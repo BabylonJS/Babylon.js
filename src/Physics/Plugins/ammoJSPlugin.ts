@@ -447,7 +447,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     body.setCollisionFlags(body.getCollisionFlags() | AmmoJSPlugin.DISABLE_COLLISION_FLAG);
                 }
 
-                this.world.addRigidBody(body);
+                let group = impostor.getParam("group");
+                let mask = impostor.getParam("mask");
+                if (group && mask) {
+                    this.world.addRigidBody(body, group, mask);
+                } else {
+                    this.world.addRigidBody(body);
+                }
                 impostor.physicsBody = body;
                 impostor._pluginData.toDispose = impostor._pluginData.toDispose.concat([body, rbInfo, myMotionState, startTransform, localInertia, colShape]);
             }
@@ -1025,7 +1031,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
         var trans = impostor.physicsBody.getWorldTransform();
 
-        // If rotation/position has changed update and activate riged body
+        // If rotation/position has changed update and activate rigged body
         if (
             trans.getOrigin().x() != newPosition.x ||
             trans.getOrigin().y() != newPosition.y ||

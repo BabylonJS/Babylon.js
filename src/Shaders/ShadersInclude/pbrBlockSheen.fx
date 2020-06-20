@@ -19,6 +19,8 @@
     #endif
     };
 
+    #define pbr_inline
+    #define inline
     void sheenBlock(
         const in vec4 vSheenColor,
     #ifdef SHEEN_ROUGHNESS
@@ -26,10 +28,7 @@
     #endif
         const in float roughness,
     #ifdef SHEEN_TEXTURE
-        const in vec2 vSheenUV,
-        const in vec2 vSheenInfos,
-        const in vec2 uvOffset,
-        const in sampler2D sheenSampler,
+        const in vec4 sheenMapData,
     #endif
         const in float reflectance,
     #ifdef SHEEN_LINKWITHALBEDO
@@ -38,6 +37,7 @@
     #endif
     #ifdef ENVIRONMENTBRDF
         const in float NdotV,
+        const in vec3 environmentBrdf,
     #endif
     #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
         const in vec2 AARoughnessFactors,
@@ -54,10 +54,14 @@
         #endif
         const in float NdotVUnclamped,
         #ifndef LODBASEDMICROSFURACE
-            const in sampler2D reflectionSamplerLow,
-            const in sampler2D reflectionSamplerHigh,
+            #ifdef REFLECTIONMAP_3D
+                const in samplerCube reflectionSamplerLow,
+                const in samplerCube reflectionSamplerHigh,
+            #else
+                const in sampler2D reflectionSamplerLow,
+                const in sampler2D reflectionSamplerHigh,
+            #endif
         #endif
-        const in vec3 environmentBrdf,
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
             const in float seo,
         #endif
@@ -71,8 +75,6 @@
         float sheenIntensity = vSheenColor.a;
 
         #ifdef SHEEN_TEXTURE
-            vec4 sheenMapData = texture2D(sheenSampler, vSheenUV + uvOffset) * vSheenInfos.y;
-            sheenIntensity *= sheenMapData.a;
             #if DEBUGMODE > 0
                 outParams.sheenMapData = sheenMapData;
             #endif
@@ -83,16 +85,26 @@
             vec3 sheenColor = baseColor.rgb*(1.0-sheenFactor);
             float sheenRoughness = sheenIntensity;
             outParams.surfaceAlbedo = surfaceAlbedo * sheenFactor;
+
+            #ifdef SHEEN_TEXTURE
+                sheenIntensity *= sheenMapData.a;
+            #endif
         #else
             vec3 sheenColor = vSheenColor.rgb;
             #ifdef SHEEN_TEXTURE
-                sheenColor.rgb *= toLinearSpace(sheenMapData.rgb);
+                sheenColor.rgb *= sheenMapData.rgb;
             #endif
             
             #ifdef SHEEN_ROUGHNESS
                 float sheenRoughness = vSheenRoughness;
+                #ifdef SHEEN_TEXTURE
+                    sheenRoughness *= sheenMapData.a;
+                #endif
             #else
                 float sheenRoughness = roughness;
+                #ifdef SHEEN_TEXTURE
+                    sheenIntensity *= sheenMapData.a;
+                #endif
             #endif
 
             // Sheen Lobe Layering.
@@ -127,50 +139,25 @@
 
             vec4 environmentSheenRadiance = vec4(0., 0., 0., 0.);
 
-            // _____________________________ 2D vs 3D Maps ________________________________
+            sampleReflectionTexture(
+                sheenAlphaG,
+                vReflectionMicrosurfaceInfos,
+                vReflectionInfos,
+                vReflectionColor,
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG, NdotVUnclamped);
-            #elif defined(LINEARSPECULARREFLECTION)
-                float sheenReflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, sheenRoughness);
-            #else
-                float sheenReflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, sheenAlphaG);
+                NdotVUnclamped,
             #endif
-
-            #ifdef LODBASEDMICROSFURACE
-                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-                sheenReflectionLOD = sheenReflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
-                environmentSheenRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, sheenReflectionLOD);
-            #else
-                float lodSheenReflectionNormalized = saturate(sheenReflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
-                float lodSheenReflectionNormalizedDoubled = lodSheenReflectionNormalized * 2.0;
-
-                vec4 environmentSheenMid = sampleReflection(reflectionSampler, reflectionCoords);
-                if (lodSheenReflectionNormalizedDoubled < 1.0){
-                    environmentSheenRadiance = mix(
-                        sampleReflection(reflectionSamplerHigh, reflectionCoords),
-                        environmentSheenMid,
-                        lodSheenReflectionNormalizedDoubled
-                    );
-                } else {
-                    environmentSheenRadiance = mix(
-                        environmentSheenMid,
-                        sampleReflection(reflectionSamplerLow, reflectionCoords),
-                        lodSheenReflectionNormalizedDoubled - 1.0
-                    );
-                }
+            #ifdef LINEARSPECULARREFLECTION
+                sheenRoughness,
             #endif
-
-            #ifdef RGBDREFLECTION
-                environmentSheenRadiance.rgb = fromRGBD(environmentSheenRadiance);
+                reflectionSampler,
+                reflectionCoords,
+            #ifndef LODBASEDMICROSFURACE
+                reflectionSamplerLow,
+                reflectionSamplerHigh,
             #endif
-
-            #ifdef GAMMAREFLECTION
-                environmentSheenRadiance.rgb = toLinearSpace(environmentSheenRadiance.rgb);
-            #endif
-
-            // _____________________________ Levels _____________________________________
-            environmentSheenRadiance.rgb *= vReflectionInfos.x;
-            environmentSheenRadiance.rgb *= vReflectionColor.rgb;
+                environmentSheenRadiance
+            );
 
             vec3 sheenEnvironmentReflectance = getSheenReflectanceFromBRDFLookup(sheenColor, environmentSheenBrdf);
 

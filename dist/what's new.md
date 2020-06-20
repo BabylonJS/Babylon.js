@@ -353,6 +353,7 @@
 - Fix for bug where comments would break out of frames and break resizing of frames ([Kyle Belfort](https://github.com/belfortk))
 - Fix for bug where frames without comments would display undefined at the bottom right corner ([Kyle Belfort](https://github.com/belfortk))
 - Fixed an issue in XR where one of the cameras used for rendering got the wrong framebuffer dimensions ([RaananW](https://github.com/RaananW/))
+- Fix bug in `StandardMaterial` and `PBRMaterial` where the mesh visibility value is not applied correctly when the material is frozen ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

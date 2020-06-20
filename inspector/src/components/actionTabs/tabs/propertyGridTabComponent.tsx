@@ -3,7 +3,7 @@ import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 
 import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Material } from "babylonjs/Materials/material";
 import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
@@ -50,7 +50,7 @@ import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
 
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
-import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
+import { AnimationGroupGridComponent } from "./propertyGrids/animations/animationGroupPropertyGridComponent";
 import { LockObject } from "./propertyGrids/lockObject";
 import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
 import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
@@ -91,6 +91,11 @@ import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 import { MultiMaterialPropertyGridComponent } from './propertyGrids/materials/multiMaterialPropertyGridComponent';
 import { ParticleSystemPropertyGridComponent } from './propertyGrids/particleSystems/particleSystemPropertyGridComponent';
 import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { SpriteManagerPropertyGridComponent } from './propertyGrids/sprites/spriteManagerPropertyGridComponent';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { SpritePropertyGridComponent } from './propertyGrids/sprites/spritePropertyGridComponent';
+import { Sprite } from 'babylonjs/Sprites/sprite';
+import { TargetedAnimationGridComponent } from './propertyGrids/animations/targetedAnimationPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -133,6 +138,24 @@ export class PropertyGridTabComponent extends PaneComponent {
                 return (<ScenePropertyGridComponent scene={scene}
                     globalState={this.props.globalState}
                     lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "Sprite") {
+                const sprite = entity as Sprite;
+                return (<SpritePropertyGridComponent sprite={sprite}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "SpriteManager") {
+                const spriteManager = entity as SpriteManager;
+                return (<SpriteManagerPropertyGridComponent spriteManager={spriteManager}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}                    
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
@@ -297,6 +320,17 @@ export class PropertyGridTabComponent extends PaneComponent {
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
+
+            if (className === "TargetedAnimation") {
+                const targetedAnimation = entity as TargetedAnimation;
+                return (<TargetedAnimationGridComponent
+                    globalState={this.props.globalState}
+                    targetedAnimation={targetedAnimation}
+                    scene={this.props.scene}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }            
 
             if (className.indexOf("Material") !== -1) {
                 const material = entity as Material;

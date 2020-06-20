@@ -22,6 +22,7 @@ import { GraphNode } from './diagram/graphNode';
 import { GraphFrame } from './diagram/graphFrame';
 import * as ReactDOM from 'react-dom';
 import { IInspectorOptions } from "babylonjs/Debug/debugLayer";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 
 require("./main.scss");
@@ -157,6 +158,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
+        this.props.globalState.onImportFrameObservable.add((source: any) => {
+            const frameData = source.editorData.frames[0];
+
+            // create new graph nodes for only blocks from frame (last blocks added)
+            this.props.globalState.nodeMaterial.attachedBlocks.slice(-(frameData.blocks.length)).forEach((block: NodeMaterialBlock) => {
+                this.createNodeFromObject(block);
+            });
+            this._graphCanvas.addFrame(frameData);
+            this.reOrganize(this.props.globalState.nodeMaterial.editorData, true);
+        })
+
         this.props.globalState.onZoomToFitRequiredObservable.add(() => {
             this.zoomToFit();
         });
@@ -243,16 +255,26 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     newFrame.y = currentY;
 
                     // Paste nodes
-
                     if (this._copiedFrame.nodes.length) {
                         currentX = newFrame.x + this._copiedFrame.nodes[0].x - this._copiedFrame.x;
                         currentY = newFrame.y + this._copiedFrame.nodes[0].y - this._copiedFrame.y;
-                        this.pasteSelection(this._copiedFrame.nodes, currentX, currentY);                  
+                        
+                        this._graphCanvas._frameIsMoving = true;
+                        let newNodes = this.pasteSelection(this._copiedFrame.nodes, currentX, currentY);       
+                        if (newNodes) {           
+                            for (var node of newNodes) {
+                                newFrame.syncNode(node);
+                            }
+                        }
+                        this._graphCanvas._frameIsMoving = false;
                     }
 
                     if (this._copiedFrame.isCollapsed) {
                         newFrame.isCollapsed = true;
                     }
+
+                    // Select
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
                     return;
                 }
 
@@ -261,7 +283,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 }
 
                 let currentX = (this._mouseLocationX - rootElement.offsetLeft - this._graphCanvas.x - this.NodeWidth) / zoomLevel;
-                this.pasteSelection(this._copiedNodes, currentX, currentY);
+                this.pasteSelection(this._copiedNodes, currentX, currentY, true);
             }
 
         }, false);
@@ -310,11 +332,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         done[nodeIndex] = true;
     }
 
-    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number) {
+    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew = false) {
 
         let originalNode: Nullable<GraphNode> = null;
 
         let newNodes:GraphNode[] = [];
+
+        // Copy to prevent recursive side effects while creating nodes.
+        copiedNodes = copiedNodes.slice();
+
+        // Cancel selection        
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
         // Create new nodes
         for (var node of copiedNodes) {
@@ -329,7 +357,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             if (!clone) {
                 return;
             }
-            
+
             let newNode = this.createNodeFromObject(clone, false);
 
             let x = 0;
@@ -348,6 +376,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             newNode.cleanAccumulation();
 
             newNodes.push(newNode);
+
+            if (selectNew) {
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newNode);
+            }
         }
 
         // Relink
@@ -356,6 +388,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this.reconnectNewNodes(index, newNodes, copiedNodes, done);
         }
 
+        return newNodes;
     }
 
     zoomToFit() {
@@ -397,31 +430,35 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Load graph of nodes from the material
         if (this.props.globalState.nodeMaterial) {
-            var material = this.props.globalState.nodeMaterial;
-            material._vertexOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject(n);
-            });
-            material._fragmentOutputNodes.forEach((n: any) => {
-                this.createNodeFromObject(n);
-            });
-
-            material.attachedBlocks.forEach((n: any) => {
-                this.createNodeFromObject(n);
-            });
-
-            // Links
-            material.attachedBlocks.forEach((n: any) => {
-                if (n.inputs.length) {
-                    for (var input of n.inputs) {
-                        if (input.isConnected) {
-                            this._graphCanvas.connectPorts(input.connectedPoint!, input);
-                        }
-                    }
-                }
-            });            
+            this.loadGraph()
         }
 
         this.reOrganize(editorData);
+    }
+
+    loadGraph() {
+        var material = this.props.globalState.nodeMaterial;
+        material._vertexOutputNodes.forEach((n: any) => {
+            this.createNodeFromObject(n, true);
+        });
+        material._fragmentOutputNodes.forEach((n: any) => {
+            this.createNodeFromObject(n, true);
+        });
+
+        material.attachedBlocks.forEach((n: any) => {
+            this.createNodeFromObject(n, true);
+        });
+
+        // Links
+        material.attachedBlocks.forEach((n: any) => {
+            if (n.inputs.length) {
+                for (var input of n.inputs) {
+                    if (input.isConnected) {
+                        this._graphCanvas.connectPorts(input.connectedPoint!, input);
+                    }
+                }
+            }
+        });           
     }
 
     showWaitScreen() {
@@ -432,7 +469,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.add("hidden");
     }
 
-    reOrganize(editorData: Nullable<IEditorData> = null) {
+    reOrganize(editorData: Nullable<IEditorData> = null, isImportingAFrame = false) {
         this.showWaitScreen();
         this._graphCanvas._isLoading = true; // Will help loading large graphes
 
@@ -451,8 +488,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                         }
                     }
                 }
-
-                this._graphCanvas.processEditorData(editorData);
+                
+                if (!isImportingAFrame){
+                    this._graphCanvas.processEditorData(editorData);
+                }
             }
 
             this._graphCanvas._isLoading = false;
@@ -580,7 +619,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     createPopUp = () => {
         const userOptions = {
             original: true,
-            popup: false,
+            popup: true,
             overlay: false,
             embedMode: false,
             enableClose: true,
@@ -590,7 +629,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         };
         const options = {
             embedHostWidth: "100%",
-            popup: true,
             ...userOptions
         };
         const popUpWindow = this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");

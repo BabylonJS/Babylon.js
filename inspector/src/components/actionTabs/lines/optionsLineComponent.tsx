@@ -97,9 +97,9 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                 <div className="options">
                     <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
                         {
-                            this.props.options.map((option) => {
+                            this.props.options.map((option, i) => {
                                 return (
-                                    <option key={option.label} value={option.value}>{option.label}</option>
+                                    <option key={option.label + i} value={option.value}>{option.label}</option>
                                 );
                             })
                         }

@@ -74,41 +74,41 @@ export interface CubeMapInfo {
  */
 export class PanoramaToCubeMapTools {
 
-    private static FACE_FRONT = [
+    private static FACE_LEFT = [
         new Vector3(-1.0, -1.0, -1.0),
         new Vector3(1.0, -1.0, -1.0),
         new Vector3(-1.0, 1.0, -1.0),
         new Vector3(1.0, 1.0, -1.0)
     ];
-    private static FACE_BACK = [
+    private static FACE_RIGHT = [
         new Vector3(1.0, -1.0, 1.0),
         new Vector3(-1.0, -1.0, 1.0),
         new Vector3(1.0, 1.0, 1.0),
         new Vector3(-1.0, 1.0, 1.0)
     ];
-    private static FACE_RIGHT = [
+    private static FACE_FRONT = [
         new Vector3(1.0, -1.0, -1.0),
         new Vector3(1.0, -1.0, 1.0),
         new Vector3(1.0, 1.0, -1.0),
         new Vector3(1.0, 1.0, 1.0)
     ];
-    private static FACE_LEFT = [
+    private static FACE_BACK = [
         new Vector3(-1.0, -1.0, 1.0),
         new Vector3(-1.0, -1.0, -1.0),
         new Vector3(-1.0, 1.0, 1.0),
         new Vector3(-1.0, 1.0, -1.0)
     ];
     private static FACE_DOWN = [
-        new Vector3(-1.0, 1.0, -1.0),
         new Vector3(1.0, 1.0, -1.0),
+        new Vector3(1.0, 1.0, 1.0),
+        new Vector3(-1.0, 1.0, -1.0),
         new Vector3(-1.0, 1.0, 1.0),
-        new Vector3(1.0, 1.0, 1.0)
     ];
     private static FACE_UP = [
-        new Vector3(-1.0, -1.0, 1.0),
-        new Vector3(1.0, -1.0, 1.0),
         new Vector3(-1.0, -1.0, -1.0),
-        new Vector3(1.0, -1.0, -1.0)
+        new Vector3(-1.0, -1.0, 1.0),
+        new Vector3(1.0, -1.0, -1.0),
+        new Vector3(1.0, -1.0, 1.0),
     ];
 
     /**

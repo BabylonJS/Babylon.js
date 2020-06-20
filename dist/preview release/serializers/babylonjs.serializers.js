@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -443,7 +443,14 @@ var OBJExport = /** @class */ (function () {
                 continue;
             }
             for (var i = 0; i < trunkVerts.length; i += 3) {
-                output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+                // Babylon.js default is left handed, while OBJ default is right handed
+                // Need to invert Z vertices unless Babylon is set to use a right handed system
+                if (mesh[0].getScene().useRightHandedSystem) {
+                    output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + trunkVerts[i + 2]);
+                }
+                else {
+                    output.push("v " + trunkVerts[i] + " " + trunkVerts[i + 1] + " " + -trunkVerts[i + 2]);
+                }
                 curV++;
             }
             if (trunkNormals != null) {
@@ -4296,6 +4303,10 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 return _this._textureMap[textureUid];
             }
             else {
+                var pixels = _this.getPixelsFromTexture(babylonTexture);
+                if (!pixels) {
+                    return null;
+                }
                 var samplers = _this._exporter._samplers;
                 var sampler = _this._getGLTFTextureSampler(babylonTexture);
                 var samplerIndex_1 = null;
@@ -4316,7 +4327,6 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 else {
                     samplerIndex_1 = foundSamplerIndex;
                 }
-                var pixels = _this.getPixelsFromTexture(babylonTexture);
                 var size = babylonTexture.getSize();
                 return _this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(function (base64Data) {
                     var textureInfo = _this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex_1);
@@ -4690,7 +4700,7 @@ var _GLTFUtilities = /** @class */ (function () {
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! exports provided: GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
+/*! exports provided: _GLTFAnimation, GLTFData, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, GLTF2Export, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4779,7 +4789,7 @@ var __IGLTFExporterExtension = 0; // I am here to allow dts to be created
 /*!***********************!*\
   !*** ./glTF/index.ts ***!
   \***********************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
+/*! exports provided: __IGLTFExporterExtension, _GLTFAnimation, GLTFData, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, GLTF2Export, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4788,11 +4798,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtension", function() { return _glTFFileExporter__WEBPACK_IMPORTED_MODULE_0__["__IGLTFExporterExtension"]; });
 
 /* harmony import */ var _2_0__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./2.0 */ "./glTF/2.0/index.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["GLTFData"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["GLTF2Export"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFAnimation", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["_GLTFAnimation"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["GLTFData"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_Exporter", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["_Exporter"]; });
 
@@ -4801,6 +4809,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtensionV2", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["__IGLTFExporterExtensionV2"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFMaterialExporter", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["_GLTFMaterialExporter"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["GLTF2Export"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFUtilities", function() { return _2_0__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]; });
 
@@ -4820,7 +4830,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************!*\
   !*** ./index.ts ***!
   \******************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, OBJExport, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, STLExport, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
+/*! exports provided: OBJExport, __IGLTFExporterExtension, _GLTFAnimation, GLTFData, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, GLTF2Export, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen, STLExport */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4831,11 +4841,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _glTF__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./glTF */ "./glTF/index.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtension", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["__IGLTFExporterExtension"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["GLTFData"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["GLTF2Export"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFAnimation", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["_GLTFAnimation"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["GLTFData"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_Exporter", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["_Exporter"]; });
 
@@ -4844,6 +4852,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtensionV2", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["__IGLTFExporterExtensionV2"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFMaterialExporter", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["_GLTFMaterialExporter"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["GLTF2Export"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFUtilities", function() { return _glTF__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]; });
 
@@ -4867,7 +4877,7 @@ __webpack_require__.r(__webpack_exports__);
 /*!******************************************!*\
   !*** ./legacy/legacy-glTF2Serializer.ts ***!
   \******************************************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
+/*! exports provided: __IGLTFExporterExtension, _GLTFAnimation, GLTFData, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, GLTF2Export, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4879,11 +4889,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../glTF/2.0 */ "./glTF/2.0/index.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtension", function() { return _glTF_glTFFileExporter__WEBPACK_IMPORTED_MODULE_0__["__IGLTFExporterExtension"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["GLTFData"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["GLTF2Export"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFAnimation", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["_GLTFAnimation"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["GLTFData"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_Exporter", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["_Exporter"]; });
 
@@ -4892,6 +4900,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtensionV2", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["__IGLTFExporterExtensionV2"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFMaterialExporter", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["_GLTFMaterialExporter"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["GLTF2Export"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFUtilities", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_4__["_GLTFUtilities"]; });
 
@@ -5011,7 +5021,7 @@ if (typeof globalObject !== "undefined") {
 /*!**************************!*\
   !*** ./legacy/legacy.ts ***!
   \**************************/
-/*! exports provided: __IGLTFExporterExtension, GLTFData, GLTF2Export, _GLTFAnimation, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, _GLTFUtilities, OBJExport, STLExport, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen */
+/*! exports provided: __IGLTFExporterExtension, _GLTFAnimation, GLTFData, _Exporter, _BinaryWriter, __IGLTFExporterExtensionV2, _GLTFMaterialExporter, GLTF2Export, _GLTFUtilities, KHR_texture_transform, KHR_lights_punctual, KHR_materials_sheen, OBJExport, STLExport */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -5020,11 +5030,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./legacy-glTF2Serializer */ "./legacy/legacy-glTF2Serializer.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtension", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["__IGLTFExporterExtension"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["GLTFData"]; });
-
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["GLTF2Export"]; });
-
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFAnimation", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["_GLTFAnimation"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFData", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["GLTFData"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_Exporter", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["_Exporter"]; });
 
@@ -5033,6 +5041,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__IGLTFExporterExtensionV2", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["__IGLTFExporterExtensionV2"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFMaterialExporter", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["_GLTFMaterialExporter"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTF2Export", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["GLTF2Export"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_GLTFUtilities", function() { return _legacy_glTF2Serializer__WEBPACK_IMPORTED_MODULE_1__["_GLTFUtilities"]; });
 

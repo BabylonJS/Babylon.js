@@ -1,7 +1,7 @@
 import {
     WebXRAbstractMotionController,
     IMinimalMotionControllerObject,
-    MotionControllerHandness,
+    MotionControllerHandedness,
     IMotionControllerLayoutMap
 } from "./webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
@@ -85,13 +85,13 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
 
     public profileId = "microsoft-mixed-reality";
 
-    constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handness: MotionControllerHandness) {
-        super(scene, MixedRealityProfile["left-right"], gamepadObject, handness);
+    constructor(scene: Scene, gamepadObject: IMinimalMotionControllerObject, handedness: MotionControllerHandedness) {
+        super(scene, MixedRealityProfile["left-right"], gamepadObject, handedness);
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string; } {
         let filename = "";
-        if (this.handness === 'left') {
+        if (this.handedness === 'left') {
             filename = WebXRMicrosoftMixedRealityController.MODEL_LEFT_FILENAME;
         }
         else { // Right is the default if no hand is specified
@@ -194,7 +194,7 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
         this.rootMesh.isPickable = false;
         let rootMesh;
         // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
@@ -213,7 +213,9 @@ export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionCon
             rootMesh.setParent(this.rootMesh);
         }
 
-        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        if (!this.scene.useRightHandedSystem) {
+            this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        }
     }
 
     protected _updateModel(): void {

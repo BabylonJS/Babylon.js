@@ -3,10 +3,10 @@ import { Tools } from "../../Misc/tools";
 import { Logger } from "../../Misc/logger";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Engine } from "../../Engines/engine";
 import { Texture } from "../../Materials/Textures/texture";
 
 import "../../Engines/Extensions/engine.videoTexture";
+import "../../Engines/Extensions/engine.dynamicTexture";
 
 /**
  * Settings for finer control over video usage
@@ -63,7 +63,6 @@ export class VideoTexture extends Texture {
     }
 
     private _generateMipMaps: boolean;
-    private _engine: Engine;
     private _stillImageCaptured = false;
     private _displayingPosterTexture = false;
     private _settings: VideoTextureSettings;
@@ -99,7 +98,6 @@ export class VideoTexture extends Texture {
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        this._engine = this.getScene()!.getEngine();
         this._generateMipMaps = generateMipMaps;
         this._initialSamplingMode = samplingMode;
         this.autoUpdateTexture = settings.autoUpdateTexture;
@@ -131,7 +129,7 @@ export class VideoTexture extends Texture {
         const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
         if (settings.poster &&
             (!settings.autoPlay || !videoHasEnoughData)) {
-            this._texture = this._engine.createTexture(settings.poster!, false, !this.invertY, scene);
+            this._texture = this._getEngine()!.createTexture(settings.poster!, false, !this.invertY, scene);
             this._displayingPosterTexture = true;
         }
         else if (videoHasEnoughData) {
@@ -182,7 +180,7 @@ export class VideoTexture extends Texture {
             }
         }
 
-        if (!this._engine.needPOTTextures ||
+        if (!this._getEngine()!.needPOTTextures ||
             (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
             this.wrapU = Texture.WRAP_ADDRESSMODE;
             this.wrapV = Texture.WRAP_ADDRESSMODE;
@@ -192,7 +190,7 @@ export class VideoTexture extends Texture {
             this._generateMipMaps = false;
         }
 
-        this._texture = this._engine.createDynamicTexture(
+        this._texture = this._getEngine()!.createDynamicTexture(
             this.video.videoWidth,
             this.video.videoHeight,
             this._generateMipMaps,
@@ -310,7 +308,7 @@ export class VideoTexture extends Texture {
 
         this._frameId = frameId;
 
-        this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
+        this._getEngine()!.updateVideoTexture(this._texture, this.video, this._invertY);
     }
 
     /**

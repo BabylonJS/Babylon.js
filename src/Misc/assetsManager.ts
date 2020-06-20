@@ -248,7 +248,7 @@ export class MeshAssetTask extends AbstractAssetTask {
      * @param name defines the name of the task
      * @param meshesNames defines the list of mesh's names you want to load
      * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
-     * @param sceneFilename defines the filename of the scene to load from
+     * @param sceneFilename defines the filename or File of the scene to load from
      */
     constructor(
         /**
@@ -264,9 +264,9 @@ export class MeshAssetTask extends AbstractAssetTask {
          */
         public rootUrl: string,
         /**
-         * Defines the filename of the scene to load from
+         * Defines the filename or File of the scene to load from
          */
-        public sceneFilename: string) {
+        public sceneFilename: string | File) {
         super(name);
     }
 
@@ -763,7 +763,7 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
 
 /**
  * This class can be used to easily import assets into a scene
- * @see http://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+ * @see https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
  */
 export class AssetsManager {
     private _scene: Scene;
@@ -815,7 +815,7 @@ export class AssetsManager {
 
     /**
      * Gets or sets a boolean defining if the AssetsManager should use the default loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public useDefaultLoadingScreen = true;
 

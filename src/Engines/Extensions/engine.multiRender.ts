@@ -18,7 +18,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Create a multi render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multiple-render-target
+         * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
          * @param size defines the size of the texture
          * @param options defines the creation options
          * @returns the cube texture as an InternalTexture
@@ -27,7 +27,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update the sample count for a given multiple render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
+         * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
          * @param textures defines the textures to update
          * @param samples defines the sample count to set
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)

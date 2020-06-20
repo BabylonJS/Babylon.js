@@ -7,7 +7,7 @@ import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
-import { BaseSubMesh, SubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { Geometry } from "../Meshes/geometry";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
@@ -19,6 +19,7 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
 import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
+import { ShadowDepthWrapper } from './shadowDepthWrapper';
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
@@ -39,6 +40,16 @@ export interface IMaterialCompilationOptions {
      * Defines whether instances are enabled.
      */
     useInstances: boolean;
+}
+
+/**
+ * Options passed when calling customShaderNameResolve
+ */
+export interface ICustomShaderNameResolveOptions {
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+     */
+    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
 }
 
 /**
@@ -142,6 +153,35 @@ export class Material implements IAnimatable {
      * They are also discarded below the alpha cutoff threshold to improve performances.
      */
     public static readonly MATERIAL_ALPHATESTANDBLEND = 3;
+
+    /**
+     * The Whiteout method is used to blend normals.
+     * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+     */
+    public static readonly MATERIAL_NORMALBLENDMETHOD_WHITEOUT = 0;
+
+    /**
+     * The Reoriented Normal Mapping method is used to blend normals.
+     * Details of the algorithm can be found here: https://blog.selfshadow.com/publications/blending-in-detail/
+     */
+    public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
+
+    /**
+     * Custom callback helping to override the default shader used in the material.
+     */
+    public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[], options?: ICustomShaderNameResolveOptions) => string;
+
+    /**
+     * Custom shadow depth material to use for shadow rendering instead of the in-built one
+     */
+    public shadowDepthWrapper: Nullable<ShadowDepthWrapper> = null;
+
+    /**
+     * Gets or sets a boolean indicating that the material is allowed (if supported) to do shader hot swapping.
+     * This means that the material can keep using a previous shader while a new one is being compiled.
+     * This is mostly used when shader parallel compilation is supported (true by default)
+     */
+    public allowShaderHotSwapping = true;
 
     /**
      * The ID of the material
@@ -346,6 +386,19 @@ export class Material implements IAnimatable {
         return this._onUnBindObservable;
     }
 
+    protected _onEffectCreatedObservable: Nullable<Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}>>;
+
+    /**
+    * An event triggered when the effect is (re)created
+    */
+    public get onEffectCreatedObservable(): Observable<{ effect: Effect, subMesh: Nullable<SubMesh>}> {
+        if (!this._onEffectCreatedObservable) {
+            this._onEffectCreatedObservable = new Observable<{effect: Effect, subMesh: Nullable<SubMesh>}>();
+        }
+
+        return this._onEffectCreatedObservable;
+    }
+
     /**
      * Stores the value of the alpha mode
      */
@@ -418,6 +471,12 @@ export class Material implements IAnimatable {
     public disableDepthWrite = false;
 
     /**
+     * Specifies if color writing should be disabled
+     */
+    @serialize()
+    public disableColorWrite = false;
+
+    /**
      * Specifies if depth writing should be forced
      */
     @serialize()
@@ -471,10 +530,6 @@ export class Material implements IAnimatable {
     @serialize()
     public zOffset = 0;
 
-    /**
-     * Gets a value specifying if wireframe mode is enabled
-     */
-    @serialize()
     public get wireframe(): boolean {
         switch (this._fillMode) {
             case Material.WireFrameFillMode:
@@ -560,6 +615,11 @@ export class Material implements IAnimatable {
      * Specifies if the depth write state should be cached
      */
     private _cachedDepthWriteState: boolean = false;
+
+    /**
+     * Specifies if the color write state should be cached
+     */
+    private _cachedColorWriteState: boolean = false;
 
     /**
      * Specifies if the depth function state should be cached
@@ -668,7 +728,7 @@ export class Material implements IAnimatable {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return false;
     }
 
@@ -905,6 +965,12 @@ export class Material implements IAnimatable {
             engine.setDepthWrite(false);
         }
 
+        if (this.disableColorWrite) {
+            var engine = this._scene.getEngine();
+            this._cachedColorWriteState = engine.getColorWrite();
+            engine.setColorWrite(false);
+        }
+
         if (this.depthFunction !== 0) {
             var engine = this._scene.getEngine();
             this._cachedDepthFunctionState = engine.getDepthFunction() || 0;
@@ -928,6 +994,11 @@ export class Material implements IAnimatable {
         if (this.disableDepthWrite) {
             var engine = this._scene.getEngine();
             engine.setDepthWrite(this._cachedDepthWriteState);
+        }
+
+        if (this.disableColorWrite) {
+            var engine = this._scene.getEngine();
+            engine.setColorWrite(this._cachedColorWriteState);
         }
     }
 
@@ -992,16 +1063,13 @@ export class Material implements IAnimatable {
             ...options
         };
 
-        var subMesh = new BaseSubMesh();
         var scene = this.getScene();
+        let currentHotSwapingState = this.allowShaderHotSwapping;
+        this.allowShaderHotSwapping = false; // Turned off to let us evaluate the real compilation state
 
         var checkReady = () => {
             if (!this._scene || !this._scene.getEngine()) {
                 return;
-            }
-
-            if (subMesh._materialDefines) {
-                subMesh._materialDefines._renderId = -1;
             }
 
             var clipPlaneState = scene.clipPlane;
@@ -1011,22 +1079,35 @@ export class Material implements IAnimatable {
             }
 
             if (this._storeEffectOnSubMeshes) {
-                if (this.isReadyForSubMesh(mesh, subMesh, localOptions.useInstances)) {
+                var allDone = true, lastError = null;
+                if (mesh.subMeshes) {
+                    let tempSubMesh = new SubMesh(0, 0, 0, 0, 0, mesh, undefined, false, false);
+                    if (tempSubMesh._materialDefines) {
+                        tempSubMesh._materialDefines._renderId = -1;
+                    }
+                    if (!this.isReadyForSubMesh(mesh, tempSubMesh, localOptions.useInstances)) {
+                        if (tempSubMesh.effect && tempSubMesh.effect.getCompilationError() && tempSubMesh.effect.allFallbacksProcessed()) {
+                            lastError = tempSubMesh.effect.getCompilationError();
+                        } else {
+                            allDone = false;
+                            setTimeout(checkReady, 16);
+                        }
+                    }
+                }
+                if (allDone) {
+                    this.allowShaderHotSwapping = currentHotSwapingState;
+                    if (lastError) {
+                        if (onError) {
+                            onError(lastError);
+                        }
+                    }
                     if (onCompiled) {
                         onCompiled(this);
                     }
                 }
-                else {
-                    if (subMesh.effect && subMesh.effect.getCompilationError() && subMesh.effect.allFallbacksProcessed()) {
-                        if (onError) {
-                            onError(subMesh.effect.getCompilationError());
-                        }
-                    } else {
-                        setTimeout(checkReady, 16);
-                    }
-                }
             } else {
                 if (this.isReady()) {
+                    this.allowShaderHotSwapping = currentHotSwapingState;
                     if (onCompiled) {
                         onCompiled(this);
                     }
@@ -1272,6 +1353,10 @@ export class Material implements IAnimatable {
 
         if (this._onUnBindObservable) {
             this._onUnBindObservable.clear();
+        }
+
+        if (this._onEffectCreatedObservable) {
+            this._onEffectCreatedObservable.clear();
         }
     }
 

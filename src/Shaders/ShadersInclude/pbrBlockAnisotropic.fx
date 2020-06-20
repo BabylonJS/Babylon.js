@@ -10,13 +10,11 @@
     #endif
     };
 
+    #define pbr_inline
     void anisotropicBlock(
         const in vec3 vAnisotropy,
     #ifdef ANISOTROPIC_TEXTURE
-        const in vec2 vAnisotropyInfos,
-        const in vec2 vAnisotropyUV,
-        const in vec2 uvOffset,
-        const in sampler2D anisotropySampler,
+        const in vec3 anisotropyMapData,
     #endif
         const in mat3 TBN,
         const in vec3 normalW,
@@ -28,7 +26,6 @@
         vec3 anisotropyDirection = vec3(vAnisotropy.xy, 0.);
 
         #ifdef ANISOTROPIC_TEXTURE
-            vec3 anisotropyMapData = texture2D(anisotropySampler, vAnisotropyUV + uvOffset).rgb * vAnisotropyInfos.y;
             anisotropy *= anisotropyMapData.b;
             anisotropyDirection.rg *= anisotropyMapData.rg * 2.0 - 1.0;
             #if DEBUGMODE > 0

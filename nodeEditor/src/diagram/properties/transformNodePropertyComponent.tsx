@@ -4,7 +4,7 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
 import { TransformBlock } from 'babylonjs/Materials/Node/Blocks/transformBlock';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class TransformPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -14,7 +14,7 @@ export class TransformPropertyTabComponent extends React.Component<IPropertyComp
     render() {
         return (
             <>                
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     <CheckBoxLineComponent label="Transform as direction" onSelect={value => {
                         let transformBlock = this.props.block as TransformBlock;

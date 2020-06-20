@@ -51,6 +51,13 @@ function processEs6Packages(version) {
             fs.copySync(source, destination);
         }
 
+        if (es6Config.license) {
+            let source = path.join(config.computed.rootFolder, es6Config.readme);
+            let destination = path.join(packagePath, "license.md");
+            colorConsole.log("    Copy es6 license file: ", source.cyan, destination.cyan);
+            fs.copySync(source, destination);
+        }
+
         umdPackageJson.name = es6Config.packageName;
         umdPackageJson.version = version;
         umdPackageJson.main = es6Config.index || "index.js";
@@ -66,6 +73,10 @@ function processEs6Packages(version) {
                 .map(f => f.replace(packagePath + "/", ""))
                 .filter(f => f.indexOf("assets/") === -1);
             umdPackageJson.files = files;
+        }
+
+        if (es6Config.license && umdPackageJson.files.indexOf("license.md") === -1) {
+            umdPackageJson.files.push("license.md");
         }
 
         ["dependencies", "peerDependencies", "devDependencies"].forEach(key => {

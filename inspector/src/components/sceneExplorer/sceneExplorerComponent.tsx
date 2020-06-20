@@ -22,6 +22,9 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 import { GPUParticleSystem } from 'babylonjs/Particles/gpuParticleSystem';
 import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline';
+import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
+import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
 
 require("./sceneExplorer.scss");
 
@@ -61,6 +64,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _onSelectionRenamedObserver: Nullable<Observer<void>>;
     private _onNewSceneAddedObserver: Nullable<Observer<Scene>>;
+    private _onNewSceneObserver: Nullable<Observer<Scene>>;
     private sceneExplorerRef: React.RefObject<Resizable>;
 
 
@@ -77,6 +81,11 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         this.sceneMutationFunc = this.processMutation.bind(this);
 
         this.sceneExplorerRef = React.createRef();
+        this._onNewSceneObserver = this.props.globalState.onNewSceneObservable.add((scene: Scene) => {
+            this.setState({
+                scene
+            });
+        })
     }
 
     processMutation() {
@@ -110,6 +119,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         if (this._onNewSceneAddedObserver) {
             EngineStore.LastCreatedEngine!.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
+        }
+
+        if(this._onNewSceneObserver){
+            this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
         }
 
         const scene = this.state.scene;
@@ -312,6 +325,20 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         // Materials
         let materialsContextMenus: { label: string, action: () => void }[] = [];
         materialsContextMenus.push({
+            label: "Add new standard material",
+            action: () => {
+                let newStdMaterial = new StandardMaterial("Standard material", scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
+            }
+        });        
+        materialsContextMenus.push({
+            label: "Add new PBR material",
+            action: () => {
+                let newPBRMaterial = new PBRMaterial("PBR material", scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
+            }
+        });        
+        materialsContextMenus.push({
             label: "Add new node material",
             action: () => {
                 let newNodeMaterial = new NodeMaterial("node material", scene);
@@ -328,6 +355,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         if (scene.multiMaterials && scene.multiMaterials.length) {
             materials.push(...scene.multiMaterials);
         }
+
+        // Sprite Managers
+        let spriteManagersContextMenus: { label: string, action: () => void }[] = [];
+        spriteManagersContextMenus.push({
+            label: "Add new sprite manager",
+            action: () => {
+                let newSpriteManager = new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene);
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newSpriteManager);
+            }
+        });            
 
         // Particle systems
         let particleSystemsContextMenus: { label: string, action: () => void }[] = [];
@@ -379,6 +416,10 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <TreeItemComponent globalState={this.props.globalState} 
                     contextMenuItems={particleSystemsContextMenus} 
                     extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.particleSystems} label="Particle systems" offset={1} filter={this.state.filter} />
+                <TreeItemComponent globalState={this.props.globalState} 
+                    contextMenuItems={spriteManagersContextMenus} 
+                    forceSubitems={true}
+                    extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={scene.spriteManagers} label="Sprite managers" offset={1} filter={this.state.filter} />
                 {
                     guiElements && guiElements.length > 0 &&
                     <TreeItemComponent globalState={this.props.globalState} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.state.selectedEntity} items={guiElements} label="GUI" offset={1} filter={this.state.filter} />

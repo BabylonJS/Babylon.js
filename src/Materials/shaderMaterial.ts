@@ -1,18 +1,23 @@
 import { SerializationHelper } from "../Misc/decorators";
+import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { BaseSubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
-import { IEffectCreationOptions } from "./effect";
+import { Effect, IEffectCreationOptions } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
+import { WebRequest } from '../Misc/webRequest';
+import { Engine } from '../Engines/engine';
+
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -59,7 +64,7 @@ export interface IShaderMaterialOptions {
  *
  * This returned material effects how the mesh will look based on the code in the shaders.
  *
- * @see http://doc.babylonjs.com/how_to/shader_material
+ * @see https://doc.babylonjs.com/how_to/shader_material
  */
 export class ShaderMaterial extends Material {
     private _shaderPath: any;
@@ -87,12 +92,19 @@ export class ShaderMaterial extends Material {
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
     private _multiview: boolean = false;
+    private _cachedDefines: string;
+
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the material was created from the snippet server */
+    public snippetId: string;
 
     /**
      * Instantiate a new shader material.
      * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
      * This returned material effects how the mesh will look based on the code in the shaders.
-     * @see http://doc.babylonjs.com/how_to/shader_material
+     * @see https://doc.babylonjs.com/how_to/shader_material
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
@@ -459,7 +471,7 @@ export class ShaderMaterial extends Material {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return this.isReady(mesh, useInstances);
     }
 
@@ -521,9 +533,14 @@ export class ShaderMaterial extends Material {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (mesh?.hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Bones
+        let numInfluencers = 0;
+
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -534,7 +551,9 @@ export class ShaderMaterial extends Material {
 
             const skeleton = mesh.skeleton;
 
-            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+            numInfluencers = mesh.numBoneInfluencers;
+
+            defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
             fallbacks.addCPUSkinningFallback(0, mesh);
 
             if (skeleton.isUsingTextureForMatrices) {
@@ -571,21 +590,43 @@ export class ShaderMaterial extends Material {
             defines.push("#define ALPHATEST");
         }
 
+        let shaderName = this._shaderPath,
+            uniforms = this._options.uniforms,
+            uniformBuffers = this._options.uniformBuffers,
+            samplers = this._options.samplers;
+
+        if (this.customShaderNameResolve) {
+            uniforms = uniforms.slice();
+            uniformBuffers = uniformBuffers.slice();
+            samplers = samplers.slice();
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+        }
+
         var previousEffect = this._effect;
         var join = defines.join("\n");
 
-        this._effect = engine.createEffect(this._shaderPath, <IEffectCreationOptions>{
-            attributes: attribs,
-            uniformsNames: this._options.uniforms,
-            uniformBuffersNames: this._options.uniformBuffers,
-            samplers: this._options.samplers,
-            defines: join,
-            fallbacks: fallbacks,
-            onCompiled: this.onCompiled,
-            onError: this.onError
-        }, engine);
+        if (this._cachedDefines !== join) {
+            this._cachedDefines = join;
 
-        if (!this._effect.isReady()) {
+            this._effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
+                attributes: attribs,
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError,
+                indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
+            }, engine);
+
+            if (this._onEffectCreatedObservable) {
+                onCreatedEffectParameters.effect = this._effect;
+                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+            }
+        }
+
+        if (!this._effect?.isReady() ?? true) {
             return false;
         }
 
@@ -602,161 +643,185 @@ export class ShaderMaterial extends Material {
     /**
      * Binds the world matrix to the material
      * @param world defines the world transformation matrix
+     * @param effectOverride - If provided, use this effect instead of internal effect
      */
-    public bindOnlyWorldMatrix(world: Matrix): void {
+    public bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
         var scene = this.getScene();
 
-        if (!this._effect) {
+        const effect = effectOverride ?? this._effect;
+
+        if (!effect) {
             return;
         }
 
         if (this._options.uniforms.indexOf("world") !== -1) {
-            this._effect.setMatrix("world", world);
+            effect.setMatrix("world", world);
         }
 
         if (this._options.uniforms.indexOf("worldView") !== -1) {
             world.multiplyToRef(scene.getViewMatrix(), this._cachedWorldViewMatrix);
-            this._effect.setMatrix("worldView", this._cachedWorldViewMatrix);
+            effect.setMatrix("worldView", this._cachedWorldViewMatrix);
         }
 
         if (this._options.uniforms.indexOf("worldViewProjection") !== -1) {
             world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
-            this._effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
-
+            effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
         }
+    }
+
+    /**
+     * Binds the submesh to this material by preparing the effect and shader to draw
+     * @param world defines the world transformation matrix
+     * @param mesh defines the mesh containing the submesh
+     * @param subMesh defines the submesh to bind the material to
+     */
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        this.bind(world, mesh, subMesh._effectOverride);
     }
 
     /**
      * Binds the material to the mesh
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh to bind the material to
+     * @param effectOverride - If provided, use this effect instead of internal effect
      */
-    public bind(world: Matrix, mesh?: Mesh): void {
+    public bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>): void {
         // Std values
-        this.bindOnlyWorldMatrix(world);
+        this.bindOnlyWorldMatrix(world, effectOverride);
 
-        if (this._effect && this.getScene().getCachedMaterial() !== this) {
+        const effect = effectOverride ?? this._effect;
+
+        if (effect && this.getScene().getCachedMaterial() !== this) {
             if (this._options.uniforms.indexOf("view") !== -1) {
-                this._effect.setMatrix("view", this.getScene().getViewMatrix());
+                effect.setMatrix("view", this.getScene().getViewMatrix());
             }
 
             if (this._options.uniforms.indexOf("projection") !== -1) {
-                this._effect.setMatrix("projection", this.getScene().getProjectionMatrix());
+                effect.setMatrix("projection", this.getScene().getProjectionMatrix());
             }
 
             if (this._options.uniforms.indexOf("viewProjection") !== -1) {
-                this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
                 if (this._multiview) {
-                    this._effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
+                    effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
                 }
             }
 
             if (this.getScene().activeCamera && this._options.uniforms.indexOf("cameraPosition") !== -1) {
-                this._effect.setVector3("cameraPosition", this.getScene().activeCamera!.globalPosition);
+                effect.setVector3("cameraPosition", this.getScene().activeCamera!.globalPosition);
             }
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, effect);
 
             var name: string;
             // Texture
             for (name in this._textures) {
-                this._effect.setTexture(name, this._textures[name]);
+                effect.setTexture(name, this._textures[name]);
             }
 
             // Texture arrays
             for (name in this._textureArrays) {
-                this._effect.setTextureArray(name, this._textureArrays[name]);
+                effect.setTextureArray(name, this._textureArrays[name]);
             }
 
             // Int
             for (name in this._ints) {
-                this._effect.setInt(name, this._ints[name]);
+                effect.setInt(name, this._ints[name]);
             }
 
             // Float
             for (name in this._floats) {
-                this._effect.setFloat(name, this._floats[name]);
+                effect.setFloat(name, this._floats[name]);
             }
 
             // Floats
             for (name in this._floatsArrays) {
-                this._effect.setArray(name, this._floatsArrays[name]);
+                effect.setArray(name, this._floatsArrays[name]);
             }
 
             // Color3
             for (name in this._colors3) {
-                this._effect.setColor3(name, this._colors3[name]);
+                effect.setColor3(name, this._colors3[name]);
             }
 
             // Color3Array
             for (name in this._colors3Arrays) {
-                this._effect.setArray3(name, this._colors3Arrays[name]);
+                effect.setArray3(name, this._colors3Arrays[name]);
             }
 
             // Color4
             for (name in this._colors4) {
                 var color = this._colors4[name];
-                this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
+                effect.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
             // Color4Array
             for (name in this._colors4Arrays) {
-                this._effect.setArray4(name, this._colors4Arrays[name]);
+                effect.setArray4(name, this._colors4Arrays[name]);
             }
 
             // Vector2
             for (name in this._vectors2) {
-                this._effect.setVector2(name, this._vectors2[name]);
+                effect.setVector2(name, this._vectors2[name]);
             }
 
             // Vector3
             for (name in this._vectors3) {
-                this._effect.setVector3(name, this._vectors3[name]);
+                effect.setVector3(name, this._vectors3[name]);
             }
 
             // Vector4
             for (name in this._vectors4) {
-                this._effect.setVector4(name, this._vectors4[name]);
+                effect.setVector4(name, this._vectors4[name]);
             }
 
             // Matrix
             for (name in this._matrices) {
-                this._effect.setMatrix(name, this._matrices[name]);
+                effect.setMatrix(name, this._matrices[name]);
             }
 
             // MatrixArray
             for (name in this._matrixArrays) {
-                this._effect.setMatrices(name, this._matrixArrays[name]);
+                effect.setMatrices(name, this._matrixArrays[name]);
             }
 
             // Matrix 3x3
             for (name in this._matrices3x3) {
-                this._effect.setMatrix3x3(name, this._matrices3x3[name]);
+                effect.setMatrix3x3(name, this._matrices3x3[name]);
             }
 
             // Matrix 2x2
             for (name in this._matrices2x2) {
-                this._effect.setMatrix2x2(name, this._matrices2x2[name]);
+                effect.setMatrix2x2(name, this._matrices2x2[name]);
             }
 
             // Vector2Array
             for (name in this._vectors2Arrays) {
-                this._effect.setArray2(name, this._vectors2Arrays[name]);
+                effect.setArray2(name, this._vectors2Arrays[name]);
             }
 
             // Vector3Array
             for (name in this._vectors3Arrays) {
-                this._effect.setArray3(name, this._vectors3Arrays[name]);
+                effect.setArray3(name, this._vectors3Arrays[name]);
             }
 
             // Vector4Array
             for (name in this._vectors4Arrays) {
-                this._effect.setArray4(name, this._vectors4Arrays[name]);
+                effect.setArray4(name, this._vectors4Arrays[name]);
             }
         }
 
+        const seffect = this._effect;
+
+        this._effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
         this._afterBind(mesh);
+        this._effect = seffect;
+    }
+
+    protected _afterBind(mesh?: Mesh): void {
+        super._afterBind(mesh);
+        this.getScene()._cachedEffect = this._effect;
     }
 
     /**
@@ -1172,6 +1237,71 @@ export class ShaderMaterial extends Material {
         }
 
         return material;
+    }
+
+    /**
+     * Creates a new ShaderMaterial from a snippet saved in a remote file
+     * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        if (name) {
+                            output.name = name;
+                        }
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the ShaderMaterial");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates a ShaderMaterial from a snippet saved by the Inspector
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.shaderMaterial);
+                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        output.snippetId = snippetId;
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 }
 

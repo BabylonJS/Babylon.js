@@ -3,6 +3,7 @@ import { Observable } from "../Misc/observable";
 import { IDisposable, Scene } from "../scene";
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
 import { WebXRState, WebXRRenderTarget } from './webXRTypes';
+import { Tools } from '../Misc/tools';
 /**
  * Button which can be used to enter a different mode of XR
  */
@@ -52,6 +53,11 @@ export class WebXREnterExitUIOptions {
      * Default is immersive-vr
      */
     sessionMode?: XRSessionMode;
+
+    /**
+     * A list of optional features to init the session with
+     */
+    optionalFeatures?: string[];
 }
 /**
  * UI to allow the user to enter/exit XR mode
@@ -82,6 +88,14 @@ export class WebXREnterExitUI implements IDisposable {
     ) {
         this._overlay = document.createElement("div");
         this._overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
+
+        // if served over HTTP, warn people.
+        // Hopefully the browsers will catch up
+        if (typeof window !== 'undefined') {
+            if (window.location && window.location.protocol === 'http:') {
+                Tools.Warn('WebXR can only be served over HTTPS');
+            }
+        }
 
         if (options.customButtons) {
             this._buttons = options.customButtons;
@@ -143,7 +157,7 @@ export class WebXREnterExitUI implements IDisposable {
                         } else if (helper.state == WebXRState.NOT_IN_XR) {
                             if (options.renderTarget) {
                                 try {
-                                    await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.renderTarget);
+                                    await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.renderTarget, {optionalFeatures: options.optionalFeatures});
                                     ui._updateButtons(ui._buttons[i]);
                                 } catch (e) {
                                     // make sure button is visible
@@ -156,6 +170,8 @@ export class WebXREnterExitUI implements IDisposable {
                             }
                         }
                     };
+                } else {
+                    Tools.Warn(`Session mode "${ui._buttons[i].sessionMode}" not supported in browser`);
                 }
             });
             return ui;

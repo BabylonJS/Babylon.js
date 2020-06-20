@@ -1,7 +1,6 @@
 #if  DEBUGMODE > 0
-    if (vClipSpacePosition.x / vClipSpacePosition.w < vDebugMode.x) {
-        return;
-    }
+if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
+
 // Geometry
     #if   DEBUGMODE == 1
         gl_FragColor.rgb = vPositionW.rgb;
@@ -160,4 +159,6 @@
     #endif
 
     gl_FragColor.a = 1.0;
+    return;
+}
 #endif

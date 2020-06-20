@@ -13,7 +13,7 @@ interface IRenderTargetProvider {
 
 /**
  * Manages an XRSession to work with Babylon's engine
- * @see https://doc.babylonjs.com/how_to/webxr
+ * @see https://doc.babylonjs.com/how_to/webxr_session_manager
  */
 export class WebXRSessionManager implements IDisposable {
     private _referenceSpace: XRReferenceSpace;
@@ -267,12 +267,14 @@ export class WebXRSessionManager implements IDisposable {
                 throw "XR initialization failed: required \"viewer\" reference space type not supported.";
             });
         }).then((referenceSpace) => {
+            // create viewer reference space before setting the first reference space
+            return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace: XRReferenceSpace) => {
+                this.viewerReferenceSpace = viewerReferenceSpace;
+                return referenceSpace;
+            });
+        }).then((referenceSpace) => {
             // initialize the base and offset (currently the same)
             this.referenceSpace = this.baseReferenceSpace = referenceSpace;
-
-            this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
-                this.viewerReferenceSpace = referenceSpace;
-            });
             return this.referenceSpace;
         });
     }

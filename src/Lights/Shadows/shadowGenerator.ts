@@ -23,10 +23,14 @@ import { Constants } from "../../Engines/constants";
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
+import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
+
+const tmpMatrix = new Matrix(),
+      tmpMatrix2 = new Matrix();
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -72,9 +76,10 @@ export interface IShadowGenerator {
      * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
      * @param useInstances Defines wether will draw in the map using instances
+     * @param isTransparent Indicates that isReady is called for a transparent subMesh
      * @returns true if ready otherwise, false
      */
-    isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean;
 
     /**
      * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -658,6 +663,15 @@ export class ShadowGenerator implements IShadowGenerator {
         return this;
     }
 
+    /**
+     * Enables or disables shadows with varying strength based on the transparency
+     * When it is enabled, the strength of the shadow is taken equal to mesh.visibility
+     * If you enabled an alpha texture on your material, the alpha value red from the texture is also combined to compute the strength:
+     *          mesh.visibility * alphaTexture.a
+     * Note that by definition transparencyShadow must be set to true for enableSoftTransparentShadow to work!
+     */
+    public enableSoftTransparentShadow: boolean = false;
+
     protected _shadowMap: Nullable<RenderTargetTexture>;
     protected _shadowMap2: Nullable<RenderTargetTexture>;
 
@@ -885,10 +899,23 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
             }
+            if (this._scene.getSceneUniformBuffer().useUbo) {
+                const sceneUBO = this._scene.getSceneUniformBuffer();
+                sceneUBO.updateMatrix("viewProjection", this.getTransformMatrix());
+                sceneUBO.updateMatrix("view", this._viewMatrix);
+                sceneUBO.update();
+            }
         });
 
         // Blur if required afer render.
         this._shadowMap.onAfterUnbindObservable.add(() => {
+            if (this._scene.getSceneUniformBuffer().useUbo) {
+                const sceneUBO = this._scene.getSceneUniformBuffer();
+                sceneUBO.updateMatrix("viewProjection", this._scene.getTransformMatrix());
+                sceneUBO.updateMatrix("view", this._scene.getViewMatrix());
+                sceneUBO.update();
+            }
+
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(true);
             }
@@ -898,7 +925,9 @@ export class ShadowGenerator implements IShadowGenerator {
             let shadowMap = this.getShadowMapForRendering();
 
             if (shadowMap) {
-                this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.getInternalTexture(), true);
+                const texture = shadowMap.getInternalTexture()!;
+                this._scene.postProcessManager.directRender(this._blurPostProcesses, texture, true);
+                engine.unBindFramebuffer(texture, true);
             }
         });
 
@@ -999,19 +1028,38 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (this._transparencyShadow) {
             for (index = 0; index < transparentSubMeshes.length; index++) {
-                this._renderSubMeshForShadowMap(transparentSubMeshes.data[index]);
+                this._renderSubMeshForShadowMap(transparentSubMeshes.data[index], true);
+            }
+        } else {
+            for (index = 0; index < transparentSubMeshes.length; index++) {
+                transparentSubMeshes.data[index].getEffectiveMesh()._internalAbstractMeshDataInfo._isActiveIntermediate = false;
             }
         }
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void {
+        effect.setMatrix(matriceNames?.viewProjection ?? "viewProjection", this.getTransformMatrix());
+
+        effect.setMatrix(matriceNames?.view ?? "view", this._viewMatrix);
+
+        effect.setMatrix(matriceNames?.projection ?? "projection", this._projectionMatrix);
+
+        const world = mesh.getWorldMatrix();
+
+        effect.setMatrix(matriceNames?.world ?? "world", world);
+
+        world.multiplyToRef(this.getTransformMatrix(), tmpMatrix);
+
+        effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
+
+        world.multiplyToRef(this._viewMatrix, tmpMatrix2);
+
+        effect.setMatrix(matriceNames?.worldView ?? "worldView", tmpMatrix2);
     }
 
-    protected _renderSubMeshForShadowMap(subMesh: SubMesh): void {
-        var ownerMesh = subMesh.getMesh();
-        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+    protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent: boolean = false): void {
         var renderingMesh = subMesh.getRenderingMesh();
-        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+        var effectiveMesh = subMesh.getEffectiveMesh();
         var scene = this._scene;
         var engine = scene.getEngine();
         let material = subMesh.getMaterial();
@@ -1026,64 +1074,85 @@ export class ShadowGenerator implements IShadowGenerator {
         engine.setState(material.backFaceCulling);
 
         // Managing instances
-        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
         if (batch.mustReturn) {
             return;
         }
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
-        if (this.isReady(subMesh, hardwareInstancedRendering)) {
-            engine.enableEffect(this._effect);
-            renderingMesh._bind(subMesh, this._effect, material.fillMode);
+        var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
+        if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
+            const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
 
-            this._effect.setFloat3("biasAndScale", this.bias, this.normalBias, this.depthScale);
+            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? this._effect;
 
-            this._effect.setMatrix("viewProjection", this.getTransformMatrix());
+            engine.enableEffect(effect);
+
+            renderingMesh._bind(subMesh, effect, material.fillMode);
+
+            this.getTransformMatrix(); // make sur _cachedDirection et _cachedPosition are up to date
+
+            effect.setFloat3("biasAndScaleSM", this.bias, this.normalBias, this.depthScale);
+
             if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                this._effect.setVector3("lightData", this._cachedDirection);
+                effect.setVector3("lightDataSM", this._cachedDirection);
             }
             else {
-                this._effect.setVector3("lightData", this._cachedPosition);
+                effect.setVector3("lightDataSM", this._cachedPosition);
             }
 
             if (scene.activeCamera) {
-                this._effect.setFloat2("depthValues", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
+                effect.setFloat2("depthValuesSM", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
             }
 
-            // Alpha test
-            if (material && material.needAlphaTesting()) {
-                var alphaTexture = material.getAlphaTestTexture();
-                if (alphaTexture) {
-                    this._effect.setTexture("diffuseSampler", alphaTexture);
-                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix() || this._defaultTextureMatrix);
-                }
+            if (isTransparent && this.enableSoftTransparentShadow) {
+                effect.setFloat("softTransparentShadowSM", effectiveMesh.visibility);
             }
 
-            // Bones
-            if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                const skeleton = renderingMesh.skeleton;
-
-                if (skeleton.isUsingTextureForMatrices) {
-                    const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
-
-                    if (!boneTexture) {
-                        return;
-                    }
-
-                    this._effect.setTexture("boneSampler", boneTexture);
-                    this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+            if (shadowDepthWrapper) {
+                subMesh._effectOverride = effect;
+                if (shadowDepthWrapper.standalone) {
+                    shadowDepthWrapper.baseMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 } else {
-                    this._effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                    material.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 }
+                subMesh._effectOverride = null;
+            } else {
+                effect.setMatrix("viewProjection", this.getTransformMatrix());
+                // Alpha test
+                if (material && material.needAlphaTesting()) {
+                    var alphaTexture = material.getAlphaTestTexture();
+                    if (alphaTexture) {
+                        effect.setTexture("diffuseSampler", alphaTexture);
+                        effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix() || this._defaultTextureMatrix);
+                    }
+                }
+
+                // Bones
+                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                    const skeleton = renderingMesh.skeleton;
+
+                    if (skeleton.isUsingTextureForMatrices) {
+                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
+
+                        if (!boneTexture) {
+                            return;
+                        }
+
+                        effect.setTexture("boneSampler", boneTexture);
+                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                    } else {
+                        effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                    }
+                }
+
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+
+                // Clip planes
+                MaterialHelper.BindClipPlane(effect, scene);
             }
 
-            // Morph targets
-            MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
-
-            // Clip planes
-            MaterialHelper.BindClipPlane(this._effect, scene);
-
-            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, this._effect);
+            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect, shadowDepthWrapper?._matriceNames, effectiveMesh);
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, true);
@@ -1091,20 +1160,19 @@ export class ShadowGenerator implements IShadowGenerator {
 
             // Observables
             this.onBeforeShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
-            this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
+            this.onBeforeShadowMapRenderObservable.notifyObservers(effect);
 
             // Draw
-            renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => this._effect.setMatrix("world", world));
+            renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
+                (isInstance, world) => effect.setMatrix("world", world));
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, false);
             }
 
             // Observables
-            this.onAfterShadowMapRenderObservable.notifyObservers(this._effect);
+            this.onAfterShadowMapRenderObservable.notifyObservers(effect);
             this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
-
         } else {
             // Need to reset refresh rate of the shadowMap
             if (this._shadowMap) {
@@ -1170,7 +1238,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 return;
             }
 
-            while (this.isReady(subMeshes[currentIndex], localOptions.useInstances)) {
+            while (this.isReady(subMeshes[currentIndex], localOptions.useInstances, subMeshes[currentIndex].getMaterial()?.needAlphaBlendingForMesh(subMeshes[currentIndex].getMesh()) ?? false)) {
                 currentIndex++;
                 if (currentIndex >= subMeshes.length) {
                     if (onCompiled) {
@@ -1201,189 +1269,211 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {
     }
 
+    private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[], isTransparent: boolean): string[] {
+        defines.push("#define SM_FLOAT " + (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT ? "1" : "0"));
+
+        defines.push("#define SM_ESM " + (this.useExponentialShadowMap || this.useBlurExponentialShadowMap ? "1" : "0"));
+
+        defines.push("#define SM_DEPTHTEXTURE " + (this.usePercentageCloserFiltering || this.useContactHardeningShadow ? "1" : "0"));
+
+        var mesh = subMesh.getMesh();
+
+        // Normal bias.
+        defines.push("#define SM_NORMALBIAS " + (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind) ? "1" : "0"));
+        defines.push("#define SM_DIRECTIONINLIGHTDATA " + (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT ? "1" : "0"));
+
+        // Point light
+        defines.push("#define SM_USEDISTANCE " + (this._light.needCube() ? "1" : "0"));
+
+        // Soft transparent shadows
+        defines.push("#define SM_SOFTTRANSPARENTSHADOW " + (this.enableSoftTransparentShadow && isTransparent ? "1" : "0"));
+
+        this._isReadyCustomDefines(defines, subMesh, useInstances);
+
+        return defines;
+    }
+
     /**
      * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
      * @param useInstances Defines wether will draw in the map using instances
+     * @param isTransparent Indicates that isReady is called for a transparent subMesh
      * @returns true if ready otherwise, false
      */
-    public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
-        var defines = [];
+    public isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean {
+        const material = subMesh.getMaterial(),
+              shadowDepthWrapper = material?.shadowDepthWrapper;
 
-        if (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT) {
-            defines.push("#define FLOAT");
-        }
+        const defines: string[] = [];
 
-        if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
-            defines.push("#define ESM");
-        }
-        else if (this.usePercentageCloserFiltering || this.useContactHardeningShadow) {
-            defines.push("#define DEPTHTEXTURE");
-        }
+        this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
-        var attribs = [VertexBuffer.PositionKind];
-
-        var mesh = subMesh.getMesh();
-        var material = subMesh.getMaterial();
-
-        // Normal bias.
-        if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            attribs.push(VertexBuffer.NormalKind);
-            defines.push("#define NORMAL");
-            if (mesh.nonUniformScaling) {
-                defines.push("#define NONUNIFORMSCALING");
+        if (shadowDepthWrapper) {
+            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
+                return false;
             }
-            if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                defines.push("#define DIRECTIONINLIGHTDATA");
-            }
-        }
-
-        // Alpha test
-        if (material && material.needAlphaTesting()) {
-            var alphaTexture = material.getAlphaTestTexture();
-            if (alphaTexture) {
-                defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
-                }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    if (alphaTexture.coordinatesIndex === 1) {
-                        attribs.push(VertexBuffer.UV2Kind);
-                        defines.push("#define UV2");
-                    }
-                }
-            }
-        }
-
-        // Bones
-        const fallbacks = new EffectFallbacks();
-        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            attribs.push(VertexBuffer.MatricesIndicesKind);
-            attribs.push(VertexBuffer.MatricesWeightsKind);
-            if (mesh.numBoneInfluencers > 4) {
-                attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-            }
-            const skeleton = mesh.skeleton;
-            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            if (mesh.numBoneInfluencers > 0) {
-                fallbacks.addCPUSkinningFallback(0, mesh);
-            }
-
-            if (skeleton.isUsingTextureForMatrices) {
-                defines.push("#define BONETEXTURE");
-            } else {
-                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
-            }
-
         } else {
-            defines.push("#define NUM_BONE_INFLUENCERS 0");
-        }
+            var attribs = [VertexBuffer.PositionKind];
 
-        // Morph targets
-        var manager = (<Mesh>mesh).morphTargetManager;
-        let morphInfluencers = 0;
-        if (manager) {
-            if (manager.numInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-                morphInfluencers = manager.numInfluencers;
-                defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+            var mesh = subMesh.getMesh();
+
+            // Normal bias.
+            if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                attribs.push(VertexBuffer.NormalKind);
+                defines.push("#define NORMAL");
+                if (mesh.nonUniformScaling) {
+                    defines.push("#define NONUNIFORMSCALING");
+                }
             }
-        }
 
-        // ClipPlanes
-        const scene = this._scene;
-        if (scene.clipPlane) {
-            defines.push("#define CLIPPLANE");
-        }
-        if (scene.clipPlane2) {
-            defines.push("#define CLIPPLANE2");
-        }
-        if (scene.clipPlane3) {
-            defines.push("#define CLIPPLANE3");
-        }
-        if (scene.clipPlane4) {
-            defines.push("#define CLIPPLANE4");
-        }
-        if (scene.clipPlane5) {
-            defines.push("#define CLIPPLANE5");
-        }
-        if (scene.clipPlane6) {
-            defines.push("#define CLIPPLANE6");
-        }
+            // Alpha test
+            if (material && material.needAlphaTesting()) {
+                var alphaTexture = material.getAlphaTestTexture();
+                if (alphaTexture) {
 
-        // Instances
-        if (useInstances) {
-            defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
-        }
+                    if (!alphaTexture.isReady()) {
+                        return false;
+                    }
 
-        if (this.customShaderOptions) {
-            if (this.customShaderOptions.defines) {
-                for (var define of this.customShaderOptions.defines) {
-                    if (defines.indexOf(define) === -1) {
-                        defines.push(define);
+                    defines.push("#define ALPHATEST");
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                        attribs.push(VertexBuffer.UVKind);
+                        defines.push("#define UV1");
+                    }
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                        if (alphaTexture.coordinatesIndex === 1) {
+                            attribs.push(VertexBuffer.UV2Kind);
+                            defines.push("#define UV2");
+                        }
                     }
                 }
             }
-        }
 
-        // Point light
-        if (this._light.needCube()) {
-            defines.push("#define USEDISTANCE");
-        }
+            // Bones
+            const fallbacks = new EffectFallbacks();
+            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+                }
+                const skeleton = mesh.skeleton;
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+                if (mesh.numBoneInfluencers > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
+                }
 
-        this._isReadyCustomDefines(defines, subMesh, useInstances);
+                if (skeleton.isUsingTextureForMatrices) {
+                    defines.push("#define BONETEXTURE");
+                } else {
+                    defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+                }
 
-        // Get correct effect
-        var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
+            } else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
+            }
 
-            let shaderName = "shadowMap";
-            let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences", "boneTextureWidth",
-                            "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"];
-            let samplers = ["diffuseSampler", "boneSampler"];
+            // Morph targets
+            var manager = (<Mesh>mesh).morphTargetManager;
+            let morphInfluencers = 0;
+            if (manager) {
+                if (manager.numInfluencers > 0) {
+                    defines.push("#define MORPHTARGETS");
+                    morphInfluencers = manager.numInfluencers;
+                    defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
+                    MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+                }
+            }
 
-            // Custom shader?
+            // ClipPlanes
+            const scene = this._scene;
+            if (scene.clipPlane) {
+                defines.push("#define CLIPPLANE");
+            }
+            if (scene.clipPlane2) {
+                defines.push("#define CLIPPLANE2");
+            }
+            if (scene.clipPlane3) {
+                defines.push("#define CLIPPLANE3");
+            }
+            if (scene.clipPlane4) {
+                defines.push("#define CLIPPLANE4");
+            }
+            if (scene.clipPlane5) {
+                defines.push("#define CLIPPLANE5");
+            }
+            if (scene.clipPlane6) {
+                defines.push("#define CLIPPLANE6");
+            }
+
+            // Instances
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                MaterialHelper.PushAttributesForInstances(attribs);
+                if (subMesh.getRenderingMesh().hasThinInstances) {
+                    defines.push("#define THIN_INSTANCES");
+                }
+            }
+
             if (this.customShaderOptions) {
-                shaderName = this.customShaderOptions.shaderName;
-
-                if (this.customShaderOptions.attributes) {
-                    for (var attrib of this.customShaderOptions.attributes) {
-                        if (attribs.indexOf(attrib) === -1) {
-                            attribs.push(attrib);
-                        }
-                    }
-                }
-
-                if (this.customShaderOptions.uniforms) {
-                    for (var uniform of this.customShaderOptions.uniforms) {
-                        if (uniforms.indexOf(uniform) === -1) {
-                            uniforms.push(uniform);
-                        }
-                    }
-                }
-
-                if (this.customShaderOptions.samplers) {
-                    for (var sampler of this.customShaderOptions.samplers) {
-                        if (samplers.indexOf(sampler) === -1) {
-                            samplers.push(sampler);
+                if (this.customShaderOptions.defines) {
+                    for (var define of this.customShaderOptions.defines) {
+                        if (defines.indexOf(define) === -1) {
+                            defines.push(define);
                         }
                     }
                 }
             }
 
-            this._effect = this._scene.getEngine().createEffect(shaderName,
-                attribs, uniforms,
-                samplers, join,
-                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
-        }
+            // Get correct effect
+            var join = defines.join("\n");
+            if (this._cachedDefines !== join) {
+                this._cachedDefines = join;
 
-        if (!this._effect.isReady()) {
-            return false;
+                let shaderName = "shadowMap";
+                let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
+                                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM"];
+                let samplers = ["diffuseSampler", "boneSampler"];
+
+                // Custom shader?
+                if (this.customShaderOptions) {
+                    shaderName = this.customShaderOptions.shaderName;
+
+                    if (this.customShaderOptions.attributes) {
+                        for (var attrib of this.customShaderOptions.attributes) {
+                            if (attribs.indexOf(attrib) === -1) {
+                                attribs.push(attrib);
+                            }
+                        }
+                    }
+
+                    if (this.customShaderOptions.uniforms) {
+                        for (var uniform of this.customShaderOptions.uniforms) {
+                            if (uniforms.indexOf(uniform) === -1) {
+                                uniforms.push(uniform);
+                            }
+                        }
+                    }
+
+                    if (this.customShaderOptions.samplers) {
+                        for (var sampler of this.customShaderOptions.samplers) {
+                            if (samplers.indexOf(sampler) === -1) {
+                                samplers.push(sampler);
+                            }
+                        }
+                    }
+                }
+
+                this._effect = this._scene.getEngine().createEffect(shaderName,
+                    attribs, uniforms,
+                    samplers, join,
+                    fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+            }
+
+            if (!this._effect.isReady()) {
+                return false;
+            }
         }
 
         if (this.useBlurExponentialShadowMap || this.useBlurCloseExponentialShadowMap) {

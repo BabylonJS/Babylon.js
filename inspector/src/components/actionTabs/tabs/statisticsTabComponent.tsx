@@ -101,6 +101,7 @@ export class StatisticsTabComponent extends PaneComponent {
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SYSTEM INFO">
                     <TextLineComponent label="Resolution" value={engine.getRenderWidth() + "x" + engine.getRenderHeight()} />
+                    <TextLineComponent label="Hardware scaling level" value={engine.getHardwareScalingLevel().toString()} />
                     <TextLineComponent label="WebGL version" value={engine.webGLVersion.toString()} />
                     <BooleanLineComponent label="Std derivatives" value={caps.standardDerivatives} />
                     <BooleanLineComponent label="Compressed textures" value={caps.s3tc !== undefined} />

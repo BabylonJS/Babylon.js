@@ -14,7 +14,7 @@ import { Control3D } from "./controls/control3D";
 
 /**
  * Class used to manage 3D user interface
- * @see http://doc.babylonjs.com/how_to/gui3d
+ * @see https://doc.babylonjs.com/how_to/gui3d
  */
 export class GUI3DManager implements IDisposable {
     private _scene: Scene;

@@ -43,14 +43,29 @@ mat3 inverseMat3(mat3 inMatrix) {
               b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
 }
 
+float toLinearSpace(float color)
+{
+    return pow(color, LinearEncodePowerApprox);
+}
+
 vec3 toLinearSpace(vec3 color)
 {
     return pow(color, vec3(LinearEncodePowerApprox));
 }
 
+vec4 toLinearSpace(vec4 color)
+{
+    return vec4(pow(color.rgb, vec3(LinearEncodePowerApprox)), color.a);
+}
+
 vec3 toGammaSpace(vec3 color)
 {
     return pow(color, vec3(GammaEncodePowerApprox));
+}
+
+vec4 toGammaSpace(vec4 color)
+{
+    return vec4(pow(color.rgb, vec3(GammaEncodePowerApprox)), color.a);
 }
 
 float toGammaSpace(float color)

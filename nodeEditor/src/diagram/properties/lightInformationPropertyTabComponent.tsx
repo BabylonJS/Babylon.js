@@ -4,7 +4,7 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { LightInformationBlock } from 'babylonjs/Materials/Node/Blocks/Vertex/lightInformationBlock';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class LightInformationPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -18,7 +18,7 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
 
         return (
             <div>               
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent label="Light" noDirectUpdate={true} valuesAreStrings={true} options={lightOptions} target={lightInformationBlock} propertyName="name" onSelect={(name: any) => {
                         lightInformationBlock.light = scene.getLightByName(name);

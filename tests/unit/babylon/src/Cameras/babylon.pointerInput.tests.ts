@@ -1815,7 +1815,7 @@ describe('ArcRotateCameraInput', function() {
         {inertialAlphaOffset: ValChange.Decrease})
       ).to.be.true;
 
-      // Loose focus.
+      // Lost focus
       (<any>this.cameraInput)._onLostFocus();
 
       // Move X + Y coordinate. Should have no affect after loosing focus.
@@ -1896,7 +1896,7 @@ describe('ArcRotateCameraInput', function() {
         {inertialRadiusOffset: ValChange.Increase})
       ).to.be.true;
 
-      // Loose focus.
+      // Lost focus
       (<any>this.cameraInput)._onLostFocus();
 
       // Move X + Y coordinate. Should have no affect after loosing focus.

@@ -17,6 +17,7 @@ import { Ray } from '../../Culling/ray';
 import { PickingInfo } from '../../Collisions/pickingInfo';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
+import { WebXRAbstractMotionController } from '../motionController/webXRAbstractMotionController';
 
 /**
  * Options interface for the pointer selection module
@@ -113,6 +114,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             pick: Nullable<PickingInfo>;
             id: number;
             tmpRay: Ray;
+            // event support
+            eventListeners?: {[event in XREventType]?: ((event: XRInputSourceEvent) => void)};
         };
     } = {};
     private _scene: Scene;
@@ -152,7 +155,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     /**
      * Default color of the laser pointer
      */
-    public lasterPointerDefaultColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    public laserPointerDefaultColor: Color3 = new Color3(0.7, 0.7, 0.7);
     /**
      * default color of the selection ring
      */
@@ -195,6 +198,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // REMOVE the controller
             this._detachController(controller.uniqueId);
         });
+
+        this._scene.constantlyUpdateMeshUnderPointer = true;
 
         return true;
     }
@@ -380,50 +385,76 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     private _attachTrackedPointerRayMode(xrController: WebXRInputSource) {
-        xrController.onMotionControllerInitObservable.add((motionController) => {
-            if (this._options.forceGazeMode) {
-                return this._attachGazeMode(xrController);
-            }
+        const controllerData = this._controllers[xrController.uniqueId];
+        if (this._options.forceGazeMode) {
+            return this._attachGazeMode(xrController);
+        }
+        controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
+            controllerData.laserPointer.isVisible = this.displayLaserPointer;
+            (<StandardMaterial>controllerData.laserPointer.material).disableLighting = this.disablePointerLighting;
+            (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
 
-            const controllerData = this._controllers[xrController.uniqueId];
-
-            if (this._options.overrideButtonId) {
-                controllerData.selectionComponent = motionController.getComponent(this._options.overrideButtonId);
+            if (controllerData.pick) {
+                this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
             }
-            if (!controllerData.selectionComponent) {
-                controllerData.selectionComponent = motionController.getMainComponent();
-            }
-
-            controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
-                if (controllerData.selectionComponent && controllerData.selectionComponent.pressed) {
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
-                } else {
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.lasterPointerDefaultColor;
+        });
+        if (xrController.inputSource.gamepad) {
+            const init = (motionController: WebXRAbstractMotionController) => {
+                if (this._options.overrideButtonId) {
+                    controllerData.selectionComponent = motionController.getComponent(this._options.overrideButtonId);
                 }
-                controllerData.laserPointer.isVisible = this.displayLaserPointer;
-                (<StandardMaterial>controllerData.laserPointer.material).disableLighting = this.disablePointerLighting;
-                (<StandardMaterial>controllerData.selectionMesh.material).disableLighting = this.disableSelectionMeshLighting;
-
-                if (controllerData.pick) {
-                    this._scene.simulatePointerMove(controllerData.pick, { pointerId: controllerData.id });
+                if (!controllerData.selectionComponent) {
+                    controllerData.selectionComponent = motionController.getMainComponent();
                 }
-            });
 
-            controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
-                if (component.changes.pressed) {
-                    const pressed = component.changes.pressed.current;
-                    if (controllerData.pick) {
-                        if (pressed) {
-                            this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
-                        } else {
-                            this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                controllerData.onButtonChangedObserver = controllerData.selectionComponent.onButtonStateChangedObservable.add((component) => {
+                    if (component.changes.pressed) {
+                        const pressed = component.changes.pressed.current;
+                        if (controllerData.pick) {
+                            if (pressed) {
+                                this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                                (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                            } else {
+                                this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                                (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+                            }
                         }
                     }
+                });
+            };
+            if (xrController.motionController) {
+                init(xrController.motionController);
+            } else {
+                xrController.onMotionControllerInitObservable.add(init);
+            }
+        } else {
+            // use the select and squeeze events
+            const selectStartListener = (event: XRInputSourceEvent) => {
+                if (event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                    this._scene.simulatePointerDown(controllerData.pick, { pointerId: controllerData.id });
+                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                 }
-            });
-        });
+            };
+
+            const selectEndListener = (event: XRInputSourceEvent) => {
+                if (event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                    this._scene.simulatePointerUp(controllerData.pick, { pointerId: controllerData.id });
+                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+                }
+            };
+
+            controllerData.eventListeners = {
+                selectend: selectEndListener,
+                selectstart: selectStartListener
+            };
+
+            this._xrSessionManager.session.addEventListener('selectstart', selectStartListener);
+            this._xrSessionManager.session.addEventListener('selectend', selectEndListener);
+        }
     }
 
     private _convertNormalToDirectionOfRay(normal: Nullable<Vector3>, ray: Ray) {
@@ -447,6 +478,14 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (controllerData.onFrameObserver) {
             this._xrSessionManager.onXRFrameObservable.remove(controllerData.onFrameObserver);
         }
+        if (controllerData.eventListeners) {
+            Object.keys(controllerData.eventListeners).forEach((eventName: string) => {
+                const func = controllerData.eventListeners && controllerData.eventListeners[eventName as XREventType];
+                if (func) {
+                    this._xrSessionManager.session.removeEventListener(eventName, func);
+                }
+            });
+        }
         controllerData.selectionMesh.dispose();
         controllerData.laserPointer.dispose();
         // remove from the map
@@ -464,7 +503,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }, sceneToRenderTo);
         laserPointer.parent = xrController.pointer;
         let laserPointerMaterial = new StandardMaterial("laserPointerMat", sceneToRenderTo);
-        laserPointerMaterial.emissiveColor = this.lasterPointerDefaultColor;
+        laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
         laserPointer.rotation.x = Math.PI / 2;
@@ -513,7 +552,16 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _updatePointerDistance(_laserPointer: AbstractMesh, distance: number = 100) {
         _laserPointer.scaling.y = distance;
         // a bit of distance from the controller
+        if (this._scene.useRightHandedSystem) {
+            distance *= -1;
+        }
         _laserPointer.position.z = (distance / 2) + 0.05;
+    }
+
+    /** @hidden */
+    public get lasterPointerDefaultColor(): Color3 {
+        // here due to a typo
+        return this.laserPointerDefaultColor;
     }
 }
 

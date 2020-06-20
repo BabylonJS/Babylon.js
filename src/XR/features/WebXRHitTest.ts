@@ -3,7 +3,9 @@ import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../Misc/observable';
 import { Vector3, Matrix, Quaternion } from '../../Maths/math.vector';
 import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult } from './WebXRHitTestLegacy';
+import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult, IWebXRHitTestFeature } from './WebXRHitTestLegacy';
+import { Tools } from '../../Misc/tools';
+import { Nullable } from '../../types';
 
 /**
  * Options used for hit testing (version 2)
@@ -52,6 +54,11 @@ export interface IWebXRHitResult extends IWebXRLegacyHitResult {
      * Rotation of the hit test result
      */
     rotationQuaternion: Quaternion;
+
+    /**
+     * The native hit test result
+     */
+    xrHitResult: XRHitTestResult;
 }
 
 /**
@@ -61,19 +68,26 @@ export interface IWebXRHitResult extends IWebXRLegacyHitResult {
  *
  * Tested on chrome (mobile) 80.
  */
-export class WebXRHitTest extends WebXRAbstractFeature {
+export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestFeature<IWebXRHitResult> {
     private _tmpMat: Matrix = new Matrix();
     private _tmpPos: Vector3 = new Vector3();
     private _tmpQuat: Quaternion = new Quaternion();
-    private _transientXrHitTestSource: XRTransientInputHitTestSource;
+    private _transientXrHitTestSource: Nullable<XRTransientInputHitTestSource>;
     // in XR space z-forward is negative
-    private _xrHitTestSource: XRHitTestSource;
-    private initHitTestSource = () => {
+    private _xrHitTestSource: Nullable<XRHitTestSource>;
+    private initHitTestSource = (referenceSpace: XRReferenceSpace) => {
+        if (!referenceSpace) {
+            return;
+        }
         const offsetRay = new XRRay(this.options.offsetRay || {});
         const options: XRHitTestOptionsInit = {
-            space: this.options.useReferenceSpace ? this._xrSessionManager.referenceSpace : this._xrSessionManager.viewerReferenceSpace,
+            space: this.options.useReferenceSpace ? referenceSpace : this._xrSessionManager.viewerReferenceSpace,
             offsetRay: offsetRay
         };
+        if (!options.space) {
+            Tools.Warn('waiting for viewer reference space to initialize');
+            return;
+        }
         this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
             if (this._xrHitTestSource) {
                 this._xrHitTestSource.cancel();
@@ -100,10 +114,6 @@ export class WebXRHitTest extends WebXRAbstractFeature {
      */
     public autoCloneTransformation: boolean = false;
     /**
-     * Populated with the last native XR Hit Results
-     */
-    public lastNativeXRHitResults: XRHitResult[] = [];
-    /**
      * Triggered when new babylon (transformed) hit test results are available
      */
     public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
@@ -123,6 +133,7 @@ export class WebXRHitTest extends WebXRAbstractFeature {
          */
         public readonly options: IWebXRHitTestOptions = {}) {
         super(_xrSessionManager);
+        Tools.Warn('Hit test is an experimental and unstable feature. make sure you enable optionalFeatures when creating the XR session');
     }
 
     /**
@@ -138,7 +149,7 @@ export class WebXRHitTest extends WebXRAbstractFeature {
 
         if (!this.options.disablePermanentHitTest) {
             if (this._xrSessionManager.referenceSpace) {
-                this.initHitTestSource();
+                this.initHitTestSource(this._xrSessionManager.referenceSpace);
             }
             this._xrSessionManager.onXRReferenceSpaceChanged.add(this.initHitTestSource);
         }
@@ -167,10 +178,12 @@ export class WebXRHitTest extends WebXRAbstractFeature {
         }
         if (this._xrHitTestSource) {
             this._xrHitTestSource.cancel();
+            this._xrHitTestSource = null;
         }
         this._xrSessionManager.onXRReferenceSpaceChanged.removeCallback(this.initHitTestSource);
         if (this._transientXrHitTestSource) {
             this._transientXrHitTestSource.cancel();
+            this._transientXrHitTestSource = null;
         }
         return true;
     }

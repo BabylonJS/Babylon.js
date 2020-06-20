@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
+		module.exports = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else if(typeof define === 'function' && define.amd)
-		define("babylonjs-inspector", ["babylonjs-gui", "babylonjs-loaders", "babylonjs-materials", "babylonjs-serializers", "babylonjs"], factory);
+		define("babylonjs-inspector", ["babylonjs-gui", "babylonjs-loaders", "babylonjs-loaders", "babylonjs-materials", "babylonjs-serializers", "babylonjs"], factory);
 	else if(typeof exports === 'object')
-		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
+		exports["babylonjs-inspector"] = factory(require("babylonjs-gui"), require("babylonjs-loaders"), require("babylonjs-loaders"), require("babylonjs-materials"), require("babylonjs-serializers"), require("babylonjs"));
 	else
-		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
+		root["INSPECTOR"] = factory(root["BABYLON"]["GUI"], root["BABYLON"]["GLTF2"]["Loader"]["Extensions"], root["BABYLON"], root["BABYLON"], root["BABYLON"], root["BABYLON"]);
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__, __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_materials_grid_gridMaterial__, __WEBPACK_EXTERNAL_MODULE_babylonjs_serializers_glTF_2_0_index__, __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/@fortawesome/fontawesome-svg-core/index.es.js":
 /*!**************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/fontawesome-svg-core/index.es.js ***!
   \**************************************************************************************/
 /*! exports provided: icon, noAuto, config, toHtml, layer, text, counter, library, dom, parse, findIconDefinition */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -2530,7 +2530,7 @@ var autoReplace = function autoReplace() {
 
 /***/ "../../node_modules/@fortawesome/free-regular-svg-icons/index.es.js":
 /*!****************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-regular-svg-icons/index.es.js ***!
   \****************************************************************************************/
 /*! exports provided: far, prefix, faAddressBook, faAddressCard, faAngry, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faBell, faBellSlash, faBookmark, faBuilding, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faChartBar, faCheckCircle, faCheckSquare, faCircle, faClipboard, faClock, faClone, faClosedCaptioning, faComment, faCommentAlt, faCommentDots, faComments, faCompass, faCopy, faCopyright, faCreditCard, faDizzy, faDotCircle, faEdit, faEnvelope, faEnvelopeOpen, faEye, faEyeSlash, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileExcel, faFileImage, faFilePdf, faFilePowerpoint, faFileVideo, faFileWord, faFlag, faFlushed, faFolder, faFolderOpen, faFontAwesomeLogoFull, faFrown, faFrownOpen, faFutbol, faGem, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHandshake, faHdd, faHeart, faHospital, faHourglass, faIdBadge, faIdCard, faImage, faImages, faKeyboard, faKiss, faKissBeam, faKissWinkHeart, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLemon, faLifeRing, faLightbulb, faListAlt, faMap, faMeh, faMehBlank, faMehRollingEyes, faMinusSquare, faMoneyBillAlt, faMoon, faNewspaper, faObjectGroup, faObjectUngroup, faPaperPlane, faPauseCircle, faPlayCircle, faPlusSquare, faQuestionCircle, faRegistered, faSadCry, faSadTear, faSave, faShareSquare, faSmile, faSmileBeam, faSmileWink, faSnowflake, faSquare, faStar, faStarHalf, faStickyNote, faStopCircle, faSun, faSurprise, faThumbsDown, faThumbsUp, faTimesCircle, faTired, faTrashAlt, faUser, faUserCircle, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -3010,7 +3010,7 @@ var _iconsCache = {
 
 /***/ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js":
 /*!**************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/free-solid-svg-icons/index.es.js ***!
   \**************************************************************************************/
 /*! exports provided: fas, prefix, faAd, faAddressBook, faAddressCard, faAdjust, faAirFreshener, faAlignCenter, faAlignJustify, faAlignLeft, faAlignRight, faAllergies, faAmbulance, faAmericanSignLanguageInterpreting, faAnchor, faAngleDoubleDown, faAngleDoubleLeft, faAngleDoubleRight, faAngleDoubleUp, faAngleDown, faAngleLeft, faAngleRight, faAngleUp, faAngry, faAnkh, faAppleAlt, faArchive, faArchway, faArrowAltCircleDown, faArrowAltCircleLeft, faArrowAltCircleRight, faArrowAltCircleUp, faArrowCircleDown, faArrowCircleLeft, faArrowCircleRight, faArrowCircleUp, faArrowDown, faArrowLeft, faArrowRight, faArrowUp, faArrowsAlt, faArrowsAltH, faArrowsAltV, faAssistiveListeningSystems, faAsterisk, faAt, faAtlas, faAtom, faAudioDescription, faAward, faBackspace, faBackward, faBalanceScale, faBan, faBandAid, faBarcode, faBars, faBaseballBall, faBasketballBall, faBath, faBatteryEmpty, faBatteryFull, faBatteryHalf, faBatteryQuarter, faBatteryThreeQuarters, faBed, faBeer, faBell, faBellSlash, faBezierCurve, faBible, faBicycle, faBinoculars, faBirthdayCake, faBlender, faBlenderPhone, faBlind, faBold, faBolt, faBomb, faBone, faBong, faBook, faBookDead, faBookOpen, faBookReader, faBookmark, faBowlingBall, faBox, faBoxOpen, faBoxes, faBraille, faBrain, faBriefcase, faBriefcaseMedical, faBroadcastTower, faBroom, faBrush, faBug, faBuilding, faBullhorn, faBullseye, faBurn, faBus, faBusAlt, faBusinessTime, faCalculator, faCalendar, faCalendarAlt, faCalendarCheck, faCalendarMinus, faCalendarPlus, faCalendarTimes, faCamera, faCameraRetro, faCampground, faCannabis, faCapsules, faCar, faCarAlt, faCarBattery, faCarCrash, faCarSide, faCaretDown, faCaretLeft, faCaretRight, faCaretSquareDown, faCaretSquareLeft, faCaretSquareRight, faCaretSquareUp, faCaretUp, faCartArrowDown, faCartPlus, faCat, faCertificate, faChair, faChalkboard, faChalkboardTeacher, faChargingStation, faChartArea, faChartBar, faChartLine, faChartPie, faCheck, faCheckCircle, faCheckDouble, faCheckSquare, faChess, faChessBishop, faChessBoard, faChessKing, faChessKnight, faChessPawn, faChessQueen, faChessRook, faChevronCircleDown, faChevronCircleLeft, faChevronCircleRight, faChevronCircleUp, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faChild, faChurch, faCircle, faCircleNotch, faCity, faClipboard, faClipboardCheck, faClipboardList, faClock, faClone, faClosedCaptioning, faCloud, faCloudDownloadAlt, faCloudMoon, faCloudSun, faCloudUploadAlt, faCocktail, faCode, faCodeBranch, faCoffee, faCog, faCogs, faCoins, faColumns, faComment, faCommentAlt, faCommentDollar, faCommentDots, faCommentSlash, faComments, faCommentsDollar, faCompactDisc, faCompass, faCompress, faConciergeBell, faCookie, faCookieBite, faCopy, faCopyright, faCouch, faCreditCard, faCrop, faCropAlt, faCross, faCrosshairs, faCrow, faCrown, faCube, faCubes, faCut, faDatabase, faDeaf, faDesktop, faDharmachakra, faDiagnoses, faDice, faDiceD20, faDiceD6, faDiceFive, faDiceFour, faDiceOne, faDiceSix, faDiceThree, faDiceTwo, faDigitalTachograph, faDirections, faDivide, faDizzy, faDna, faDog, faDollarSign, faDolly, faDollyFlatbed, faDonate, faDoorClosed, faDoorOpen, faDotCircle, faDove, faDownload, faDraftingCompass, faDragon, faDrawPolygon, faDrum, faDrumSteelpan, faDrumstickBite, faDumbbell, faDungeon, faEdit, faEject, faEllipsisH, faEllipsisV, faEnvelope, faEnvelopeOpen, faEnvelopeOpenText, faEnvelopeSquare, faEquals, faEraser, faEuroSign, faExchangeAlt, faExclamation, faExclamationCircle, faExclamationTriangle, faExpand, faExpandArrowsAlt, faExternalLinkAlt, faExternalLinkSquareAlt, faEye, faEyeDropper, faEyeSlash, faFastBackward, faFastForward, faFax, faFeather, faFeatherAlt, faFemale, faFighterJet, faFile, faFileAlt, faFileArchive, faFileAudio, faFileCode, faFileContract, faFileCsv, faFileDownload, faFileExcel, faFileExport, faFileImage, faFileImport, faFileInvoice, faFileInvoiceDollar, faFileMedical, faFileMedicalAlt, faFilePdf, faFilePowerpoint, faFilePrescription, faFileSignature, faFileUpload, faFileVideo, faFileWord, faFill, faFillDrip, faFilm, faFilter, faFingerprint, faFire, faFireExtinguisher, faFirstAid, faFish, faFistRaised, faFlag, faFlagCheckered, faFlask, faFlushed, faFolder, faFolderMinus, faFolderOpen, faFolderPlus, faFont, faFontAwesomeLogoFull, faFootballBall, faForward, faFrog, faFrown, faFrownOpen, faFunnelDollar, faFutbol, faGamepad, faGasPump, faGavel, faGem, faGenderless, faGhost, faGift, faGlassMartini, faGlassMartiniAlt, faGlasses, faGlobe, faGlobeAfrica, faGlobeAmericas, faGlobeAsia, faGolfBall, faGopuram, faGraduationCap, faGreaterThan, faGreaterThanEqual, faGrimace, faGrin, faGrinAlt, faGrinBeam, faGrinBeamSweat, faGrinHearts, faGrinSquint, faGrinSquintTears, faGrinStars, faGrinTears, faGrinTongue, faGrinTongueSquint, faGrinTongueWink, faGrinWink, faGripHorizontal, faGripVertical, faHSquare, faHammer, faHamsa, faHandHolding, faHandHoldingHeart, faHandHoldingUsd, faHandLizard, faHandPaper, faHandPeace, faHandPointDown, faHandPointLeft, faHandPointRight, faHandPointUp, faHandPointer, faHandRock, faHandScissors, faHandSpock, faHands, faHandsHelping, faHandshake, faHanukiah, faHashtag, faHatWizard, faHaykal, faHdd, faHeading, faHeadphones, faHeadphonesAlt, faHeadset, faHeart, faHeartbeat, faHelicopter, faHighlighter, faHiking, faHippo, faHistory, faHockeyPuck, faHome, faHorse, faHospital, faHospitalAlt, faHospitalSymbol, faHotTub, faHotel, faHourglass, faHourglassEnd, faHourglassHalf, faHourglassStart, faHouseDamage, faHryvnia, faICursor, faIdBadge, faIdCard, faIdCardAlt, faImage, faImages, faInbox, faIndent, faIndustry, faInfinity, faInfo, faInfoCircle, faItalic, faJedi, faJoint, faJournalWhills, faKaaba, faKey, faKeyboard, faKhanda, faKiss, faKissBeam, faKissWinkHeart, faKiwiBird, faLandmark, faLanguage, faLaptop, faLaptopCode, faLaugh, faLaughBeam, faLaughSquint, faLaughWink, faLayerGroup, faLeaf, faLemon, faLessThan, faLessThanEqual, faLevelDownAlt, faLevelUpAlt, faLifeRing, faLightbulb, faLink, faLiraSign, faList, faListAlt, faListOl, faListUl, faLocationArrow, faLock, faLockOpen, faLongArrowAltDown, faLongArrowAltLeft, faLongArrowAltRight, faLongArrowAltUp, faLowVision, faLuggageCart, faMagic, faMagnet, faMailBulk, faMale, faMap, faMapMarked, faMapMarkedAlt, faMapMarker, faMapMarkerAlt, faMapPin, faMapSigns, faMarker, faMars, faMarsDouble, faMarsStroke, faMarsStrokeH, faMarsStrokeV, faMask, faMedal, faMedkit, faMeh, faMehBlank, faMehRollingEyes, faMemory, faMenorah, faMercury, faMicrochip, faMicrophone, faMicrophoneAlt, faMicrophoneAltSlash, faMicrophoneSlash, faMicroscope, faMinus, faMinusCircle, faMinusSquare, faMobile, faMobileAlt, faMoneyBill, faMoneyBillAlt, faMoneyBillWave, faMoneyBillWaveAlt, faMoneyCheck, faMoneyCheckAlt, faMonument, faMoon, faMortarPestle, faMosque, faMotorcycle, faMountain, faMousePointer, faMusic, faNetworkWired, faNeuter, faNewspaper, faNotEqual, faNotesMedical, faObjectGroup, faObjectUngroup, faOilCan, faOm, faOtter, faOutdent, faPaintBrush, faPaintRoller, faPalette, faPallet, faPaperPlane, faPaperclip, faParachuteBox, faParagraph, faParking, faPassport, faPastafarianism, faPaste, faPause, faPauseCircle, faPaw, faPeace, faPen, faPenAlt, faPenFancy, faPenNib, faPenSquare, faPencilAlt, faPencilRuler, faPeopleCarry, faPercent, faPercentage, faPhone, faPhoneSlash, faPhoneSquare, faPhoneVolume, faPiggyBank, faPills, faPlaceOfWorship, faPlane, faPlaneArrival, faPlaneDeparture, faPlay, faPlayCircle, faPlug, faPlus, faPlusCircle, faPlusSquare, faPodcast, faPoll, faPollH, faPoo, faPoop, faPortrait, faPoundSign, faPowerOff, faPray, faPrayingHands, faPrescription, faPrescriptionBottle, faPrescriptionBottleAlt, faPrint, faProcedures, faProjectDiagram, faPuzzlePiece, faQrcode, faQuestion, faQuestionCircle, faQuidditch, faQuoteLeft, faQuoteRight, faQuran, faRandom, faReceipt, faRecycle, faRedo, faRedoAlt, faRegistered, faReply, faReplyAll, faRetweet, faRibbon, faRing, faRoad, faRobot, faRocket, faRoute, faRss, faRssSquare, faRubleSign, faRuler, faRulerCombined, faRulerHorizontal, faRulerVertical, faRunning, faRupeeSign, faSadCry, faSadTear, faSave, faSchool, faScrewdriver, faScroll, faSearch, faSearchDollar, faSearchLocation, faSearchMinus, faSearchPlus, faSeedling, faServer, faShapes, faShare, faShareAlt, faShareAltSquare, faShareSquare, faShekelSign, faShieldAlt, faShip, faShippingFast, faShoePrints, faShoppingBag, faShoppingBasket, faShoppingCart, faShower, faShuttleVan, faSign, faSignInAlt, faSignLanguage, faSignOutAlt, faSignal, faSignature, faSitemap, faSkull, faSkullCrossbones, faSlash, faSlidersH, faSmile, faSmileBeam, faSmileWink, faSmoking, faSmokingBan, faSnowflake, faSocks, faSolarPanel, faSort, faSortAlphaDown, faSortAlphaUp, faSortAmountDown, faSortAmountUp, faSortDown, faSortNumericDown, faSortNumericUp, faSortUp, faSpa, faSpaceShuttle, faSpider, faSpinner, faSplotch, faSprayCan, faSquare, faSquareFull, faSquareRootAlt, faStamp, faStar, faStarAndCrescent, faStarHalf, faStarHalfAlt, faStarOfDavid, faStarOfLife, faStepBackward, faStepForward, faStethoscope, faStickyNote, faStop, faStopCircle, faStopwatch, faStore, faStoreAlt, faStream, faStreetView, faStrikethrough, faStroopwafel, faSubscript, faSubway, faSuitcase, faSuitcaseRolling, faSun, faSuperscript, faSurprise, faSwatchbook, faSwimmer, faSwimmingPool, faSynagogue, faSync, faSyncAlt, faSyringe, faTable, faTableTennis, faTablet, faTabletAlt, faTablets, faTachometerAlt, faTag, faTags, faTape, faTasks, faTaxi, faTeeth, faTeethOpen, faTerminal, faTextHeight, faTextWidth, faTh, faThLarge, faThList, faTheaterMasks, faThermometer, faThermometerEmpty, faThermometerFull, faThermometerHalf, faThermometerQuarter, faThermometerThreeQuarters, faThumbsDown, faThumbsUp, faThumbtack, faTicketAlt, faTimes, faTimesCircle, faTint, faTintSlash, faTired, faToggleOff, faToggleOn, faToiletPaper, faToolbox, faTooth, faTorah, faToriiGate, faTractor, faTrademark, faTrafficLight, faTrain, faTransgender, faTransgenderAlt, faTrash, faTrashAlt, faTree, faTrophy, faTruck, faTruckLoading, faTruckMonster, faTruckMoving, faTruckPickup, faTshirt, faTty, faTv, faUmbrella, faUmbrellaBeach, faUnderline, faUndo, faUndoAlt, faUniversalAccess, faUniversity, faUnlink, faUnlock, faUnlockAlt, faUpload, faUser, faUserAlt, faUserAltSlash, faUserAstronaut, faUserCheck, faUserCircle, faUserClock, faUserCog, faUserEdit, faUserFriends, faUserGraduate, faUserInjured, faUserLock, faUserMd, faUserMinus, faUserNinja, faUserPlus, faUserSecret, faUserShield, faUserSlash, faUserTag, faUserTie, faUserTimes, faUsers, faUsersCog, faUtensilSpoon, faUtensils, faVectorSquare, faVenus, faVenusDouble, faVenusMars, faVial, faVials, faVideo, faVideoSlash, faVihara, faVolleyballBall, faVolumeDown, faVolumeMute, faVolumeOff, faVolumeUp, faVrCardboard, faWalking, faWallet, faWarehouse, faWeight, faWeightHanging, faWheelchair, faWifi, faWind, faWindowClose, faWindowMaximize, faWindowMinimize, faWindowRestore, faWineBottle, faWineGlass, faWineGlassAlt, faWonSign, faWrench, faXRay, faYenSign, faYinYang */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -5590,7 +5590,7 @@ var _iconsCache = {
 
 /***/ "../../node_modules/@fortawesome/react-fontawesome/index.es.js":
 /*!***********************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/@fortawesome/react-fontawesome/index.es.js ***!
   \***********************************************************************************/
 /*! exports provided: FontAwesomeIcon */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -5963,7 +5963,7 @@ var convertCurry = convert.bind(null, react__WEBPACK_IMPORTED_MODULE_2___default
 
 /***/ "../../node_modules/@icons/material/CheckIcon.js":
 /*!*********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/@icons/material/CheckIcon.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/@icons/material/CheckIcon.js ***!
   \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6012,7 +6012,7 @@ exports.default = function (_ref) {
 
 /***/ "../../node_modules/@icons/material/UnfoldMoreHorizontalIcon.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/@icons/material/UnfoldMoreHorizontalIcon.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/@icons/material/UnfoldMoreHorizontalIcon.js ***!
   \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6061,7 +6061,7 @@ exports.default = function (_ref) {
 
 /***/ "../../node_modules/classnames/index.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/classnames/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/classnames/index.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6123,7 +6123,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss":
 /*!****************************************************************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/css-loader!E:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/actionTabs.scss ***!
   \****************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6133,7 +6133,27 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#__resizable_base__ {\n  display: none; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 100%;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: 100%;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: block;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .actionIcon {\n            display: inline-block;\n            margin-top: 6px;\n            margin-right: 4px; }\n        #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #actionTabs .tabs .panes .pane .color-picker {\n          height: calc(100% - 8px);\n          margin: 4px;\n          width: 100%; }\n          #actionTabs .tabs .panes .pane .color-picker .color-rect {\n            height: calc(100% - 4px);\n            border: 2px white solid;\n            cursor: pointer;\n            min-height: 18px; }\n          #actionTabs .tabs .panes .pane .color-picker .color-picker-cover {\n            position: fixed;\n            top: 0px;\n            right: 0px;\n            bottom: 0px;\n            left: 0px;\n            z-index: 100; }\n          #actionTabs .tabs .panes .pane .color-picker .color-picker-float {\n            position: absolute; }\n        #actionTabs .tabs .panes .pane .linkButtonLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto 20px; }\n          #actionTabs .tabs .panes .pane .linkButtonLine .link {\n            grid-column: 1;\n            display: flex;\n            align-items: center;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .linkButtonLine .link-button {\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .link-button button {\n              background: #222222;\n              border: 1px solid #337ab7;\n              margin: 5px 10px 5px 10px;\n              color: white;\n              padding: 4px 5px;\n              opacity: 0.9;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .link-button button:hover {\n              opacity: 1.0; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .link-button button:active {\n              background: #282828; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .link-button button:focus {\n              border: 1px solid #337ab7;\n              outline: 0px; }\n          #actionTabs .tabs .panes .pane .linkButtonLine .link-icon {\n            grid-column: 3;\n            display: grid;\n            align-content: center; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 6px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .gradient-container {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .gradient-container .gradient-label {\n            height: 30px;\n            display: grid;\n            align-content: center; }\n          #actionTabs .tabs .panes .pane .gradient-container .gradient-step {\n            display: grid;\n            grid-template-rows: 100%;\n            grid-template-columns: 25px 50px 55px 40px auto 20px 5px;\n            padding-top: 5px;\n            padding-left: 5px;\n            padding-bottom: 5px;\n            align-items: center;\n            border-left: orange 3px solid; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step {\n              grid-row: 1;\n              grid-column: 1; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .color1 {\n              height: 100%; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .color2 {\n              height: 100%;\n              padding-left: 5px; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor1 {\n              grid-row: 1;\n              grid-column: 2;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor2 {\n              padding-left: 5px;\n              grid-row: 1;\n              grid-column: 3;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor2 .grayed {\n                background: gray;\n                border-color: gray; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .numeric-input {\n              width: calc(100% - 5px); }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-value {\n              margin-left: 5px;\n              grid-row: 1;\n              grid-column: 4;\n              text-align: right;\n              margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-slider {\n              grid-row: 1;\n              grid-column: 5;\n              display: grid;\n              justify-content: stretch;\n              align-content: center;\n              margin-right: 5px; }\n              #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-slider input {\n                width: 100%; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .gradient-delete {\n              grid-row: 1;\n              grid-column: 6;\n              display: grid;\n              align-content: center;\n              justify-content: center; }\n        #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              width: 50px;\n              display: flex;\n              align-items: center; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .copy img {\n                height: 100%; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList {\n            border-left: 3px solid transparent; }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneList {\n            border-left: 3px solid rgba(51, 122, 183, 0.8); }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneContainer-content .header .title {\n            border-left: 3px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;\n  top: 0px;\n  bottom: 0px; }\n\n#__resizable_base__ {\n  display: none; }\n\n#actionTabs {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\";\n  overflow: hidden; }\n  #actionTabs .hoverIcon:hover {\n    opacity: 0.8; }\n  #actionTabs #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #actionTabs #header #logo {\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #actionTabs #header #back {\n      grid-column: 1;\n      display: grid;\n      align-self: center;\n      justify-self: center;\n      cursor: pointer; }\n    #actionTabs #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #actionTabs #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #actionTabs #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #actionTabs #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #actionTabs .tabs {\n    display: grid;\n    grid-row: 2;\n    grid-template-rows: 40px 1fr;\n    font: 14px \"Arial\";\n    overflow: hidden; }\n    #actionTabs .tabs .labels {\n      grid-row: 1;\n      display: flex;\n      align-items: center;\n      justify-items: center;\n      border-bottom: 1px solid #ffffff;\n      margin: 0;\n      padding: 0; }\n      #actionTabs .tabs .labels .label {\n        font-size: 24px;\n        color: white;\n        width: 40px;\n        display: flex;\n        align-content: center;\n        justify-content: center;\n        border: 1px solid transparent;\n        border-bottom: none;\n        background: #333333;\n        padding: 5px;\n        height: 28px;\n        cursor: pointer; }\n        #actionTabs .tabs .labels .label.active {\n          border-color: #ffffff;\n          border-bottom: 2px solid transparent;\n          margin-bottom: -2px; }\n    #actionTabs .tabs .panes {\n      grid-row: 2;\n      display: grid;\n      grid-template-rows: 100%;\n      overflow: hidden; }\n      #actionTabs .tabs .panes .infoMessage {\n        opacity: 0.5;\n        color: white;\n        margin: 15px 5px 0px 5px; }\n      #actionTabs .tabs .panes .pane {\n        color: white;\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: 100%;\n        -webkit-user-select: none;\n        -moz-user-select: none;\n        -ms-user-select: none;\n        user-select: none; }\n        #actionTabs .tabs .panes .pane .animation-info {\n          border-left: greenyellow 3px solid;\n          margin-left: 5px;\n          padding-left: 5px !important; }\n        #actionTabs .tabs .panes .pane .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #actionTabs .tabs .panes .pane .textureLinkLine {\n          display: grid;\n          grid-template-columns: auto 1fr; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .debug {\n            grid-column: 1;\n            margin-left: 5px;\n            margin-right: 5px;\n            display: block;\n            align-items: center;\n            justify-items: center;\n            cursor: pointer;\n            opacity: 0.5; }\n            #actionTabs .tabs .panes .pane .textureLinkLine .debug.selected {\n              opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .textLine {\n            grid-column: 2; }\n          #actionTabs .tabs .panes .pane .textureLinkLine .actionIcon {\n            display: inline-block;\n            margin-top: 6px;\n            margin-right: 4px; }\n        #actionTabs .tabs .panes .pane .messageLine {\n          text-align: center;\n          font-size: 12px;\n          font-style: italic;\n          opacity: 0.6; }\n        #actionTabs .tabs .panes .pane .iconMessageLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 30px 1fr; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .icon {\n            grid-column: 1;\n            display: grid;\n            align-items: center;\n            justify-items: center; }\n          #actionTabs .tabs .panes .pane .iconMessageLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n        #actionTabs .tabs .panes .pane .color-picker {\n          height: calc(100% - 8px);\n          margin: 4px;\n          width: 100%; }\n          #actionTabs .tabs .panes .pane .color-picker .color-rect {\n            height: calc(100% - 4px);\n            border: 2px white solid;\n            cursor: pointer;\n            min-height: 18px; }\n          #actionTabs .tabs .panes .pane .color-picker .color-picker-cover {\n            position: fixed;\n            top: 0px;\n            right: 0px;\n            bottom: 0px;\n            left: 0px;\n            z-index: 100; }\n          #actionTabs .tabs .panes .pane .color-picker .color-picker-float {\n            position: absolute; }\n        #actionTabs .tabs .panes .pane .linkButtonLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto 20px; }\n          #actionTabs .tabs .panes .pane .linkButtonLine .link {\n            grid-column: 1;\n            display: flex;\n            align-items: center;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .linkButtonLine .link-button {\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .link-button button {\n              background: #222222;\n              border: 1px solid #337ab7;\n              margin: 5px 10px 5px 10px;\n              color: white;\n              padding: 4px 5px;\n              opacity: 0.9;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .link-button button:hover {\n              opacity: 1.0; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .link-button button:active {\n              background: #282828; }\n            #actionTabs .tabs .panes .pane .linkButtonLine .link-button button:focus {\n              border: 1px solid #337ab7;\n              outline: 0px; }\n          #actionTabs .tabs .panes .pane .linkButtonLine .link-icon {\n            grid-column: 3;\n            display: grid;\n            align-content: center; }\n        #actionTabs .tabs .panes .pane .textLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .textLine.indented {\n            grid-template-columns: 100%; }\n            #actionTabs .tabs .panes .pane .textLine.indented .link-value {\n              grid-column: 1;\n              text-align: start;\n              margin-left: 20px;\n              opacity: 0.6;\n              max-width: unset; }\n            #actionTabs .tabs .panes .pane .textLine.indented .value {\n              grid-column: 1;\n              text-align: start;\n              margin-left: 20px;\n              opacity: 0.6;\n              max-width: unset; }\n          #actionTabs .tabs .panes .pane .textLine.reduced-opacity {\n            opacity: 0.6;\n            padding-left: 25px; }\n          #actionTabs .tabs .panes .pane .textLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textLine .link-value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 7px;\n            max-width: 140px;\n            text-decoration: underline;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .textLine .value {\n            grid-column: 2;\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n            text-align: end;\n            opacity: 0.8;\n            margin: 5px;\n            margin-top: 7px;\n            max-width: 200px;\n            -webkit-user-select: text;\n            -moz-user-select: text;\n            -ms-user-select: text;\n            user-select: text; }\n            #actionTabs .tabs .panes .pane .textLine .value.check {\n              color: green; }\n            #actionTabs .tabs .panes .pane .textLine .value.uncheck {\n              color: red; }\n        #actionTabs .tabs .panes .pane .gradient-container {\n          margin-top: 3px; }\n          #actionTabs .tabs .panes .pane .gradient-container .gradient-label {\n            height: 30px;\n            display: grid;\n            align-content: center; }\n          #actionTabs .tabs .panes .pane .gradient-container .gradient-step {\n            display: grid;\n            grid-template-rows: 100%;\n            grid-template-columns: 25px 50px 55px 40px auto 20px 5px;\n            padding-top: 5px;\n            padding-left: 5px;\n            padding-bottom: 5px;\n            align-items: center;\n            border-left: orange 3px solid; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step {\n              grid-row: 1;\n              grid-column: 1; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .color1 {\n              height: 100%; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .color2 {\n              height: 100%;\n              padding-left: 5px; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor1 {\n              grid-row: 1;\n              grid-column: 2;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor2 {\n              padding-left: 5px;\n              grid-row: 1;\n              grid-column: 3;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .gradient-container .gradient-step .factor2 .grayed {\n                background: gray;\n                border-color: gray; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .numeric-input {\n              width: calc(100% - 5px); }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-value {\n              margin-left: 5px;\n              grid-row: 1;\n              grid-column: 4;\n              text-align: right;\n              margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-slider {\n              grid-row: 1;\n              grid-column: 5;\n              display: grid;\n              justify-content: stretch;\n              align-content: center;\n              margin-right: 5px; }\n              #actionTabs .tabs .panes .pane .gradient-container .gradient-step .step-slider input {\n                width: 100%; }\n            #actionTabs .tabs .panes .pane .gradient-container .gradient-step .gradient-delete {\n              grid-row: 1;\n              grid-column: 6;\n              display: grid;\n              align-content: center;\n              justify-content: center; }\n        #actionTabs .tabs .panes .pane .textInputLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .textInputLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .textInputLine .value {\n            display: flex;\n            align-items: center;\n            grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textInputLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #actionTabs .tabs .panes .pane .buttonLine input[type=\"file\"] {\n            display: none; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer;\n            text-align: center; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine .file-upload:active {\n            transform: scale(0.98);\n            transform-origin: 0.5 0.5; }\n          #actionTabs .tabs .panes .pane .buttonLine button {\n            background: #222222;\n            border: 1px solid #337ab7;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9;\n            cursor: pointer; }\n          #actionTabs .tabs .panes .pane .buttonLine button:hover {\n            opacity: 1.0; }\n          #actionTabs .tabs .panes .pane .buttonLine button:active {\n            background: #282828; }\n          #actionTabs .tabs .panes .pane .buttonLine button:focus {\n            border: 1px solid #337ab7;\n            outline: 0px; }\n        #actionTabs .tabs .panes .pane .radioLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 24px; }\n          #actionTabs .tabs .panes .pane .radioLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .radioLine .radioContainer {\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio {\n              grid-column: 2;\n              display: none; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:before {\n                border-color: #337ab7; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .radio:checked + label:after {\n                transform: scale(1); }\n            #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio {\n              display: inline-block;\n              height: 14px;\n              position: relative;\n              padding: 0 24px;\n              margin-bottom: 0;\n              cursor: pointer;\n              vertical-align: bottom; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before, #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                position: absolute;\n                content: '';\n                border-radius: 50%;\n                transition: all .3s ease;\n                transition-property: transform, border-color; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:before {\n                left: 0px;\n                top: 0;\n                width: 16px;\n                height: 16px;\n                border: 2px solid white; }\n              #actionTabs .tabs .panes .pane .radioLine .radioContainer .labelForRadio:after {\n                top: 6px;\n                left: 6px;\n                width: 8px;\n                height: 8px;\n                transform: scale(0);\n                background: #337ab7; }\n        #actionTabs .tabs .panes .pane .vector3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .vector3Line .firstLine {\n            display: grid;\n            grid-template-columns: 1fr auto 20px;\n            height: 30px; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .vector {\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              text-align: right;\n              opacity: 0.8; }\n            #actionTabs .tabs .panes .pane .vector3Line .firstLine .expand {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .vector3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .vector3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .checkBoxLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .checkBoxLine .checkBox {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl {\n              position: relative;\n              display: block;\n              height: 14px;\n              width: 34px;\n              margin-right: 5px;\n              background: #898989;\n              border-radius: 100px;\n              cursor: pointer;\n              transition: all 0.3s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:after {\n              position: absolute;\n              left: 3px;\n              top: 2px;\n              display: block;\n              width: 10px;\n              height: 10px;\n              border-radius: 100px;\n              background: #fff;\n              box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.05);\n              content: '';\n              transition: all 0.15s ease; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .lbl:active:after {\n              transform: scale(1.15, 0.85); }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label {\n              background: #337ab7; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .cbx:checked ~ label:after {\n              left: 20px;\n              background: #164975; }\n            #actionTabs .tabs .panes .pane .checkBoxLine .checkBox .hidden {\n              display: none; }\n        #actionTabs .tabs .panes .pane .textureLine {\n          display: grid;\n          grid-template-rows: 30px auto; }\n          #actionTabs .tabs .panes .pane .textureLine .control {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control .red {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control .green {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control .blue {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control .alpha {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control .all {\n              grid-column: 6; }\n          #actionTabs .tabs .panes .pane .textureLine .control3D {\n            margin-top: 2px;\n            grid-row: 1;\n            display: grid;\n            grid-template-columns: 1fr 40px 40px 40px 40px 40px 40px 1fr; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .px {\n              grid-column: 2; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nx {\n              grid-column: 3; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .py {\n              grid-column: 4; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .ny {\n              grid-column: 5; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .pz {\n              grid-column: 6; }\n            #actionTabs .tabs .panes .pane .textureLine .control3D .nz {\n              grid-column: 7; }\n          #actionTabs .tabs .panes .pane .textureLine .command {\n            border: 1px solid transparent;\n            background: transparent;\n            color: white; }\n          #actionTabs .tabs .panes .pane .textureLine .selected {\n            border: 1px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .textureLine .preview {\n            grid-row: 2;\n            display: grid;\n            align-self: center;\n            justify-self: center;\n            height: 256px;\n            width: 256px;\n            margin-top: 5px;\n            margin-bottom: 5px;\n            border: 2px solid rgba(255, 255, 255, 0.4); }\n        #actionTabs .tabs .panes .pane .gltf-extension-property {\n          margin-left: 30px;\n          border-left: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .floatLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr 120px; }\n          #actionTabs .tabs .panes .pane .floatLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .floatLine .value {\n            grid-column: 2;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .floatLine .value input {\n              width: 110px; }\n        #actionTabs .tabs .panes .pane .sliderLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .sliderLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .sliderLine .slider {\n            grid-column: 2;\n            margin-right: 5px;\n            display: flex;\n            align-items: center; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range {\n              -webkit-appearance: none;\n              width: 120px;\n              height: 6px;\n              background: #d3d3d3;\n              border-radius: 5px;\n              outline: none;\n              opacity: 0.7;\n              -webkit-transition: .2s;\n              transition: opacity .2s; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range:hover {\n              opacity: 1; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-webkit-slider-thumb {\n              -webkit-appearance: none;\n              appearance: none;\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n            #actionTabs .tabs .panes .pane .sliderLine .slider .range::-moz-range-thumb {\n              width: 14px;\n              height: 14px;\n              border-radius: 50%;\n              background: #337ab7;\n              cursor: pointer; }\n        #actionTabs .tabs .panes .pane .color3Line {\n          padding-left: 2px;\n          display: grid; }\n          #actionTabs .tabs .panes .pane .color3Line .firstLine {\n            height: 30px;\n            display: grid;\n            grid-template-columns: 1fr auto 20px 20px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .label {\n              grid-column: 1;\n              display: flex;\n              align-items: center; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 {\n              grid-column: 2;\n              width: 50px;\n              display: flex;\n              align-items: center; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"] {\n                -webkit-appearance: none;\n                border: 1px solid rgba(255, 255, 255, 0.5);\n                padding: 0;\n                width: 30px;\n                height: 20px; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch-wrapper {\n                padding: 0; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input[type=\"color\"]::-webkit-color-swatch {\n                border: none; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .color3 input {\n                margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .copy {\n              grid-column: 3;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .color3Line .firstLine .copy img {\n                height: 100%; }\n            #actionTabs .tabs .panes .pane .color3Line .firstLine .expand {\n              grid-column: 4;\n              display: grid;\n              align-items: center;\n              justify-items: center;\n              cursor: pointer; }\n          #actionTabs .tabs .panes .pane .color3Line .secondLine {\n            display: grid;\n            padding-right: 5px;\n            border-left: 1px solid #337ab7; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric {\n              display: grid;\n              grid-template-columns: 1fr auto; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-label {\n              text-align: right;\n              grid-column: 1;\n              display: flex;\n              align-items: center;\n              justify-self: right;\n              margin-right: 10px; }\n            #actionTabs .tabs .panes .pane .color3Line .secondLine .numeric-value {\n              width: 120px;\n              grid-column: 2;\n              display: flex;\n              align-items: center;\n              border: 1px solid #337ab7; }\n        #actionTabs .tabs .panes .pane .listLine {\n          padding-left: 2px;\n          height: 30px;\n          display: grid;\n          grid-template-columns: 1fr auto; }\n          #actionTabs .tabs .panes .pane .listLine .label {\n            grid-column: 1;\n            display: flex;\n            align-items: center; }\n          #actionTabs .tabs .panes .pane .listLine .options {\n            grid-column: 2;\n            display: flex;\n            align-items: center;\n            margin-right: 5px; }\n            #actionTabs .tabs .panes .pane .listLine .options select {\n              width: 115px; }\n        #actionTabs .tabs .panes .pane .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneList {\n            border-left: 3px solid transparent; }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneList {\n            border-left: 3px solid rgba(51, 122, 183, 0.8); }\n          #actionTabs .tabs .panes .pane .paneContainer:hover .paneContainer-content .header .title {\n            border-left: 3px solid #337ab7; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border {\n            grid-row: 1;\n            grid-column: 1;\n            opacity: 1;\n            border: 3px solid red;\n            margin-bottom: -5px;\n            z-index: 100;\n            transition: opacity 250ms;\n            pointer-events: none; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-highlight-border.transparent {\n              opacity: 0; }\n          #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n            #actionTabs .tabs .panes .pane .paneContainer .paneContainer-content .fragment > div:not(:last-child) {\n              border-bottom: 0.5px solid rgba(255, 255, 255, 0.1); }\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor.scss":
+/*!***********************************************************************************************************************************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor.scss ***!
+  \***********************************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var escape = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/lib/url/escape.js */ "../../node_modules/css-loader/lib/url/escape.js");
+exports = module.exports = __webpack_require__(/*! ../../../../../../../node_modules/css-loader/lib/css-base.js */ "../../node_modules/css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "body {\n  background-color: #333333; }\n\n#animation-curve-editor {\n  font-family: acumin-pro-condensed; }\n  #animation-curve-editor .last {\n    margin-left: 3px; }\n  #animation-curve-editor .icon {\n    width: 40px;\n    height: 40px; }\n    #animation-curve-editor .icon.medium {\n      width: 30px;\n      height: 30px; }\n    #animation-curve-editor .icon.small {\n      width: 20px;\n      height: 20px; }\n    #animation-curve-editor .icon.babylon-logo {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/babylonLogo.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/babylonLogo.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain; }\n    #animation-curve-editor .icon.close {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/closeWindowIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/closeWindowIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.auto-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/autoTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/autoTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.auto-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.auto-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.break-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/breakTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/breakTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.break-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.break-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.flat-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/flatTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/flatTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.flat-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.flat-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.frame {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/frameIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/frameIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.frame:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.frame:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.linear-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/linearTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/linearTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.linear-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.linear-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.unify-tangent {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/unifyTangentIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/unifyTangentIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n      #animation-curve-editor .icon.unify-tangent:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.unify-tangent:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.add-animation {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/addAnimationIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/addAnimationIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-bullet {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-delete {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationDeleteIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationDeleteIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.animation-edit {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/editIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/editIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.animation-end {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationEndIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationEndIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n    #animation-curve-editor .icon.animation-lastkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-lastkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationLastKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-nextkey {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-nextkey:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationNextKeyHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-options {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationOptionsIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationOptionsIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-options:hover {\n        background-color: #888888 !important; }\n    #animation-curve-editor .icon.animation-playfwd {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayFwdIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-playfwd:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayFwdHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-playrev {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayRevIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      width: 20px;\n      cursor: pointer;\n      background-position: center; }\n      #animation-curve-editor .icon.animation-playrev:hover {\n        background-image: url(" + escape(__webpack_require__(/*! ./assets/animationPlayRevHoverIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevHoverIcon.svg")) + "); }\n    #animation-curve-editor .icon.animation-start {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStartIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStartIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      cursor: pointer;\n      background-position: center;\n      width: 20px; }\n    #animation-curve-editor .icon.animation-stop {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationStopIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStopIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      background-position: center;\n      cursor: pointer;\n      background-position: center;\n      width: 20px;\n      margin-left: 10px; }\n    #animation-curve-editor .icon.animation-triangle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keyInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.key-selected {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.loop-active {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopActiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopActiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.loop-inactive {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loopInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopInactiveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.move {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/moveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/moveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.save {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/saveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/saveIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.load {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/loadIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/loadIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white;\n      cursor: pointer; }\n    #animation-curve-editor .icon.checked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxCheckedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxCheckedIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.unchecked {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/checkboxDefaultIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxDefaultIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.new-key {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/newKeyIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/newKeyIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n      #animation-curve-editor .icon.new-key:hover {\n        background-color: #888888; }\n      #animation-curve-editor .icon.new-key:active {\n        background-color: #555555; }\n    #animation-curve-editor .icon.scale {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scaleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scaleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n    #animation-curve-editor .icon.scrollbar-handle {\n      background-image: url(" + escape(__webpack_require__(/*! ./assets/scrollbarHandleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/scrollbarHandleIcon.svg")) + ");\n      background-repeat: no-repeat;\n      background-color: transparent;\n      background-size: contain;\n      color: white; }\n  #animation-curve-editor .hidden {\n    display: none; }\n  #animation-curve-editor .notification-area {\n    position: absolute;\n    width: auto;\n    left: 0.53em;\n    bottom: 60px;\n    background-color: #c73228;\n    padding: 16px;\n    border-radius: 5px;\n    color: white;\n    right: 2em;\n    z-index: 1000; }\n    #animation-curve-editor .notification-area button {\n      position: absolute;\n      top: 3px;\n      right: 10px;\n      padding: 0;\n      cursor: pointer;\n      background: transparent;\n      border: 0;\n      -webkit-appearance: none;\n      color: #000;\n      text-shadow: 0 1px 0 #fff;\n      opacity: 0.4;\n      font-size: 1.8em; }\n  #animation-curve-editor .header {\n    display: flex;\n    padding: 9px;\n    background: #333333;\n    color: white;\n    height: 1.3em;\n    justify-content: space-between;\n    align-items: center;\n    padding-left: 12px;\n    padding-right: 12px; }\n    #animation-curve-editor .header .title {\n      text-transform: uppercase; }\n    #animation-curve-editor .header .close {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      justify-items: center;\n      cursor: pointer; }\n  #animation-curve-editor .actions-wrapper {\n    display: flex;\n    flex-direction: row;\n    justify-content: flex-start;\n    align-items: center;\n    background: #333333;\n    height: 40px; }\n    #animation-curve-editor .actions-wrapper .close {\n      position: absolute;\n      right: 1px; }\n    #animation-curve-editor .actions-wrapper .title-container {\n      display: flex;\n      justify-content: stretch;\n      align-items: center;\n      color: white;\n      width: 220px; }\n      #animation-curve-editor .actions-wrapper .title-container .title {\n        font-size: 15pt; }\n    #animation-curve-editor .actions-wrapper .buttons-container {\n      display: flex;\n      padding-left: 10px; }\n    #animation-curve-editor .actions-wrapper .action-input {\n      display: flex;\n      justify-content: center;\n      flex-direction: row;\n      align-items: center;\n      margin-right: 8px; }\n      #animation-curve-editor .actions-wrapper .action-input input {\n        width: 75px;\n        height: 24px;\n        color: white;\n        font-size: 12px;\n        background: none;\n        border: none;\n        background-color: black;\n        padding: 6px; }\n        #animation-curve-editor .actions-wrapper .action-input input:focus {\n          outline: solid 1px #ccc; }\n  #animation-curve-editor .content {\n    display: flex;\n    align-items: flex-start;\n    justify-content: flex-start;\n    flex-direction: column;\n    height: 462px; }\n    #animation-curve-editor .content .row {\n      width: 1024px;\n      height: 427px;\n      display: flex;\n      flex-flow: row;\n      background-color: #333333; }\n    #animation-curve-editor .content .row-bottom {\n      display: flex;\n      align-items: stretch;\n      justify-content: flex-start;\n      flex-direction: row;\n      width: 1024px;\n      height: 45px;\n      background-color: #333333; }\n      #animation-curve-editor .content .row-bottom .timeline {\n        width: 100vw;\n        background: #333333;\n        display: flex;\n        align-items: center;\n        justify-content: stretch;\n        height: 2.5rem; }\n        #animation-curve-editor .content .row-bottom .timeline .display-line {\n          width: 75vw;\n          height: 40px;\n          overflow: hidden;\n          margin-right: 0px;\n          padding-left: 10px;\n          padding-right: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar {\n            height: 0.4em; }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar-track {\n            box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); }\n          #animation-curve-editor .content .row-bottom .timeline .display-line::-webkit-scrollbar-thumb {\n            background-color: cornflowerblue;\n            outline: 1px solid slategrey; }\n        #animation-curve-editor .content .row-bottom .timeline .input-frame {\n          width: 60px;\n          margin-left: 10px;\n          margin-right: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .input-frame input {\n            text-align: center;\n            width: 60px;\n            border: none;\n            background: #222222;\n            color: white;\n            height: 25px;\n            font-size: 15px;\n            font-family: acumin-pro-condensed; }\n            #animation-curve-editor .content .row-bottom .timeline .input-frame input::-webkit-inner-spin-button, #animation-curve-editor .content .row-bottom .timeline .input-frame input::-webkit-outer-spin-button {\n              appearance: none;\n              -webkit-appearance: none;\n              margin: 0; }\n        #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle {\n          display: flex;\n          flex-direction: row;\n          height: 25px;\n          margin: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle {\n            width: 703px;\n            background-color: #222222;\n            height: 25px;\n            display: flex;\n            align-items: center; }\n            #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle {\n              display: flex;\n              flex-direction: row;\n              height: 20px;\n              background-color: #666666;\n              justify-content: space-between;\n              position: absolute; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .scrollbar {\n                cursor: pointer;\n                width: 100%; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .left-grabber,\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .right-grabber {\n                display: flex;\n                align-items: center;\n                cursor: pointer; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .left-grabber {\n                padding-left: 3px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .right-grabber {\n                padding-right: 3px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .grabber {\n                background-color: #333333;\n                width: 2px;\n                height: 16px;\n                margin-right: 2px; }\n              #animation-curve-editor .content .row-bottom .timeline .timeline-scroll-handle .scroll-handle .handle .text {\n                margin-left: 10px;\n                margin-right: 10px;\n                font-size: 12px;\n                font-family: acumin-pro-condensed;\n                color: #222222; }\n        #animation-curve-editor .content .row-bottom .timeline .timeline-wrapper {\n          margin-top: -40px;\n          margin-left: -2px; }\n        #animation-curve-editor .content .row-bottom .timeline .controls {\n          display: flex;\n          justify-content: center;\n          align-items: center;\n          padding-left: 46px;\n          padding-right: 46px;\n          margin-left: 10px; }\n          #animation-curve-editor .content .row-bottom .timeline .controls .stop-container {\n            width: 40px;\n            display: flex;\n            flex-direction: row;\n            justify-content: space-between;\n            align-items: center; }\n          #animation-curve-editor .content .row-bottom .timeline .controls .input-frame input {\n            width: 3em; }\n    #animation-curve-editor .content .animation-list {\n      margin: 10px;\n      margin-top: 0;\n      margin-bottom: 0;\n      background: #111111;\n      color: white;\n      width: 210px; }\n      #animation-curve-editor .content .animation-list .controls-header {\n        display: flex;\n        background-color: #252525; }\n        #animation-curve-editor .content .animation-list .controls-header .input-fps {\n          display: flex;\n          align-items: center;\n          width: 52px;\n          padding-left: 4px; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input {\n            width: 52px;\n            font-size: 12px;\n            height: 22px;\n            background-color: black;\n            border: none;\n            color: white;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n            #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-inner-spin-button, #animation-curve-editor .content .animation-list .controls-header .input-fps .numeric input::-webkit-outer-spin-button {\n              appearance: none;\n              -webkit-appearance: none;\n              margin: 0; }\n          #animation-curve-editor .content .animation-list .controls-header .input-fps p {\n            color: white;\n            font-size: 12px;\n            margin: 0px;\n            position: relative;\n            right: 17px;\n            line-height: 20px;\n            height: 20px;\n            margin-top: -2px; }\n      #animation-curve-editor .content .animation-list .load-container {\n        flex-direction: column;\n        height: 377px;\n        padding-top: 10px; }\n        #animation-curve-editor .content .animation-list .load-container .load-server {\n          font-size: 12px;\n          display: flex;\n          background-color: #222222;\n          padding-left: 10px;\n          height: 20px;\n          margin-top: 277px; }\n          #animation-curve-editor .content .animation-list .load-container .load-server p {\n            margin: 0px; }\n        #animation-curve-editor .content .animation-list .load-container .load-browse {\n          margin-top: 10px;\n          display: flex; }\n          #animation-curve-editor .content .animation-list .load-container .load-browse p {\n            height: 20px;\n            margin: 0px;\n            font-size: 12px;\n            width: 65px;\n            text-align: right;\n            margin-right: 10px; }\n          #animation-curve-editor .content .animation-list .load-container .load-browse .buttonLine {\n            margin-left: 0px;\n            margin-top: 0px; }\n            #animation-curve-editor .content .animation-list .load-container .load-browse .buttonLine button {\n              margin-top: 0px;\n              font-family: acumin-pro-condensed;\n              padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .load-container .buttonLine {\n          width: 60px;\n          padding: 0px;\n          display: block;\n          margin-left: 75px;\n          height: 20px;\n          margin-top: 10px; }\n          #animation-curve-editor .content .animation-list .load-container .buttonLine button {\n            border: none;\n            font-size: 12px;\n            margin: 0px;\n            width: 60px;\n            background-color: #444;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .load-container .textInputLine {\n          display: flex; }\n          #animation-curve-editor .content .animation-list .load-container .textInputLine .label {\n            font-size: 12px;\n            width: 75px;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .load-container .textInputLine .value input {\n            width: 127px;\n            background-color: #444444;\n            border: none;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-bottom: 6px;\n            padding-left: 6px; }\n      #animation-curve-editor .content .animation-list .save-container {\n        flex-direction: column;\n        height: 377px;\n        padding-top: 10px; }\n        #animation-curve-editor .content .animation-list .save-container .item-list {\n          height: 317px; }\n          #animation-curve-editor .content .animation-list .save-container .item-list ul {\n            list-style: none;\n            padding-left: 10px;\n            margin: 0px; }\n            #animation-curve-editor .content .animation-list .save-container .item-list ul label {\n              font-size: 12px;\n              font-family: acumin-pro-condensed;\n              display: flex;\n              align-content: center;\n              align-items: center; }\n              #animation-curve-editor .content .animation-list .save-container .item-list ul label input {\n                margin: 0px;\n                margin-right: 5px; }\n        #animation-curve-editor .content .animation-list .save-container .save-server {\n          font-size: 12px;\n          display: flex;\n          background-color: #222222;\n          padding-left: 10px;\n          height: 20px; }\n          #animation-curve-editor .content .animation-list .save-container .save-server p {\n            margin: 0px; }\n        #animation-curve-editor .content .animation-list .save-container .save-buttons {\n          margin-top: 10px;\n          display: flex;\n          justify-content: space-evenly;\n          margin-bottom: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .save-buttons p {\n            height: 20px;\n            margin: 0px;\n            font-size: 12px;\n            width: 65px;\n            text-align: right;\n            margin-right: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .save-buttons .buttonLine {\n            margin-left: 0px;\n            margin-top: 0px; }\n            #animation-curve-editor .content .animation-list .save-container .save-buttons .buttonLine button {\n              margin-top: 0px;\n              font-family: acumin-pro-condensed;\n              padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .save-container .buttonLine {\n          width: 80px;\n          padding: 0px;\n          display: block;\n          margin-left: 75px;\n          height: 20px;\n          margin-top: 10px; }\n          #animation-curve-editor .content .animation-list .save-container .buttonLine button {\n            border: none;\n            font-size: 12px;\n            margin: 0px;\n            width: 80px;\n            background-color: #444444;\n            height: 20px;\n            font-family: acumin-pro-condensed;\n            padding-top: 1px; }\n        #animation-curve-editor .content .animation-list .save-container .textInputLine {\n          display: flex; }\n          #animation-curve-editor .content .animation-list .save-container .textInputLine .label {\n            font-size: 12px;\n            width: 75px;\n            text-align: center;\n            font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .save-container .textInputLine .value input {\n            width: 127px;\n            background-color: #444444;\n            border: none;\n            height: 20px;\n            font-family: acumin-pro-condensed; }\n      #animation-curve-editor .content .animation-list .new-animation {\n        display: block;\n        position: absolute;\n        background-color: #111111;\n        height: 377px;\n        z-index: 10; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-header {\n          display: flex;\n          align-items: start;\n          width: 250px;\n          justify-content: space-between; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-header .title {\n            margin: 0px;\n            font-size: 15pt; }\n        #animation-curve-editor .content .animation-list .new-animation .sub-content {\n          background-color: #111111;\n          padding: 10px;\n          display: inline-grid;\n          grid-template-columns: 63px 127px;\n          grid-template-rows: repeat(6, 30px);\n          font-size: 12px; }\n          #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons {\n            grid-column-start: 2; }\n            #animation-curve-editor .content .animation-list .new-animation .sub-content .confirm-buttons .buttonLine button {\n              width: 60px;\n              height: 20px;\n              background-color: #444444;\n              color: white;\n              font-size: 12px;\n              line-height: 11px;\n              margin: 5px;\n              font-size: 10px;\n              font-family: acumin-pro-condensed;\n              border: none; }\n      #animation-curve-editor .content .animation-list .object-tree {\n        background-color: #111111; }\n        #animation-curve-editor .content .animation-list .object-tree ul {\n          list-style: none;\n          padding-left: 0px;\n          padding: 0px;\n          margin: 0px; }\n          #animation-curve-editor .content .animation-list .object-tree ul li.property {\n            height: 20px;\n            display: flex;\n            flex-wrap: wrap;\n            font-size: 12px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.sub {\n              height: auto; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property:before {\n              content: '';\n              background: none; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property p {\n              display: inline;\n              font-size: 12px;\n              margin: 0px;\n              flex: 8;\n              cursor: pointer; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .spacer {\n              width: 20px;\n              height: 20px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-bullet {\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationBulletIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: contain;\n              color: #7a4ece;\n              width: 10px;\n              margin-left: 18px;\n              margin-right: 2px;\n              height: 20px;\n              background-position-y: 5px; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow {\n              width: 30px;\n              background-image: url(" + escape(__webpack_require__(/*! ./assets/animationTriangleIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg")) + ");\n              background-repeat: no-repeat;\n              background-color: transparent;\n              background-size: 10px;\n              background-position-y: center;\n              background-position-x: 18px;\n              cursor: pointer; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .animation-arrow.flip {\n                transform: rotate(180deg);\n                background-position: 2px 50%; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property.active {\n              background-color: #444444; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator {\n              width: 30px; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator.show {\n                display: block;\n                background-image: url(" + escape(__webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg")) + ");\n                background-repeat: no-repeat;\n                background-color: transparent;\n                background-size: 10px;\n                color: white;\n                background-position-x: 9px;\n                background-position-y: 5px; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property .handle-indicator.hide {\n                display: block; }\n            #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list {\n              flex-grow: 1;\n              flex-shrink: 1;\n              flex-basis: 100%; }\n              #animation-curve-editor .content .animation-list .object-tree ul li.property ul.sub-list .property {\n                cursor: pointer; }\n      #animation-curve-editor .content .animation-list .label-input {\n        display: contents; }\n        #animation-curve-editor .content .animation-list .label-input label {\n          text-align: right; }\n        #animation-curve-editor .content .animation-list .label-input input {\n          margin-left: 5px;\n          height: 20px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          padding-left: 3px;\n          font-size: 10px;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input input:focus {\n            border-radius: 0px;\n            outline: 1px solid #ccc; }\n        #animation-curve-editor .content .animation-list .label-input select {\n          height: 20px;\n          margin-left: 5px;\n          font-size: 10px;\n          background-color: #444444;\n          border: none;\n          color: white;\n          font-family: acumin-pro-condensed; }\n          #animation-curve-editor .content .animation-list .label-input select:focus {\n            border-radius: 0px;\n            outline: 1px solid #ccc; }\n    #animation-curve-editor .content .sample-chart .linear .draggable {\n      cursor: move; }\n    #animation-curve-editor .content .graph-chart {\n      overflow: hidden;\n      scroll-behavior: smooth;\n      background-color: #111111;\n      height: 364px;\n      width: 782px; }\n      #animation-curve-editor .content .graph-chart .linear {\n        overflow: visible;\n        border: 0px solid white;\n        height: 362px;\n        width: 780px;\n        outline: none; }\n        #animation-curve-editor .content .graph-chart .linear svg {\n          overflow: visible; }\n        #animation-curve-editor .content .graph-chart .linear:focus {\n          outline-color: transparent; }\n        #animation-curve-editor .content .graph-chart .linear line {\n          stroke: #555555;\n          stroke-width: 0.2; }\n        #animation-curve-editor .content .graph-chart .linear text {\n          fill: #555555;\n          font-family: 'acumin-pro-condensed'; }\n        #animation-curve-editor .content .graph-chart .linear .control-point {\n          display: none; }\n        #animation-curve-editor .content .graph-chart .linear .control-point.active {\n          display: inline;\n          stroke: #e9db1e;\n          stroke-width: 0.2; }\n      #animation-curve-editor .content .graph-chart .playhead-container {\n        position: relative; }\n      #animation-curve-editor .content .graph-chart .playhead-wrapper {\n        left: -13px;\n        bottom: 366px;\n        position: relative; }\n      #animation-curve-editor .content .graph-chart .playhead-scrollable {\n        width: 100px;\n        height: 33px;\n        position: absolute;\n        top: 335px;\n        left: -39px; }\n      #animation-curve-editor .content .graph-chart .playhead-handle {\n        position: relative;\n        top: 340px;\n        width: 22px;\n        height: 30px; }\n        #animation-curve-editor .content .graph-chart .playhead-handle .playhead {\n          width: 22px;\n          background-color: transparent;\n          color: #555555;\n          text-align: center;\n          font-size: 12px;\n          position: absolute;\n          top: 1px;\n          cursor: pointer; }\n        #animation-curve-editor .content .graph-chart .playhead-handle .playhead-circle {\n          background-color: #ffffff;\n          width: 22px;\n          height: 22px;\n          border-radius: 50%;\n          position: absolute;\n          top: 0; }\n      #animation-curve-editor .content .graph-chart .playhead-line {\n        width: 1px;\n        height: 341px;\n        background-color: #ffffff;\n        position: absolute;\n        margin-left: 9.5px; }\n  #animation-curve-editor .buttonLine {\n    height: 30px;\n    display: grid;\n    align-items: center;\n    justify-items: stretch; }\n    #animation-curve-editor .buttonLine input[type='file'] {\n      display: none; }\n    #animation-curve-editor .buttonLine .file-upload {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer;\n      text-align: center; }\n    #animation-curve-editor .buttonLine .file-upload:hover {\n      opacity: 1; }\n    #animation-curve-editor .buttonLine .file-upload:active {\n      transform: scale(0.98);\n      transform-origin: 0.5 0.5; }\n    #animation-curve-editor .buttonLine button {\n      background: #222222;\n      border: 1px solid #337ab7;\n      margin: 5px 10px 5px 10px;\n      color: white;\n      padding: 4px 5px;\n      opacity: 0.9;\n      cursor: pointer; }\n    #animation-curve-editor .buttonLine button:hover {\n      opacity: 1; }\n    #animation-curve-editor .buttonLine button:active {\n      background: #282828; }\n    #animation-curve-editor .buttonLine button:focus {\n      border: 1px solid #337ab7;\n      outline: 0px; }\n", ""]);
 
 // exports
 
@@ -6142,7 +6162,7 @@ exports.push([module.i, "#inspector-host {\n  position: absolute;\n  right: 0px;
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss":
 /*!**************************************************************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/css-loader!E:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/embedHost/embedHost.scss ***!
   \**************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6161,7 +6181,7 @@ exports.push([module.i, "#embed-host {\n  position: absolute;\n  right: 0px;\n  
 
 /***/ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss":
 /*!**********************************************************************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/css-loader!E:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
+  !*** D:/Repos/Babylon.js/node_modules/css-loader!D:/Repos/Babylon.js/node_modules/sass-loader/dist/cjs.js!./components/sceneExplorer/sceneExplorer.scss ***!
   \**********************************************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6171,7 +6191,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .bounding-box {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .bounding-box.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .particleSystemTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .particleSystemTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .skeletonTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .skeletonTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
+exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  bottom: 0px; }\n  #scene-explorer-host:focus {\n    outline: none; }\n\n#__resizable_base__ {\n  display: none; }\n\n.context-menu {\n  background: #222222; }\n  .context-menu .react-contextmenu-item {\n    padding: 10px;\n    cursor: pointer; }\n    .context-menu .react-contextmenu-item:hover {\n      background: #555555; }\n\n.react-contextmenu.context-menu.react-contextmenu--visible {\n  z-index: 99;\n  transform: scale(1); }\n\n#sceneExplorer {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  grid-template-rows: auto 1fr;\n  font: 14px \"Arial\"; }\n  #sceneExplorer:focus {\n    outline: none; }\n  #sceneExplorer #header {\n    height: 30px;\n    font-size: 16px;\n    color: white;\n    background: #222222;\n    grid-row: 1;\n    text-align: center;\n    display: grid;\n    grid-template-columns: 30px 1fr 50px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none; }\n    #sceneExplorer #header #logo {\n      position: relative;\n      grid-column: 1;\n      width: 24px;\n      height: 24px;\n      left: 0;\n      display: flex;\n      align-self: center;\n      justify-self: center; }\n    #sceneExplorer #header #title {\n      grid-column: 2;\n      display: grid;\n      align-items: center;\n      text-align: center; }\n    #sceneExplorer #header #commands {\n      grid-column: 3;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 1fr 1fr; }\n      #sceneExplorer #header #commands .expand {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n      #sceneExplorer #header #commands .close {\n        grid-column: 2;\n        display: grid;\n        align-items: center;\n        justify-items: center;\n        cursor: pointer; }\n  #sceneExplorer #tree {\n    grid-row: 2;\n    overflow-x: hidden;\n    overflow-y: auto; }\n  #sceneExplorer .filter {\n    display: flex;\n    align-items: stretch; }\n    #sceneExplorer .filter input {\n      width: 100%;\n      margin: 10px 40px 5px 40px;\n      display: block;\n      border: none;\n      padding: 0;\n      border-bottom: solid 1px #337ab7;\n      background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n      background-position: -1000px 0;\n      background-size: 1000px 100%;\n      background-repeat: no-repeat;\n      color: white; }\n    #sceneExplorer .filter input::placeholder {\n      color: lightgray; }\n    #sceneExplorer .filter input:focus {\n      box-shadow: none;\n      outline: none;\n      background-position: 0 0; }\n  #sceneExplorer .groupContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    align-self: center;\n    display: grid;\n    align-items: center; }\n    #sceneExplorer .groupContainer:hover {\n      background: #444444; }\n    #sceneExplorer .groupContainer .expandableHeader {\n      display: grid;\n      grid-template-columns: 1fr 20px; }\n      #sceneExplorer .groupContainer .expandableHeader .text {\n        grid-column: 1;\n        display: grid;\n        grid-template-columns: 20px 1fr; }\n        #sceneExplorer .groupContainer .expandableHeader .text .arrow {\n          grid-column: 1;\n          margin-left: 0px;\n          color: white;\n          cursor: pointer;\n          display: inline-block;\n          margin-right: 6px;\n          opacity: 0.5; }\n        #sceneExplorer .groupContainer .expandableHeader .text .text-value {\n          grid-column: 2;\n          display: flex;\n          align-items: center; }\n      #sceneExplorer .groupContainer .expandableHeader .expandAll {\n        opacity: 0.5;\n        grid-column: 2;\n        margin-right: 10px; }\n  #sceneExplorer .icon {\n    display: grid;\n    align-items: center;\n    justify-items: center;\n    cursor: pointer; }\n  #sceneExplorer .itemContainer {\n    margin-left: 0px;\n    color: white;\n    margin-top: 0px;\n    margin-bottom: 0px;\n    height: 24px;\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n    display: grid;\n    grid-template-columns: 20px 1fr; }\n    #sceneExplorer .itemContainer:hover {\n      background: #444444; }\n    #sceneExplorer .itemContainer.selected {\n      background: #bbbbbb;\n      color: black; }\n    #sceneExplorer .itemContainer .isNotActive {\n      opacity: 0.3; }\n    #sceneExplorer .itemContainer .arrow {\n      grid-column: 1;\n      color: white;\n      opacity: 0.6; }\n    #sceneExplorer .itemContainer .popup {\n      width: 200px;\n      visibility: hidden;\n      background-color: #444444;\n      color: #fff;\n      border: 1px solid rgba(255, 255, 255, 0.5);\n      position: absolute;\n      z-index: 1;\n      margin-left: -180px;\n      box-sizing: border-box; }\n      #sceneExplorer .itemContainer .popup.show {\n        visibility: visible; }\n      #sceneExplorer .itemContainer .popup:focus {\n        outline: none; }\n      #sceneExplorer .itemContainer .popup .popupMenu {\n        padding: 6px 5px 5px 10px;\n        overflow: hidden;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        height: 18px; }\n        #sceneExplorer .itemContainer .popup .popupMenu:hover {\n          background: white;\n          color: #333333; }\n    #sceneExplorer .itemContainer .sceneNode {\n      grid-column: 2;\n      margin-left: -10px;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px 20px 20px 10px 20px 20px auto 5px;\n      align-items: center;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .sceneNode .sceneTitle {\n        grid-column: 1;\n        margin-right: 5px;\n        display: flex;\n        align-items: center;\n        height: 24px; }\n      #sceneExplorer .itemContainer .sceneNode .translation {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .translation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .rotation {\n        grid-column: 3;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .rotation.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .scaling {\n        grid-column: 4;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .scaling.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .bounding {\n        grid-column: 5;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .bounding.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .separator {\n        grid-column: 6;\n        margin-left: 5px;\n        width: 5px;\n        display: flex;\n        align-items: center;\n        height: 18px;\n        border-left: solid 1px #337ab7; }\n      #sceneExplorer .itemContainer .sceneNode .pickingMode {\n        grid-column: 7;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .sceneNode .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .sceneNode .refresh {\n        grid-column: 8; }\n      #sceneExplorer .itemContainer .sceneNode .extensions {\n        width: 20px;\n        grid-column: 9; }\n    #sceneExplorer .itemContainer .targetedAnimationTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .targetedAnimationTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .animationGroupTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .animationGroupTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .meshTools {\n      grid-column: 2;\n      width: 100%;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center;\n      min-width: 0; }\n      #sceneExplorer .itemContainer .meshTools .bounding-box {\n        grid-column: 2;\n        opacity: 0.5; }\n        #sceneExplorer .itemContainer .meshTools .bounding-box.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .meshTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .meshTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .cameraTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .cameraTools .activeCamera {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .cameraTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .lightTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .lightTools .enableLight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .lightTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .spriteTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .spriteTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .spriteManagerTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .spriteManagerTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .materialTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .materialTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .particleSystemTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .particleSystemTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .postProcessTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .postProcessTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .renderingPipelineTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .renderingPipelineTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .textureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .textureTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .adtextureTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .adtextureTools .pickingMode {\n        grid-column: 2;\n        opacity: 0.6; }\n        #sceneExplorer .itemContainer .adtextureTools .pickingMode.selected {\n          opacity: 1; }\n      #sceneExplorer .itemContainer .adtextureTools .extensions {\n        width: 20px;\n        grid-column: 3; }\n    #sceneExplorer .itemContainer .controlTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr 20px 20px auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .controlTools .highlight {\n        grid-column: 2; }\n      #sceneExplorer .itemContainer .controlTools .visibility {\n        grid-column: 3; }\n      #sceneExplorer .itemContainer .controlTools .extensions {\n        width: 20px;\n        grid-column: 4; }\n    #sceneExplorer .itemContainer .transformNodeTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .transformNodeTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .skeletonTools {\n      grid-column: 2;\n      display: grid;\n      grid-template-columns: 1fr auto 5px;\n      align-items: center; }\n      #sceneExplorer .itemContainer .skeletonTools .extensions {\n        width: 20px;\n        grid-column: 2; }\n    #sceneExplorer .itemContainer .title {\n      grid-column: 1;\n      background: transparent;\n      white-space: nowrap;\n      overflow: hidden;\n      min-width: 0;\n      margin-right: 5px;\n      display: grid;\n      align-items: center;\n      grid-template-columns: 25px 1fr;\n      height: 24px;\n      cursor: pointer; }\n      #sceneExplorer .itemContainer .title .titleIcon {\n        grid-column: 1;\n        display: grid;\n        align-items: center;\n        justify-items: center; }\n      #sceneExplorer .itemContainer .title .titleText {\n        grid-column: 2;\n        white-space: nowrap;\n        text-overflow: ellipsis;\n        overflow: hidden; }\n", ""]);
 
 // exports
 
@@ -6180,7 +6200,7 @@ exports.push([module.i, "#scene-explorer-host {\n  position: absolute;\n  left: 
 
 /***/ "../../node_modules/css-loader/lib/css-base.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/css-loader/lib/css-base.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -6265,9 +6285,48 @@ function toComment(sourceMap) {
 
 /***/ }),
 
+/***/ "../../node_modules/css-loader/lib/url/escape.js":
+/*!*********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/css-loader/lib/url/escape.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function escape(url) {
+    if (typeof url !== 'string') {
+        return url
+    }
+    // If url is already wrapped in quotes, remove them
+    if (/^['"].*['"]$/.test(url)) {
+        url = url.slice(1, -1);
+    }
+    // Should url be wrapped?
+    // See https://drafts.csswg.org/css-values-3/#urls
+    if (/["'() \t\n]/.test(url)) {
+        return '"' + url.replace(/"/g, '\\"').replace(/\n/g, '\\n') + '"'
+    }
+
+    return url
+}
+
+
+/***/ }),
+
+/***/ "../../node_modules/gif.js.optimized/dist/gif.js":
+/*!*********************************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/gif.js.optimized/dist/gif.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+!function(t,e){ true?module.exports=e():undefined}(this,function(){return function(t){function e(n){if(i[n])return i[n].exports;var r=i[n]={exports:{},id:n,loaded:!1};return t[n].call(r.exports,r,r.exports,e),r.loaded=!0,r.exports}var i={};return e.m=t,e.c=i,e.p="",e(0)}([function(t,e,i){var n,r,s,o=function(t,e){function i(){this.constructor=t}for(var n in e)a.call(e,n)&&(t[n]=e[n]);return i.prototype=e.prototype,t.prototype=new i,t.__super__=e.prototype,t},a={}.hasOwnProperty,h=[].indexOf||function(t){for(var e=0,i=this.length;e<i;e++)if(e in this&&this[e]===t)return e;return-1};n=i(1).EventEmitter,s=i(2),r=function(t){function e(t){var e,n,r;this.running=!1,this.options={},this.frames=[],this.groups=new Map,this.freeWorkers=[],this.activeWorkers=[],this.setOptions(t);for(n in i)r=i[n],null==(e=this.options)[n]&&(e[n]=r)}var i,n;return o(e,t),i={workerScript:"gif.worker.js",workers:2,repeat:0,background:"#fff",quality:10,width:null,height:null,transparent:null,debug:!1},n={delay:500,copy:!1},e.prototype.setOption=function(t,e){if(this.options[t]=e,null!=this._canvas&&("width"===t||"height"===t))return this._canvas[t]=e},e.prototype.setOptions=function(t){var e,i,n;i=[];for(e in t)a.call(t,e)&&(n=t[e],i.push(this.setOption(e,n)));return i},e.prototype.addFrame=function(t,e){var i,r,s;null==e&&(e={}),i={},i.transparent=this.options.transparent;for(s in n)i[s]=e[s]||n[s];if(null==this.options.width&&this.setOption("width",t.width),null==this.options.height&&this.setOption("height",t.height),"undefined"!=typeof ImageData&&null!==ImageData&&t instanceof ImageData)i.data=t.data;else if("undefined"!=typeof CanvasRenderingContext2D&&null!==CanvasRenderingContext2D&&t instanceof CanvasRenderingContext2D||"undefined"!=typeof WebGLRenderingContext&&null!==WebGLRenderingContext&&t instanceof WebGLRenderingContext)e.copy?i.data=this.getContextData(t):i.context=t;else{if(null==t.childNodes)throw new Error("Invalid image");e.copy?i.data=this.getImageData(t):i.image=t}return r=this.frames.length,r>0&&i.data&&(this.groups.has(i.data)?this.groups.get(i.data).push(r):this.groups.set(i.data,[r])),this.frames.push(i)},e.prototype.render=function(){var t,e,i,n;if(this.running)throw new Error("Already running");if(null==this.options.width||null==this.options.height)throw new Error("Width and height must be set prior to rendering");if(this.running=!0,this.nextFrame=0,this.finishedFrames=0,this.imageParts=function(){var e,i,n;for(n=[],t=e=0,i=this.frames.length;0<=i?e<i:e>i;t=0<=i?++e:--e)n.push(null);return n}.call(this),i=this.spawnWorkers(),this.options.globalPalette===!0)this.renderNextFrame();else for(t=e=0,n=i;0<=n?e<n:e>n;t=0<=n?++e:--e)this.renderNextFrame();return this.emit("start"),this.emit("progress",0)},e.prototype.abort=function(){for(var t;;){if(t=this.activeWorkers.shift(),null==t)break;this.log("killing active worker"),t.terminate()}return this.running=!1,this.emit("abort")},e.prototype.spawnWorkers=function(){var t,e,i;return t=Math.min(this.options.workers,this.frames.length),function(){i=[];for(var n=e=this.freeWorkers.length;e<=t?n<t:n>t;e<=t?n++:n--)i.push(n);return i}.apply(this).forEach(function(t){return function(e){var i;return t.log("spawning worker "+e),i=new Worker(t.options.workerScript),i.onmessage=function(e){return t.activeWorkers.splice(t.activeWorkers.indexOf(i),1),t.freeWorkers.push(i),t.frameFinished(e.data,!1)},t.freeWorkers.push(i)}}(this)),t},e.prototype.frameFinished=function(t,e){var i,n,r,s,o;if(this.finishedFrames++,e?(n=this.frames.indexOf(t),r=this.groups.get(t.data)[0],this.log("frame "+(n+1)+" is duplicate of "+r+" - "+this.activeWorkers.length+" active"),this.imageParts[n]={indexOfFirstInGroup:r}):(this.log("frame "+(t.index+1)+" finished - "+this.activeWorkers.length+" active"),this.emit("progress",this.finishedFrames/this.frames.length),this.imageParts[t.index]=t),this.options.globalPalette===!0&&!e&&(this.options.globalPalette=t.globalPalette,this.log("global palette analyzed"),this.frames.length>2))for(i=s=1,o=this.freeWorkers.length;1<=o?s<o:s>o;i=1<=o?++s:--s)this.renderNextFrame();return h.call(this.imageParts,null)>=0?this.renderNextFrame():this.finishRendering()},e.prototype.finishRendering=function(){var t,e,i,n,r,s,o,a,h,l,f,p,u,d,c,g,v,m,y,_;for(v=this.imageParts,r=s=0,l=v.length;s<l;r=++s)e=v[r],e.indexOfFirstInGroup&&(this.imageParts[r]=this.imageParts[e.indexOfFirstInGroup]);for(h=0,m=this.imageParts,o=0,f=m.length;o<f;o++)e=m[o],h+=(e.data.length-1)*e.pageSize+e.cursor;for(h+=e.pageSize-e.cursor,this.log("rendering finished - filesize "+Math.round(h/1e3)+"kb"),t=new Uint8Array(h),c=0,y=this.imageParts,a=0,p=y.length;a<p;a++)for(e=y[a],_=e.data,i=d=0,u=_.length;d<u;i=++d)g=_[i],t.set(g,c),c+=i===e.data.length-1?e.cursor:e.pageSize;return n=new Blob([t],{type:"image/gif"}),this.emit("finished",n,t)},e.prototype.renderNextFrame=function(){var t,e,i,n;if(0===this.freeWorkers.length)throw new Error("No free workers");if(!(this.nextFrame>=this.frames.length))return t=this.frames[this.nextFrame++],e=this.frames.indexOf(t),e>0&&this.groups.has(t.data)&&this.groups.get(t.data)[0]!==e?void setTimeout(function(e){return function(){return e.frameFinished(t,!0)}}(this),0):(n=this.freeWorkers.shift(),i=this.getTask(t),this.log("starting frame "+(i.index+1)+" of "+this.frames.length),this.activeWorkers.push(n),n.postMessage(i))},e.prototype.getContextData=function(t){return t.getImageData(0,0,this.options.width,this.options.height).data},e.prototype.getImageData=function(t){var e;return null==this._canvas&&(this._canvas=document.createElement("canvas"),this._canvas.width=this.options.width,this._canvas.height=this.options.height),e=this._canvas.getContext("2d"),e.setFill=this.options.background,e.fillRect(0,0,this.options.width,this.options.height),e.drawImage(t,0,0),this.getContextData(e)},e.prototype.getTask=function(t){var e,i;if(e=this.frames.indexOf(t),i={index:e,last:e===this.frames.length-1,delay:t.delay,transparent:t.transparent,width:this.options.width,height:this.options.height,quality:this.options.quality,dither:this.options.dither,globalPalette:this.options.globalPalette,repeat:this.options.repeat,canTransfer:!0},null!=t.data)i.data=t.data;else if(null!=t.context)i.data=this.getContextData(t.context);else{if(null==t.image)throw new Error("Invalid frame");i.data=this.getImageData(t.image)}return i},e.prototype.log=function(t){if(this.options.debug)return console.log(t)},e}(n),t.exports=r},function(t,e){function i(){this._events=this._events||{},this._maxListeners=this._maxListeners||void 0}function n(t){return"function"==typeof t}function r(t){return"number"==typeof t}function s(t){return"object"==typeof t&&null!==t}function o(t){return void 0===t}t.exports=i,i.EventEmitter=i,i.prototype._events=void 0,i.prototype._maxListeners=void 0,i.defaultMaxListeners=10,i.prototype.setMaxListeners=function(t){if(!r(t)||t<0||isNaN(t))throw TypeError("n must be a positive number");return this._maxListeners=t,this},i.prototype.emit=function(t){var e,i,r,a,h,l;if(this._events||(this._events={}),"error"===t&&(!this._events.error||s(this._events.error)&&!this._events.error.length)){if(e=arguments[1],e instanceof Error)throw e;var f=new Error('Uncaught, unspecified "error" event. ('+e+")");throw f.context=e,f}if(i=this._events[t],o(i))return!1;if(n(i))switch(arguments.length){case 1:i.call(this);break;case 2:i.call(this,arguments[1]);break;case 3:i.call(this,arguments[1],arguments[2]);break;default:a=Array.prototype.slice.call(arguments,1),i.apply(this,a)}else if(s(i))for(a=Array.prototype.slice.call(arguments,1),l=i.slice(),r=l.length,h=0;h<r;h++)l[h].apply(this,a);return!0},i.prototype.addListener=function(t,e){var r;if(!n(e))throw TypeError("listener must be a function");return this._events||(this._events={}),this._events.newListener&&this.emit("newListener",t,n(e.listener)?e.listener:e),this._events[t]?s(this._events[t])?this._events[t].push(e):this._events[t]=[this._events[t],e]:this._events[t]=e,s(this._events[t])&&!this._events[t].warned&&(r=o(this._maxListeners)?i.defaultMaxListeners:this._maxListeners,r&&r>0&&this._events[t].length>r&&(this._events[t].warned=!0,console.error("(node) warning: possible EventEmitter memory leak detected. %d listeners added. Use emitter.setMaxListeners() to increase limit.",this._events[t].length),"function"==typeof console.trace&&console.trace())),this},i.prototype.on=i.prototype.addListener,i.prototype.once=function(t,e){function i(){this.removeListener(t,i),r||(r=!0,e.apply(this,arguments))}if(!n(e))throw TypeError("listener must be a function");var r=!1;return i.listener=e,this.on(t,i),this},i.prototype.removeListener=function(t,e){var i,r,o,a;if(!n(e))throw TypeError("listener must be a function");if(!this._events||!this._events[t])return this;if(i=this._events[t],o=i.length,r=-1,i===e||n(i.listener)&&i.listener===e)delete this._events[t],this._events.removeListener&&this.emit("removeListener",t,e);else if(s(i)){for(a=o;a-- >0;)if(i[a]===e||i[a].listener&&i[a].listener===e){r=a;break}if(r<0)return this;1===i.length?(i.length=0,delete this._events[t]):i.splice(r,1),this._events.removeListener&&this.emit("removeListener",t,e)}return this},i.prototype.removeAllListeners=function(t){var e,i;if(!this._events)return this;if(!this._events.removeListener)return 0===arguments.length?this._events={}:this._events[t]&&delete this._events[t],this;if(0===arguments.length){for(e in this._events)"removeListener"!==e&&this.removeAllListeners(e);return this.removeAllListeners("removeListener"),this._events={},this}if(i=this._events[t],n(i))this.removeListener(t,i);else if(i)for(;i.length;)this.removeListener(t,i[i.length-1]);return delete this._events[t],this},i.prototype.listeners=function(t){var e;return e=this._events&&this._events[t]?n(this._events[t])?[this._events[t]]:this._events[t].slice():[]},i.prototype.listenerCount=function(t){if(this._events){var e=this._events[t];if(n(e))return 1;if(e)return e.length}return 0},i.listenerCount=function(t,e){return t.listenerCount(e)}},function(t,e){var i,n,r,s,o;o=navigator.userAgent.toLowerCase(),s=navigator.platform.toLowerCase(),i=o.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/)||[null,"unknown",0],r="ie"===i[1]&&document.documentMode,n={name:"version"===i[1]?i[3]:i[1],version:r||parseFloat("opera"===i[1]&&i[4]?i[4]:i[2]),platform:{name:o.match(/ip(?:ad|od|hone)/)?"ios":(o.match(/(?:webos|android)/)||s.match(/mac|win|linux/)||["other"])[0]}},n[n.name]=!0,n[n.name+parseInt(n.version,10)]=!0,n.platform[n.platform.name]=!0,t.exports=n}])});
+//# sourceMappingURL=gif.js.map
+
+/***/ }),
+
 /***/ "../../node_modules/lodash/_DataView.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_DataView.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_DataView.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6285,7 +6344,7 @@ module.exports = DataView;
 
 /***/ "../../node_modules/lodash/_Hash.js":
 /*!********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_Hash.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_Hash.js ***!
   \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6328,7 +6387,7 @@ module.exports = Hash;
 
 /***/ "../../node_modules/lodash/_ListCache.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_ListCache.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_ListCache.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6371,7 +6430,7 @@ module.exports = ListCache;
 
 /***/ "../../node_modules/lodash/_Map.js":
 /*!*******************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_Map.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_Map.js ***!
   \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6389,7 +6448,7 @@ module.exports = Map;
 
 /***/ "../../node_modules/lodash/_MapCache.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_MapCache.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_MapCache.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6432,7 +6491,7 @@ module.exports = MapCache;
 
 /***/ "../../node_modules/lodash/_Promise.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_Promise.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_Promise.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6450,7 +6509,7 @@ module.exports = Promise;
 
 /***/ "../../node_modules/lodash/_Set.js":
 /*!*******************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_Set.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_Set.js ***!
   \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6468,7 +6527,7 @@ module.exports = Set;
 
 /***/ "../../node_modules/lodash/_SetCache.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_SetCache.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_SetCache.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6506,7 +6565,7 @@ module.exports = SetCache;
 
 /***/ "../../node_modules/lodash/_Stack.js":
 /*!*********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_Stack.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_Stack.js ***!
   \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6544,7 +6603,7 @@ module.exports = Stack;
 
 /***/ "../../node_modules/lodash/_Symbol.js":
 /*!**********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_Symbol.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_Symbol.js ***!
   \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6561,7 +6620,7 @@ module.exports = Symbol;
 
 /***/ "../../node_modules/lodash/_Uint8Array.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_Uint8Array.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_Uint8Array.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6578,7 +6637,7 @@ module.exports = Uint8Array;
 
 /***/ "../../node_modules/lodash/_WeakMap.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_WeakMap.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_WeakMap.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6596,7 +6655,7 @@ module.exports = WeakMap;
 
 /***/ "../../node_modules/lodash/_apply.js":
 /*!*********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_apply.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_apply.js ***!
   \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -6628,7 +6687,7 @@ module.exports = apply;
 
 /***/ "../../node_modules/lodash/_arrayEach.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_arrayEach.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_arrayEach.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -6661,7 +6720,7 @@ module.exports = arrayEach;
 
 /***/ "../../node_modules/lodash/_arrayFilter.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_arrayFilter.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_arrayFilter.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -6697,7 +6756,7 @@ module.exports = arrayFilter;
 
 /***/ "../../node_modules/lodash/_arrayLikeKeys.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_arrayLikeKeys.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_arrayLikeKeys.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6757,7 +6816,7 @@ module.exports = arrayLikeKeys;
 
 /***/ "../../node_modules/lodash/_arrayMap.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_arrayMap.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_arrayMap.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -6789,7 +6848,7 @@ module.exports = arrayMap;
 
 /***/ "../../node_modules/lodash/_arrayPush.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_arrayPush.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_arrayPush.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -6820,7 +6879,7 @@ module.exports = arrayPush;
 
 /***/ "../../node_modules/lodash/_arraySome.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_arraySome.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_arraySome.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -6854,7 +6913,7 @@ module.exports = arraySome;
 
 /***/ "../../node_modules/lodash/_assignMergeValue.js":
 /*!********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_assignMergeValue.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_assignMergeValue.js ***!
   \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6885,7 +6944,7 @@ module.exports = assignMergeValue;
 
 /***/ "../../node_modules/lodash/_assignValue.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_assignValue.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_assignValue.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6924,7 +6983,7 @@ module.exports = assignValue;
 
 /***/ "../../node_modules/lodash/_assocIndexOf.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_assocIndexOf.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_assocIndexOf.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6956,7 +7015,7 @@ module.exports = assocIndexOf;
 
 /***/ "../../node_modules/lodash/_baseAssign.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseAssign.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseAssign.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -6984,7 +7043,7 @@ module.exports = baseAssign;
 
 /***/ "../../node_modules/lodash/_baseAssignIn.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseAssignIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseAssignIn.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7012,7 +7071,7 @@ module.exports = baseAssignIn;
 
 /***/ "../../node_modules/lodash/_baseAssignValue.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseAssignValue.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseAssignValue.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7048,7 +7107,7 @@ module.exports = baseAssignValue;
 
 /***/ "../../node_modules/lodash/_baseClone.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseClone.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseClone.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7224,7 +7283,7 @@ module.exports = baseClone;
 
 /***/ "../../node_modules/lodash/_baseCreate.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseCreate.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseCreate.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7265,7 +7324,7 @@ module.exports = baseCreate;
 
 /***/ "../../node_modules/lodash/_baseEach.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseEach.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseEach.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7290,7 +7349,7 @@ module.exports = baseEach;
 
 /***/ "../../node_modules/lodash/_baseFor.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseFor.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseFor.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7317,7 +7376,7 @@ module.exports = baseFor;
 
 /***/ "../../node_modules/lodash/_baseForOwn.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseForOwn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseForOwn.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7344,7 +7403,7 @@ module.exports = baseForOwn;
 
 /***/ "../../node_modules/lodash/_baseGet.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseGet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseGet.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7379,7 +7438,7 @@ module.exports = baseGet;
 
 /***/ "../../node_modules/lodash/_baseGetAllKeys.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseGetAllKeys.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseGetAllKeys.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7410,7 +7469,7 @@ module.exports = baseGetAllKeys;
 
 /***/ "../../node_modules/lodash/_baseGetTag.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseGetTag.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseGetTag.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7449,7 +7508,7 @@ module.exports = baseGetTag;
 
 /***/ "../../node_modules/lodash/_baseHasIn.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseHasIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseHasIn.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -7473,7 +7532,7 @@ module.exports = baseHasIn;
 
 /***/ "../../node_modules/lodash/_baseIsArguments.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIsArguments.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIsArguments.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7502,7 +7561,7 @@ module.exports = baseIsArguments;
 
 /***/ "../../node_modules/lodash/_baseIsEqual.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIsEqual.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIsEqual.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7541,7 +7600,7 @@ module.exports = baseIsEqual;
 
 /***/ "../../node_modules/lodash/_baseIsEqualDeep.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIsEqualDeep.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIsEqualDeep.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7635,7 +7694,7 @@ module.exports = baseIsEqualDeep;
 
 /***/ "../../node_modules/lodash/_baseIsMap.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIsMap.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIsMap.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7664,7 +7723,7 @@ module.exports = baseIsMap;
 
 /***/ "../../node_modules/lodash/_baseIsMatch.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIsMatch.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIsMatch.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7737,7 +7796,7 @@ module.exports = baseIsMatch;
 
 /***/ "../../node_modules/lodash/_baseIsNative.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIsNative.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIsNative.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7795,7 +7854,7 @@ module.exports = baseIsNative;
 
 /***/ "../../node_modules/lodash/_baseIsSet.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIsSet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIsSet.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7824,7 +7883,7 @@ module.exports = baseIsSet;
 
 /***/ "../../node_modules/lodash/_baseIsTypedArray.js":
 /*!********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIsTypedArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIsTypedArray.js ***!
   \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7895,7 +7954,7 @@ module.exports = baseIsTypedArray;
 
 /***/ "../../node_modules/lodash/_baseIteratee.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseIteratee.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseIteratee.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7937,7 +7996,7 @@ module.exports = baseIteratee;
 
 /***/ "../../node_modules/lodash/_baseKeys.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseKeys.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseKeys.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -7978,7 +8037,7 @@ module.exports = baseKeys;
 
 /***/ "../../node_modules/lodash/_baseKeysIn.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseKeysIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseKeysIn.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8022,7 +8081,7 @@ module.exports = baseKeysIn;
 
 /***/ "../../node_modules/lodash/_baseMap.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseMap.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseMap.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8055,7 +8114,7 @@ module.exports = baseMap;
 
 /***/ "../../node_modules/lodash/_baseMatches.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseMatches.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseMatches.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8088,7 +8147,7 @@ module.exports = baseMatches;
 
 /***/ "../../node_modules/lodash/_baseMatchesProperty.js":
 /*!***********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseMatchesProperty.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseMatchesProperty.js ***!
   \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8132,7 +8191,7 @@ module.exports = baseMatchesProperty;
 
 /***/ "../../node_modules/lodash/_baseMerge.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseMerge.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseMerge.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8185,7 +8244,7 @@ module.exports = baseMerge;
 
 /***/ "../../node_modules/lodash/_baseMergeDeep.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseMergeDeep.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseMergeDeep.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8290,7 +8349,7 @@ module.exports = baseMergeDeep;
 
 /***/ "../../node_modules/lodash/_baseProperty.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseProperty.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseProperty.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -8315,7 +8374,7 @@ module.exports = baseProperty;
 
 /***/ "../../node_modules/lodash/_basePropertyDeep.js":
 /*!********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_basePropertyDeep.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_basePropertyDeep.js ***!
   \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8342,7 +8401,7 @@ module.exports = basePropertyDeep;
 
 /***/ "../../node_modules/lodash/_baseRest.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseRest.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseRest.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8370,7 +8429,7 @@ module.exports = baseRest;
 
 /***/ "../../node_modules/lodash/_baseSetToString.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseSetToString.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseSetToString.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8403,7 +8462,7 @@ module.exports = baseSetToString;
 
 /***/ "../../node_modules/lodash/_baseTimes.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseTimes.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseTimes.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -8434,7 +8493,7 @@ module.exports = baseTimes;
 
 /***/ "../../node_modules/lodash/_baseToString.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseToString.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseToString.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8482,7 +8541,7 @@ module.exports = baseToString;
 
 /***/ "../../node_modules/lodash/_baseUnary.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_baseUnary.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_baseUnary.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -8507,7 +8566,7 @@ module.exports = baseUnary;
 
 /***/ "../../node_modules/lodash/_cacheHas.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_cacheHas.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_cacheHas.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -8531,7 +8590,7 @@ module.exports = cacheHas;
 
 /***/ "../../node_modules/lodash/_castFunction.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_castFunction.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_castFunction.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8556,7 +8615,7 @@ module.exports = castFunction;
 
 /***/ "../../node_modules/lodash/_castPath.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_castPath.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_castPath.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8588,7 +8647,7 @@ module.exports = castPath;
 
 /***/ "../../node_modules/lodash/_cloneArrayBuffer.js":
 /*!********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_cloneArrayBuffer.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_cloneArrayBuffer.js ***!
   \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8615,7 +8674,7 @@ module.exports = cloneArrayBuffer;
 
 /***/ "../../node_modules/lodash/_cloneBuffer.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_cloneBuffer.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_cloneBuffer.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8662,7 +8721,7 @@ module.exports = cloneBuffer;
 
 /***/ "../../node_modules/lodash/_cloneDataView.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_cloneDataView.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_cloneDataView.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8689,7 +8748,7 @@ module.exports = cloneDataView;
 
 /***/ "../../node_modules/lodash/_cloneRegExp.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_cloneRegExp.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_cloneRegExp.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -8717,7 +8776,7 @@ module.exports = cloneRegExp;
 
 /***/ "../../node_modules/lodash/_cloneSymbol.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_cloneSymbol.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_cloneSymbol.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8746,7 +8805,7 @@ module.exports = cloneSymbol;
 
 /***/ "../../node_modules/lodash/_cloneTypedArray.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_cloneTypedArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_cloneTypedArray.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8773,7 +8832,7 @@ module.exports = cloneTypedArray;
 
 /***/ "../../node_modules/lodash/_copyArray.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_copyArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_copyArray.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -8804,7 +8863,7 @@ module.exports = copyArray;
 
 /***/ "../../node_modules/lodash/_copyObject.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_copyObject.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_copyObject.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8855,7 +8914,7 @@ module.exports = copyObject;
 
 /***/ "../../node_modules/lodash/_copySymbols.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_copySymbols.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_copySymbols.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8882,7 +8941,7 @@ module.exports = copySymbols;
 
 /***/ "../../node_modules/lodash/_copySymbolsIn.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_copySymbolsIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_copySymbolsIn.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8909,7 +8968,7 @@ module.exports = copySymbolsIn;
 
 /***/ "../../node_modules/lodash/_coreJsData.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_coreJsData.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_coreJsData.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8926,7 +8985,7 @@ module.exports = coreJsData;
 
 /***/ "../../node_modules/lodash/_createAssigner.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_createAssigner.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_createAssigner.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -8974,7 +9033,7 @@ module.exports = createAssigner;
 
 /***/ "../../node_modules/lodash/_createBaseEach.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_createBaseEach.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_createBaseEach.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9017,7 +9076,7 @@ module.exports = createBaseEach;
 
 /***/ "../../node_modules/lodash/_createBaseFor.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_createBaseFor.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_createBaseFor.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -9053,7 +9112,7 @@ module.exports = createBaseFor;
 
 /***/ "../../node_modules/lodash/_defineProperty.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_defineProperty.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_defineProperty.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9075,7 +9134,7 @@ module.exports = defineProperty;
 
 /***/ "../../node_modules/lodash/_equalArrays.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_equalArrays.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_equalArrays.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9169,7 +9228,7 @@ module.exports = equalArrays;
 
 /***/ "../../node_modules/lodash/_equalByTag.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_equalByTag.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_equalByTag.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9292,7 +9351,7 @@ module.exports = equalByTag;
 
 /***/ "../../node_modules/lodash/_equalObjects.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_equalObjects.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_equalObjects.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9392,7 +9451,7 @@ module.exports = equalObjects;
 
 /***/ "../../node_modules/lodash/_freeGlobal.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_freeGlobal.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_freeGlobal.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9408,7 +9467,7 @@ module.exports = freeGlobal;
 
 /***/ "../../node_modules/lodash/_getAllKeys.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getAllKeys.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getAllKeys.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9435,7 +9494,7 @@ module.exports = getAllKeys;
 
 /***/ "../../node_modules/lodash/_getAllKeysIn.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getAllKeysIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getAllKeysIn.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9463,7 +9522,7 @@ module.exports = getAllKeysIn;
 
 /***/ "../../node_modules/lodash/_getMapData.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getMapData.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getMapData.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9492,7 +9551,7 @@ module.exports = getMapData;
 
 /***/ "../../node_modules/lodash/_getMatchData.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getMatchData.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getMatchData.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9527,7 +9586,7 @@ module.exports = getMatchData;
 
 /***/ "../../node_modules/lodash/_getNative.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getNative.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getNative.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9555,7 +9614,7 @@ module.exports = getNative;
 
 /***/ "../../node_modules/lodash/_getPrototype.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getPrototype.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getPrototype.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9572,7 +9631,7 @@ module.exports = getPrototype;
 
 /***/ "../../node_modules/lodash/_getRawTag.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getRawTag.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getRawTag.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9629,7 +9688,7 @@ module.exports = getRawTag;
 
 /***/ "../../node_modules/lodash/_getSymbols.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getSymbols.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getSymbols.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9670,7 +9729,7 @@ module.exports = getSymbols;
 
 /***/ "../../node_modules/lodash/_getSymbolsIn.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getSymbolsIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getSymbolsIn.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9706,7 +9765,7 @@ module.exports = getSymbolsIn;
 
 /***/ "../../node_modules/lodash/_getTag.js":
 /*!**********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getTag.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getTag.js ***!
   \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9775,7 +9834,7 @@ module.exports = getTag;
 
 /***/ "../../node_modules/lodash/_getValue.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_getValue.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_getValue.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -9799,7 +9858,7 @@ module.exports = getValue;
 
 /***/ "../../node_modules/lodash/_hasPath.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_hasPath.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_hasPath.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9849,7 +9908,7 @@ module.exports = hasPath;
 
 /***/ "../../node_modules/lodash/_hashClear.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_hashClear.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_hashClear.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9875,7 +9934,7 @@ module.exports = hashClear;
 
 /***/ "../../node_modules/lodash/_hashDelete.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_hashDelete.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_hashDelete.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -9903,7 +9962,7 @@ module.exports = hashDelete;
 
 /***/ "../../node_modules/lodash/_hashGet.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_hashGet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_hashGet.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9944,7 +10003,7 @@ module.exports = hashGet;
 
 /***/ "../../node_modules/lodash/_hashHas.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_hashHas.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_hashHas.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -9978,7 +10037,7 @@ module.exports = hashHas;
 
 /***/ "../../node_modules/lodash/_hashSet.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_hashSet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_hashSet.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10012,7 +10071,7 @@ module.exports = hashSet;
 
 /***/ "../../node_modules/lodash/_initCloneArray.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_initCloneArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_initCloneArray.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10049,7 +10108,7 @@ module.exports = initCloneArray;
 
 /***/ "../../node_modules/lodash/_initCloneByTag.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_initCloneByTag.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_initCloneByTag.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10137,7 +10196,7 @@ module.exports = initCloneByTag;
 
 /***/ "../../node_modules/lodash/_initCloneObject.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_initCloneObject.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_initCloneObject.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10166,7 +10225,7 @@ module.exports = initCloneObject;
 
 /***/ "../../node_modules/lodash/_isIndex.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_isIndex.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_isIndex.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10202,7 +10261,7 @@ module.exports = isIndex;
 
 /***/ "../../node_modules/lodash/_isIterateeCall.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_isIterateeCall.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_isIterateeCall.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10243,7 +10302,7 @@ module.exports = isIterateeCall;
 
 /***/ "../../node_modules/lodash/_isKey.js":
 /*!*********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_isKey.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_isKey.js ***!
   \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10283,7 +10342,7 @@ module.exports = isKey;
 
 /***/ "../../node_modules/lodash/_isKeyable.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_isKeyable.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_isKeyable.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10309,7 +10368,7 @@ module.exports = isKeyable;
 
 /***/ "../../node_modules/lodash/_isMasked.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_isMasked.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_isMasked.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10340,7 +10399,7 @@ module.exports = isMasked;
 
 /***/ "../../node_modules/lodash/_isPrototype.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_isPrototype.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_isPrototype.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10369,7 +10428,7 @@ module.exports = isPrototype;
 
 /***/ "../../node_modules/lodash/_isStrictComparable.js":
 /*!**********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_isStrictComparable.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_isStrictComparable.js ***!
   \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10395,7 +10454,7 @@ module.exports = isStrictComparable;
 
 /***/ "../../node_modules/lodash/_listCacheClear.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_listCacheClear.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_listCacheClear.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10419,7 +10478,7 @@ module.exports = listCacheClear;
 
 /***/ "../../node_modules/lodash/_listCacheDelete.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_listCacheDelete.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_listCacheDelete.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10465,7 +10524,7 @@ module.exports = listCacheDelete;
 
 /***/ "../../node_modules/lodash/_listCacheGet.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_listCacheGet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_listCacheGet.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10495,7 +10554,7 @@ module.exports = listCacheGet;
 
 /***/ "../../node_modules/lodash/_listCacheHas.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_listCacheHas.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_listCacheHas.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10522,7 +10581,7 @@ module.exports = listCacheHas;
 
 /***/ "../../node_modules/lodash/_listCacheSet.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_listCacheSet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_listCacheSet.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10559,7 +10618,7 @@ module.exports = listCacheSet;
 
 /***/ "../../node_modules/lodash/_mapCacheClear.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_mapCacheClear.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_mapCacheClear.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10591,7 +10650,7 @@ module.exports = mapCacheClear;
 
 /***/ "../../node_modules/lodash/_mapCacheDelete.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_mapCacheDelete.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_mapCacheDelete.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10620,7 +10679,7 @@ module.exports = mapCacheDelete;
 
 /***/ "../../node_modules/lodash/_mapCacheGet.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_mapCacheGet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_mapCacheGet.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10647,7 +10706,7 @@ module.exports = mapCacheGet;
 
 /***/ "../../node_modules/lodash/_mapCacheHas.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_mapCacheHas.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_mapCacheHas.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10674,7 +10733,7 @@ module.exports = mapCacheHas;
 
 /***/ "../../node_modules/lodash/_mapCacheSet.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_mapCacheSet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_mapCacheSet.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10707,7 +10766,7 @@ module.exports = mapCacheSet;
 
 /***/ "../../node_modules/lodash/_mapToArray.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_mapToArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_mapToArray.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10736,7 +10795,7 @@ module.exports = mapToArray;
 
 /***/ "../../node_modules/lodash/_matchesStrictComparable.js":
 /*!***************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_matchesStrictComparable.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_matchesStrictComparable.js ***!
   \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10767,7 +10826,7 @@ module.exports = matchesStrictComparable;
 
 /***/ "../../node_modules/lodash/_memoizeCapped.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_memoizeCapped.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_memoizeCapped.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10804,7 +10863,7 @@ module.exports = memoizeCapped;
 
 /***/ "../../node_modules/lodash/_nativeCreate.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_nativeCreate.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_nativeCreate.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10821,7 +10880,7 @@ module.exports = nativeCreate;
 
 /***/ "../../node_modules/lodash/_nativeKeys.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_nativeKeys.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_nativeKeys.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10838,7 +10897,7 @@ module.exports = nativeKeys;
 
 /***/ "../../node_modules/lodash/_nativeKeysIn.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_nativeKeysIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_nativeKeysIn.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10869,7 +10928,7 @@ module.exports = nativeKeysIn;
 
 /***/ "../../node_modules/lodash/_nodeUtil.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_nodeUtil.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_nodeUtil.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -10911,7 +10970,7 @@ module.exports = nodeUtil;
 
 /***/ "../../node_modules/lodash/_objectToString.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_objectToString.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_objectToString.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10944,7 +11003,7 @@ module.exports = objectToString;
 
 /***/ "../../node_modules/lodash/_overArg.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_overArg.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_overArg.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -10970,7 +11029,7 @@ module.exports = overArg;
 
 /***/ "../../node_modules/lodash/_overRest.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_overRest.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_overRest.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11017,7 +11076,7 @@ module.exports = overRest;
 
 /***/ "../../node_modules/lodash/_root.js":
 /*!********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_root.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_root.js ***!
   \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11037,7 +11096,7 @@ module.exports = root;
 
 /***/ "../../node_modules/lodash/_safeGet.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_safeGet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_safeGet.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11069,7 +11128,7 @@ module.exports = safeGet;
 
 /***/ "../../node_modules/lodash/_setCacheAdd.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_setCacheAdd.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_setCacheAdd.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11099,7 +11158,7 @@ module.exports = setCacheAdd;
 
 /***/ "../../node_modules/lodash/_setCacheHas.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_setCacheHas.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_setCacheHas.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11124,7 +11183,7 @@ module.exports = setCacheHas;
 
 /***/ "../../node_modules/lodash/_setToArray.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_setToArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_setToArray.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11153,7 +11212,7 @@ module.exports = setToArray;
 
 /***/ "../../node_modules/lodash/_setToString.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_setToString.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_setToString.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11178,7 +11237,7 @@ module.exports = setToString;
 
 /***/ "../../node_modules/lodash/_shortOut.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_shortOut.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_shortOut.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11226,7 +11285,7 @@ module.exports = shortOut;
 
 /***/ "../../node_modules/lodash/_stackClear.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_stackClear.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_stackClear.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11252,7 +11311,7 @@ module.exports = stackClear;
 
 /***/ "../../node_modules/lodash/_stackDelete.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_stackDelete.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_stackDelete.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11281,7 +11340,7 @@ module.exports = stackDelete;
 
 /***/ "../../node_modules/lodash/_stackGet.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_stackGet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_stackGet.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11306,7 +11365,7 @@ module.exports = stackGet;
 
 /***/ "../../node_modules/lodash/_stackHas.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_stackHas.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_stackHas.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11331,7 +11390,7 @@ module.exports = stackHas;
 
 /***/ "../../node_modules/lodash/_stackSet.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_stackSet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_stackSet.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11376,7 +11435,7 @@ module.exports = stackSet;
 
 /***/ "../../node_modules/lodash/_stringToPath.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_stringToPath.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_stringToPath.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11414,7 +11473,7 @@ module.exports = stringToPath;
 
 /***/ "../../node_modules/lodash/_toKey.js":
 /*!*********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_toKey.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_toKey.js ***!
   \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11446,7 +11505,7 @@ module.exports = toKey;
 
 /***/ "../../node_modules/lodash/_toSource.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/_toSource.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/_toSource.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11483,7 +11542,7 @@ module.exports = toSource;
 
 /***/ "../../node_modules/lodash/cloneDeep.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/cloneDeep.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/cloneDeep.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11523,7 +11582,7 @@ module.exports = cloneDeep;
 
 /***/ "../../node_modules/lodash/constant.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/constant.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/constant.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11560,7 +11619,7 @@ module.exports = constant;
 
 /***/ "../../node_modules/lodash/debounce.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/debounce.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/debounce.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11762,7 +11821,7 @@ module.exports = debounce;
 
 /***/ "../../node_modules/lodash/each.js":
 /*!*******************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/each.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/each.js ***!
   \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11774,7 +11833,7 @@ module.exports = __webpack_require__(/*! ./forEach */ "../../node_modules/lodash
 
 /***/ "../../node_modules/lodash/eq.js":
 /*!*****************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/eq.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/eq.js ***!
   \*****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -11822,7 +11881,7 @@ module.exports = eq;
 
 /***/ "../../node_modules/lodash/forEach.js":
 /*!**********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/forEach.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/forEach.js ***!
   \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11874,7 +11933,7 @@ module.exports = forEach;
 
 /***/ "../../node_modules/lodash/forOwn.js":
 /*!*********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/forOwn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/forOwn.js ***!
   \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11921,7 +11980,7 @@ module.exports = forOwn;
 
 /***/ "../../node_modules/lodash/get.js":
 /*!******************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/get.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/get.js ***!
   \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -11965,7 +12024,7 @@ module.exports = get;
 
 /***/ "../../node_modules/lodash/hasIn.js":
 /*!********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/hasIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/hasIn.js ***!
   \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12010,7 +12069,7 @@ module.exports = hasIn;
 
 /***/ "../../node_modules/lodash/identity.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/identity.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/identity.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -12042,7 +12101,7 @@ module.exports = identity;
 
 /***/ "../../node_modules/lodash/isArguments.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isArguments.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isArguments.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12089,7 +12148,7 @@ module.exports = isArguments;
 
 /***/ "../../node_modules/lodash/isArray.js":
 /*!**********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isArray.js ***!
   \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -12126,7 +12185,7 @@ module.exports = isArray;
 
 /***/ "../../node_modules/lodash/isArrayLike.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isArrayLike.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isArrayLike.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12170,7 +12229,7 @@ module.exports = isArrayLike;
 
 /***/ "../../node_modules/lodash/isArrayLikeObject.js":
 /*!********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isArrayLikeObject.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isArrayLikeObject.js ***!
   \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12214,7 +12273,7 @@ module.exports = isArrayLikeObject;
 
 /***/ "../../node_modules/lodash/isBuffer.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isBuffer.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isBuffer.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12264,7 +12323,7 @@ module.exports = isBuffer;
 
 /***/ "../../node_modules/lodash/isFunction.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isFunction.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isFunction.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12312,7 +12371,7 @@ module.exports = isFunction;
 
 /***/ "../../node_modules/lodash/isLength.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isLength.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isLength.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -12358,7 +12417,7 @@ module.exports = isLength;
 
 /***/ "../../node_modules/lodash/isMap.js":
 /*!********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isMap.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isMap.js ***!
   \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12396,7 +12455,7 @@ module.exports = isMap;
 
 /***/ "../../node_modules/lodash/isObject.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isObject.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isObject.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -12438,7 +12497,7 @@ module.exports = isObject;
 
 /***/ "../../node_modules/lodash/isObjectLike.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isObjectLike.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isObjectLike.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -12478,7 +12537,7 @@ module.exports = isObjectLike;
 
 /***/ "../../node_modules/lodash/isPlainObject.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isPlainObject.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isPlainObject.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12551,7 +12610,7 @@ module.exports = isPlainObject;
 
 /***/ "../../node_modules/lodash/isSet.js":
 /*!********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isSet.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isSet.js ***!
   \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12589,7 +12648,7 @@ module.exports = isSet;
 
 /***/ "../../node_modules/lodash/isString.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isString.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isString.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12630,7 +12689,7 @@ module.exports = isString;
 
 /***/ "../../node_modules/lodash/isSymbol.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isSymbol.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isSymbol.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12670,7 +12729,7 @@ module.exports = isSymbol;
 
 /***/ "../../node_modules/lodash/isTypedArray.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/isTypedArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/isTypedArray.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12708,7 +12767,7 @@ module.exports = isTypedArray;
 
 /***/ "../../node_modules/lodash/keys.js":
 /*!*******************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/keys.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/keys.js ***!
   \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12756,7 +12815,7 @@ module.exports = keys;
 
 /***/ "../../node_modules/lodash/keysIn.js":
 /*!*********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/keysIn.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/keysIn.js ***!
   \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12799,7 +12858,7 @@ module.exports = keysIn;
 
 /***/ "../../node_modules/lodash/map.js":
 /*!******************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/map.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/map.js ***!
   \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12863,7 +12922,7 @@ module.exports = map;
 
 /***/ "../../node_modules/lodash/memoize.js":
 /*!**********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/memoize.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/memoize.js ***!
   \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12947,7 +13006,7 @@ module.exports = memoize;
 
 /***/ "../../node_modules/lodash/merge.js":
 /*!********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/merge.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/merge.js ***!
   \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -12997,7 +13056,7 @@ module.exports = merge;
 
 /***/ "../../node_modules/lodash/now.js":
 /*!******************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/now.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/now.js ***!
   \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -13031,7 +13090,7 @@ module.exports = now;
 
 /***/ "../../node_modules/lodash/property.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/property.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/property.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -13074,7 +13133,7 @@ module.exports = property;
 
 /***/ "../../node_modules/lodash/stubArray.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/stubArray.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/stubArray.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -13108,7 +13167,7 @@ module.exports = stubArray;
 
 /***/ "../../node_modules/lodash/stubFalse.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/stubFalse.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/stubFalse.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -13137,7 +13196,7 @@ module.exports = stubFalse;
 
 /***/ "../../node_modules/lodash/throttle.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/throttle.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/throttle.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -13217,7 +13276,7 @@ module.exports = throttle;
 
 /***/ "../../node_modules/lodash/toNumber.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/toNumber.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/toNumber.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -13294,7 +13353,7 @@ module.exports = toNumber;
 
 /***/ "../../node_modules/lodash/toPlainObject.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/toPlainObject.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/toPlainObject.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -13337,7 +13396,7 @@ module.exports = toPlainObject;
 
 /***/ "../../node_modules/lodash/toString.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/lodash/toString.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/lodash/toString.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -13376,7 +13435,7 @@ module.exports = toString;
 
 /***/ "../../node_modules/material-colors/dist/colors.es2015.js":
 /*!******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/material-colors/dist/colors.es2015.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/material-colors/dist/colors.es2015.js ***!
   \******************************************************************************/
 /*! exports provided: red, pink, purple, deepPurple, indigo, blue, lightBlue, cyan, teal, green, lightGreen, lime, yellow, amber, orange, deepOrange, brown, grey, blueGrey, darkText, lightText, darkIcons, lightIcons, white, black, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -13467,7 +13526,7 @@ var black = "#000000";
 
 /***/ "../../node_modules/object-assign/index.js":
 /*!***************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/object-assign/index.js ***!
   \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -13569,7 +13628,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 /***/ "../../node_modules/process/browser.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/process/browser.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/process/browser.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -13764,7 +13823,7 @@ process.umask = function() { return 0; };
 
 /***/ "../../node_modules/prop-types/checkPropTypes.js":
 /*!*********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/checkPropTypes.js ***!
   \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -13878,7 +13937,7 @@ module.exports = checkPropTypes;
 
 /***/ "../../node_modules/prop-types/factoryWithTypeCheckers.js":
 /*!******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/factoryWithTypeCheckers.js ***!
   \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -14481,7 +14540,7 @@ module.exports = function(isValidElement, throwOnDirectAccess) {
 
 /***/ "../../node_modules/prop-types/index.js":
 /*!************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/index.js ***!
   \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -14507,7 +14566,7 @@ if (true) {
 
 /***/ "../../node_modules/prop-types/lib/ReactPropTypesSecret.js":
 /*!*******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/prop-types/lib/ReactPropTypesSecret.js ***!
   \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -14531,7 +14590,7 @@ module.exports = ReactPropTypesSecret;
 
 /***/ "../../node_modules/re-resizable/lib/index.es5.js":
 /*!**********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/re-resizable/lib/index.es5.js ***!
   \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -15280,7 +15339,7 @@ module.exports = Resizable;
 
 /***/ "../../node_modules/react-color/lib/components/alpha/Alpha.js":
 /*!**********************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/alpha/Alpha.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/alpha/Alpha.js ***!
   \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -15365,7 +15424,7 @@ exports.default = (0, _common.ColorWrap)(AlphaPicker);
 
 /***/ "../../node_modules/react-color/lib/components/alpha/AlphaPointer.js":
 /*!*****************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/alpha/AlphaPointer.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/alpha/AlphaPointer.js ***!
   \*****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -15418,7 +15477,7 @@ exports.default = AlphaPointer;
 
 /***/ "../../node_modules/react-color/lib/components/block/Block.js":
 /*!**********************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/block/Block.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/block/Block.js ***!
   \**********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -15583,7 +15642,7 @@ exports.default = (0, _common.ColorWrap)(Block);
 
 /***/ "../../node_modules/react-color/lib/components/block/BlockSwatches.js":
 /*!******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/block/BlockSwatches.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/block/BlockSwatches.js ***!
   \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -15661,7 +15720,7 @@ exports.default = BlockSwatches;
 
 /***/ "../../node_modules/react-color/lib/components/chrome/Chrome.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/chrome/Chrome.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/chrome/Chrome.js ***!
   \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -15890,7 +15949,7 @@ exports.default = (0, _common.ColorWrap)(Chrome);
 
 /***/ "../../node_modules/react-color/lib/components/chrome/ChromeFields.js":
 /*!******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/chrome/ChromeFields.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/chrome/ChromeFields.js ***!
   \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -16251,7 +16310,7 @@ exports.default = ChromeFields;
 
 /***/ "../../node_modules/react-color/lib/components/chrome/ChromePointer.js":
 /*!*******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/chrome/ChromePointer.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/chrome/ChromePointer.js ***!
   \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -16297,7 +16356,7 @@ exports.default = ChromePointer;
 
 /***/ "../../node_modules/react-color/lib/components/chrome/ChromePointerCircle.js":
 /*!*************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/chrome/ChromePointerCircle.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/chrome/ChromePointerCircle.js ***!
   \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -16342,7 +16401,7 @@ exports.default = ChromePointerCircle;
 
 /***/ "../../node_modules/react-color/lib/components/circle/Circle.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/circle/Circle.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/circle/Circle.js ***!
   \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -16456,7 +16515,7 @@ exports.default = (0, _common.ColorWrap)(Circle);
 
 /***/ "../../node_modules/react-color/lib/components/circle/CircleSwatch.js":
 /*!******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/circle/CircleSwatch.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/circle/CircleSwatch.js ***!
   \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -16543,7 +16602,7 @@ exports.default = (0, _reactcss.handleHover)(CircleSwatch);
 
 /***/ "../../node_modules/react-color/lib/components/common/Alpha.js":
 /*!***********************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Alpha.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Alpha.js ***!
   \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -16716,7 +16775,7 @@ exports.default = Alpha;
 
 /***/ "../../node_modules/react-color/lib/components/common/Checkboard.js":
 /*!****************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Checkboard.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Checkboard.js ***!
   \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -16780,7 +16839,7 @@ exports.default = Checkboard;
 
 /***/ "../../node_modules/react-color/lib/components/common/ColorWrap.js":
 /*!***************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/ColorWrap.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/ColorWrap.js ***!
   \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -16894,7 +16953,7 @@ exports.default = ColorWrap;
 
 /***/ "../../node_modules/react-color/lib/components/common/EditableInput.js":
 /*!*******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/EditableInput.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/EditableInput.js ***!
   \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -17106,7 +17165,7 @@ exports.default = EditableInput;
 
 /***/ "../../node_modules/react-color/lib/components/common/Hue.js":
 /*!*********************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Hue.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Hue.js ***!
   \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -17263,7 +17322,7 @@ exports.default = Hue;
 
 /***/ "../../node_modules/react-color/lib/components/common/Raised.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Raised.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Raised.js ***!
   \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -17393,7 +17452,7 @@ exports.default = Raised;
 
 /***/ "../../node_modules/react-color/lib/components/common/Saturation.js":
 /*!****************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Saturation.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Saturation.js ***!
   \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -17565,7 +17624,7 @@ exports.default = Saturation;
 
 /***/ "../../node_modules/react-color/lib/components/common/Swatch.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Swatch.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/Swatch.js ***!
   \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -17663,7 +17722,7 @@ exports.default = (0, _interaction.handleFocus)(Swatch);
 
 /***/ "../../node_modules/react-color/lib/components/common/index.js":
 /*!***********************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/common/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/common/index.js ***!
   \***********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -17753,7 +17812,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 /***/ "../../node_modules/react-color/lib/components/compact/Compact.js":
 /*!**************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/compact/Compact.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/compact/Compact.js ***!
   \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -17883,7 +17942,7 @@ exports.default = (0, _common.ColorWrap)(Compact);
 
 /***/ "../../node_modules/react-color/lib/components/compact/CompactColor.js":
 /*!*******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/compact/CompactColor.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/compact/CompactColor.js ***!
   \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -17977,7 +18036,7 @@ exports.default = CompactColor;
 
 /***/ "../../node_modules/react-color/lib/components/compact/CompactFields.js":
 /*!********************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/compact/CompactFields.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/compact/CompactFields.js ***!
   \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -18121,7 +18180,7 @@ exports.default = CompactFields;
 
 /***/ "../../node_modules/react-color/lib/components/github/Github.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/github/Github.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/github/Github.js ***!
   \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -18297,7 +18356,7 @@ exports.default = (0, _common.ColorWrap)(Github);
 
 /***/ "../../node_modules/react-color/lib/components/github/GithubSwatch.js":
 /*!******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/github/GithubSwatch.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/github/GithubSwatch.js ***!
   \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -18366,7 +18425,7 @@ exports.default = (0, _reactcss.handleHover)(GithubSwatch);
 
 /***/ "../../node_modules/react-color/lib/components/hue/Hue.js":
 /*!******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/hue/Hue.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/hue/Hue.js ***!
   \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -18464,7 +18523,7 @@ exports.default = (0, _common.ColorWrap)(HuePicker);
 
 /***/ "../../node_modules/react-color/lib/components/hue/HuePointer.js":
 /*!*************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/hue/HuePointer.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/hue/HuePointer.js ***!
   \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -18517,7 +18576,7 @@ exports.default = SliderPointer;
 
 /***/ "../../node_modules/react-color/lib/components/material/Material.js":
 /*!****************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/material/Material.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/material/Material.js ***!
   \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -18697,7 +18756,7 @@ exports.default = (0, _common.ColorWrap)(Material);
 
 /***/ "../../node_modules/react-color/lib/components/photoshop/Photoshop.js":
 /*!******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/Photoshop.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/Photoshop.js ***!
   \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -18921,7 +18980,7 @@ exports.default = (0, _common.ColorWrap)(Photoshop);
 
 /***/ "../../node_modules/react-color/lib/components/photoshop/PhotoshopButton.js":
 /*!************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopButton.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopButton.js ***!
   \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -18986,7 +19045,7 @@ exports.default = PhotoshopButton;
 
 /***/ "../../node_modules/react-color/lib/components/photoshop/PhotoshopFields.js":
 /*!************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopFields.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopFields.js ***!
   \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -19190,7 +19249,7 @@ exports.default = PhotoshopPicker;
 
 /***/ "../../node_modules/react-color/lib/components/photoshop/PhotoshopPointer.js":
 /*!*************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopPointer.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopPointer.js ***!
   \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -19276,7 +19335,7 @@ exports.default = PhotoshopPointerCircle;
 
 /***/ "../../node_modules/react-color/lib/components/photoshop/PhotoshopPointerCircle.js":
 /*!*******************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopPointerCircle.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopPointerCircle.js ***!
   \*******************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -19328,7 +19387,7 @@ exports.default = PhotoshopPointerCircle;
 
 /***/ "../../node_modules/react-color/lib/components/photoshop/PhotoshopPreviews.js":
 /*!**************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopPreviews.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/photoshop/PhotoshopPreviews.js ***!
   \**************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -19409,7 +19468,7 @@ exports.default = PhotoshopPreviews;
 
 /***/ "../../node_modules/react-color/lib/components/sketch/Sketch.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/sketch/Sketch.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/sketch/Sketch.js ***!
   \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -19624,7 +19683,7 @@ exports.default = (0, _common.ColorWrap)(Sketch);
 
 /***/ "../../node_modules/react-color/lib/components/sketch/SketchFields.js":
 /*!******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/sketch/SketchFields.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/sketch/SketchFields.js ***!
   \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -19805,7 +19864,7 @@ exports.default = SketchFields;
 
 /***/ "../../node_modules/react-color/lib/components/sketch/SketchPresetColors.js":
 /*!************************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/sketch/SketchPresetColors.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/sketch/SketchPresetColors.js ***!
   \************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -19913,7 +19972,7 @@ exports.default = SketchPresetColors;
 
 /***/ "../../node_modules/react-color/lib/components/slider/Slider.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/slider/Slider.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/slider/Slider.js ***!
   \************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20010,7 +20069,7 @@ exports.default = (0, _common.ColorWrap)(Slider);
 
 /***/ "../../node_modules/react-color/lib/components/slider/SliderPointer.js":
 /*!*******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/slider/SliderPointer.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/slider/SliderPointer.js ***!
   \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20056,7 +20115,7 @@ exports.default = SliderPointer;
 
 /***/ "../../node_modules/react-color/lib/components/slider/SliderSwatch.js":
 /*!******************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/slider/SliderSwatch.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/slider/SliderSwatch.js ***!
   \******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20132,7 +20191,7 @@ exports.default = SliderSwatch;
 
 /***/ "../../node_modules/react-color/lib/components/slider/SliderSwatches.js":
 /*!********************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/slider/SliderSwatches.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/slider/SliderSwatches.js ***!
   \********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20248,7 +20307,7 @@ exports.default = SliderSwatches;
 
 /***/ "../../node_modules/react-color/lib/components/swatches/Swatches.js":
 /*!****************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/swatches/Swatches.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/swatches/Swatches.js ***!
   \****************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20385,7 +20444,7 @@ exports.default = (0, _common.ColorWrap)(Swatches);
 
 /***/ "../../node_modules/react-color/lib/components/swatches/SwatchesColor.js":
 /*!*********************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/swatches/SwatchesColor.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/swatches/SwatchesColor.js ***!
   \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20503,7 +20562,7 @@ exports.default = SwatchesColor;
 
 /***/ "../../node_modules/react-color/lib/components/swatches/SwatchesGroup.js":
 /*!*********************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/swatches/SwatchesGroup.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/swatches/SwatchesGroup.js ***!
   \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20574,7 +20633,7 @@ exports.default = SwatchesGroup;
 
 /***/ "../../node_modules/react-color/lib/components/twitter/Twitter.js":
 /*!**************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/components/twitter/Twitter.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/components/twitter/Twitter.js ***!
   \**************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20793,7 +20852,7 @@ exports.default = (0, _common.ColorWrap)(Twitter);
 
 /***/ "../../node_modules/react-color/lib/helpers/alpha.js":
 /*!*************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/helpers/alpha.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/helpers/alpha.js ***!
   \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20858,7 +20917,7 @@ var calculateChange = exports.calculateChange = function calculateChange(e, hsl,
 
 /***/ "../../node_modules/react-color/lib/helpers/checkboard.js":
 /*!******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/helpers/checkboard.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/helpers/checkboard.js ***!
   \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -20907,7 +20966,7 @@ var get = exports.get = function get(c1, c2, size, serverCanvas) {
 
 /***/ "../../node_modules/react-color/lib/helpers/color.js":
 /*!*************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/helpers/color.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/helpers/color.js ***!
   \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -21004,7 +21063,7 @@ exports.default = exports;
 
 /***/ "../../node_modules/react-color/lib/helpers/hue.js":
 /*!***********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/helpers/hue.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/helpers/hue.js ***!
   \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -21071,7 +21130,7 @@ var calculateChange = exports.calculateChange = function calculateChange(e, dire
 
 /***/ "../../node_modules/react-color/lib/helpers/interaction.js":
 /*!*******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/helpers/interaction.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/helpers/interaction.js ***!
   \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -21143,7 +21202,7 @@ var handleFocus = exports.handleFocus = function handleFocus(Component) {
 
 /***/ "../../node_modules/react-color/lib/helpers/saturation.js":
 /*!******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/helpers/saturation.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/helpers/saturation.js ***!
   \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -21192,7 +21251,7 @@ var calculateChange = exports.calculateChange = function calculateChange(e, hsl,
 
 /***/ "../../node_modules/react-color/lib/index.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-color/lib/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-color/lib/index.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -21341,7 +21400,7 @@ exports.default = _Chrome2.default;
 
 /***/ "../../node_modules/react-contextmenu/es6/AbstractMenu.js":
 /*!******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/AbstractMenu.js ***!
   \******************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -21538,7 +21597,7 @@ var _initialiseProps = function _initialiseProps() {
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenu.js":
 /*!*****************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenu.js ***!
   \*****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -21848,7 +21907,7 @@ ContextMenu.defaultProps = {
 
 /***/ "../../node_modules/react-contextmenu/es6/ContextMenuTrigger.js":
 /*!************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/ContextMenuTrigger.js ***!
   \************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -22031,7 +22090,7 @@ ContextMenuTrigger.defaultProps = {
 
 /***/ "../../node_modules/react-contextmenu/es6/MenuItem.js":
 /*!**************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/MenuItem.js ***!
   \**************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -22165,7 +22224,7 @@ MenuItem.defaultProps = {
 
 /***/ "../../node_modules/react-contextmenu/es6/SubMenu.js":
 /*!*************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/SubMenu.js ***!
   \*************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -22499,7 +22558,7 @@ SubMenu.defaultProps = {
 
 /***/ "../../node_modules/react-contextmenu/es6/actions.js":
 /*!*************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/actions.js ***!
   \*************************************************************************/
 /*! exports provided: MENU_SHOW, MENU_HIDE, dispatchGlobalEvent, showMenu, hideMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -22559,7 +22618,7 @@ function hideMenu() {
 
 /***/ "../../node_modules/react-contextmenu/es6/connectMenu.js":
 /*!*****************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/connectMenu.js ***!
   \*****************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -22657,7 +22716,7 @@ var ignoredTriggerProps = [].concat(_toConsumableArray(Object.keys(_ContextMenuT
 
 /***/ "../../node_modules/react-contextmenu/es6/globalEventListener.js":
 /*!*************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/globalEventListener.js ***!
   \*************************************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -22719,7 +22778,7 @@ var GlobalEventListener = function GlobalEventListener() {
 
 /***/ "../../node_modules/react-contextmenu/es6/helpers.js":
 /*!*************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/helpers.js ***!
   \*************************************************************************/
 /*! exports provided: callIfExists, hasOwnProp, uniqueId, cssClasses, store, canUseDOM */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -22768,7 +22827,7 @@ var canUseDOM = Boolean(typeof window !== 'undefined' && window.document && wind
 
 /***/ "../../node_modules/react-contextmenu/es6/index.js":
 /*!***********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-contextmenu/es6/index.js ***!
   \***********************************************************************/
 /*! exports provided: ContextMenu, ContextMenuTrigger, MenuItem, SubMenu, connectMenu, hideMenu, showMenu */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -22806,7 +22865,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ "../../node_modules/react-dom/cjs/react-dom.development.js":
 /*!*******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-dom/cjs/react-dom.development.js ***!
   \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -48033,7 +48092,7 @@ module.exports = reactDom;
 
 /***/ "../../node_modules/react-dom/index.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-dom/index.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -48078,7 +48137,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/react-is/cjs/react-is.development.js":
 /*!*****************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-is/cjs/react-is.development.js ***!
   \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -48326,7 +48385,7 @@ exports.isSuspense = isSuspense;
 
 /***/ "../../node_modules/react-is/index.js":
 /*!**********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react-is/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react-is/index.js ***!
   \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -48343,7 +48402,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/react/cjs/react.development.js":
 /*!***********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react/cjs/react.development.js ***!
   \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -50590,7 +50649,7 @@ module.exports = react;
 
 /***/ "../../node_modules/react/index.js":
 /*!*******************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/react/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/react/index.js ***!
   \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -50607,7 +50666,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/reactcss/lib/autoprefix.js":
 /*!*******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/reactcss/lib/autoprefix.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/reactcss/lib/autoprefix.js ***!
   \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -50743,7 +50802,7 @@ exports.default = autoprefix;
 
 /***/ "../../node_modules/reactcss/lib/components/active.js":
 /*!**************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/reactcss/lib/components/active.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/reactcss/lib/components/active.js ***!
   \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -50810,7 +50869,7 @@ exports.default = active;
 
 /***/ "../../node_modules/reactcss/lib/components/hover.js":
 /*!*************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/reactcss/lib/components/hover.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/reactcss/lib/components/hover.js ***!
   \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -50877,7 +50936,7 @@ exports.default = hover;
 
 /***/ "../../node_modules/reactcss/lib/flattenNames.js":
 /*!*********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/reactcss/lib/flattenNames.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/reactcss/lib/flattenNames.js ***!
   \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -50937,7 +50996,7 @@ exports.default = flattenNames;
 
 /***/ "../../node_modules/reactcss/lib/index.js":
 /*!**************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/reactcss/lib/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/reactcss/lib/index.js ***!
   \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -50996,7 +51055,7 @@ exports.default = ReactCSS;
 
 /***/ "../../node_modules/reactcss/lib/loop.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/reactcss/lib/loop.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/reactcss/lib/loop.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -51030,7 +51089,7 @@ exports.default = loopable;
 
 /***/ "../../node_modules/reactcss/lib/mergeClasses.js":
 /*!*********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/reactcss/lib/mergeClasses.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/reactcss/lib/mergeClasses.js ***!
   \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -51082,7 +51141,7 @@ exports.default = mergeClasses;
 
 /***/ "../../node_modules/scheduler/cjs/scheduler-tracing.development.js":
 /*!***************************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
   \***************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -51560,7 +51619,7 @@ exports.unstable_unsubscribe = unstable_unsubscribe;
 
 /***/ "../../node_modules/scheduler/cjs/scheduler.development.js":
 /*!*******************************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/cjs/scheduler.development.js ***!
   \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -52473,7 +52532,7 @@ exports.unstable_getFirstCallbackNode = unstable_getFirstCallbackNode;
 
 /***/ "../../node_modules/scheduler/index.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/index.js ***!
   \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -52490,7 +52549,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/scheduler/tracing.js":
 /*!*************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/scheduler/tracing.js ***!
   \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -52507,7 +52566,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/setimmediate/setImmediate.js":
 /*!*********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/setimmediate/setImmediate.js ***!
   \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -52705,7 +52764,7 @@ if (false) {} else {
 
 /***/ "../../node_modules/split.js/dist/split.es.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/split.js/dist/split.es.js ***!
   \******************************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -53490,7 +53549,7 @@ var Split = function (idsOption, options) {
 
 /***/ "../../node_modules/style-loader/lib/addStyles.js":
 /*!**********************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/addStyles.js ***!
   \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -53881,7 +53940,7 @@ function updateLink (link, options, obj) {
 
 /***/ "../../node_modules/style-loader/lib/urls.js":
 /*!*****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/style-loader/lib/urls.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/style-loader/lib/urls.js ***!
   \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
@@ -53981,7 +54040,7 @@ module.exports = function (css) {
 
 /***/ "../../node_modules/timers-browserify/main.js":
 /*!******************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/timers-browserify/main.js ***!
   \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -54056,7 +54115,7 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 
 /***/ "../../node_modules/tinycolor2/tinycolor.js":
 /*!****************************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tinycolor2/tinycolor.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/tinycolor2/tinycolor.js ***!
   \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
@@ -55261,7 +55320,7 @@ else {}
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -55759,17 +55818,23 @@ var LineContainerComponent = /** @class */ (function (_super) {
     };
     LineContainerComponent.prototype.componentDidMount = function () {
         var _this = this;
-        if (this.props.globalState && !this.props.globalState.selectedLineContainerTitle) {
+        if (!this.props.globalState) {
             return;
         }
-        if (this.props.globalState && this.props.globalState.selectedLineContainerTitle === this.props.title) {
+        if (this.props.globalState.selectedLineContainerTitles.length === 0 && this.props.globalState.selectedLineContainerTitlesNoFocus.length === 0) {
+            return;
+        }
+        if (this.props.globalState.selectedLineContainerTitles.indexOf(this.props.title) > -1) {
             setTimeout(function () {
-                _this.props.globalState.selectedLineContainerTitle = "";
+                _this.props.globalState.selectedLineContainerTitles = [];
             });
             this.setState({ isExpanded: true, isHighlighted: true });
             window.setTimeout(function () {
                 _this.setState({ isHighlighted: false });
             }, 5000);
+        }
+        else if (this.props.globalState.selectedLineContainerTitlesNoFocus.indexOf(this.props.title) > -1) {
+            this.setState({ isExpanded: true, isHighlighted: false });
         }
         else {
             this.setState({ isExpanded: false });
@@ -55908,7 +55973,7 @@ var CheckBoxLineComponent = /** @class */ (function (_super) {
         else {
             currentState = nextProps.target[nextProps.propertyName] == true;
         }
-        if (currentState !== nextState.isSelected || this._localChange) {
+        if (currentState !== nextState.isSelected || this._localChange || this.props.label !== nextProps.label) {
             nextState.isSelected = currentState;
             this._localChange = false;
             return true;
@@ -56320,7 +56385,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
                 r: nextProps.value.r * 255,
                 g: nextProps.value.g * 255,
                 b: nextProps.value.b * 255,
-                a: nextProps instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"] ? nextProps.a * 100 : 100,
+                a: nextProps.value instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"] ? nextProps.value.a : 1,
             };
             nextState.hex = nextProps.value.toHexString();
         }
@@ -56542,13 +56607,19 @@ var FloatLineComponent = /** @class */ (function (_super) {
         else {
             valueAsNumber = parseFloat(valueString);
         }
+        if (!isNaN(valueAsNumber) && this.props.min !== undefined) {
+            if (valueAsNumber < this.props.min) {
+                valueAsNumber = this.props.min;
+                valueString = valueAsNumber.toString();
+            }
+        }
         this._localChange = true;
         this.setState({ value: valueString });
         if (isNaN(valueAsNumber)) {
             return;
         }
-        this.raiseOnPropertyChanged(valueAsNumber, this._store);
         this.props.target[this.props.propertyName] = valueAsNumber;
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
         this._store = valueAsNumber;
     };
     FloatLineComponent.prototype.lock = function () {
@@ -56580,6 +56651,84 @@ var FloatLineComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sliderLineComponent__WEBPACK_IMPORTED_MODULE_2__["SliderLineComponent"], { label: this.props.label, minimum: 0, maximum: 360, step: 0.1, directValue: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToDegrees(valueAsNumber), onChange: function (value) { return _this.updateValue(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_3__["Tools"].ToRadians(value).toString()); } })));
     };
     return FloatLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/lines/iconButtonLineComponent.tsx":
+/*!*****************************************************************!*\
+  !*** ./components/actionTabs/lines/iconButtonLineComponent.tsx ***!
+  \*****************************************************************/
+/*! exports provided: IconButtonLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IconButtonLineComponent", function() { return IconButtonLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var IconButtonLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(IconButtonLineComponent, _super);
+    function IconButtonLineComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    IconButtonLineComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { style: { backgroundColor: this.props.active ? '#111111' : '' }, title: this.props.tooltip, className: "icon " + this.props.icon, onClick: function () { return _this.props.onClick(); } }));
+    };
+    return IconButtonLineComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/lines/indentedTextLineComponent.tsx":
+/*!*******************************************************************!*\
+  !*** ./components/actionTabs/lines/indentedTextLineComponent.tsx ***!
+  \*******************************************************************/
+/*! exports provided: IndentedTextLineComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IndentedTextLineComponent", function() { return IndentedTextLineComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var IndentedTextLineComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(IndentedTextLineComponent, _super);
+    function IndentedTextLineComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    IndentedTextLineComponent.prototype.onLink = function () {
+        if (this.props.url) {
+            window.open(this.props.url, '_blank');
+            return;
+        }
+        if (!this.props.onLink) {
+            return;
+        }
+        this.props.onLink();
+    };
+    IndentedTextLineComponent.prototype.renderContent = function () {
+        var _this = this;
+        if (this.props.onLink || this.props.url) {
+            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "link-value", title: this.props.value, onClick: function () { return _this.onLink(); } }, this.props.url ? "doc" : (this.props.value || "no name")));
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", title: this.props.value, style: { color: this.props.color ? this.props.color : "" } }, this.props.value || "no name"));
+    };
+    IndentedTextLineComponent.prototype.render = function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "indented " + (this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "")) }, this.renderContent()));
+    };
+    return IndentedTextLineComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -56888,8 +57037,8 @@ var OptionsLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "listLine" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "options" },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label, value: option.value }, option.label));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (evt) { return _this.updateValue(evt.target.value); }, value: (_a = this.state.value) !== null && _a !== void 0 ? _a : "" }, this.props.options.map(function (option, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { key: option.label + i, value: option.value }, option.label));
                 })))));
     };
     return OptionsLineComponent;
@@ -57139,7 +57288,7 @@ var SliderLineComponent = /** @class */ (function (_super) {
         if (currentState === undefined) {
             currentState = nextProps.maximum;
         }
-        if (currentState !== nextState.value || this._localChange) {
+        if (currentState !== nextState.value || this._localChange || nextProps.maximum !== this.props.maximum || nextProps.minimum !== this.props.minimum) {
             nextState.value = currentState;
             this._localChange = false;
             return true;
@@ -57176,6 +57325,9 @@ var SliderLineComponent = /** @class */ (function (_super) {
         }
     };
     SliderLineComponent.prototype.prepareDataToRead = function (value) {
+        if (value === null) {
+            value = 0;
+        }
         if (this.props.useEuler) {
             return babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Tools"].ToDegrees(value);
         }
@@ -57315,8 +57467,9 @@ var TextLineComponent = /** @class */ (function (_super) {
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "value", title: this.props.value, style: { color: this.props.color ? this.props.color : "" } }, this.props.value || "no name"));
     };
     TextLineComponent.prototype.render = function () {
-        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.underline ? "textLine underline" : "textLine" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, this.props.label),
+        var _a;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "") },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "label" }, (_a = this.props.label) !== null && _a !== void 0 ? _a : ""),
             this.renderContent()));
     };
     return TextLineComponent;
@@ -57339,30 +57492,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Engines/constants */ "babylonjs/Misc/observable");
-/* harmony import */ var babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _textureHelper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../textureHelper */ "./textureHelper.ts");
 
 
 
 
-
-
-
-var ChannelToDisplay;
-(function (ChannelToDisplay) {
-    ChannelToDisplay[ChannelToDisplay["R"] = 0] = "R";
-    ChannelToDisplay[ChannelToDisplay["G"] = 1] = "G";
-    ChannelToDisplay[ChannelToDisplay["B"] = 2] = "B";
-    ChannelToDisplay[ChannelToDisplay["A"] = 3] = "A";
-    ChannelToDisplay[ChannelToDisplay["All"] = 4] = "All";
-})(ChannelToDisplay || (ChannelToDisplay = {}));
 var TextureLineComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TextureLineComponent, _super);
     function TextureLineComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
-            channel: ChannelToDisplay.All,
+            channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].All,
             face: 0
         };
         _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
@@ -57380,90 +57521,12 @@ var TextureLineComponent = /** @class */ (function (_super) {
     TextureLineComponent.prototype.updatePreview = function () {
         var _this = this;
         var texture = this.props.texture;
-        if (!texture.isReady() && texture._texture) {
-            texture._texture.onLoadedObservable.addOnce(function () {
-                _this.updatePreview();
-            });
-        }
-        var scene = texture.getScene();
-        var engine = scene.getEngine();
         var size = texture.getSize();
         var ratio = size.width / size.height;
         var width = this.props.width;
         var height = (width / ratio) | 1;
-        var passPostProcess;
-        if (!texture.isCube) {
-            passPostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassPostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
-        }
-        else {
-            var passCubePostProcess = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["PassCubePostProcess"]("pass", 1, null, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURETYPE_UNSIGNED_INT);
-            passCubePostProcess.face = this.state.face;
-            passPostProcess = passCubePostProcess;
-        }
-        if (!passPostProcess.getEffect().isReady()) {
-            // Try again later
-            passPostProcess.dispose();
-            setTimeout(function () { return _this.updatePreview(); }, 250);
-            return;
-        }
-        var previewCanvas = this.canvasRef.current;
-        if (this.props.globalState) {
-            this.props.globalState.blockMutationUpdates = true;
-        }
-        var rtt = new babylonjs_Engines_constants__WEBPACK_IMPORTED_MODULE_2__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
-        passPostProcess.onApply = function (effect) {
-            effect.setTexture("textureSampler", texture);
-        };
-        var internalTexture = rtt.getInternalTexture();
-        if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
-            // Read the contents of the framebuffer
-            var numberOfChannelsByLine = width * 4;
-            var halfHeight = height / 2;
-            //Reading datas from WebGL
-            var data = engine.readPixels(0, 0, width, height);
-            if (!texture.isCube) {
-                if (this.state.channel != ChannelToDisplay.All) {
-                    for (var i = 0; i < width * height * 4; i += 4) {
-                        switch (this.state.channel) {
-                            case ChannelToDisplay.R:
-                                data[i + 1] = data[i];
-                                data[i + 2] = data[i];
-                                data[i + 3] = 255;
-                                break;
-                            case ChannelToDisplay.G:
-                                data[i] = data[i + 1];
-                                data[i + 2] = data[i];
-                                data[i + 3] = 255;
-                                break;
-                            case ChannelToDisplay.B:
-                                data[i] = data[i + 2];
-                                data[i + 1] = data[i + 2];
-                                data[i + 3] = 255;
-                                break;
-                            case ChannelToDisplay.A:
-                                data[i] = data[i + 3];
-                                data[i + 1] = data[i + 3];
-                                data[i + 2] = data[i + 3];
-                                data[i + 3] = 255;
-                                break;
-                        }
-                    }
-                }
-            }
-            //To flip image on Y axis.
-            if (texture.invertY || texture.isCube) {
-                for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
-                        var temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
-                    }
-                }
-            }
+        _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureHelper"].GetTextureDataAsync(texture, width, height, this.state.face, this.state.channel, this.props.globalState).then(function (data) {
+            var previewCanvas = _this.canvasRef.current;
             previewCanvas.width = width;
             previewCanvas.height = height;
             var context = previewCanvas.getContext('2d');
@@ -57474,15 +57537,8 @@ var TextureLineComponent = /** @class */ (function (_super) {
                 castData.set(data);
                 context.putImageData(imageData, 0, 0);
             }
-            // Unbind
-            engine.unBindFramebuffer(internalTexture);
-        }
-        rtt.dispose();
-        passPostProcess.dispose();
-        previewCanvas.style.height = height + "px";
-        if (this.props.globalState) {
-            this.props.globalState.blockMutationUpdates = false;
-        }
+            previewCanvas.style.height = height + "px";
+        });
     };
     TextureLineComponent.prototype.render = function () {
         var _this = this;
@@ -57491,22 +57547,22 @@ var TextureLineComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "textureLine" },
                 !this.props.hideChannelSelect && texture.isCube &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control3D" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 0 ? "px command selected" : "px command", onClick: function () { return _this.setState({ face: 0 }); } }, "PX"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 1 ? "nx command selected" : "nx command", onClick: function () { return _this.setState({ face: 1 }); } }, "NX"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 2 ? "py command selected" : "py command", onClick: function () { return _this.setState({ face: 2 }); } }, "PY"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 3 ? "ny command selected" : "ny command", onClick: function () { return _this.setState({ face: 3 }); } }, "NY"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 4 ? "pz command selected" : "pz command", onClick: function () { return _this.setState({ face: 4 }); } }, "PZ"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "NZ")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 0 ? "px command selected" : "px command", onClick: function () { return _this.setState({ face: 0 }); } }, "+X"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 1 ? "nx command selected" : "nx command", onClick: function () { return _this.setState({ face: 1 }); } }, "-X"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 2 ? "py command selected" : "py command", onClick: function () { return _this.setState({ face: 2 }); } }, "+Y"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 3 ? "ny command selected" : "ny command", onClick: function () { return _this.setState({ face: 3 }); } }, "-Y"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 4 ? "pz command selected" : "pz command", onClick: function () { return _this.setState({ face: 4 }); } }, "+Z"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.face === 5 ? "nz command selected" : "nz command", onClick: function () { return _this.setState({ face: 5 }); } }, "-Z")),
                 !this.props.hideChannelSelect && !texture.isCube &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "control" },
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.R ? "red command selected" : "red command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.R }); } }, "R"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.G ? "green command selected" : "green command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.G }); } }, "G"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.B ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.B }); } }, "B"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.A ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.A }); } }, "A"),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command", onClick: function () { return _this.setState({ channel: ChannelToDisplay.All }); } }, "ALL")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].R ? "red command selected" : "red command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].R }); } }, "R"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].G ? "green command selected" : "green command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].G }); } }, "G"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].B ? "blue command selected" : "blue command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].B }); } }, "B"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].A ? "alpha command selected" : "alpha command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].A }); } }, "A"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { className: this.state.channel === _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].All ? "all command selected" : "all command", onClick: function () { return _this.setState({ channel: _textureHelper__WEBPACK_IMPORTED_MODULE_3__["TextureChannelToDisplay"].All }); } }, "ALL")),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview" })),
             texture.isRenderTarget &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Refresh", onClick: function () {
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Refresh", onClick: function () {
                         _this.updatePreview();
                     } })));
     };
@@ -58168,6 +58224,7 @@ var DebugTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Fresnel", isSelected: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; }, onSelect: function () { return babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled = !babylonjs_Debug_physicsViewer__WEBPACK_IMPORTED_MODULE_6__["StandardMaterial"].FresnelEnabled; } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "FEATURES" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Animations", isSelected: function () { return scene.animationsEnabled; }, onSelect: function () { return scene.animationsEnabled = !scene.animationsEnabled; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Physics", isSelected: function () { return scene.physicsEnabled; }, onSelect: function () { return scene.physicsEnabled = !scene.physicsEnabled; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Collisions", isSelected: function () { return scene.collisionsEnabled; }, onSelect: function () { return scene.collisionsEnabled = !scene.collisionsEnabled; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Fog", isSelected: function () { return scene.fogEnabled; }, onSelect: function () { return scene.fogEnabled = !scene.fogEnabled; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Lens flares", isSelected: function () { return scene.lensFlaresEnabled; }, onSelect: function () { return scene.lensFlaresEnabled = !scene.lensFlaresEnabled; } }),
@@ -58219,7 +58276,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_gui_textBlockPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./propertyGrids/gui/textBlockPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/textBlockPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_inputTextPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./propertyGrids/gui/inputTextPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/inputTextPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_colorPickerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./propertyGrids/gui/colorPickerPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx");
-/* harmony import */ var _propertyGrids_animationGroupPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./propertyGrids/animationGroupPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animationGroupPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_animations_animationGroupPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./propertyGrids/animations/animationGroupPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_lockObject__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./propertyGrids/lockObject */ "./components/actionTabs/tabs/propertyGrids/lockObject.ts");
 /* harmony import */ var _propertyGrids_gui_imagePropertyGridComponent__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./propertyGrids/gui/imagePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/imagePropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_gui_sliderPropertyGridComponent__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./propertyGrids/gui/sliderPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx");
@@ -58247,6 +58304,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _propertyGrids_materials_nodeMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_44__ = __webpack_require__(/*! ./propertyGrids/materials/nodeMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_materials_multiMaterialPropertyGridComponent__WEBPACK_IMPORTED_MODULE_45__ = __webpack_require__(/*! ./propertyGrids/materials/multiMaterialPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/materials/multiMaterialPropertyGridComponent.tsx");
 /* harmony import */ var _propertyGrids_particleSystems_particleSystemPropertyGridComponent__WEBPACK_IMPORTED_MODULE_46__ = __webpack_require__(/*! ./propertyGrids/particleSystems/particleSystemPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_sprites_spriteManagerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_47__ = __webpack_require__(/*! ./propertyGrids/sprites/spriteManagerPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_sprites_spritePropertyGridComponent__WEBPACK_IMPORTED_MODULE_48__ = __webpack_require__(/*! ./propertyGrids/sprites/spritePropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent.tsx");
+/* harmony import */ var _propertyGrids_animations_targetedAnimationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_49__ = __webpack_require__(/*! ./propertyGrids/animations/targetedAnimationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent.tsx");
+
+
+
 
 
 
@@ -58324,6 +58387,14 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
                 var scene = entity;
                 return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_scenePropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["ScenePropertyGridComponent"], { scene: scene, globalState: this.props.globalState, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
+            if (className === "Sprite") {
+                var sprite = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_sprites_spritePropertyGridComponent__WEBPACK_IMPORTED_MODULE_48__["SpritePropertyGridComponent"], { sprite: sprite, globalState: this.props.globalState, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className === "SpriteManager") {
+                var spriteManager = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_sprites_spriteManagerPropertyGridComponent__WEBPACK_IMPORTED_MODULE_47__["SpriteManagerPropertyGridComponent"], { spriteManager: spriteManager, globalState: this.props.globalState, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
             if (className.indexOf("Mesh") !== -1) {
                 var mesh = entity;
                 if (mesh.getTotalVertices() > 0) {
@@ -58394,7 +58465,11 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
             }
             if (className === "AnimationGroup") {
                 var animationGroup = entity;
-                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_animationGroupPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["AnimationGroupGridComponent"], { globalState: this.props.globalState, animationGroup: animationGroup, scene: this.props.scene, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_animations_animationGroupPropertyGridComponent__WEBPACK_IMPORTED_MODULE_19__["AnimationGroupGridComponent"], { globalState: this.props.globalState, animationGroup: animationGroup, scene: this.props.scene, lockObject: this._lockObject, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
+            }
+            if (className === "TargetedAnimation") {
+                var targetedAnimation = entity;
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_propertyGrids_animations_targetedAnimationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_49__["TargetedAnimationGridComponent"], { globalState: this.props.globalState, targetedAnimation: targetedAnimation, scene: this.props.scene, lockObject: this._lockObject, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onPropertyChangedObservable: this.props.onPropertyChangedObservable }));
             }
             if (className.indexOf("Material") !== -1) {
                 var material = entity;
@@ -58506,10 +58581,1473 @@ var PropertyGridTabComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/actionTabs/tabs/propertyGrids/animationGroupPropertyGridComponent.tsx":
-/*!******************************************************************************************!*\
-  !*** ./components/actionTabs/tabs/propertyGrids/animationGroupPropertyGridComponent.tsx ***!
-  \******************************************************************************************/
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/addAnimation.tsx":
+/*!******************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/addAnimation.tsx ***!
+  \******************************************************************************/
+/*! exports provided: AddAnimation */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AddAnimation", function() { return AddAnimation; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+
+
+
+var AddAnimation = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AddAnimation, _super);
+    function AddAnimation(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = {
+            animationName: '',
+            animationTargetPath: '',
+            animationType: 'Float',
+            loopMode: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CYCLE,
+            animationTargetProperty: '',
+        };
+        return _this;
+    }
+    AddAnimation.prototype.getAnimationTypeofChange = function (selected) {
+        var dataType = 0;
+        switch (selected) {
+            case 'Float':
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_FLOAT;
+                break;
+            case 'Quaternion':
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_QUATERNION;
+                break;
+            case 'Vector3':
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR3;
+                break;
+            case 'Vector2':
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR2;
+                break;
+            case 'Size':
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_SIZE;
+                break;
+            case 'Color3':
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR3;
+                break;
+            case 'Color4':
+                dataType = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR4;
+                break;
+        }
+        return dataType;
+    };
+    AddAnimation.prototype.addAnimation = function () {
+        var _this = this;
+        var _a, _b;
+        if (this.state.animationName != '' &&
+            this.state.animationTargetProperty != '') {
+            var matchTypeTargetProperty = this.state.animationTargetProperty.split('.');
+            var animationDataType = this.getAnimationTypeofChange(this.state.animationType);
+            var matched = false;
+            if (matchTypeTargetProperty.length === 1) {
+                var match = this.props.entity[matchTypeTargetProperty[0]];
+                if (match) {
+                    switch (match.constructor.name) {
+                        case 'Vector2':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR2
+                                ? (matched = true)
+                                : (matched = false);
+                            break;
+                        case 'Vector3':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR3
+                                ? (matched = true)
+                                : (matched = false);
+                            break;
+                        case 'Quaternion':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_QUATERNION
+                                ? (matched = true)
+                                : (matched = false);
+                            break;
+                        case 'Color3':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR3
+                                ? (matched = true)
+                                : (matched = false);
+                            break;
+                        case 'Color4':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR4
+                                ? (matched = true)
+                                : (matched = false);
+                            break;
+                        case 'Size':
+                            animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_SIZE
+                                ? (matched = true)
+                                : (matched = false);
+                            break;
+                        default:
+                            console.log('not recognized');
+                            break;
+                    }
+                }
+                else {
+                    this.props.setNotificationMessage("The selected entity doesn't have a " + matchTypeTargetProperty[0] + " property");
+                }
+            }
+            else if (matchTypeTargetProperty.length > 1) {
+                var matchProp = this.props.entity[matchTypeTargetProperty[0]];
+                if (matchProp) {
+                    var match = matchProp[matchTypeTargetProperty[1]];
+                    if (typeof match === 'number') {
+                        animationDataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_FLOAT
+                            ? (matched = true)
+                            : (matched = false);
+                    }
+                }
+            }
+            if (matched) {
+                var startValue = void 0;
+                var endValue = void 0;
+                var outTangent = void 0;
+                var inTangent = void 0;
+                // Default start and end values for new animations
+                switch (animationDataType) {
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_FLOAT:
+                        startValue = 1;
+                        endValue = 1;
+                        outTangent = 0;
+                        inTangent = 0;
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR2:
+                        startValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Vector2"](1, 1);
+                        endValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Vector2"](1, 1);
+                        outTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Vector2"].Zero();
+                        inTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Vector2"].Zero();
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_VECTOR3:
+                        startValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Vector3"](1, 1, 1);
+                        endValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Vector3"](1, 1, 1);
+                        outTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero();
+                        inTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Vector3"].Zero();
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_QUATERNION:
+                        startValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Quaternion"](1, 1, 1, 1);
+                        endValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Quaternion"](1, 1, 1, 1);
+                        outTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Quaternion"].Zero();
+                        inTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Quaternion"].Zero();
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR3:
+                        startValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Color3"](1, 1, 1);
+                        endValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Color3"](1, 1, 1);
+                        outTangent = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Color3"](0, 0, 0);
+                        inTangent = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Color3"](0, 0, 0);
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_COLOR4:
+                        startValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Color4"](1, 1, 1, 1);
+                        endValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Color4"](1, 1, 1, 1);
+                        outTangent = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Color4"](0, 0, 0, 0);
+                        inTangent = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Color4"](0, 0, 0, 0);
+                        break;
+                    case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONTYPE_SIZE:
+                        startValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Size"](1, 1);
+                        endValue = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Size"](1, 1);
+                        outTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Size"].Zero();
+                        inTangent = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Size"].Zero();
+                        break;
+                    default:
+                        console.log('not recognized');
+                        break;
+                }
+                var alreadyAnimatedProperty = (_a = this.props
+                    .entity.animations) === null || _a === void 0 ? void 0 : _a.find(function (anim) { return anim.targetProperty === _this.state.animationTargetProperty; }, this);
+                var alreadyAnimationName = (_b = this.props
+                    .entity.animations) === null || _b === void 0 ? void 0 : _b.find(function (anim) { return anim.name === _this.state.animationName; }, this);
+                if (alreadyAnimatedProperty) {
+                    this.props.setNotificationMessage("The property \"" + this.state.animationTargetProperty + "\" already has an animation");
+                }
+                else if (alreadyAnimationName) {
+                    this.props.setNotificationMessage("There is already an animation with the name: \"" + this.state.animationName + "\"");
+                }
+                else {
+                    var animation = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"](this.state.animationName, this.state.animationTargetProperty, 30, animationDataType);
+                    // Start with two keyframes
+                    var keys = [];
+                    keys.push({
+                        frame: 0,
+                        value: startValue,
+                        outTangent: outTangent,
+                    });
+                    keys.push({
+                        inTangent: inTangent,
+                        frame: 100,
+                        value: endValue,
+                    });
+                    animation.setKeys(keys);
+                    if (this.props.entity.animations) {
+                        var store = this.props.entity.animations;
+                        var updatedCollection = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.entity.animations, [
+                            animation,
+                        ]);
+                        this.raiseOnPropertyChanged(updatedCollection, store);
+                        this.props.entity.animations = updatedCollection;
+                        this.props.changed();
+                        this.props.close();
+                        //Cleaning form fields
+                        this.setState({
+                            animationName: '',
+                            animationTargetPath: '',
+                            animationType: 'Float',
+                            loopMode: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CYCLE,
+                            animationTargetProperty: '',
+                        });
+                    }
+                }
+            }
+            else {
+                this.props.setNotificationMessage("The property \"" + this.state.animationTargetProperty + "\" is not a \"" + this.state.animationType + "\" type");
+            }
+        }
+        else {
+            this.props.setNotificationMessage("You need to provide a name and target property.");
+        }
+    };
+    AddAnimation.prototype.raiseOnPropertyChanged = function (newValue, previousValue) {
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.entity,
+            property: 'animations',
+            value: newValue,
+            initialValue: previousValue,
+        });
+    };
+    AddAnimation.prototype.handleNameChange = function (event) {
+        event.preventDefault();
+        this.setState({ animationName: event.target.value.trim() });
+    };
+    AddAnimation.prototype.handlePathChange = function (event) {
+        event.preventDefault();
+        this.setState({ animationTargetPath: event.target.value.trim() });
+    };
+    AddAnimation.prototype.handleTypeChange = function (event) {
+        event.preventDefault();
+        this.setState({ animationType: event.target.value });
+    };
+    AddAnimation.prototype.handlePropertyChange = function (event) {
+        event.preventDefault();
+        this.setState({ animationTargetProperty: event.target.value });
+    };
+    AddAnimation.prototype.handleLoopModeChange = function (event) {
+        event.preventDefault();
+        this.setState({ loopMode: parseInt(event.target.value) });
+    };
+    AddAnimation.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'new-animation', style: { display: this.props.isOpen ? 'block' : 'none' } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'sub-content' },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Target Path"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'text', value: this.state.animationTargetPath, onChange: function (e) { return _this.handlePathChange(e); }, disabled: true })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Display Name"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'text', value: this.state.animationName, onChange: function (e) { return _this.handleNameChange(e); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Property"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'text', value: this.state.animationTargetProperty, onChange: function (e) { return _this.handlePropertyChange(e); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Type"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (e) { return _this.handleTypeChange(e); }, value: this.state.animationType },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Float' }, "Float"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Vector3' }, "Vector3"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Vector2' }, "Vector2"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Quaternion' }, "Quaternion"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Color3' }, "Color3"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Color4' }, "Color4"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: 'Size' }, "Size"))),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'label-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null, "Loop Mode"),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("select", { onChange: function (e) { return _this.handleLoopModeChange(e); }, value: this.state.loopMode },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CYCLE }, "Cycle"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_RELATIVE }, "Relative"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("option", { value: babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_3__["Animation"].ANIMATIONLOOPMODE_CONSTANT }, "Constant"))),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'confirm-buttons' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: 'Create', onClick: function () { return _this.addAnimation(); } })))));
+    };
+    return AddAnimation;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/anchorSvgPoint.tsx":
+/*!********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/anchorSvgPoint.tsx ***!
+  \********************************************************************************/
+/*! exports provided: AnchorSvgPoint */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnchorSvgPoint", function() { return AnchorSvgPoint; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var AnchorSvgPoint = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnchorSvgPoint, _super);
+    function AnchorSvgPoint(props) {
+        return _super.call(this, props) || this;
+    }
+    AnchorSvgPoint.prototype.select = function () {
+        this.props.selectControlPoint(this.props.type);
+    };
+    AnchorSvgPoint.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { x: this.props.control.x, y: this.props.control.y, style: { overflow: 'visible' }, onClick: function () { return _this.select(); } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("circle", { type: this.props.type, "data-id": this.props.index, className: "draggable control-point " + (this.props.active ? 'active' : ''), cx: "0", cy: "0", r: "1", stroke: "white", strokeWidth: this.props.selected ? 0 : 0, fill: this.props.active ? "#e9db1e" : "white" })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { className: "control-point " + (this.props.active ? 'active' : ''), x1: this.props.anchor.x, y1: this.props.anchor.y, x2: this.props.control.x, y2: this.props.control.y, strokeWidth: "1" })));
+    };
+    return AnchorSvgPoint;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent.tsx":
+/*!***********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent.tsx ***!
+  \***********************************************************************************************/
+/*! exports provided: AnimationCurveEditorComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnimationCurveEditorComponent", function() { return AnimationCurveEditorComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Animations/animation */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _svgDraggableArea__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./svgDraggableArea */ "./components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea.tsx");
+/* harmony import */ var _timeline__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./timeline */ "./components/actionTabs/tabs/propertyGrids/animations/timeline.tsx");
+/* harmony import */ var _playhead__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./playhead */ "./components/actionTabs/tabs/propertyGrids/animations/playhead.tsx");
+/* harmony import */ var _notification__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./notification */ "./components/actionTabs/tabs/propertyGrids/animations/notification.tsx");
+/* harmony import */ var _graphActionsBar__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graphActionsBar */ "./components/actionTabs/tabs/propertyGrids/animations/graphActionsBar.tsx");
+/* harmony import */ var _editorControls__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./editorControls */ "./components/actionTabs/tabs/propertyGrids/animations/editorControls.tsx");
+/* harmony import */ var _animationListTree__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./animationListTree */ "./components/actionTabs/tabs/propertyGrids/animations/animationListTree.tsx");
+
+
+
+
+
+
+
+
+
+
+
+
+__webpack_require__(/*! ./curveEditor.scss */ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor.scss");
+var AnimationCurveEditorComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationCurveEditorComponent, _super);
+    function AnimationCurveEditorComponent(props) {
+        var _this = _super.call(this, props) || this;
+        // Height scale *Review this functionaliy
+        _this._heightScale = 100;
+        _this._canvasLength = 20;
+        _this._svgKeyframes = [];
+        _this._isPlaying = false;
+        _this._entityName = _this.props.entity.id;
+        // Review is we really need this refs
+        _this._graphCanvas = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        //this._selectedCurve = React.createRef();
+        _this._svgCanvas = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        console.log(_this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]);
+        var initialSelection;
+        var initialPathData;
+        var initialLerpMode;
+        if (_this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
+            _this._isTargetedAnimation = true;
+            initialSelection = _this.props.entity.animation;
+            initialLerpMode =
+                initialSelection !== undefined
+                    ? _this.analizeAnimationForLerp(initialSelection)
+                    : false;
+            initialPathData =
+                initialSelection !== undefined
+                    ? _this.getPathData(initialSelection)
+                    : undefined;
+        }
+        else {
+            _this._isTargetedAnimation = false;
+            var hasAnimations = _this.props.entity.animations !== undefined ||
+                _this.props.entity.animations !== null
+                ? _this.props.entity.animations
+                : false;
+            initialSelection =
+                hasAnimations !== false ? hasAnimations && hasAnimations[0] : null;
+            initialLerpMode =
+                initialSelection !== undefined
+                    ? _this.analizeAnimationForLerp(_this.props.entity.animations && initialSelection)
+                    : false;
+            initialPathData = initialSelection && _this.getPathData(initialSelection);
+            initialPathData =
+                initialPathData === null || initialPathData === undefined
+                    ? undefined
+                    : initialPathData;
+        }
+        // will update this until we have a top scroll/zoom feature
+        var valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
+        _this.state = {
+            selected: initialSelection,
+            isOpen: true,
+            svgKeyframes: _this._svgKeyframes,
+            currentFrame: 0,
+            currentValue: 1,
+            isFlatTangentMode: false,
+            isTangentMode: false,
+            isBrokenMode: false,
+            lerpMode: initialLerpMode,
+            playheadOffset: _this._graphCanvas.current
+                ? _this._graphCanvas.current.children[0].clientWidth /
+                    (_this._canvasLength * 10)
+                : 0,
+            frameAxisLength: new Array(_this._canvasLength).fill(0).map(function (s, i) {
+                return { value: i * 10, label: i * 10 };
+            }),
+            valueAxisLength: new Array(10).fill(0).map(function (s, i) {
+                return { value: i * 10, label: valueInd[i] };
+            }),
+            notification: '',
+            currentPoint: undefined,
+            scale: 1,
+            playheadPos: 0,
+            isPlaying: _this.isAnimationPlaying(),
+            selectedPathData: initialPathData,
+            selectedCoordinate: 0,
+        };
+        return _this;
+    }
+    AnimationCurveEditorComponent.prototype.componentDidMount = function () {
+        var _this = this;
+        setTimeout(function () { return _this.resetPlayheadOffset(); }, 500);
+    };
+    /**
+     * Notifications
+     * To add notification we set the state and clear to make the notification bar hide.
+     */
+    AnimationCurveEditorComponent.prototype.clearNotification = function () {
+        this.setState({ notification: '' });
+    };
+    /**
+     * Zoom and Scroll
+     * This section handles zoom and scroll
+     * of the graph area.
+     */
+    AnimationCurveEditorComponent.prototype.zoom = function (e) {
+        e.nativeEvent.stopImmediatePropagation();
+        //console.log(e.deltaY);
+        var scaleX = 1;
+        if (Math.sign(e.deltaY) === -1) {
+            scaleX = this.state.scale - 0.01;
+        }
+        else {
+            scaleX = this.state.scale + 0.01;
+        }
+        this.setState({ scale: scaleX }, this.setAxesLength);
+    };
+    AnimationCurveEditorComponent.prototype.setAxesLength = function () {
+        var _this = this;
+        var length = 20;
+        var newlength = Math.round(this._canvasLength * this.state.scale); // Check Undefined, or NaN
+        if (!isNaN(newlength) || newlength !== undefined) {
+            length = newlength;
+        }
+        var highestFrame = 100;
+        if (this.state.selected !== null && this.state.selected !== undefined) {
+            highestFrame = this.state.selected.getHighestFrame();
+        }
+        if (length < (highestFrame * 2) / 10) {
+            length = Math.round((highestFrame * 2) / 10);
+        }
+        var valueLines = Math.round((this.state.scale * this._heightScale) / 10);
+        console.log(highestFrame);
+        var newFrameLength = new Array(length).fill(0).map(function (s, i) {
+            return { value: i * 10, label: i * 10 };
+        });
+        var newValueLength = new Array(valueLines).fill(0).map(function (s, i) {
+            return { value: i * 10, label: _this.getValueLabel(i * 10) };
+        });
+        this.setState({
+            frameAxisLength: newFrameLength,
+            valueAxisLength: newValueLength,
+        });
+        this.resetPlayheadOffset();
+    };
+    AnimationCurveEditorComponent.prototype.getValueLabel = function (i) {
+        // Need to update this when Y axis grows
+        var label = 0;
+        if (i === 0) {
+            label = 2;
+        }
+        if (i === 50) {
+            label = 1;
+        }
+        else {
+            label = (100 - i * 2) * 0.01 + 1;
+        }
+        return label;
+    };
+    AnimationCurveEditorComponent.prototype.resetPlayheadOffset = function () {
+        if (this._graphCanvas && this._graphCanvas.current) {
+            this.setState({
+                playheadOffset: this._graphCanvas.current.children[0].clientWidth /
+                    (this._canvasLength * 10 * this.state.scale),
+            });
+        }
+    };
+    /**
+     * Keyframe Manipulation
+     * This section handles events from SvgDraggableArea.
+     */
+    AnimationCurveEditorComponent.prototype.selectKeyframe = function (id) {
+        var _a;
+        var updatedKeyframes = (_a = this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.map(function (kf) {
+            if (kf.id === id) {
+                kf.selected = !kf.selected;
+            }
+            return kf;
+        });
+        this.setState({ svgKeyframes: updatedKeyframes });
+    };
+    AnimationCurveEditorComponent.prototype.selectedControlPoint = function (type, id) {
+        var _this = this;
+        var _a;
+        var updatedKeyframes = (_a = this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.map(function (kf) {
+            if (kf.id === id) {
+                _this.setState({ isFlatTangentMode: false });
+                if (type === 'left') {
+                    kf.isLeftActive = !kf.isLeftActive;
+                    kf.isRightActive = false;
+                }
+                if (type === 'right') {
+                    kf.isRightActive = !kf.isRightActive;
+                    kf.isLeftActive = false;
+                }
+            }
+            return kf;
+        });
+        this.setState({ svgKeyframes: updatedKeyframes });
+    };
+    AnimationCurveEditorComponent.prototype.updateValuePerCoordinate = function (dataType, value, newValue, coordinate) {
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT) {
+            value = newValue;
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].x:
+                    value.x = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].y:
+                    value.y = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].x:
+                    value.x = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].y:
+                    value.y = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].z:
+                    value.z = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].x:
+                    value.x = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].y:
+                    value.y = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].z:
+                    value.z = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].w:
+                    value.w = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].r:
+                    value.r = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].g:
+                    value.g = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].b:
+                    value.b = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].r:
+                    value.r = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].g:
+                    value.g = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].b:
+                    value.b = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].a:
+                    value.a = newValue;
+                    break;
+            }
+        }
+        if (dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_SIZE) {
+            switch (coordinate) {
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].width:
+                    value.width = newValue;
+                    break;
+                case _animationListTree__WEBPACK_IMPORTED_MODULE_9__["SelectedCoordinate"].g:
+                    value.height = newValue;
+                    break;
+            }
+        }
+        return value;
+    };
+    AnimationCurveEditorComponent.prototype.renderPoints = function (updatedSvgKeyFrame, id) {
+        var animation = this.state.selected;
+        // Bug: After play/stop we get an extra keyframe at 0
+        var index = parseInt(id.split('_')[3]);
+        var coordinate = parseInt(id.split('_')[2]);
+        var keys = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(animation.getKeys());
+        var newFrame = 0;
+        if (updatedSvgKeyFrame.keyframePoint.x !== 0) {
+            if (updatedSvgKeyFrame.keyframePoint.x > 0 &&
+                updatedSvgKeyFrame.keyframePoint.x < 1) {
+                newFrame = 1;
+            }
+            else {
+                newFrame = Math.round(updatedSvgKeyFrame.keyframePoint.x);
+            }
+        }
+        keys[index].frame = newFrame; // This value comes as percentage/frame/time
+        // Calculate value for Vector3...
+        var updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) /
+            this._heightScale) *
+            2; // this value comes inverted svg from 0 = 100 to 100 = 0
+        keys[index].value = this.updateValuePerCoordinate(animation.dataType, keys[index].value, updatedValue, coordinate);
+        if (updatedSvgKeyFrame.isLeftActive) {
+            if (updatedSvgKeyFrame.leftControlPoint !== null) {
+                // Rotate
+                var newValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) /
+                    this._heightScale) *
+                    2;
+                var keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) /
+                    this._heightScale) *
+                    2;
+                var updatedValue_1 = keyframeValue - newValue;
+                keys[index].inTangent = this.updateValuePerCoordinate(animation.dataType, keys[index].inTangent, updatedValue_1, coordinate);
+                if (!this.state.isBrokenMode) {
+                    // Right control point if exists
+                    if (updatedSvgKeyFrame.rightControlPoint !== null) {
+                        // Sets opposite value
+                        keys[index].outTangent = keys[index].inTangent * -1;
+                    }
+                }
+            }
+        }
+        if (updatedSvgKeyFrame.isRightActive) {
+            if (updatedSvgKeyFrame.rightControlPoint !== null) {
+                // Rotate
+                var newValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) /
+                    this._heightScale) *
+                    2;
+                var keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) /
+                    this._heightScale) *
+                    2;
+                var updatedValue_2 = keyframeValue - newValue;
+                keys[index].outTangent = this.updateValuePerCoordinate(animation.dataType, keys[index].outTangent, updatedValue_2, coordinate);
+                if (!this.state.isBrokenMode) {
+                    if (updatedSvgKeyFrame.leftControlPoint !== null) {
+                        // Sets opposite value
+                        keys[index].inTangent = keys[index].outTangent * -1;
+                    }
+                }
+            }
+        }
+        animation.setKeys(keys);
+        this.selectAnimation(animation, coordinate);
+    };
+    /**
+     * Actions
+     * This section handles events from GraphActionsBar.
+     */
+    AnimationCurveEditorComponent.prototype.handleFrameChange = function (event) {
+        event.preventDefault();
+        this.changeCurrentFrame(parseInt(event.target.value));
+    };
+    AnimationCurveEditorComponent.prototype.handleValueChange = function (event) {
+        var _this = this;
+        event.preventDefault();
+        this.setState({ currentValue: parseFloat(event.target.value) }, function () {
+            if (_this.state.selected !== null) {
+                var animation = _this.state.selected;
+                var keys = animation.getKeys();
+                var isKeyframe = keys.find(function (k) { return k.frame === _this.state.currentFrame; });
+                if (isKeyframe) {
+                    var updatedKeys = keys.map(function (k) {
+                        if (k.frame === _this.state.currentFrame) {
+                            k.value = _this.state.currentValue;
+                        }
+                        return k;
+                    });
+                    _this.state.selected.setKeys(updatedKeys);
+                    _this.selectAnimation(animation);
+                }
+            }
+        });
+    };
+    AnimationCurveEditorComponent.prototype.setFlatTangent = function () {
+        var _this = this;
+        if (this.state.selected !== null) {
+            var animation_1 = this.state.selected;
+            this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, function () {
+                return _this.selectAnimation(animation_1);
+            });
+        }
+    };
+    // Use this for Bezier curve mode
+    AnimationCurveEditorComponent.prototype.setTangentMode = function () {
+        var _this = this;
+        if (this.state.selected !== null) {
+            var animation_2 = this.state.selected;
+            this.setState({ isTangentMode: !this.state.isTangentMode }, function () {
+                return _this.selectAnimation(animation_2);
+            });
+        }
+    };
+    AnimationCurveEditorComponent.prototype.setBrokenMode = function () {
+        var _this = this;
+        if (this.state.selected !== null) {
+            var animation_3 = this.state.selected;
+            this.setState({ isBrokenMode: !this.state.isBrokenMode }, function () {
+                return _this.selectAnimation(animation_3);
+            });
+        }
+    };
+    AnimationCurveEditorComponent.prototype.setLerpMode = function () {
+        var _this = this;
+        if (this.state.selected !== null) {
+            var animation_4 = this.state.selected;
+            this.setState({ lerpMode: !this.state.lerpMode }, function () {
+                return _this.selectAnimation(animation_4);
+            });
+        }
+    };
+    AnimationCurveEditorComponent.prototype.addKeyframeClick = function () {
+        if (this.state.selected !== null) {
+            var currentAnimation = this.state.selected;
+            if (currentAnimation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT) {
+                var keys = currentAnimation.getKeys();
+                var x = this.state.currentFrame;
+                var y = this.state.currentValue;
+                keys.push({ frame: x, value: y, inTangent: 0, outTangent: 0 });
+                keys.sort(function (a, b) { return a.frame - b.frame; });
+                currentAnimation.setKeys(keys);
+                this.selectAnimation(currentAnimation);
+            }
+        }
+    };
+    AnimationCurveEditorComponent.prototype.removeKeyframeClick = function () {
+        if (this.state.selected !== null) {
+            var currentAnimation = this.state.selected;
+            if (currentAnimation.dataType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT) {
+                var keys = currentAnimation.getKeys();
+                var x_1 = this.state.currentFrame;
+                var filteredKeys = keys.filter(function (kf) { return kf.frame !== x_1; });
+                currentAnimation.setKeys(filteredKeys);
+                this.selectAnimation(currentAnimation);
+            }
+        }
+    };
+    AnimationCurveEditorComponent.prototype.addKeyFrame = function (event) {
+        var _a;
+        event.preventDefault();
+        if (this.state.selected !== null) {
+            var svg = event.target;
+            var pt = svg.createSVGPoint();
+            pt.x = event.clientX;
+            pt.y = event.clientY;
+            var inverse = (_a = svg.getScreenCTM()) === null || _a === void 0 ? void 0 : _a.inverse();
+            var cursorpt = pt.matrixTransform(inverse);
+            var currentAnimation = this.state.selected;
+            var keys = currentAnimation.getKeys();
+            var height = 100;
+            var middle = height / 2;
+            var keyValue;
+            if (cursorpt.y < middle) {
+                keyValue = 1 + (100 / cursorpt.y) * 0.1;
+            }
+            if (cursorpt.y > middle) {
+                keyValue = 1 - (100 / cursorpt.y) * 0.1;
+            }
+            keys.push({ frame: cursorpt.x, value: keyValue });
+            currentAnimation.setKeys(keys);
+            this.selectAnimation(currentAnimation);
+        }
+    };
+    /**
+     * Curve Rendering Functions
+     * This section handles how to render curves.
+     */
+    AnimationCurveEditorComponent.prototype.linearInterpolation = function (keyframes, data, middle) {
+        var _this = this;
+        keyframes.forEach(function (key, i) {
+            // identify type of value and split...
+            var point = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
+            point.x = key.frame;
+            point.y = _this._heightScale - key.value * middle;
+            _this.setKeyframePointLinear(point, i);
+            if (i !== 0) {
+                data += " L" + point.x + " " + point.y;
+            }
+        });
+        return data;
+    };
+    AnimationCurveEditorComponent.prototype.setKeyframePointLinear = function (point, index) {
+        // here set the ID to a unique id
+        var svgKeyframe = {
+            keyframePoint: point,
+            rightControlPoint: null,
+            leftControlPoint: null,
+            id: index.toString(),
+            selected: false,
+            isLeftActive: false,
+            isRightActive: false,
+        };
+        this._svgKeyframes.push(svgKeyframe);
+    };
+    AnimationCurveEditorComponent.prototype.flatTangents = function (keyframes, dataType) {
+        var _this = this;
+        // Checks if Flat Tangent is active (tangents are set to zero)
+        var flattened;
+        if (this.state && this.state.isFlatTangentMode) {
+            flattened = keyframes.map(function (kf) {
+                if (kf.inTangent !== undefined) {
+                    kf.inTangent = _this.returnZero(dataType);
+                }
+                if (kf.outTangent !== undefined) {
+                    kf.outTangent = _this.returnZero(dataType);
+                }
+                return kf;
+            });
+        }
+        else {
+            flattened = keyframes;
+        }
+        return flattened;
+    };
+    AnimationCurveEditorComponent.prototype.returnZero = function (dataType) {
+        var type;
+        switch (dataType) {
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
+                type = 0;
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
+                type = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector3"].Zero();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
+                type = babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"].Zero();
+                break;
+        }
+        return type;
+    };
+    AnimationCurveEditorComponent.prototype.getValueAsArray = function (valueType, value) {
+        var valueAsArray = [];
+        switch (valueType) {
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
+                valueAsArray = [value];
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                valueAsArray = value.asArray();
+                break;
+            case babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_SIZE:
+                valueAsArray = [value.width, value.height];
+                break;
+        }
+        return valueAsArray;
+    };
+    AnimationCurveEditorComponent.prototype.getPathData = function (animation) {
+        if (animation === null) {
+            return undefined;
+        }
+        var keyframes = animation.getKeys();
+        if (keyframes === undefined) {
+            return undefined;
+        }
+        else {
+            var _a = this.getAnimationData(animation), easingMode = _a.easingMode, easingType = _a.easingType, usesTangents = _a.usesTangents, valueType = _a.valueType, highestFrame = _a.highestFrame, name_1 = _a.name, targetProperty = _a.targetProperty;
+            keyframes = this.flatTangents(keyframes, valueType);
+            var startKey = keyframes[0];
+            var middle = this._heightScale / 2;
+            var collection = [];
+            var colors = ['red', 'green', 'blue', 'white', '#7a4ece'];
+            var startValue = this.getValueAsArray(valueType, startKey.value);
+            for (var d = 0; d < startValue.length; d++) {
+                var id = name_1 + "_" + targetProperty + "_" + d;
+                var curveColor = valueType === babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT ? colors[4] : colors[d];
+                // START OF LINE/CURVE
+                var data = "M" + startKey.frame + ", " + (this._heightScale - startValue[d] * middle); //
+                if (this.state && this.state.lerpMode) {
+                    data = this.linearInterpolation(keyframes, data, middle);
+                }
+                else {
+                    if (usesTangents) {
+                        data = this.curvePathWithTangents(keyframes, data, middle, valueType, d, id);
+                    }
+                    else {
+                        if (easingType !== undefined && easingMode !== undefined) {
+                            var easingFunction = animation.getEasingFunction();
+                            data = this.curvePath(keyframes, data, middle, easingFunction);
+                        }
+                        else {
+                            if (this.state !== undefined) {
+                                var emptyTangents = keyframes.map(function (kf, i) {
+                                    if (i === 0) {
+                                        kf.outTangent = 0;
+                                    }
+                                    else if (i === keyframes.length - 1) {
+                                        kf.inTangent = 0;
+                                    }
+                                    else {
+                                        kf.inTangent = 0;
+                                        kf.outTangent = 0;
+                                    }
+                                    return kf;
+                                });
+                                data = this.curvePathWithTangents(emptyTangents, data, middle, valueType, d, id);
+                            }
+                            else {
+                                data = this.linearInterpolation(keyframes, data, middle);
+                            }
+                        }
+                    }
+                }
+                collection.push({
+                    pathData: data,
+                    pathLength: highestFrame,
+                    domCurve: react__WEBPACK_IMPORTED_MODULE_1__["createRef"](),
+                    color: curveColor,
+                    id: id,
+                });
+            }
+            return collection;
+        }
+    };
+    AnimationCurveEditorComponent.prototype.getAnimationData = function (animation) {
+        // General Props
+        var loopMode = animation.loopMode;
+        var name = animation.name;
+        var blendingSpeed = animation.blendingSpeed;
+        var targetProperty = animation.targetProperty;
+        var targetPropertyPath = animation.targetPropertyPath;
+        var framesPerSecond = animation.framePerSecond;
+        var highestFrame = animation.getHighestFrame();
+        //let serialized = animation.serialize();
+        var usesTangents = animation
+            .getKeys()
+            .find(function (kf) {
+            return kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent');
+        }) !== undefined
+            ? true
+            : false;
+        var valueType = animation.dataType;
+        // easing properties
+        var easingType, easingMode;
+        var easingFunction = animation.getEasingFunction();
+        if (easingFunction === undefined) {
+            easingType = undefined;
+            easingMode = undefined;
+        }
+        else {
+            easingType = easingFunction.constructor.name;
+            easingMode = easingFunction.getEasingMode();
+        }
+        return {
+            loopMode: loopMode,
+            name: name,
+            blendingSpeed: blendingSpeed,
+            targetPropertyPath: targetPropertyPath,
+            targetProperty: targetProperty,
+            framesPerSecond: framesPerSecond,
+            highestFrame: highestFrame,
+            usesTangents: usesTangents,
+            easingType: easingType,
+            easingMode: easingMode,
+            valueType: valueType,
+        };
+    };
+    AnimationCurveEditorComponent.prototype.curvePathWithTangents = function (keyframes, data, middle, type, coordinate, animationName) {
+        var _this = this;
+        keyframes.forEach(function (key, i) {
+            var _a;
+            // Create a unique id for curve
+            var curveId = animationName + '_' + i;
+            // identify type of value and split...
+            var keyframe_valueAsArray = _this.getValueAsArray(type, key.value)[coordinate];
+            var svgKeyframe;
+            var outTangent;
+            var inTangent;
+            var defaultWeight = 5;
+            var inT = key.inTangent === undefined
+                ? null
+                : _this.getValueAsArray(type, key.inTangent)[coordinate];
+            var outT = key.outTangent === undefined
+                ? null
+                : _this.getValueAsArray(type, key.outTangent)[coordinate];
+            var y = _this._heightScale - keyframe_valueAsArray * middle;
+            var nextKeyframe = keyframes[i + 1];
+            var prevKeyframe = keyframes[i - 1];
+            if (nextKeyframe !== undefined) {
+                var distance = keyframes[i + 1].frame - key.frame;
+                defaultWeight = distance * 0.33;
+            }
+            if (prevKeyframe !== undefined) {
+                var distance = key.frame - keyframes[i - 1].frame;
+                defaultWeight = distance * 0.33;
+            }
+            if (inT !== null) {
+                var valueIn = y * inT + y;
+                inTangent = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame - defaultWeight, valueIn);
+            }
+            else {
+                inTangent = null;
+            }
+            if (outT !== null) {
+                var valueOut = y * outT + y;
+                outTangent = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame + defaultWeight, valueOut);
+            }
+            else {
+                outTangent = null;
+            }
+            if (i === 0) {
+                svgKeyframe = {
+                    keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - keyframe_valueAsArray * middle),
+                    rightControlPoint: outTangent,
+                    leftControlPoint: null,
+                    id: curveId,
+                    selected: false,
+                    isLeftActive: false,
+                    isRightActive: false,
+                };
+                if (outTangent !== null) {
+                    data += " C" + outTangent.x + " " + outTangent.y + " ";
+                }
+            }
+            else {
+                svgKeyframe = {
+                    keyframePoint: new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - keyframe_valueAsArray * middle),
+                    rightControlPoint: outTangent,
+                    leftControlPoint: inTangent,
+                    id: curveId,
+                    selected: false,
+                    isLeftActive: false,
+                    isRightActive: false,
+                };
+                if (outTangent !== null && inTangent !== null) {
+                    data += " " + inTangent.x + " " + inTangent.y + " " + svgKeyframe.keyframePoint.x + " " + svgKeyframe.keyframePoint.y + " C" + outTangent.x + " " + outTangent.y + " ";
+                }
+                else if (inTangent !== null) {
+                    data += " " + inTangent.x + " " + inTangent.y + " " + svgKeyframe.keyframePoint.x + " " + svgKeyframe.keyframePoint.y + " ";
+                }
+            }
+            if (_this.state) {
+                var prev = (_a = _this.state.svgKeyframes) === null || _a === void 0 ? void 0 : _a.find(function (kf) { return kf.id === curveId; });
+                if (prev) {
+                    svgKeyframe.isLeftActive = prev === null || prev === void 0 ? void 0 : prev.isLeftActive;
+                    svgKeyframe.isRightActive = prev === null || prev === void 0 ? void 0 : prev.isRightActive;
+                    svgKeyframe.selected = prev === null || prev === void 0 ? void 0 : prev.selected;
+                }
+            }
+            _this._svgKeyframes.push(svgKeyframe);
+        }, this);
+        return data;
+    };
+    AnimationCurveEditorComponent.prototype.curvePath = function (keyframes, data, middle, easingFunction) {
+        var _this = this;
+        // This will get 1/4 and 3/4 of points in eased curve
+        var u = 0.25;
+        var v = 0.75;
+        keyframes.forEach(function (key, i) {
+            // identify type of value and split...
+            // Gets previous initial point of curve segment
+            var pointA = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
+            if (i === 0) {
+                pointA.x = key.frame;
+                pointA.y = _this._heightScale - key.value * middle;
+                _this.setKeyframePoint([pointA], i, keyframes.length);
+            }
+            else {
+                pointA.x = keyframes[i - 1].frame;
+                pointA.y = _this._heightScale - keyframes[i - 1].value * middle;
+                // Gets the end point of this curve segment
+                var pointB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"](key.frame, _this._heightScale - key.value * middle);
+                // Get easing value of percentage to get the bezier control points below
+                var du = easingFunction.easeInCore(u); // What to do here, when user edits the curve? Option 1: Modify the curve with the new control points as BezierEaseCurve(x,y,z,w)
+                var dv = easingFunction.easeInCore(v); // Option 2: Create a easeInCore function and adapt it with the new control points values... needs more revision.
+                // Direction of curve up/down
+                var yInt25 = 0;
+                if (pointB.y > pointA.y) {
+                    // if pointB.y > pointA.y = goes down
+                    yInt25 = (pointB.y - pointA.y) * du + pointA.y;
+                }
+                else if (pointB.y < pointA.y) {
+                    // if pointB.y < pointA.y = goes up
+                    yInt25 = pointA.y - (pointA.y - pointB.y) * du;
+                }
+                var yInt75 = 0;
+                if (pointB.y > pointA.y) {
+                    yInt75 = (pointB.y - pointA.y) * dv + pointA.y;
+                }
+                else if (pointB.y < pointA.y) {
+                    yInt75 = pointA.y - (pointA.y - pointB.y) * dv;
+                }
+                // Intermediate points in curve
+                var intermediatePoint25 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]((pointB.x - pointA.x) * u + pointA.x, yInt25);
+                var intermediatePoint75 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]((pointB.x - pointA.x) * v + pointA.x, yInt75);
+                // Gets the four control points of bezier curve
+                var controlPoints = _this.interpolateControlPoints(pointA, intermediatePoint25, u, intermediatePoint75, v, pointB);
+                if (controlPoints === undefined) {
+                    console.log('error getting bezier control points');
+                }
+                else {
+                    _this.setKeyframePoint(controlPoints, i, keyframes.length);
+                    data += " C" + controlPoints[1].x + " " + controlPoints[1].y + " " + controlPoints[2].x + " " + controlPoints[2].y + " " + controlPoints[3].x + " " + controlPoints[3].y;
+                }
+            }
+        });
+        return data;
+    };
+    AnimationCurveEditorComponent.prototype.setKeyframePoint = function (controlPoints, index, keyframesCount) {
+        var svgKeyframe;
+        if (index === 0) {
+            svgKeyframe = {
+                keyframePoint: controlPoints[0],
+                rightControlPoint: null,
+                leftControlPoint: null,
+                id: index.toString(),
+                selected: false,
+                isLeftActive: false,
+                isRightActive: false,
+            };
+        }
+        else {
+            this._svgKeyframes[index - 1].rightControlPoint = controlPoints[1];
+            svgKeyframe = {
+                keyframePoint: controlPoints[3],
+                rightControlPoint: null,
+                leftControlPoint: controlPoints[2],
+                id: index.toString(),
+                selected: false,
+                isLeftActive: false,
+                isRightActive: false,
+            };
+        }
+        this._svgKeyframes.push(svgKeyframe);
+    };
+    AnimationCurveEditorComponent.prototype.interpolateControlPoints = function (p0, p1, u, p2, v, p3) {
+        var a = 0.0;
+        var b = 0.0;
+        var c = 0.0;
+        var d = 0.0;
+        var det = 0.0;
+        var q1 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
+        var q2 = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
+        var controlA = p0;
+        var controlB = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
+        var controlC = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]();
+        var controlD = p3;
+        if (u <= 0.0 || u >= 1.0 || v <= 0.0 || v >= 1.0 || u >= v) {
+            return undefined;
+        }
+        a = 3 * (1 - u) * (1 - u) * u;
+        b = 3 * (1 - u) * u * u;
+        c = 3 * (1 - v) * (1 - v) * v;
+        d = 3 * (1 - v) * v * v;
+        det = a * d - b * c;
+        if (det == 0.0)
+            return undefined;
+        q1.x = p1.x - ((1 - u) * (1 - u) * (1 - u) * p0.x + u * u * u * p3.x);
+        q1.y = p1.y - ((1 - u) * (1 - u) * (1 - u) * p0.y + u * u * u * p3.y);
+        q2.x = p2.x - ((1 - v) * (1 - v) * (1 - v) * p0.x + v * v * v * p3.x);
+        q2.y = p2.y - ((1 - v) * (1 - v) * (1 - v) * p0.y + v * v * v * p3.y);
+        controlB.x = (d * q1.x - b * q2.x) / det;
+        controlB.y = (d * q1.y - b * q2.y) / det;
+        controlC.x = (-c * q1.x + a * q2.x) / det;
+        controlC.y = (-c * q1.y + a * q2.y) / det;
+        return [controlA, controlB, controlC, controlD];
+    };
+    /**
+     * Core functions
+     * This section handles main Curve Editor Functions.
+     */
+    AnimationCurveEditorComponent.prototype.selectAnimation = function (animation, coordinate) {
+        var _a;
+        this._svgKeyframes = [];
+        var updatedPath;
+        var filteredSvgKeys;
+        var selectedCurve = 0;
+        if (coordinate === undefined) {
+            this.playStopAnimation();
+            updatedPath = this.getPathData(animation);
+            if (updatedPath === undefined) {
+                console.log('no keyframes in this animation');
+            }
+        }
+        else {
+            var curves = this.getPathData(animation);
+            if (curves === undefined) {
+                console.log('no keyframes in this animation');
+            }
+            updatedPath = [];
+            filteredSvgKeys = (_a = this._svgKeyframes) === null || _a === void 0 ? void 0 : _a.filter(function (curve) {
+                var id = parseInt(curve.id.split('_')[2]);
+                if (id === coordinate) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            });
+            curves === null || curves === void 0 ? void 0 : curves.map(function (curve) {
+                var id = parseInt(curve.id.split('_')[2]);
+                if (id === coordinate) {
+                    updatedPath.push(curve);
+                }
+            });
+            selectedCurve = coordinate;
+        }
+        // check for empty svgKeyframes, lastframe, selected
+        this.setState({
+            selected: animation,
+            svgKeyframes: coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes,
+            selectedPathData: updatedPath,
+            selectedCoordinate: selectedCurve,
+        });
+    };
+    AnimationCurveEditorComponent.prototype.isAnimationPlaying = function () {
+        var target = this.props.entity;
+        if (this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
+            target = this.props.entity.target;
+        }
+        return this.props.scene.getAllAnimatablesByTarget(target).length > 0;
+    };
+    AnimationCurveEditorComponent.prototype.playStopAnimation = function () {
+        var target = this.props.entity;
+        if (this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
+            target = this.props.entity.target;
+        }
+        this._isPlaying =
+            this.props.scene.getAllAnimatablesByTarget(target).length > 0;
+        if (this._isPlaying) {
+            this.props.playOrPause && this.props.playOrPause();
+            return true;
+        }
+        else {
+            this._isPlaying = false;
+            return false;
+        }
+    };
+    AnimationCurveEditorComponent.prototype.analizeAnimationForLerp = function (animation) {
+        if (animation !== null) {
+            var _a = this.getAnimationData(animation), easingMode = _a.easingMode, easingType = _a.easingType, usesTangents = _a.usesTangents;
+            if (easingType === undefined &&
+                easingMode === undefined &&
+                !usesTangents) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    };
+    /**
+     * Timeline
+     * This section controls the timeline.
+     */
+    AnimationCurveEditorComponent.prototype.changeCurrentFrame = function (frame) {
+        var currentValue;
+        if (this.state.selectedPathData) {
+            var selectedCurve = this.state.selectedPathData[this.state.selectedCoordinate].domCurve.current;
+            if (selectedCurve) {
+                var curveLength = selectedCurve.getTotalLength();
+                var frameValue = (frame * curveLength) / 100;
+                var currentP = selectedCurve.getPointAtLength(frameValue);
+                var middle = this._heightScale / 2;
+                var offset = ((currentP === null || currentP === void 0 ? void 0 : currentP.y) * this._heightScale - Math.pow(this._heightScale, 2) / 2) /
+                    middle /
+                    this._heightScale;
+                var unit = Math.sign(offset);
+                currentValue = unit === -1 ? Math.abs(offset + unit) : unit - offset;
+                this.setState({
+                    currentFrame: frame,
+                    currentValue: currentValue,
+                    currentPoint: currentP,
+                });
+            }
+        }
+    };
+    AnimationCurveEditorComponent.prototype.updateFrameInKeyFrame = function (frame, index) {
+        if (this.state && this.state.selected) {
+            var animation = this.state.selected;
+            var keys = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(animation.getKeys());
+            keys[index].frame = frame;
+            animation.setKeys(keys);
+            this.selectAnimation(animation);
+        }
+    };
+    AnimationCurveEditorComponent.prototype.playPause = function (direction) {
+        this.registerObs();
+        if (this.state.selected) {
+            var target = this.props.entity;
+            if (this.props.entity instanceof babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
+                target = this.props.entity.target;
+            }
+            if (this.state.isPlaying) {
+                this.props.scene.stopAnimation(target);
+                this.setState({ isPlaying: false });
+                this._isPlaying = false;
+                this.forceUpdate();
+            }
+            else {
+                var keys = this.state.selected.getKeys();
+                var firstFrame = keys[0].frame;
+                var LastFrame = keys[keys.length - 1].frame;
+                if (direction === 1) {
+                    this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, true);
+                }
+                if (direction === -1) {
+                    this._mainAnimatable = this.props.scene.beginAnimation(target, LastFrame, firstFrame, true);
+                }
+                this._isPlaying = true;
+                this.setState({ isPlaying: true });
+                this.forceUpdate();
+            }
+        }
+    };
+    AnimationCurveEditorComponent.prototype.moveFrameTo = function (e) {
+        var svg = e.currentTarget;
+        var CTM = svg.getScreenCTM();
+        var position;
+        if (CTM) {
+            position = new babylonjs_Animations_animation__WEBPACK_IMPORTED_MODULE_2__["Vector2"]((e.clientX - CTM.e) / CTM.a, (e.clientY - CTM.f) / CTM.d);
+            var selectedFrame = Math.round(position.x);
+            this.setState({ currentFrame: selectedFrame });
+        }
+    };
+    AnimationCurveEditorComponent.prototype.registerObs = function () {
+        var _this = this;
+        this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(function () {
+            if (!_this._isPlaying || !_this._mainAnimatable) {
+                return;
+            }
+            _this.setState({
+                currentFrame: Math.round(_this._mainAnimatable.masterFrame),
+            });
+        });
+    };
+    AnimationCurveEditorComponent.prototype.componentWillUnmount = function () {
+        if (this._onBeforeRenderObserver) {
+            this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
+    };
+    AnimationCurveEditorComponent.prototype.render = function () {
+        var _this = this;
+        var _a;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: 'animation-curve-editor' },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_notification__WEBPACK_IMPORTED_MODULE_6__["Notification"], { message: this.state.notification, open: this.state.notification !== '' ? true : false, close: function () { return _this.clearNotification(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_graphActionsBar__WEBPACK_IMPORTED_MODULE_7__["GraphActionsBar"], { enabled: this.state.selected === null || this.state.selected === undefined
+                    ? false
+                    : true, title: this._entityName, close: this.props.close, currentValue: this.state.currentValue, currentFrame: this.state.currentFrame, handleFrameChange: function (e) { return _this.handleFrameChange(e); }, handleValueChange: function (e) { return _this.handleValueChange(e); }, addKeyframe: function () { return _this.addKeyframeClick(); }, removeKeyframe: function () { return _this.removeKeyframeClick(); }, brokenMode: this.state.isBrokenMode, brokeTangents: function () { return _this.setBrokenMode(); }, lerpMode: this.state.lerpMode, setLerpMode: function () { return _this.setLerpMode(); }, flatTangent: function () { return _this.setFlatTangent(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'content' },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'row' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_editorControls__WEBPACK_IMPORTED_MODULE_8__["EditorControls"], { selectAnimation: function (animation, axis) { return _this.selectAnimation(animation, axis); }, isTargetedAnimation: this._isTargetedAnimation, entity: this.props.entity, selected: this.state.selected, lockObject: this.props.lockObject, setNotificationMessage: function (message) {
+                            _this.setState({ notification: message });
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._graphCanvas, className: 'graph-chart', onWheel: function (e) { return _this.zoom(e); } },
+                        this.state.svgKeyframes && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_svgDraggableArea__WEBPACK_IMPORTED_MODULE_3__["SvgDraggableArea"], { ref: this._svgCanvas, selectKeyframe: function (id) { return _this.selectKeyframe(id); }, viewBoxScale: this.state.frameAxisLength.length, scale: this.state.scale, keyframeSvgPoints: this.state.svgKeyframes, selectedControlPoint: function (type, id) {
+                                return _this.selectedControlPoint(type, id);
+                            }, updatePosition: function (updatedSvgKeyFrame, id) { return _this.renderPoints(updatedSvgKeyFrame, id); } }, (_a = this.state.selectedPathData) === null || _a === void 0 ? void 0 :
+                            _a.map(function (curve, i) { return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("path", { key: i, ref: curve.domCurve, pathLength: curve.pathLength, id: 'curve', d: curve.pathData, style: {
+                                    stroke: curve.color,
+                                    fill: 'none',
+                                    strokeWidth: '0.5',
+                                } })); }),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", null,
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("rect", { x: '-4%', y: '0%', width: '5%', height: '101%', fill: '#222' })),
+                            this.state.valueAxisLength.map(function (f, i) {
+                                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i },
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: '-4', y: f.value, dx: '0', dy: '1', style: { fontSize: 0.2 * _this.state.scale + "em" } }, f.label.toFixed(1)),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: '0', y1: f.value, x2: '105%', y2: f.value })));
+                            }),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", null,
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("rect", { onClick: function (e) { return _this.moveFrameTo(e); }, x: '0%', y: '91%', width: '105%', height: '10%', fill: '#222', style: { cursor: 'pointer' } })),
+                            this.state.frameAxisLength.map(function (f, i) { return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: i, x: '0', y: '96%' },
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: f.value, y: '0', dx: '2px', style: { fontSize: 0.2 * _this.state.scale + "em" } }, f.value),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: f.value, y1: '0', x2: f.value, y2: '5%' }))); }))),
+                        this.state.selected === null ||
+                            this.state.selected === undefined ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_playhead__WEBPACK_IMPORTED_MODULE_5__["Playhead"], { frame: this.state.currentFrame, offset: this.state.playheadOffset, onCurrentFrameChange: function (frame) {
+                                return _this.changeCurrentFrame(frame);
+                            } })))),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'row-bottom' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_timeline__WEBPACK_IMPORTED_MODULE_4__["Timeline"], { currentFrame: this.state.currentFrame, playPause: function (direction) { return _this.playPause(direction); }, isPlaying: this.state.isPlaying, dragKeyframe: function (frame, index) {
+                            return _this.updateFrameInKeyFrame(frame, index);
+                        }, onCurrentFrameChange: function (frame) {
+                            return _this.changeCurrentFrame(frame);
+                        }, keyframes: this.state.selected && this.state.selected.getKeys(), selected: this.state.selected && this.state.selected.getKeys()[0] })))));
+    };
+    return AnimationCurveEditorComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx":
+/*!*****************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx ***!
+  \*****************************************************************************************************/
 /*! exports provided: AnimationGroupGridComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -58519,10 +60057,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
-/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+
 
 
 
@@ -58617,6 +60157,9 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
         var animationGroup = this.props.animationGroup;
         var playButtonText = animationGroup.isPlaying ? "Pause" : "Play";
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: animationGroup.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_6__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: animationGroup, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONTROLS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: playButtonText, onClick: function () { return _this.playOrPause(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Speed ratio", minimum: 0, maximum: 10, step: 0.1, target: animationGroup, propertyName: "speedRatio", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -58634,10 +60177,215 @@ var AnimationGroupGridComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx":
-/*!*************************************************************************************!*\
-  !*** ./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx ***!
-  \*************************************************************************************/
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/animationListTree.tsx":
+/*!***********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/animationListTree.tsx ***!
+  \***********************************************************************************/
+/*! exports provided: SelectedCoordinate, AnimationListTree */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SelectedCoordinate", function() { return SelectedCoordinate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnimationListTree", function() { return AnimationListTree; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Animations/animationGroup */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/iconButtonLineComponent */ "./components/actionTabs/lines/iconButtonLineComponent.tsx");
+
+
+
+
+
+var SelectedCoordinate;
+(function (SelectedCoordinate) {
+    SelectedCoordinate[SelectedCoordinate["x"] = 0] = "x";
+    SelectedCoordinate[SelectedCoordinate["y"] = 1] = "y";
+    SelectedCoordinate[SelectedCoordinate["z"] = 2] = "z";
+    SelectedCoordinate[SelectedCoordinate["w"] = 3] = "w";
+    SelectedCoordinate[SelectedCoordinate["r"] = 0] = "r";
+    SelectedCoordinate[SelectedCoordinate["g"] = 1] = "g";
+    SelectedCoordinate[SelectedCoordinate["b"] = 2] = "b";
+    SelectedCoordinate[SelectedCoordinate["a"] = 3] = "a";
+    SelectedCoordinate[SelectedCoordinate["width"] = 0] = "width";
+    SelectedCoordinate[SelectedCoordinate["height"] = 1] = "height";
+})(SelectedCoordinate || (SelectedCoordinate = {}));
+var AnimationListTree = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationListTree, _super);
+    function AnimationListTree(props) {
+        var _a;
+        var _this = _super.call(this, props) || this;
+        var animationList = _this.props.entity.animations && ((_a = _this.props.entity.animations) === null || _a === void 0 ? void 0 : _a.map(function (animation, i) {
+            return { index: i, name: animation.name, property: animation.targetProperty, selected: false, open: false };
+        }));
+        _this.state = { list: animationList !== null && animationList !== void 0 ? animationList : [], selectedCoordinate: 0, selectedAnimation: 0 };
+        return _this;
+    }
+    AnimationListTree.prototype.deleteAnimation = function () {
+        var currentSelected = this.props.selected;
+        if (this.props.entity instanceof babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) {
+            console.log("no animation remove allowed");
+        }
+        else {
+            var animations = this.props.entity.animations;
+            if (animations) {
+                var updatedAnimations = animations.filter(function (anim) { return anim !== currentSelected; });
+                this.props.entity.animations = updatedAnimations;
+                this.generateList();
+            }
+        }
+    };
+    AnimationListTree.prototype.generateList = function () {
+        var _a;
+        var animationList = this.props.entity.animations && ((_a = this.props.entity.animations) === null || _a === void 0 ? void 0 : _a.map(function (animation, i) {
+            return { index: i, name: animation.name, property: animation.targetProperty, selected: false, open: false };
+        }));
+        if ((animationList === null || animationList === void 0 ? void 0 : animationList.length) === 0) {
+            this.props.empty();
+        }
+        this.setState({ list: animationList !== null && animationList !== void 0 ? animationList : [] });
+    };
+    AnimationListTree.prototype.editAnimation = function () {
+        console.log('Edit animation'); // TODO. Implement the edit options here
+    };
+    AnimationListTree.prototype.toggleProperty = function (index) {
+        var item = this.state.list[index];
+        item.open = !item.open;
+    };
+    AnimationListTree.prototype.setSelectedCoordinate = function (animation, coordinate, index) {
+        this.setState({ selectedCoordinate: coordinate, selectedAnimation: index });
+        this.props.selectAnimation(animation, SelectedCoordinate.x);
+    };
+    AnimationListTree.prototype.setListItem = function (animation, i) {
+        var _this = this;
+        var element;
+        switch (animation.dataType) {
+            case babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_FLOAT:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: this.props.selected && this.props.selected.name === animation.name ? 'property active' : 'property', key: i, onClick: function () { return _this.props.selectAnimation(animation); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-bullet" }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["IconButtonLineComponent"], { tooltip: "Options", icon: "small animation-options", onClick: function () { return _this.editAnimation(); } }),
+                    !(this.props.entity instanceof babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) ? this.props.selected && this.props.selected.name === animation.name ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["IconButtonLineComponent"], { tooltip: "Remove", icon: "small animation-delete", onClick: function () { return _this.deleteAnimation(); } }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "spacer" }) : null);
+                break;
+            case babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR2:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: this.props.selected && this.props.selected.name === animation.name ? 'property active' : 'property', key: i, onClick: function () { return _this.props.selectAnimation(animation); } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "X")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y"))));
+                break;
+            case babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_VECTOR3:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: this.props.selected && this.props.selected.name === animation.name ? 'property sub active' : 'property sub', key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "animation-arrow " + (this.state.list[i].open ? '' : 'flip'), onClick: function () { return _this.toggleProperty(i); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", { onClick: function () { return _this.props.selectAnimation(animation); } }, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["IconButtonLineComponent"], { tooltip: "Options", icon: "small animation-options", onClick: function () { return _this.editAnimation(); } }),
+                    !(this.props.entity instanceof babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["TargetedAnimation"]) ? this.props.selected && this.props.selected.name === animation.name ? react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_3__["IconButtonLineComponent"], { tooltip: "Remove", icon: "small animation-delete", onClick: function () { return _this.deleteAnimation(); } }) : react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "spacer" }) : null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", { className: "sub-list " + (this.state.list[i].open ? '' : 'hidden') },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x", id: i + "_x", className: "property", style: { color: '#db3e3e' }, onClick: function () { return _this.setSelectedCoordinate(animation, SelectedCoordinate.x, i); } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + (this.state.selectedCoordinate === SelectedCoordinate.x && this.state.selectedAnimation === i ? 'show' : 'hide') }),
+                            animation.targetProperty,
+                            " X"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y", id: i + "_y", className: "property", style: { color: '#51e22d' }, onClick: function () { return _this.setSelectedCoordinate(animation, SelectedCoordinate.y, i); } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + (this.state.selectedCoordinate === SelectedCoordinate.y && this.state.selectedAnimation === i ? 'show' : 'hide') }),
+                            animation.targetProperty,
+                            " Y"),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_z", id: i + "_z", className: "property", style: { color: '#00a3ff' }, onClick: function () { return _this.setSelectedCoordinate(animation, SelectedCoordinate.z, i); } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "handle-indicator " + (this.state.selectedCoordinate === SelectedCoordinate.z && this.state.selectedAnimation === i ? 'show' : 'hide') }),
+                            animation.targetProperty,
+                            " Z")));
+                break;
+            case babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_QUATERNION:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_x" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "X")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_y" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Y")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_z" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Z")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_w" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "W"))));
+                break;
+            case babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR3:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_r" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "R")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_g" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "G")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_b" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "B"))));
+                break;
+            case babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_COLOR4:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_r" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "R")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_g" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "G")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_b" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "B")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_a" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "A"))));
+                break;
+            case babylonjs_Animations_animationGroup__WEBPACK_IMPORTED_MODULE_2__["Animation"].ANIMATIONTYPE_SIZE:
+                element = react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { className: "property", key: i },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, animation.targetProperty),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_width" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Width")),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i + "_height" },
+                            "Property ",
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("strong", null, "Height"))));
+                break;
+            default:
+                console.log("not recognized");
+                element = null;
+                break;
+        }
+        return element;
+    };
+    AnimationListTree.prototype.render = function () {
+        var _this = this;
+        var _a;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "object-tree" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null, this.props.isTargetedAnimation ? this.setListItem(this.props.entity.animation, 0) :
+                this.props.entity.animations && ((_a = this.props.entity.animations) === null || _a === void 0 ? void 0 : _a.map(function (animation, i) {
+                    return _this.setListItem(animation, i);
+                })))));
+    };
+    return AnimationListTree;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx":
+/*!************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx ***!
+  \************************************************************************************************/
 /*! exports provided: AnimationGridComponent */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -58647,14 +60395,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
-/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Animations/animationPropertiesOverride */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
-/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
-/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../animations/animationCurveEditorComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent.tsx");
+/* harmony import */ var _animations_popupComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../animations/popupComponent */ "./components/actionTabs/tabs/propertyGrids/animations/popupComponent.tsx");
+
+
 
 
 
@@ -58667,17 +60419,21 @@ __webpack_require__.r(__webpack_exports__);
 var AnimationGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(AnimationGridComponent, _super);
     function AnimationGridComponent(props) {
+        var _a;
         var _this = _super.call(this, props) || this;
         _this._animations = null;
+        _this._isPlaying = false;
+        _this._isCurveEditorOpen = false;
         _this._animationControl = {
             from: 0,
             to: 0,
-            loop: false
+            loop: false,
         };
-        _this._isPlaying = false;
         _this.state = { currentFrame: 0 };
         var animatableAsAny = _this.props.animatable;
-        _this._ranges = animatableAsAny.getAnimationRanges ? animatableAsAny.getAnimationRanges() : [];
+        _this._ranges = animatableAsAny.getAnimationRanges
+            ? animatableAsAny.getAnimationRanges()
+            : [];
         if (animatableAsAny.getAnimatables) {
             var animatables = animatableAsAny.getAnimatables();
             _this._animations = new Array();
@@ -58687,6 +60443,9 @@ var AnimationGridComponent = /** @class */ (function (_super) {
                     (_a = _this._animations).push.apply(_a, animatable.animations);
                 }
             });
+            if (animatableAsAny.animations) {
+                (_a = _this._animations).push.apply(_a, animatableAsAny.animations);
+            }
             // Extract from and to
             if (_this._animations && _this._animations.length) {
                 _this._animations.forEach(function (animation) {
@@ -58708,23 +60467,24 @@ var AnimationGridComponent = /** @class */ (function (_super) {
     }
     AnimationGridComponent.prototype.playOrPause = function () {
         var animatable = this.props.animatable;
-        this._isPlaying = this.props.scene.getAllAnimatablesByTarget(animatable).length > 0;
+        this._isPlaying =
+            this.props.scene.getAllAnimatablesByTarget(animatable).length > 0;
         if (this._isPlaying) {
             this.props.scene.stopAnimation(this.props.animatable);
-            this._runningAnimatable = null;
+            this._mainAnimatable = null;
         }
         else {
-            this._runningAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
+            this._mainAnimatable = this.props.scene.beginAnimation(this.props.animatable, this._animationControl.from, this._animationControl.to, this._animationControl.loop);
         }
         this.forceUpdate();
     };
     AnimationGridComponent.prototype.componentDidMount = function () {
         var _this = this;
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(function () {
-            if (!_this._isPlaying || !_this._runningAnimatable) {
+            if (!_this._isPlaying || !_this._mainAnimatable) {
                 return;
             }
-            _this.setState({ currentFrame: _this._runningAnimatable.masterFrame });
+            _this.setState({ currentFrame: _this._mainAnimatable.masterFrame });
         });
     };
     AnimationGridComponent.prototype.componentWillUnmount = function () {
@@ -58734,11 +60494,29 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         }
     };
     AnimationGridComponent.prototype.onCurrentFrameChange = function (value) {
-        if (!this._runningAnimatable) {
+        if (!this._mainAnimatable) {
             return;
         }
-        this._runningAnimatable.goToFrame(value);
+        this._mainAnimatable.goToFrame(value);
         this.setState({ currentFrame: value });
+    };
+    AnimationGridComponent.prototype.onChangeFromOrTo = function () {
+        this.playOrPause();
+        if (this._isPlaying) {
+            this.playOrPause();
+        }
+    };
+    AnimationGridComponent.prototype.onOpenAnimationCurveEditor = function () {
+        this._isCurveEditorOpen = true;
+    };
+    AnimationGridComponent.prototype.onCloseAnimationCurveEditor = function (window) {
+        this._isCurveEditorOpen = false;
+        if (window === null) {
+            console.log('Window already closed');
+        }
+        else {
+            window.close();
+        }
     };
     AnimationGridComponent.prototype.render = function () {
         var _this = this;
@@ -58746,49 +60524,1608 @@ var AnimationGridComponent = /** @class */ (function (_super) {
         var animatableAsAny = this.props.animatable;
         var animatablesForTarget = this.props.scene.getAllAnimatablesByTarget(animatable);
         this._isPlaying = animatablesForTarget.length > 0;
-        if (this._isPlaying && !this._runningAnimatable) {
-            this._runningAnimatable = animatablesForTarget[0];
+        if (this._isPlaying && !this._mainAnimatable) {
+            this._mainAnimatable = animatablesForTarget[0];
+            if (this._mainAnimatable) {
+                this._animationControl.from = this._mainAnimatable.fromFrame;
+                this._animationControl.to = this._mainAnimatable.toFrame;
+                this._animationControl.loop = this._mainAnimatable.loopAnimation;
+            }
         }
-        if (this._runningAnimatable) {
-            this._animationControl.from = this._runningAnimatable.fromFrame;
-            this._animationControl.to = this._runningAnimatable.toFrame;
-            this._animationControl.loop = this._runningAnimatable.loopAnimation;
-        }
+        var animations = animatable.animations;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-            (this._ranges.length > 0 || this._animations && this._animations.length > 0) &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION OVERRIDE" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable override", onSelect: function (value) {
-                            if (value) {
-                                animatableAsAny.animationPropertiesOverride = new babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__["AnimationPropertiesOverride"]();
-                                animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
-                            }
-                            else {
-                                animatableAsAny.animationPropertiesOverride = null;
-                            }
-                            _this.forceUpdate();
-                        }, isSelected: function () { return animatableAsAny.animationPropertiesOverride != null; }, onValueChanged: function () { return _this.forceUpdate(); } }),
-                    animatableAsAny.animationPropertiesOverride != null &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Enable blending", target: animatableAsAny.animationPropertiesOverride, propertyName: "enableBlending", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Blending speed", target: animatableAsAny.animationPropertiesOverride, propertyName: "blendingSpeed", minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
-            this._ranges.length > 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION RANGES" }, this._ranges.map(function (range) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name, label: range.name, onClick: function () {
-                            _this._runningAnimatable = null;
-                            _this.props.scene.beginAnimation(animatable, range.from, range.to, true);
-                        } }));
-                })),
-            this._animations && this._animations.length > 0 &&
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATIONS" },
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: "Count", value: this._animations.length.toString() }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "From", target: this._animationControl, propertyName: "from" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "To", target: this._animationControl, propertyName: "to" }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Loop", onSelect: function (value) { return _this._animationControl.loop = value; }, isSelected: function () { return _this._animationControl.loop; } }),
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? "Stop" : "Play", onClick: function () { return _this.playOrPause(); } }),
-                    this._isPlaying &&
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: this.timelineRef, label: "Current frame", minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to - this._animationControl.from) / 1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } }))));
+            this._ranges.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: 'ANIMATION RANGES' }, this._ranges.map(function (range, i) {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { key: range.name + i, label: range.name, onClick: function () {
+                        _this._mainAnimatable = null;
+                        _this.props.scene.beginAnimation(animatable, range.from, range.to, true);
+                    } }));
+            }))),
+            animations && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: 'ANIMATIONS' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { label: 'Count', value: animations.length.toString() }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: 'Edit', onClick: function () { return _this.onOpenAnimationCurveEditor(); } }),
+                    animations.map(function (anim, i) {
+                        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_8__["TextLineComponent"], { key: anim.targetProperty + i, label: '#' + i + ' >', value: anim.targetProperty }));
+                    }),
+                    this._isCurveEditorOpen && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_popupComponent__WEBPACK_IMPORTED_MODULE_10__["PopupComponent"], { id: 'curve-editor', title: 'Curve Animation Editor', size: { width: 1024, height: 490 }, onOpen: function (window) { }, onClose: function (window) {
+                            return _this.onCloseAnimationCurveEditor(window);
+                        } },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_9__["AnimationCurveEditorComponent"], { scene: this.props.scene, entity: animatableAsAny, close: function (event) {
+                                return _this.onCloseAnimationCurveEditor(event.view);
+                            }, lockObject: this.props.lockObject, playOrPause: function () { return _this.playOrPause(); } })))),
+                animations.length > 0 && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: 'ANIMATION GENERAL CONTROL' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: 'From', target: this._animationControl, propertyName: 'from', onChange: function () { return _this.onChangeFromOrTo(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { lockObject: this.props.lockObject, isInteger: true, label: 'To', target: this._animationControl, propertyName: 'to', onChange: function () { return _this.onChangeFromOrTo(); } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: 'Loop', onSelect: function (value) { return (_this._animationControl.loop = value); }, isSelected: function () { return _this._animationControl.loop; } }),
+                    this._isPlaying && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { ref: this.timelineRef, label: 'Current frame', minimum: this._animationControl.from, maximum: this._animationControl.to, step: (this._animationControl.to -
+                            this._animationControl.from) /
+                            1000.0, directValue: this.state.currentFrame, onInput: function (value) { return _this.onCurrentFrameChange(value); } })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: this._isPlaying ? 'Stop' : 'Play', onClick: function () { return _this.playOrPause(); } }),
+                    (this._ranges.length > 0 ||
+                        (this._animations && this._animations.length > 0)) && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: 'Enable override', onSelect: function (value) {
+                                if (value) {
+                                    animatableAsAny.animationPropertiesOverride = new babylonjs_Animations_animationPropertiesOverride__WEBPACK_IMPORTED_MODULE_5__["AnimationPropertiesOverride"]();
+                                    animatableAsAny.animationPropertiesOverride.blendingSpeed = 0.05;
+                                }
+                                else {
+                                    animatableAsAny.animationPropertiesOverride = null;
+                                }
+                                _this.forceUpdate();
+                            }, isSelected: function () {
+                                return animatableAsAny.animationPropertiesOverride != null;
+                            }, onValueChanged: function () { return _this.forceUpdate(); } }),
+                        animatableAsAny.animationPropertiesOverride != null && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: 'Enable blending', target: animatableAsAny.animationPropertiesOverride, propertyName: 'enableBlending', onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: 'Blending speed', target: animatableAsAny.animationPropertiesOverride, propertyName: 'blendingSpeed', minimum: 0, maximum: 0.1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })))))))))));
     };
     return AnimationGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/addAnimationIcon.svg":
+/*!*****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/addAnimationIcon.svg ***!
+  \*****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='30' height='30'/%3E%3Cpath class='cls-2' d='M23,14.5v1H15.5V23h-1V15.5H7v-1h7.5V7h1v7.5Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationBulletIcon.svg ***!
+  \********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%237a4ece;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Ccircle class='cls-1' cx='5' cy='5' r='2.89'/%3E%3Crect class='cls-2' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationDeleteIcon.svg":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationDeleteIcon.svg ***!
+  \********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='20' height='20'/%3E%3Cpath class='cls-2' d='M10.71,10,15,14.29l-.71.71L10,10.71,5.71,15,5,14.29,9.29,10,5,5.71,5.71,5,10,9.29,14.29,5l.71.71Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationEndIcon.svg":
+/*!*****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationEndIcon.svg ***!
+  \*****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23888;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpath class='cls-2' d='M10.29,23,3.5,28.05V17.9Zm.21-5.07V28.05L17.29,23Zm9-.9h-2V29h2Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyHoverIcon.svg":
+/*!**************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyHoverIcon.svg ***!
+  \**************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23ccc;%7D.cls-3%7Bfill:%23ffc017;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpolygon class='cls-2' points='8.07 22.86 18.21 28.71 18.21 17 8.07 22.86'/%3E%3Crect class='cls-3' x='4.79' y='17' width='3' height='12' transform='translate(12.58 46) rotate(-180)'/%3E%3Crect class='cls-2' x='5.79' y='14' width='1' height='3'/%3E%3Crect class='cls-2' x='5.79' y='29' width='1' height='3'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyIcon.svg":
+/*!*********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationLastKeyIcon.svg ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23888;%7D.cls-3%7Bfill:%23ffc017;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpolygon class='cls-2' points='8.07 22.86 18.21 28.71 18.21 17 8.07 22.86'/%3E%3Crect class='cls-3' x='4.79' y='17' width='3' height='12' transform='translate(12.58 46) rotate(-180)'/%3E%3Crect class='cls-2' x='5.79' y='14' width='1' height='3'/%3E%3Crect class='cls-2' x='5.79' y='29' width='1' height='3'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyHoverIcon.svg":
+/*!**************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyHoverIcon.svg ***!
+  \**************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23ccc;%7D.cls-3%7Bfill:%23ffc017;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpolygon class='cls-2' points='14.93 22.86 4.79 28.71 4.79 17 14.93 22.86'/%3E%3Crect class='cls-3' x='15.21' y='17' width='3' height='12'/%3E%3Crect class='cls-2' x='16.21' y='14' width='1' height='3'/%3E%3Crect class='cls-2' x='16.21' y='29' width='1' height='3'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyIcon.svg":
+/*!*********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationNextKeyIcon.svg ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23888;%7D.cls-3%7Bfill:%23ffc017;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpolygon class='cls-2' points='14.93 22.86 4.79 28.71 4.79 17 14.93 22.86'/%3E%3Crect class='cls-3' x='15.21' y='17' width='3' height='12'/%3E%3Crect class='cls-2' x='16.21' y='14' width='1' height='3'/%3E%3Crect class='cls-2' x='16.21' y='29' width='1' height='3'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationOptionsIcon.svg":
+/*!*********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationOptionsIcon.svg ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='20' height='20'/%3E%3Cpath class='cls-2' d='M13.73,9.82v.36L15,11l-.78,1.88-1.46-.34-.25.25.34,1.46L11,15l-.79-1.27H9.82L9,15l-1.88-.78.34-1.46-.25-.25-1.46.34L5,11l1.27-.79V9.82L5,9l.78-1.88,1.46.34.25-.25L7.15,5.78,9,5l.79,1.27h.36L11,5l1.88.78-.34,1.46.25.25,1.46-.34L15,9Zm-.58.64a1.79,1.79,0,0,0,0-.23,1.69,1.69,0,0,0,0-.23,1.93,1.93,0,0,0,0-.24,2,2,0,0,0,0-.23l1.16-.72-.42-1-1.33.31a3.49,3.49,0,0,0-.31-.34l-.35-.32.31-1.33-1-.42-.73,1.16-.23,0H9.77l-.24,0L8.81,5.69l-1,.42L8.1,7.44a3.49,3.49,0,0,0-.34.31c-.11.11-.21.22-.32.35L6.11,7.79l-.42,1,1.16.73a1.79,1.79,0,0,0,0,.23,1.69,1.69,0,0,0,0,.23,1.93,1.93,0,0,0,0,.24,2,2,0,0,0,0,.23l-1.16.72.42,1,1.33-.31a3.49,3.49,0,0,0,.31.34l.35.32-.31,1.33,1,.42.73-1.16.23,0h.46l.24,0,.72,1.16,1-.42-.31-1.33a3.49,3.49,0,0,0,.34-.31c.11-.11.21-.22.32-.35l1.33.31.42-1ZM10,8.15a1.75,1.75,0,0,1,.72.15,1.77,1.77,0,0,1,1,1,2.1,2.1,0,0,1,.15.72,1.75,1.75,0,0,1-.15.72,1.77,1.77,0,0,1-1,1,2.1,2.1,0,0,1-.72.15,1.75,1.75,0,0,1-.72-.15,1.77,1.77,0,0,1-1-1A2.1,2.1,0,0,1,8.15,10a1.75,1.75,0,0,1,.15-.72,1.77,1.77,0,0,1,1-1A2.1,2.1,0,0,1,10,8.15Zm0,3.15a1.45,1.45,0,0,0,.51-.1,1.42,1.42,0,0,0,.41-.28,1.22,1.22,0,0,0,.27-.41,1.29,1.29,0,0,0,0-1,1.42,1.42,0,0,0-.28-.41,1.22,1.22,0,0,0-.41-.27,1.29,1.29,0,0,0-1,0,1.42,1.42,0,0,0-.41.28,1.22,1.22,0,0,0-.27.41,1.29,1.29,0,0,0,0,1,1.42,1.42,0,0,0,.28.41,1.22,1.22,0,0,0,.41.27A1.45,1.45,0,0,0,10,11.3Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdHoverIcon.svg":
+/*!**************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdHoverIcon.svg ***!
+  \**************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23ccc;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpolygon class='cls-2' points='18.19 23.39 4.81 31.12 4.81 15.66 18.19 23.39'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdIcon.svg":
+/*!*********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayFwdIcon.svg ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23888;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpolygon class='cls-2' points='18.19 23.39 4.81 31.12 4.81 15.66 18.19 23.39'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevHoverIcon.svg":
+/*!**************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevHoverIcon.svg ***!
+  \**************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23ccc;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpolygon class='cls-2' points='4.81 23.39 18.19 31.12 18.19 15.66 4.81 23.39'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevIcon.svg":
+/*!*********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationPlayRevIcon.svg ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23888;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpolygon class='cls-2' points='4.81 23.39 18.19 31.12 18.19 15.66 4.81 23.39'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStartIcon.svg":
+/*!*******************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationStartIcon.svg ***!
+  \*******************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23888;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Cpath class='cls-2' d='M19.5,17.9V28.05L12.71,23ZM5.71,23l6.79,5.08V17.9ZM3.5,29h2V17h-2Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationStopIcon.svg":
+/*!******************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationStopIcon.svg ***!
+  \******************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 45'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%238c2f2f;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='23' height='45'/%3E%3Crect class='cls-2' x='5' y='16.61' width='13' height='13'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg":
+/*!**********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/animationTriangleIcon.svg ***!
+  \**********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23888;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpolygon class='cls-1' points='5 7.81 8.25 2.19 1.75 2.19 5 7.81'/%3E%3Crect class='cls-2' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/autoTangentIcon.svg":
+/*!****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/autoTangentIcon.svg ***!
+  \****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M28,18.79a1.51,1.51,0,0,0-1.41,1H22l-1-3.86H19.9L19,19.79H13.41a1.5,1.5,0,1,0,0,1h5.32l-.79,3.28h.88l.6-2.58h2.11l.6,2.58h1l-.81-3.28h4.31a1.5,1.5,0,1,0,1.41-2Zm-8.41,1.9c.41-1.75.73-3.21.85-3.92h0c.1.65.42,1.92.88,3.92Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/babylonLogo.svg":
+/*!************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/babylonLogo.svg ***!
+  \************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23e0684b;%7D.cls-3%7Bfill:%23bb464b;%7D.cls-4%7Bfill:%23e0ded8;%7D.cls-5%7Bfill:%23d5d2ca;%7D.cls-6%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='40' height='40'/%3E%3Cpolygon class='cls-2' points='32.91 13.78 29.54 11.84 26.29 13.71 29.66 15.65 32.91 13.78'/%3E%3Cpolygon class='cls-2' points='14.61 15.65 25.38 9.44 22.14 7.57 11.37 13.78 14.61 15.65'/%3E%3Cpolygon class='cls-2' points='18.77 21.95 22.14 23.89 25.51 21.95 22.14 20 18.77 21.95'/%3E%3Cpolygon class='cls-3' points='29.66 15.65 29.66 24.34 22.14 28.69 14.61 24.34 14.61 15.65 11.37 13.78 11.37 26.22 22.14 32.44 32.91 26.22 32.91 13.78 29.66 15.65'/%3E%3Cpolygon class='cls-3' points='22.14 16.11 18.77 18.05 18.77 21.95 22.14 20 25.51 21.95 25.51 18.05 22.14 16.11'/%3E%3Cpolygon class='cls-4' points='29.66 15.65 25.51 18.05 25.51 21.95 22.14 23.89 22.14 28.69 29.66 24.34 29.66 15.65'/%3E%3Cpolygon class='cls-5' points='14.61 15.65 18.77 18.05 18.77 21.95 22.14 23.89 22.14 28.69 14.61 24.34 14.61 15.65'/%3E%3Cpolygon class='cls-6' points='25.38 9.44 29.54 11.84 26.29 13.71 29.66 15.65 25.51 18.05 22.14 16.11 18.77 18.05 14.61 15.65 25.38 9.44'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/breakTangentIcon.svg":
+/*!*****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/breakTangentIcon.svg ***!
+  \*****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M26.25,13.2a1.5,1.5,0,0,0-1.89,2.27L20.27,24A1.55,1.55,0,0,0,20,24l-.23,0-4.09-8.55a1.5,1.5,0,1,0-2.44-.22,1.51,1.51,0,0,0,1.57.72l4.08,8.53a1.5,1.5,0,1,0,2.27.05L25.23,16a1.5,1.5,0,0,0,1-2.77Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxCheckedIcon.svg":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxCheckedIcon.svg ***!
+  \********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='20' height='20'/%3E%3Cpath class='cls-2' d='M15,5V15H5V5Zm-.63.63H5.61v8.78h8.78ZM8.75,13l-2.1-2.1.44-.44,1.66,1.65L12.91,7.9l.44.44Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxDefaultIcon.svg":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/checkboxDefaultIcon.svg ***!
+  \********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='20' height='20'/%3E%3Cpath class='cls-2' d='M15,5V15H5V5Zm-.63.63H5.61v8.78h8.78Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/closeWindowIcon.svg":
+/*!****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/closeWindowIcon.svg ***!
+  \****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M21.13,20,28,26.87,26.87,28,20,21.13,13.13,28,12,26.87,18.87,20,12,13.13,13.13,12,20,18.87,26.87,12,28,13.13Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/editIcon.svg":
+/*!*********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/editIcon.svg ***!
+  \*********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='Layer_2' data-name='Layer 2'%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='30' height='30'/%3E%3Cpath class='cls-2' d='M23,9.3a2.65,2.65,0,0,1-.19,1,2.58,2.58,0,0,1-.57.86L12,21.45,7,22.68l1.24-4.94L18.56,7.45a2.54,2.54,0,0,1,.85-.57,2.7,2.7,0,0,1,1-.2,2.52,2.52,0,0,1,1,.21,2.48,2.48,0,0,1,.83.56,3,3,0,0,1,.56.83A2.52,2.52,0,0,1,23,9.3ZM9.58,17.84a3.46,3.46,0,0,1,1.42.87,3.56,3.56,0,0,1,.88,1.43l8.44-8.46L18,9.39ZM8.41,21.31,11,20.67a2.64,2.64,0,0,0-.25-.68,2.25,2.25,0,0,0-.43-.57A2.67,2.67,0,0,0,9.73,19a2.64,2.64,0,0,0-.68-.25ZM21,11l.38-.37a2.74,2.74,0,0,0,.32-.36A1.78,1.78,0,0,0,22,9.83a1.72,1.72,0,0,0,0-1.15,1.78,1.78,0,0,0-.35-.51A2,2,0,0,0,21,7.81a1.81,1.81,0,0,0-.63-.13,1.62,1.62,0,0,0-.52.08,1.53,1.53,0,0,0-.41.23,2.83,2.83,0,0,0-.37.32l-.37.37Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/flatTangentIcon.svg":
+/*!****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/flatTangentIcon.svg ***!
+  \****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M28,18.5a1.51,1.51,0,0,0-1.41,1H13.41a1.5,1.5,0,1,0,0,1H26.59a1.5,1.5,0,1,0,1.41-2Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/frameIcon.svg":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/frameIcon.svg ***!
+  \**********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M25,19V17H23V16h3v3ZM15,17v2H14V16h3v1Zm11,4v3H23V23h2V21Zm-9,2v1H14V21h1v2Zm-5-9H28V26H12ZM27,25V15H13V25Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyActiveIcon.svg":
+/*!**************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/keyActiveIcon.svg ***!
+  \**************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23111;%7D.cls-3%7Bfill:%23ffc017;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='10' height='10'/%3E%3Crect class='cls-2' x='2.67' y='2.67' width='4.66' height='4.66' transform='translate(-2.07 5) rotate(-45)'/%3E%3Cpath class='cls-3' d='M5,2.41,7.59,5,5,7.59,2.41,5,5,2.41M5,1,1,5,5,9,9,5,5,1Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyInactiveIcon.svg":
+/*!****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/keyInactiveIcon.svg ***!
+  \****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23111;%7D.cls-3%7Bfill:%23aaa;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='10' height='10'/%3E%3Crect class='cls-2' x='2.67' y='2.67' width='4.66' height='4.66' transform='translate(-2.07 5) rotate(-45)'/%3E%3Cpath class='cls-3' d='M5,2.41,7.59,5,5,7.59,2.41,5,5,2.41M5,1,1,5,5,9,9,5,5,1Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg":
+/*!****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg ***!
+  \****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23ffc017;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='10' height='10'/%3E%3Crect class='cls-2' x='2.17' y='2.17' width='5.66' height='5.66' transform='translate(-2.07 5) rotate(-45)'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/linearTangentIcon.svg":
+/*!******************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/linearTangentIcon.svg ***!
+  \******************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M26.41,14.3l-.71-.71-10,10a1.5,1.5,0,1,0,.71.71Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/loadIcon.svg":
+/*!*********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/loadIcon.svg ***!
+  \*********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='parameters'%3E%3Crect class='cls-1' width='30' height='30'/%3E%3Cpath class='cls-2' d='M21.78,19l-1.27-1.27V23h-1V17.71L18.24,19l-.71-.71L20,15.8l2.48,2.47ZM8.51,22h10v1h-11V7h8.71l4.29,4.29V15h-1V12h-4V8h-7Zm8-11H18.8L16.51,8.71Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopActiveIcon.svg":
+/*!***************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/loopActiveIcon.svg ***!
+  \***************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='30' height='30'/%3E%3Cpath class='cls-2' d='M8,15a4.72,4.72,0,0,0,.12,1.06,5.31,5.31,0,0,0,.34,1A4.77,4.77,0,0,0,9,18a4.2,4.2,0,0,0,.74.78L9,19.49a5.89,5.89,0,0,1-.86-.94,6.15,6.15,0,0,1-.64-1.08,5.83,5.83,0,0,1-.4-1.2A6.59,6.59,0,0,1,7,15a6,6,0,0,1,.21-1.59A5.51,5.51,0,0,1,7.82,12a6.6,6.6,0,0,1,.94-1.22A5.53,5.53,0,0,1,10,9.82a6.53,6.53,0,0,1,1.44-.6A5.6,5.6,0,0,1,13,9h5.05L16.77,7.73,17.48,7,20,9.5,17.48,12l-.71-.71L18.05,10H13a4.91,4.91,0,0,0-1.33.18,5.25,5.25,0,0,0-1.19.5,4.47,4.47,0,0,0-1,.78,5.51,5.51,0,0,0-.78,1,4.86,4.86,0,0,0-.51,1.19A4.91,4.91,0,0,0,8,15Zm13-4.48a5.82,5.82,0,0,1,.86.93,6.15,6.15,0,0,1,.64,1.08,5.83,5.83,0,0,1,.4,1.2A6.77,6.77,0,0,1,23,15a6,6,0,0,1-.21,1.59A5.51,5.51,0,0,1,22.18,18a6.6,6.6,0,0,1-.94,1.22,5.53,5.53,0,0,1-1.21.94,6.53,6.53,0,0,1-1.44.6A5.6,5.6,0,0,1,17,21H12l1.28,1.27-.71.71L10.05,20.5,12.52,18l.71.71L12,20H17a4.91,4.91,0,0,0,1.33-.18,5.25,5.25,0,0,0,1.19-.5,4.47,4.47,0,0,0,1-.78,5.51,5.51,0,0,0,.78-1,4.86,4.86,0,0,0,.51-1.19A4.91,4.91,0,0,0,22,15a4.81,4.81,0,0,0-.12-1.07,6.07,6.07,0,0,0-.33-1A4.69,4.69,0,0,0,21,12a6.86,6.86,0,0,0-.74-.79Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/loopInactiveIcon.svg":
+/*!*****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/loopInactiveIcon.svg ***!
+  \*****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='30' height='30'/%3E%3Cpolygon class='cls-2' points='15.01 10 18.05 10 16.77 11.27 17.48 11.98 19.95 9.5 17.48 7.02 16.77 7.73 18.05 9 14.6 9 15.01 10'/%3E%3Cpath class='cls-2' d='M8.46,17.08a5.31,5.31,0,0,1-.34-1A4.72,4.72,0,0,1,8,15a4.91,4.91,0,0,1,.18-1.33,4.86,4.86,0,0,1,.51-1.19,5.51,5.51,0,0,1,.78-1,4.47,4.47,0,0,1,1-.78,5.25,5.25,0,0,1,1.19-.5l.16,0-.39-.94h0a6.53,6.53,0,0,0-1.44.6,5.53,5.53,0,0,0-1.21.94A6.6,6.6,0,0,0,7.82,12a5.51,5.51,0,0,0-.61,1.43A6,6,0,0,0,7,15a6.59,6.59,0,0,0,.14,1.27,5.83,5.83,0,0,0,.4,1.2,6.15,6.15,0,0,0,.64,1.08,5.89,5.89,0,0,0,.86.94l.71-.71A4.2,4.2,0,0,1,9,18,4.77,4.77,0,0,1,8.46,17.08Z'/%3E%3Cpolygon class='cls-2' points='15.91 20 11.95 20 13.23 18.73 12.52 18.02 10.05 20.5 12.52 22.98 13.23 22.27 11.95 21 16.32 21 15.91 20'/%3E%3Cpath class='cls-2' d='M22.86,13.73a5.83,5.83,0,0,0-.4-1.2,6.15,6.15,0,0,0-.64-1.08,5.82,5.82,0,0,0-.86-.93l-.7.69A6.86,6.86,0,0,1,21,12a4.69,4.69,0,0,1,.55.91,6.07,6.07,0,0,1,.33,1A4.81,4.81,0,0,1,22,15a4.91,4.91,0,0,1-.18,1.33,4.86,4.86,0,0,1-.51,1.19,5.51,5.51,0,0,1-.78,1,4.47,4.47,0,0,1-1,.78,4.53,4.53,0,0,1-.54.27l.38.92a7,7,0,0,0,.67-.33,5.53,5.53,0,0,0,1.21-.94A6.6,6.6,0,0,0,22.18,18a5.51,5.51,0,0,0,.61-1.43A6,6,0,0,0,23,15,6.77,6.77,0,0,0,22.86,13.73Z'/%3E%3Crect class='cls-2' x='14.92' y='6.37' width='1' height='16.63' transform='translate(-4.44 7.02) rotate(-22.5)'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/moveIcon.svg":
+/*!*********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/moveIcon.svg ***!
+  \*********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' width='40' height='40'/%3E%3Cpath class='cls-2' d='M14.41,20.5,16,22.1l-.71.71L12.5,20l2.81-2.81.71.71-1.61,1.6H17.5v1ZM27.5,20l-2.78,2.77-.7-.7,1.57-1.57H22.5v-1h3.09L24,17.9l.71-.71Zm-9.57-4-.7-.7L20,12.5l2.81,2.81L22.1,16l-1.6-1.61V17.5h-1V14.41Zm4.17,8,.71.71L20,27.5l-2.81-2.81L17.9,24l1.6,1.61V22.5h1v3.09Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/newKeyIcon.svg":
+/*!***********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/newKeyIcon.svg ***!
+  \***********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M20,15.41,24.59,20,20,24.59,15.41,20,20,15.41M20,14l-6,6,6,6,6-6-6-6Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/saveIcon.svg":
+/*!*********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/saveIcon.svg ***!
+  \*********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:none;%7D.cls-2%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='parameters'%3E%3Crect class='cls-1' width='30' height='30'/%3E%3Cpath class='cls-2' d='M21,8a1,1,0,0,1,.39.08,1,1,0,0,1,.31.21,1.21,1.21,0,0,1,.22.32A.91.91,0,0,1,22,9V22H9.79L8,20.2V9a.85.85,0,0,1,.08-.39,1,1,0,0,1,.21-.31,1.07,1.07,0,0,1,.32-.22A.85.85,0,0,1,9,8ZM11,14h8V9H11Zm6,4H12v3h1V19h1v2h3Zm4-9H20v6H10V9H9V19.79L10.2,21H11V17h7v4h3Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/scaleIcon.svg":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/scaleIcon.svg ***!
+  \**********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M16,13H13.71l2.64,2.65-.7.7L13,13.71V16H12V12h4Zm8-1h4v4H27V13.71l-2.65,2.64-.7-.7L26.29,13H24ZM15.65,23.65l.7.7L13.71,27H16v1H12V24h1v2.29ZM27,26.29V24h1v4H24V27h2.29l-2.64-2.65.7-.7ZM17,23V17h6v6Zm1-5v4h4V18Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/scrollbarHandleIcon.svg":
+/*!********************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/scrollbarHandleIcon.svg ***!
+  \********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 21'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23333;%7D.cls-2%7Bfill:none;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Crect class='cls-1' x='5' y='3' width='2' height='15'/%3E%3Crect class='cls-1' x='9' y='3' width='2' height='15'/%3E%3Crect class='cls-1' x='13' y='3' width='2' height='15'/%3E%3Crect class='cls-2' width='20' height='21'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/assets/unifyTangentIcon.svg":
+/*!*****************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/assets/unifyTangentIcon.svg ***!
+  \*****************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Cg id='UI'%3E%3Cpath class='cls-1' d='M27.94,18.28a1.49,1.49,0,0,0-1.41,1h-5l-1.62-1.63-1.62,1.63h-5a1.5,1.5,0,1,0,0,1h5l1.62,1.62,1.62-1.62h5a1.5,1.5,0,1,0,1.41-2Z'/%3E%3C/g%3E%3C/svg%3E"
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/controls.tsx":
+/*!**************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/controls.tsx ***!
+  \**************************************************************************/
+/*! exports provided: Controls */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Controls", function() { return Controls; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/iconButtonLineComponent */ "./components/actionTabs/lines/iconButtonLineComponent.tsx");
+
+
+
+var Controls = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Controls, _super);
+    function Controls(props) {
+        var _this = _super.call(this, props) || this;
+        if (_this.props.selected !== null) {
+            _this.state = { selected: _this.props.selected };
+        }
+        return _this;
+    }
+    Controls.prototype.playBackwards = function () {
+        this.props.playPause(-1);
+    };
+    Controls.prototype.play = function () {
+        this.props.playPause(1);
+    };
+    Controls.prototype.pause = function () {
+        if (this.props.isPlaying) {
+            this.props.playPause(1);
+        }
+    };
+    Controls.prototype.nextFrame = function () {
+        this.props.onCurrentFrameChange(this.props.currentFrame + 1);
+        this.props.scrollable.current.scrollLeft = this.props.currentFrame * 5;
+    };
+    Controls.prototype.previousFrame = function () {
+        if (this.props.currentFrame !== 0) {
+            this.props.onCurrentFrameChange(this.props.currentFrame - 1);
+            this.props.scrollable.current.scrollLeft = -(this.props.currentFrame * 5);
+        }
+    };
+    Controls.prototype.nextKeyframe = function () {
+        var _this = this;
+        if (this.props.keyframes !== null) {
+            var first = this.props.keyframes.find(function (kf) { return kf.frame > _this.props.currentFrame; });
+            if (first) {
+                this.props.onCurrentFrameChange(first.frame);
+                this.setState({ selected: first });
+                this.props.scrollable.current.scrollLeft = first.frame * 5;
+            }
+        }
+    };
+    Controls.prototype.previousKeyframe = function () {
+        var _this = this;
+        if (this.props.keyframes !== null) {
+            var keyframes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.keyframes);
+            var first = keyframes.reverse().find(function (kf) { return kf.frame < _this.props.currentFrame; });
+            if (first) {
+                this.props.onCurrentFrameChange(first.frame);
+                this.setState({ selected: first });
+                this.props.scrollable.current.scrollLeft = -(first.frame * 5);
+            }
+        }
+    };
+    Controls.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "controls" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Animation Start", icon: "animation-start", onClick: function () { return _this.previousFrame(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Previous Keyframe", icon: "animation-lastkey", onClick: function () { return _this.previousKeyframe(); } }),
+            this.props.isPlaying ?
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "stop-container" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Play Reverse", icon: "animation-stop", onClick: function () { return _this.pause(); } }))
+                :
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "stop-container" },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Play Reverse", icon: "animation-playrev", onClick: function () { return _this.playBackwards(); } }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Play Forward", icon: "animation-playfwd", onClick: function () { return _this.play(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Next Keyframe", icon: "animation-nextkey", onClick: function () { return _this.nextKeyframe(); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: "Animation End", icon: "animation-end", onClick: function () { return _this.nextFrame(); } })));
+    };
+    return Controls;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/curveEditor.scss":
+/*!******************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/curveEditor.scss ***!
+  \******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../../../../../../node_modules/css-loader!../../../../../../../node_modules/sass-loader/dist/cjs.js!./curveEditor.scss */ "../../node_modules/css-loader/index.js!../../node_modules/sass-loader/dist/cjs.js!./components/actionTabs/tabs/propertyGrids/animations/curveEditor.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../../../../../../node_modules/style-loader/lib/addStyles.js */ "../../node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/editorControls.tsx":
+/*!********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/editorControls.tsx ***!
+  \********************************************************************************/
+/*! exports provided: EditorControls */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EditorControls", function() { return EditorControls; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/iconButtonLineComponent */ "./components/actionTabs/lines/iconButtonLineComponent.tsx");
+/* harmony import */ var _lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/numericInputComponent */ "./components/actionTabs/lines/numericInputComponent.tsx");
+/* harmony import */ var _addAnimation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./addAnimation */ "./components/actionTabs/tabs/propertyGrids/animations/addAnimation.tsx");
+/* harmony import */ var _animationListTree__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./animationListTree */ "./components/actionTabs/tabs/propertyGrids/animations/animationListTree.tsx");
+/* harmony import */ var _loadsnippet__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./loadsnippet */ "./components/actionTabs/tabs/propertyGrids/animations/loadsnippet.tsx");
+/* harmony import */ var _saveSnippet__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./saveSnippet */ "./components/actionTabs/tabs/propertyGrids/animations/saveSnippet.tsx");
+
+
+
+
+
+
+
+
+var EditorControls = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(EditorControls, _super);
+    function EditorControls(props) {
+        var _a, _b;
+        var _this = _super.call(this, props) || this;
+        var count = _this.props.isTargetedAnimation
+            ? 1
+            : (_b = (_a = _this.props.entity.animations) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0;
+        _this.state = {
+            isAnimationTabOpen: count === 0 ? true : false,
+            isEditTabOpen: count === 0 ? false : true,
+            isSaveTabOpen: false,
+            isLoadTabOpen: false,
+            isLoopActive: false,
+            animationsCount: count,
+            framesPerSecond: 60,
+        };
+        return _this;
+    }
+    EditorControls.prototype.animationAdded = function () {
+        // select recently created animation/first coordinate...
+        this.setState({
+            animationsCount: this.recountAnimations(),
+            isEditTabOpen: true,
+            isAnimationTabOpen: false,
+        });
+    };
+    EditorControls.prototype.recountAnimations = function () {
+        var _a, _b;
+        return (_b = (_a = this.props.entity.animations) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0;
+    };
+    EditorControls.prototype.handleTabs = function (tab) {
+        var state = {
+            isAnimationTabOpen: true,
+            isLoadTabOpen: false,
+            isSaveTabOpen: false,
+            isEditTabOpen: false,
+        };
+        switch (tab) {
+            case 0:
+                state = {
+                    isAnimationTabOpen: true,
+                    isLoadTabOpen: false,
+                    isSaveTabOpen: false,
+                    isEditTabOpen: false,
+                };
+                break;
+            case 1:
+                state = {
+                    isAnimationTabOpen: false,
+                    isLoadTabOpen: true,
+                    isSaveTabOpen: false,
+                    isEditTabOpen: false,
+                };
+                break;
+            case 2:
+                state = {
+                    isAnimationTabOpen: false,
+                    isLoadTabOpen: false,
+                    isSaveTabOpen: true,
+                    isEditTabOpen: false,
+                };
+                break;
+            case 3:
+                state = {
+                    isAnimationTabOpen: false,
+                    isLoadTabOpen: false,
+                    isSaveTabOpen: false,
+                    isEditTabOpen: true,
+                };
+                break;
+        }
+        this.setState(state);
+    };
+    EditorControls.prototype.handleChangeFps = function (fps) {
+        this.setState({ framesPerSecond: fps });
+    };
+    EditorControls.prototype.emptiedList = function () {
+        this.setState({
+            animationsCount: this.recountAnimations(),
+            isEditTabOpen: false,
+            isAnimationTabOpen: true,
+        });
+    };
+    EditorControls.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'animation-list' },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'controls-header' },
+                this.props.isTargetedAnimation ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isAnimationTabOpen, tooltip: 'Add Animation', icon: 'medium add-animation', onClick: function () { return _this.handleTabs(0); } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isLoadTabOpen, tooltip: 'Load Animation', icon: 'medium load', onClick: function () { return _this.handleTabs(1); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isSaveTabOpen, tooltip: 'Save Animation', icon: 'medium save', onClick: function () { return _this.handleTabs(2); } }),
+                this.state.animationsCount === 0 ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { active: this.state.isEditTabOpen, tooltip: 'Edit Animations', icon: 'medium animation-edit', onClick: function () { return _this.handleTabs(3); } })),
+                this.state.isEditTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'input-fps' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_3__["NumericInputComponent"], { label: '', precision: 0, value: this.state.framesPerSecond, onChange: function (framesPerSecond) {
+                            return _this.handleChangeFps(framesPerSecond);
+                        } }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, "fps"))) : null,
+                this.state.isEditTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: 'Loop/Unloop', icon: "medium " + (this.state.isLoopActive
+                        ? 'loop-active last'
+                        : 'loop-inactive last'), onClick: function () {
+                        _this.setState({ isLoopActive: !_this.state.isLoopActive });
+                    } })) : null),
+            this.props.isTargetedAnimation ? null : (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_addAnimation__WEBPACK_IMPORTED_MODULE_4__["AddAnimation"], { isOpen: this.state.isAnimationTabOpen, close: function () {
+                    _this.setState({ isAnimationTabOpen: false });
+                }, entity: this.props.entity, setNotificationMessage: function (message) {
+                    _this.props.setNotificationMessage(message);
+                }, changed: function () { return _this.animationAdded(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            this.state.isLoadTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_loadsnippet__WEBPACK_IMPORTED_MODULE_6__["LoadSnippet"], { lockObject: this.props.lockObject, animations: [] })) : null,
+            this.state.isSaveTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_saveSnippet__WEBPACK_IMPORTED_MODULE_7__["SaveSnippet"], { lockObject: this.props.lockObject, animations: [] })) : null,
+            this.state.isEditTabOpen ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationListTree__WEBPACK_IMPORTED_MODULE_5__["AnimationListTree"], { isTargetedAnimation: this.props.isTargetedAnimation, entity: this.props.entity, selected: this.props.selected, onPropertyChangedObservable: this.props.onPropertyChangedObservable, empty: function () { return _this.emptiedList(); }, selectAnimation: this.props.selectAnimation })) : null));
+    };
+    return EditorControls;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/graphActionsBar.tsx":
+/*!*********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/graphActionsBar.tsx ***!
+  \*********************************************************************************/
+/*! exports provided: GraphActionsBar */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GraphActionsBar", function() { return GraphActionsBar; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/iconButtonLineComponent */ "./components/actionTabs/lines/iconButtonLineComponent.tsx");
+
+
+
+var GraphActionsBar = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(GraphActionsBar, _super);
+    function GraphActionsBar(props) {
+        return _super.call(this, props) || this;
+    }
+    GraphActionsBar.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'actions-wrapper' },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'title-container' },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'icon babylon-logo' }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'title' }, this.props.title)),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'buttons-container', style: { display: this.props.enabled ? 'flex' : 'none' } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'action-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'number', value: this.props.currentFrame, onChange: this.props.handleFrameChange, step: '1' })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'action-input' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'number', value: this.props.currentValue.toFixed(3), onChange: this.props.handleValueChange, step: '0.001' })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: 'Add Keyframe', icon: 'new-key', onClick: this.props.addKeyframe }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: 'Remove Keyframe', icon: 'frame', onClick: this.props.removeKeyframe }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: 'Flat Tangents', icon: 'flat-tangent', onClick: this.props.flatTangent }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: this.props.brokenMode ? 'Broken Mode On' : 'Broken Mode Off', icon: this.props.brokenMode ? 'break-tangent' : 'unify-tangent', onClick: this.props.brokeTangents }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_iconButtonLineComponent__WEBPACK_IMPORTED_MODULE_2__["IconButtonLineComponent"], { tooltip: this.props.lerpMode ? 'Lerp On' : 'lerp Off', icon: 'linear-tangent', onClick: this.props.setLerpMode })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'icon close', onClick: function (event) {
+                    return _this.props.close(event);
+                } })));
+    };
+    return GraphActionsBar;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: KeyframeSvgPoint */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KeyframeSvgPoint", function() { return KeyframeSvgPoint; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _anchorSvgPoint__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./anchorSvgPoint */ "./components/actionTabs/tabs/propertyGrids/animations/anchorSvgPoint.tsx");
+
+
+
+var keyInactive = __webpack_require__(/*! ./assets/keyInactiveIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keyInactiveIcon.svg");
+//const keyActive = require("./assets/keyActiveIcon.svg") as string; uncomment when setting active multiselect
+var keySelected = __webpack_require__(/*! ./assets/keySelectedIcon.svg */ "./components/actionTabs/tabs/propertyGrids/animations/assets/keySelectedIcon.svg");
+var KeyframeSvgPoint = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(KeyframeSvgPoint, _super);
+    function KeyframeSvgPoint(props) {
+        return _super.call(this, props) || this;
+    }
+    KeyframeSvgPoint.prototype.select = function () {
+        this.props.selectKeyframe(this.props.id);
+    };
+    KeyframeSvgPoint.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { className: "draggable", x: this.props.keyframePoint.x, y: this.props.keyframePoint.y, style: { overflow: 'visible', cursor: 'pointer' } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("image", { "data-id": this.props.id, className: "draggable", x: "-1", y: "-1.5", width: "3", height: "3", href: this.props.selected ? keySelected : keyInactive, onClick: function () { return _this.select(); } })),
+            this.props.leftControlPoint && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_anchorSvgPoint__WEBPACK_IMPORTED_MODULE_2__["AnchorSvgPoint"], { type: "left", index: this.props.id, control: this.props.leftControlPoint, anchor: this.props.keyframePoint, active: this.props.selected, selected: this.props.isLeftActive, selectControlPoint: function (type) { return _this.props.selectedControlPoint(type, _this.props.id); } }),
+            this.props.rightControlPoint && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_anchorSvgPoint__WEBPACK_IMPORTED_MODULE_2__["AnchorSvgPoint"], { type: "right", index: this.props.id, control: this.props.rightControlPoint, anchor: this.props.keyframePoint, active: this.props.selected, selected: this.props.isRightActive, selectControlPoint: function (type) { return _this.props.selectedControlPoint(type, _this.props.id); } })));
+    };
+    return KeyframeSvgPoint;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/loadsnippet.tsx":
+/*!*****************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/loadsnippet.tsx ***!
+  \*****************************************************************************/
+/*! exports provided: LoadSnippet */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LoadSnippet", function() { return LoadSnippet; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+
+
+
+
+var LoadSnippet = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LoadSnippet, _super);
+    function LoadSnippet(props) {
+        var _this = _super.call(this, props) || this;
+        _this._serverAddress = "-";
+        _this.state = { server: "" };
+        return _this;
+    }
+    LoadSnippet.prototype.change = function (value) {
+        this.setState({ server: value });
+    };
+    LoadSnippet.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "load-container" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { label: "Snippet Server", lockObject: this.props.lockObject, value: this.state.server, onChange: function (value) { return _this.change(value); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Load", onClick: function () { } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "load-browse" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, "Local File"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Browse", onClick: function () { } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "load-server" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, "Snippet Server : "),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, this._serverAddress))));
+    };
+    return LoadSnippet;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/notification.tsx":
+/*!******************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/notification.tsx ***!
+  \******************************************************************************/
+/*! exports provided: Notification */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Notification", function() { return Notification; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var Notification = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Notification, _super);
+    function Notification(props) {
+        return _super.call(this, props) || this;
+    }
+    Notification.prototype.render = function () {
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "notification-area", style: { display: this.props.open ? 'block' : 'none' } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "alert alert-error" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("button", { type: "button", className: "close", "data-dismiss": "alert", onClick: this.props.close }, "\u00D7"),
+                this.props.message)));
+    };
+    return Notification;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/playhead.tsx":
+/*!**************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/playhead.tsx ***!
+  \**************************************************************************/
+/*! exports provided: Playhead */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Playhead", function() { return Playhead; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var Playhead = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Playhead, _super);
+    function Playhead(props) {
+        return _super.call(this, props) || this;
+    }
+    Playhead.prototype.dragStart = function (e) {
+        e.preventDefault();
+        this._direction = e.clientX;
+        this._active = true;
+    };
+    Playhead.prototype.drag = function (e) {
+        e.preventDefault();
+        if (this._active) {
+            var moved = e.pageX - this._direction;
+            var framesToMove = Math.round(Math.abs(moved) / 2);
+            console.log(framesToMove);
+            if (Math.sign(moved) === -1) {
+                this.props.onCurrentFrameChange(this.props.frame - 1);
+            }
+            else {
+                this.props.onCurrentFrameChange(this.props.frame + 1);
+            }
+        }
+    };
+    Playhead.prototype.dragEnd = function (e) {
+        e.preventDefault();
+        this._direction = 0;
+        this._active = false;
+    };
+    Playhead.prototype.calculateMove = function () {
+        return "calc(" + this.props.frame * this.props.offset + "px - 13px)";
+    };
+    Playhead.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead-wrapper', id: 'playhead', style: {
+                left: this.calculateMove(),
+            } },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead-line' }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead-handle', onMouseMove: function (e) { return _this.drag(e); }, onTouchMove: function (e) { return _this.drag(e); }, onTouchStart: function (e) { return _this.dragStart(e); }, onTouchEnd: function (e) { return _this.dragEnd(e); }, onMouseDown: function (e) { return _this.dragStart(e); }, onMouseUp: function (e) { return _this.dragEnd(e); }, onMouseLeave: function (e) { return _this.dragEnd(e); }, onDragStart: function () { return false; } },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead-circle' }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'playhead' }, this.props.frame))));
+    };
+    return Playhead;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/popupComponent.tsx":
+/*!********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/popupComponent.tsx ***!
+  \********************************************************************************/
+/*! exports provided: PopupComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PopupComponent", function() { return PopupComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dom */ "../../node_modules/react-dom/index.js");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _inspector__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../inspector */ "./inspector.ts");
+
+
+
+
+var PopupComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PopupComponent, _super);
+    function PopupComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._container = document.createElement('div');
+        _this._container.id = _this.props.id;
+        _this._window;
+        _this.state = {
+            isComponentMounted: false,
+            blockedByBrowser: false,
+        };
+        return _this;
+    }
+    PopupComponent.prototype.componentDidMount = function () {
+        this.openPopup();
+        this.setState({ isComponentMounted: true });
+    };
+    PopupComponent.prototype.openPopup = function () {
+        var _this = this;
+        var _a = this.props, title = _a.title, size = _a.size, onClose = _a.onClose, onOpen = _a.onOpen;
+        var windowVariableName = "window_" + title;
+        this._container = _inspector__WEBPACK_IMPORTED_MODULE_3__["Inspector"]._CreatePopup(title, windowVariableName, size.width, size.height);
+        this._window = _inspector__WEBPACK_IMPORTED_MODULE_3__["Inspector"][windowVariableName];
+        if (this._window) {
+            onOpen(this._window);
+            this._window.addEventListener('beforeunload', function () { return _this._window && onClose(_this._window); });
+        }
+        else {
+            if (!this._window) {
+                this.setState({ blockedByBrowser: true }, function () {
+                    if (_this.state.blockedByBrowser) {
+                        alert("You might have blocked popups in your browser");
+                        console.warn("Popup window couldn't be created");
+                    }
+                });
+            }
+        }
+    };
+    PopupComponent.prototype.componentWillUnmount = function () {
+        if (this._window) {
+            this._window.close();
+        }
+    };
+    PopupComponent.prototype.render = function () {
+        if (!this.state.isComponentMounted || this._container === null)
+            return null;
+        return react_dom__WEBPACK_IMPORTED_MODULE_2__["createPortal"](this.props.children, this._container);
+    };
+    return PopupComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/saveSnippet.tsx":
+/*!*****************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/saveSnippet.tsx ***!
+  \*****************************************************************************/
+/*! exports provided: SaveSnippet */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SaveSnippet", function() { return SaveSnippet; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+
+
+
+var SaveSnippet = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SaveSnippet, _super);
+    function SaveSnippet(props) {
+        var _this = _super.call(this, props) || this;
+        _this._serverAddress = "-";
+        var animList = _this.props.animations.map(function (animation, i) {
+            return {
+                id: animation.name + "_" + animation.targetProperty,
+                name: animation.name,
+                index: i,
+                selected: false,
+            };
+        });
+        _this.state = { selectedAnimations: animList };
+        return _this;
+    }
+    SaveSnippet.prototype.handleCheckboxChange = function (e) {
+        e.preventDefault();
+        var index = parseInt(e.target.id.replace("save_", ""));
+        var updated = this.state.selectedAnimations.map(function (item) {
+            if (item.index === index) {
+                item.selected = !item.selected;
+            }
+            return item;
+        });
+        this.setState({ selectedAnimations: updated });
+    };
+    SaveSnippet.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "save-container" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "item-list" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("ul", null, this.props.animations.map(function (animation, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("li", { key: i },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", null,
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { id: "save_" + i, name: "save_" + animation.name, type: "checkbox", checked: _this.state.selectedAnimations[i].selected, onChange: function (e) { return _this.handleCheckboxChange(e); } }),
+                                animation.name))));
+                }))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "save-buttons" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save Snippet", onClick: function () { } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Save File", onClick: function () { } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "save-server" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, "Snippet Server:"),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("p", null, this._serverAddress))));
+    };
+    return SaveSnippet;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: SvgDraggableArea */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SvgDraggableArea", function() { return SvgDraggableArea; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./keyframeSvgPoint */ "./components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint.tsx");
+
+
+
+
+var SvgDraggableArea = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SvgDraggableArea, _super);
+    function SvgDraggableArea(props) {
+        var _this = _super.call(this, props) || this;
+        _this._currentPointId = "";
+        _this._isCurrentPointControl = "";
+        _this._draggableArea = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._panStart = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
+        _this._panStop = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"](0, 0);
+        return _this;
+    }
+    SvgDraggableArea.prototype.componentDidMount = function () {
+        var _this = this;
+        var _a, _b;
+        (_a = this._draggableArea.current) === null || _a === void 0 ? void 0 : _a.addEventListener("keydown", this.keyDown.bind(this));
+        (_b = this._draggableArea.current) === null || _b === void 0 ? void 0 : _b.addEventListener("keyup", this.keyUp.bind(this));
+        setTimeout(function () {
+            var _a, _b;
+            _this._width = ((_a = _this._draggableArea.current) === null || _a === void 0 ? void 0 : _a.clientWidth) !== undefined ? (_b = _this._draggableArea.current) === null || _b === void 0 ? void 0 : _b.clientWidth : 0;
+            console.log(_this._width);
+        }, 500);
+    };
+    SvgDraggableArea.prototype.dragStart = function (e) {
+        e.preventDefault();
+        if (e.target.classList.contains("draggable")) {
+            this._active = true;
+            this._currentPointId = e.target.getAttribute('data-id');
+            if (e.target.classList.contains("control-point")) {
+                this._isCurrentPointControl = e.target.getAttribute("type");
+            }
+        }
+        if (e.target.classList.contains("pannable")) {
+            if (e.buttons === 1 && e.ctrlKey) {
+                this._panStart.set(e.clientX, e.clientY);
+            }
+        }
+    };
+    SvgDraggableArea.prototype.drag = function (e) {
+        var _this = this;
+        if (this._active) {
+            e.preventDefault();
+            var coord = this.getMousePosition(e);
+            if (coord !== undefined) {
+                var newPoints = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.keyframeSvgPoints);
+                var point = newPoints.find(function (kf) { return kf.id === _this._currentPointId; });
+                if (point) {
+                    // Check for NaN values here. 
+                    if (this._isCurrentPointControl === "left") {
+                        point.leftControlPoint = coord;
+                    }
+                    else if (this._isCurrentPointControl === "right") {
+                        point.rightControlPoint = coord;
+                    }
+                    else {
+                        point.keyframePoint = coord;
+                    }
+                    this.props.updatePosition(point, this._currentPointId);
+                }
+            }
+        }
+    };
+    SvgDraggableArea.prototype.dragEnd = function (e) {
+        e.preventDefault();
+        this._active = false;
+        this._currentPointId = "";
+        this._isCurrentPointControl = "";
+        if (e.target.classList.contains("pannable")) {
+            if (this._panStart.x !== 0 && this._panStart.y !== 0) {
+                this._panStop.set(e.clientX, e.clientY);
+                this.panDirection();
+            }
+        }
+    };
+    SvgDraggableArea.prototype.getMousePosition = function (e) {
+        if (e.touches) {
+            e = e.touches[0];
+        }
+        if (this._draggableArea.current) {
+            var svg = this._draggableArea.current;
+            var CTM = svg.getScreenCTM();
+            if (CTM) {
+                return new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector2"]((e.clientX - CTM.e) / CTM.a, (e.clientY - CTM.f) / CTM.d);
+            }
+            else {
+                return undefined;
+            }
+        }
+        else {
+            return undefined;
+        }
+    };
+    SvgDraggableArea.prototype.panDirection = function () {
+        // Movement Right to Left
+        if (this._panStart.x > this._panStop.x) {
+            console.log("right to left");
+            this.panTo("right", Math.abs(this._panStart.x - this._panStop.x));
+        }
+        // Movement Right to Left
+        if (this._panStart.x < this._panStop.x) {
+            this.panTo("left", Math.abs(this._panStart.x - this._panStop.x));
+            console.log("left to right");
+        }
+        // Movement Bottom to Up
+        if (this._panStart.y > this._panStop.y) {
+            console.log("down up");
+        }
+        // Movement Up to Bottom
+        if (this._panStart.y < this._panStop.y) {
+            console.log("up down");
+        }
+        this._panStart.set(0, 0);
+        this._panStop.set(0, 0);
+    };
+    SvgDraggableArea.prototype.panTo = function (direction, value) {
+        var _a, _b;
+        switch (direction) {
+            case "left":
+                ((_a = this._draggableArea.current) === null || _a === void 0 ? void 0 : _a.parentElement).scrollLeft -= (value * 1);
+                break;
+            case "right":
+                ((_b = this._draggableArea.current) === null || _b === void 0 ? void 0 : _b.parentElement).scrollLeft += (value * 1);
+                break;
+            case "top":
+                break;
+            case "down":
+                break;
+        }
+    };
+    SvgDraggableArea.prototype.keyDown = function (e) {
+        var _a;
+        e.preventDefault();
+        if (e.keyCode === 17) {
+            (_a = this._draggableArea.current) === null || _a === void 0 ? void 0 : _a.style.setProperty("cursor", "grab");
+        }
+    };
+    SvgDraggableArea.prototype.keyUp = function (e) {
+        var _a;
+        e.preventDefault();
+        if (e.keyCode === 17) {
+            (_a = this._draggableArea.current) === null || _a === void 0 ? void 0 : _a.style.setProperty("cursor", "initial");
+        }
+    };
+    SvgDraggableArea.prototype.focus = function (e) {
+        var _a;
+        e.preventDefault();
+        (_a = this._draggableArea.current) === null || _a === void 0 ? void 0 : _a.focus();
+    };
+    SvgDraggableArea.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { className: "linear pannable", ref: this._draggableArea, tabIndex: 0, onMouseMove: function (e) { return _this.drag(e); }, onTouchMove: function (e) { return _this.drag(e); }, onTouchStart: function (e) { return _this.dragStart(e); }, onTouchEnd: function (e) { return _this.dragEnd(e); }, onMouseDown: function (e) { return _this.dragStart(e); }, onMouseUp: function (e) { return _this.dragEnd(e); }, onMouseLeave: function (e) { return _this.dragEnd(e); }, 
+                // Add way to add new keyframe
+                onClick: function (e) { return _this.focus(e); }, viewBox: "0 0 " + Math.round(this.props.scale * 200) + " " + Math.round(this.props.scale * 100) },
+                this.props.children,
+                this.props.keyframeSvgPoints.map(function (keyframe, i) {
+                    return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_keyframeSvgPoint__WEBPACK_IMPORTED_MODULE_3__["KeyframeSvgPoint"], { key: keyframe.id + "_" + i, id: keyframe.id, keyframePoint: keyframe.keyframePoint, leftControlPoint: keyframe.leftControlPoint, rightControlPoint: keyframe.rightControlPoint, isLeftActive: keyframe.isLeftActive, isRightActive: keyframe.isRightActive, selected: keyframe.selected, selectedControlPoint: function (type, id) { return _this.props.selectedControlPoint(type, id); }, selectKeyframe: function (id) { return _this.props.selectKeyframe(id); } });
+                }))));
+    };
+    return SvgDraggableArea;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent.tsx":
+/*!********************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent.tsx ***!
+  \********************************************************************************************************/
+/*! exports provided: TargetedAnimationGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TargetedAnimationGridComponent", function() { return TargetedAnimationGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _animations_popupComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../animations/popupComponent */ "./components/actionTabs/tabs/propertyGrids/animations/popupComponent.tsx");
+/* harmony import */ var _animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../animations/animationCurveEditorComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent.tsx");
+
+
+
+
+
+
+
+
+var TargetedAnimationGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TargetedAnimationGridComponent, _super);
+    function TargetedAnimationGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._animationGroup = _this.props.scene.animationGroups.find(function (ag) {
+            var ta = ag.targetedAnimations.find(function (ta) { return ta === _this.props.targetedAnimation; });
+            return ta !== undefined;
+        });
+        return _this;
+    }
+    TargetedAnimationGridComponent.prototype.onOpenAnimationCurveEditor = function () {
+        this._isCurveEditorOpen = true;
+    };
+    TargetedAnimationGridComponent.prototype.onCloseAnimationCurveEditor = function (window) {
+        this._isCurveEditorOpen = false;
+        if (window !== null) {
+            window.close();
+        }
+    };
+    TargetedAnimationGridComponent.prototype.playOrPause = function () {
+        if (this._animationGroup) {
+            if (this._animationGroup.isPlaying) {
+                this._animationGroup.stop();
+            }
+            else {
+                this._animationGroup.start();
+            }
+            this.forceUpdate();
+        }
+    };
+    TargetedAnimationGridComponent.prototype.deleteAnimation = function () {
+        var _a;
+        if (this._animationGroup) {
+            var index = this._animationGroup.targetedAnimations.indexOf(this.props.targetedAnimation);
+            if (index > -1) {
+                this._animationGroup.targetedAnimations.splice(index, 1);
+                (_a = this.props.onSelectionChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers(null);
+                if (this._animationGroup.isPlaying) {
+                    this._animationGroup.stop();
+                    this._animationGroup.start();
+                }
+            }
+        }
+    };
+    TargetedAnimationGridComponent.prototype.render = function () {
+        var _this = this;
+        var targetedAnimation = this.props.targetedAnimation;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Class", value: targetedAnimation.getClassName() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: targetedAnimation.animation, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                targetedAnimation.target.name && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Target", value: targetedAnimation.target.name, onLink: function () {
+                        return _this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation);
+                    } })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Edit animation", onClick: function () { return _this.onOpenAnimationCurveEditor(); } }),
+                this._isCurveEditorOpen && (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_popupComponent__WEBPACK_IMPORTED_MODULE_6__["PopupComponent"], { id: "curve-editor", title: "Curve Animation Editor", size: { width: 1024, height: 512 }, onOpen: function (window) { }, onClose: function (window) {
+                        return _this.onCloseAnimationCurveEditor(window);
+                    } },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationCurveEditorComponent__WEBPACK_IMPORTED_MODULE_7__["AnimationCurveEditorComponent"], { scene: this.props.scene, entity: targetedAnimation, playOrPause: function () { return _this.playOrPause(); }, lockObject: this.props.lockObject, close: function (event) { return _this.onCloseAnimationCurveEditor(event.view); } }))),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.deleteAnimation(); } }))));
+    };
+    return TargetedAnimationGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/animations/timeline.tsx":
+/*!**************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/animations/timeline.tsx ***!
+  \**************************************************************************/
+/*! exports provided: Timeline */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Timeline", function() { return Timeline; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _controls__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controls */ "./components/actionTabs/tabs/propertyGrids/animations/controls.tsx");
+
+
+
+var Timeline = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(Timeline, _super);
+    function Timeline(props) {
+        var _this = _super.call(this, props) || this;
+        _this._frames = Array(300).fill({});
+        if (_this.props.selected !== null) {
+            _this.state = { selected: _this.props.selected, activeKeyframe: null };
+        }
+        _this._scrollable = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._scrollbarHandle = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._direction = 0;
+        _this._scrolling = false;
+        _this._shiftX = 0;
+        return _this;
+    }
+    Timeline.prototype.playBackwards = function (event) {
+        this.props.playPause(-1);
+    };
+    Timeline.prototype.play = function (event) {
+        this.props.playPause(1);
+    };
+    Timeline.prototype.pause = function (event) {
+        if (this.props.isPlaying) {
+            this.props.playPause(1);
+        }
+    };
+    Timeline.prototype.handleInputChange = function (event) {
+        this.props.onCurrentFrameChange(parseInt(event.target.value));
+        event.preventDefault();
+    };
+    Timeline.prototype.nextFrame = function (event) {
+        event.preventDefault();
+        this.props.onCurrentFrameChange(this.props.currentFrame + 1);
+        this._scrollable.current.scrollLeft =
+            this.props.currentFrame * 5;
+    };
+    Timeline.prototype.previousFrame = function (event) {
+        event.preventDefault();
+        if (this.props.currentFrame !== 0) {
+            this.props.onCurrentFrameChange(this.props.currentFrame - 1);
+            this._scrollable.current.scrollLeft = -(this.props.currentFrame * 5);
+        }
+    };
+    Timeline.prototype.nextKeyframe = function (event) {
+        var _this = this;
+        event.preventDefault();
+        if (this.props.keyframes !== null) {
+            var first = this.props.keyframes.find(function (kf) { return kf.frame > _this.props.currentFrame; });
+            if (first) {
+                this.props.onCurrentFrameChange(first.frame);
+                this.setState({ selected: first });
+                this._scrollable.current.scrollLeft =
+                    first.frame * 5;
+            }
+        }
+    };
+    Timeline.prototype.previousKeyframe = function (event) {
+        var _this = this;
+        event.preventDefault();
+        if (this.props.keyframes !== null) {
+            var keyframes = Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__spreadArrays"])(this.props.keyframes);
+            var first = keyframes
+                .reverse()
+                .find(function (kf) { return kf.frame < _this.props.currentFrame; });
+            if (first) {
+                this.props.onCurrentFrameChange(first.frame);
+                this.setState({ selected: first });
+                this._scrollable.current.scrollLeft = -(first.frame * 5);
+            }
+        }
+    };
+    Timeline.prototype.dragStart = function (e) {
+        e.preventDefault();
+        this.setState({ activeKeyframe: parseInt(e.target.id.replace('kf_', '')) });
+        this._direction = e.clientX;
+    };
+    Timeline.prototype.drag = function (e) {
+        e.preventDefault();
+        if (this.props.keyframes) {
+            if (this.state.activeKeyframe === parseInt(e.target.id.replace('kf_', ''))) {
+                var updatedKeyframe = this.props.keyframes[this.state.activeKeyframe];
+                if (this._direction > e.clientX) {
+                    console.log("Dragging left " + this.state.activeKeyframe);
+                    var used = this.isFrameBeingUsed(updatedKeyframe.frame - 1, -1);
+                    if (used) {
+                        updatedKeyframe.frame = used;
+                    }
+                }
+                else {
+                    console.log("Dragging Right " + this.state.activeKeyframe);
+                    var used = this.isFrameBeingUsed(updatedKeyframe.frame + 1, 1);
+                    if (used) {
+                        updatedKeyframe.frame = used;
+                    }
+                }
+                this.props.dragKeyframe(updatedKeyframe.frame, this.state.activeKeyframe);
+            }
+        }
+    };
+    Timeline.prototype.isFrameBeingUsed = function (frame, direction) {
+        var _a;
+        var used = (_a = this.props.keyframes) === null || _a === void 0 ? void 0 : _a.find(function (kf) { return kf.frame === frame; });
+        if (used) {
+            this.isFrameBeingUsed(used.frame + direction, direction);
+            return false;
+        }
+        else {
+            return frame;
+        }
+    };
+    Timeline.prototype.dragEnd = function (e) {
+        e.preventDefault();
+        this._direction = 0;
+        this.setState({ activeKeyframe: null });
+    };
+    Timeline.prototype.scrollDragStart = function (e) {
+        e.preventDefault();
+        if ((e.target.class = 'scrollbar') && this._scrollbarHandle.current) {
+            this._scrolling = true;
+            this._shiftX =
+                e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
+            this._scrollbarHandle.current.style.left = e.pageX - this._shiftX + 'px';
+        }
+    };
+    Timeline.prototype.scrollDrag = function (e) {
+        e.preventDefault();
+        if (this._scrolling && this._scrollbarHandle.current) {
+            var moved = e.pageX - this._shiftX;
+            if (moved > 233 && moved < 630) {
+                this._scrollbarHandle.current.style.left = moved + 'px';
+                this._scrollable.current.scrollLeft = moved + 10;
+            }
+        }
+    };
+    Timeline.prototype.scrollDragEnd = function (e) {
+        e.preventDefault();
+        this._scrolling = false;
+        this._shiftX = 0;
+    };
+    Timeline.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'timeline' },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_controls__WEBPACK_IMPORTED_MODULE_2__["Controls"], { keyframes: this.props.keyframes, selected: this.props.selected, currentFrame: this.props.currentFrame, onCurrentFrameChange: this.props.onCurrentFrameChange, playPause: this.props.playPause, isPlaying: this.props.isPlaying, scrollable: this._scrollable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'timeline-wrapper' },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { ref: this._scrollable, className: 'display-line' },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { viewBox: '0 0 2010 40', style: { width: 2000, height: 40, backgroundColor: '#222222' }, onMouseMove: function (e) { return _this.drag(e); }, onTouchMove: function (e) { return _this.drag(e); }, onTouchStart: function (e) { return _this.dragStart(e); }, onTouchEnd: function (e) { return _this.dragEnd(e); }, onMouseDown: function (e) { return _this.dragStart(e); }, onMouseUp: function (e) { return _this.dragEnd(e); }, onMouseLeave: function (e) { return _this.dragEnd(e); }, onDragStart: function () { return false; } },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: this.props.currentFrame * 10, y1: '0', x2: this.props.currentFrame * 10, y2: '40', style: { stroke: '#12506b', strokeWidth: 6 } }),
+                            this.props.keyframes &&
+                                this.props.keyframes.map(function (kf, i) {
+                                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: "kf_" + i, style: { cursor: 'pointer' }, tabIndex: i + 40 },
+                                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { id: "kf_" + i.toString(), x1: kf.frame * 10, y1: '0', x2: kf.frame * 10, y2: '40', style: { stroke: 'red', strokeWidth: 6 } })));
+                                }),
+                            this._frames.map(function (frame, i) {
+                                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("svg", { key: "tl_" + i }, i % 5 === 0 ? (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("text", { x: i * 5 - 3, y: '18', style: { fontSize: 10, fill: '#555555' } }, i),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("line", { x1: i * 5, y1: '22', x2: i * 5, y2: '40', style: { stroke: '#555555', strokeWidth: 0.5 } }))) : null));
+                            }))),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'timeline-scroll-handle' },
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'scroll-handle' },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'handle', ref: this._scrollbarHandle, style: { width: 300 } },
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'left-grabber' },
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'text' }, "20")),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'scrollbar', onMouseMove: function (e) { return _this.scrollDrag(e); }, onTouchMove: function (e) { return _this.scrollDrag(e); }, onTouchStart: function (e) { return _this.scrollDragStart(e); }, onTouchEnd: function (e) { return _this.scrollDragEnd(e); }, onMouseDown: function (e) { return _this.scrollDragStart(e); }, onMouseUp: function (e) { return _this.scrollDragEnd(e); }, onMouseLeave: function (e) { return _this.scrollDragEnd(e); }, onDragStart: function () { return false; } }),
+                                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'right-grabber' },
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'text' }, "100"),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' }),
+                                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'grabber' })))),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: 'input-frame' },
+                            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: 'number', value: this.props.currentFrame, onChange: function (e) { return _this.handleInputChange(e); } })))))));
+    };
+    return Timeline;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -58888,6 +62225,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+
 
 
 
@@ -58923,6 +62262,7 @@ var CommonCameraPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Near plane", target: camera, propertyName: "minZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { lockObject: this.props.lockObject, label: "Far plane", target: camera, propertyName: "maxZ", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Inertia", target: camera, propertyName: "inertia", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__["FloatLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Layer mask", target: camera, propertyName: "layerMask", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Mode", options: modeOptions, target: camera, propertyName: "mode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
                 camera.mode === babylonjs_Cameras_camera__WEBPACK_IMPORTED_MODULE_2__["Camera"].PERSPECTIVE_CAMERA &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_3__["SliderLineComponent"], { label: "Field of view", target: camera, useEuler: this.props.globalState.onlyUseEulers, propertyName: "fov", minimum: 0.1, maximum: Math.PI, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -58937,7 +62277,8 @@ var CommonCameraPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         camera.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    } }))));
+                    } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: camera, scene: camera.getScene(), lockObject: this.props.lockObject })));
     };
     return CommonCameraPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -58992,6 +62333,76 @@ var FreeCameraPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Ellipsoid offset", target: camera, propertyName: "ellipsoidOffset", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
     };
     return FreeCameraPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: CommonPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CommonPropertyGridComponent", function() { return CommonPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/indentedTextLineComponent */ "./components/actionTabs/lines/indentedTextLineComponent.tsx");
+
+
+
+
+
+var CommonPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(CommonPropertyGridComponent, _super);
+    function CommonPropertyGridComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    CommonPropertyGridComponent.prototype.renderLevel = function (jsonObject) {
+        var components = [];
+        for (var data in jsonObject) {
+            var value = jsonObject[data];
+            var type = Object.prototype.toString.call(value);
+            switch (type) {
+                case '[object String]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__["IndentedTextLineComponent"], { key: data + value, value: value }));
+                    break;
+                case '[object Array]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
+                        var entry = value_1[_i];
+                        components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_indentedTextLineComponent__WEBPACK_IMPORTED_MODULE_4__["IndentedTextLineComponent"], { key: data + entry, value: entry }));
+                    }
+                    break;
+                case '[object Object]':
+                    components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data, label: data, ignoreValue: true }));
+                    for (var entryKey in value) {
+                        components.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { key: data + entry, label: entryKey, value: value[entryKey], additionalClass: "reduced-opacity" }));
+                    }
+                    break;
+            }
+        }
+        return components;
+    };
+    CommonPropertyGridComponent.prototype.render = function () {
+        if (!this.props.host.metadata) {
+            return null;
+        }
+        if (!this.props.host.metadata.xmp) {
+            return null;
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "XMP METADATA" }, this.renderLevel(this.props.host.metadata.xmp))));
+    };
+    return CommonPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -59227,7 +62638,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/control */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_control__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
@@ -59533,7 +62944,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs-gui/2D/controls/image */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_image__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
@@ -59947,7 +63358,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonControlPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonControlPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs-gui/2D/controls/textBlock */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_controls_textBlock__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
@@ -60025,6 +63436,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+
 
 
 
@@ -60052,7 +63465,8 @@ var CommonLightPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_6__["ButtonLineComponent"], { label: "Dispose", onClick: function () {
                         light.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                    } }))));
+                    } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: light, scene: light.getScene(), lockObject: this.props.lockObject })));
     };
     return CommonLightPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60110,7 +63524,9 @@ var CommonShadowLightPropertyGridComponent = /** @class */ (function (_super) {
         var generator = internals.generatorType === 0 ? new babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["ShadowGenerator"](internals.mapSize, light) : new babylonjs_Lights_Shadows_shadowGenerator__WEBPACK_IMPORTED_MODULE_6__["CascadedShadowGenerator"](internals.mapSize, light);
         scene.meshes.forEach(function (m) {
             generator.addShadowCaster(m);
-            m.receiveShadows = true;
+            if (!m.isAnInstance) {
+                m.receiveShadows = true;
+            }
         });
         this.forceUpdate();
     };
@@ -60548,6 +63964,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+
 
 
 
@@ -60613,6 +64031,7 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Backface culling", target: material, propertyName: "backFaceCulling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Orientation", options: orientationOptions, target: material, propertyName: "sideOrientation", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ mode: value }); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Disable lighting", target: material, propertyName: "disableLighting", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Disable color write", target: material, propertyName: "disableColorWrite", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Disable depth write", target: material, propertyName: "disableDepthWrite", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Depth function", options: depthfunctionOptions, target: material, propertyName: "depthFunction", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ depthFunction: value }); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Need depth pre-pass", target: material, propertyName: "needDepthPrePass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -60637,7 +64056,8 @@ var CommonMaterialPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Albedo texture has alpha", target: material.albedoTexture, propertyName: "hasAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.useAlphaFromAlbedoTexture !== undefined &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use alpha from albedo texture", target: material, propertyName: "useAlphaFromAlbedoTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Separate culling pass", target: material, propertyName: "separateCullingPass", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Separate culling pass", target: material, propertyName: "separateCullingPass", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: material, scene: material.getScene(), lockObject: this.props.lockObject })));
     };
     return CommonMaterialPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -60906,6 +64326,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(PBRMaterialPropertyGridComponent, _super);
     function PBRMaterialPropertyGridComponent(props) {
@@ -60938,7 +64359,9 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, propertyName: "opacityTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { customDebugAction: function (state) { return _this.switchAmbientMode(state); }, label: "Ambient", texture: material.ambientTexture, propertyName: "ambientTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, propertyName: "lightmapTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use lightmap as shadowmap", target: material, propertyName: "useLightmapAsShadowmap ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Detailmap", texture: material.detailMap.texture, material: material, onTextureCreated: function (texture) { return material.detailMap.texture = texture; }, onTextureRemoved: function () { return material.detailMap.texture = null; }, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use lightmap as shadowmap", target: material, propertyName: "useLightmapAsShadowmap", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use detailmap", target: material.detailMap, propertyName: "isEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     PBRMaterialPropertyGridComponent.prototype.render = function () {
         var _this = this;
@@ -61006,6 +64429,11 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
         ];
+        var realTimeFilteringQualityOptions = [
+            { label: "Low", value: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURE_FILTERING_QUALITY_LOW },
+            { label: "Medium", value: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURE_FILTERING_QUALITY_MEDIUM },
+            { label: "High", value: babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_2__["Constants"].TEXTURE_FILTERING_QUALITY_HIGH }
+        ];
         material.sheen._useRoughness = (_a = material.sheen._useRoughness) !== null && _a !== void 0 ? _a : material.sheen.roughness !== null;
         material.sheen.roughness = (_c = (_b = material.sheen.roughness) !== null && _b !== void 0 ? _b : material.sheen._saveRoughness) !== null && _c !== void 0 ? _c : 0;
         if (!material.sheen._useRoughness) {
@@ -61024,9 +64452,11 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use physical light falloff", target: material, propertyName: "usePhysicalLightFalloff", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "METALLIC WORKFLOW" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Metallic", target: material, propertyName: "metallic", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Metallic F0", target: material, propertyName: "metallicF0Factor", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Metallic F0 From Map", target: material, propertyName: "useMetallicF0FactorFromMetallicTexture", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Roughness", target: material, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Roughness", target: material, propertyName: "roughness", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Index of Refraction", target: material, propertyName: "indexOfRefraction", minimum: 1, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "F0 Factor", target: material, propertyName: "metallicF0Factor", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Color3LineComponent"], { label: "Reflectance Color", target: material, propertyName: "metallicReflectanceColor", onPropertyChangedObservable: this.props.onPropertyChangedObservable, isLinear: true }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Reflectance Texture", texture: material.metallicReflectanceTexture, onTextureCreated: function (texture) { return material.metallicReflectanceTexture = texture; }, onTextureRemoved: function () { return material.metallicReflectanceTexture = null; }, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CLEAR COAT" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Enabled", target: material.clearCoat, propertyName: "isEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.clearCoat.isEnabled &&
@@ -61079,7 +64509,8 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_10__["TextureLinkLineComponent"], { label: "Refraction", texture: material.subSurface.refractionTexture, onTextureCreated: function (texture) { return material.subSurface.refractionTexture = texture; }, onTextureRemoved: function () { return material.subSurface.refractionTexture = null; }, material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: this._onDebugSelectionChangeObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Index of Refraction", target: material.subSurface, propertyName: "indexOfRefraction", minimum: 1, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Tint at Distance", target: material.subSurface, propertyName: "tintColorAtDistance", minimum: 0, maximum: 10, step: 0.1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link refraction with transparency", target: material.subSurface, propertyName: "linkRefractionWithTransparency", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Link refraction with transparency", target: material.subSurface, propertyName: "linkRefractionWithTransparency", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use albedo to tint surface transparency", target: material.subSurface, propertyName: "useAlbedoToTintRefraction", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Translucency Enabled", target: material.subSurface, propertyName: "isTranslucencyEnabled", onValueChanged: function () { return _this.forceUpdate(); }, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.subSurface.isTranslucencyEnabled &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "fragment" },
@@ -61109,14 +64540,20 @@ var PBRMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 material.subSurface.thicknessTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Thickness", target: material.subSurface.thicknessTexture, propertyName: "level", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.subSurface.refractionTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Refraction", target: material.subSurface.refractionTexture, propertyName: "level", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Refraction", target: material.subSurface.refractionTexture, propertyName: "level", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.detailMap.isEnabled && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Detailmap diffuse", target: material.detailMap, propertyName: "diffuseBlendLevel", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Detailmap bump", target: material.detailMap, propertyName: "bumpLevel", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Detailmap roughness", target: material.detailMap, propertyName: "roughnessBlendLevel", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "RENDERING", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Alpha from albedo", target: material, propertyName: "useAlphaFromAlbedoTexture", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Ambient in grayscale", target: material, propertyName: "useAmbientInGrayScale", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Radiance over alpha", target: material, propertyName: "useRadianceOverAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Micro-surface from ref. map alpha", target: material, propertyName: "useMicroSurfaceFromReflectivityMapAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular over alpha", target: material, propertyName: "useSpecularOverAlpha", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular anti-aliasing", target: material, propertyName: "enableSpecularAntiAliasing", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Specular anti-aliasing", target: material, propertyName: "enableSpecularAntiAliasing", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Realtime Filtering", target: material, propertyName: "realTimeFiltering", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_8__["OptionsLineComponent"], { allowNullValue: true, label: "Realtime Filtering quality", options: realTimeFilteringQualityOptions, target: material, propertyName: "realTimeFilteringQuality", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "NORMAL MAP", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Invert X axis", target: material, propertyName: "invertNormalMapX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Invert Y axis", target: material, propertyName: "invertNormalMapY", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
@@ -61327,7 +64764,9 @@ var StandardMaterialPropertyGridComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Opacity", texture: material.opacityTexture, propertyName: "opacityTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Ambient", texture: material.ambientTexture, propertyName: "ambientTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Lightmap", texture: material.lightmapTexture, propertyName: "lightmapTexture", material: material, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Use lightmap as shadowmap", target: material, propertyName: "useLightmapAsShadowmap ", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_7__["TextureLinkLineComponent"], { label: "Detailmap", texture: material.detailMap.texture, material: material, onTextureCreated: function (texture) { return material.detailMap.texture = texture; }, onTextureRemoved: function () { return material.detailMap.texture = null; }, onSelectionChangedObservable: this.props.onSelectionChangedObservable, onDebugSelectionChangeObservable: onDebugSelectionChangeObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Use lightmap as shadowmap", target: material, propertyName: "useLightmapAsShadowmap", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Use detailmap", target: material.detailMap, propertyName: "isEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
     };
     StandardMaterialPropertyGridComponent.prototype.render = function () {
         var material = this.props.material;
@@ -61359,7 +64798,10 @@ var StandardMaterialPropertyGridComponent = /** @class */ (function (_super) {
                 material.ambientTexture &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Ambient level", target: material.ambientTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 material.lightmapTexture &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Lightmap level", target: material.lightmapTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Lightmap level", target: material.lightmapTexture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                material.detailMap.isEnabled && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Detailmap diffuse", target: material.detailMap, propertyName: "diffuseBlendLevel", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_5__["SliderLineComponent"], { label: "Detailmap bump", target: material.detailMap, propertyName: "bumpLevel", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "NORMAL MAP", closed: true },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Invert X axis", target: material, propertyName: "invertNormalMapX", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_8__["CheckBoxLineComponent"], { label: "Invert Y axis", target: material, propertyName: "invertNormalMapY", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
@@ -61395,11 +64837,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
 /* harmony import */ var _lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/valueLineComponent */ "./components/actionTabs/lines/valueLineComponent.tsx");
-/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/adtInstrumentation");
+/* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! babylonjs-gui/2D/adtInstrumentation */ "babylonjs-gui/2D/controls/image");
 /* harmony import */ var babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(babylonjs_gui_2D_adtInstrumentation__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+
 
 
 
@@ -61543,6 +64987,8 @@ var TexturePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_4__["SliderLineComponent"], { label: "Level", target: texture, propertyName: "level", minimum: 0, maximum: 2, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 texture.updateSamplingMode &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_9__["OptionsLineComponent"], { label: "Sampling", options: samplingMode, target: texture, noDirectUpdate: true, propertyName: "samplingMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return texture.updateSamplingMode(value); } })),
+            texture.getScene() &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: texture, scene: texture.getScene(), lockObject: this.props.lockObject }),
             texture.rootContainer &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ADVANCED TEXTURE PROPERTIES" },
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_11__["ValueLineComponent"], { label: "Last layout time", value: this._adtInstrumentation.renderTimeCounter.current, units: "ms" }),
@@ -61666,6 +65112,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+/* harmony import */ var _commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../commonPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx");
+/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
+
+
+
+
 
 
 
@@ -61875,6 +65328,7 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
     };
     MeshPropertyGridComponent.prototype.render = function () {
         var _this = this;
+        var _a;
         var mesh = this.props.mesh;
         var scene = mesh.getScene();
         var displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
@@ -61941,6 +65395,8 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                         mesh.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_16__["CommonPropertyGridComponent"], { host: mesh, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_17__["VariantsPropertyGridComponent"], { host: mesh, lockObject: this.props.lockObject, globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: mesh, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.rotationQuaternion &&
@@ -61960,15 +65416,19 @@ var MeshPropertyGridComponent = /** @class */ (function (_super) {
                 scene.fogMode !== babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["Scene"].FOGMODE_NONE &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Apply fog", target: mesh, propertyName: "applyFog", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !mesh.parent &&
-                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Infinite distance", target: mesh, propertyName: "infiniteDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Infinite distance", target: mesh, propertyName: "infiniteDistance", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: "Rendering group ID", decimalCount: 0, target: mesh, propertyName: "renderingGroupId", minimum: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["RenderingManager"].MIN_RENDERINGGROUPS, maximum: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["RenderingManager"].MAX_RENDERINGGROUPS - 1, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_9__["FloatLineComponent"], { isInteger: true, lockObject: this.props.lockObject, label: "Layer mask", target: mesh, propertyName: "layerMask", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
             mesh.morphTargetManager != null &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "MORPH TARGETS", closed: true }, morphTargets.map(function (mt, i) {
-                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { label: mt.name, target: mt, propertyName: "influence", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: _this.props.onPropertyChangedObservable }));
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_7__["SliderLineComponent"], { key: i, label: mt.name, target: mt, propertyName: "influence", minimum: 0, maximum: 1, step: 0.01, onPropertyChangedObservable: _this.props.onPropertyChangedObservable }));
                 })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: mesh, scene: mesh.getScene(), lockObject: this.props.lockObject }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "ADVANCED", closed: true },
                 mesh.useBones &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Compute bones using shaders", target: mesh, propertyName: "computeBonesUsingShaders", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Collisions", target: mesh, propertyName: "checkCollisions", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Geometry ID", value: (_a = mesh.geometry) === null || _a === void 0 ? void 0 : _a.uniqueId.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has normals", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].NormalKind) ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has vertex colors", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].ColorKind) ? "Yes" : "No" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Has UV set 0", value: mesh.isVerticesDataPresent(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_2__["VertexBuffer"].UVKind) ? "Yes" : "No" }),
@@ -62038,7 +65498,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
 /* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
-/* harmony import */ var _animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animationPropertyGridComponent.tsx");
+/* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
 /* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! babylonjs/Debug/skeletonViewer */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Debug_skeletonViewer__WEBPACK_IMPORTED_MODULE_6__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
@@ -62133,7 +65593,7 @@ var SkeletonPropertyGridComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Override mesh", value: skeleton.overrideMesh.name, onLink: function () { return _this.onOverrideMeshLink(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Use texture to store matrices", target: skeleton, propertyName: "useTextureToStoreBoneMatrices", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "Debug mode", isSelected: function () { return _this._skeletonViewersEnabled; }, onSelect: function () { return _this.switchSkeletonViewers(); } })),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: skeleton, scene: skeleton.getScene(), lockObject: this.props.lockObject })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_5__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: skeleton, scene: skeleton.getScene(), lockObject: this.props.lockObject })));
     };
     return SkeletonPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -62163,6 +65623,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _customPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../customPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
 /* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+/* harmony import */ var _commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../commonPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/commonPropertyGridComponent.tsx");
+/* harmony import */ var _variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../variantsPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx");
+
+
+
 
 
 
@@ -62195,13 +65661,16 @@ var TransformNodePropertyGridComponent = /** @class */ (function (_super) {
                         transformNode.dispose();
                         _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPropertyGridComponent__WEBPACK_IMPORTED_MODULE_11__["CommonPropertyGridComponent"], { host: transformNode, lockObject: this.props.lockObject, globalState: this.props.globalState }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_variantsPropertyGridComponent__WEBPACK_IMPORTED_MODULE_12__["VariantsPropertyGridComponent"], { host: transformNode, lockObject: this.props.lockObject, globalState: this.props.globalState }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "TRANSFORMATIONS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Position", target: transformNode, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 !transformNode.rotationQuaternion &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Rotation", useEuler: this.props.globalState.onlyUseEulers, target: transformNode, propertyName: "rotation", step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 transformNode.rotationQuaternion &&
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_quaternionLineComponent__WEBPACK_IMPORTED_MODULE_6__["QuaternionLineComponent"], { label: "Rotation", useEuler: this.props.globalState.onlyUseEulers, target: transformNode, propertyName: "rotationQuaternion", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: transformNode, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_4__["Vector3LineComponent"], { label: "Scaling", target: transformNode, propertyName: "scaling", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_10__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: transformNode, scene: transformNode.getScene(), lockObject: this.props.lockObject })));
     };
     return TransformNodePropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -63653,6 +67122,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./commonPostProcessPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx");
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+
+
 
 
 
@@ -63661,10 +67134,18 @@ var PostProcessPropertyGridComponent = /** @class */ (function (_super) {
     function PostProcessPropertyGridComponent(props) {
         return _super.call(this, props) || this;
     }
+    PostProcessPropertyGridComponent.prototype.edit = function () {
+        var postProcess = this.props.postProcess;
+        postProcess.nodeMaterialSource.edit();
+    };
     PostProcessPropertyGridComponent.prototype.render = function () {
+        var _this = this;
         var postProcess = this.props.postProcess;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonPostProcessPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, postProcess: postProcess, onPropertyChangedObservable: this.props.onPropertyChangedObservable })));
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_commonPostProcessPropertyGridComponent__WEBPACK_IMPORTED_MODULE_2__["CommonPostProcessPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, postProcess: postProcess, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+            postProcess.nodeMaterialSource &&
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "CONFIGURATION" },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Node Material Editor", onClick: function () { return _this.edit(); } }))));
     };
     return PostProcessPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -63911,6 +67392,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
 /* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./animations/animationPropertyGridComponent */ "./components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx");
+
 
 
 
@@ -64028,6 +67511,7 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_8__["FileButtonLineComponent"], { label: "Update environment texture", onClick: function (file) { return _this.updateEnvironmentTexture(file); }, accept: ".dds, .env" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 2, step: 0.01, label: "IBL Intensity", target: scene, propertyName: "environmentIntensity", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_fogPropertyGridComponent__WEBPACK_IMPORTED_MODULE_7__["FogPropertyGridComponent"], { globalState: this.props.globalState, lockObject: this.props.lockObject, scene: scene, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_animations_animationPropertyGridComponent__WEBPACK_IMPORTED_MODULE_15__["AnimationGridComponent"], { globalState: this.props.globalState, animatable: scene, scene: scene, lockObject: this.props.lockObject }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "MATERIAL IMAGE PROCESSING" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Contrast", target: imageProcessing, propertyName: "contrast", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_12__["SliderLineComponent"], { minimum: 0, maximum: 4, step: 0.1, label: "Exposure", target: imageProcessing, propertyName: "exposure", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
@@ -64051,6 +67535,486 @@ var ScenePropertyGridComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_14__["ButtonLineComponent"], { label: "Normalize scene", onClick: function () { return _this.normalizeScene(); } }))));
     };
     return ScenePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx":
+/*!*************************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx ***!
+  \*************************************************************************************************/
+/*! exports provided: SpriteManagerPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpriteManagerPropertyGridComponent", function() { return SpriteManagerPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Sprites/spriteManager */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/textureLinkLineComponent */ "./components/actionTabs/lines/textureLinkLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../lines/fileButtonLineComponent */ "./components/actionTabs/lines/fileButtonLineComponent.tsx");
+/* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../../../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var SpriteManagerPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SpriteManagerPropertyGridComponent, _super);
+    function SpriteManagerPropertyGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this._snippetUrl = "https://snippet.babylonjs.com";
+        return _this;
+    }
+    SpriteManagerPropertyGridComponent.prototype.addNewSprite = function () {
+        var _a;
+        var spriteManager = this.props.spriteManager;
+        var newSprite = new babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Sprite"]("new sprite", spriteManager);
+        (_a = this.props.onSelectionChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers(newSprite);
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: spriteManager,
+            code: "new BABYLON.Sprite(\"new sprite\", TARGET);"
+        });
+    };
+    SpriteManagerPropertyGridComponent.prototype.disposeManager = function () {
+        var _a;
+        var spriteManager = this.props.spriteManager;
+        spriteManager.dispose();
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: spriteManager,
+            code: "TARGET.dispose();"
+        });
+        (_a = this.props.onSelectionChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers(null);
+    };
+    SpriteManagerPropertyGridComponent.prototype.saveToFile = function () {
+        var spriteManager = this.props.spriteManager;
+        var content = JSON.stringify(spriteManager.serialize(true));
+        babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Tools"].Download(new Blob([content]), "spriteManager.json");
+    };
+    SpriteManagerPropertyGridComponent.prototype.loadFromFile = function (file) {
+        var _this = this;
+        var spriteManager = this.props.spriteManager;
+        var scene = spriteManager.scene;
+        babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Tools"].ReadFile(file, function (data) {
+            var decoder = new TextDecoder("utf-8");
+            var jsonObject = JSON.parse(decoder.decode(data));
+            spriteManager.dispose();
+            _this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+            var newManager = babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["SpriteManager"].Parse(jsonObject, scene, "");
+            _this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
+        }, undefined, true);
+    };
+    SpriteManagerPropertyGridComponent.prototype.loadFromSnippet = function () {
+        var _this = this;
+        var spriteManager = this.props.spriteManager;
+        var scene = spriteManager.scene;
+        var snippedID = window.prompt("Please enter the snippet ID to use");
+        if (!snippedID) {
+            return;
+        }
+        spriteManager.dispose();
+        this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["SpriteManager"].CreateFromSnippetAsync(snippedID, scene).then(function (newManager) {
+            _this.props.globalState.onSelectionChangedObservable.notifyObservers(newManager);
+        }).catch(function (err) {
+            alert("Unable to load your sprite manager: " + err);
+        });
+    };
+    SpriteManagerPropertyGridComponent.prototype.saveToSnippet = function () {
+        var _this = this;
+        var spriteManager = this.props.spriteManager;
+        var content = JSON.stringify(spriteManager.serialize(true));
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4) {
+                if (xmlHttp.status == 200) {
+                    var snippet = JSON.parse(xmlHttp.responseText);
+                    var oldId = spriteManager.snippetId;
+                    spriteManager.snippetId = snippet.id;
+                    if (snippet.version && snippet.version != "0") {
+                        spriteManager.snippetId += "#" + snippet.version;
+                    }
+                    _this.forceUpdate();
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(spriteManager.snippetId);
+                    }
+                    var windowAsAny = window;
+                    if (windowAsAny.Playground && oldId) {
+                        windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
+                            regex: new RegExp(oldId, "g"),
+                            replace: spriteManager.snippetId
+                        });
+                    }
+                    alert("Sprite manager saved with ID: " + spriteManager.snippetId + " (please note that the id was also saved to your clipboard)");
+                }
+                else {
+                    alert("Unable to save your sprite manager");
+                }
+            }
+        };
+        xmlHttp.open("POST", this._snippetUrl + (spriteManager.snippetId ? "/" + spriteManager.snippetId : ""), true);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        var dataToSend = {
+            payload: JSON.stringify({
+                spriteManager: content
+            }),
+            name: "",
+            description: "",
+            tags: ""
+        };
+        xmlHttp.send(JSON.stringify(dataToSend));
+    };
+    SpriteManagerPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var spriteManager = this.props.spriteManager;
+        var alphaModeOptions = [
+            { label: "Combine", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_COMBINE },
+            { label: "One one", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_ONEONE },
+            { label: "Add", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_ADD },
+            { label: "Subtract", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_SUBTRACT },
+            { label: "Multiply", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_MULTIPLY },
+            { label: "Maximized", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["Constants"].ALPHA_PREMULTIPLIED },
+        ];
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: spriteManager, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Unique ID", value: spriteManager.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Capacity", value: spriteManager.capacity.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textureLinkLineComponent__WEBPACK_IMPORTED_MODULE_9__["TextureLinkLineComponent"], { label: "Texture", texture: spriteManager.texture, onSelectionChangedObservable: this.props.onSelectionChangedObservable }),
+                spriteManager.sprites.length < spriteManager.capacity &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Add new sprite", onClick: function () { return _this.addNewSprite(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.disposeManager(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "FILE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_fileButtonLineComponent__WEBPACK_IMPORTED_MODULE_11__["FileButtonLineComponent"], { label: "Load", onClick: function (file) { return _this.loadFromFile(file); }, accept: ".json" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Save", onClick: function () { return _this.saveToFile(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SNIPPET" },
+                spriteManager.snippetId &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "Snippet ID", value: spriteManager.snippetId }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Load from snippet server", onClick: function () { return _this.loadFromSnippet(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Save to snippet server", onClick: function () { return _this.saveToSnippet(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Pickable", target: spriteManager, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "Fog enabled", target: spriteManager, propertyName: "fogEnabled", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_6__["CheckBoxLineComponent"], { label: "No depth write", target: spriteManager, propertyName: "disableDepthWrite", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_8__["SliderLineComponent"], { label: "Rendering group ID", decimalCount: 0, target: spriteManager, propertyName: "renderingGroupId", minimum: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["RenderingManager"].MIN_RENDERINGGROUPS, maximum: babylonjs_Sprites_spriteManager__WEBPACK_IMPORTED_MODULE_3__["RenderingManager"].MAX_RENDERINGGROUPS - 1, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_12__["OptionsLineComponent"], { label: "Alpha mode", options: alphaModeOptions, target: spriteManager, propertyName: "blendMode", onPropertyChangedObservable: this.props.onPropertyChangedObservable, onSelect: function (value) { return _this.setState({ blendMode: value }); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "CELLS" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { label: "Cell width", isInteger: true, target: spriteManager, propertyName: "cellWidth", min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_7__["FloatLineComponent"], { label: "Cell height", isInteger: true, target: spriteManager, propertyName: "cellHeight", min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }))));
+    };
+    return SpriteManagerPropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent.tsx":
+/*!******************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent.tsx ***!
+  \******************************************************************************************/
+/*! exports provided: SpritePropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpritePropertyGridComponent", function() { return SpritePropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../lines/textInputLineComponent */ "./components/actionTabs/lines/textInputLineComponent.tsx");
+/* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var _lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../lines/vector3LineComponent */ "./components/actionTabs/lines/vector3LineComponent.tsx");
+/* harmony import */ var _lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../lines/color4LineComponent */ "./components/actionTabs/lines/color4LineComponent.tsx");
+/* harmony import */ var _lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../lines/floatLineComponent */ "./components/actionTabs/lines/floatLineComponent.tsx");
+/* harmony import */ var _lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../lines/sliderLineComponent */ "./components/actionTabs/lines/sliderLineComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _textureHelper__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../../../textureHelper */ "./textureHelper.ts");
+
+
+
+
+
+
+
+
+
+
+
+
+var SpritePropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SpritePropertyGridComponent, _super);
+    function SpritePropertyGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        _this.imageData = null;
+        _this.cachedCellIndex = -1;
+        _this.canvasRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
+    }
+    SpritePropertyGridComponent.prototype.onManagerLink = function () {
+        if (!this.props.onSelectionChangedObservable) {
+            return;
+        }
+        var sprite = this.props.sprite;
+        this.props.onSelectionChangedObservable.notifyObservers(sprite.manager);
+    };
+    SpritePropertyGridComponent.prototype.switchPlayStopState = function () {
+        var sprite = this.props.sprite;
+        if (sprite.animationStarted) {
+            sprite.stopAnimation();
+        }
+        else {
+            sprite.playAnimation(sprite.fromIndex, sprite.toIndex, sprite.loopAnimation, sprite.delay, function () { });
+        }
+        this.forceUpdate();
+    };
+    SpritePropertyGridComponent.prototype.disposeSprite = function () {
+        var _a;
+        var sprite = this.props.sprite;
+        sprite.dispose();
+        this.props.globalState.onCodeChangedObservable.notifyObservers({
+            object: sprite,
+            code: "TARGET.dispose();"
+        });
+        (_a = this.props.onSelectionChangedObservable) === null || _a === void 0 ? void 0 : _a.notifyObservers(null);
+    };
+    SpritePropertyGridComponent.prototype.componentDidMount = function () {
+        this.updatePreview();
+    };
+    SpritePropertyGridComponent.prototype.componentDidUpdate = function () {
+        this.updatePreview();
+    };
+    SpritePropertyGridComponent.prototype.shouldComponentUpdate = function (nextProps) {
+        if (nextProps.sprite !== this.props.sprite) {
+            this.imageData = null;
+        }
+        return true;
+    };
+    SpritePropertyGridComponent.prototype.updatePreview = function () {
+        var _this = this;
+        var sprite = this.props.sprite;
+        var manager = sprite.manager;
+        var texture = manager.texture;
+        var size = texture.getSize();
+        if (!this.imageData) {
+            _textureHelper__WEBPACK_IMPORTED_MODULE_11__["TextureHelper"].GetTextureDataAsync(texture, size.width, size.height, 0, _textureHelper__WEBPACK_IMPORTED_MODULE_11__["TextureChannelToDisplay"].All, this.props.globalState).then(function (data) {
+                _this.imageData = data;
+                _this.forceUpdate();
+            });
+            return;
+        }
+        if (this.cachedCellIndex === sprite.cellIndex) {
+            return;
+        }
+        this.cachedCellIndex = sprite.cellIndex;
+        var previewCanvas = this.canvasRef.current;
+        previewCanvas.width = manager.cellWidth;
+        previewCanvas.height = manager.cellHeight;
+        var context = previewCanvas.getContext('2d');
+        if (context) {
+            // Copy the pixels to the preview canvas
+            var imageData = context.createImageData(manager.cellWidth, manager.cellHeight);
+            var castData = imageData.data;
+            var rowLength = size.width / manager.cellWidth | 0;
+            var offsetY = sprite.cellIndex / rowLength | 0;
+            var offsetX = sprite.cellIndex - offsetY * rowLength;
+            var offset = (offsetX + offsetY * size.width) * 4 * manager.cellWidth;
+            for (var x = 0; x < manager.cellWidth; x++) {
+                for (var y = 0; y < manager.cellHeight; y++) {
+                    var targetCoord = (x + y * manager.cellWidth) * 4;
+                    var sourceCoord = (x + y * size.width) * 4;
+                    castData[targetCoord] = this.imageData[offset + sourceCoord];
+                    castData[targetCoord + 1] = this.imageData[offset + sourceCoord + 1];
+                    castData[targetCoord + 2] = this.imageData[offset + sourceCoord + 2];
+                    castData[targetCoord + 3] = this.imageData[offset + sourceCoord + 3];
+                }
+            }
+            context.putImageData(imageData, 0, 0);
+        }
+    };
+    SpritePropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var sprite = this.props.sprite;
+        var manager = sprite.manager;
+        var textureSize = manager.texture.getSize();
+        var maxCellCount = 0;
+        if (!textureSize.width || !textureSize.height) {
+            maxCellCount = Math.max(sprite.fromIndex, sprite.toIndex);
+        }
+        else {
+            maxCellCount = (textureSize.width / manager.cellWidth) * (textureSize.height / manager.cellHeight);
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "pane" },
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "GENERAL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { lockObject: this.props.lockObject, label: "Name", target: sprite, propertyName: "name", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Unique ID", value: sprite.uniqueId.toString() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_4__["TextLineComponent"], { label: "Link to manager", value: manager.name, onLink: function () { return _this.onManagerLink(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Visible", target: sprite, propertyName: "isVisible", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: "Dispose", onClick: function () { return _this.disposeSprite(); } })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_vector3LineComponent__WEBPACK_IMPORTED_MODULE_6__["Vector3LineComponent"], { label: "Position", target: sprite, propertyName: "position", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Pickable", target: sprite, propertyName: "isPickable", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Use alpha for picking", target: sprite, propertyName: "useAlphaForPicking", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_color4LineComponent__WEBPACK_IMPORTED_MODULE_7__["Color4LineComponent"], { label: "Color", target: sprite, propertyName: "color", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { useEuler: this.props.globalState.onlyUseEulers, label: "Angle", target: sprite, propertyName: "angle", minimum: 0, maximum: 2 * Math.PI, step: 0.01, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "CELL" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("canvas", { ref: this.canvasRef, className: "preview", style: {
+                        margin: "auto",
+                        marginTop: "4px",
+                        marginBottom: "4px",
+                        display: "grid",
+                        height: "108px"
+                    } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Cell index", decimalCount: 0, target: sprite, propertyName: "cellIndex", minimum: 0, maximum: maxCellCount, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable, onChange: function () { return _this.forceUpdate(); } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Invert U axis", target: sprite, propertyName: "invertU", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Invert V axis", target: sprite, propertyName: "invertV", onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "SCALE" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Width", target: sprite, propertyName: "width", min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Height", target: sprite, propertyName: "height", min: 0, onPropertyChangedObservable: this.props.onPropertyChangedObservable })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "ANIMATION" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "Start cell", decimalCount: 0, target: sprite, propertyName: "fromIndex", minimum: 0, maximum: maxCellCount, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_sliderLineComponent__WEBPACK_IMPORTED_MODULE_9__["SliderLineComponent"], { label: "End cell", decimalCount: 0, target: sprite, propertyName: "toIndex", minimum: 0, maximum: maxCellCount, step: 1, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_5__["CheckBoxLineComponent"], { label: "Loop", target: sprite, propertyName: "loopAnimation", onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Delay", target: sprite, propertyName: "delay", digits: 0, min: 0, isInteger: true, onPropertyChangedObservable: this.props.onPropertyChangedObservable }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_10__["ButtonLineComponent"], { label: sprite.animationStarted ? "Stop" : "Start", onClick: function () { return _this.switchPlayStopState(); } }))));
+    };
+    return SpritePropertyGridComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx":
+/*!************************************************************************************!*\
+  !*** ./components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx ***!
+  \************************************************************************************/
+/*! exports provided: VariantsPropertyGridComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VariantsPropertyGridComponent", function() { return VariantsPropertyGridComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../lineContainerComponent */ "./components/actionTabs/lineContainerComponent.tsx");
+/* harmony import */ var _lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../lines/buttonLineComponent */ "./components/actionTabs/lines/buttonLineComponent.tsx");
+/* harmony import */ var _lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../lines/checkBoxLineComponent */ "./components/actionTabs/lines/checkBoxLineComponent.tsx");
+/* harmony import */ var babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants */ "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants");
+/* harmony import */ var babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_5__);
+
+
+
+// import { OptionsLineComponent } from '../../lines/optionsLineComponent';
+
+
+
+var VariantsPropertyGridComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(VariantsPropertyGridComponent, _super);
+    function VariantsPropertyGridComponent(props) {
+        var _this = _super.call(this, props) || this;
+        // private _lastOne = 0;
+        _this._selectedTags = [];
+        return _this;
+    }
+    VariantsPropertyGridComponent.prototype.render = function () {
+        var _this = this;
+        var variants = babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_variants"].GetAvailableVariants(this.props.host);
+        if (!variants || variants.length === 0) {
+            return null;
+        }
+        var lastPickedVariants = babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_variants"].GetLastSelectedVariant(this.props.host);
+        variants.sort(function (a, b) {
+            var aIsActive = lastPickedVariants && lastPickedVariants.indexOf ? lastPickedVariants.indexOf(a) > -1 : lastPickedVariants === a;
+            var bIsActive = lastPickedVariants && lastPickedVariants.indexOf ? lastPickedVariants.indexOf(b) > -1 : lastPickedVariants === b;
+            if (!aIsActive && _this._selectedTags.indexOf(a) > -1) {
+                aIsActive = true;
+            }
+            if (!bIsActive && _this._selectedTags.indexOf(b) > -1) {
+                bIsActive = true;
+            }
+            if (aIsActive && bIsActive || !aIsActive && !bIsActive) {
+                return a.localeCompare(b);
+            }
+            if (aIsActive) {
+                return -1;
+            }
+            return 1;
+        });
+        // let options = variants.map((v: string, i: number) =>  {
+        //     return {label: v, value: i + 1}
+        // });
+        // options.splice(0, 0, {label: "Original", value: 0})
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { globalState: this.props.globalState, title: "VARIANTS" },
+                variants.map(function (v, i) {
+                    return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { key: i, label: v, isSelected: function () {
+                            if (lastPickedVariants) {
+                                if (Object.prototype.toString.call(lastPickedVariants) === '[object String]') {
+                                    if (lastPickedVariants === v) {
+                                        if (_this._selectedTags.indexOf(v) === -1) {
+                                            _this._selectedTags.push(v);
+                                        }
+                                        return true;
+                                    }
+                                }
+                                else {
+                                    var index = lastPickedVariants.indexOf(v);
+                                    if (index > -1) {
+                                        return true;
+                                    }
+                                }
+                            }
+                            return _this._selectedTags.indexOf(v) > -1;
+                        }, onSelect: function (value) {
+                            if (value) {
+                                _this._selectedTags.push(v);
+                                babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_variants"].SelectVariant(_this.props.host, v);
+                            }
+                            else {
+                                // Do something on extension?
+                                var index = _this._selectedTags.indexOf(v);
+                                if (index > -1) {
+                                    _this._selectedTags.splice(index, 1);
+                                }
+                            }
+                        } }));
+                }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_3__["ButtonLineComponent"], { label: "Reset", onClick: function () {
+                        babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_variants"].Reset(_this.props.host);
+                        _this._selectedTags = [];
+                        _this.forceUpdate();
+                    } }))));
+    };
+    return VariantsPropertyGridComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
@@ -64200,6 +68164,7 @@ var StatisticsTabComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_valueLineComponent__WEBPACK_IMPORTED_MODULE_6__["ValueLineComponent"], { label: "GPU Frame time (average)", value: engineInstrumentation.gpuFrameTimeCounter.average * 0.000001, units: "ms" })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_4__["LineContainerComponent"], { globalState: this.props.globalState, title: "SYSTEM INFO" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Resolution", value: engine.getRenderWidth() + "x" + engine.getRenderHeight() }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "Hardware scaling level", value: engine.getHardwareScalingLevel().toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_textLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextLineComponent"], { label: "WebGL version", value: engine.webGLVersion.toString() }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Std derivatives", value: caps.standardDerivatives }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_booleanLineComponent__WEBPACK_IMPORTED_MODULE_7__["BooleanLineComponent"], { label: "Compressed textures", value: caps.s3tc !== undefined }),
@@ -64270,15 +68235,22 @@ var GLTFComponent = /** @class */ (function (_super) {
         extensionStates["MSFT_minecraftMesh"] = extensionStates["MSFT_minecraftMesh"] || { enabled: true };
         extensionStates["MSFT_sRGBFactors"] = extensionStates["MSFT_sRGBFactors"] || { enabled: true };
         extensionStates["MSFT_audio_emitter"] = extensionStates["MSFT_audio_emitter"] || { enabled: true };
+        extensionStates["KHR_xmp"] = extensionStates["KHR_xmp"] || { enabled: true };
         extensionStates["KHR_draco_mesh_compression"] = extensionStates["KHR_draco_mesh_compression"] || { enabled: true };
+        extensionStates["KHR_mesh_quantization"] = extensionStates["KHR_mesh_quantization"] || { enabled: true };
         extensionStates["KHR_materials_pbrSpecularGlossiness"] = extensionStates["KHR_materials_pbrSpecularGlossiness"] || { enabled: true };
         extensionStates["KHR_materials_clearcoat"] = extensionStates["KHR_materials_clearcoat"] || { enabled: true };
+        extensionStates["KHR_materials_ior"] = extensionStates["KHR_materials_ior"] || { enabled: true };
         extensionStates["KHR_materials_sheen"] = extensionStates["KHR_materials_sheen"] || { enabled: true };
         extensionStates["KHR_materials_specular"] = extensionStates["KHR_materials_specular"] || { enabled: true };
         extensionStates["KHR_materials_unlit"] = extensionStates["KHR_materials_unlit"] || { enabled: true };
+        extensionStates["KHR_materials_variants"] = extensionStates["KHR_materials_variants"] || { enabled: true };
+        extensionStates["KHR_materials_transmission"] = extensionStates["KHR_materials_transmission"] || { enabled: true };
         extensionStates["KHR_lights_punctual"] = extensionStates["KHR_lights_punctual"] || { enabled: true };
+        extensionStates["KHR_texture_basisu"] = extensionStates["KHR_texture_basisu"] || { enabled: true };
         extensionStates["KHR_texture_transform"] = extensionStates["KHR_texture_transform"] || { enabled: true };
         extensionStates["EXT_lights_image_based"] = extensionStates["EXT_lights_image_based"] || { enabled: true };
+        extensionStates["EXT_mesh_gpu_instancing"] = extensionStates["EXT_mesh_gpu_instancing"] || { enabled: true };
         var loaderState = _this.props.globalState.glTFLoaderDefaults;
         if (loaderState["animationStartMode"] === undefined) {
             loaderState["animationStartMode"] = babylonjs_loaders_glTF_index__WEBPACK_IMPORTED_MODULE_9__["GLTFLoaderAnimationStartMode"].FIRST;
@@ -64375,15 +68347,22 @@ var GLTFComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_minecraftMesh", isSelected: function () { return extensionStates["MSFT_minecraftMesh"].enabled; }, onSelect: function (value) { return extensionStates["MSFT_minecraftMesh"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_sRGBFactors", isSelected: function () { return extensionStates["MSFT_sRGBFactors"].enabled; }, onSelect: function (value) { return extensionStates["MSFT_sRGBFactors"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "MSFT_audio_emitter", isSelected: function () { return extensionStates["MSFT_audio_emitter"].enabled; }, onSelect: function (value) { return extensionStates["MSFT_audio_emitter"].enabled = value; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_xmp", isSelected: function () { return extensionStates["KHR_xmp"].enabled; }, onSelect: function (value) { return extensionStates["KHR_xmp"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_draco_mesh_compression", isSelected: function () { return extensionStates["KHR_draco_mesh_compression"].enabled; }, onSelect: function (value) { return extensionStates["KHR_draco_mesh_compression"].enabled = value; } }),
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_pbrSpecularGlossiness", isSelected: function () { return extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled = value; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_mesh_quantization", isSelected: function () { return extensionStates["KHR_mesh_quantization"].enabled; }, onSelect: function (value) { return extensionStates["KHR_mesh_quantization"].enabled = value; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_pbrSpecularGloss...", isSelected: function () { return extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_pbrSpecularGlossiness"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_clearcoat", isSelected: function () { return extensionStates["KHR_materials_clearcoat"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_clearcoat"].enabled = value; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_ior", isSelected: function () { return extensionStates["KHR_materials_ior"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_ior"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_sheen", isSelected: function () { return extensionStates["KHR_materials_sheen"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_sheen"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_specular", isSelected: function () { return extensionStates["KHR_materials_specular"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_specular"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_unlit", isSelected: function () { return extensionStates["KHR_materials_unlit"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_unlit"].enabled = value; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_variants", isSelected: function () { return extensionStates["KHR_materials_variants"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_variants"].enabled = value; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_materials_transmission", isSelected: function () { return extensionStates["KHR_materials_transmission"].enabled; }, onSelect: function (value) { return extensionStates["KHR_materials_transmission"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_lights_punctual", isSelected: function () { return extensionStates["KHR_lights_punctual"].enabled; }, onSelect: function (value) { return extensionStates["KHR_lights_punctual"].enabled = value; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_texture_basisu", isSelected: function () { return extensionStates["KHR_texture_basisu"].enabled; }, onSelect: function (value) { return extensionStates["KHR_texture_basisu"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "KHR_texture_transform", isSelected: function () { return extensionStates["KHR_texture_transform"].enabled; }, onSelect: function (value) { return extensionStates["KHR_texture_transform"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_lights_image_based", isSelected: function () { return extensionStates["EXT_lights_image_based"].enabled; }, onSelect: function (value) { return extensionStates["EXT_lights_image_based"].enabled = value; } }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_3__["CheckBoxLineComponent"], { label: "EXT_mesh_gpu_instancing", isSelected: function () { return extensionStates["EXT_mesh_gpu_instancing"].enabled; }, onSelect: function (value) { return extensionStates["EXT_mesh_gpu_instancing"].enabled = value; } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_6__["MessageLineComponent"], { text: "You need to reload your file to see these changes" })),
             loaderState["validate"] && this.props.globalState.validationResults &&
                 this.renderValidation()));
@@ -64422,6 +68401,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lines_textLineComponent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../lines/textLineComponent */ "./components/actionTabs/lines/textLineComponent.tsx");
 /* harmony import */ var _lines_fileMultipleButtonLineComponent__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../lines/fileMultipleButtonLineComponent */ "./components/actionTabs/lines/fileMultipleButtonLineComponent.tsx");
 /* harmony import */ var _lines_optionsLineComponent__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../lines/optionsLineComponent */ "./components/actionTabs/lines/optionsLineComponent.tsx");
+/* harmony import */ var _lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../lines/messageLineComponent */ "./components/actionTabs/lines/messageLineComponent.tsx");
 
 
 
@@ -64443,13 +68423,17 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+var GIF = __webpack_require__(/*! gif.js.optimized */ "../../node_modules/gif.js.optimized/dist/gif.js");
 var ToolsTabComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(ToolsTabComponent, _super);
     function ToolsTabComponent(props) {
         var _this = _super.call(this, props) || this;
         _this._screenShotSize = { precision: 1 };
+        _this._gifOptions = { width: 512, frequency: 200 };
         _this._useWidthHeight = false;
         _this._isExporting = false;
+        _this._crunchingGIF = false;
         _this.state = { tag: "Record video" };
         var sceneImportDefaults = _this.props.globalState.sceneImportDefaults;
         if (sceneImportDefaults["overwriteAnimations"] === undefined) {
@@ -64472,6 +68456,11 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             this._videoRecorder.stopRecording();
             this._videoRecorder.dispose();
             this._videoRecorder = null;
+        }
+        if (this._gifRecorder) {
+            this._gifRecorder.render();
+            this._gifRecorder = null;
+            return;
         }
     };
     ToolsTabComponent.prototype.captureScreenshot = function () {
@@ -64510,6 +68499,54 @@ var ToolsTabComponent = /** @class */ (function (_super) {
             _this.setState({ tag: "Record video" });
         });
         this.setState({ tag: "Stop recording" });
+    };
+    ToolsTabComponent.prototype.recordGIFInternal = function () {
+        var _this = this;
+        var workerUrl = URL.createObjectURL(this._gifWorkerBlob);
+        this._gifRecorder = new GIF({
+            workers: 2,
+            quality: 10,
+            workerScript: workerUrl
+        });
+        var scene = this.props.scene;
+        var engine = scene.getEngine();
+        this._previousRenderingScale = engine.getHardwareScalingLevel();
+        engine.setHardwareScalingLevel(engine.getRenderWidth() / this._gifOptions.width | 0);
+        var intervalId = setInterval(function () {
+            if (!_this._gifRecorder) {
+                clearInterval(intervalId);
+                return;
+            }
+            _this._gifRecorder.addFrame(engine.getRenderingCanvas(), { delay: _this._gifOptions.frequency });
+        }, this._gifOptions.frequency);
+        this._gifRecorder.on('finished', function (blob) {
+            _this._crunchingGIF = false;
+            babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].Download(blob, "record.gif");
+            _this.forceUpdate();
+            URL.revokeObjectURL(workerUrl);
+            engine.setHardwareScalingLevel(_this._previousRenderingScale);
+        });
+        this.forceUpdate();
+    };
+    ToolsTabComponent.prototype.recordGIF = function () {
+        var _this = this;
+        if (this._gifRecorder) {
+            this._crunchingGIF = true;
+            this.forceUpdate();
+            this._gifRecorder.render();
+            this._gifRecorder = null;
+            return;
+        }
+        if (this._gifWorkerBlob) {
+            this.recordGIFInternal();
+            return;
+        }
+        babylonjs_Misc_videoRecorder__WEBPACK_IMPORTED_MODULE_5__["Tools"].LoadFileAsync("https://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js").then(function (value) {
+            _this._gifWorkerBlob = new Blob([value], {
+                type: 'application/javascript'
+            });
+            _this.recordGIFInternal();
+        });
     };
     ToolsTabComponent.prototype.importAnimations = function (event) {
         var scene = this.props.scene;
@@ -64612,6 +68649,15 @@ var ToolsTabComponent = /** @class */ (function (_super) {
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "secondLine" },
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_9__["NumericInputComponent"], { label: "Width", precision: 0, step: 1, value: this._screenShotSize.width ? this._screenShotSize.width : 512, onChange: function (value) { return _this._screenShotSize.width = value; } }),
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_numericInputComponent__WEBPACK_IMPORTED_MODULE_9__["NumericInputComponent"], { label: "Height", precision: 0, step: 1, value: this._screenShotSize.height ? this._screenShotSize.height : 512, onChange: function (value) { return _this._screenShotSize.height = value; } })))),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "GIF" },
+                this._crunchingGIF &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_messageLineComponent__WEBPACK_IMPORTED_MODULE_14__["MessageLineComponent"], { text: "Creating the GIF file..." }),
+                !this._crunchingGIF &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: this._gifRecorder ? "Stop" : "Record", onClick: function () { return _this.recordGIF(); } }),
+                !this._crunchingGIF && !this._gifRecorder &&
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Resolution", isInteger: true, target: this._gifOptions, propertyName: "width" }),
+                        react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_floatLineComponent__WEBPACK_IMPORTED_MODULE_8__["FloatLineComponent"], { label: "Frequency (ms)", isInteger: true, target: this._gifOptions, propertyName: "frequency" }))),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { globalState: this.props.globalState, title: "REPLAY" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate replay code", onClick: function () { return _this.exportReplay(); } }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Reset", onClick: function () { return _this.resetReplay(); } })),
@@ -64630,7 +68676,7 @@ var ToolsTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to GLB", onClick: function () { return _this.exportGLTF(); } }),
                         react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Export to Babylon", onClick: function () { return _this.exportBabylon(); } }),
-                        !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture.isPrefiltered && scene.activeCamera &&
+                        !scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera &&
                             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_lines_buttonLineComponent__WEBPACK_IMPORTED_MODULE_4__["ButtonLineComponent"], { label: "Generate .env texture", onClick: function () { return _this.createEnvTexture(); } }))),
             BABYLON.GLTFFileLoader &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_tools_gltfComponent__WEBPACK_IMPORTED_MODULE_6__["GLTFComponent"], { scene: scene, globalState: this.props.globalState })));
@@ -64833,13 +68879,15 @@ var GlobalState = /** @class */ (function () {
         this.onInspectorClosedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onTabChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.onSelectionRenamedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        this.onNewSceneObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.sceneImportDefaults = {};
         this.validationResults = null;
         this.onValidationResultsUpdatedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         this.glTFLoaderExtensionDefaults = {};
         this.glTFLoaderDefaults = { "validate": true };
         this.blockMutationUpdates = false;
-        this.selectedLineContainerTitle = "";
+        this.selectedLineContainerTitles = [];
+        this.selectedLineContainerTitlesNoFocus = [];
         this.recorder = new _replayRecorder__WEBPACK_IMPORTED_MODULE_1__["ReplayRecorder"]();
         this._onlyUseEulers = null;
         this._ignoreBackfacesForPicking = null;
@@ -64911,6 +68959,7 @@ var GlobalState = /** @class */ (function () {
             _this.validationResults = results;
             _this.onValidationResultsUpdatedObservable.notifyObservers(results);
             if (results.issues.numErrors || results.issues.numWarnings) {
+                _this.selectedLineContainerTitlesNoFocus.push("GLTF VALIDATION");
                 _this.onTabChangedObservable.notifyObservers(3);
             }
         });
@@ -65194,7 +69243,7 @@ var AnimationGroupItemComponent = /** @class */ (function (_super) {
         var _this = this;
         var animationGroup = this.props.animationGroup;
         return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "animationGroupTools" },
-            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: animationGroup.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faFilm"], color: "cornflowerblue" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: animationGroup.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faLayerGroup"], color: "cornflowerblue" }),
             react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: animationGroup, extensibilityGroups: this.props.extensibilityGroups })));
     };
     return AnimationGroupItemComponent;
@@ -66108,6 +70157,124 @@ var SkeletonTreeItemComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./components/sceneExplorer/entities/spriteManagerTreeItemComponent.tsx":
+/*!******************************************************************************!*\
+  !*** ./components/sceneExplorer/entities/spriteManagerTreeItemComponent.tsx ***!
+  \******************************************************************************/
+/*! exports provided: SpriteManagerTreeItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpriteManagerTreeItemComponent", function() { return SpriteManagerTreeItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var SpriteManagerTreeItemComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SpriteManagerTreeItemComponent, _super);
+    function SpriteManagerTreeItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SpriteManagerTreeItemComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "spriteManagerTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: this.props.spriteManager.name || "No name", onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faAddressBook"], color: "blanchedalmond" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: this.props.spriteManager, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return SpriteManagerTreeItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/sceneExplorer/entities/spriteTreeItemComponent.tsx":
+/*!***********************************************************************!*\
+  !*** ./components/sceneExplorer/entities/spriteTreeItemComponent.tsx ***!
+  \***********************************************************************/
+/*! exports provided: SpriteTreeItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpriteTreeItemComponent", function() { return SpriteTreeItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var SpriteTreeItemComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SpriteTreeItemComponent, _super);
+    function SpriteTreeItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    SpriteTreeItemComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "spriteTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: this.props.sprite.name || "No name", onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faGhost"], color: "blanchedalmond" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: this.props.sprite, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return SpriteTreeItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./components/sceneExplorer/entities/targetedAnimationTreeItemComponent.tsx":
+/*!**********************************************************************************!*\
+  !*** ./components/sceneExplorer/entities/targetedAnimationTreeItemComponent.tsx ***!
+  \**********************************************************************************/
+/*! exports provided: TargetedAnimationItemComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TargetedAnimationItemComponent", function() { return TargetedAnimationItemComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
+/* harmony import */ var _treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../treeItemLabelComponent */ "./components/sceneExplorer/treeItemLabelComponent.tsx");
+/* harmony import */ var _extensionsComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../extensionsComponent */ "./components/sceneExplorer/extensionsComponent.tsx");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_4__);
+
+
+
+
+
+var TargetedAnimationItemComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(TargetedAnimationItemComponent, _super);
+    function TargetedAnimationItemComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    TargetedAnimationItemComponent.prototype.render = function () {
+        var _this = this;
+        var targetedAnimation = this.props.targetedAnimation;
+        return (react__WEBPACK_IMPORTED_MODULE_4__["createElement"]("div", { className: "targetedAnimationTools" },
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_treeItemLabelComponent__WEBPACK_IMPORTED_MODULE_2__["TreeItemLabelComponent"], { label: targetedAnimation.animation.name, onClick: function () { return _this.props.onClick(); }, icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__["faFilm"], color: "cornflowerblue" }),
+            react__WEBPACK_IMPORTED_MODULE_4__["createElement"](_extensionsComponent__WEBPACK_IMPORTED_MODULE_3__["ExtensionsComponent"], { target: targetedAnimation, extensibilityGroups: this.props.extensibilityGroups })));
+    };
+    return TargetedAnimationItemComponent;
+}(react__WEBPACK_IMPORTED_MODULE_4__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./components/sceneExplorer/entities/textureTreeItemComponent.tsx":
 /*!************************************************************************!*\
   !*** ./components/sceneExplorer/entities/textureTreeItemComponent.tsx ***!
@@ -66328,6 +70495,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+
 __webpack_require__(/*! ./sceneExplorer.scss */ "./components/sceneExplorer/sceneExplorer.scss");
 var SceneExplorerFilterComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(SceneExplorerFilterComponent, _super);
@@ -66351,6 +70521,11 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         _this.state = { filter: null, selectedEntity: null, scene: _this.props.scene };
         _this.sceneMutationFunc = _this.processMutation.bind(_this);
         _this.sceneExplorerRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        _this._onNewSceneObserver = _this.props.globalState.onNewSceneObservable.add(function (scene) {
+            _this.setState({
+                scene: scene
+            });
+        });
         return _this;
     }
     SceneExplorerComponent.prototype.processMutation = function () {
@@ -66380,6 +70555,9 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         }
         if (this._onNewSceneAddedObserver) {
             babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["EngineStore"].LastCreatedEngine.onNewSceneAddedObservable.remove(this._onNewSceneAddedObserver);
+        }
+        if (this._onNewSceneObserver) {
+            this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
         }
         var scene = this.state.scene;
         scene.onNewSkeletonAddedObservable.removeCallback(this.sceneMutationFunc);
@@ -66559,6 +70737,20 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         // Materials
         var materialsContextMenus = [];
         materialsContextMenus.push({
+            label: "Add new standard material",
+            action: function () {
+                var newStdMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"]("Standard material", scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newStdMaterial);
+            }
+        });
+        materialsContextMenus.push({
+            label: "Add new PBR material",
+            action: function () {
+                var newPBRMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["PBRMaterial"]("PBR material", scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newPBRMaterial);
+            }
+        });
+        materialsContextMenus.push({
             label: "Add new node material",
             action: function () {
                 var newNodeMaterial = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["NodeMaterial"]("node material", scene);
@@ -66572,6 +70764,15 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
         if (scene.multiMaterials && scene.multiMaterials.length) {
             materials.push.apply(materials, scene.multiMaterials);
         }
+        // Sprite Managers
+        var spriteManagersContextMenus = [];
+        spriteManagersContextMenus.push({
+            label: "Add new sprite manager",
+            action: function () {
+                var newSpriteManager = new babylonjs_Engines_engineStore__WEBPACK_IMPORTED_MODULE_2__["SpriteManager"]("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene);
+                _this.props.globalState.onSelectionChangedObservable.notifyObservers(newSpriteManager);
+            }
+        });
         // Particle systems
         var particleSystemsContextMenus = [];
         particleSystemsContextMenus.push({
@@ -66606,6 +70807,7 @@ var SceneExplorerComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: postProcessses, label: "Post-processes", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, contextMenuItems: pipelineContextMenus, selectedEntity: this.state.selectedEntity, items: pipelines, label: "Rendering pipelines", offset: 1, filter: this.state.filter }),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: particleSystemsContextMenus, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.particleSystems, label: "Particle systems", offset: 1, filter: this.state.filter }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, contextMenuItems: spriteManagersContextMenus, forceSubitems: true, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: scene.spriteManagers, label: "Sprite managers", offset: 1, filter: this.state.filter }),
             guiElements && guiElements.length > 0 &&
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_treeItemComponent__WEBPACK_IMPORTED_MODULE_3__["TreeItemComponent"], { globalState: this.props.globalState, extensibilityGroups: this.props.extensibilityGroups, selectedEntity: this.state.selectedEntity, items: guiElements, label: "GUI", offset: 1, filter: this.state.filter }),
             scene.animationGroups.length > 0 &&
@@ -66760,8 +70962,13 @@ var TreeItemComponent = /** @class */ (function (_super) {
             paddingLeft: (10 * (this.props.offset + 0.5)) + "px"
         };
         if (!items) {
-            return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "groupContainer", style: marginStyle },
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, this.props.label)));
+            if (this.props.forceSubitems) {
+                items = [];
+            }
+            else {
+                return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "groupContainer", style: marginStyle },
+                    react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, this.props.label)));
+            }
         }
         if (!items.length) {
             return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "groupContainer", style: marginStyle },
@@ -66923,8 +71130,8 @@ var TreeItemSelectableComponent = /** @class */ (function (_super) {
             return null;
         }
         var children = _tools__WEBPACK_IMPORTED_MODULE_4__["Tools"].SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
-        return (children.map(function (item) {
-            return (react__WEBPACK_IMPORTED_MODULE_6__["createElement"](TreeItemSelectableComponent, { globalState: _this.props.globalState, mustExpand: _this.props.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, selectedEntity: _this.props.selectedEntity, key: item.uniqueId, offset: _this.props.offset + 2, entity: item, filter: _this.props.filter }));
+        return (children.map(function (item, i) {
+            return (react__WEBPACK_IMPORTED_MODULE_6__["createElement"](TreeItemSelectableComponent, { globalState: _this.props.globalState, mustExpand: _this.props.mustExpand, extensibilityGroups: _this.props.extensibilityGroups, selectedEntity: _this.props.selectedEntity, key: i, offset: _this.props.offset + 2, entity: item, filter: _this.props.filter }));
         }));
     };
     TreeItemSelectableComponent.prototype.render = function () {
@@ -67001,6 +71208,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _entities_skeletonTreeItemComponent__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./entities/skeletonTreeItemComponent */ "./components/sceneExplorer/entities/skeletonTreeItemComponent.tsx");
 /* harmony import */ var _entities_boneTreeItemComponent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./entities/boneTreeItemComponent */ "./components/sceneExplorer/entities/boneTreeItemComponent.tsx");
 /* harmony import */ var _entities_particleSystemTreeItemComponent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./entities/particleSystemTreeItemComponent */ "./components/sceneExplorer/entities/particleSystemTreeItemComponent.tsx");
+/* harmony import */ var _entities_spriteManagerTreeItemComponent__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./entities/spriteManagerTreeItemComponent */ "./components/sceneExplorer/entities/spriteManagerTreeItemComponent.tsx");
+/* harmony import */ var _entities_spriteTreeItemComponent__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./entities/spriteTreeItemComponent */ "./components/sceneExplorer/entities/spriteTreeItemComponent.tsx");
+/* harmony import */ var _entities_targetedAnimationTreeItemComponent__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./entities/targetedAnimationTreeItemComponent */ "./components/sceneExplorer/entities/targetedAnimationTreeItemComponent.tsx");
+
+
+
 
 
 
@@ -67044,6 +71257,12 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
                     return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_transformNodeTreeItemComponent__WEBPACK_IMPORTED_MODULE_8__["TransformNodeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, transformNode: entity, onClick: function () { return _this.onClick(); } }));
                 }
             }
+            if (className.indexOf("SpriteManager") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_spriteManagerTreeItemComponent__WEBPACK_IMPORTED_MODULE_18__["SpriteManagerTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, spriteManager: entity, onClick: function () { return _this.onClick(); } }));
+            }
+            if (className.indexOf("Sprite") !== -1) {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_spriteTreeItemComponent__WEBPACK_IMPORTED_MODULE_19__["SpriteTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, sprite: entity, onClick: function () { return _this.onClick(); } }));
+            }
             if (className.indexOf("Skeleton") !== -1) {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_skeletonTreeItemComponent__WEBPACK_IMPORTED_MODULE_15__["SkeletonTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, skeleton: entity, onClick: function () { return _this.onClick(); } }));
             }
@@ -67070,6 +71289,9 @@ var TreeItemSpecializedComponent = /** @class */ (function (_super) {
             }
             if (className === "AnimationGroup") {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_animationGroupTreeItemComponent__WEBPACK_IMPORTED_MODULE_12__["AnimationGroupItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, animationGroup: entity, onClick: function () { return _this.onClick(); } }));
+            }
+            if (className === "TargetedAnimation") {
+                return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_targetedAnimationTreeItemComponent__WEBPACK_IMPORTED_MODULE_20__["TargetedAnimationItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, targetedAnimation: entity, onClick: function () { return _this.onClick(); } }));
             }
             if (className.indexOf("Texture") !== -1) {
                 return (react__WEBPACK_IMPORTED_MODULE_9__["createElement"](_entities_textureTreeItemComponent__WEBPACK_IMPORTED_MODULE_7__["TextureTreeItemComponent"], { extensibilityGroups: this.props.extensibilityGroups, texture: entity, onClick: function () { return _this.onClick(); } }));
@@ -67146,7 +71368,13 @@ var Inspector = /** @class */ (function () {
     function Inspector() {
     }
     Inspector.MarkLineContainerTitleForHighlighting = function (title) {
-        this._GlobalState.selectedLineContainerTitle = title;
+        this._GlobalState.selectedLineContainerTitles = [];
+        this._GlobalState.selectedLineContainerTitles.push(title);
+    };
+    Inspector.MarkMultipleLineContainerTitlesForHighlighting = function (titles) {
+        var _a;
+        this._GlobalState.selectedLineContainerTitles = [];
+        (_a = this._GlobalState.selectedLineContainerTitles).push.apply(_a, titles);
     };
     Inspector._CopyStyles = function (sourceDoc, targetDoc) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
@@ -67457,6 +71685,10 @@ var Inspector = /** @class */ (function () {
             }
         }
     };
+    Inspector._SetNewScene = function (scene) {
+        this._Scene = scene;
+        this._GlobalState.onNewSceneObservable.notifyObservers(scene);
+    };
     Inspector._CreateCanvasContainer = function (parentControl) {
         // Create a container for previous elements
         this._NewCanvasContainer = parentControl.ownerDocument.createElement("div");
@@ -67575,6 +71807,144 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
+/***/ "./textureHelper.ts":
+/*!**************************!*\
+  !*** ./textureHelper.ts ***!
+  \**************************/
+/*! exports provided: TextureChannelToDisplay, TextureHelper */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextureChannelToDisplay", function() { return TextureChannelToDisplay; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextureHelper", function() { return TextureHelper; });
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/Textures/texture */ "babylonjs/Misc/observable");
+/* harmony import */ var babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__);
+
+
+
+
+var TextureChannelToDisplay;
+(function (TextureChannelToDisplay) {
+    TextureChannelToDisplay[TextureChannelToDisplay["R"] = 0] = "R";
+    TextureChannelToDisplay[TextureChannelToDisplay["G"] = 1] = "G";
+    TextureChannelToDisplay[TextureChannelToDisplay["B"] = 2] = "B";
+    TextureChannelToDisplay[TextureChannelToDisplay["A"] = 3] = "A";
+    TextureChannelToDisplay[TextureChannelToDisplay["All"] = 4] = "All";
+})(TextureChannelToDisplay || (TextureChannelToDisplay = {}));
+var TextureHelper = /** @class */ (function () {
+    function TextureHelper() {
+    }
+    TextureHelper._ProcessAsync = function (texture, width, height, face, channel, globalState, resolve, reject) {
+        var _this = this;
+        var scene = texture.getScene();
+        var engine = scene.getEngine();
+        var passPostProcess;
+        if (!texture.isCube) {
+            passPostProcess = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["PassPostProcess"]("pass", 1, null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT);
+        }
+        else {
+            var passCubePostProcess = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["PassCubePostProcess"]("pass", 1, null, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT);
+            passCubePostProcess.face = face;
+            passPostProcess = passCubePostProcess;
+        }
+        if (!passPostProcess.getEffect().isReady()) {
+            // Try again later
+            passPostProcess.dispose();
+            setTimeout(function () {
+                _this._ProcessAsync(texture, width, height, face, channel, globalState, resolve, reject);
+            }, 250);
+            return;
+        }
+        if (globalState) {
+            globalState.blockMutationUpdates = true;
+        }
+        var rtt = new babylonjs_Materials_Textures_texture__WEBPACK_IMPORTED_MODULE_0__["RenderTargetTexture"]("temp", { width: width, height: height }, scene, false);
+        passPostProcess.onApply = function (effect) {
+            effect.setTexture("textureSampler", texture);
+        };
+        var internalTexture = rtt.getInternalTexture();
+        if (internalTexture) {
+            scene.postProcessManager.directRender([passPostProcess], internalTexture);
+            // Read the contents of the framebuffer
+            var numberOfChannelsByLine = width * 4;
+            var halfHeight = height / 2;
+            //Reading datas from WebGL
+            var data = engine.readPixels(0, 0, width, height);
+            if (!texture.isCube) {
+                if (channel != TextureChannelToDisplay.All) {
+                    for (var i = 0; i < width * height * 4; i += 4) {
+                        switch (channel) {
+                            case TextureChannelToDisplay.R:
+                                data[i + 1] = data[i];
+                                data[i + 2] = data[i];
+                                data[i + 3] = 255;
+                                break;
+                            case TextureChannelToDisplay.G:
+                                data[i] = data[i + 1];
+                                data[i + 2] = data[i];
+                                data[i + 3] = 255;
+                                break;
+                            case TextureChannelToDisplay.B:
+                                data[i] = data[i + 2];
+                                data[i + 1] = data[i + 2];
+                                data[i + 3] = 255;
+                                break;
+                            case TextureChannelToDisplay.A:
+                                data[i] = data[i + 3];
+                                data[i + 1] = data[i + 3];
+                                data[i + 2] = data[i + 3];
+                                data[i + 3] = 255;
+                                break;
+                        }
+                    }
+                }
+            }
+            //To flip image on Y axis.
+            if (texture.invertY || texture.isCube) {
+                for (var i = 0; i < halfHeight; i++) {
+                    for (var j = 0; j < numberOfChannelsByLine; j++) {
+                        var currentCell = j + i * numberOfChannelsByLine;
+                        var targetLine = height - i - 1;
+                        var targetCell = j + targetLine * numberOfChannelsByLine;
+                        var temp = data[currentCell];
+                        data[currentCell] = data[targetCell];
+                        data[targetCell] = temp;
+                    }
+                }
+            }
+            resolve(data);
+            // Unbind
+            engine.unBindFramebuffer(internalTexture);
+        }
+        else {
+            reject();
+        }
+        rtt.dispose();
+        passPostProcess.dispose();
+        if (globalState) {
+            globalState.blockMutationUpdates = false;
+        }
+    };
+    TextureHelper.GetTextureDataAsync = function (texture, width, height, face, channel, globalState) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            if (!texture.isReady() && texture._texture) {
+                texture._texture.onLoadedObservable.addOnce(function () {
+                    _this._ProcessAsync(texture, width, height, face, channel, globalState || null, resolve, reject);
+                });
+                return;
+            }
+            _this._ProcessAsync(texture, width, height, face, channel, globalState || null, resolve, reject);
+        });
+    };
+    return TextureHelper;
+}());
+
+
+
+/***/ }),
+
 /***/ "./tools.ts":
 /*!******************!*\
   !*** ./tools.ts ***!
@@ -67646,14 +72016,25 @@ var Tools = /** @class */ (function () {
 
 /***/ }),
 
-/***/ "babylonjs-gui/2D/adtInstrumentation":
+/***/ "babylonjs-gui/2D/controls/image":
 /*!************************************************************************************************************************!*\
   !*** external {"root":["BABYLON","GUI"],"commonjs":"babylonjs-gui","commonjs2":"babylonjs-gui","amd":"babylonjs-gui"} ***!
   \************************************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_adtInstrumentation__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_gui_2D_controls_image__;
+
+/***/ }),
+
+/***/ "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants":
+/*!************************************************************************************************************************************************************!*\
+  !*** external {"root":["BABYLON","GLTF2","Loader","Extensions"],"commonjs":"babylonjs-loaders","commonjs2":"babylonjs-loaders","amd":"babylonjs-loaders"} ***!
+  \************************************************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_loaders_glTF_2_0_Extensions_KHR_materials_variants__;
 
 /***/ }),
 

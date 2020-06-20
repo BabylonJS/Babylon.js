@@ -1,11 +1,14 @@
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix } from "../../Maths/math.vector";
-import { Engine } from "../../Engines/engine";
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
-import { _TypeStore } from '../../Misc/typeStore';
+import { _TypeStore } from "../../Misc/typeStore";
+import { ThinEngine } from "../../Engines/thinEngine";
+
+// Ensures Raw texture are included
+import "../../Engines/Extensions/engine.rawTexture";
 
 /**
  * This represents a color grading texture. This acts as a lookup table LUT, useful during post process
@@ -17,11 +20,6 @@ import { _TypeStore } from '../../Misc/typeStore';
  */
 export class ColorGradingTexture extends BaseTexture {
     /**
-     * The current texture matrix. (will always be identity in color grading texture)
-     */
-    private _textureMatrix: Matrix;
-
-    /**
      * The texture URL.
      */
     public url: string;
@@ -31,42 +29,54 @@ export class ColorGradingTexture extends BaseTexture {
      */
     private static _noneEmptyLineRegex = /\S+/;
 
-    private _engine: Engine;
+    private _textureMatrix: Matrix;
+    private _onLoad: Nullable<() => void>;
 
     /**
      * Instantiates a ColorGradingTexture from the following parameters.
      *
      * @param url The location of the color gradind data (currently only supporting 3dl)
-     * @param scene The scene the texture will be used in
+     * @param sceneOrEngine The scene or engine the texture will be used in
+     * @param onLoad defines a callback triggered when the texture has been loaded
      */
-    constructor(url: string, scene: Scene) {
-        super(scene);
+    constructor(url: string, sceneOrEngine: Scene | ThinEngine, onLoad: Nullable<() => void> = null) {
+        super(sceneOrEngine);
 
         if (!url) {
             return;
         }
 
-        this._engine = scene.getEngine();
         this._textureMatrix = Matrix.Identity();
         this.name = url;
         this.url = url;
-        this.hasAlpha = false;
-        this.isCube = false;
-        this.is3D = this._engine.webGLVersion > 1;
-        this.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        this.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-        this.wrapR = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-
-        this.anisotropicFilteringLevel = 1;
+        this._onLoad = onLoad;
 
         this._texture = this._getFromCache(url, true);
 
         if (!this._texture) {
-            if (!scene.useDelayedTextureLoading) {
-                this.loadTexture();
-            } else {
-                this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+            const scene = this.getScene();
+            if (scene) {
+                if (!scene.useDelayedTextureLoading) {
+                    this.loadTexture();
+                } else {
+                    this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+                }
             }
+            else {
+                this.loadTexture();
+            }
+        }
+        else {
+            this._triggerOnLoad();
+        }
+    }
+
+    /**
+     * Fires the onload event from the constructor if requested.
+     */
+    private _triggerOnLoad(): void {
+        if (this._onLoad) {
+            this._onLoad();
         }
     }
 
@@ -82,7 +92,7 @@ export class ColorGradingTexture extends BaseTexture {
      * Occurs when the file being loaded is a .3dl LUT file.
      */
     private load3dlTexture() {
-        var engine = this._engine as Engine;
+        var engine = this._getEngine()!;
         var texture: InternalTexture;
         if (engine.webGLVersion === 1) {
             texture = engine.createRawTexture(null, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, null, Constants.TEXTURETYPE_UNSIGNED_INT);
@@ -92,6 +102,14 @@ export class ColorGradingTexture extends BaseTexture {
         }
 
         this._texture = texture;
+        this._texture.isReady = false;
+
+        this.isCube = false;
+        this.is3D = engine.webGLVersion > 1;
+        this.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        this.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        this.wrapR = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        this.anisotropicFilteringLevel = 1;
 
         var callback = (text: string | ArrayBuffer) => {
 
@@ -187,6 +205,9 @@ export class ColorGradingTexture extends BaseTexture {
                 texture.updateSize(size * size, size);
                 engine.updateRawTexture(texture, data, Constants.TEXTUREFORMAT_RGBA, false);
             }
+
+            texture.isReady = true;
+            this._triggerOnLoad();
         };
 
         let scene = this.getScene();
@@ -194,7 +215,7 @@ export class ColorGradingTexture extends BaseTexture {
             scene._loadFile(this.url, callback);
         }
         else {
-            this._engine._loadFile(this.url, callback);
+            engine._loadFile(this.url, callback);
         }
 
         return this._texture;
@@ -213,7 +234,7 @@ export class ColorGradingTexture extends BaseTexture {
      * Clones the color gradind texture.
      */
     public clone(): ColorGradingTexture {
-        var newTexture = new ColorGradingTexture(this.url, <Scene>this.getScene());
+        var newTexture = new ColorGradingTexture(this.url, this.getScene() || this._getEngine()!);
 
         // Base texture
         newTexture.level = this.level;

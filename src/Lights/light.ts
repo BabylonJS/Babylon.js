@@ -586,15 +586,21 @@ export abstract class Light extends Node {
     /**
      * Returns a new Light object, named "name", from the current one.
      * @param name The name of the cloned light
+     * @param newParent The parent of this light, if it has one
      * @returns the new created light
      */
-    public clone(name: string): Nullable<Light> {
+    public clone(name: string, newParent: Nullable<Node> = null): Nullable<Light> {
         let constructor = Light.GetConstructorFromName(this.getTypeID(), name, this.getScene());
 
         if (!constructor) {
             return null;
         }
-        return SerializationHelper.Clone(constructor, this);
+        let clonedLight = SerializationHelper.Clone(constructor, this);
+        if (newParent) {
+            clonedLight.parent = newParent;
+        }
+        clonedLight.setEnabled(this.isEnabled());
+        return clonedLight;
     }
 
     /**

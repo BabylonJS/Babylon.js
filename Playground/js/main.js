@@ -101,7 +101,14 @@ compileAndRun = function (parent, fpsLabel) {
 
                 parent.zipTool.ZipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
-                code += "\r\n\r\nengine = " + createEngineFunction + "();";
+                code += `
+var engine;
+try {
+    engine = ${createEngineFunction}();
+} catch(e) {
+    console.log("the available createEngine function failed. Creating the default engine instead");
+    engine = createDefaultEngine();
+}`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 if (parent.settingsPG.ScriptLanguage == "JS") {
@@ -400,16 +407,19 @@ class Main {
             }.bind(this));
         }
         // Safe mode
+        this.parent.settingsPG.restoreSafeMode();
         this.parent.utils.setToMultipleID("safemodeToggle", 'click', function () {
             document.getElementById("safemodeToggle1280").classList.toggle('checked');
-            if (document.getElementById("safemodeToggle1280").classList.contains('checked')) {
-                this.parent.utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
-            } else {
-                this.parent.utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square" aria-hidden="true"></i>');
-            }
+            this.parent.settingsPG.setSafeMode(document.getElementById("safemodeToggle1280").classList.contains('checked'));
         }.bind(this));
         // Editor
         this.parent.utils.setToMultipleID("editorButton", "click", this.toggleEditor.bind(this));
+        // CTRL + S        
+        this.parent.settingsPG.restoreCTRLS();
+        this.parent.utils.setToMultipleID("ctrlsToggle", 'click', function () {
+            document.getElementById("ctrlsToggle1280").classList.toggle('checked');            
+            this.parent.settingsPG.setCTRLS(document.getElementById("ctrlsToggle1280").classList.contains('checked'));
+        }.bind(this));        
         // FullScreen
         this.parent.utils.setToMultipleID("fullscreenButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
@@ -450,7 +460,7 @@ class Main {
         this.parent.menuPG.resizeBigCanvas();
 
         // HotKeys
-        document.onkeydown = function (e) {
+        document.onkeydown = (e) => {
             // Alt+Enter to Run
             if (e.altKey && (e.key === 'Enter' || event.which === 13)) {
                 handleRun();
@@ -469,6 +479,9 @@ class Main {
                 (e.key === 'S' || event.which === 83)
             ) {
                 e.preventDefault();
+                if (!this.checkCTRLSMode()) {
+                    return;
+                }
                 handleSave();
             }
         };
@@ -566,7 +579,7 @@ class Main {
                         exampleList.appendChild(noResultContainer);
                     }
 
-                    if (!location.hash && restoreVersionResult == false) {
+                    if (!location.hash && restoreVersionResult == false && location.pathname.indexOf('pg/') === -1) {
                         // Query string
                         var queryString = window.location.search;
 
@@ -754,6 +767,14 @@ class Main {
         } else {
             return true;
         }
+    };
+
+    checkCTRLSMode() {
+        if (document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()) &&
+            document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+            return true;
+        }
+        return false;
     };
 
     /**
@@ -1016,12 +1037,11 @@ class Main {
     };
     checkHash() {
         let pgHash = "";
-        if (location.search) {
+        if (location.search && (!location.pathname  || location.pathname === '/') && !location.hash) {
             var query = this.parseQuery(location.search);
             if (query.pg) {
                 pgHash = "#" + query.pg + "#" + (query.revision || "0")
             }
-
         } else if (location.hash) {
             if (this.previousHash !== location.hash) {
                 this.cleanHash();

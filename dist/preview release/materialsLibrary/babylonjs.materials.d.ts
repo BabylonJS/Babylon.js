@@ -60,6 +60,7 @@ declare module BABYLON {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_After_WorldPosComputed: string;
         Vertex_MainEnd: string;
     }
     export class CustomMaterial extends BABYLON.StandardMaterial {
@@ -69,14 +70,18 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
         AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
-        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.StandardMaterialDefines, attributes?: string[]): string;
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[]): string;
         constructor(name: string, scene: BABYLON.Scene);
         AddUniform(name: string, kind: string, param: any): CustomMaterial;
         AddAttribute(name: string): CustomMaterial;
@@ -93,6 +98,7 @@ declare module BABYLON {
         Vertex_MainBegin(shaderPart: string): CustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial;
+        Vertex_After_WorldPosComputed(shaderPart: string): CustomMaterial;
         Vertex_MainEnd(shaderPart: string): CustomMaterial;
     }
 }
@@ -114,6 +120,7 @@ declare module BABYLON {
         Vertex_MainBegin: string;
         Vertex_Before_PositionUpdated: string;
         Vertex_Before_NormalUpdated: string;
+        Vertex_After_WorldPosComputed: string;
         Vertex_MainEnd: string;
     }
     export class PBRCustomMaterial extends BABYLON.PBRMaterial {
@@ -123,14 +130,18 @@ declare module BABYLON {
         _createdShaderName: string;
         _customUniform: string[];
         _newUniforms: string[];
-        _newUniformInstances: any[];
-        _newSamplerInstances: BABYLON.Texture[];
+        _newUniformInstances: {
+            [name: string]: any;
+        };
+        _newSamplerInstances: {
+            [name: string]: BABYLON.Texture;
+        };
         _customAttributes: string[];
         FragmentShader: string;
         VertexShader: string;
         AttachAfterBind(mesh: BABYLON.Mesh, effect: BABYLON.Effect): void;
         ReviewUniform(name: string, arr: string[]): string[];
-        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.PBRMaterialDefines, attributes?: string[]): string;
+        Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: BABYLON.MaterialDefines | string[], attributes?: string[]): string;
         constructor(name: string, scene: BABYLON.Scene);
         AddUniform(name: string, kind: string, param: any): PBRCustomMaterial;
         AddAttribute(name: string): PBRCustomMaterial;
@@ -149,6 +160,7 @@ declare module BABYLON {
         Vertex_MainBegin(shaderPart: string): PBRCustomMaterial;
         Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial;
         Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial;
+        Vertex_After_WorldPosComputed(shaderPart: string): PBRCustomMaterial;
         Vertex_MainEnd(shaderPart: string): PBRCustomMaterial;
     }
 }
@@ -547,6 +559,7 @@ declare module BABYLON {
 declare module BABYLON {
     export class ShadowOnlyMaterial extends BABYLON.PushMaterial {
         private _activeLight;
+        private _needAlphaBlending;
         constructor(name: string, scene: BABYLON.Scene);
         shadowColor: BABYLON.Color3;
         needAlphaBlending(): boolean;
@@ -554,6 +567,7 @@ declare module BABYLON {
         getAlphaTestTexture(): BABYLON.Nullable<BABYLON.BaseTexture>;
         get activeLight(): BABYLON.IShadowLight;
         set activeLight(light: BABYLON.IShadowLight);
+        private _getFirstShadowLightForMesh;
         isReadyForSubMesh(mesh: BABYLON.AbstractMesh, subMesh: BABYLON.SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: BABYLON.Matrix, mesh: BABYLON.Mesh, subMesh: BABYLON.SubMesh): void;
         clone(name: string): ShadowOnlyMaterial;

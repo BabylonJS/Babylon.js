@@ -90,6 +90,14 @@ export class EffectRenderer {
     }
 
     /**
+     * Restores engine states
+     */
+    public restoreStates(): void {
+        this.engine.depthCullingState.depthTest = true;
+        this.engine.stencilState.stencilTest = true;
+    }
+
+    /**
      * Draws a full screen quad.
      */
     public draw(): void {
@@ -108,7 +116,7 @@ export class EffectRenderer {
     public render(effectWrapper: EffectWrapper, outputTexture: Nullable<InternalTexture | RenderTargetTexture> = null) {
         // Ensure effect is ready
         if (!effectWrapper.effect.isReady()) {
-            return ;
+            return;
         }
 
         // Reset state
@@ -127,6 +135,8 @@ export class EffectRenderer {
         if (out) {
             this.engine.unBindFramebuffer(out);
         }
+
+        this.restoreStates();
     }
 
     /**
@@ -158,6 +168,10 @@ interface EffectWrapperCreationOptions {
      */
     fragmentShader: string;
     /**
+     * Use the shader store instead of direct source code
+     */
+    useShaderStore?: boolean;
+    /**
      * Vertex shader for the effect
      */
     vertexShader?: string;
@@ -173,6 +187,14 @@ interface EffectWrapperCreationOptions {
      * Texture sampler names to use in the shader
      */
     samplerNames?: Array<string>;
+    /**
+      * Defines to use in the shader
+      */
+    defines?: Array<string>;
+    /**
+      * Callback when effect is compiled
+      */
+    onCompiled?: Nullable<(effect: Effect) => void>;
     /**
      * The friendly name of the effect displayed in Spector.
      */
@@ -199,6 +221,7 @@ export class EffectWrapper {
     constructor(creationOptions: EffectWrapperCreationOptions) {
         let effectCreationOptions: any;
         const uniformNames = creationOptions.uniformNames || [];
+
         if (creationOptions.vertexShader) {
             effectCreationOptions = {
                 fragmentSource: creationOptions.fragmentShader,
@@ -222,11 +245,36 @@ export class EffectWrapper {
             });
         }
 
-        this.effect = new Effect(effectCreationOptions,
-            creationOptions.attributeNames || ["position"],
-            uniformNames,
-            creationOptions.samplerNames,
-            creationOptions.engine);
+        const defines = creationOptions.defines ? creationOptions.defines.join("\n") : "";
+
+        if (creationOptions.useShaderStore) {
+            effectCreationOptions.fragment = effectCreationOptions.fragmentSource;
+            if (!effectCreationOptions.vertex) {
+                effectCreationOptions.vertex = effectCreationOptions.vertexSource;
+            }
+
+            delete effectCreationOptions.fragmentSource;
+            delete effectCreationOptions.vertexSource;
+
+            this.effect = creationOptions.engine.createEffect(effectCreationOptions.spectorName,
+                creationOptions.attributeNames || ["position"],
+                uniformNames,
+                creationOptions.samplerNames,
+                defines,
+                undefined,
+                creationOptions.onCompiled
+            );
+        } else {
+            this.effect = new Effect(effectCreationOptions,
+                creationOptions.attributeNames || ["position"],
+                uniformNames,
+                creationOptions.samplerNames,
+                creationOptions.engine,
+                defines,
+                undefined,
+                creationOptions.onCompiled,
+            );
+        }
     }
 
     /**

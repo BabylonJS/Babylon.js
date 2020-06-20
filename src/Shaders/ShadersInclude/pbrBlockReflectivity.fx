@@ -17,24 +17,26 @@ struct reflectivityOutParams
 #endif
 };
 
+#define pbr_inline
 void reflectivityBlock(
     const in vec4 vReflectivityColor,
-    const in vec2 uvOffset,
 #ifdef METALLICWORKFLOW
     const in vec3 surfaceAlbedo,
+    const in vec4 metallicReflectanceFactors,
 #endif
 #ifdef REFLECTIVITY
-    const in vec3 vReflectivityInfos,
-    const in vec2 vReflectivityUV,
-    const in sampler2D reflectivitySampler,
+    const in vec3 reflectivityInfos,
+    const in vec4 surfaceMetallicOrReflectivityColorMap,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-    const in vec3 ambientOcclusionColor,
+    const in vec3 ambientOcclusionColorIn,
 #endif
 #ifdef MICROSURFACEMAP
-    const in vec2 vMicroSurfaceSamplerUV_,
-    const in vec2 vMicroSurfaceSamplerInfos,
-    const in sampler2D microSurfaceSampler,
+    const in vec4 microSurfaceTexel,
+#endif
+#ifdef DETAIL
+    const in vec4 detailColor,
+    const in vec4 vDetailInfos,
 #endif
     out reflectivityOutParams outParams
 )
@@ -46,34 +48,36 @@ void reflectivityBlock(
         vec2 metallicRoughness = surfaceReflectivityColor.rg;
 
         #ifdef REFLECTIVITY
-            vec4 surfaceMetallicColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
-
             #if DEBUGMODE > 0
-                outParams.surfaceMetallicColorMap = surfaceMetallicColorMap;
+                outParams.surfaceMetallicColorMap = surfaceMetallicOrReflectivityColorMap;
             #endif
 
             #ifdef AOSTOREINMETALMAPRED
-                vec3 aoStoreInMetalMap = vec3(surfaceMetallicColorMap.r, surfaceMetallicColorMap.r, surfaceMetallicColorMap.r);
-                outParams.ambientOcclusionColor = mix(ambientOcclusionColor, aoStoreInMetalMap, vReflectivityInfos.z);
+                vec3 aoStoreInMetalMap = vec3(surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r);
+                outParams.ambientOcclusionColor = mix(ambientOcclusionColorIn, aoStoreInMetalMap, vReflectivityInfos.z);
             #endif
 
             #ifdef METALLNESSSTOREINMETALMAPBLUE
-                metallicRoughness.r *= surfaceMetallicColorMap.b;
+                metallicRoughness.r *= surfaceMetallicOrReflectivityColorMap.b;
             #else
-                metallicRoughness.r *= surfaceMetallicColorMap.r;
+                metallicRoughness.r *= surfaceMetallicOrReflectivityColorMap.r;
             #endif
 
             #ifdef ROUGHNESSSTOREINMETALMAPALPHA
-                metallicRoughness.g *= surfaceMetallicColorMap.a;
+                metallicRoughness.g *= surfaceMetallicOrReflectivityColorMap.a;
             #else
                 #ifdef ROUGHNESSSTOREINMETALMAPGREEN
-                    metallicRoughness.g *= surfaceMetallicColorMap.g;
+                    metallicRoughness.g *= surfaceMetallicOrReflectivityColorMap.g;
                 #endif
             #endif
         #endif
 
+        #ifdef DETAIL
+            float detailRoughness = 2.0 * mix(0.5, detailColor.b, vDetailInfos.w);
+            metallicRoughness.g = saturate(metallicRoughness.g * detailRoughness);
+        #endif
+
         #ifdef MICROSURFACEMAP
-            vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV_ + uvOffset) * vMicroSurfaceSamplerInfos.y;
             metallicRoughness.g *= microSurfaceTexel.r;
         #endif
 
@@ -89,7 +93,7 @@ void reflectivityBlock(
         // Diffuse is used as the base of the reflectivity.
         vec3 baseColor = surfaceAlbedo;
 
-        #ifdef REFLECTANCE
+        #ifdef FROSTBITE_REFLECTANCE
             // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
             // https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf page 115
@@ -102,45 +106,35 @@ void reflectivityBlock(
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
-            vec3 metallicF0 = vec3(vReflectivityColor.a, vReflectivityColor.a, vReflectivityColor.a);
-            #ifdef METALLICF0FACTORFROMMETALLICMAP
-                #ifdef REFLECTIVITY
-                    metallicF0 *= surfaceMetallicColorMap.a;
-                #endif
-            #endif
+            vec3 metallicF0 = metallicReflectanceFactors.rgb;
 
             #if DEBUGMODE > 0
                 outParams.metallicF0 = metallicF0;
             #endif
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0.r), vec3(0., 0., 0.), metallicRoughness.r);
+            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0), vec3(0., 0., 0.), metallicRoughness.r);
 
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(metallicF0, baseColor, metallicRoughness.r);
         #endif
     #else
         #ifdef REFLECTIVITY
-            vec4 surfaceReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
-            surfaceReflectivityColor *= toLinearSpace(surfaceReflectivityColorMap.rgb);
-            surfaceReflectivityColor *= vReflectivityInfos.y;
+            surfaceReflectivityColor *= surfaceMetallicOrReflectivityColorMap.rgb;
 
             #if DEBUGMODE > 0
-                outParams.surfaceReflectivityColorMap = surfaceReflectivityColorMap;
-                vec2 metallicRoughness;
-                vec3 metallicF0;
+                outParams.surfaceReflectivityColorMap = surfaceMetallicOrReflectivityColorMap;
             #endif
 
             #ifdef MICROSURFACEFROMREFLECTIVITYMAP
-                microSurface *= surfaceReflectivityColorMap.a;
-                microSurface *= vReflectivityInfos.z;
+                microSurface *= surfaceMetallicOrReflectivityColorMap.a;
+                microSurface *= reflectivityInfos.z;
             #else
                 #ifdef MICROSURFACEAUTOMATIC
                     microSurface *= computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);
                 #endif
 
                 #ifdef MICROSURFACEMAP
-                    vec4 microSurfaceTexel = texture2D(microSurfaceSampler, vMicroSurfaceSamplerUV_ + uvOffset) * vMicroSurfaceSamplerInfos.y;
                     microSurface *= microSurfaceTexel.r;
                 #endif
                 

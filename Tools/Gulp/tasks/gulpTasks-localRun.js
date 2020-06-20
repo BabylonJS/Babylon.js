@@ -28,13 +28,23 @@ gulp.task("webserver", function () {
         middleware: function (connect, opt) {
             return [function (req, res, next) {
                 const baseUrl =  (req.url.indexOf('dist') !== -1 || req.url.indexOf('Tools') !== -1  || req.url.indexOf('temp/') !== -1);
-                if (!baseUrl && req.headers['referer'] && req.headers['referer'].indexOf('/Playground/') !== -1 && req.url.indexOf('/Playground/') === -1) {
-                    req.url = "/Playground/" + req.url;
-                    res.writeHead(301, {
-                        'Location': req.url
-                    });
-                    return res.end();
+                let referer = req.headers['referer'];
+                if (!baseUrl && referer) {
+                    referer = referer.toLowerCase();
+                    if (referer.indexOf('/playground/') !== -1 && req.url.indexOf('/Playground/') === -1) {
+                        req.url = "/Playground/" + req.url;
+                        res.writeHead(301, {
+                            'Location': req.url
+                        });
+                        return res.end();
+                    }
+                    if (referer.indexOf('/localdev/') !== -1 && referer.indexOf(req.originalUrl) === -1) {
+                        if (!fs.existsSync(rootRelativePath + req.originalUrl)) {
+                            req.url = "/Playground/" + req.url.replace(/localDev/ig, "");
+                        }
+                    }
                 }
+
                 const pgMath = req.url.match(/\/Playground\/pg\/(.*)/);
                 if (pgMath) {
                     const isAFile = req.url.indexOf('.') !== -1;
@@ -61,6 +71,7 @@ gulp.task("webserver", function () {
                         req.url += ".js";
                     }
                 }
+
                 next();
             }]
         }

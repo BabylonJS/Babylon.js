@@ -65,7 +65,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Get if draw buffers are currently supported by the used hardware and browser.
      */
     public get isSupported(): boolean {
-        return this._engine.webGLVersion > 1 || this._engine.getCaps().drawBuffersExtension;
+        return this._getEngine()!.webGLVersion > 1 || this._getEngine()!.getCaps().drawBuffersExtension;
     }
 
     /**
@@ -125,8 +125,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
 
-        this._engine = scene.getEngine();
-
         if (!this.isSupported) {
             this.dispose();
             return;
@@ -182,7 +180,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     private _createInternalTextures(): void {
-        this._internalTextures = this._engine.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
+        this._internalTextures = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
     }
 
     private _createTextures(): void {
@@ -209,7 +207,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
-        this._samples = this._engine.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
     }
 
     /**

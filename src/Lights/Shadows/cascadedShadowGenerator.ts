@@ -2,6 +2,7 @@ import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { SubMesh } from "../../Meshes/subMesh";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
 
 import { IShadowLight } from "../../Lights/shadowLight";
 import { Effect } from "../../Materials/effect";
@@ -34,7 +35,8 @@ const ZeroVec = Vector3.Zero();
 
 let tmpv1 = new Vector3(),
     tmpv2 = new Vector3(),
-    matrix = new Matrix();
+    tmpMatrix = new Matrix(),
+    tmpMatrix2 = new Matrix();
 
 /**
  * A CSM implementation allowing casting shadows on large scenes.
@@ -111,7 +113,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     /**
      * Sets this to true if you want that the edges of the shadows don't "swimm" / "shimmer" when rotating the camera.
-     * The trade off is that you loose some precision in the shadow rendering when enabling this setting.
+     * The trade off is that you lose some precision in the shadow rendering when enabling this setting.
      */
     public stabilizeCascades: boolean;
 
@@ -601,9 +603,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             tmpv2.copyFromFloats(Math.round(tmpv1.x), Math.round(tmpv1.y), Math.round(tmpv1.z)); // tmpv2 = roundedOrigin
             tmpv2.subtractInPlace(tmpv1).scaleInPlace(2 / this._mapSize); // tmpv2 = roundOffset
 
-            Matrix.TranslationToRef(tmpv2.x, tmpv2.y, 0.0, matrix);
+            Matrix.TranslationToRef(tmpv2.x, tmpv2.y, 0.0, tmpMatrix);
 
-            this._projectionMatrices[cascadeIndex].multiplyToRef(matrix, this._projectionMatrices[cascadeIndex]);
+            this._projectionMatrices[cascadeIndex].multiplyToRef(tmpMatrix, this._projectionMatrices[cascadeIndex]);
             this._viewMatrices[cascadeIndex].multiplyToRef(this._projectionMatrices[cascadeIndex], this._transformMatrices[cascadeIndex]);
 
             this._transformMatrices[cascadeIndex].copyToArray(this._transformMatricesAsArray, cascadeIndex * 16);
@@ -675,11 +677,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
             this._frustumCenter[cascadeIndex].addToRef(this._lightDirection, tmpv1); // tmpv1 = look at
 
-            Matrix.LookAtLHToRef(lightCameraPos, tmpv1, UpDir, matrix); // matrix = lightView
+            Matrix.LookAtLHToRef(lightCameraPos, tmpv1, UpDir, tmpMatrix); // matrix = lightView
 
             // Calculate an AABB around the frustum corners
             for (let cornerIndex = 0; cornerIndex < this._frustumCornersWorldSpace[cascadeIndex].length; ++cornerIndex) {
-                Vector3.TransformCoordinatesToRef(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex], matrix, tmpv1);
+                Vector3.TransformCoordinatesToRef(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex], tmpMatrix, tmpv1);
 
                 this._cascadeMinExtents[cascadeIndex].minimizeInPlace(tmpv1);
                 this._cascadeMaxExtents[cascadeIndex].maximizeInPlace(tmpv1);
@@ -797,6 +799,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         this._shadowMap.onBeforeRenderObservable.add((layer: number) => {
             this._currentLayer = layer;
+            if (this._scene.getSceneUniformBuffer().useUbo) {
+                const sceneUBO = this._scene.getSceneUniformBuffer();
+                sceneUBO.updateMatrix("viewProjection", this.getCascadeTransformMatrix(layer)!);
+                sceneUBO.updateMatrix("view", this.getCascadeViewMatrix(layer)!);
+                sceneUBO.update();
+            }
         });
 
         this._shadowMap.onBeforeBindObservable.add(() => {
@@ -809,14 +817,26 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._splitFrustum();
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
-        effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void {
+        effect.setMatrix(matriceNames?.viewProjection ?? "viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
+
+        effect.setMatrix(matriceNames?.view ?? "view", this.getCascadeViewMatrix(this._currentLayer)!);
+
+        effect.setMatrix(matriceNames?.projection ?? "projection", this.getCascadeProjectionMatrix(this._currentLayer)!);
+
+        const world = mesh.getWorldMatrix();
+
+        world.multiplyToRef(this.getCascadeTransformMatrix(this._currentLayer)!, tmpMatrix);
+
+        effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
+
+        world.multiplyToRef(this.getCascadeViewMatrix(this._currentLayer)!, tmpMatrix2);
+
+        effect.setMatrix(matriceNames?.worldView ?? "worldView", tmpMatrix2);
     }
 
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {
-        if (this._depthClamp && this._filter !== ShadowGenerator.FILTER_PCSS) {
-            defines.push("#define DEPTHCLAMP");
-        }
+        defines.push("#define SM_DEPTHCLAMP " + (this._depthClamp && this._filter !== ShadowGenerator.FILTER_PCSS ? "1" : "0"));
     }
 
     /**

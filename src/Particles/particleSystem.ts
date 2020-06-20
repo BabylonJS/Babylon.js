@@ -11,19 +11,17 @@ import { MaterialHelper } from "../Materials/materialHelper";
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { Texture } from "../Materials/Textures/texture";
-import { DynamicTexture } from "../Materials/Textures/dynamicTexture";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { Scene, IDisposable } from "../scene";
-import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
+import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter, PointParticleEmitter, MeshParticleEmitter } from "../Particles/EmitterTypes/index";
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { Particle } from "./particle";
 import { SubEmitter, SubEmitterType } from "./subEmitter";
 import { Constants } from "../Engines/constants";
 import { SerializationHelper } from "../Misc/decorators";
-import { DeepCopier } from "../Misc/deepCopier";
 import { _TypeStore } from '../Misc/typeStore';
 import { IAnimatable } from '../Animations/animatable.interface';
 
@@ -81,9 +79,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     /**
     * An event triggered when the system is disposed
     */
-    public onDisposeObservable = new Observable<ParticleSystem>();
+    public onDisposeObservable = new Observable<IParticleSystem>();
 
-    private _onDisposeObserver: Nullable<Observer<ParticleSystem>>;
+    private _onDisposeObserver: Nullable<Observer<IParticleSystem>>;
     /**
      * Sets a callback that will be triggered when the system is disposed
      */
@@ -105,7 +103,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: Nullable<DataBuffer>;
     private _effect: Effect;
-    private _customEffect: Nullable<Effect>;
+    private _customEffect: { [blendMode: number] : Nullable<Effect> };
     private _cachedDefines: string;
     private _scaledColorStep = new Color4(0, 0, 0, 0);
     private _colorDiff = new Color4(0, 0, 0, 0);
@@ -140,7 +138,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _useRampGradients = false;
 
     /** Gets or sets a boolean indicating that ramp gradients must be used
-     * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
      */
     public get useRampGradients(): boolean {
         return this._useRampGradients;
@@ -214,6 +212,45 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
+     * Gets the custom effect used to render the particles
+     * @param blendMode Blend mode for which the effect should be retrieved
+     * @returns The effect
+     */
+    public getCustomEffect(blendMode: number = 0): Nullable<Effect> {
+        return this._customEffect[blendMode] ?? this._customEffect[0];
+    }
+
+    /**
+     * Sets the custom effect used to render the particles
+     * @param effect The effect to set
+     * @param blendMode Blend mode for which the effect should be set
+     */
+    public setCustomEffect(effect: Nullable<Effect>, blendMode: number = 0) {
+        this._customEffect[blendMode] = effect;
+    }
+
+    /** @hidden */
+    private _onBeforeDrawParticlesObservable: Nullable<Observable<Nullable<Effect>>> = null;
+
+    /**
+     * Observable that will be called just before the particles are drawn
+     */
+    public get onBeforeDrawParticlesObservable(): Observable<Nullable<Effect>> {
+        if (!this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable = new Observable<Nullable<Effect>>();
+        }
+
+        return this._onBeforeDrawParticlesObservable;
+    }
+
+    /**
+     * Gets the name of the particle vertex shader
+     */
+    public get vertexShaderName(): string {
+        return "particles";
+    }
+
+    /**
      * Instantiates a particle system.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
      * @param name The name of the particle system
@@ -238,7 +275,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
-        this._customEffect = customEffect;
+        this._customEffect = { 0: customEffect };
 
         this._scene.particleSystems.push(this);
 
@@ -1564,14 +1601,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         return effectCreationOption;
     }
 
-    /** @hidden */
-    private _getEffect(blendMode: number): Effect {
-        if (this._customEffect) {
-            return this._customEffect;
-        }
-
-        var defines = [];
-
+    /**
+     * Fill the defines array according to the current settings of the particle system
+     * @param defines Array to be updated
+     * @param blendMode blend mode to take into account when updating the array
+     */
+    public fillDefines(defines: Array<string>, blendMode: number) {
         if (this._scene.clipPlane) {
             defines.push("#define CLIPPLANE");
         }
@@ -1619,6 +1654,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     defines.push("#define BILLBOARDSTRETCHED");
                     break;
                 case ParticleSystem.BILLBOARDMODE_ALL:
+                    defines.push("#define BILLBOARDMODE_ALL");
+                    break;
                 default:
                     break;
             }
@@ -1628,21 +1665,49 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
             defines.push(this._imageProcessingConfigurationDefines.toString());
         }
+    }
+
+    /**
+     * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
+     * @param uniforms Uniforms array to fill
+     * @param attributes Attributes array to fill
+     * @param samplers Samplers array to fill
+     */
+    public fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>) {
+        attributes.push(...ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients));
+
+        uniforms.push(...ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled));
+
+        samplers.push("diffuseSampler", "rampSampler");
+
+        if (this._imageProcessingConfiguration) {
+            ImageProcessingConfiguration.PrepareUniforms(uniforms, this._imageProcessingConfigurationDefines);
+            ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
+        }
+    }
+
+    /** @hidden */
+    private _getEffect(blendMode: number): Effect {
+        const customEffect = this.getCustomEffect(blendMode);
+
+        if (customEffect) {
+            return customEffect;
+        }
+
+        var defines: Array<string> = [];
+
+        this.fillDefines(defines, blendMode);
 
         // Effect
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
             this._cachedDefines = join;
 
-            var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions(this._isAnimationSheetEnabled, this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED, this._useRampGradients);
-            var effectCreationOption = ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled);
+            var attributesNamesOrOptions: Array<string> = [];
+            var effectCreationOption: Array<string> = [];
+            var samplers: Array<string> = [];
 
-            var samplers = ["diffuseSampler", "rampSampler"];
-
-            if (ImageProcessingConfiguration) {
-                ImageProcessingConfiguration.PrepareUniforms(effectCreationOption, this._imageProcessingConfigurationDefines);
-                ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
-            }
+            this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
 
             this._effect = this._scene.getEngine().createEffect(
                 "particles",
@@ -1837,11 +1902,16 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             effect.setTexture("rampSampler", this._rampGradientsTexture);
         }
 
+        const defines = effect.defines;
+
         if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
+            MaterialHelper.BindClipPlane(effect, this._scene);
+        }
+
+        if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
             var invView = viewMatrix.clone();
             invView.invert();
             effect.setMatrix("invView", invView);
-            MaterialHelper.BindClipPlane(effect, this._scene);
         }
 
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
@@ -1865,6 +1935,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             case ParticleSystem.BLENDMODE_MULTIPLY:
                 engine.setAlphaMode(Constants.ALPHA_MULTIPLY);
                 break;
+        }
+
+        if (this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable.notifyObservers(effect);
         }
 
         if (this._useInstancing) {
@@ -1958,6 +2032,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             (<AbstractMesh>this.emitter).dispose(true);
         }
 
+        if (this._onBeforeDrawParticlesObservable) {
+            this._onBeforeDrawParticlesObservable.clear();
+        }
+
         // Remove from scene
         var index = this._scene.particleSystems.indexOf(this);
         if (index > -1) {
@@ -1981,19 +2059,19 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @returns the cloned particle system
      */
     public clone(name: string, newEmitter: any): ParticleSystem {
-        var custom: Nullable<Effect> = null;
+        var custom = { ...this._customEffect };
         var program: any = null;
         if (this.customShader != null) {
             program = this.customShader;
             var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
-            custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
-        } else if (this._customEffect) {
-            custom = this._customEffect;
+            custom[0] = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
         }
-        var result = new ParticleSystem(name, this._capacity, this._scene, custom);
-        result.customShader = program;
 
-        DeepCopier.DeepCopy(this, result, ["particles", "customShader", "noiseTexture", "particleTexture", "onDisposeObservable"]);
+        let serialization = this.serialize();
+        var result = ParticleSystem.Parse(serialization, this._scene, "");
+        result.name = name;
+        result.customShader = program;
+        result._customEffect = custom;
 
         if (newEmitter === undefined) {
             newEmitter = this.emitter;
@@ -2004,79 +2082,6 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         result.emitter = newEmitter;
-        if (this.particleTexture) {
-            if (this.particleTexture instanceof DynamicTexture) {
-                result.particleTexture = this.particleTexture.clone();
-                const ctx = (<unknown>result.particleTexture as DynamicTexture).getContext();
-                ctx.drawImage((<unknown>this.particleTexture as DynamicTexture).getContext().canvas, 0, 0);
-                (<unknown>result.particleTexture as DynamicTexture).update();
-            } else {
-                result.particleTexture = new Texture(this.particleTexture.url, this._scene);
-            }
-        }
-
-        // Clone gradients
-        if (this._colorGradients) {
-            this._colorGradients.forEach((v) => {
-                result.addColorGradient(v.gradient, v.color1, v.color2);
-            });
-        }
-        if (this._dragGradients) {
-            this._dragGradients.forEach((v) => {
-                result.addDragGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._angularSpeedGradients) {
-            this._angularSpeedGradients.forEach((v) => {
-                result.addAngularSpeedGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._emitRateGradients) {
-            this._emitRateGradients.forEach((v) => {
-                result.addEmitRateGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._lifeTimeGradients) {
-            this._lifeTimeGradients.forEach((v) => {
-                result.addLifeTimeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._limitVelocityGradients) {
-            this._limitVelocityGradients.forEach((v) => {
-                result.addLimitVelocityGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._sizeGradients) {
-            this._sizeGradients.forEach((v) => {
-                result.addSizeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._startSizeGradients) {
-            this._startSizeGradients.forEach((v) => {
-                result.addStartSizeGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._velocityGradients) {
-            this._velocityGradients.forEach((v) => {
-                result.addVelocityGradient(v.gradient, v.factor1, v.factor2);
-            });
-        }
-        if (this._rampGradients) {
-            this._rampGradients.forEach((v) => {
-                result.addRampGradient(v.gradient, v.color);
-            });
-        }
-        if (this._colorRemapGradients) {
-            this._colorRemapGradients.forEach((v) => {
-                result.addColorRemapGradient(v.gradient, v.factor1, v.factor2!);
-            });
-        }
-        if (this._alphaRemapGradients) {
-            this._alphaRemapGradients.forEach((v) => {
-                result.addAlphaRemapGradient(v.gradient, v.factor1, v.factor2!);
-            });
-        }
-
         if (!this.preventAutoStart) {
             result.start();
         }
@@ -2628,7 +2633,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 case "HemisphericParticleEmitter":
                     emitterType = new HemisphericParticleEmitter();
                     break;
-                case "BoxEmitter":
+                case "PointParticleEmitter":
+                    emitterType = new PointParticleEmitter();
+                    break;
+                case "MeshParticleEmitter":
+                    emitterType = new MeshParticleEmitter();
+                    break;
+                    case "BoxEmitter":
                 case "BoxParticleEmitter":
                 default:
                     emitterType = new BoxParticleEmitter();

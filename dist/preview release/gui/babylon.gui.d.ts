@@ -822,6 +822,10 @@ declare module BABYLON.GUI {
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
         /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: BABYLON.Observable<Control>;
+        /**
          * Get the hosting AdvancedDynamicTexture
          */
         get host(): AdvancedDynamicTexture;
@@ -1420,6 +1424,10 @@ declare module BABYLON.GUI {
         * An event triggered after the text was broken up into lines
         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
+        /**
+         * Function used to split a string into words. By default, a string is split at each space character found
+         */
+        wordSplittingFunction: BABYLON.Nullable<(line: string) => string[]>;
         /**
          * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
          */
@@ -3057,6 +3065,8 @@ declare module BABYLON.GUI {
         private _barImageHeight;
         private _horizontalBarImageHeight;
         private _verticalBarImageHeight;
+        private _oldWindowContentsWidth;
+        private _oldWindowContentsHeight;
         /**
          * Gets the horizontal scrollbar
          */

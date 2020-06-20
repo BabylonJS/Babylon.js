@@ -6,22 +6,17 @@ import { IDisplayManager } from './display/displayManager';
 import { Observable } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+import { FramePortData, isFramePortData } from './graphCanvas';
 
 export class FrameNodePort extends NodePort {
-    private _onFramePortMoveUpObservable = new Observable<FrameNodePort>();
-    private _onFramePortMoveDownObservable = new Observable<FrameNodePort>();
-    private _onFramePortPositionChangedObservable = new Observable<FramePortPosition>();
-    private _portLabel: Element;
+    private _parentFrameId: number;
     private _isInput: boolean;
     private _framePortPosition: FramePortPosition
-    private _framePortId: Nullable<number>;
+    private _framePortId: number;
+    private _onFramePortPositionChangedObservable = new Observable<FrameNodePort>();
 
-    public get onFramePortMoveUpObservable() {
-        return this._onFramePortMoveUpObservable;
-    }
-
-    public get onFramePortMoveDownObservable() {
-        return this._onFramePortMoveDownObservable;
+    public get parentFrameId () {
+        return this._parentFrameId;
     }
 
     public get onFramePortPositionChangedObservable() {
@@ -32,16 +27,8 @@ export class FrameNodePort extends NodePort {
         return this._isInput;
     }
 
-    public get portLabel() {
-        return this._portLabel.innerHTML;
-    }
-
     public get framePortId() {
         return this._framePortId;
-    }
-
-    public set portLabel(newLabel: string) {
-        this._portLabel.innerHTML = newLabel;
     }
 
     public get framePortPosition() {
@@ -50,18 +37,18 @@ export class FrameNodePort extends NodePort {
 
     public set framePortPosition(position: FramePortPosition) {
         this._framePortPosition = position;
-        this.onFramePortPositionChangedObservable.notifyObservers(position);
+        this.onFramePortPositionChangedObservable.notifyObservers(this);
     }
 
-    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number) {
+    public constructor(portContainer: HTMLElement, public connectionPoint: NodeMaterialConnectionPoint, public node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number) {
         super(portContainer, connectionPoint,node, globalState);
 
-        this._portLabel = portContainer.children[0];
+        this._parentFrameId = parentFrameId;
         this._isInput = isInput;
         this._framePortId = framePortId;
 
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add((selection) => {
-            if (selection === this) {
+            if (isFramePortData(selection) && (selection as FramePortData).port === this) {
                 this._img.classList.add("selected");
             } else {
                 this._img.classList.remove("selected");
@@ -72,7 +59,7 @@ export class FrameNodePort extends NodePort {
     }
 
     public static CreateFrameNodePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, 
-        displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number) {
+        displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number) {
         let portContainer = root.ownerDocument!.createElement("div");
         let block = connectionPoint.ownerBlock;
 
@@ -85,11 +72,15 @@ export class FrameNodePort extends NodePort {
         if (!displayManager || displayManager.shouldDisplayPortLabels(block)) {
             let portLabel = root.ownerDocument!.createElement("div");
             portLabel.classList.add("port-label");
-            portLabel.innerHTML = connectionPoint.name;        
+            let portName = connectionPoint.displayName || connectionPoint.name;
+            if (connectionPoint.ownerBlock.isInput) {
+                portName = node.name;
+            }
+            portLabel.innerHTML = portName;       
             portContainer.appendChild(portLabel);
         }
 
-        return new FrameNodePort(portContainer, connectionPoint, node, globalState, isInput, framePortId);
+        return new FrameNodePort(portContainer, connectionPoint, node, globalState, isInput, framePortId, parentFrameId);
     }
 
 } 
