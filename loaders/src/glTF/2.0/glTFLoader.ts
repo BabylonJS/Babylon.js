@@ -877,11 +877,8 @@ export class GLTFLoader implements IGLTFLoader {
                                 min.copyFromFloats(...mmin);
                                 max.copyFromFloats(...mmax);
                                 babylonMesh.getBoundingInfo().reConstruct(min, max);
-                                if (babylonMesh.subMeshes) {
-                                    for (let index = 0; index < babylonMesh.subMeshes.length; index++) {
-                                        babylonMesh.subMeshes[index].getBoundingInfo().reConstruct(min, max);
-                                    }
-                                }
+                                // Note: we don't need to update sub meshes bounding info because the GLTF loader does not create sub meshes
+                                // Each mesh has a single sub mesh which is a global sub mesh, meaning its bounding info is the bounding info of the mesh itself
                                 babylonMesh._updateBoundingInfo();
                             }
                         }
