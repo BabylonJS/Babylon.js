@@ -8,7 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
 /**
  * This class is used to deform meshes using morphing between different targets
- * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+ * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
  */
 export class MorphTargetManager {
     private _targets = new Array<MorphTarget>();

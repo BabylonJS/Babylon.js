@@ -9,7 +9,7 @@ declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Class used to represent a sprite
- * @see http://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/babylon101/sprites
  */
 export class Sprite implements IAnimatable {
     /** Gets or sets the current world position */
