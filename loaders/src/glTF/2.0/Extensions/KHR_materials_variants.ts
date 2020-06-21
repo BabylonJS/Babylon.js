@@ -9,22 +9,22 @@ import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
 
 const NAME = "KHR_materials_variants";
 
-interface IKHRMaterialVariantsMapping {
+export interface IKHRMaterialVariantsMapping {
     tags: string[];
     material: number;
 }
 
-interface IKHRMaterialVariants {
+export interface IKHRMaterialVariants {
     mapping: IKHRMaterialVariantsMapping[];
 }
 
-interface IExtensionMetadata {
+export interface IExtensionMetadata {
     lastSelected: Nullable<string | Array<string>>;
     original: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
     variants: IVariantsMap;
 }
 
-interface IVariantsMap {
+export interface IVariantsMap {
     [key: string]: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
 }
 

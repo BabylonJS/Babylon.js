@@ -8,7 +8,7 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "KHR_texture_transform";
 
-interface IKHRTextureTransform {
+export interface IKHRTextureTransform {
     offset?: number[];
     rotation?: number;
     scale?: number[];

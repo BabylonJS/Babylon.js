@@ -14,17 +14,17 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_lights_punctual";
 
-enum LightType {
+export enum LightType {
     DIRECTIONAL = "directional",
     POINT = "point",
     SPOT = "spot"
 }
 
-interface ILightReference {
+export interface ILightReference {
     light: number;
 }
 
-interface ILight extends IChildRootProperty {
+export interface ILight extends IChildRootProperty {
     type: LightType;
     color?: number[];
     intensity?: number;
@@ -35,7 +35,7 @@ interface ILight extends IChildRootProperty {
     };
 }
 
-interface ILights {
+export interface ILights {
     lights: ILight[];
 }
 

@@ -9,7 +9,7 @@ import { TmpVectors } from 'babylonjs/Maths/math.vector';
 
 const NAME = "EXT_mesh_gpu_instancing";
 
-interface IEXTMeshGpuInstancing {
+export interface IEXTMeshGpuInstancing {
     mesh?: number;
     attributes: { [name: string]: number };
 }

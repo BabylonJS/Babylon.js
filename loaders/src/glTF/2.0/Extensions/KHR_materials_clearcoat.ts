@@ -9,7 +9,7 @@ import { IMaterialNormalTextureInfo } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_clearcoat";
 
-interface IKHR_materials_clearcoat {
+export interface IKHR_materials_clearcoat {
     clearcoatFactor: number;
     clearcoatTexture: ITextureInfo;
     clearcoatRoughnessFactor: number;
