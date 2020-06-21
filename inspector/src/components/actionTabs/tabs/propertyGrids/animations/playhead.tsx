@@ -47,7 +47,7 @@ export class Playhead extends React.Component<IPlayheadProps> {
   }
 
   calculateMove() {
-    return `calc(${this.props.frame * this.props.offset}px - 13px)`;
+    return `calc(${this.props.frame * this.props.offset}px + 20px)`;
   }
 
   render() {

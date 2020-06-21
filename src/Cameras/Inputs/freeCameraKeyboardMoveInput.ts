@@ -9,7 +9,7 @@ import { Vector3 } from "../../Maths/math.vector";
 import { Engine } from "../../Engines/engine";
 /**
  * Manage the keyboard inputs to control the movement of a free camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     /**

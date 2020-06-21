@@ -37,7 +37,7 @@ FreeCameraInputsManager.prototype.addDeviceOrientation = function(): FreeCameraI
 /**
  * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
  * Screen rotation is taken into account.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
     private _camera: FreeCamera;
@@ -99,7 +99,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     public _onDeviceOrientationChangedObservable = new Observable<void>();
     /**
      * Instantiates a new input
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
     constructor() {
         this._constantTranform = new Quaternion(- Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));

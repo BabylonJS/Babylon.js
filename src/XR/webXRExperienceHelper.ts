@@ -10,7 +10,7 @@ import { Logger } from '../Misc/logger';
 
 /**
  * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
- * @see https://doc.babylonjs.com/how_to/webxr
+ * @see https://doc.babylonjs.com/how_to/webxr_experience_helpers
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;
