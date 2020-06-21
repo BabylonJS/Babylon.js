@@ -9,7 +9,7 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 
 const NAME = "KHR_materials_sheen";
 
-interface IKHR_materials_sheen {
+export interface IKHR_materials_sheen {
     sheenColorFactor: number[];
     sheenTexture: ITextureInfo;
     sheenRoughnessFactor: number;

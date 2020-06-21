@@ -9,7 +9,7 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 
 const NAME = "KHR_materials_specular";
 
-interface IKHR_materials_specular {
+export interface IKHR_materials_specular {
     specularFactor: number;
     specularColorFactor: number[];
     specularTexture: ITextureInfo;

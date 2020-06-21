@@ -14,22 +14,22 @@ import { IProperty } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_audio_emitter";
 
-interface IClipReference {
+export interface IClipReference {
     clip: number;
     weight?: number;
 }
 
-interface IEmittersReference {
+export interface IEmittersReference {
     emitters: number[];
 }
 
-const enum DistanceModel {
+export const enum DistanceModel {
     linear = "linear",
     inverse = "inverse",
     exponential = "exponential",
 }
 
-interface IEmitter {
+export interface IEmitter {
     name?: string;
     distanceModel?: DistanceModel;
     refDistance?: number;
@@ -42,21 +42,21 @@ interface IEmitter {
     clips: IClipReference[];
 }
 
-const enum AudioMimeType {
+export const enum AudioMimeType {
     WAV = "audio/wav",
 }
 
-interface IClip extends IProperty {
+export interface IClip extends IProperty {
     uri?: string;
     bufferView?: number;
     mimeType?: AudioMimeType;
 }
 
-interface ILoaderClip extends IClip, IArrayItem {
+export interface ILoaderClip extends IClip, IArrayItem {
     _objectURL?: Promise<string>;
 }
 
-interface ILoaderEmitter extends IEmitter, IArrayItem {
+export interface ILoaderEmitter extends IEmitter, IArrayItem {
     _babylonData?: {
         sound?: WeightedSound;
         loaded: Promise<void>;
@@ -64,28 +64,28 @@ interface ILoaderEmitter extends IEmitter, IArrayItem {
     _babylonSounds: Sound[];
 }
 
-interface IMSFTAudioEmitter {
+export interface IMSFTAudioEmitter {
     clips: ILoaderClip[];
     emitters: ILoaderEmitter[];
 }
 
-const enum AnimationEventAction {
+export const enum AnimationEventAction {
     play = "play",
     pause = "pause",
     stop = "stop",
 }
 
-interface IAnimationEvent {
+export interface IAnimationEvent {
     action: AnimationEventAction;
     emitter: number;
     time: number;
     startOffset?: number;
 }
 
-interface ILoaderAnimationEvent extends IAnimationEvent, IArrayItem {
+export interface ILoaderAnimationEvent extends IAnimationEvent, IArrayItem {
 }
 
-interface ILoaderAnimationEvents {
+export interface ILoaderAnimationEvents {
     events: ILoaderAnimationEvent[];
 }
 

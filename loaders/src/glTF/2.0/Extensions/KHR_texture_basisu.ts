@@ -6,7 +6,7 @@ import { Nullable } from "babylonjs/types";
 
 const NAME = "KHR_texture_basisu";
 
-interface IKHRTextureBasisU {
+export interface IKHRTextureBasisU {
     source: number;
 }
 

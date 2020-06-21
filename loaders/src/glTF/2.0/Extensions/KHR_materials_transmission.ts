@@ -8,7 +8,7 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "KHR_materials_transmission";
 
-interface IMaterialsTransmission {
+export interface IMaterialsTransmission {
     transmissionFactor?: number;
     transmissionTexture?: ITextureInfo;
 }
