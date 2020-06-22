@@ -79,18 +79,24 @@ export class PBRSubSurfaceConfiguration {
      * Diffusion profile for subsurface scattering.
      * Useful for better scattering in the skins or foliages.
      */
-    public get scatteringDiffusionProfile() {
-        return this._scene.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
+    public get scatteringDiffusionProfile() : Nullable<Color3> {
+        if (!this._scene.prePassRenderer) {
+            return null;
+        }
+
+        return this._scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
     }
 
-    public set scatteringDiffusionProfile(c: Color3) {
+    public set scatteringDiffusionProfile(c: Nullable<Color3>) {
         if (!this._scene.enablePrePassRenderer()) {
             // Not supported
             return;
         }
 
         // addDiffusionProfile automatically checks for doubles
-        this._scatteringDiffusionProfileIndex = this._scene.prePassRenderer!.subSurfaceConfiguration.addDiffusionProfile(c);
+        if (c) {
+            this._scatteringDiffusionProfileIndex = this._scene.prePassRenderer!.subSurfaceConfiguration.addDiffusionProfile(c);
+        }
     }
 
     /**
