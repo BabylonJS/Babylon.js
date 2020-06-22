@@ -1,14 +1,11 @@
 import { Logger } from "../Misc/logger";
 import { Color3 } from "../Maths/math.color";
-import { Scene } from "../scene";
 
 /**
  * Contains all parameters needed for the prepass to perform
  * screen space subsurface scattering
  */
 export class SubSurfaceConfiguration {
-    private _scene: Scene;
-
     private _ssDiffusionS: number[] = [];
     private _ssFilterRadii: number[] = [];
     private _ssDiffusionD: number[] = [];
@@ -35,6 +32,14 @@ export class SubSurfaceConfiguration {
     }
 
     /**
+     * Diffusion profile colors for subsurface scattering
+     * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
+     * See ...
+     * Note that you can only store up to 5 of them
+     */
+    public ssDiffusionProfileColors: Color3[] = [];
+
+    /**
      * Defines the ratio real world => scene units.
      * Used for subsurface scattering
      */
@@ -44,9 +49,8 @@ export class SubSurfaceConfiguration {
      * Builds a subsurface configuration object
      * @param scene The scene
      */
-    constructor(scene: Scene) {
+    constructor() {
         // Adding default diffusion profile
-        this._scene = scene;
         this.addDiffusionProfile(new Color3(1, 1, 1));
     }
 
@@ -75,7 +79,7 @@ export class SubSurfaceConfiguration {
         this._ssDiffusionS.push(color.r, color.b, color.g);
         this._ssDiffusionD.push(Math.max(Math.max(color.r, color.b), color.g));
         this._ssFilterRadii.push(this.getDiffusionProfileParameters(color));
-        this._scene.ssDiffusionProfileColors.push(color);
+        this.ssDiffusionProfileColors.push(color);
 
         return this._ssDiffusionD.length - 1;
     }
@@ -88,7 +92,7 @@ export class SubSurfaceConfiguration {
         this._ssDiffusionD = [];
         this._ssDiffusionS = [];
         this._ssFilterRadii = [];
-        this._scene.ssDiffusionProfileColors = [];
+        this.ssDiffusionProfileColors = [];
     }
 
     /**
