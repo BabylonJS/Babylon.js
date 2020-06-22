@@ -787,13 +787,13 @@ declare module INSPECTOR {
         height = 1
     }
     export class AnimationListTree extends React.Component<IAnimationListTreeProps, {
-        list: Item[];
         selectedCoordinate: SelectedCoordinate;
         selectedAnimation: number;
     }> {
+        private _list;
         constructor(props: IAnimationListTreeProps);
         deleteAnimation(): void;
-        generateList(): void;
+        generateList(): Item[] | null;
         editAnimation(): void;
         toggleProperty(index: number): void;
         setSelectedCoordinate(animation: BABYLON.Animation, coordinate: SelectedCoordinate, index: number): void;
@@ -802,25 +802,55 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ILoadSnippetProps {
         animations: BABYLON.Animation[];
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         lockObject: LockObject;
+        globalState: GlobalState;
+        snippetServer: string;
+        setSnippetId: (id: string) => void;
+        entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
+        setNotificationMessage: (message: string) => void;
+        animationsLoaded: (numberOfAnimations: number) => void;
     }
     export class LoadSnippet extends React.Component<ILoadSnippetProps, {
-        server: string;
+        snippetId: string;
     }> {
         private _serverAddress;
         constructor(props: ILoadSnippetProps);
         change(value: string): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
         render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
     interface ISaveSnippetProps {
-        animations: any[];
+        animations: BABYLON.Nullable<BABYLON.Animation[]>;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         lockObject: LockObject;
+        globalState: GlobalState;
+        snippetServer: string;
+        snippetId: string;
+    }
+    export interface Snippet {
+        url: string;
+        id: string;
     }
     interface SelectedAnimation {
         id: string;
@@ -831,9 +861,11 @@ declare module INSPECTOR {
     export class SaveSnippet extends React.Component<ISaveSnippetProps, {
         selectedAnimations: SelectedAnimation[];
     }> {
-        private _serverAddress;
         constructor(props: ISaveSnippetProps);
         handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>): void;
+        stringifySelectedAnimations(): string;
+        saveToFile(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -846,6 +878,8 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: BABYLON.Animation, axis?: SelectedCoordinate) => void;
+        globalState: GlobalState;
+        snippetServer: string;
     }
     export class EditorControls extends React.Component<IEditorControlsProps, {
         isAnimationTabOpen: boolean;
@@ -855,6 +889,7 @@ declare module INSPECTOR {
         isLoopActive: boolean;
         animationsCount: number;
         framesPerSecond: number;
+        snippetId: string;
     }> {
         constructor(props: IEditorControlsProps);
         animationAdded(): void;
@@ -862,6 +897,7 @@ declare module INSPECTOR {
         handleTabs(tab: number): void;
         handleChangeFps(fps: number): void;
         emptiedList(): void;
+        animationsLoaded(numberOfAnimations: number): void;
         render(): JSX.Element;
     }
 }
@@ -872,6 +908,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
         lockObject: LockObject;
+        globalState: GlobalState;
     }
     interface ICanvasAxis {
         value: number;
@@ -905,6 +942,7 @@ declare module INSPECTOR {
         selectedPathData: ICurveData[] | undefined;
         selectedCoordinate: number;
     }> {
+        private _snippetUrl;
         private _heightScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
@@ -959,7 +997,7 @@ declare module INSPECTOR {
         linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
         flatTangents(keyframes: BABYLON.IAnimationKey[], dataType: number): BABYLON.IAnimationKey[];
-        returnZero(dataType: number): number | BABYLON.Vector3 | BABYLON.Vector2 | undefined;
+        returnZero(dataType: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size | undefined;
         getValueAsArray(valueType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion): number[];
         getPathData(animation: BABYLON.Animation | null): ICurveData[] | undefined;
         getAnimationData(animation: BABYLON.Animation): {
@@ -1075,21 +1113,6 @@ declare module INSPECTOR {
     }
     export class MaterialPropertyGridComponent extends React.Component<IMaterialPropertyGridComponentProps> {
         constructor(props: IMaterialPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        private static _IDGenerator;
-        private _id;
-        private uploadInputRef;
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
