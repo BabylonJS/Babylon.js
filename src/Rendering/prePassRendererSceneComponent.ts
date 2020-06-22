@@ -6,6 +6,20 @@ import { AbstractScene } from "../abstractScene";
 import { Color3 } from "../Maths/math.color";
 import { Logger } from "../Misc/logger";
 
+// Adds the parser to the scene parsers.
+AbstractScene.AddParser(SceneComponentConstants.NAME_PREPASSRENDERER, (parsedData: any, scene: Scene) => {
+    // Diffusion profiles
+    if (parsedData.ssDiffusionProfileColors !== undefined && parsedData.ssDiffusionProfileColors !== null) {
+        scene.enablePrePassRenderer();
+        if (scene.prePassRenderer) {
+            for (var index = 0, cache = parsedData.ssDiffusionProfileColors.length; index < cache; index++) {
+                var color = parsedData.ssDiffusionProfileColors[index];
+                scene.prePassRenderer.subSurfaceConfiguration.addDiffusionProfile(new Color3(color.r, color.g, color.b));
+            }
+        }
+    }
+});
+
 declare module "../abstractScene" {
     export interface AbstractScene {
         /** @hidden (Backing field) */
@@ -26,14 +40,6 @@ declare module "../abstractScene" {
          * Disables the prepass associated with the scene
          */
         disablePrePassRenderer(): void;
-
-        /**
-         * Diffusion profile colors for subsurface scattering
-         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
-         * See ...
-         * Note that you can only store up to 5 of them
-         */
-        ssDiffusionProfileColors: Color3[];
     }
 }
 
@@ -97,8 +103,6 @@ export class PrePassRendererSceneComponent implements ISceneSerializableComponen
      */
     constructor(scene: Scene) {
         this.scene = scene;
-
-        scene.ssDiffusionProfileColors = [];
     }
 
     /**
@@ -133,13 +137,17 @@ export class PrePassRendererSceneComponent implements ISceneSerializableComponen
      * @param serializationObject The object to serialize to
      */
     public serialize(serializationObject: any): void {
-        const ssDiffusionProfileColors = this.scene.ssDiffusionProfileColors;
+        if (!this.scene.prePassRenderer) {
+            return;
+        }
+
+        const ssDiffusionProfileColors = this.scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionProfileColors;
         serializationObject.ssDiffusionProfileColors = [];
 
         for (let i = 0; i < ssDiffusionProfileColors.length; i++) {
-            serializationObject.ssDiffusionProfileColors.push(ssDiffusionProfileColors[i].r,
-                                                              ssDiffusionProfileColors[i].g,
-                                                              ssDiffusionProfileColors[i].b);
+            serializationObject.ssDiffusionProfileColors.push({ r: ssDiffusionProfileColors[i].r,
+                                                                g: ssDiffusionProfileColors[i].g,
+                                                                b: ssDiffusionProfileColors[i].b });
         }
     }
 
@@ -148,15 +156,7 @@ export class PrePassRendererSceneComponent implements ISceneSerializableComponen
      * @param container the container holding the elements
      */
     public addFromContainer(container: AbstractScene): void {
-        if (!container.ssDiffusionProfileColors) {
-            return;
-        }
-
-        if (this.scene.prePassRenderer) {
-            container.ssDiffusionProfileColors.forEach((color) => {
-                this.scene.prePassRenderer!.subSurfaceConfiguration.addDiffusionProfile(color);
-            });
-        }
+        // Nothing to do
     }
 
     /**
@@ -165,10 +165,7 @@ export class PrePassRendererSceneComponent implements ISceneSerializableComponen
      * @param dispose if the removed element should be disposed (default: false)
      */
     public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
-        if (!container.ssDiffusionProfileColors) {
-            return;
-        }
-
+        // Make sure nothing will be serialized
         if (this.scene.prePassRenderer) {
             this.scene.prePassRenderer.subSurfaceConfiguration.clearAllDiffusionProfiles();
         }

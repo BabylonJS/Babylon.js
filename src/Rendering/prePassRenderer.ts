@@ -96,7 +96,7 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
 
-        this.subSurfaceConfiguration = new SubSurfaceConfiguration(this._scene);
+        this.subSurfaceConfiguration = new SubSurfaceConfiguration();
     }
 
     private _initializeAttachments() {
