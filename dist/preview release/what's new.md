@@ -246,3 +246,4 @@
 - PBRMaterial index of refraction is now defined as index of refraction and not the inverse of it ([Sebavan](https://github.com/sebavan/))
 - `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))
 - Rendering of transparent meshes: stencil state is now set to the value registered in the engine instead of being set to `false` unconditionally ([Popov72](https://github.com/Popov72))
+- Fix width/height GUI container computation to take into account paddings when `adaptWithToChildren = true` ([Popov72](https://github.com/Popov72))
