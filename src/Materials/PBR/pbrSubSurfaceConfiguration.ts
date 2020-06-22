@@ -116,14 +116,6 @@ export class PBRSubSurfaceConfiguration {
     public translucencyIntensity: number = 1;
 
     /**
-     * Defines the scattering intensity of the material.
-     * When scattering has been enabled, this defines how much of the "scattered light"
-     * is addded to the diffuse part of the material.
-     */
-    @serialize()
-    public scatteringIntensity: number = 1;
-
-    /**
      * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
      */
     @serialize()
@@ -412,7 +404,7 @@ export class PBRSubSurfaceConfiguration {
                 this.tintColor.b,
                 this.tintColorAtDistance);
 
-            uniformBuffer.updateFloat3("vSubSurfaceIntensity", this.refractionIntensity, this.translucencyIntensity, this.scatteringIntensity);
+            uniformBuffer.updateFloat3("vSubSurfaceIntensity", this.refractionIntensity, this.translucencyIntensity, 0);
         }
 
         // Textures
