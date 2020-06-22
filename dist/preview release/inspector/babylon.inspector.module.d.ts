@@ -635,7 +635,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea" {
-    import * as React from "react";
+    import * as React from 'react';
     import { Vector2 } from 'babylonjs/Maths/math.vector';
     import { IKeyframeSvgPoint } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint";
     interface ISvgDraggableAreaProps {
@@ -848,10 +848,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationListTree" {
-    import * as React from "react";
+    import * as React from 'react';
     import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
-    import { Observable } from "babylonjs/Misc/observable";
+    import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
+    import { Observable } from 'babylonjs/Misc/observable';
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { Animation } from 'babylonjs/Animations/animation';
     interface IAnimationListTreeProps {
@@ -882,13 +882,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         height = 1
     }
     export class AnimationListTree extends React.Component<IAnimationListTreeProps, {
-        list: Item[];
         selectedCoordinate: SelectedCoordinate;
         selectedAnimation: number;
     }> {
+        private _list;
         constructor(props: IAnimationListTreeProps);
         deleteAnimation(): void;
-        generateList(): void;
+        generateList(): Item[] | null;
         editAnimation(): void;
         toggleProperty(index: number): void;
         setSelectedCoordinate(animation: Animation, coordinate: SelectedCoordinate, index: number): void;
@@ -896,35 +896,72 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/loadsnippet" {
+declare module "babylonjs-inspector/components/actionTabs/lines/fileButtonLineComponent" {
     import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/loadsnippet" {
+    import * as React from 'react';
+    import { Observable } from 'babylonjs/Misc/observable';
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { Animation } from "babylonjs/Animations/animation";
+    import { Animation } from 'babylonjs/Animations/animation';
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+    import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
     interface ILoadSnippetProps {
         animations: Animation[];
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         lockObject: LockObject;
+        globalState: GlobalState;
+        snippetServer: string;
+        setSnippetId: (id: string) => void;
+        entity: IAnimatable | TargetedAnimation;
+        setNotificationMessage: (message: string) => void;
+        animationsLoaded: (numberOfAnimations: number) => void;
     }
     export class LoadSnippet extends React.Component<ILoadSnippetProps, {
-        server: string;
+        snippetId: string;
     }> {
         private _serverAddress;
         constructor(props: ILoadSnippetProps);
         change(value: string): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
         render(): JSX.Element;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/saveSnippet" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
+    import * as React from 'react';
+    import { Observable } from 'babylonjs/Misc/observable';
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { Animation } from 'babylonjs/Animations/animation';
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { Nullable } from 'babylonjs/types';
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ISaveSnippetProps {
-        animations: any[];
+        animations: Nullable<Animation[]>;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         lockObject: LockObject;
+        globalState: GlobalState;
+        snippetServer: string;
+        snippetId: string;
+    }
+    export interface Snippet {
+        url: string;
+        id: string;
     }
     interface SelectedAnimation {
         id: string;
@@ -935,9 +972,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     export class SaveSnippet extends React.Component<ISaveSnippetProps, {
         selectedAnimations: SelectedAnimation[];
     }> {
-        private _serverAddress;
         constructor(props: ISaveSnippetProps);
         handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>): void;
+        stringifySelectedAnimations(): string;
+        saveToFile(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -950,6 +989,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
     import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface IEditorControlsProps {
         isTargetedAnimation: boolean;
         entity: IAnimatable | TargetedAnimation;
@@ -958,6 +998,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
+        globalState: GlobalState;
+        snippetServer: string;
     }
     export class EditorControls extends React.Component<IEditorControlsProps, {
         isAnimationTabOpen: boolean;
@@ -967,6 +1009,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         isLoopActive: boolean;
         animationsCount: number;
         framesPerSecond: number;
+        snippetId: string;
     }> {
         constructor(props: IEditorControlsProps);
         animationAdded(): void;
@@ -974,6 +1017,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         handleTabs(tab: number): void;
         handleChangeFps(fps: number): void;
         emptiedList(): void;
+        animationsLoaded(numberOfAnimations: number): void;
         render(): JSX.Element;
     }
 }
@@ -991,12 +1035,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
     import { SelectedCoordinate } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationListTree";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
         scene: Scene;
         entity: IAnimatable | TargetedAnimation;
         lockObject: LockObject;
+        globalState: GlobalState;
     }
     interface ICanvasAxis {
         value: number;
@@ -1030,6 +1076,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         selectedPathData: ICurveData[] | undefined;
         selectedCoordinate: number;
     }> {
+        private _snippetUrl;
         private _heightScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
@@ -1084,7 +1131,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: Vector2, index: number): void;
         flatTangents(keyframes: IAnimationKey[], dataType: number): IAnimationKey[];
-        returnZero(dataType: number): number | Vector3 | Vector2 | undefined;
+        returnZero(dataType: number): number | Vector3 | Quaternion | Color3 | Color4 | Vector2 | Size | undefined;
         getValueAsArray(valueType: number, value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion): number[];
         getPathData(animation: Animation | null): ICurveData[] | undefined;
         getAnimationData(animation: Animation): {
@@ -1220,22 +1267,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     }
     export class MaterialPropertyGridComponent extends React.Component<IMaterialPropertyGridComponentProps> {
         constructor(props: IMaterialPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-inspector/components/actionTabs/lines/fileButtonLineComponent" {
-    import * as React from "react";
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        private static _IDGenerator;
-        private _id;
-        private uploadInputRef;
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
@@ -2800,10 +2831,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/spr
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent" {
-    import * as React from "react";
-    import { Observable } from "babylonjs/Misc/observable";
-    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
-    import { Scene } from "babylonjs/scene";
+    import * as React from 'react';
+    import { Observable } from 'babylonjs/Misc/observable';
+    import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
+    import { Scene } from 'babylonjs/scene';
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
@@ -4331,13 +4362,13 @@ declare module INSPECTOR {
         height = 1
     }
     export class AnimationListTree extends React.Component<IAnimationListTreeProps, {
-        list: Item[];
         selectedCoordinate: SelectedCoordinate;
         selectedAnimation: number;
     }> {
+        private _list;
         constructor(props: IAnimationListTreeProps);
         deleteAnimation(): void;
-        generateList(): void;
+        generateList(): Item[] | null;
         editAnimation(): void;
         toggleProperty(index: number): void;
         setSelectedCoordinate(animation: BABYLON.Animation, coordinate: SelectedCoordinate, index: number): void;
@@ -4346,25 +4377,55 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFileButtonLineComponentProps {
+        label: string;
+        onClick: (file: File) => void;
+        accept: string;
+    }
+    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private static _IDGenerator;
+        private _id;
+        private uploadInputRef;
+        constructor(props: IFileButtonLineComponentProps);
+        onChange(evt: any): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ILoadSnippetProps {
         animations: BABYLON.Animation[];
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         lockObject: LockObject;
+        globalState: GlobalState;
+        snippetServer: string;
+        setSnippetId: (id: string) => void;
+        entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
+        setNotificationMessage: (message: string) => void;
+        animationsLoaded: (numberOfAnimations: number) => void;
     }
     export class LoadSnippet extends React.Component<ILoadSnippetProps, {
-        server: string;
+        snippetId: string;
     }> {
         private _serverAddress;
         constructor(props: ILoadSnippetProps);
         change(value: string): void;
+        loadFromFile(file: File): void;
+        loadFromSnippet(): void;
         render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
     interface ISaveSnippetProps {
-        animations: any[];
+        animations: BABYLON.Nullable<BABYLON.Animation[]>;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         lockObject: LockObject;
+        globalState: GlobalState;
+        snippetServer: string;
+        snippetId: string;
+    }
+    export interface Snippet {
+        url: string;
+        id: string;
     }
     interface SelectedAnimation {
         id: string;
@@ -4375,9 +4436,11 @@ declare module INSPECTOR {
     export class SaveSnippet extends React.Component<ISaveSnippetProps, {
         selectedAnimations: SelectedAnimation[];
     }> {
-        private _serverAddress;
         constructor(props: ISaveSnippetProps);
         handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>): void;
+        stringifySelectedAnimations(): string;
+        saveToFile(): void;
+        saveToSnippet(): void;
         render(): JSX.Element;
     }
 }
@@ -4390,6 +4453,8 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: BABYLON.Animation, axis?: SelectedCoordinate) => void;
+        globalState: GlobalState;
+        snippetServer: string;
     }
     export class EditorControls extends React.Component<IEditorControlsProps, {
         isAnimationTabOpen: boolean;
@@ -4399,6 +4464,7 @@ declare module INSPECTOR {
         isLoopActive: boolean;
         animationsCount: number;
         framesPerSecond: number;
+        snippetId: string;
     }> {
         constructor(props: IEditorControlsProps);
         animationAdded(): void;
@@ -4406,6 +4472,7 @@ declare module INSPECTOR {
         handleTabs(tab: number): void;
         handleChangeFps(fps: number): void;
         emptiedList(): void;
+        animationsLoaded(numberOfAnimations: number): void;
         render(): JSX.Element;
     }
 }
@@ -4416,6 +4483,7 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         entity: BABYLON.IAnimatable | BABYLON.TargetedAnimation;
         lockObject: LockObject;
+        globalState: GlobalState;
     }
     interface ICanvasAxis {
         value: number;
@@ -4449,6 +4517,7 @@ declare module INSPECTOR {
         selectedPathData: ICurveData[] | undefined;
         selectedCoordinate: number;
     }> {
+        private _snippetUrl;
         private _heightScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
@@ -4503,7 +4572,7 @@ declare module INSPECTOR {
         linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
         flatTangents(keyframes: BABYLON.IAnimationKey[], dataType: number): BABYLON.IAnimationKey[];
-        returnZero(dataType: number): number | BABYLON.Vector3 | BABYLON.Vector2 | undefined;
+        returnZero(dataType: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size | undefined;
         getValueAsArray(valueType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion): number[];
         getPathData(animation: BABYLON.Animation | null): ICurveData[] | undefined;
         getAnimationData(animation: BABYLON.Animation): {
@@ -4619,21 +4688,6 @@ declare module INSPECTOR {
     }
     export class MaterialPropertyGridComponent extends React.Component<IMaterialPropertyGridComponentProps> {
         constructor(props: IMaterialPropertyGridComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IFileButtonLineComponentProps {
-        label: string;
-        onClick: (file: File) => void;
-        accept: string;
-    }
-    export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
-        private static _IDGenerator;
-        private _id;
-        private uploadInputRef;
-        constructor(props: IFileButtonLineComponentProps);
-        onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
