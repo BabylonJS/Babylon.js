@@ -68,6 +68,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     isPlaying: boolean;
     selectedPathData: ICurveData[] | undefined;
     selectedCoordinate: number;
+    animationLimit: number;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -162,6 +163,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       isPlaying: this.isAnimationPlaying(),
       selectedPathData: initialPathData,
       selectedCoordinate: 0,
+      animationLimit: 100,
     };
   }
 
@@ -1294,6 +1296,12 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
+  changeAnimationLimit(limit: number) {
+    this.setState({
+      animationLimit: limit,
+    });
+  }
+
   updateFrameInKeyFrame(frame: number, index: number) {
     if (this.state && this.state.selected) {
       let animation = this.state.selected;
@@ -1541,6 +1549,10 @@ export class AnimationCurveEditorComponent extends React.Component<
               onCurrentFrameChange={(frame: number) =>
                 this.changeCurrentFrame(frame)
               }
+              onAnimationLimitChange={(limit: number) =>
+                this.changeAnimationLimit(limit)
+              }
+              animationLimit={this.state.animationLimit}
               keyframes={this.state.selected && this.state.selected.getKeys()}
               selected={this.state.selected && this.state.selected.getKeys()[0]}
             ></Timeline>
