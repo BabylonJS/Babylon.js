@@ -102,8 +102,9 @@ export class PostProcessManager {
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
      * @param faceIndex defines the face to render to if a cubemap is defined as the target
      * @param lodLevel defines which lod of the texture to render to
+     * @param doNotBindFrambuffer If set to true, assumes that the framebuffer has been bound previously
      */
-    public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false, faceIndex = 0, lodLevel = 0): void {
+    public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false, faceIndex = 0, lodLevel = 0, doNotBindFrambuffer = false): void {
         var engine = this._scene.getEngine();
 
         for (var index = 0; index < postProcesses.length; index++) {
@@ -112,7 +113,7 @@ export class PostProcessManager {
             } else {
                 if (targetTexture) {
                     engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport, lodLevel);
-                } else {
+                } else if (!doNotBindFrambuffer) {
                     engine.restoreDefaultFramebuffer();
                 }
             }

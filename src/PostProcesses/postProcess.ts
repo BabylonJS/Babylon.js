@@ -137,7 +137,7 @@ export class PostProcess {
     public adaptScaleToCurrentViewport = false;
 
     private _camera: Camera;
-    private _scene: Scene;
+    protected _scene: Scene;
     private _engine: Engine;
 
     private _options: number | PostProcessOptions;
@@ -657,16 +657,17 @@ export class PostProcess {
 
         this._disposeTextures();
 
+        let index;
         if (this._scene) {
-            let index = this._scene.postProcesses.indexOf(this);
+            index = this._scene.postProcesses.indexOf(this);
             if (index !== -1) {
                 this._scene.postProcesses.splice(index, 1);
             }
-        } else {
-            let index = this._engine.postProcesses.indexOf(this);
-            if (index !== -1) {
-                this._engine.postProcesses.splice(index, 1);
-            }
+        }
+
+        index = this._engine.postProcesses.indexOf(this);
+        if (index !== -1) {
+            this._engine.postProcesses.splice(index, 1);
         }
 
         if (!camera) {
@@ -674,7 +675,7 @@ export class PostProcess {
         }
         camera.detachPostProcess(this);
 
-        var index = camera._postProcesses.indexOf(this);
+        index = camera._postProcesses.indexOf(this);
         if (index === 0 && camera._postProcesses.length > 0) {
             var firstPostProcess = this._camera._getFirstPostProcess();
             if (firstPostProcess) {

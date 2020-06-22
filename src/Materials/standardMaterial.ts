@@ -125,6 +125,9 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public ALPHATEST_AFTERALLALPHACOMPUTATIONS = false;
     public ALPHABLEND = true;
 
+    public PREPASS = false;
+    public SCENE_MRT_COUNT = 0;
+
     public RGBDLIGHTMAP = false;
     public RGBDREFLECTION = false;
     public RGBDREFRACTION = false;

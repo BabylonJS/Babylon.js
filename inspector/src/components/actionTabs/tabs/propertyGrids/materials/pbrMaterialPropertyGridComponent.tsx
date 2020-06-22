@@ -243,6 +243,12 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Tint Color" target={material.subSurface} propertyName="tintColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
 
+                    <CheckBoxLineComponent label="Scattering Enabled" target={material.subSurface} propertyName="isScatteringEnabled"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    { (material.subSurface as any).isScatteringEnabled && material.getScene().prePassRenderer &&
+                        <SliderLineComponent label="Meters per unit" target={ material.getScene().prePassRenderer!.subSurfaceConfiguration } propertyName="metersPerUnit" minimum={0.01} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                     <CheckBoxLineComponent label="Refraction Enabled" target={material.subSurface} propertyName="isRefractionEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
