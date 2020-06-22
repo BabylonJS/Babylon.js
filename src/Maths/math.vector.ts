@@ -2722,7 +2722,7 @@ export class Vector4 {
 /**
  * Class used to store quaternion data
  * @see https://en.wikipedia.org/wiki/Quaternion
- * @see http://doc.babylonjs.com/features/position,_rotation,_scaling
+ * @see https://doc.babylonjs.com/features/position,_rotation,_scaling
  */
 export class Quaternion {
     /** @hidden */

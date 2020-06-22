@@ -21,7 +21,7 @@ export interface ISoundTrackOptions {
 /**
  * It could be useful to isolate your music & sounds on several tracks to better manage volume on a grouped instance of sounds.
  * It will be also used in a future release to apply effects on a specific track.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
  */
 export class SoundTrack {
     /**
@@ -41,7 +41,7 @@ export class SoundTrack {
 
     /**
      * Creates a new sound track.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
      * @param scene Define the scene the sound track belongs to
      * @param options
      */
@@ -137,7 +137,7 @@ export class SoundTrack {
     /**
      * Switch the panning model to HRTF:
      * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToHRTF(): void {
         if (Engine.audioEngine.canUseWebAudio) {
@@ -150,7 +150,7 @@ export class SoundTrack {
     /**
      * Switch the panning model to Equal Power:
      * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToEqualPower(): void {
         if (Engine.audioEngine.canUseWebAudio) {
@@ -163,7 +163,7 @@ export class SoundTrack {
     /**
      * Connect the sound track to an audio analyser allowing some amazing
      * synchornization between the sounds/music and your visualization (VuMeter for instance).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
      * @param analyser The analyser to connect to the engine
      */
     public connectToAnalyser(analyser: Analyser): void {

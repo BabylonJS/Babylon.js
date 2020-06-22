@@ -96,3 +96,10 @@ html, body, #root {
             }
         }
 }
+
+@media (max-width: 768px) {
+    html {
+        --footer-height: 50px;
+        --font-size: 16px;
+    }
+}
