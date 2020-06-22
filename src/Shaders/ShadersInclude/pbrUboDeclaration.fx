@@ -69,6 +69,7 @@ uniform Material
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+    uniform float scatteringDiffusionProfile;
 
     uniform vec4 vDetailInfos;
     uniform mat4 detailMatrix;
