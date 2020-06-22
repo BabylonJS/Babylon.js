@@ -100,6 +100,7 @@
 - Added support for KHR_materials_variants for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for KHR_materials_transmission for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Improved progress handling in glTF loader. ([bghgary](https://github.com/bghgary))
+- Added missing "pluginExtension" parameter to SceneLoader.ImportAnimations. ([phenry20](https://github.com/phenry20))
 
 ### Navigation
 
