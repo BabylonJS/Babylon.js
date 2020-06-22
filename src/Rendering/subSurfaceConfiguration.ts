@@ -35,6 +35,12 @@ export class SubSurfaceConfiguration {
     }
 
     /**
+     * Defines the ratio real world => scene units.
+     * Used for subsurface scattering
+     */
+    public metersPerUnit: number = 1;
+
+    /**
      * Builds a subsurface configuration object
      * @param scene The scene
      */

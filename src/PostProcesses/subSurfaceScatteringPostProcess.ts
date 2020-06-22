@@ -33,7 +33,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
                 return;
             }
             var texelSize = this.texelSize;
-            effect.setFloat("metersPerUnit", scene.prePassRenderer.metersPerUnit);
+            effect.setFloat("metersPerUnit", scene.prePassRenderer.subSurfaceConfiguration.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
             effect.setTexture("irradianceSampler", scene.prePassRenderer.prePassRT.textures[1]);
             effect.setTexture("depthSampler", scene.prePassRenderer.prePassRT.textures[2]);

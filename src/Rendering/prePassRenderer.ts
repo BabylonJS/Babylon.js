@@ -48,12 +48,6 @@ export class PrePassRenderer {
     private readonly _clearColor = new Color4(0, 0, 0, 0);
 
     /**
-     * Defines the ratio real world => scene units.
-     * Used for subsurface scattering
-     */
-    public metersPerUnit: number = 1;
-
-    /**
      * Image processing post process for composition
      */
     public imageProcessingPostProcess: ImageProcessingPostProcess;

@@ -84,7 +84,7 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
         gl.drawBuffers(attachments);
     }
 
-    for (var i = 0; i < textures[0]._attachments!.length; i++) {
+    for (var i = 0; i < count; i++) {
         var texture = textures[i];
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
