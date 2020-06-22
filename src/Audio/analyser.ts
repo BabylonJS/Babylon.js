@@ -5,7 +5,7 @@ import { Engine } from "../Engines/engine";
 
 /**
  * Class used to work with sound analyzer using fast fourier transform (FFT)
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
 export class Analyser {
     /**

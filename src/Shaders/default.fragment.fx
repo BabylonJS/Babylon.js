@@ -475,4 +475,5 @@ color.rgb = max(color.rgb, 0.);
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 	gl_FragColor = color;
+
 }

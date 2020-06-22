@@ -399,7 +399,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the audio engine
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
      * @ignorenaming
      */
     public static audioEngine: IAudioEngine;
@@ -447,7 +447,7 @@ export class Engine extends ThinEngine {
     private _performanceMonitor = new PerformanceMonitor();
     /**
      * Gets the performance monitor attached to this engine
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
      */
     public get performanceMonitor(): PerformanceMonitor {
         return this._performanceMonitor;
@@ -640,7 +640,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -649,7 +649,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
@@ -1066,7 +1066,7 @@ export class Engine extends ThinEngine {
     /**
      * Call this function to leave webVR mode
      * Will do nothing if webVR is not supported or if there is no webVR device
-     * @see http://doc.babylonjs.com/how_to/webvr_camera
+     * @see https://doc.babylonjs.com/how_to/webvr_camera
      */
     public disableVR() {
         // Do nothing as the engine side effect will overload it
@@ -1587,7 +1587,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Updates the sample count of a render target texture
-     * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
+     * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
      * @param texture defines the texture to update
      * @param samples defines the sample count to set
      * @returns the effective sample count (could be 0 if multisample render targets are not supported)
@@ -1864,7 +1864,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Display the loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public displayLoadingUI(): void {
         if (!DomManagement.IsWindowObjectExist()) {
@@ -1878,7 +1878,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Hide the loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public hideLoadingUI(): void {
         if (!DomManagement.IsWindowObjectExist()) {
@@ -1892,7 +1892,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the current loading screen object
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public get loadingScreen(): ILoadingScreen {
         if (!this._loadingScreen && this._renderingCanvas) {
@@ -1903,7 +1903,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen object
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public set loadingScreen(loadingScreen: ILoadingScreen) {
         this._loadingScreen = loadingScreen;
@@ -1911,7 +1911,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen text
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public set loadingUIText(text: string) {
         this.loadingScreen.loadingUIText = text;
@@ -1919,7 +1919,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen background color
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public set loadingUIBackgroundColor(color: string) {
         this.loadingScreen.loadingUIBackgroundColor = color;
