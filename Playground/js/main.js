@@ -693,7 +693,9 @@ class Main {
                                         newPG = "";
                                         break;
                                 }
-                                window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
+                                // reset pathname if it is a 'pg/' location
+                                const pathname = location.pathname.match(/\/pg\//) ? '/' : location.pathname;
+                                window.location.href = location.protocol + "//" + location.host + pathname + "#" + newPG;
                             } else if (query.indexOf("=") === -1) {
                                 this.loadScript("scripts/" + query + ".js", query);
                             } else if (query.indexOf('pg=') === -1 && !location.pathname.match(/\/pg\//)) {
@@ -717,6 +719,10 @@ class Main {
         // Check if safe mode is on, and ask if it is
         if (!this.checkSafeMode("Are you sure you want to create a new playground?")) return;
         location.hash = "";
+        if(location.pathname.indexOf('pg/') !== -1) {
+            // reload to create a new pg if in full-path playground mode.
+            window.location.pathname = '';
+        }
         this.currentSnippetToken = null;
         this.currentSnippetTitle = null;
         this.currentSnippetDescription = null;

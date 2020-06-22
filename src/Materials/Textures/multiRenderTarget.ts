@@ -60,6 +60,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _internalTextures: InternalTexture[];
     private _textures: Texture[];
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
+    private _count: number;
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -73,6 +74,13 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public get textures(): Texture[] {
         return this._textures;
+    }
+
+    /**
+     * Gets the number of textures in this MRT. This number can be different from `_textures.length` in case a depth texture is generated.
+     */
+    public get count(): number {
+        return this._count;
     }
 
     /**
@@ -161,6 +169,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
             textureCount: count
         };
 
+        this._count = count;
+
         this._createInternalTextures();
         this._createTextures();
     }
@@ -177,6 +187,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         // Keeps references to frame buffer and stencil/depth buffer
         this._texture = this._internalTextures[0];
+
+        if (this.samples !== 1) {
+            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples);
+        }
     }
 
     private _createInternalTextures(): void {
@@ -216,9 +230,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param size Define the new size
      */
     public resize(size: any) {
-        this.releaseInternalTextures();
         this._size = size;
-        this._createInternalTextures();
+        this._rebuild();
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {

@@ -9,7 +9,7 @@ import { CanvasGenerator } from '../../Misc/canvasGenerator';
 
 /**
  * A class extending Texture allowing drawing on a texture
- * @see http://doc.babylonjs.com/how_to/dynamictexture
+ * @see https://doc.babylonjs.com/how_to/dynamictexture
  */
 export class DynamicTexture extends Texture {
     private _generateMipMaps: boolean;

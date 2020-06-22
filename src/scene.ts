@@ -100,7 +100,7 @@ export interface SceneOptions {
 
 /**
  * Represents a scene to be rendered by the engine.
- * @see http://doc.babylonjs.com/features/scene
+ * @see https://doc.babylonjs.com/features/scene
  */
 export class Scene extends AbstractScene implements IAnimatable {
     /** The fog is deactivated */
@@ -114,12 +114,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public static MinDeltaTime = 1.0;
     /**
      * Gets or sets the maximum deltatime when deterministic lock step is enabled
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public static MaxDeltaTime = 1000.0;
 
@@ -793,7 +793,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Sets the step Id used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @param newStepId defines the step Id
      */
     public setStepId(newStepId: number): void {
@@ -802,7 +802,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the step Id used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the step Id
      */
     public getStepId(): number {
@@ -811,7 +811,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the internal step used by deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the internal step
      */
     public getInternalStep(): number {
@@ -823,7 +823,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _fogEnabled = true;
     /**
     * Gets or sets a boolean indicating if fog is enabled on this scene
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is true)
     */
     public set fogEnabled(value: boolean) {
@@ -840,7 +840,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     private _fogMode = Scene.FOGMODE_NONE;
     /**
     * Gets or sets the fog mode to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * | mode | value |
     * | --- | --- |
     * | FOGMODE_NONE | 0 |
@@ -861,28 +861,33 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
     * Gets or sets the fog color to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is Color3(0.2, 0.2, 0.3))
     */
     public fogColor = new Color3(0.2, 0.2, 0.3);
     /**
     * Gets or sets the fog density to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is 0.1)
     */
     public fogDensity = 0.1;
     /**
     * Gets or sets the fog start distance to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is 0)
     */
     public fogStart = 0;
     /**
     * Gets or sets the fog end distance to use
-    * @see http://doc.babylonjs.com/babylon101/environment#fog
+    * @see https://doc.babylonjs.com/babylon101/environment#fog
     * (Default is 1000)
     */
     public fogEnd = 1000.0;
+
+    /**
+    * Flag indicating that the frame buffer binding is handled by another component
+    */
+    public prePass: boolean = false;
 
     // Lights
     private _shadowsEnabled = true;
@@ -1012,7 +1017,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     // Collisions
     /**
     * Gets or sets a boolean indicating if collisions are enabled on this scene
-    * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+    * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
     */
     public collisionsEnabled = true;
 
@@ -1030,7 +1035,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Defines the gravity applied to this scene (used only for collisions)
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public gravity = new Vector3(0, -9.807, 0);
 
@@ -1083,13 +1088,13 @@ export class Scene extends AbstractScene implements IAnimatable {
     // Offline support
     /**
      * Gets or sets the current offline provider to use to store scene data
-     * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+     * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
      */
     public offlineProvider: IOfflineProvider;
 
     /**
      * Gets or sets the action manager associated with the scene
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions
     */
     public actionManager: AbstractActionManager;
 
@@ -1560,7 +1565,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the performance counter for total vertices
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get totalVerticesPerfCounter(): PerfCounter {
         return this._totalVertices;
@@ -1576,7 +1581,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the performance counter for active indices
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get totalActiveIndicesPerfCounter(): PerfCounter {
         return this._activeIndices;
@@ -1592,7 +1597,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the performance counter for active particles
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get activeParticlesPerfCounter(): PerfCounter {
         return this._activeParticles;
@@ -1608,7 +1613,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
     /**
      * Gets the performance counter for active bones
-     * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
      */
     public get activeBonesPerfCounter(): PerfCounter {
         return this._activeBones;
@@ -3706,9 +3711,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             step.action(this._renderTargets);
         }
 
+        let needRebind = false;
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
-            let needRebind = false;
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -3736,18 +3741,17 @@ export class Scene extends AbstractScene implements IAnimatable {
             if (this.activeCamera && this.activeCamera.outputRenderTarget) {
                 needRebind = true;
             }
+        }
 
-            // Restore framebuffer after rendering to targets
-            if (needRebind) {
-                this._bindFrameBuffer();
-            }
-
+        // Restore framebuffer after rendering to targets
+        if (needRebind && !this.prePass) {
+            this._bindFrameBuffer();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         // Prepare Frame
-        if (this.postProcessManager && !camera._multiviewTexture) {
+        if (this.postProcessManager && !camera._multiviewTexture && !this.prePass) {
             this.postProcessManager._prepareFrame();
         }
 
@@ -4019,7 +4023,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM) {
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM && !this.prePass) {
             this._bindFrameBuffer();
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4029,8 +4033,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Clear
-        if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+        if ((this.autoClearDepthAndStencil || this.autoClear) && !this.prePass) {
+            this._engine.clear(this.clearColor,
+                this.autoClear || this.forceWireframe || this.forcePointsCloud,
+                this.autoClearDepthAndStencil,
+                this.autoClearDepthAndStencil);
         }
 
         // Collects render targets from external components.

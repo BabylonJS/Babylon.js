@@ -296,6 +296,28 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines related to the prepass
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     * @param shouldRenderToMRT Indicates if this material renders to several textures in the prepass
+     */
+    public static PrepareDefinesForPrePass(scene: Scene, defines: any, shouldRenderToMRT: boolean) {
+        var previousPrePass = defines.PREPASS;
+
+        if (scene.prePassRenderer && shouldRenderToMRT) {
+            defines.PREPASS = true;
+            defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
+        } else {
+            defines.PREPASS = false;
+        }
+
+        if (defines.PREPASS != previousPrePass) {
+            defines.markAsUnprocessed();
+            defines.markAsImageProcessingDirty();
+        }
+    }
+
+    /**
      * Prepares the defines related to the light information passed in parameter
      * @param scene The scene we are intending to draw
      * @param mesh The mesh the effect is compiling for

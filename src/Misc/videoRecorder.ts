@@ -65,7 +65,7 @@ export interface VideoRecorderOptions {
  * This can help with recording videos from BabylonJS.
  * This is based on the available WebRTC functionalities of the browser.
  *
- * @see http://doc.babylonjs.com/how_to/render_scene_on_a_video
+ * @see https://doc.babylonjs.com/how_to/render_scene_on_a_video
  */
 export class VideoRecorder {
 

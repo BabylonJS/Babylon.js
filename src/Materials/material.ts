@@ -230,6 +230,15 @@ export class Material implements IAnimatable {
     public state = "";
 
     /**
+     * If the material should be rendered to several textures with MRT extension
+     */
+    public get shouldRenderToMRT() : boolean {
+        // By default, shaders are not compatible with MRTs
+        // Base classes should override that if their shader supports MRT
+        return false;
+    }
+
+    /**
      * The alpha value of the material
      */
     @serialize("alpha")
@@ -1233,8 +1242,22 @@ export class Material implements IAnimatable {
     }
 
     /**
- * Indicates that we need to re-calculated for all submeshes
- */
+     * Indicates that the scene should check if the rendering now needs a prepass
+     */
+    protected _markScenePrePassDirty() {
+        if (this.getScene().blockMaterialDirtyMechanism) {
+            return;
+        }
+
+        const prePassRenderer = this.getScene().enablePrePassRenderer();
+        if (prePassRenderer) {
+            prePassRenderer.markAsDirty();
+        }
+    }
+
+    /**
+     * Indicates that we need to re-calculated for all submeshes
+     */
     protected _markAllSubMeshesAsAllDirty() {
         this._markAllSubMeshesAsDirty(Material._AllDirtyCallBack);
     }

@@ -235,7 +235,7 @@ export class DepthRenderer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
-            if (subMesh.getRenderingMesh().hasInstances) {
+            if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }
         }
