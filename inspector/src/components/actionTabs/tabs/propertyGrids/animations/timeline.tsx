@@ -7,31 +7,71 @@ interface ITimelineProps {
   selected: IAnimationKey | null;
   currentFrame: number;
   onCurrentFrameChange: (frame: number) => void;
+  onAnimationLimitChange: (limit: number) => void;
   dragKeyframe: (frame: number, index: number) => void;
   playPause: (direction: number) => void;
   isPlaying: boolean;
+  animationLimit: number;
 }
 
 export class Timeline extends React.Component<
   ITimelineProps,
-  { selected: IAnimationKey; activeKeyframe: number | null }
+  {
+    selected: IAnimationKey;
+    activeKeyframe: number | null;
+    start: number;
+    end: number;
+    scrollWidth: number | undefined;
+    selectionLength: number[];
+  }
 > {
   readonly _frames: object[] = Array(300).fill({});
   private _scrollable: React.RefObject<HTMLDivElement>;
   private _scrollbarHandle: React.RefObject<HTMLDivElement>;
+  private _scrollContainer: React.RefObject<HTMLDivElement>;
   private _direction: number;
   private _scrolling: boolean;
   private _shiftX: number;
+
   constructor(props: ITimelineProps) {
     super(props);
-    if (this.props.selected !== null) {
-      this.state = { selected: this.props.selected, activeKeyframe: null };
-    }
+
     this._scrollable = React.createRef();
     this._scrollbarHandle = React.createRef();
+    this._scrollContainer = React.createRef();
     this._direction = 0;
     this._scrolling = false;
     this._shiftX = 0;
+
+    if (this.props.selected !== null) {
+      this.state = {
+        selected: this.props.selected,
+        activeKeyframe: null,
+        start: 0,
+        end: this.props.animationLimit,
+        scrollWidth: this.calculateScrollWidth(0, this.props.animationLimit),
+        selectionLength: this.range(0, 100),
+      };
+    }
+  }
+
+  componentDidMount() {
+    this.setState({
+      scrollWidth: this.calculateScrollWidth(this.state.start, this.state.end),
+    });
+  }
+
+  calculateScrollWidth(start: number, end: number) {
+    if (this._scrollContainer.current) {
+      const containerWidth = this._scrollContainer.current.clientWidth;
+      const scrollFrameLimit = this.props.animationLimit;
+      const scrollFrameLength = end - start;
+      const widthPercentage = (scrollFrameLength * 100) / scrollFrameLimit;
+      const scrollPixelWidth = (widthPercentage * containerWidth) / 100;
+      return scrollPixelWidth;
+    } else {
+      return undefined;
+    }
   }
 
   playBackwards(event: React.MouseEvent<HTMLDivElement>) {
@@ -51,6 +91,17 @@ export class Timeline extends React.Component<
   handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     this.props.onCurrentFrameChange(parseInt(event.target.value));
     event.preventDefault();
+  }
+
+  handleLimitChange(event: React.ChangeEvent<HTMLInputElement>) {
+    event.preventDefault();
+    const newLimit = parseInt(event.target.value);
+    this.setState({
+      end: newLimit,
+      scrollWidth: this.calculateScrollWidth(this.state.start, newLimit),
+      selectionLength: this.range(this.state.start, newLimit),
+    });
+    this.props.onAnimationLimitChange(newLimit);
   }
 
   nextFrame(event: React.MouseEvent<HTMLDivElement>) {
@@ -159,15 +210,41 @@ export class Timeline extends React.Component<
     this.setState({ activeKeyframe: null });
   }
 
+  private active: string = '';
+
   scrollDragStart(e: React.TouchEvent<HTMLDivElement>): void;
   scrollDragStart(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
   scrollDragStart(e: any) {
     e.preventDefault();
-    if ((e.target.class = 'scrollbar') && this._scrollbarHandle.current) {
-      this._scrolling = true;
+    if (e.target.className === 'scrollbar') {
+      if ((e.target.class = 'scrollbar') && this._scrollbarHandle.current) {
+        this._scrolling = true;
+        this._shiftX =
+          e.clientX -
+          this._scrollbarHandle.current.getBoundingClientRect().left;
+        this._scrollbarHandle.current.style.left =
+          e.pageX - this._shiftX + 'px';
+      }
+    }
+
+    if (
+      (e.target.className === 'left-grabber' ||
+        e.target.className === 'left-draggable') &&
+      this._scrollbarHandle.current
+    ) {
+      this.active = 'leftDraggable';
       this._shiftX =
         e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
-      this._scrollbarHandle.current.style.left = e.pageX - this._shiftX + 'px';
+    }
+
+    if (
+      (e.target.className === 'right-grabber' ||
+        e.target.className === 'right-draggable') &&
+      this._scrollbarHandle.current
+    ) {
+      this.active = 'rightDraggable';
+      this._shiftX =
+        e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
     }
   }
 
@@ -175,11 +252,79 @@ export class Timeline extends React.Component<
   scrollDrag(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
   scrollDrag(e: any) {
     e.preventDefault();
-    if (this._scrolling && this._scrollbarHandle.current) {
-      let moved = e.pageX - this._shiftX;
-      if (moved > 233 && moved < 630) {
-        this._scrollbarHandle.current.style.left = moved + 'px';
-        (this._scrollable.current as HTMLDivElement).scrollLeft = moved + 10;
+    if (e.target.className === 'scrollbar') {
+      if (this._scrolling && this._scrollbarHandle.current) {
+        let moved = e.pageX - this._shiftX;
+        if (moved > 233 && moved < 630) {
+          this._scrollbarHandle.current.style.left = moved + 'px';
+          (this._scrollable.current as HTMLDivElement).scrollLeft = moved + 10;
+        }
+      }
+    }
+
+    if (this.active === 'leftDraggable') {
+      if (this._scrollContainer.current && this._scrollbarHandle.current) {
+        let moving =
+          e.clientX -
+          this._scrollbarHandle.current.getBoundingClientRect().left;
+        const scrollContainerWith = this._scrollContainer.current.clientWidth;
+        const pixelFrameRatio = scrollContainerWith / this.props.animationLimit;
+
+        let containerWidth = this.state.scrollWidth ?? 0;
+        let resizePercentage = (100 * Math.abs(moving)) / containerWidth;
+
+        let frameChange = (resizePercentage * this.state.end) / 100;
+
+        let framesTo;
+
+        if (Math.sign(moving) === 1) {
+          framesTo = this.state.start + Math.round(frameChange);
+        } else {
+          framesTo = this.state.start - Math.round(frameChange);
+        }
+        let Toleft = framesTo * pixelFrameRatio + 233;
+
+        this._scrollbarHandle.current.style.left = Toleft + 'px';
+
+        this.setState({
+          start: framesTo,
+          scrollWidth: this.calculateScrollWidth(framesTo, this.state.end),
+          selectionLength: this.range(framesTo, this.state.end),
+        });
+      }
+    }
+
+    if (this.active === 'rightDraggable') {
+      if (this._scrollContainer.current && this._scrollbarHandle.current) {
+        let moving =
+          e.clientX -
+          this._scrollbarHandle.current.getBoundingClientRect().left;
+        // const scrollContainerWith = this._scrollContainer.current.clientWidth;
+        //const pixelFrameRatio = scrollContainerWith / this.props.animationLimit;
+
+        let containerWidth = this.state.scrollWidth ?? 0;
+        let resizePercentage = (100 * Math.abs(moving)) / containerWidth;
+
+        let frameChange = (resizePercentage * this.state.end) / 100;
+
+        // let framesTo;
+
+        // if (Math.sign(moving) === 1) {
+        //   framesTo = this.state.end + Math.round(frameChange);
+        // } else {
+        //   framesTo = this.state.end - Math.round(frameChange);
+        // }
+        // let Toleft = framesTo * pixelFrameRatio + 233;
+        let framesTo = Math.round(frameChange);
+        console.log('frames ' + framesTo + ' >> resize' + resizePercentage);
+
+        // this._scrollbarHandle.current.style.left = Toleft + 'px';
+
+        this.setState({
+          end: framesTo,
+          scrollWidth: this.calculateScrollWidth(this.state.start, framesTo),
+          selectionLength: this.range(this.state.start, framesTo),
+        });
       }
     }
   }
@@ -188,8 +333,16 @@ export class Timeline extends React.Component<
   scrollDragEnd(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
   scrollDragEnd(e: any) {
     e.preventDefault();
-    this._scrolling = false;
+    if (e.target.className === 'scrollbar') {
+      this._scrolling = false;
+    }
+
+    this.active = '';
     this._shiftX = 0;
+  }
+
+  range(start: number, end: number) {
+    return Array.from({ length: end - start }, (_, i) => start + i * 1);
   }
 
   render() {
@@ -208,8 +361,11 @@ export class Timeline extends React.Component<
           <div className='timeline-wrapper'>
             <div ref={this._scrollable} className='display-line'>
               <svg
-                viewBox='0 0 2010 40'
-                style={{ width: 2000, height: 40, backgroundColor: '#222222' }}
+                style={{
+                  width: '100%',
+                  height: 40,
+                  backgroundColor: '#222222',
+                }}
                 onMouseMove={(e) => this.drag(e)}
                 onTouchMove={(e) => this.drag(e)}
                 onTouchStart={(e) => this.dragStart(e)}
@@ -227,27 +383,36 @@ export class Timeline extends React.Component<
                   style={{ stroke: '#12506b', strokeWidth: 6 }}
                 />
 
-                {this._frames.map((frame, i) => {
+                {this.state.selectionLength.map((frame, i) => {
                   return (
-                    <svg key={`tl_${i}`}>
-                      {i % 5 === 0 ? (
+                    <svg key={`tl_${frame}`}>
+                      {
                         <>
                           <text
-                            x={i * 5 - 3}
+                            x={
+                              (i * 100) / this.state.selectionLength.length +
+                              '%'
+                            }
                             y='18'
                             style={{ fontSize: 10, fill: '#555555' }}
                           >
-                            {i}
+                            {frame}
                           </text>
                           <line
-                            x1={i * 5}
+                            x1={
+                              (i * 100) / this.state.selectionLength.length +
+                              '%'
+                            }
                             y1='22'
-                            x2={i * 5}
+                            x2={
+                              (i * 100) / this.state.selectionLength.length +
+                              '%'
+                            }
                             y2='40'
                             style={{ stroke: '#555555', strokeWidth: 0.5 }}
                           />
                         </>
-                      ) : null}
+                      }
                     </svg>
                   );
                 })}
@@ -274,44 +439,48 @@ export class Timeline extends React.Component<
               </svg>
             </div>
 
-            <div className='timeline-scroll-handle'>
-              <div className='scroll-handle'>
+            <div
+              className='timeline-scroll-handle'
+              onMouseMove={(e) => this.scrollDrag(e)}
+              onTouchMove={(e) => this.scrollDrag(e)}
+              onTouchStart={(e) => this.scrollDragStart(e)}
+              onTouchEnd={(e) => this.scrollDragEnd(e)}
+              onMouseDown={(e) => this.scrollDragStart(e)}
+              onMouseUp={(e) => this.scrollDragEnd(e)}
+              onMouseLeave={(e) => this.scrollDragEnd(e)}
+              onDragStart={() => false}
+            >
+              <div className='scroll-handle' ref={this._scrollContainer}>
                 <div
                   className='handle'
                   ref={this._scrollbarHandle}
-                  style={{ width: 300 }}
+                  style={{ width: this.state.scrollWidth }}
                 >
                   <div className='left-grabber'>
-                    <div className='grabber'></div>
-                    <div className='grabber'></div>
-                    <div className='grabber'></div>
-                    <div className='text'>20</div>
+                    <div className='left-draggable'>
+                      <div className='grabber'></div>
+                      <div className='grabber'></div>
+                      <div className='grabber'></div>
+                    </div>
+                    <div className='text'>{this.state.start}</div>
                   </div>
-                  <div
-                    className='scrollbar'
-                    onMouseMove={(e) => this.scrollDrag(e)}
-                    onTouchMove={(e) => this.scrollDrag(e)}
-                    onTouchStart={(e) => this.scrollDragStart(e)}
-                    onTouchEnd={(e) => this.scrollDragEnd(e)}
-                    onMouseDown={(e) => this.scrollDragStart(e)}
-                    onMouseUp={(e) => this.scrollDragEnd(e)}
-                    onMouseLeave={(e) => this.scrollDragEnd(e)}
-                    onDragStart={() => false}
-                  ></div>
+                  <div className='scrollbar'></div>
 
                   <div className='right-grabber'>
-                    <div className='text'>100</div>
-                    <div className='grabber'></div>
-                    <div className='grabber'></div>
-                    <div className='grabber'></div>
+                    <div className='text'>{this.state.end}</div>
+                    <div className='right-draggable'>
+                      <div className='grabber'></div>
+                      <div className='grabber'></div>
+                      <div className='grabber'></div>
+                    </div>
                   </div>
                 </div>
               </div>
               <div className='input-frame'>
                 <input
                   type='number'
-                  value={this.props.currentFrame}
-                  onChange={(e) => this.handleInputChange(e)}
+                  value={this.props.animationLimit}
+                  onChange={(e) => this.handleLimitChange(e)}
                 ></input>
               </div>
             </div>

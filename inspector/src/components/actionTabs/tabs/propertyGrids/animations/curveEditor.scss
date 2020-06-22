@@ -535,7 +535,6 @@ body {
         height: 2.5rem;
 
         .display-line {
-          width: 75vw;
           height: 40px;
           overflow: hidden;
           margin-right: 0px;
@@ -591,6 +590,8 @@ body {
             height: 25px;
             display: flex;
             align-items: center;
+            padding-left: 2px;
+            padding-right: 2px;
             .handle {
               display: flex;
               flex-direction: row;
@@ -608,7 +609,18 @@ body {
               .right-grabber {
                 display: flex;
                 align-items: center;
+              }
+
+              .left-draggable,
+              .right-draggable {
                 cursor: pointer;
+                display: flex;
+                align-items: center;
+                &:active {
+                  .grabber {
+                    background-color: #555555;
+                  }
+                }
               }
 
               .left-grabber {
