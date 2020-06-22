@@ -22,6 +22,7 @@ interface IEditorControlsProps {
   onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
   setNotificationMessage: (message: string) => void;
   selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
+  setFps: (fps: number) => void;
   globalState: GlobalState;
   snippetServer: string;
 }
@@ -37,6 +38,7 @@ export class EditorControls extends React.Component<
     animationsCount: number;
     framesPerSecond: number;
     snippetId: string;
+    loopMode: number;
   }
 > {
   constructor(props: IEditorControlsProps) {
@@ -50,8 +52,9 @@ export class EditorControls extends React.Component<
       isSaveTabOpen: false,
       isLoadTabOpen: false,
       isLoopActive: false,
+      loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
       animationsCount: count,
-      framesPerSecond: 60,
+      framesPerSecond: 0,
       snippetId: '',
     };
   }
@@ -67,6 +70,25 @@ export class EditorControls extends React.Component<
 
   recountAnimations() {
     return (this.props.entity as IAnimatable).animations?.length ?? 0;
+  }
+
+  changeLoopBehavior() {
+    let loopMode = this.state.loopMode;
+    const animation = this.props.selected;
+    if (loopMode === 2) {
+      loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
+    } else {
+      loopMode = Animation.ANIMATIONLOOPMODE_CONSTANT;
+    }
+    if (animation) {
+      // Notify observers
+      animation.loopMode = loopMode;
+    }
+
+    this.setState({
+      isLoopActive: !this.state.isLoopActive,
+      loopMode: loopMode,
+    });
   }
 
   handleTabs(tab: number) {
@@ -116,6 +138,7 @@ export class EditorControls extends React.Component<
   }
 
   handleChangeFps(fps: number) {
+    this.props.setFps(fps);
     this.setState({ framesPerSecond: fps });
   }
 
@@ -155,12 +178,14 @@ export class EditorControls extends React.Component<
             icon='medium load'
             onClick={() => this.handleTabs(1)}
           ></IconButtonLineComponent>
-          <IconButtonLineComponent
-            active={this.state.isSaveTabOpen}
-            tooltip='Save Animation'
-            icon='medium save'
-            onClick={() => this.handleTabs(2)}
-          ></IconButtonLineComponent>
+          {this.state.animationsCount === 0 ? null : (
+            <IconButtonLineComponent
+              active={this.state.isSaveTabOpen}
+              tooltip='Save Animation'
+              icon='medium save'
+              onClick={() => this.handleTabs(2)}
+            ></IconButtonLineComponent>
+          )}
           {this.state.animationsCount === 0 ? null : (
             <IconButtonLineComponent
               active={this.state.isEditTabOpen}
@@ -190,9 +215,7 @@ export class EditorControls extends React.Component<
                   ? 'loop-active last'
                   : 'loop-inactive last'
               }`}
-              onClick={() => {
-                this.setState({ isLoopActive: !this.state.isLoopActive });
-              }}
+              onClick={() => this.changeLoopBehavior()}
             ></IconButtonLineComponent>
           ) : null}
         </div>

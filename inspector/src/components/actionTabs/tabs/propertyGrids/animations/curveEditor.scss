@@ -540,6 +540,7 @@ body {
           margin-right: 0px;
           padding-left: 10px;
           padding-right: 10px;
+          width: 782px;
 
           &::-webkit-scrollbar {
             height: 0.4em;
@@ -559,6 +560,9 @@ body {
           width: 60px;
           margin-left: 10px;
           margin-right: 10px;
+          position: absolute;
+          right: 9px;
+          bottom: 11px;
 
           input {
             text-align: center;
@@ -609,13 +613,17 @@ body {
               .right-grabber {
                 display: flex;
                 align-items: center;
+                cursor: pointer;
+                .text {
+                  pointer-events: none;
+                }
               }
 
               .left-draggable,
               .right-draggable {
-                cursor: pointer;
                 display: flex;
                 align-items: center;
+                pointer-events: none;
                 &:active {
                   .grabber {
                     background-color: #555555;

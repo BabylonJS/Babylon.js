@@ -69,6 +69,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     selectedPathData: ICurveData[] | undefined;
     selectedCoordinate: number;
     animationLimit: number;
+    fps: number;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -164,6 +165,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       selectedPathData: initialPathData,
       selectedCoordinate: 0,
       animationLimit: 100,
+      fps: 0,
     };
   }
 
@@ -1435,6 +1437,9 @@ export class AnimationCurveEditorComponent extends React.Component<
               }}
               globalState={this.props.globalState}
               snippetServer={this._snippetUrl}
+              setFps={(fps: number) => {
+                this.setState({ fps: fps });
+              }}
             />
 
             <div
@@ -1477,7 +1482,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     <rect
                       x='-4%'
                       y='0%'
-                      width='5%'
+                      width='4%'
                       height='101%'
                       fill='#222'
                     ></rect>
@@ -1521,6 +1526,15 @@ export class AnimationCurveEditorComponent extends React.Component<
                         {f.value}
                       </text>
                       <line x1={f.value} y1='0' x2={f.value} y2='5%'></line>
+
+                      {f.value % this.state.fps === 0 && f.value !== 0 ? (
+                        <line
+                          x1={f.value}
+                          y1='-100'
+                          x2={f.value}
+                          y2='5%'
+                        ></line>
+                      ) : null}
                     </svg>
                   ))}
                 </SvgDraggableArea>
@@ -1555,6 +1569,7 @@ export class AnimationCurveEditorComponent extends React.Component<
               animationLimit={this.state.animationLimit}
               keyframes={this.state.selected && this.state.selected.getKeys()}
               selected={this.state.selected && this.state.selected.getKeys()[0]}
+              fps={this.state.fps}
             ></Timeline>
           </div>
         </div>
