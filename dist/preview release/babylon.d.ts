@@ -54621,12 +54621,6 @@ declare module BABYLON {
          */
         translucencyIntensity: number;
         /**
-         * Defines the scattering intensity of the material.
-         * When scattering has been enabled, this defines how much of the "scattered light"
-         * is addded to the diffuse part of the material.
-         */
-        scatteringIntensity: number;
-        /**
          * When enabled, transparent surfaces will be tinted with the albedo colour (independent of thickness)
          */
         useAlbedoToTintRefraction: boolean;

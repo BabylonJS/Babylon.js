@@ -3613,10 +3613,10 @@ var Container = /** @class */ (function (_super) {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
                     if (child._layout(this._measureForChildren, context)) {
                         if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels);
                         }
                         if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels);
                         }
                     }
                 }
