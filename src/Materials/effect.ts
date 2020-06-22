@@ -69,6 +69,10 @@ export interface IEffectCreationOptions {
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
     processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    /**
+     * Is this effect rendering to several color attachments ?
+     */
+    multiTarget?: boolean;
 }
 
 /**
@@ -139,6 +143,8 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _bonesComputationForcedToCPU = false;
+    /** @hidden */
+    public _multiTarget: boolean = false;
 
     private static _uniqueIdSeed = 0;
     private _engine: Engine;
@@ -208,6 +214,7 @@ export class Effect implements IDisposable {
             this._fallbacks = options.fallbacks;
             this._indexParameters = options.indexParameters;
             this._transformFeedbackVaryings = options.transformFeedbackVaryings || null;
+            this._multiTarget = !!options.multiTarget;
 
             if (options.uniformBuffersNames) {
                 this._uniformBuffersNamesList = options.uniformBuffersNames.slice();
