@@ -806,7 +806,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the SubSurface parameters for the material.
      */
-    public readonly subSurface : PBRSubSurfaceConfiguration;
+    public readonly subSurface: PBRSubSurfaceConfiguration;
 
     /**
      * Defines the detail map parameters for the material.
