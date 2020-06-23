@@ -10,7 +10,7 @@ import { _TypeStore } from '../Misc/typeStore';
 /**
  * A multi-material is used to apply different materials to different parts of the same object without the need of
  * separate meshes. This can be use to improve performances.
- * @see http://doc.babylonjs.com/how_to/multi_materials
+ * @see https://doc.babylonjs.com/how_to/multi_materials
  */
 export class MultiMaterial extends Material {
     private _subMaterials: Nullable<Material>[];
@@ -40,7 +40,7 @@ export class MultiMaterial extends Material {
      * Instantiates a new Multi Material
      * A multi-material is used to apply different materials to different parts of the same object without the need of
      * separate meshes. This can be use to improve performances.
-     * @see http://doc.babylonjs.com/how_to/multi_materials
+     * @see https://doc.babylonjs.com/how_to/multi_materials
      * @param name Define the name in the scene
      * @param scene Define the scene the material belongs to
      */

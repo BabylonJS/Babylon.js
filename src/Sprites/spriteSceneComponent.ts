@@ -23,7 +23,7 @@ declare module "../scene" {
 
         /**
          * All of the sprite managers added to this scene
-         * @see http://doc.babylonjs.com/babylon101/sprites
+         * @see https://doc.babylonjs.com/babylon101/sprites
          */
         spriteManagers: Array<ISpriteManager>;
 
