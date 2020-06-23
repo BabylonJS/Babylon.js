@@ -59,7 +59,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param primitive The glTF mesh primitive property
      * @returns A promise that resolves with the loaded geometry when the load is complete or null if not handled
      */
-    _loadVertexDataAsync?(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<[Geometry, Nullable<Array<() => void>>]>>;
+    _loadVertexDataAsync?(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
 
     /**
      * @hidden
