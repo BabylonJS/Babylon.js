@@ -689,7 +689,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             this._forEachPrimitive(node, (babylonMesh) => {
-                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!._boundingInfo) {
+                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!.useBoundingInfoFromGeometry) {
                     // simply apply the world matrices to the bounding info - the extends are already ok
                     babylonMesh._updateBoundingInfo();
                 } else {
@@ -870,7 +870,6 @@ export class GLTFLoader implements IGLTFLoader {
 
             const accessor = ArrayItem.Get(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
             promises.push(this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
-                babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
                 if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
                     const mmin = accessor.min as [number, number, number], mmax = accessor.max as [number, number, number];
                     if (mmin !== undefined && mmax !== undefined) {
@@ -878,8 +877,10 @@ export class GLTFLoader implements IGLTFLoader {
                         min.copyFromFloats(...mmin);
                         max.copyFromFloats(...mmax);
                         babylonGeometry._boundingInfo = new BoundingInfo(min, max);
+                        babylonGeometry.useBoundingInfoFromGeometry = true;
                     }
                 }
+                babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
             }));
 
             if (kind == VertexBuffer.MatricesIndicesExtraKind) {

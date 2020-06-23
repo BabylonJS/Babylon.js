@@ -113,6 +113,12 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
+     * If set to true (false by defaut), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
+     * and won't be computed based on the vertex positions (which is what we get when useBoundingInfoFromGeometry = false)
+     */
+    public useBoundingInfoFromGeometry = false;
+
+    /**
      * Creates a new geometry
      * @param id defines the unique ID
      * @param scene defines the hosting scene
@@ -275,12 +281,9 @@ export class Geometry implements IGetSetVerticesData {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
 
-            var minimum = this._boundingInfo?.minimum ?? this._extend.minimum;
-            var maximum = this._boundingInfo?.maximum ?? this._extend.maximum;
-
             for (var index = 0; index < numOfMeshes; index++) {
                 var mesh = meshes[index];
-                mesh._boundingInfo = new BoundingInfo(minimum, maximum);
+                mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                 mesh._createGlobalSubMesh(false);
                 mesh.computeWorldMatrix(true);
             }
@@ -344,16 +347,13 @@ export class Geometry implements IGetSetVerticesData {
         this._resetPointsArrayCache();
 
         if (updateExtends) {
-            var minimum = this._boundingInfo?.minimum ?? this._extend.minimum;
-            var maximum = this._boundingInfo?.maximum ?? this._extend.maximum;
-
             var meshes = this._meshes;
             for (const mesh of meshes) {
                 if (mesh._boundingInfo) {
-                    mesh._boundingInfo.reConstruct(minimum, maximum);
+                    mesh._boundingInfo.reConstruct(this._extend.minimum, this._extend.maximum);
                 }
                 else {
-                    mesh._boundingInfo = new BoundingInfo(minimum, maximum);
+                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
                 }
 
                 const subMeshes = mesh.subMeshes;
@@ -702,11 +702,18 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     private _updateExtend(data: Nullable<FloatArray> = null) {
-        if (!data) {
-            data = this.getVerticesData(VertexBuffer.PositionKind)!;
-        }
+        if (this.useBoundingInfoFromGeometry && this._boundingInfo) {
+            this._extend = {
+                minimum: this._boundingInfo.minimum.clone(),
+                maximum: this._boundingInfo.maximum.clone()
+            }
+        } else {
+            if (!data) {
+                data = this.getVerticesData(VertexBuffer.PositionKind)!;
+            }
 
-        this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+            this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+        }
     }
 
     private _applyToMesh(mesh: Mesh): void {
@@ -723,14 +730,10 @@ export class Geometry implements IGetSetVerticesData {
             }
 
             if (kind === VertexBuffer.PositionKind) {
-                if (this._boundingInfo) {
-                    mesh._boundingInfo = new BoundingInfo(this._boundingInfo.minimum, this._boundingInfo.maximum);
-                } else {
-                    if (!this._extend) {
-                        this._updateExtend();
-                    }
-                    mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
+                if (!this._extend) {
+                    this._updateExtend();
                 }
+                mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
                 mesh._createGlobalSubMesh(false);
 
