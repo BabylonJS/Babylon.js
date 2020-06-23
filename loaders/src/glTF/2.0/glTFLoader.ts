@@ -33,6 +33,8 @@ import { IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
+import { TmpVectors } from 'babylonjs/Maths/math.vector';
+import { BoundingInfo } from 'babylonjs/Culling/boundingInfo';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -687,7 +689,12 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             this._forEachPrimitive(node, (babylonMesh) => {
-                babylonMesh.refreshBoundingInfo(true);
+                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!.useBoundingInfoFromGeometry) {
+                    // simply apply the world matrices to the bounding info - the extends are already ok
+                    babylonMesh._updateBoundingInfo();
+                } else {
+                    babylonMesh.refreshBoundingInfo(true);
+                }
             });
 
             return node._babylonTransformNode!;
@@ -863,6 +870,16 @@ export class GLTFLoader implements IGLTFLoader {
 
             const accessor = ArrayItem.Get(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
             promises.push(this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
+                if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
+                    const mmin = accessor.min as [number, number, number], mmax = accessor.max as [number, number, number];
+                    if (mmin !== undefined && mmax !== undefined) {
+                        const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
+                        min.copyFromFloats(...mmin);
+                        max.copyFromFloats(...mmax);
+                        babylonGeometry._boundingInfo = new BoundingInfo(min, max);
+                        babylonGeometry.useBoundingInfoFromGeometry = true;
+                    }
+                }
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
             }));
 
