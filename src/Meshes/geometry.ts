@@ -706,7 +706,7 @@ export class Geometry implements IGetSetVerticesData {
             this._extend = {
                 minimum: this._boundingInfo.minimum.clone(),
                 maximum: this._boundingInfo.maximum.clone()
-            }
+            };
         } else {
             if (!data) {
                 data = this.getVerticesData(VertexBuffer.PositionKind)!;
