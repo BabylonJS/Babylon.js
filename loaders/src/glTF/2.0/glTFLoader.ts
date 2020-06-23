@@ -689,7 +689,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             this._forEachPrimitive(node, (babylonMesh) => {
-                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!.useBoundingInfoFromGeometry) {
+                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!._boundingInfo) {
                     // simply apply the world matrices to the bounding info - the extends are already ok
                     babylonMesh._updateBoundingInfo();
                 } else {
@@ -878,7 +878,6 @@ export class GLTFLoader implements IGLTFLoader {
                         min.copyFromFloats(...mmin);
                         max.copyFromFloats(...mmax);
                         babylonGeometry._boundingInfo = new BoundingInfo(min, max);
-                        babylonGeometry.useBoundingInfoFromGeometry = true;
                     }
                 }
             }));
