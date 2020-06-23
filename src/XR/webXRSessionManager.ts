@@ -13,7 +13,7 @@ interface IRenderTargetProvider {
 
 /**
  * Manages an XRSession to work with Babylon's engine
- * @see https://doc.babylonjs.com/how_to/webxr
+ * @see https://doc.babylonjs.com/how_to/webxr_session_manager
  */
 export class WebXRSessionManager implements IDisposable {
     private _referenceSpace: XRReferenceSpace;

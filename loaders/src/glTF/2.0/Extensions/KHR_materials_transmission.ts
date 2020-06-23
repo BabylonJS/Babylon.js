@@ -79,7 +79,9 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         if (extension.transmissionFactor !== undefined) {
             pbrMaterial.subSurface.refractionIntensity = extension.transmissionFactor;
         } else {
-            pbrMaterial.subSurface.refractionIntensity = 1.0;
+            pbrMaterial.subSurface.refractionIntensity = 0.0;
+            pbrMaterial.subSurface.isRefractionEnabled = false;
+            return Promise.resolve();
         }
 
         if (extension.transmissionTexture) {

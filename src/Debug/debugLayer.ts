@@ -96,7 +96,7 @@ declare module "../scene" {
 
         /**
          * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @see https://doc.babylonjs.com/features/playground_debuglayer
          */
         debugLayer: DebugLayer;
     }
@@ -141,7 +141,7 @@ export enum DebugLayerTab {
 /**
  * The debug layer (aka Inspector) is the go to tool in order to better understand
  * what is happening in your scene
- * @see http://doc.babylonjs.com/features/playground_debuglayer
+ * @see https://doc.babylonjs.com/features/playground_debuglayer
  */
 export class DebugLayer {
     /**
@@ -175,7 +175,7 @@ export class DebugLayer {
      * Instantiates a new debug layer.
      * The debug layer (aka Inspector) is the go to tool in order to better understand
      * what is happening in your scene
-     * @see http://doc.babylonjs.com/features/playground_debuglayer
+     * @see https://doc.babylonjs.com/features/playground_debuglayer
      * @param scene Defines the scene to inspect
      */
     constructor(scene: Scene) {

@@ -50,7 +50,7 @@ export interface ISpriteManager extends IDisposable {
 
     /**
      * Specifies the rendering group id for this mesh (0 by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
     renderingGroupId: number;
 
@@ -96,7 +96,7 @@ export interface ISpriteManager extends IDisposable {
 
 /**
  * Class used to manage multiple sprites on the same spritesheet
- * @see http://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/babylon101/sprites
  */
 export class SpriteManager implements ISpriteManager {
     /** Define the Url to load snippets */

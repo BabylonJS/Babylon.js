@@ -763,7 +763,7 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
 
 /**
  * This class can be used to easily import assets into a scene
- * @see http://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+ * @see https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
  */
 export class AssetsManager {
     private _scene: Scene;
@@ -815,7 +815,7 @@ export class AssetsManager {
 
     /**
      * Gets or sets a boolean defining if the AssetsManager should use the default loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public useDefaultLoadingScreen = true;
 

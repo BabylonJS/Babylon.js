@@ -714,9 +714,6 @@ export class TransformNode extends Node {
      * @returns this TransformNode.
      */
     public getAbsolutePivotPointToRef(result: Vector3): TransformNode {
-        result.x = this._pivotMatrix.m[12];
-        result.y = this._pivotMatrix.m[13];
-        result.z = this._pivotMatrix.m[14];
         this.getPivotPointToRef(result);
         Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
         return this;

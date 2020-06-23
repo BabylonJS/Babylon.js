@@ -1,8 +1,6 @@
-body {
-  background-color: rgb(51, 51, 51);
-}
-
 #animation-curve-editor {
+  background-color: rgb(51, 51, 51);
+
   font-family: acumin-pro-condensed;
 
   .last {
@@ -757,15 +755,16 @@ body {
           margin-left: 75px;
           height: 20px;
           margin-top: 10px;
-          button {
+          button,
+          label {
             border: none;
             font-size: 12px;
             margin: 0px;
-            width: 60px;
+            width: 127px;
             background-color: #444;
             height: 20px;
             font-family: acumin-pro-condensed;
-            padding-top: 1px;
+            padding-top: 0px;
           }
         }
 
@@ -786,6 +785,7 @@ body {
               font-family: acumin-pro-condensed;
               padding-bottom: 6px;
               padding-left: 6px;
+              color: white;
             }
           }
         }
@@ -852,7 +852,7 @@ body {
         }
 
         .buttonLine {
-          width: 80px;
+          width: 105px;
           padding: 0px;
           display: block;
           margin-left: 75px;
@@ -862,11 +862,21 @@ body {
             border: none;
             font-size: 12px;
             margin: 0px;
-            width: 80px;
             background-color: #444444;
             height: 20px;
+            width: 105px;
             font-family: acumin-pro-condensed;
             padding-top: 1px;
+          }
+
+          &:first-child {
+            width: 105px;
+          }
+          &:nth-child(2) {
+            width: 60px;
+            button {
+              width: 60px;
+            }
           }
         }
 
@@ -1089,8 +1099,8 @@ body {
       .linear {
         overflow: visible;
         border: 0px solid white;
-        height: 362px;
-        width: 780px;
+        height: 100%;
+        width: 100%;
         outline: none;
 
         svg {
@@ -1126,7 +1136,7 @@ body {
       }
 
       .playhead-wrapper {
-        left: -13px;
+        left: 20px;
         bottom: 366px;
         position: relative;
       }
