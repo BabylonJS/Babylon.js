@@ -90,7 +90,12 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             };
 
         }, undefined, true);
-    }    
+    }
+
+    edit() {
+        window.alert("test");
+        // this.props.texture.edit();
+    }
 
     foreceRefresh() {
         this.forceUpdate();
@@ -137,6 +142,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                    <ButtonLineComponent label="Edit" onClick={() => this.edit()} />
                     <TextInputLineComponent label="URL" value={textureUrl} lockObject={this.props.lockObject} onChange={url => {
                         (texture as Texture).updateURL(url);
                         this.foreceRefresh();

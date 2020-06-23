@@ -726,6 +726,10 @@ export class BaseTexture implements IAnimatable {
         return null;
     }
 
+    public edit(): void {
+
+    }
+
     /**
      * Dispose the texture and release its associated resources.
      */
