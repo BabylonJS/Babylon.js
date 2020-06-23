@@ -34,6 +34,7 @@ import { LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
+import { BoundingInfo } from 'babylonjs/Culling/boundingInfo';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -687,6 +688,15 @@ export class GLTFLoader implements IGLTFLoader {
         this.logClose();
 
         return Promise.all(promises).then(() => {
+            this._forEachPrimitive(node, (babylonMesh) => {
+                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!.useBoundingInfoFromGeometry) {
+                    // simply apply the world matrices to the bounding info - the extends are already ok
+                    babylonMesh._updateBoundingInfo();
+                } else {
+                    babylonMesh.refreshBoundingInfo(true);
+                }
+            });
+
             return node._babylonTransformNode!;
         });
     }
@@ -777,12 +787,9 @@ export class GLTFLoader implements IGLTFLoader {
             babylonMesh.overrideMaterialSideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
-            promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then(([babylonGeometry, postProcesses]) => {
+            promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then((babylonGeometry) => {
                 return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonGeometry).then(() => {
                     babylonGeometry.applyToMesh(babylonMesh);
-                    if (postProcesses) {
-                        postProcesses.forEach((f) => f());
-                    }
                 });
             }));
 
@@ -826,7 +833,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
     }
 
-    private _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Promise<[Geometry, Nullable<Array<() => void>>]> {
+    private _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Promise<Geometry> {
         const extensionPromise = this._extensionsLoadVertexDataAsync(context, primitive, babylonMesh);
         if (extensionPromise) {
             return extensionPromise;
@@ -851,8 +858,6 @@ export class GLTFLoader implements IGLTFLoader {
             }));
         }
 
-        const postProcesses = new Array<() => void>();
-
         const loadAttribute = (attribute: string, kind: string, callback?: (accessor: IAccessor) => void) => {
             if (attributes[attribute] == undefined) {
                 return;
@@ -866,26 +871,15 @@ export class GLTFLoader implements IGLTFLoader {
             const accessor = ArrayItem.Get(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
             promises.push(this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
-                if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind) {
-                    postProcesses.push(() => {
+                if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
+                    const mmin = accessor.min as [number, number, number], mmax = accessor.max as [number, number, number];
+                    if (mmin !== undefined && mmax !== undefined) {
                         const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
-                        let recomputeBoundingInfo = true;
-                        if (!this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
-                            const mmin = accessor.min as [number, number, number], mmax = accessor.max as [number, number, number];
-                            if (mmin !== undefined && mmax !== undefined) {
-                                recomputeBoundingInfo = false;
-                                min.copyFromFloats(...mmin);
-                                max.copyFromFloats(...mmax);
-                                babylonMesh.getBoundingInfo().reConstruct(min, max);
-                                // Note: we don't need to update sub meshes bounding info because the GLTF loader does not create sub meshes
-                                // Each mesh has a single sub mesh which is a global sub mesh, meaning its bounding info is the bounding info of the mesh itself
-                                babylonMesh._updateBoundingInfo();
-                            }
-                        }
-                        if (recomputeBoundingInfo) {
-                            babylonMesh.refreshBoundingInfo(true);
-                        }
-                    });
+                        min.copyFromFloats(...mmin);
+                        max.copyFromFloats(...mmax);
+                        babylonGeometry._boundingInfo = new BoundingInfo(min, max);
+                        babylonGeometry.useBoundingInfoFromGeometry = true;
+                    }
                 }
             }));
 
@@ -914,7 +908,7 @@ export class GLTFLoader implements IGLTFLoader {
         });
 
         return Promise.all(promises).then(() => {
-            return [babylonGeometry, postProcesses];
+            return babylonGeometry;
         });
     }
 
@@ -2289,7 +2283,7 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(camera, "loadCamera", (extension) => extension.loadCameraAsync && extension.loadCameraAsync(context, camera, assign));
     }
 
-    private _extensionsLoadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<[Geometry, Nullable<Array<() => void>>]>> {
+    private _extensionsLoadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
         return this._applyExtensions(primitive, "loadVertexData", (extension) => extension._loadVertexDataAsync && extension._loadVertexDataAsync(context, primitive, babylonMesh));
     }
 
