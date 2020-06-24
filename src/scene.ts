@@ -884,6 +884,11 @@ export class Scene extends AbstractScene implements IAnimatable {
     */
     public fogEnd = 1000.0;
 
+    /**
+    * Flag indicating that the frame buffer binding is handled by another component
+    */
+    public prePass: boolean = false;
+
     // Lights
     private _shadowsEnabled = true;
     /**
@@ -3706,9 +3711,9 @@ export class Scene extends AbstractScene implements IAnimatable {
             step.action(this._renderTargets);
         }
 
+        let needRebind = false;
         if (this.renderTargetsEnabled) {
             this._intermediateRendering = true;
-            let needRebind = false;
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -3736,18 +3741,17 @@ export class Scene extends AbstractScene implements IAnimatable {
             if (this.activeCamera && this.activeCamera.outputRenderTarget) {
                 needRebind = true;
             }
+        }
 
-            // Restore framebuffer after rendering to targets
-            if (needRebind) {
-                this._bindFrameBuffer();
-            }
-
+        // Restore framebuffer after rendering to targets
+        if (needRebind && !this.prePass) {
+            this._bindFrameBuffer();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
 
         // Prepare Frame
-        if (this.postProcessManager && !camera._multiviewTexture) {
+        if (this.postProcessManager && !camera._multiviewTexture && !this.prePass) {
             this.postProcessManager._prepareFrame();
         }
 
@@ -4019,7 +4023,7 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         // Restore back buffer
         this.activeCamera = currentActiveCamera;
-        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM) {
+        if (this._activeCamera && this._activeCamera.cameraRigMode !== Camera.RIG_MODE_CUSTOM && !this.prePass) {
             this._bindFrameBuffer();
         }
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4029,8 +4033,11 @@ export class Scene extends AbstractScene implements IAnimatable {
         }
 
         // Clear
-        if (this.autoClearDepthAndStencil || this.autoClear) {
-            this._engine.clear(this.clearColor, this.autoClear || this.forceWireframe || this.forcePointsCloud, this.autoClearDepthAndStencil, this.autoClearDepthAndStencil);
+        if ((this.autoClearDepthAndStencil || this.autoClear) && !this.prePass) {
+            this._engine.clear(this.clearColor,
+                this.autoClear || this.forceWireframe || this.forcePointsCloud,
+                this.autoClearDepthAndStencil,
+                this.autoClearDepthAndStencil);
         }
 
         // Collects render targets from external components.
