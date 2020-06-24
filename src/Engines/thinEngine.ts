@@ -1153,6 +1153,7 @@ export class ThinEngine {
             this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
             mode |= this._gl.COLOR_BUFFER_BIT;
         }
+
         if (depth) {
             if (this.useReverseDepthBuffer) {
                 this._depthCullingState.depthFunc = this._gl.GREATER;
@@ -1341,8 +1342,12 @@ export class ThinEngine {
 
         // If MSAA, we need to bitblt back to main texture
         var gl = this._gl;
-
         if (texture._MSAAFramebuffer) {
+            if (texture._textureArray) {
+                // This texture is part of a MRT texture, we need to treat all attachments
+                this.unBindMultiColorAttachmentFramebuffer(texture._textureArray!, disableGenerateMipMaps, onBeforeUnbind);
+                return;
+            }
             gl.bindFramebuffer(gl.READ_FRAMEBUFFER, texture._MSAAFramebuffer);
             gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, texture._framebuffer);
             gl.blitFramebuffer(0, 0, texture.width, texture.height,
