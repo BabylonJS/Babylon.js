@@ -12,11 +12,11 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "EXT_lights_image_based";
 
-export interface ILightReference {
+export interface ILightReferenceImageBased {
     light: number;
 }
 
-export interface ILight extends IChildRootProperty {
+export interface ILightImageBased extends IChildRootProperty {
     intensity: number;
     rotation: number[];
     specularImageSize: number;
@@ -27,8 +27,8 @@ export interface ILight extends IChildRootProperty {
     _loaded?: Promise<void>;
 }
 
-export interface ILights {
-    lights: ILight[];
+export interface ILightsImageBased {
+    lights: ILightImageBased[];
 }
 
 /**
@@ -46,7 +46,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     public enabled: boolean;
 
     private _loader: GLTFLoader;
-    private _lights?: ILight[];
+    private _lights?: ILightImageBased[];
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -64,14 +64,14 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            const extension = extensions[this.name] as ILights;
+            const extension = extensions[this.name] as ILightsImageBased;
             this._lights = extension.lights;
         }
     }
 
     /** @hidden */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<ILightReference>(context, scene, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<ILightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
             promises.push(this._loader.loadSceneAsync(context, scene));
@@ -89,7 +89,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadLightAsync(context: string, light: ILight): Promise<BaseTexture> {
+    private _loadLightAsync(context: string, light: ILightImageBased): Promise<BaseTexture> {
         if (!light._loaded) {
             const promises = new Array<Promise<any>>();
 
