@@ -161,6 +161,9 @@ export class PBRMaterialDefines extends MaterialDefines
     public INSTANCES = false;
     public THIN_INSTANCES = false;
 
+    public PREPASS = false;
+    public SCENE_MRT_COUNT = 0;
+
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
@@ -673,6 +676,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
+     * Should this material render to several textures at once
+     */
+    public get shouldRenderToMRT() {
+        return this.subSurface.isScatteringEnabled;
+    }
+
+    /**
      * Force normal to face away from face.
      */
     protected _forceNormalForward = false;
@@ -796,7 +806,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the SubSurface parameters for the material.
      */
-    public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+    public readonly subSurface: PBRSubSurfaceConfiguration;
 
     /**
      * Defines the detail map parameters for the material.
@@ -830,6 +840,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         };
 
         this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
+        this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
     }
 
     /**
@@ -1293,6 +1304,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             onError: onError,
             indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
             processFinalCode: csnrOptions.processFinalCode,
+            multiTarget: this.shouldRenderToMRT
         }, engine);
     }
 
@@ -1306,6 +1318,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+
+        // PrePass
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.shouldRenderToMRT);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();

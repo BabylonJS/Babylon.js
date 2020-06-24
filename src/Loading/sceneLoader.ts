@@ -417,7 +417,21 @@ export class SceneLoader {
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
 
         if (directLoad) {
-            onSuccess(plugin, plugin.directLoad ? plugin.directLoad(scene, directLoad) : directLoad);
+            if (plugin.directLoad) {
+                const result = plugin.directLoad(scene, directLoad);
+                if (result.then) {
+                    result.then((data: any) => {
+                        onSuccess(plugin, data);
+                    }).catch((error: any) => {
+                        onError("Error in directLoad of _loadData: " + error, error);
+                    });
+                }
+                else {
+                    onSuccess(plugin, result);
+                }
+            } else {
+                onSuccess(plugin, directLoad);
+            }
             return plugin;
         }
 
@@ -1001,8 +1015,9 @@ export class SceneLoader {
      * @param onSuccess a callback with the scene when import succeeds
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     * @param pluginExtension the extension used to determine the plugin
      */
-    public static ImportAnimations(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): void {
+    public static ImportAnimations(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): void {
         if (!scene) {
             Logger.Error("No scene available to load animations to");
             return;
@@ -1065,7 +1080,7 @@ export class SceneLoader {
             }
         };
 
-        this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError);
+        this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension);
     }
 
     /**
@@ -1079,15 +1094,16 @@ export class SceneLoader {
      * @param onSuccess a callback with the scene when import succeeds
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     * @param pluginExtension the extension used to determine the plugin
      * @returns the updated scene with imported animations
      */
-    public static ImportAnimationsAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null): Promise<Scene> {
+    public static ImportAnimationsAsync(rootUrl: string, sceneFilename: string | File = "", scene: Nullable<Scene> = EngineStore.LastCreatedScene, overwriteAnimations = true, animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean, targetConverter: Nullable<(target: any) => any> = null, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Promise<Scene> {
         return new Promise((resolve, reject) => {
             SceneLoader.ImportAnimations(rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, (_scene: Scene) => {
                 resolve(_scene);
             }, onProgress, (_scene: Scene, message: string, exception: any) => {
                 reject(exception || new Error(message));
-            });
+            }, pluginExtension);
         });
     }
 }

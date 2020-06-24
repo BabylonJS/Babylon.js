@@ -7,6 +7,7 @@
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
 - Added HDR texture filtering tools to the sandbox ([Sebavan](https://github.com/sebavan/))
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
+- Added SubSurfaceScattering on PBR materials ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
 - Added Curve editor to manage selected entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
@@ -99,6 +100,13 @@
 - Added support for KHR_materials_variants for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Added support for KHR_materials_transmission for glTF loader. ([MiiBond](https://github.com/MiiBond/))
 - Improved progress handling in glTF loader. ([bghgary](https://github.com/bghgary))
+- Use min/max values from position accessors (when available) to set the bounding box of meshes ([Popov72](https://github.com/Popov72))
+- Added missing "pluginExtension" parameter to SceneLoader.ImportAnimations. ([phenry20](https://github.com/phenry20))
+- Added support for .glb file loading through a base64 encoded filename ([Popov72](https://github.com/Popov72))
+
+### Serializers
+
+- Added support for KHR_materials_unlit to glTF serializer ([Popov72](https://github.com/Popov72))
 
 ### Navigation
 
@@ -231,9 +239,11 @@
 - Fixed `DracoCompression` to not load empty data into attributes ([bghgary](https://github.com/bghgary))
 - Fixed `Mesh.subdivide` where one face could be lost depending on the number of subdivision ([Popov72](https://github.com/Popov72))
 - Fixed `AssetContainer.instantiateModelsToScene` with cloneMaterials=true and MultiMaterials to properly set the cloned submaterials ([ghempton](https://github.com/ghempton))
+- Fixed MSAA fail on MultiRenderTarget textures ([CraigFeldpsar](https://github.com/craigfeldspar)
 - Fixed wrong display when setting `DefaultRenderingPipeline.imageProcessingEnabled` to `false` ([Popov72](https://github.com/Popov72))
 - Fix crash when loading a .obj file with vertex colors ([Popov72](https://github.com/Popov72))
 - Fix skeleton viewer still visible when `isEnabled = false` ([Popov72](https://github.com/Popov72))
+- Fix crash with CSG when no uvs defined ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
@@ -243,3 +253,4 @@
 - PBRMaterial index of refraction is now defined as index of refraction and not the inverse of it ([Sebavan](https://github.com/sebavan/))
 - `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))
 - Rendering of transparent meshes: stencil state is now set to the value registered in the engine instead of being set to `false` unconditionally ([Popov72](https://github.com/Popov72))
+- Fix width/height GUI container computation to take into account paddings when `adaptWithToChildren = true` ([Popov72](https://github.com/Popov72))

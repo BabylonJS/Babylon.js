@@ -2356,12 +2356,12 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
     export interface ITemplateConfiguration {
             /**
                 * can be either the id of the template's html element or a URL.
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                * See - https://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
                 */
             location?: string;
             /**
                 * If no location is provided you can provide here the raw html of this template.
-                * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                * See https://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
                 */
             html?: string;
             id?: string;
@@ -2376,7 +2376,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
                 * event name is the key. the value can either be a boolean (attach to the parent element)
                 * or a map of html id elements.
                 *
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
+                * See - https://doc.babylonjs.com/extensions/the_templating_system#event-binding
                 */
             events?: {
                     pointerdown?: boolean | {
