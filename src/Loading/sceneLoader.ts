@@ -420,6 +420,8 @@ export class SceneLoader {
             if (plugin.directLoad) {
                 plugin.directLoad(scene, directLoad).then((data) => {
                     onSuccess(plugin, data);
+                }).catch((error) => {
+                    onError("Error in directLoad of _loadData: " + error, error);
                 });
             } else {
                 onSuccess(plugin, directLoad);
