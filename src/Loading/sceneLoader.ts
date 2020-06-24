@@ -123,7 +123,7 @@ export interface ISceneLoaderPluginBase {
      * @param data string containing the data
      * @returns data to pass to the plugin
      */
-    directLoad?(scene: Scene, data: string): Promise<any>;
+    directLoad?(scene: Scene, data: string): any;
 
     /**
      * The callback that allows custom handling of the root url based on the response url.
@@ -418,11 +418,17 @@ export class SceneLoader {
 
         if (directLoad) {
             if (plugin.directLoad) {
-                plugin.directLoad(scene, directLoad).then((data) => {
-                    onSuccess(plugin, data);
-                }).catch((error) => {
-                    onError("Error in directLoad of _loadData: " + error, error);
-                });
+                const result = plugin.directLoad(scene, directLoad);
+                if (result.then) {
+                    result.then((data: any) => {
+                        onSuccess(plugin, data);
+                    }).catch((error: any) => {
+                        onError("Error in directLoad of _loadData: " + error, error);
+                    });
+                }
+                else {
+                    onSuccess(plugin, result);
+                }
             } else {
                 onSuccess(plugin, directLoad);
             }
