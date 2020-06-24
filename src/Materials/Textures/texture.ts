@@ -706,7 +706,13 @@ export class Texture extends BaseTexture {
                 if (parsedTexture.base64String) {
                     texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY);
                 } else {
-                    let url = rootUrl + parsedTexture.name;
+                    let url: string;
+                    if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
+                        url = parsedTexture.name;
+                    }
+                    else {
+                        url = rootUrl + parsedTexture.name;
+                    }
 
                     if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
