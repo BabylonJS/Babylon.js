@@ -56,7 +56,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
             onClick={this.props.addKeyframe}
           />
           <IconButtonLineComponent
-            tooltip={'Focus'}
+            tooltip={'Frame'}
             icon='frame'
             onClick={this.props.removeKeyframe}
           />

@@ -4,6 +4,7 @@ body {
 
 #animation-curve-editor {
   font-family: acumin-pro-condensed;
+  background-color: #333333;
 
   .last {
     margin-left: 3px;
@@ -507,7 +508,7 @@ body {
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
-    height: 462px;
+    height: 465px;
 
     .row {
       width: 1024px;
@@ -656,7 +657,7 @@ body {
         }
 
         .timeline-wrapper {
-          margin-top: -40px;
+          margin-top: -45px;
           margin-left: -2px;
         }
 
