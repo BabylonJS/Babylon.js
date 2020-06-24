@@ -54,7 +54,7 @@ export class EditorControls extends React.Component<
       isLoopActive: false,
       loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
       animationsCount: count,
-      framesPerSecond: 0,
+      framesPerSecond: 60,
       snippetId: '',
     };
   }
@@ -231,6 +231,7 @@ export class EditorControls extends React.Component<
             }}
             changed={() => this.animationAdded()}
             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+            fps={this.state.framesPerSecond}
           />
         )}
 
