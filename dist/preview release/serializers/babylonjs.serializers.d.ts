@@ -1159,6 +1159,25 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
     }
 }
+declare module BABYLON.GLTF2.Exporter.Extensions {
+    /**
+     * @hidden
+     */
+    export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
+        /** Name of this extension */
+        readonly name: string;
+        /** Defines whether this extension is enabled */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        private _wasUsed;
+        constructor(exporter: _Exporter);
+        /** @hidden */
+        get wasUsed(): boolean;
+        dispose(): void;
+        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+    }
+}
 declare module BABYLON {
     /**
     * Class for generating STL data from a Babylon scene.

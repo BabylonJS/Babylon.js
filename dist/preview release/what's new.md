@@ -103,6 +103,10 @@
 - Use min/max values from position accessors (when available) to set the bounding box of meshes ([Popov72](https://github.com/Popov72))
 - Added missing "pluginExtension" parameter to SceneLoader.ImportAnimations. ([phenry20](https://github.com/phenry20))
 
+### Serializers
+
+- Added support for KHR_materials_unlit to glTF serializer ([Popov72](https://github.com/Popov72))
+
 ### Navigation
 
 - export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
@@ -238,6 +242,7 @@
 - Fixed wrong display when setting `DefaultRenderingPipeline.imageProcessingEnabled` to `false` ([Popov72](https://github.com/Popov72))
 - Fix crash when loading a .obj file with vertex colors ([Popov72](https://github.com/Popov72))
 - Fix skeleton viewer still visible when `isEnabled = false` ([Popov72](https://github.com/Popov72))
+- Fix crash with CSG when no uvs defined ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

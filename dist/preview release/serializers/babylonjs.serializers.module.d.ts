@@ -1224,10 +1224,34 @@ declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_materials_sheen" {
         postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
     }
 }
+declare module "babylonjs-serializers/glTF/2.0/Extensions/KHR_materials_unlit" {
+    import { IMaterial } from "babylonjs-gltf2interface";
+    import { IGLTFExporterExtensionV2 } from "babylonjs-serializers/glTF/2.0/glTFExporterExtension";
+    import { _Exporter } from "babylonjs-serializers/glTF/2.0/glTFExporter";
+    import { Material } from 'babylonjs/Materials/material';
+    /**
+     * @hidden
+     */
+    export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
+        /** Name of this extension */
+        readonly name: string;
+        /** Defines whether this extension is enabled */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        private _wasUsed;
+        constructor(exporter: _Exporter);
+        /** @hidden */
+        get wasUsed(): boolean;
+        dispose(): void;
+        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+    }
+}
 declare module "babylonjs-serializers/glTF/2.0/Extensions/index" {
     export * from "babylonjs-serializers/glTF/2.0/Extensions/KHR_texture_transform";
     export * from "babylonjs-serializers/glTF/2.0/Extensions/KHR_lights_punctual";
     export * from "babylonjs-serializers/glTF/2.0/Extensions/KHR_materials_sheen";
+    export * from "babylonjs-serializers/glTF/2.0/Extensions/KHR_materials_unlit";
 }
 declare module "babylonjs-serializers/glTF/2.0/index" {
     export * from "babylonjs-serializers/glTF/2.0/glTFAnimation";
@@ -2446,6 +2470,25 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         private _getTextureIndex;
         postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+    }
+}
+declare module BABYLON.GLTF2.Exporter.Extensions {
+    /**
+     * @hidden
+     */
+    export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
+        /** Name of this extension */
+        readonly name: string;
+        /** Defines whether this extension is enabled */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        private _wasUsed;
+        constructor(exporter: _Exporter);
+        /** @hidden */
+        get wasUsed(): boolean;
+        dispose(): void;
         postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
     }
 }
