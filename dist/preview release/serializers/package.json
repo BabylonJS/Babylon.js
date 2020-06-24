@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-serializers",
     "description": "The Babylon.js serializers library is an extension you can use to serialize Babylon scenes.",
-    "version": "4.2.0-alpha.20",
+    "version": "4.2.0-alpha.21",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -28,8 +28,8 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "babylonjs": "4.2.0-alpha.20",
-        "babylonjs-gltf2interface": "4.2.0-alpha.20"
+        "babylonjs": "4.2.0-alpha.21",
+        "babylonjs-gltf2interface": "4.2.0-alpha.21"
     },
     "engines": {
         "node": "*"
