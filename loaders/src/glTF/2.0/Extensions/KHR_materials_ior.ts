@@ -8,6 +8,7 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "KHR_materials_ior";
 
+/** @hidden */
 export interface IKHR_materials_ior {
     ior: number;
 }

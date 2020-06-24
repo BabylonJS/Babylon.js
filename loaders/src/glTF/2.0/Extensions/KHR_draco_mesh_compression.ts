@@ -11,11 +11,13 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_draco_mesh_compression";
 
+/** @hidden */
 export interface IKHRDracoMeshCompression {
     bufferView: number;
     attributes: { [name: string]: number };
 }
 
+/** @hidden */
 export interface IBufferViewDraco extends IBufferView {
     _dracoBabylonGeometry?: Promise<Geometry>;
 }

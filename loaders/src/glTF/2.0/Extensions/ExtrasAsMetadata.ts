@@ -10,6 +10,7 @@ import { Material } from "babylonjs/Materials/material";
 
 const NAME = "ExtrasAsMetadata";
 
+/** @hidden */
 export interface ObjectWithMetadata {
     metadata: any;
 }

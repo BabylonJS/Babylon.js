@@ -12,10 +12,12 @@ import { IProperty } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_lod";
 
+/** @hidden */
 export interface IMSFTLOD {
     ids: number[];
 }
 
+/** @hidden */
 export interface IBufferInfo {
     start: number;
     end: number;
