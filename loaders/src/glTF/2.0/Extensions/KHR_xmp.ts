@@ -3,14 +3,17 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "KHR_xmp";
 
+/** @hidden */
 export interface IKHR_xmp_data {
     [key: string]: unknown;
 }
 
+/** @hidden */
 export interface IKHR_xmp_gltf {
     packets: IKHR_xmp_data[];
 }
 
+/** @hidden */
 export interface IKHR_xmp_node {
     packet: number;
 }

@@ -12,10 +12,12 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "EXT_lights_image_based";
 
+/** @hidden */
 export interface ILightReferenceImageBased {
     light: number;
 }
 
+/** @hidden */
 export interface ILightImageBased extends IChildRootProperty {
     intensity: number;
     rotation: number[];
@@ -27,6 +29,7 @@ export interface ILightImageBased extends IChildRootProperty {
     _loaded?: Promise<void>;
 }
 
+/** @hidden */
 export interface ILightsImageBased {
     lights: ILightImageBased[];
 }

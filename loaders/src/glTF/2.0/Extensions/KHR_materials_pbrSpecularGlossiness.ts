@@ -9,6 +9,7 @@ import { GLTFLoader } from "../glTFLoader";
 
 const NAME = "KHR_materials_pbrSpecularGlossiness";
 
+/** @hidden */
 export interface IKHRMaterialsPbrSpecularGlossiness {
     diffuseFactor: number[];
     diffuseTexture: ITextureInfo;

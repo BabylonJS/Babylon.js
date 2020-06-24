@@ -14,21 +14,25 @@ import { IProperty } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_audio_emitter";
 
+/** @hidden */
 export interface IClipReference {
     clip: number;
     weight?: number;
 }
 
+/** @hidden */
 export interface IEmittersReference {
     emitters: number[];
 }
 
+/** @hidden */
 export const enum DistanceModel {
     linear = "linear",
     inverse = "inverse",
     exponential = "exponential",
 }
 
+/** @hidden */
 export interface IEmitter {
     name?: string;
     distanceModel?: DistanceModel;
@@ -42,20 +46,24 @@ export interface IEmitter {
     clips: IClipReference[];
 }
 
+/** @hidden */
 export const enum AudioMimeType {
     WAV = "audio/wav",
 }
 
+/** @hidden */
 export interface IClip extends IProperty {
     uri?: string;
     bufferView?: number;
     mimeType?: AudioMimeType;
 }
 
+/** @hidden */
 export interface ILoaderClip extends IClip, IArrayItem {
     _objectURL?: Promise<string>;
 }
 
+/** @hidden */
 export interface ILoaderEmitter extends IEmitter, IArrayItem {
     _babylonData?: {
         sound?: WeightedSound;
@@ -64,17 +72,20 @@ export interface ILoaderEmitter extends IEmitter, IArrayItem {
     _babylonSounds: Sound[];
 }
 
+/** @hidden */
 export interface IMSFTAudioEmitter {
     clips: ILoaderClip[];
     emitters: ILoaderEmitter[];
 }
 
+/** @hidden */
 export const enum AnimationEventAction {
     play = "play",
     pause = "pause",
     stop = "stop",
 }
 
+/** @hidden */
 export interface IAnimationEvent {
     action: AnimationEventAction;
     emitter: number;
@@ -82,9 +93,11 @@ export interface IAnimationEvent {
     startOffset?: number;
 }
 
+/** @hidden */
 export interface ILoaderAnimationEvent extends IAnimationEvent, IArrayItem {
 }
 
+/** @hidden */
 export interface ILoaderAnimationEvents {
     events: ILoaderAnimationEvent[];
 }
