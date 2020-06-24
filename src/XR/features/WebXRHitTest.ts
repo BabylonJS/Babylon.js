@@ -226,8 +226,10 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             if (!pose) {
                 return;
             }
-            this._tmpPos.copyFrom(pose.transform.position as unknown as Vector3);
-            this._tmpQuat.copyFrom(pose.transform.orientation as unknown as Quaternion);
+            const pos = pose.transform.position;
+            const quat = pose.transform.orientation;
+            this._tmpPos.set(pos.x, pos.y, pos.z);
+            this._tmpQuat.set(quat.x, quat.y, quat.z, quat.w);
             Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMat);
             if (!this._xrSessionManager.scene.useRightHandedSystem) {
                 this._tmpPos.z *= -1;

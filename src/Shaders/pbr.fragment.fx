@@ -1,4 +1,4 @@
-﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -13,6 +13,8 @@
 #endif
 
 precision highp float;
+
+#include<prePassDeclaration>[SCENE_MRT_COUNT]
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
@@ -31,6 +33,7 @@ precision highp float;
 
 // Helper Functions
 #include<helperFunctions>
+#include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
 #include<pbrHelperFunctions>
 #include<imageProcessingFunctions>
@@ -492,12 +495,32 @@ void main(void) {
 
     #include<logDepthFragment>
     #include<fogFragment>(color, finalColor)
-
     #include<pbrBlockImageProcessing>
 
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
-    gl_FragColor = finalColor;
+#ifdef PREPASS
+    vec3 irradiance = finalDiffuse;
+    #ifndef UNLIT
+        #ifdef REFLECTION
+            irradiance += finalIrradiance;
+        #endif
+    #endif
 
+    vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
+
+    // Irradiance is diffuse * surfaceAlbedo
+    gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Lit without irradiance
+    irradiance /= sqAlbedo;
+    #ifdef SS_SCATTERING
+    gl_FragData[1] = vec4(tagLightingForSSS(irradiance), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+    #else
+    gl_FragData[1] = vec4(irradiance, 1.0); // Irradiance
+    #endif
+    gl_FragData[2] = vec4(vViewPos.z, 0.0, 0.0, 1.0); // Linear depth
+    gl_FragData[3] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
+#endif
+
+    gl_FragColor = finalColor;
     #include<pbrDebug>
 }

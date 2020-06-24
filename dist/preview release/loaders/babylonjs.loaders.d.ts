@@ -189,6 +189,10 @@ declare module BABYLON {
          */
         createInstances: boolean;
         /**
+         * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
+         */
+        alwaysComputeBoundingBox: boolean;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         preprocessUrlAsync: (url: string) => Promise<string>;

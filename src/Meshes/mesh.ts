@@ -1831,6 +1831,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
+        // Render to MRT
+        if (scene.prePassRenderer) {
+            scene.prePassRenderer.bindAttachmentsForEffect(effect);
+        }
+
         const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
 
         var sideOrientation: Nullable<number>;
