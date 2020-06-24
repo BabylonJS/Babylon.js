@@ -24674,6 +24674,11 @@ declare module BABYLON {
         /** Get the list of meshes using this geometry */
         get meshes(): Mesh[];
         /**
+         * If set to true (false by defaut), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
+         * and won't be computed based on the vertex positions (which is what we get when useBoundingInfoFromGeometry = false)
+         */
+        useBoundingInfoFromGeometry: boolean;
+        /**
          * Creates a new geometry
          * @param id defines the unique ID
          * @param scene defines the hosting scene
