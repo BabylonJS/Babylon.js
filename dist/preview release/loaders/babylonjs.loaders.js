@@ -1566,7 +1566,7 @@ __webpack_require__.r(__webpack_exports__);
 var STLFileLoader = /** @class */ (function () {
     function STLFileLoader() {
         /** @hidden */
-        this.solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
+        this.solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
         /** @hidden */
         this.facetsPattern = /facet([\s\S]*?)endfacet/g;
         /** @hidden */
