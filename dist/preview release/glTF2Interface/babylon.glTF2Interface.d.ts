@@ -931,21 +931,13 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the EXT_mesh_gpu_instancing extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
     interface IEXTMeshGpuInstancing {
         mesh?: number;
         attributes: { [name: string]: number };
-    }
-
-    /**
-     * Interfaces from the ExtrasAsMetadata extension
-     */
-
-    /** @hidden */
-    interface ObjectWithMetadata {
-        metadata: any;
     }
 
     /**
@@ -993,6 +985,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_clearcoat extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
@@ -1006,6 +999,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_ior extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
@@ -1028,6 +1022,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_sheen extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
@@ -1039,6 +1034,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_specular extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
@@ -1050,6 +1046,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_transmission extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
@@ -1060,6 +1057,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_materials_variants extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
@@ -1075,6 +1073,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_texture_basisu extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
@@ -1096,6 +1095,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * Interfaces from the KHR_xmp extension
+     * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @hidden */
