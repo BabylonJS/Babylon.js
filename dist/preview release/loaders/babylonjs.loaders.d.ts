@@ -299,6 +299,7 @@ declare module BABYLON {
         private _loader;
         private _progressCallback?;
         private _requests;
+        private static magicBase64Encoded;
         /**
          * Name of the loader ("gltf")
          */
@@ -327,7 +328,7 @@ declare module BABYLON {
         /** @hidden */
         canDirectLoad(data: string): boolean;
         /** @hidden */
-        directLoad(scene: Scene, data: string): any;
+        directLoad(scene: Scene, data: string): Promise<any>;
         /**
          * The callback that allows custom handling of the root url based on the response url.
          * @param rootUrl the original root url

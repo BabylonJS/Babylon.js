@@ -4597,6 +4597,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Mode that determines the coordinate system to use.
  */
@@ -5097,12 +5098,25 @@ var GLTFFileLoader = /** @class */ (function () {
     };
     /** @hidden */
     GLTFFileLoader.prototype.canDirectLoad = function (data) {
-        return data.indexOf("asset") !== -1 && data.indexOf("version") !== -1;
+        return (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1)
+            || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "data:base64," + GLTFFileLoader.magicBase64Encoded)
+            || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded)
+            || babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded);
     };
     /** @hidden */
     GLTFFileLoader.prototype.directLoad = function (scene, data) {
+        if (babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "base64," + GLTFFileLoader.magicBase64Encoded) ||
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader.magicBase64Encoded) ||
+            babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["StringTools"].StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader.magicBase64Encoded)) {
+            var arrayBuffer_2 = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Tools"].DecodeBase64(data);
+            this._validate(scene, arrayBuffer_2);
+            return this._unpackBinaryAsync(new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["DataReader"]({
+                readAsync: function (byteOffset, byteLength) { return Promise.resolve(new Uint8Array(arrayBuffer_2, byteOffset, byteLength)); },
+                byteLength: arrayBuffer_2.byteLength
+            }));
+        }
         this._validate(scene, data);
-        return { json: this._parseJson(data) };
+        return Promise.resolve({ json: this._parseJson(data) });
     };
     /** @hidden */
     GLTFFileLoader.prototype.createPlugin = function () {
@@ -5418,6 +5432,7 @@ var GLTFFileLoader = /** @class */ (function () {
      * @hidden
      */
     GLTFFileLoader.HomogeneousCoordinates = false;
+    GLTFFileLoader.magicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
     GLTFFileLoader._logSpaces = "                                ";
     return GLTFFileLoader;
 }());

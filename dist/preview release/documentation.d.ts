@@ -79151,6 +79151,7 @@ declare module BABYLON {
         private _loader;
         private _progressCallback?;
         private _requests;
+        private static magicBase64Encoded;
         /**
          * Name of the loader ("gltf")
          */
@@ -79179,7 +79180,7 @@ declare module BABYLON {
         /** @hidden */
         canDirectLoad(data: string): boolean;
         /** @hidden */
-        directLoad(scene: Scene, data: string): any;
+        directLoad(scene: Scene, data: string): Promise<any>;
         /**
          * The callback that allows custom handling of the root url based on the response url.
          * @param rootUrl the original root url
@@ -82536,6 +82537,25 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         private _getTextureIndex;
         postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+    }
+}
+declare module BABYLON.GLTF2.Exporter.Extensions {
+    /**
+     * @hidden
+     */
+    export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
+        /** Name of this extension */
+        readonly name: string;
+        /** Defines whether this extension is enabled */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        private _wasUsed;
+        constructor(exporter: _Exporter);
+        /** @hidden */
+        get wasUsed(): boolean;
+        dispose(): void;
         postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
     }
 }

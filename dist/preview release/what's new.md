@@ -102,6 +102,11 @@
 - Improved progress handling in glTF loader. ([bghgary](https://github.com/bghgary))
 - Use min/max values from position accessors (when available) to set the bounding box of meshes ([Popov72](https://github.com/Popov72))
 - Added missing "pluginExtension" parameter to SceneLoader.ImportAnimations. ([phenry20](https://github.com/phenry20))
+- Added support for .glb file loading through a base64 encoded filename ([Popov72](https://github.com/Popov72))
+
+### Serializers
+
+- Added support for KHR_materials_unlit to glTF serializer ([Popov72](https://github.com/Popov72))
 
 ### Navigation
 
@@ -238,6 +243,7 @@
 - Fixed wrong display when setting `DefaultRenderingPipeline.imageProcessingEnabled` to `false` ([Popov72](https://github.com/Popov72))
 - Fix crash when loading a .obj file with vertex colors ([Popov72](https://github.com/Popov72))
 - Fix skeleton viewer still visible when `isEnabled = false` ([Popov72](https://github.com/Popov72))
+- Fix crash with CSG when no uvs defined ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
