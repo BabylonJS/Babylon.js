@@ -517,7 +517,7 @@ void main(void) {
     #else
     gl_FragData[1] = vec4(irradiance, 1.0); // Irradiance
     #endif
-    gl_FragData[2] = vec4(vViewPos.z, 0.0, 0.0, 1.0); // Linear depth
+    gl_FragData[2] = vec4(vViewPos.z, normalW); // Linear depth + normal
     gl_FragData[3] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
 #endif
 

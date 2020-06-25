@@ -9,7 +9,7 @@ import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
-import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
+import { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { Scene } from "../../../scene";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
@@ -159,8 +159,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _scene: Scene;
-    private _depthTexture: Texture;
-    private _normalTexture: Texture;
+    private _depthNormalTexture: Texture;
     private _randomTexture: DynamicTexture;
 
     private _originalColorPostProcess: PassPostProcess;
@@ -198,10 +197,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         var blurRatio = this._ratio.blurRatio || ratio;
 
         // Set up assets
-        let geometryBufferRenderer = <GeometryBufferRenderer>scene.enableGeometryBufferRenderer();
+        let prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
         this._createRandomTexture();
-        this._depthTexture = geometryBufferRenderer.getGBuffer().textures[0];
-        this._normalTexture = geometryBufferRenderer.getGBuffer().textures[1];
+        this._depthNormalTexture = prePassRenderer.prePassRT.textures[2];
 
         this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
         this._originalColorPostProcess.samples = this.textureSamples;
@@ -388,8 +386,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            effect.setTexture("textureSampler", this._depthTexture);
-            effect.setTexture("normalSampler", this._normalTexture);
+            effect.setTexture("depthNormalSampler", this._depthNormalTexture);
             effect.setTexture("randomSampler", this._randomTexture);
         };
         this._ssaoPostProcess.samples = this.textureSamples;
