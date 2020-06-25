@@ -179,8 +179,11 @@ export class WebXRCamera extends FreeCamera {
                 }
             }
             // Update view/projection matrix
-            currentRig.position.copyFrom(view.transform.position);
-            currentRig.rotationQuaternion.copyFrom(view.transform.orientation);
+            const pos = view.transform.position;
+            const orientation = view.transform.orientation;
+
+            currentRig.position.set(pos.x, pos.y, pos.z);
+            currentRig.rotationQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
                 currentRig.position.z *= -1;
                 currentRig.rotationQuaternion.z *= -1;
