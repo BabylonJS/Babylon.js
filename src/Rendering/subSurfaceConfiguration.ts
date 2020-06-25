@@ -32,6 +32,11 @@ export class SubSurfaceConfiguration {
     }
 
     /**
+     * Is subsurfacescattering enabled on a material in the scene
+     */
+    public enabled = false;
+
+    /**
      * Diffusion profile colors for subsurface scattering
      * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
      * See ...

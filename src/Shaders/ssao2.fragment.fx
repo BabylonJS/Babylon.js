@@ -40,7 +40,7 @@ float viewZToOrthographicDepth( const in float viewZ, const in float near, const
 
 #ifdef SSAO
 uniform sampler2D randomSampler;
-uniform sampler2D normalSampler;
+uniform sampler2D depthNormalSampler;
 
 uniform float randTextureTiles;
 uniform float samplesFactor;
@@ -59,10 +59,10 @@ uniform mat4 projection;
 void main()
 {
 	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
-	float depth = texture2D(textureSampler, vUV).r;
+	float depth = texture2D(depthNormalSampler, vUV).r;
 	float depthSign = depth / abs(depth);
 	depth = depth * depthSign;
-	vec3 normal = texture2D(normalSampler, vUV).rgb; 
+	vec3 normal = texture2D(depthNormalSampler, vUV).gba; 
 	float occlusion = 0.0;
 	float correctedRadius = min(radius, minZAspect * depth / near);
 
@@ -96,7 +96,7 @@ void main()
 	   }
 	  
 		// get sample linearDepth:
-	   float sampleDepth = abs(texture2D(textureSampler, offset.xy).r);
+	   float sampleDepth = abs(texture2D(depthNormalSampler, offset.xy).r);
 		// range check & accumulate:
 	   difference = depthSign * samplePosition.z - sampleDepth;
 	   float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
@@ -110,7 +110,7 @@ void main()
 #endif
 
 #ifdef BILATERAL_BLUR
-uniform sampler2D depthSampler;
+uniform sampler2D depthNormalSampler;
 uniform float outSize;
 uniform float samplerOffsets[SAMPLES];
 
@@ -147,39 +147,39 @@ vec4 blur13Bilateral(sampler2D image, vec2 uv, float resolution, vec2 direction)
   vec2 off2 = vec2(3.2941176470588234) * direction;
   vec2 off3 = vec2(5.176470588235294) * direction;
 
-  float compareDepth = abs(texture2D(depthSampler, uv).r);
+  float compareDepth = abs(texture2D(depthNormalSampler, uv).r);
   float sampleDepth;
   float weight;
   float weightSum = 30.0;
 
   color += texture2D(image, uv) * 30.0;
 
-  sampleDepth = abs(texture2D(depthSampler, uv + (off1 / resolution)).r);
+  sampleDepth = abs(texture2D(depthNormalSampler, uv + (off1 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
   weightSum +=  weight;
   color += texture2D(image, uv + (off1 / resolution)) * weight;
 
-  sampleDepth = abs(texture2D(depthSampler, uv - (off1 / resolution)).r);
+  sampleDepth = abs(texture2D(depthNormalSampler, uv - (off1 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
   weightSum +=  weight;
   color += texture2D(image, uv - (off1 / resolution)) * weight;
 
-  sampleDepth = abs(texture2D(depthSampler, uv + (off2 / resolution)).r);
+  sampleDepth = abs(texture2D(depthNormalSampler, uv + (off2 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
   weightSum += weight;
   color += texture2D(image, uv + (off2 / resolution)) * weight;
 
-  sampleDepth = abs(texture2D(depthSampler, uv - (off2 / resolution)).r);
+  sampleDepth = abs(texture2D(depthNormalSampler, uv - (off2 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
   weightSum += weight;
   color += texture2D(image, uv - (off2 / resolution)) * weight;
 
-  sampleDepth = abs(texture2D(depthSampler, uv + (off3 / resolution)).r);
+  sampleDepth = abs(texture2D(depthNormalSampler, uv + (off3 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
   weightSum += weight;
   color += texture2D(image, uv + (off3 / resolution)) * weight;
 
-  sampleDepth = abs(texture2D(depthSampler, uv - (off3 / resolution)).r);
+  sampleDepth = abs(texture2D(depthNormalSampler, uv - (off3 / resolution)).r);
   weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
   weightSum += weight;
   color += texture2D(image, uv - (off3 / resolution)) * weight;
@@ -190,7 +190,7 @@ vec4 blur13Bilateral(sampler2D image, vec2 uv, float resolution, vec2 direction)
 void main()
 {
 	#if EXPENSIVE
-	float compareDepth = abs(texture2D(depthSampler, vUV).r);
+	float compareDepth = abs(texture2D(depthNormalSampler, vUV).r);
 	float texelsize = 1.0 / outSize;
 	float result = 0.0;
 	float weightSum = 0.0;
@@ -206,7 +206,7 @@ void main()
 		#endif
 		vec2 samplePos = vUV + sampleOffset;
 
-		float sampleDepth = abs(texture2D(depthSampler, samplePos).r);
+		float sampleDepth = abs(texture2D(depthNormalSampler, samplePos).r);
 		float weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30000.0);
 
 		result += texture2D(textureSampler, samplePos).r * weight;

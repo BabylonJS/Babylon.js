@@ -9,6 +9,7 @@ import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
+import { SSAO2RenderingPipeline } from "../PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 
 /**
  * Renders a pre pass of the scene
@@ -62,6 +63,9 @@ export class PrePassRenderer {
      */
     public subSurfaceConfiguration: SubSurfaceConfiguration;
 
+    // TODO
+    public ssaoConfiguration: boolean;
+
     private _enabled: boolean = false;
 
     /**
@@ -79,8 +83,8 @@ export class PrePassRenderer {
     }
 
     public set samples(n: number) {
-        if (!this.subSurfaceScatteringPostProcess) {
-            this._createEffects();
+        if (!this.imageProcessingPostProcess) {
+            this._createCompositionEffect();
         }
 
         this.prePassRT.samples = n;
@@ -116,7 +120,7 @@ export class PrePassRenderer {
         }
     }
 
-    private _createEffects() {
+    private _createCompositionEffect() {
         this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtTypes });
         this.prePassRT.samples = 1;
@@ -124,6 +128,17 @@ export class PrePassRenderer {
         this._initializeAttachments();
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
+
+        // TODO same remark as below, create PP chain
+        if (!this.subSurfaceScatteringPostProcess) {
+            this.imageProcessingPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+        }
+
+        this.imageProcessingPostProcess.autoClear = false;
+    }
+
+    private _createSubSurfaceScatteringEffect() {
+        // TODO : Could probably be moved in subsurface configuration
         this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
         this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
         this.subSurfaceScatteringPostProcess.autoClear = false;
@@ -166,10 +181,25 @@ export class PrePassRenderer {
      */
     public _afterCameraDraw() {
         if (this._enabled) {
-            this.subSurfaceScatteringPostProcess.activate(this._scene.activeCamera);
+
+            // TODO : change with list of postprocess (setup pipeline ?)
+            if (this.subSurfaceScatteringPostProcess) {
+                this.subSurfaceScatteringPostProcess.activate(this._scene.activeCamera);
+            }
             this.imageProcessingPostProcess.activate(this._scene.activeCamera);
-            this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], this.imageProcessingPostProcess.inputTexture);
-            this._scene.postProcessManager.directRender([this.imageProcessingPostProcess], null, false, 0, 0, false);
+
+            // TODO : same as above
+            if (this.subSurfaceScatteringPostProcess) {
+                this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], this.imageProcessingPostProcess.inputTexture);
+            }
+
+            // TODO make it a clean function in scene.ts
+            let doNotBindFB = false;
+            if (this._scene.postProcessManager) {
+                doNotBindFB = true;
+                this._scene.postProcessManager._prepareFrame();
+            }
+            this._scene.postProcessManager.directRender([this.imageProcessingPostProcess], null, false, 0, 0, doNotBindFB);
         }
     }
 
@@ -181,7 +211,13 @@ export class PrePassRenderer {
 
         if (width !== requiredWidth || height !== requiredHeight) {
             this.prePassRT.resize({ width: requiredWidth, height: requiredHeight });
-            this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+
+            // TODO : same as above, PP chain
+            if (!this.subSurfaceScatteringPostProcess) {
+                this.imageProcessingPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+            } else {
+                this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+            }
         }
     }
 
@@ -218,12 +254,19 @@ export class PrePassRenderer {
     private _setState(enabled: boolean) {
         this._enabled = enabled;
         this._scene.prePass = enabled;
-        this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
+
+        if (this.imageProcessingPostProcess) {
+            this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
+        }
     }
 
     private _enable() {
-        if (!this.subSurfaceScatteringPostProcess) {
-            this._createEffects();
+        if (this.subSurfaceConfiguration.enabled && !this.subSurfaceScatteringPostProcess) {
+            this._createSubSurfaceScatteringEffect();
+        }
+
+        if (!this.imageProcessingPostProcess) {
+            this._createCompositionEffect();
         }
 
         this._setState(true);
@@ -231,6 +274,8 @@ export class PrePassRenderer {
 
     private _disable() {
         this._setState(false);
+        this.subSurfaceConfiguration.enabled = false;
+        this.ssaoConfiguration = false;
     }
 
     /**
@@ -248,11 +293,18 @@ export class PrePassRenderer {
             const material = this._scene.materials[i] as PBRBaseMaterial;
 
             if (material.subSurface && material.subSurface.isScatteringEnabled) {
+                this.subSurfaceConfiguration.enabled = true;
                 this._enable();
             }
         }
 
-        // add SSAO 2 etc..
+        const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
+        for (let i = 0; i < pipelines.length; i++) {
+            if (pipelines[i] instanceof SSAO2RenderingPipeline) {
+                this.ssaoConfiguration = true;
+                this._enable();
+            }
+        }
 
         this._isDirty = false;
 
