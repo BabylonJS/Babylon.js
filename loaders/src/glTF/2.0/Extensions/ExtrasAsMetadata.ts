@@ -7,9 +7,12 @@ import { INode, ICamera, IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Material } from "babylonjs/Materials/material";
-import { ObjectWithMetadata } from "babylonjs-gltf2interface";
 
 const NAME = "ExtrasAsMetadata";
+
+interface ObjectWithMetadata {
+    metadata: any;
+}
 
 /**
  * Store glTF extras (if present) in BJS objects' metadata
