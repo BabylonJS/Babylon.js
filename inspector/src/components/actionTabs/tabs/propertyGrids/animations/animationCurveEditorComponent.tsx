@@ -214,7 +214,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
-    console.log(length);
+
     let newFrameLength = new Array(length).fill(0).map((s, i) => {
       return { value: i * 10, label: i };
     });
@@ -1391,7 +1391,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
-  getCurrentFrame(frame: number) {
+  isCurrentFrame(frame: number) {
     if (this.state.currentFrame === frame) {
       return true;
     } else {
@@ -1534,7 +1534,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                       </text>
                       <line x1={f.value} y1='0' x2={f.value} y2='5%'></line>
 
-                      {this.getCurrentFrame(f.label) ? (
+                      {this.isCurrentFrame(f.label) ? (
                         <svg>
                           <line
                             x1={f.value}

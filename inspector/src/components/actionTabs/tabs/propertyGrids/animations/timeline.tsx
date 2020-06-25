@@ -33,6 +33,7 @@ export class Timeline extends React.Component<
   private _direction: number;
   private _scrolling: boolean;
   private _shiftX: number;
+  private _active: string = '';
 
   constructor(props: ITimelineProps) {
     super(props);
@@ -246,8 +247,6 @@ export class Timeline extends React.Component<
     this.setState({ activeKeyframe: null });
   }
 
-  private active: string = '';
-
   scrollDragStart(e: React.TouchEvent<HTMLDivElement>): void;
   scrollDragStart(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
   scrollDragStart(e: any) {
@@ -264,21 +263,19 @@ export class Timeline extends React.Component<
     }
 
     if (
-      (e.target.className === 'left-grabber' ||
-        e.target.className === 'left-draggable') &&
+      e.target.className === 'left-grabber' &&
       this._scrollbarHandle.current
     ) {
-      this.active = 'leftDraggable';
+      this._active = 'leftDraggable';
       this._shiftX =
         e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
     }
 
     if (
-      (e.target.className === 'right-grabber' ||
-        e.target.className === 'right-draggable') &&
+      e.target.className === 'right-grabber' &&
       this._scrollbarHandle.current
     ) {
-      this.active = 'rightDraggable';
+      this._active = 'rightDraggable';
       this._shiftX =
         e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
     }
@@ -323,7 +320,7 @@ export class Timeline extends React.Component<
       }
     }
 
-    if (this.active === 'leftDraggable') {
+    if (this._active === 'leftDraggable') {
       if (this._scrollContainer.current && this._scrollbarHandle.current) {
         let moving =
           e.clientX -
@@ -355,7 +352,7 @@ export class Timeline extends React.Component<
       }
     }
 
-    if (this.active === 'rightDraggable') {
+    if (this._active === 'rightDraggable') {
       if (this._scrollContainer.current && this._scrollbarHandle.current) {
         let moving =
           e.clientX -
@@ -382,7 +379,7 @@ export class Timeline extends React.Component<
   scrollDragEnd(e: any) {
     e.preventDefault();
     this._scrolling = false;
-    this.active = '';
+    this._active = '';
     this._shiftX = 0;
   }
 
