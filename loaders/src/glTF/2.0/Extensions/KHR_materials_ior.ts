@@ -5,13 +5,9 @@ import { Material } from "babylonjs/Materials/material";
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { IKHR_materials_ior } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_ior";
-
-/** @hidden */
-export interface IKHR_materials_ior {
-    ior: number;
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1718)

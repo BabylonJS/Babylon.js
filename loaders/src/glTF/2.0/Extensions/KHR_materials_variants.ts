@@ -6,30 +6,18 @@ import { Material } from 'babylonjs/Materials/material';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
+import { IKHRMaterialVariants } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_variants";
 
-/** @hidden */
-export interface IKHRMaterialVariantsMapping {
-    tags: string[];
-    material: number;
+interface IVariantsMap {
+    [key: string]: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
 }
 
-/** @hidden */
-export interface IKHRMaterialVariants {
-    mapping: IKHRMaterialVariantsMapping[];
-}
-
-/** @hidden */
-export interface IExtensionMetadata {
+interface IExtensionMetadata {
     lastSelected: Nullable<string | Array<string>>;
     original: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
     variants: IVariantsMap;
-}
-
-/** @hidden */
-export interface IVariantsMap {
-    [key: string]: Array<{ mesh: AbstractMesh, material: Nullable<Material> }>;
 }
 
 /**

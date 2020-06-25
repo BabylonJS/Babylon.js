@@ -10,61 +10,15 @@ import { WeightedSound } from "babylonjs/Audio/weightedsound";
 import { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { IProperty } from 'babylonjs-gltf2interface';
+import { IClip, IEmitter, IEmittersReference, IAnimationEvent, AnimationEventAction } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_audio_emitter";
 
-/** @hidden */
-export interface IClipReference {
-    clip: number;
-    weight?: number;
-}
-
-/** @hidden */
-export interface IEmittersReference {
-    emitters: number[];
-}
-
-/** @hidden */
-export const enum DistanceModel {
-    linear = "linear",
-    inverse = "inverse",
-    exponential = "exponential",
-}
-
-/** @hidden */
-export interface IEmitter {
-    name?: string;
-    distanceModel?: DistanceModel;
-    refDistance?: number;
-    maxDistance?: number;
-    rolloffFactor?: number;
-    innerAngle?: number;
-    outerAngle?: number;
-    loop?: boolean;
-    volume?: number;
-    clips: IClipReference[];
-}
-
-/** @hidden */
-export const enum AudioMimeType {
-    WAV = "audio/wav",
-}
-
-/** @hidden */
-export interface IClip extends IProperty {
-    uri?: string;
-    bufferView?: number;
-    mimeType?: AudioMimeType;
-}
-
-/** @hidden */
-export interface ILoaderClip extends IClip, IArrayItem {
+interface ILoaderClip extends IClip, IArrayItem {
     _objectURL?: Promise<string>;
 }
 
-/** @hidden */
-export interface ILoaderEmitter extends IEmitter, IArrayItem {
+interface ILoaderEmitter extends IEmitter, IArrayItem {
     _babylonData?: {
         sound?: WeightedSound;
         loaded: Promise<void>;
@@ -72,33 +26,15 @@ export interface ILoaderEmitter extends IEmitter, IArrayItem {
     _babylonSounds: Sound[];
 }
 
-/** @hidden */
-export interface IMSFTAudioEmitter {
+interface IMSFTAudioEmitter {
     clips: ILoaderClip[];
     emitters: ILoaderEmitter[];
 }
 
-/** @hidden */
-export const enum AnimationEventAction {
-    play = "play",
-    pause = "pause",
-    stop = "stop",
+interface ILoaderAnimationEvent extends IAnimationEvent, IArrayItem {
 }
 
-/** @hidden */
-export interface IAnimationEvent {
-    action: AnimationEventAction;
-    emitter: number;
-    time: number;
-    startOffset?: number;
-}
-
-/** @hidden */
-export interface ILoaderAnimationEvent extends IAnimationEvent, IArrayItem {
-}
-
-/** @hidden */
-export interface ILoaderAnimationEvents {
+interface ILoaderAnimationEvents {
     events: ILoaderAnimationEvent[];
 }
 

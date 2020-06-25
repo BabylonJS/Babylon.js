@@ -4,21 +4,14 @@ import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
-import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import { IBufferView, IMeshPrimitive } from "../glTFLoaderInterfaces";
+import { MeshPrimitiveMode, IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
+import { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_draco_mesh_compression";
 
-/** @hidden */
-export interface IKHRDracoMeshCompression {
-    bufferView: number;
-    attributes: { [name: string]: number };
-}
-
-/** @hidden */
-export interface IBufferViewDraco extends IBufferView {
+interface IBufferViewDraco extends IBufferView {
     _dracoBabylonGeometry?: Promise<Geometry>;
 }
 
