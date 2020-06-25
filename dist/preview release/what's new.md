@@ -102,6 +102,7 @@
 - Improved progress handling in glTF loader. ([bghgary](https://github.com/bghgary))
 - Use min/max values from position accessors (when available) to set the bounding box of meshes ([Popov72](https://github.com/Popov72))
 - Added missing "pluginExtension" parameter to SceneLoader.ImportAnimations. ([phenry20](https://github.com/phenry20))
+- Added support for .glb file loading through a base64 encoded filename ([Popov72](https://github.com/Popov72))
 
 ### Serializers
 
