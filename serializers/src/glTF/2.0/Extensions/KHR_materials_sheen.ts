@@ -6,7 +6,7 @@ import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Nullable } from 'babylonjs/types';
-import { IKHR_materials_sheen } from 'babylonjs-gltf2interface';
+import { IKHRMaterialsSheen } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_sheen";
 
@@ -84,7 +84,7 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
                 if (node.extensions == null) {
                     node.extensions = {};
                 }
-                const sheenInfo: IKHR_materials_sheen = {
+                const sheenInfo: IKHRMaterialsSheen = {
                     sheenColorFactor: babylonMaterial.sheen.color.asArray(),
                     sheenRoughnessFactor: babylonMaterial.sheen.roughness ?? 0
                 };

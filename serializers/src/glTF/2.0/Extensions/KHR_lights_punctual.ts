@@ -11,7 +11,7 @@ import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import { Logger } from "babylonjs/Misc/logger";
 import { _GLTFUtilities } from "../glTFUtilities";
-import { LightType, ILightReference, ILight, ILights } from "babylonjs-gltf2interface";
+import { IKHRLightsPunctual_LightType, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_lights_punctual";
 
@@ -31,7 +31,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
     /** Reference to the glTF exporter */
     private _exporter: _Exporter;
 
-    private _lights: ILights;
+    private _lights: IKHRLightsPunctual;
 
     /** @hidden */
     constructor(exporter: _Exporter) {
@@ -64,12 +64,12 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
         return new Promise((resolve, reject) => {
             if (node && babylonNode instanceof ShadowLight) {
                 const babylonLight: ShadowLight = babylonNode;
-                let light: ILight;
+                let light: IKHRLightsPunctual_Light;
 
                 const lightType = (
-                    babylonLight.getTypeID() == Light.LIGHTTYPEID_POINTLIGHT ? LightType.POINT : (
-                        babylonLight.getTypeID() == Light.LIGHTTYPEID_DIRECTIONALLIGHT ? LightType.DIRECTIONAL : (
-                            babylonLight.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT ? LightType.SPOT : null
+                    babylonLight.getTypeID() == Light.LIGHTTYPEID_POINTLIGHT ? IKHRLightsPunctual_LightType.POINT : (
+                        babylonLight.getTypeID() == Light.LIGHTTYPEID_DIRECTIONALLIGHT ? IKHRLightsPunctual_LightType.DIRECTIONAL : (
+                            babylonLight.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT ? IKHRLightsPunctual_LightType.SPOT : null
                         )));
                 if (lightType == null) {
                     Logger.Warn(`${context}: Light ${babylonLight.name} is not supported in ${NAME}`);
@@ -83,7 +83,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                         }
                         node.translation = lightPosition.asArray();
                     }
-                    if (lightType !== LightType.POINT) {
+                    if (lightType !== IKHRLightsPunctual_LightType.POINT) {
                         const localAxis = babylonLight.direction;
                         const yaw = -Math.atan2(localAxis.z * (this._exporter._babylonScene.useRightHandedSystem ? -1 : 1), localAxis.x) + Math.PI / 2;
                         const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
@@ -113,7 +113,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                         light.range = babylonLight.range;
                     }
 
-                    if (lightType === LightType.SPOT) {
+                    if (lightType === IKHRLightsPunctual_LightType.SPOT) {
                         const babylonSpotLight = babylonLight as SpotLight;
                         if (babylonSpotLight.angle !== Math.PI / 2.0) {
                             if (light.spot == null) {
@@ -137,7 +137,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
 
                     this._lights.lights.push(light);
 
-                    const lightReference: ILightReference = {
+                    const lightReference: IKHRLightsPunctual_LightReference = {
                         light: this._lights.lights.length - 1
                     };
 
