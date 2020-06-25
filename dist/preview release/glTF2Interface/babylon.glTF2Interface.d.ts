@@ -911,12 +911,12 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface ILightReferenceImageBased {
+    interface IEXTLightsImageBased_LightReferenceImageBased {
         light: number;
     }
 
     /** @hidden */
-    interface ILightImageBased extends IChildRootProperty {
+    interface IEXTLightsImageBased_LightImageBased extends IChildRootProperty {
         intensity: number;
         rotation: number[];
         specularImageSize: number;
@@ -925,8 +925,8 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @hidden */
-    interface ILightsImageBased {
-        lights: ILightImageBased[];
+    interface IEXTLightsImageBased {
+        lights: IEXTLightsImageBased_LightImageBased[];
     }
 
     /**
@@ -955,20 +955,20 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    enum LightType {
+    enum IKHRLightsPunctual_LightType {
         DIRECTIONAL = "directional",
         POINT = "point",
         SPOT = "spot"
     }
 
     /** @hidden */
-    interface ILightReference {
+    interface IKHRLightsPunctual_LightReference {
         light: number;
     }
 
     /** @hidden */
-    interface ILight extends IChildRootProperty {
-        type: LightType;
+    interface IKHRLightsPunctual_Light extends IChildRootProperty {
+        type: IKHRLightsPunctual_LightType;
         color?: number[];
         intensity?: number;
         range?: number;
@@ -979,8 +979,8 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @hidden */
-    interface ILights {
-        lights: ILight[];
+    interface IKHRLightsPunctual {
+        lights: IKHRLightsPunctual_Light[];
     }
 
     /**
@@ -989,7 +989,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IKHR_materials_clearcoat {
+    interface IKHRMaterialsClearcoat {
         clearcoatFactor: number;
         clearcoatTexture: ITextureInfo;
         clearcoatRoughnessFactor: number;
@@ -1003,7 +1003,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IKHR_materials_ior {
+    interface IKHRMaterialsIor {
         ior: number;
     }
 
@@ -1026,7 +1026,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IKHR_materials_sheen {
+    interface IKHRMaterialsSheen {
         sheenColorFactor?: number[];
         sheenTexture?: ITextureInfo;
         sheenRoughnessFactor?: number;
@@ -1038,7 +1038,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IKHR_materials_specular {
+    interface IKHRMaterialsSpecular {
         specularFactor: number;
         specularColorFactor: number[];
         specularTexture: ITextureInfo;
@@ -1050,7 +1050,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IMaterialsTransmission {
+    interface IKHRMaterialsTransmission {
         transmissionFactor?: number;
         transmissionTexture?: ITextureInfo;
     }
@@ -1061,14 +1061,14 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IKHRMaterialVariantsMapping {
+    interface IKHRMaterialVariants_Mapping {
         tags: string[];
         material: number;
     }
 
     /** @hidden */
     interface IKHRMaterialVariants {
-        mapping: IKHRMaterialVariantsMapping[];
+        mapping: IKHRMaterialVariants_Mapping[];
     }
 
     /**
@@ -1099,17 +1099,17 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IKHR_xmp_data {
+    interface IKHRXmp_Data {
         [key: string]: unknown;
     }
 
     /** @hidden */
-    interface IKHR_xmp_gltf {
-        packets: IKHR_xmp_data[];
+    interface IKHRXmp_Gltf {
+        packets: IKHRXmp_Data[];
     }
 
     /** @hidden */
-    interface IKHR_xmp_node {
+    interface IKHRXmp_Node {
         packet: number;
     }
 
@@ -1118,27 +1118,27 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IClipReference {
+    interface IMSFTAudioEmitter_ClipReference {
         clip: number;
         weight?: number;
     }
 
     /** @hidden */
-    interface IEmittersReference {
+    interface IMSFTAudioEmitter_EmittersReference {
         emitters: number[];
     }
 
     /** @hidden */
-    const enum DistanceModel {
+    const enum IMSFTAudioEmitter_DistanceModel {
         linear = "linear",
         inverse = "inverse",
         exponential = "exponential",
     }
 
     /** @hidden */
-    interface IEmitter {
+    interface IMSFTAudioEmitter_Emitter {
         name?: string;
-        distanceModel?: DistanceModel;
+        distanceModel?: IMSFTAudioEmitter_DistanceModel;
         refDistance?: number;
         maxDistance?: number;
         rolloffFactor?: number;
@@ -1146,31 +1146,31 @@ declare module BABYLON.GLTF2 {
         outerAngle?: number;
         loop?: boolean;
         volume?: number;
-        clips: IClipReference[];
+        clips: IMSFTAudioEmitter_ClipReference[];
     }
 
     /** @hidden */
-    const enum AudioMimeType {
+    const enum IMSFTAudioEmitter_AudioMimeType {
         WAV = "audio/wav",
     }
 
     /** @hidden */
-    interface IClip extends IProperty {
+    interface IMSFTAudioEmitter_Clip extends IProperty {
         uri?: string;
         bufferView?: number;
-        mimeType?: AudioMimeType;
+        mimeType?: IMSFTAudioEmitter_AudioMimeType;
     }
 
     /** @hidden */
-    const enum AnimationEventAction {
+    const enum IMSFTAudioEmitter_AnimationEventAction {
         play = "play",
         pause = "pause",
         stop = "stop",
     }
 
     /** @hidden */
-    interface IAnimationEvent {
-        action: AnimationEventAction;
+    interface IMSFTAudioEmitter_AnimationEvent {
+        action: IMSFTAudioEmitter_AnimationEventAction;
         emitter: number;
         time: number;
         startOffset?: number;

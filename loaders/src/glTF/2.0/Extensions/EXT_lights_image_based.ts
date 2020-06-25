@@ -5,7 +5,7 @@ import { Quaternion, Matrix } from "babylonjs/Maths/math.vector";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { RawCubeTexture } from "babylonjs/Materials/Textures/rawCubeTexture";
 
-import { ILightReferenceImageBased, ILightImageBased, ILightsImageBased } from "babylonjs-gltf2interface";
+import { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBased_LightImageBased, IEXTLightsImageBased } from "babylonjs-gltf2interface";
 import { IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
@@ -14,7 +14,7 @@ const NAME = "EXT_lights_image_based";
 
 declare module "babylonjs-gltf2interface" {
     /** @hidden */
-    interface ILightImageBased {
+    interface IEXTLightsImageBased_LightImageBased {
         _babylonTexture?: BaseTexture;
         _loaded?: Promise<void>;
     }
@@ -35,7 +35,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     public enabled: boolean;
 
     private _loader: GLTFLoader;
-    private _lights?: ILightImageBased[];
+    private _lights?: IEXTLightsImageBased_LightImageBased[];
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -53,14 +53,14 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            const extension = extensions[this.name] as ILightsImageBased;
+            const extension = extensions[this.name] as IEXTLightsImageBased;
             this._lights = extension.lights;
         }
     }
 
     /** @hidden */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<ILightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
             promises.push(this._loader.loadSceneAsync(context, scene));
@@ -78,7 +78,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadLightAsync(context: string, light: ILightImageBased): Promise<BaseTexture> {
+    private _loadLightAsync(context: string, light: IEXTLightsImageBased_LightImageBased): Promise<BaseTexture> {
         if (!light._loaded) {
             const promises = new Array<Promise<any>>();
 
