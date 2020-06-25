@@ -417,7 +417,21 @@ export class SceneLoader {
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
 
         if (directLoad) {
-            onSuccess(plugin, plugin.directLoad ? plugin.directLoad(scene, directLoad) : directLoad);
+            if (plugin.directLoad) {
+                const result = plugin.directLoad(scene, directLoad);
+                if (result.then) {
+                    result.then((data: any) => {
+                        onSuccess(plugin, data);
+                    }).catch((error: any) => {
+                        onError("Error in directLoad of _loadData: " + error, error);
+                    });
+                }
+                else {
+                    onSuccess(plugin, result);
+                }
+            } else {
+                onSuccess(plugin, directLoad);
+            }
             return plugin;
         }
 
