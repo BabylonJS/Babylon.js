@@ -7,41 +7,12 @@ import { SpotLight } from "babylonjs/Lights/spotLight";
 import { Light } from "babylonjs/Lights/light";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 
-import { IChildRootProperty } from "babylonjs-gltf2interface";
+import { LightType, ILightReference, ILight, ILights } from "babylonjs-gltf2interface";
 import { INode } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_lights_punctual";
-
-/** @hidden */
-export enum LightType {
-    DIRECTIONAL = "directional",
-    POINT = "point",
-    SPOT = "spot"
-}
-
-/** @hidden */
-export interface ILightReference {
-    light: number;
-}
-
-/** @hidden */
-export interface ILight extends IChildRootProperty {
-    type: LightType;
-    color?: number[];
-    intensity?: number;
-    range?: number;
-    spot?: {
-        innerConeAngle?: number;
-        outerConeAngle?: number;
-    };
-}
-
-/** @hidden */
-export interface ILights {
-    lights: ILight[];
-}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual)

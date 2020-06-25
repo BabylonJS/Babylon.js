@@ -3,13 +3,9 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { ITexture } from "../glTFLoaderInterfaces";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Nullable } from "babylonjs/types";
+import { IKHRTextureBasisU } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_texture_basisu";
-
-/** @hidden */
-export interface IKHRTextureBasisU {
-    source: number;
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1751)

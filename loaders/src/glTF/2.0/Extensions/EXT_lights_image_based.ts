@@ -5,33 +5,19 @@ import { Quaternion, Matrix } from "babylonjs/Maths/math.vector";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { RawCubeTexture } from "babylonjs/Materials/Textures/rawCubeTexture";
 
-import { IChildRootProperty } from "babylonjs-gltf2interface";
+import { ILightReferenceImageBased, ILightImageBased, ILightsImageBased } from "babylonjs-gltf2interface";
 import { IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "EXT_lights_image_based";
 
-/** @hidden */
-export interface ILightReferenceImageBased {
-    light: number;
-}
-
-/** @hidden */
-export interface ILightImageBased extends IChildRootProperty {
-    intensity: number;
-    rotation: number[];
-    specularImageSize: number;
-    specularImages: number[][];
-    irradianceCoefficients: number[][];
-
-    _babylonTexture?: BaseTexture;
-    _loaded?: Promise<void>;
-}
-
-/** @hidden */
-export interface ILightsImageBased {
-    lights: ILightImageBased[];
+declare module "babylonjs-gltf2interface" {
+    /** @hidden */
+    interface ILightImageBased {
+        _babylonTexture?: BaseTexture;
+        _loaded?: Promise<void>;
+    }
 }
 
 /**

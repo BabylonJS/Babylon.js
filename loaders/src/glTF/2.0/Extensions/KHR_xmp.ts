@@ -1,22 +1,8 @@
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { IKHR_xmp_gltf, IKHR_xmp_node } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_xmp";
-
-/** @hidden */
-export interface IKHR_xmp_data {
-    [key: string]: unknown;
-}
-
-/** @hidden */
-export interface IKHR_xmp_gltf {
-    packets: IKHR_xmp_data[];
-}
-
-/** @hidden */
-export interface IKHR_xmp_node {
-    packet: number;
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1553)

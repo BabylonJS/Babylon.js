@@ -2,19 +2,13 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { ITextureInfo, IMaterial } from "../glTFLoaderInterfaces";
+import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { IKHR_materials_sheen } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_sheen";
-
-/** @hidden */
-export interface IKHR_materials_sheen {
-    sheenColorFactor: number[];
-    sheenTexture: ITextureInfo;
-    sheenRoughnessFactor: number;
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
