@@ -905,4 +905,286 @@ declare module BABYLON.GLTF2 {
         validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
         validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
     }
+
+    /**
+     * Interfaces from the EXT_lights_image_based extension
+     */
+
+    /** @hidden */
+    interface ILightReferenceImageBased {
+        light: number;
+    }
+
+    /** @hidden */
+    interface ILightImageBased extends IChildRootProperty {
+        intensity: number;
+        rotation: number[];
+        specularImageSize: number;
+        specularImages: number[][];
+        irradianceCoefficients: number[][];
+    }
+
+    /** @hidden */
+    interface ILightsImageBased {
+        lights: ILightImageBased[];
+    }
+
+    /**
+     * Interfaces from the EXT_mesh_gpu_instancing extension
+     */
+
+    /** @hidden */
+    interface IEXTMeshGpuInstancing {
+        mesh?: number;
+        attributes: { [name: string]: number };
+    }
+
+    /**
+     * Interfaces from the ExtrasAsMetadata extension
+     */
+
+    /** @hidden */
+    interface ObjectWithMetadata {
+        metadata: any;
+    }
+
+    /**
+     * Interfaces from the KHR_draco_mesh_compression extension
+     */
+
+    /** @hidden */
+    interface IKHRDracoMeshCompression {
+        bufferView: number;
+        attributes: { [name: string]: number };
+    }
+
+    /**
+     * Interfaces from the KHR_lights_punctual extension
+     */
+
+    /** @hidden */
+    enum LightType {
+        DIRECTIONAL = "directional",
+        POINT = "point",
+        SPOT = "spot"
+    }
+
+    /** @hidden */
+    interface ILightReference {
+        light: number;
+    }
+
+    /** @hidden */
+    interface ILight extends IChildRootProperty {
+        type: LightType;
+        color?: number[];
+        intensity?: number;
+        range?: number;
+        spot?: {
+            innerConeAngle?: number;
+            outerConeAngle?: number;
+        };
+    }
+
+    /** @hidden */
+    interface ILights {
+        lights: ILight[];
+    }
+
+    /**
+     * Interfaces from the KHR_materials_clearcoat extension
+     */
+
+    /** @hidden */
+    interface IKHR_materials_clearcoat {
+        clearcoatFactor: number;
+        clearcoatTexture: ITextureInfo;
+        clearcoatRoughnessFactor: number;
+        clearcoatRoughnessTexture: ITextureInfo;
+        clearcoatNormalTexture: IMaterialNormalTextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_ior extension
+     */
+
+    /** @hidden */
+    interface IKHR_materials_ior {
+        ior: number;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_pbrSpecularGlossiness extension
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsPbrSpecularGlossiness {
+        diffuseFactor: number[];
+        diffuseTexture: ITextureInfo;
+        specularFactor: number[];
+        glossinessFactor: number;
+        specularGlossinessTexture: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_sheen extension
+     */
+
+    /** @hidden */
+    interface IKHR_materials_sheen {
+        sheenColorFactor: number[];
+        sheenTexture: ITextureInfo;
+        sheenRoughnessFactor: number;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_specular extension
+     */
+
+    /** @hidden */
+    interface IKHR_materials_specular {
+        specularFactor: number;
+        specularColorFactor: number[];
+        specularTexture: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_transmission extension
+     */
+
+    /** @hidden */
+    interface IMaterialsTransmission {
+        transmissionFactor?: number;
+        transmissionTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_variants extension
+     */
+
+    /** @hidden */
+    interface IKHRMaterialVariantsMapping {
+        tags: string[];
+        material: number;
+    }
+
+    /** @hidden */
+    interface IKHRMaterialVariants {
+        mapping: IKHRMaterialVariantsMapping[];
+    }
+
+    /**
+     * Interfaces from the KHR_texture_basisu extension
+     */
+
+    /** @hidden */
+    interface IKHRTextureBasisU {
+        source: number;
+    }
+
+    /**
+     * Interfaces from the KHR_texture_transform extension
+     */
+
+    /** @hidden */
+    interface IKHRTextureTransform {
+        offset?: number[];
+        rotation?: number;
+        scale?: number[];
+        texCoord?: number;
+    }
+
+    /**
+     * Interfaces from the KHR_xmp extension
+     */
+
+    /** @hidden */
+    interface IKHR_xmp_data {
+        [key: string]: unknown;
+    }
+
+    /** @hidden */
+    interface IKHR_xmp_gltf {
+        packets: IKHR_xmp_data[];
+    }
+
+    /** @hidden */
+    interface IKHR_xmp_node {
+        packet: number;
+    }
+
+    /**
+     * Interfaces from the MSFT_audio_emitter extension
+     */
+
+    /** @hidden */
+    interface IClipReference {
+        clip: number;
+        weight?: number;
+    }
+
+    /** @hidden */
+    interface IEmittersReference {
+        emitters: number[];
+    }
+
+    /** @hidden */
+    const enum DistanceModel {
+        linear = "linear",
+        inverse = "inverse",
+        exponential = "exponential",
+    }
+
+    /** @hidden */
+    interface IEmitter {
+        name?: string;
+        distanceModel?: DistanceModel;
+        refDistance?: number;
+        maxDistance?: number;
+        rolloffFactor?: number;
+        innerAngle?: number;
+        outerAngle?: number;
+        loop?: boolean;
+        volume?: number;
+        clips: IClipReference[];
+    }
+
+    /** @hidden */
+    const enum AudioMimeType {
+        WAV = "audio/wav",
+    }
+
+    /** @hidden */
+    interface IClip extends IProperty {
+        uri?: string;
+        bufferView?: number;
+        mimeType?: AudioMimeType;
+    }
+
+    /** @hidden */
+    const enum AnimationEventAction {
+        play = "play",
+        pause = "pause",
+        stop = "stop",
+    }
+
+    /** @hidden */
+    interface IAnimationEvent {
+        action: AnimationEventAction;
+        emitter: number;
+        time: number;
+        startOffset?: number;
+    }
+
+    /**
+     * Interfaces from the MSFT_lod extension
+     */
+
+    /** @hidden */
+    interface IMSFTLOD {
+        ids: number[];
+    }
+
+
+
 }
