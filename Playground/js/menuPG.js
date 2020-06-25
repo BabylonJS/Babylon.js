@@ -403,7 +403,7 @@ class MenuPG {
      * Canvas full screen
      */
     goFullscreen(engine) {
-        engine.switchFullscreen(true);
+        engine.switchFullscreen(false);
     };
     /**
      * Editor full screen
