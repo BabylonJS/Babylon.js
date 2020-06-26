@@ -605,14 +605,37 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             this._log(`Loading ${fileName || ""}`);
             this._loader = this._getLoader(data);
 
+            // Prepare the asset container.
+            const container = new AssetContainer(scene);
+
             // Get materials/textures when loading to add to container
             const materials: Array<Material> = [];
             this.onMaterialLoadedObservable.add((material) => {
                 materials.push(material);
+                material.onDisposeObservable.addOnce(() => {
+                    let index = container.materials.indexOf(material);
+                    if (index > -1) {
+                        container.materials.splice(index, 1);
+                    }
+                    index = materials.indexOf(material);
+                    if (index > -1) {
+                        materials.splice(index, 1);
+                    }
+                });
             });
             const textures: Array<BaseTexture> = [];
             this.onTextureLoadedObservable.add((texture) => {
                 textures.push(texture);
+                texture.onDisposeObservable.addOnce(() => {
+                    let index = container.textures.indexOf(texture);
+                    if (index > -1) {
+                        container.textures.splice(index, 1);
+                    }
+                    index = textures.indexOf(texture);
+                    if (index > -1) {
+                        textures.splice(index, 1);
+                    }
+                });
             });
             const cameras: Array<Camera> = [];
             this.onCameraLoadedObservable.add((camera) => {
@@ -620,7 +643,6 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             });
 
             return this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then((result) => {
-                const container = new AssetContainer(scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);
