@@ -5062,21 +5062,42 @@ var GLTFFileLoader = /** @class */ (function () {
             _this.onParsedObservable.clear();
             _this._log("Loading " + (fileName || ""));
             _this._loader = _this._getLoader(data);
+            // Prepare the asset container.
+            var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
             // Get materials/textures when loading to add to container
             var materials = [];
             _this.onMaterialLoadedObservable.add(function (material) {
                 materials.push(material);
+                material.onDisposeObservable.addOnce(function () {
+                    var index = container.materials.indexOf(material);
+                    if (index > -1) {
+                        container.materials.splice(index, 1);
+                    }
+                    index = materials.indexOf(material);
+                    if (index > -1) {
+                        materials.splice(index, 1);
+                    }
+                });
             });
             var textures = [];
             _this.onTextureLoadedObservable.add(function (texture) {
                 textures.push(texture);
+                texture.onDisposeObservable.addOnce(function () {
+                    var index = container.textures.indexOf(texture);
+                    if (index > -1) {
+                        container.textures.splice(index, 1);
+                    }
+                    index = textures.indexOf(texture);
+                    if (index > -1) {
+                        textures.splice(index, 1);
+                    }
+                });
             });
             var cameras = [];
             _this.onCameraLoadedObservable.add(function (camera) {
                 cameras.push(camera);
             });
             return _this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then(function (result) {
-                var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);
