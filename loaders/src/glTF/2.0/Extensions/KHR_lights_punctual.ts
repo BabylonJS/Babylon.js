@@ -7,37 +7,12 @@ import { SpotLight } from "babylonjs/Lights/spotLight";
 import { Light } from "babylonjs/Lights/light";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 
-import { IChildRootProperty } from "babylonjs-gltf2interface";
+import { IKHRLightsPunctual_LightType, IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
 import { INode } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_lights_punctual";
-
-enum LightType {
-    DIRECTIONAL = "directional",
-    POINT = "point",
-    SPOT = "spot"
-}
-
-interface ILightReference {
-    light: number;
-}
-
-interface ILight extends IChildRootProperty {
-    type: LightType;
-    color?: number[];
-    intensity?: number;
-    range?: number;
-    spot?: {
-        innerConeAngle?: number;
-        outerConeAngle?: number;
-    };
-}
-
-interface ILights {
-    lights: ILight[];
-}
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual)
@@ -54,7 +29,7 @@ export class KHR_lights implements IGLTFLoaderExtension {
     public enabled: boolean;
 
     private _loader: GLTFLoader;
-    private _lights?: ILight[];
+    private _lights?: IKHRLightsPunctual_Light[];
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -72,14 +47,14 @@ export class KHR_lights implements IGLTFLoaderExtension {
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            const extension = extensions[this.name] as ILights;
+            const extension = extensions[this.name] as IKHRLightsPunctual;
             this._lights = extension.lights;
         }
     }
 
     /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<ILightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             return this._loader.loadNodeAsync(context, node, (babylonMesh) => {
                 let babylonLight: Light;
 
@@ -89,15 +64,15 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 this._loader.babylonScene._blockEntityCollection = this._loader._forAssetContainer;
 
                 switch (light.type) {
-                    case LightType.DIRECTIONAL: {
+                    case IKHRLightsPunctual_LightType.DIRECTIONAL: {
                         babylonLight = new DirectionalLight(name, Vector3.Backward(), this._loader.babylonScene);
                         break;
                     }
-                    case LightType.POINT: {
+                    case IKHRLightsPunctual_LightType.POINT: {
                         babylonLight = new PointLight(name, Vector3.Zero(), this._loader.babylonScene);
                         break;
                     }
-                    case LightType.SPOT: {
+                    case IKHRLightsPunctual_LightType.SPOT: {
                         const babylonSpotLight = new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 1, this._loader.babylonScene);
                         babylonSpotLight.angle = ((light.spot && light.spot.outerConeAngle) || Math.PI / 4) * 2;
                         babylonSpotLight.innerAngle = ((light.spot && light.spot.innerConeAngle) || 0) * 2;

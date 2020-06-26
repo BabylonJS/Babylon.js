@@ -1,19 +1,8 @@
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { IKHRXmp_Gltf, IKHRXmp_Node } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_xmp";
-
-interface IKHR_xmp_data {
-    [key: string]: unknown;
-}
-
-interface IKHR_xmp_gltf {
-    packets: IKHR_xmp_data[];
-}
-
-interface IKHR_xmp_node {
-    packet: number;
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1553)
@@ -52,8 +41,8 @@ export class KHR_xmp implements IGLTFLoaderExtension {
      * Called after the loader state changes to LOADING.
      */
     public onLoading(): void {
-        const xmp_gltf = (this._loader.gltf.extensions?.KHR_xmp as IKHR_xmp_gltf);
-        const xmp_node = (this._loader.gltf.asset?.extensions?.KHR_xmp as IKHR_xmp_node);
+        const xmp_gltf = (this._loader.gltf.extensions?.KHR_xmp as IKHRXmp_Gltf);
+        const xmp_node = (this._loader.gltf.asset?.extensions?.KHR_xmp as IKHRXmp_Node);
         if (xmp_gltf && xmp_node) {
             const packet = +xmp_node.packet;
             if (xmp_gltf.packets && packet < xmp_gltf.packets.length) {

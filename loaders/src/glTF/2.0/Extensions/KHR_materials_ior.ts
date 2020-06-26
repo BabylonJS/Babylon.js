@@ -5,12 +5,9 @@ import { Material } from "babylonjs/Materials/material";
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { IKHRMaterialsIor } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_ior";
-
-interface IKHR_materials_ior {
-    ior: number;
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1718)
@@ -52,7 +49,7 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHR_materials_ior>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsIor>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadIorPropertiesAsync(extensionContext, extension, babylonMaterial));
@@ -60,7 +57,7 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadIorPropertiesAsync(context: string, properties: IKHR_materials_ior, babylonMaterial: Material): Promise<void> {
+    private _loadIorPropertiesAsync(context: string, properties: IKHRMaterialsIor, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
