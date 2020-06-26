@@ -6,14 +6,9 @@ import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Nullable } from 'babylonjs/types';
+import { IKHRMaterialsSheen } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_sheen";
-
-interface IKHR_materials_sheen {
-    intensityFactor: number;
-    colorFactor: number[];
-    colorIntensityTexture?: ITextureInfo;
-}
 
 /**
  * @hidden
@@ -89,16 +84,16 @@ export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
                 if (node.extensions == null) {
                     node.extensions = {};
                 }
-                const sheenInfo: IKHR_materials_sheen = {
-                    colorFactor: babylonMaterial.sheen.color.asArray(),
-                    intensityFactor: babylonMaterial.sheen.intensity
+                const sheenInfo: IKHRMaterialsSheen = {
+                    sheenColorFactor: babylonMaterial.sheen.color.asArray(),
+                    sheenRoughnessFactor: babylonMaterial.sheen.roughness ?? 0
                 };
 
                 if (babylonMaterial.sheen.texture) {
                     let textureIndex = this._getTextureIndex(babylonMaterial.sheen.texture);
 
                     if (textureIndex > -1) {
-                        sheenInfo.colorIntensityTexture = this._textureInfos[textureIndex] ;
+                        sheenInfo.sheenTexture = this._textureInfos[textureIndex] ;
                     }
                 }
 

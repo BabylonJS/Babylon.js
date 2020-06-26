@@ -46259,6 +46259,7 @@ declare module BABYLON {
          * Overriding the _getViewMatrix function, as it is computed by WebXR
          */
         _getViewMatrix(): Matrix;
+        private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
         private _updateReferenceSpace;

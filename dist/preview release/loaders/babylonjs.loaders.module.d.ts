@@ -1737,9 +1737,17 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
 }
 declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_lights_image_based" {
     import { Nullable } from "babylonjs/types";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { IScene } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    module "babylonjs-gltf2interface" {
+        /** @hidden */
+        interface IEXTLightsImageBased_LightImageBased {
+            _babylonTexture?: BaseTexture;
+            _loaded?: Promise<void>;
+        }
+    }
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
      */
@@ -4480,6 +4488,11 @@ declare module BABYLON.GLTF2 {
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
+        /** @hidden */
+        interface IEXTLightsImageBased_LightImageBased {
+            _babylonTexture?: BaseTexture;
+            _loaded?: Promise<void>;
+        }
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
      */

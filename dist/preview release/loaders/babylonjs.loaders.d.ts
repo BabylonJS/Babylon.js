@@ -1646,6 +1646,11 @@ declare module BABYLON.GLTF2 {
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
+        /** @hidden */
+        interface IEXTLightsImageBased_LightImageBased {
+            _babylonTexture?: BaseTexture;
+            _loaded?: Promise<void>;
+        }
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
      */
