@@ -955,7 +955,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    enum IKHRLightsPunctual_LightType {
+    const enum IKHRLightsPunctual_LightType {
         DIRECTIONAL = "directional",
         POINT = "point",
         SPOT = "spot"
