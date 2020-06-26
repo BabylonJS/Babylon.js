@@ -15,6 +15,7 @@ interface IAddAnimationProps {
   onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
   setNotificationMessage: (message: string) => void;
   changed: () => void;
+  fps: number;
 }
 
 export class AddAnimation extends React.Component<
@@ -214,7 +215,7 @@ export class AddAnimation extends React.Component<
           let animation = new Animation(
             this.state.animationName,
             this.state.animationTargetProperty,
-            30,
+            this.props.fps,
             animationDataType
           );
 
