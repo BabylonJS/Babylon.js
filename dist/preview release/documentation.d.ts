@@ -46259,6 +46259,7 @@ declare module BABYLON {
          * Overriding the _getViewMatrix function, as it is computed by WebXR
          */
         _getViewMatrix(): Matrix;
+        private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
         private _updateReferenceSpace;
@@ -80498,6 +80499,11 @@ declare module BABYLON.GLTF2 {
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
+        /** @hidden */
+        interface IEXTLightsImageBased_LightImageBased {
+            _babylonTexture?: BaseTexture;
+            _loaded?: Promise<void>;
+        }
     /**
      * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
      */
@@ -83483,6 +83489,288 @@ declare module BABYLON.GLTF2 {
         validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
         validateString: (json: string, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;
     }
+
+    /**
+     * Interfaces from the EXT_lights_image_based extension
+     */
+
+    /** @hidden */
+    interface IEXTLightsImageBased_LightReferenceImageBased {
+        light: number;
+    }
+
+    /** @hidden */
+    interface IEXTLightsImageBased_LightImageBased extends IChildRootProperty {
+        intensity: number;
+        rotation: number[];
+        specularImageSize: number;
+        specularImages: number[][];
+        irradianceCoefficients: number[][];
+    }
+
+    /** @hidden */
+    interface IEXTLightsImageBased {
+        lights: IEXTLightsImageBased_LightImageBased[];
+    }
+
+    /**
+     * Interfaces from the EXT_mesh_gpu_instancing extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IEXTMeshGpuInstancing {
+        mesh?: number;
+        attributes: { [name: string]: number };
+    }
+
+    /**
+     * Interfaces from the KHR_draco_mesh_compression extension
+     */
+
+    /** @hidden */
+    interface IKHRDracoMeshCompression {
+        bufferView: number;
+        attributes: { [name: string]: number };
+    }
+
+    /**
+     * Interfaces from the KHR_lights_punctual extension
+     */
+
+    /** @hidden */
+    const enum IKHRLightsPunctual_LightType {
+        DIRECTIONAL = "directional",
+        POINT = "point",
+        SPOT = "spot"
+    }
+
+    /** @hidden */
+    interface IKHRLightsPunctual_LightReference {
+        light: number;
+    }
+
+    /** @hidden */
+    interface IKHRLightsPunctual_Light extends IChildRootProperty {
+        type: IKHRLightsPunctual_LightType;
+        color?: number[];
+        intensity?: number;
+        range?: number;
+        spot?: {
+            innerConeAngle?: number;
+            outerConeAngle?: number;
+        };
+    }
+
+    /** @hidden */
+    interface IKHRLightsPunctual {
+        lights: IKHRLightsPunctual_Light[];
+    }
+
+    /**
+     * Interfaces from the KHR_materials_clearcoat extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsClearcoat {
+        clearcoatFactor: number;
+        clearcoatTexture: ITextureInfo;
+        clearcoatRoughnessFactor: number;
+        clearcoatRoughnessTexture: ITextureInfo;
+        clearcoatNormalTexture: IMaterialNormalTextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_ior extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsIor {
+        ior: number;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_pbrSpecularGlossiness extension
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsPbrSpecularGlossiness {
+        diffuseFactor: number[];
+        diffuseTexture: ITextureInfo;
+        specularFactor: number[];
+        glossinessFactor: number;
+        specularGlossinessTexture: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_sheen extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsSheen {
+        sheenColorFactor?: number[];
+        sheenTexture?: ITextureInfo;
+        sheenRoughnessFactor?: number;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_specular extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsSpecular {
+        specularFactor: number;
+        specularColorFactor: number[];
+        specularTexture: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_transmission extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialsTransmission {
+        transmissionFactor?: number;
+        transmissionTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_variants extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRMaterialVariants_Mapping {
+        tags: string[];
+        material: number;
+    }
+
+    /** @hidden */
+    interface IKHRMaterialVariants {
+        mapping: IKHRMaterialVariants_Mapping[];
+    }
+
+    /**
+     * Interfaces from the KHR_texture_basisu extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRTextureBasisU {
+        source: number;
+    }
+
+    /**
+     * Interfaces from the KHR_texture_transform extension
+     */
+
+    /** @hidden */
+    interface IKHRTextureTransform {
+        offset?: number[];
+        rotation?: number;
+        scale?: number[];
+        texCoord?: number;
+    }
+
+    /**
+     * Interfaces from the KHR_xmp extension
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+
+    /** @hidden */
+    interface IKHRXmp_Data {
+        [key: string]: unknown;
+    }
+
+    /** @hidden */
+    interface IKHRXmp_Gltf {
+        packets: IKHRXmp_Data[];
+    }
+
+    /** @hidden */
+    interface IKHRXmp_Node {
+        packet: number;
+    }
+
+    /**
+     * Interfaces from the MSFT_audio_emitter extension
+     */
+
+    /** @hidden */
+    interface IMSFTAudioEmitter_ClipReference {
+        clip: number;
+        weight?: number;
+    }
+
+    /** @hidden */
+    interface IMSFTAudioEmitter_EmittersReference {
+        emitters: number[];
+    }
+
+    /** @hidden */
+    const enum IMSFTAudioEmitter_DistanceModel {
+        linear = "linear",
+        inverse = "inverse",
+        exponential = "exponential",
+    }
+
+    /** @hidden */
+    interface IMSFTAudioEmitter_Emitter {
+        name?: string;
+        distanceModel?: IMSFTAudioEmitter_DistanceModel;
+        refDistance?: number;
+        maxDistance?: number;
+        rolloffFactor?: number;
+        innerAngle?: number;
+        outerAngle?: number;
+        loop?: boolean;
+        volume?: number;
+        clips: IMSFTAudioEmitter_ClipReference[];
+    }
+
+    /** @hidden */
+    const enum IMSFTAudioEmitter_AudioMimeType {
+        WAV = "audio/wav",
+    }
+
+    /** @hidden */
+    interface IMSFTAudioEmitter_Clip extends IProperty {
+        uri?: string;
+        bufferView?: number;
+        mimeType?: IMSFTAudioEmitter_AudioMimeType;
+    }
+
+    /** @hidden */
+    const enum IMSFTAudioEmitter_AnimationEventAction {
+        play = "play",
+        pause = "pause",
+        stop = "stop",
+    }
+
+    /** @hidden */
+    interface IMSFTAudioEmitter_AnimationEvent {
+        action: IMSFTAudioEmitter_AnimationEventAction;
+        emitter: number;
+        time: number;
+        startOffset?: number;
+    }
+
+    /**
+     * Interfaces from the MSFT_lod extension
+     */
+
+    /** @hidden */
+    interface IMSFTLOD {
+        ids: number[];
+    }
+
+
+
 }
 
 declare module BABYLON {
