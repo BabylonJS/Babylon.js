@@ -70,21 +70,16 @@ export class Timeline extends React.Component<
   }
 
   calculateScrollWidth(start: number, end: number) {
-    if (this._scrollContainer.current) {
-      if (this.props.animationLimit !== 0) {
-        const containerWidth = this._scrollContainer.current.clientWidth;
-        const scrollFrameLimit = this.props.animationLimit;
-        const scrollFrameLength = end - start;
-        const widthPercentage = (scrollFrameLength * 100) / scrollFrameLimit;
-        const scrollPixelWidth = (widthPercentage * containerWidth) / 100;
-        // check 0 values here... to avoid Infinity
-        if (scrollPixelWidth === Infinity) {
-          console.log('error infinity');
-        }
-        return scrollPixelWidth;
-      } else {
-        return undefined;
+    if (this._scrollContainer.current && this.props.animationLimit !== 0) {
+      const containerWidth = this._scrollContainer.current.clientWidth;
+      const scrollFrameLimit = this.props.animationLimit;
+      const scrollFrameLength = end - start;
+      const widthPercentage = (scrollFrameLength * 100) / scrollFrameLimit;
+      const scrollPixelWidth = (widthPercentage * containerWidth) / 100;
+      if (scrollPixelWidth === Infinity || scrollPixelWidth > containerWidth) {
+        return containerWidth;
       }
+      return scrollPixelWidth;
     } else {
       return undefined;
     }
@@ -286,91 +281,15 @@ export class Timeline extends React.Component<
   scrollDrag(e: any) {
     e.preventDefault();
     if (e.target.className === 'scrollbar') {
-      if (
-        this._scrolling &&
-        this._scrollbarHandle.current &&
-        this._scrollContainer.current
-      ) {
-        let moved = e.pageX - this._shiftX;
-
-        const scrollContainerWith = this._scrollContainer.current.clientWidth;
-        const startPixel = moved - 233;
-        const limitRight =
-          scrollContainerWith - (this.state.scrollWidth || 0) - 5;
-
-        if (moved > 233 && startPixel < limitRight) {
-          this._scrollbarHandle.current.style.left = moved + 'px';
-          (this._scrollable.current as HTMLDivElement).scrollLeft = moved + 10;
-
-          const startPixelPercent = (startPixel * 100) / scrollContainerWith;
-
-          const selectionStartFrame = Math.round(
-            (startPixelPercent * this.props.animationLimit) / 100
-          );
-
-          const selectionEndFrame =
-            this.state.selectionLength.length + selectionStartFrame;
-
-          this.setState({
-            start: selectionStartFrame,
-            end: selectionEndFrame,
-            selectionLength: this.range(selectionStartFrame, selectionEndFrame),
-          });
-        }
-      }
+      this.moveScrollbar(e.pageX);
     }
 
     if (this._active === 'leftDraggable') {
-      if (this._scrollContainer.current && this._scrollbarHandle.current) {
-        let moving =
-          e.clientX -
-          this._scrollbarHandle.current.getBoundingClientRect().left;
-        const scrollContainerWith = this._scrollContainer.current.clientWidth;
-        const pixelFrameRatio = scrollContainerWith / this.props.animationLimit;
-
-        let containerWidth = this.state.scrollWidth ?? 0;
-        let resizePercentage = (100 * Math.abs(moving)) / containerWidth;
-
-        let frameChange = (resizePercentage * this.state.end) / 100;
-
-        let framesTo;
-
-        if (Math.sign(moving) === 1) {
-          framesTo = this.state.start + Math.round(frameChange);
-        } else {
-          framesTo = this.state.start - Math.round(frameChange);
-        }
-        let Toleft = framesTo * pixelFrameRatio + 233;
-
-        this._scrollbarHandle.current.style.left = Toleft + 'px';
-
-        this.setState({
-          start: framesTo,
-          scrollWidth: this.calculateScrollWidth(framesTo, this.state.end),
-          selectionLength: this.range(framesTo, this.state.end),
-        });
-      }
+      this.resizeScrollbarLeft(e.clientX);
     }
 
     if (this._active === 'rightDraggable') {
-      if (this._scrollContainer.current && this._scrollbarHandle.current) {
-        let moving =
-          e.clientX -
-          this._scrollbarHandle.current.getBoundingClientRect().left;
-
-        let containerWidth = this.state.scrollWidth ?? 0;
-        let resizePercentage = (100 * Math.abs(moving)) / containerWidth;
-
-        let frameChange = (resizePercentage * this.state.end) / 100;
-
-        let framesTo = Math.round(frameChange);
-
-        this.setState({
-          end: framesTo,
-          scrollWidth: this.calculateScrollWidth(this.state.start, framesTo),
-          selectionLength: this.range(this.state.start, framesTo),
-        });
-      }
+      this.resizeScrollbarRight(e.clientX);
     }
   }
 
@@ -381,6 +300,87 @@ export class Timeline extends React.Component<
     this._scrolling = false;
     this._active = '';
     this._shiftX = 0;
+  }
+
+  moveScrollbar(pageX: number) {
+    if (
+      this._scrolling &&
+      this._scrollbarHandle.current &&
+      this._scrollContainer.current
+    ) {
+      const moved = pageX - this._shiftX;
+      const scrollContainerWith = this._scrollContainer.current.clientWidth;
+      const startPixel = moved - 233;
+      const limitRight =
+        scrollContainerWith - (this.state.scrollWidth || 0) - 5;
+
+      if (moved > 233 && startPixel < limitRight) {
+        this._scrollbarHandle.current.style.left = moved + 'px';
+        (this._scrollable.current as HTMLDivElement).scrollLeft = moved + 10;
+
+        const startPixelPercent = (startPixel * 100) / scrollContainerWith;
+
+        const selectionStartFrame = Math.round(
+          (startPixelPercent * this.props.animationLimit) / 100
+        );
+
+        const selectionEndFrame =
+          this.state.selectionLength.length + selectionStartFrame;
+
+        this.setState({
+          start: selectionStartFrame,
+          end: selectionEndFrame,
+          selectionLength: this.range(selectionStartFrame, selectionEndFrame),
+        });
+      }
+    }
+  }
+
+  resizeScrollbarRight(clientX: number) {
+    if (this._scrollContainer.current && this._scrollbarHandle.current) {
+      const moving =
+        clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
+
+      const containerWidth = this.state.scrollWidth ?? 0;
+      const resizePercentage = (100 * Math.abs(moving)) / containerWidth;
+      const frameChange = (resizePercentage * this.state.end) / 100;
+      const framesTo = Math.round(frameChange);
+
+      this.setState({
+        end: framesTo,
+        scrollWidth: this.calculateScrollWidth(this.state.start, framesTo),
+        selectionLength: this.range(this.state.start, framesTo),
+      });
+    }
+  }
+
+  resizeScrollbarLeft(clientX: number) {
+    if (this._scrollContainer.current && this._scrollbarHandle.current) {
+      const moving =
+        clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
+      const scrollContainerWith = this._scrollContainer.current.clientWidth;
+      const pixelFrameRatio = scrollContainerWith / this.props.animationLimit;
+      const containerWidth = this.state.scrollWidth ?? 0;
+      const resizePercentage = (100 * Math.abs(moving)) / containerWidth;
+
+      const frameChange = (resizePercentage * this.state.end) / 100;
+
+      let framesTo;
+      if (Math.sign(moving) === 1) {
+        framesTo = this.state.start + Math.round(frameChange);
+      } else {
+        framesTo = this.state.start - Math.round(frameChange);
+      }
+      let Toleft = framesTo * pixelFrameRatio + 233;
+
+      this._scrollbarHandle.current.style.left = Toleft + 'px';
+
+      this.setState({
+        start: framesTo,
+        scrollWidth: this.calculateScrollWidth(framesTo, this.state.end),
+        selectionLength: this.range(framesTo, this.state.end),
+      });
+    }
   }
 
   range(start: number, end: number) {

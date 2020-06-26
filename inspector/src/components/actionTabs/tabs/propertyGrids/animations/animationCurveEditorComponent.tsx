@@ -1392,11 +1392,7 @@ export class AnimationCurveEditorComponent extends React.Component<
   }
 
   isCurrentFrame(frame: number) {
-    if (this.state.currentFrame === frame) {
-      return true;
-    } else {
-      return false;
-    }
+    return this.state.currentFrame === frame;
   }
 
   render() {
