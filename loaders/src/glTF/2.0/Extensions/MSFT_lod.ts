@@ -8,13 +8,9 @@ import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { IProperty } from 'babylonjs-gltf2interface';
+import { IProperty, IMSFTLOD } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_lod";
-
-interface IMSFTLOD {
-    ids: number[];
-}
 
 interface IBufferInfo {
     start: number;

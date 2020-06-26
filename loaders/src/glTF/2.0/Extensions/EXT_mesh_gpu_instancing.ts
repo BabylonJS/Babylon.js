@@ -6,13 +6,9 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { INode } from "../glTFLoaderInterfaces";
 import { TmpVectors } from 'babylonjs/Maths/math.vector';
+import { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
 const NAME = "EXT_mesh_gpu_instancing";
-
-interface IEXTMeshGpuInstancing {
-    mesh?: number;
-    attributes: { [name: string]: number };
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)

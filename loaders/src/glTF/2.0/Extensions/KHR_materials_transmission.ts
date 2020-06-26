@@ -2,16 +2,12 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
+import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { IKHRMaterialsTransmission } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_transmission";
-
-interface IMaterialsTransmission {
-    transmissionFactor?: number;
-    transmissionTexture?: ITextureInfo;
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1698)
@@ -51,7 +47,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {
             console.log(extensionContext);
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
@@ -61,7 +57,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadTransparentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IMaterialsTransmission): Promise<void> {
+    private _loadTransparentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsTransmission): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
