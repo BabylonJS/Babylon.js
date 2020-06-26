@@ -719,25 +719,38 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         selected: IAnimationKey | null;
         currentFrame: number;
         onCurrentFrameChange: (frame: number) => void;
+        onAnimationLimitChange: (limit: number) => void;
         dragKeyframe: (frame: number, index: number) => void;
         playPause: (direction: number) => void;
         isPlaying: boolean;
+        animationLimit: number;
+        fps: number;
     }
     export class Timeline extends React.Component<ITimelineProps, {
         selected: IAnimationKey;
         activeKeyframe: number | null;
+        start: number;
+        end: number;
+        scrollWidth: number | undefined;
+        selectionLength: number[];
     }> {
         readonly _frames: object[];
         private _scrollable;
         private _scrollbarHandle;
+        private _scrollContainer;
         private _direction;
         private _scrolling;
         private _shiftX;
+        private _active;
         constructor(props: ITimelineProps);
+        componentDidMount(): void;
+        calculateScrollWidth(start: number, end: number): number | undefined;
         playBackwards(event: React.MouseEvent<HTMLDivElement>): void;
         play(event: React.MouseEvent<HTMLDivElement>): void;
         pause(event: React.MouseEvent<HTMLDivElement>): void;
         handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setCurrentFrame(event: React.MouseEvent<HTMLDivElement>): void;
+        handleLimitChange(event: React.ChangeEvent<HTMLInputElement>): void;
         nextFrame(event: React.MouseEvent<HTMLDivElement>): void;
         previousFrame(event: React.MouseEvent<HTMLDivElement>): void;
         nextKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
@@ -755,6 +768,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         scrollDrag(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
         scrollDragEnd(e: React.TouchEvent<HTMLDivElement>): void;
         scrollDragEnd(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        moveScrollbar(pageX: number): void;
+        resizeScrollbarRight(clientX: number): void;
+        resizeScrollbarLeft(clientX: number): void;
+        range(start: number, end: number): number[];
+        getKeyframe(frame: number): false | IAnimationKey | undefined;
+        getCurrentFrame(frame: number): boolean;
         render(): JSX.Element;
     }
 }
@@ -827,6 +846,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         changed: () => void;
+        fps: number;
     }
     export class AddAnimation extends React.Component<IAddAnimationProps, {
         animationName: string;
@@ -998,6 +1018,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
+        setFps: (fps: number) => void;
         globalState: GlobalState;
         snippetServer: string;
     }
@@ -1010,10 +1031,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         animationsCount: number;
         framesPerSecond: number;
         snippetId: string;
+        loopMode: number;
     }> {
         constructor(props: IEditorControlsProps);
         animationAdded(): void;
         recountAnimations(): number;
+        changeLoopBehavior(): void;
         handleTabs(tab: number): void;
         handleChangeFps(fps: number): void;
         emptiedList(): void;
@@ -1075,6 +1098,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         isPlaying: boolean;
         selectedPathData: ICurveData[] | undefined;
         selectedCoordinate: number;
+        animationLimit: number;
+        fps: number;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -1164,11 +1189,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
          * This section controls the timeline.
          */
         changeCurrentFrame(frame: number): void;
+        changeAnimationLimit(limit: number): void;
         updateFrameInKeyFrame(frame: number, index: number): void;
         playPause(direction: number): void;
         moveFrameTo(e: React.MouseEvent<SVGRectElement, MouseEvent>): void;
         registerObs(): void;
         componentWillUnmount(): void;
+        isCurrentFrame(frame: number): boolean;
         render(): JSX.Element;
     }
 }
@@ -4213,25 +4240,38 @@ declare module INSPECTOR {
         selected: BABYLON.IAnimationKey | null;
         currentFrame: number;
         onCurrentFrameChange: (frame: number) => void;
+        onAnimationLimitChange: (limit: number) => void;
         dragKeyframe: (frame: number, index: number) => void;
         playPause: (direction: number) => void;
         isPlaying: boolean;
+        animationLimit: number;
+        fps: number;
     }
     export class Timeline extends React.Component<ITimelineProps, {
         selected: BABYLON.IAnimationKey;
         activeKeyframe: number | null;
+        start: number;
+        end: number;
+        scrollWidth: number | undefined;
+        selectionLength: number[];
     }> {
         readonly _frames: object[];
         private _scrollable;
         private _scrollbarHandle;
+        private _scrollContainer;
         private _direction;
         private _scrolling;
         private _shiftX;
+        private _active;
         constructor(props: ITimelineProps);
+        componentDidMount(): void;
+        calculateScrollWidth(start: number, end: number): number | undefined;
         playBackwards(event: React.MouseEvent<HTMLDivElement>): void;
         play(event: React.MouseEvent<HTMLDivElement>): void;
         pause(event: React.MouseEvent<HTMLDivElement>): void;
         handleInputChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setCurrentFrame(event: React.MouseEvent<HTMLDivElement>): void;
+        handleLimitChange(event: React.ChangeEvent<HTMLInputElement>): void;
         nextFrame(event: React.MouseEvent<HTMLDivElement>): void;
         previousFrame(event: React.MouseEvent<HTMLDivElement>): void;
         nextKeyframe(event: React.MouseEvent<HTMLDivElement>): void;
@@ -4249,6 +4289,12 @@ declare module INSPECTOR {
         scrollDrag(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
         scrollDragEnd(e: React.TouchEvent<HTMLDivElement>): void;
         scrollDragEnd(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        moveScrollbar(pageX: number): void;
+        resizeScrollbarRight(clientX: number): void;
+        resizeScrollbarLeft(clientX: number): void;
+        range(start: number, end: number): number[];
+        getKeyframe(frame: number): false | BABYLON.IAnimationKey | undefined;
+        getCurrentFrame(frame: number): boolean;
         render(): JSX.Element;
     }
 }
@@ -4313,6 +4359,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         changed: () => void;
+        fps: number;
     }
     export class AddAnimation extends React.Component<IAddAnimationProps, {
         animationName: string;
@@ -4453,6 +4500,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: BABYLON.Animation, axis?: SelectedCoordinate) => void;
+        setFps: (fps: number) => void;
         globalState: GlobalState;
         snippetServer: string;
     }
@@ -4465,10 +4513,12 @@ declare module INSPECTOR {
         animationsCount: number;
         framesPerSecond: number;
         snippetId: string;
+        loopMode: number;
     }> {
         constructor(props: IEditorControlsProps);
         animationAdded(): void;
         recountAnimations(): number;
+        changeLoopBehavior(): void;
         handleTabs(tab: number): void;
         handleChangeFps(fps: number): void;
         emptiedList(): void;
@@ -4516,6 +4566,8 @@ declare module INSPECTOR {
         isPlaying: boolean;
         selectedPathData: ICurveData[] | undefined;
         selectedCoordinate: number;
+        animationLimit: number;
+        fps: number;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -4605,11 +4657,13 @@ declare module INSPECTOR {
          * This section controls the timeline.
          */
         changeCurrentFrame(frame: number): void;
+        changeAnimationLimit(limit: number): void;
         updateFrameInKeyFrame(frame: number, index: number): void;
         playPause(direction: number): void;
         moveFrameTo(e: React.MouseEvent<SVGRectElement, MouseEvent>): void;
         registerObs(): void;
         componentWillUnmount(): void;
+        isCurrentFrame(frame: number): boolean;
         render(): JSX.Element;
     }
 }

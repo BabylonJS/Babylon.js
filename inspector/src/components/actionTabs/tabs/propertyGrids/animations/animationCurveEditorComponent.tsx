@@ -68,6 +68,8 @@ export class AnimationCurveEditorComponent extends React.Component<
     isPlaying: boolean;
     selectedPathData: ICurveData[] | undefined;
     selectedCoordinate: number;
+    animationLimit: number;
+    fps: number;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -150,7 +152,7 @@ export class AnimationCurveEditorComponent extends React.Component<
           (this._canvasLength * 10)
         : 0,
       frameAxisLength: new Array(this._canvasLength).fill(0).map((s, i) => {
-        return { value: i * 10, label: i * 10 };
+        return { value: i * 10, label: i };
       }),
       valueAxisLength: new Array(10).fill(0).map((s, i) => {
         return { value: i * 10, label: valueInd[i] };
@@ -162,6 +164,8 @@ export class AnimationCurveEditorComponent extends React.Component<
       isPlaying: this.isAnimationPlaying(),
       selectedPathData: initialPathData,
       selectedCoordinate: 0,
+      animationLimit: 120,
+      fps: 0,
     };
   }
 
@@ -184,7 +188,6 @@ export class AnimationCurveEditorComponent extends React.Component<
    */
   zoom(e: React.WheelEvent<HTMLDivElement>) {
     e.nativeEvent.stopImmediatePropagation();
-    //console.log(e.deltaY);
     let scaleX = 1;
     if (Math.sign(e.deltaY) === -1) {
       scaleX = this.state.scale - 0.01;
@@ -197,7 +200,7 @@ export class AnimationCurveEditorComponent extends React.Component<
 
   setAxesLength() {
     let length = 20;
-    let newlength = Math.round(this._canvasLength * this.state.scale); // Check Undefined, or NaN
+    let newlength = Math.round(this._canvasLength * this.state.scale);
     if (!isNaN(newlength) || newlength !== undefined) {
       length = newlength;
     }
@@ -211,9 +214,9 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
-    console.log(highestFrame);
+
     let newFrameLength = new Array(length).fill(0).map((s, i) => {
-      return { value: i * 10, label: i * 10 };
+      return { value: i * 10, label: i };
     });
     let newValueLength = new Array(valueLines).fill(0).map((s, i) => {
       return { value: i * 10, label: this.getValueLabel(i * 10) };
@@ -1294,6 +1297,12 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
+  changeAnimationLimit(limit: number) {
+    this.setState({
+      animationLimit: limit,
+    });
+  }
+
   updateFrameInKeyFrame(frame: number, index: number) {
     if (this.state && this.state.selected) {
       let animation = this.state.selected;
@@ -1382,6 +1391,10 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
+  isCurrentFrame(frame: number) {
+    return this.state.currentFrame === frame;
+  }
+
   render() {
     return (
       <div id='animation-curve-editor'>
@@ -1427,6 +1440,9 @@ export class AnimationCurveEditorComponent extends React.Component<
               }}
               globalState={this.props.globalState}
               snippetServer={this._snippetUrl}
+              setFps={(fps: number) => {
+                this.setState({ fps: fps });
+              }}
             />
 
             <div
@@ -1469,7 +1485,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     <rect
                       x='-4%'
                       y='0%'
-                      width='5%'
+                      width='4%'
                       height='101%'
                       fill='#222'
                     ></rect>
@@ -1508,11 +1524,35 @@ export class AnimationCurveEditorComponent extends React.Component<
                         x={f.value}
                         y='0'
                         dx='2px'
-                        style={{ fontSize: `${0.2 * this.state.scale}em` }}
+                        style={{ fontSize: `${0.17 * this.state.scale}em` }}
                       >
-                        {f.value}
+                        {f.label}
                       </text>
                       <line x1={f.value} y1='0' x2={f.value} y2='5%'></line>
+
+                      {this.isCurrentFrame(f.label) ? (
+                        <svg>
+                          <line
+                            x1={f.value}
+                            y1='0'
+                            x2={f.value}
+                            y2='40'
+                            style={{
+                              stroke: 'rgba(18, 80, 107, 0.26)',
+                              strokeWidth: 6,
+                            }}
+                          />
+                        </svg>
+                      ) : null}
+
+                      {f.value % this.state.fps === 0 && f.value !== 0 ? (
+                        <line
+                          x1={f.value}
+                          y1='-100'
+                          x2={f.value}
+                          y2='5%'
+                        ></line>
+                      ) : null}
                     </svg>
                   ))}
                 </SvgDraggableArea>
@@ -1541,8 +1581,13 @@ export class AnimationCurveEditorComponent extends React.Component<
               onCurrentFrameChange={(frame: number) =>
                 this.changeCurrentFrame(frame)
               }
+              onAnimationLimitChange={(limit: number) =>
+                this.changeAnimationLimit(limit)
+              }
+              animationLimit={this.state.animationLimit}
               keyframes={this.state.selected && this.state.selected.getKeys()}
               selected={this.state.selected && this.state.selected.getKeys()[0]}
+              fps={this.state.fps}
             ></Timeline>
           </div>
         </div>
