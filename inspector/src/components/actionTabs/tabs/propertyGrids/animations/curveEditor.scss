@@ -2,6 +2,7 @@
   background-color: rgb(51, 51, 51);
 
   font-family: acumin-pro-condensed;
+  background-color: #333333;
 
   .last {
     margin-left: 3px;
@@ -505,7 +506,7 @@
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
-    height: 462px;
+    height: 465px;
 
     .row {
       width: 1024px;
@@ -533,12 +534,12 @@
         height: 2.5rem;
 
         .display-line {
-          width: 75vw;
           height: 40px;
           overflow: hidden;
           margin-right: 0px;
           padding-left: 10px;
           padding-right: 10px;
+          width: 782px;
 
           &::-webkit-scrollbar {
             height: 0.4em;
@@ -558,6 +559,9 @@
           width: 60px;
           margin-left: 10px;
           margin-right: 10px;
+          position: absolute;
+          right: 9px;
+          bottom: 11px;
 
           input {
             text-align: center;
@@ -589,6 +593,8 @@
             height: 25px;
             display: flex;
             align-items: center;
+            padding-left: 2px;
+            padding-right: 2px;
             .handle {
               display: flex;
               flex-direction: row;
@@ -607,6 +613,21 @@
                 display: flex;
                 align-items: center;
                 cursor: pointer;
+                .text {
+                  pointer-events: none;
+                }
+              }
+
+              .left-draggable,
+              .right-draggable {
+                display: flex;
+                align-items: center;
+                pointer-events: none;
+                &:active {
+                  .grabber {
+                    background-color: #555555;
+                  }
+                }
               }
 
               .left-grabber {
@@ -634,7 +655,7 @@
         }
 
         .timeline-wrapper {
-          margin-top: -40px;
+          margin-top: -45px;
           margin-left: -2px;
         }
 
