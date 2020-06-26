@@ -598,12 +598,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var NAME = "KHR_lights_punctual";
-var LightType;
-(function (LightType) {
-    LightType["DIRECTIONAL"] = "directional";
-    LightType["POINT"] = "point";
-    LightType["SPOT"] = "spot";
-})(LightType || (LightType = {}));
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
  */
@@ -648,7 +642,7 @@ var KHR_lights_punctual = /** @class */ (function () {
             if (node && babylonNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["ShadowLight"]) {
                 var babylonLight = babylonNode;
                 var light = void 0;
-                var lightType = (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_POINTLIGHT ? LightType.POINT : (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_DIRECTIONALLIGHT ? LightType.DIRECTIONAL : (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_SPOTLIGHT ? LightType.SPOT : null)));
+                var lightType = (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_POINTLIGHT ? "point" /* POINT */ : (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_DIRECTIONALLIGHT ? "directional" /* DIRECTIONAL */ : (babylonLight.getTypeID() == babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].LIGHTTYPEID_SPOTLIGHT ? "spot" /* SPOT */ : null)));
                 if (lightType == null) {
                     babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Logger"].Warn(context + ": Light " + babylonLight.name + " is not supported in " + NAME);
                 }
@@ -661,7 +655,7 @@ var KHR_lights_punctual = /** @class */ (function () {
                         }
                         node.translation = lightPosition.asArray();
                     }
-                    if (lightType !== LightType.POINT) {
+                    if (lightType !== "point" /* POINT */) {
                         var localAxis = babylonLight.direction;
                         var yaw = -Math.atan2(localAxis.z * (_this._exporter._babylonScene.useRightHandedSystem ? -1 : 1), localAxis.x) + Math.PI / 2;
                         var len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
@@ -689,7 +683,7 @@ var KHR_lights_punctual = /** @class */ (function () {
                     if (babylonLight.range !== Number.MAX_VALUE) {
                         light.range = babylonLight.range;
                     }
-                    if (lightType === LightType.SPOT) {
+                    if (lightType === "spot" /* SPOT */) {
                         var babylonSpotLight = babylonLight;
                         if (babylonSpotLight.angle !== Math.PI / 2.0) {
                             if (light.spot == null) {
@@ -841,6 +835,7 @@ var KHR_materials_sheen = /** @class */ (function () {
     KHR_materials_sheen.prototype.postExportMaterialAsync = function (context, node, babylonMaterial) {
         var _this = this;
         return new Promise(function (resolve, reject) {
+            var _a;
             if (babylonMaterial instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_1__["PBRMaterial"]) {
                 if (!babylonMaterial.sheen.isEnabled) {
                     resolve(node);
@@ -851,13 +846,13 @@ var KHR_materials_sheen = /** @class */ (function () {
                     node.extensions = {};
                 }
                 var sheenInfo = {
-                    colorFactor: babylonMaterial.sheen.color.asArray(),
-                    intensityFactor: babylonMaterial.sheen.intensity
+                    sheenColorFactor: babylonMaterial.sheen.color.asArray(),
+                    sheenRoughnessFactor: (_a = babylonMaterial.sheen.roughness) !== null && _a !== void 0 ? _a : 0
                 };
                 if (babylonMaterial.sheen.texture) {
                     var textureIndex = _this._getTextureIndex(babylonMaterial.sheen.texture);
                     if (textureIndex > -1) {
-                        sheenInfo.colorIntensityTexture = _this._textureInfos[textureIndex];
+                        sheenInfo.sheenTexture = _this._textureInfos[textureIndex];
                     }
                 }
                 node.extensions[NAME] = sheenInfo;

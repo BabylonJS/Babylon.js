@@ -10,53 +10,15 @@ import { WeightedSound } from "babylonjs/Audio/weightedsound";
 import { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { IProperty } from 'babylonjs-gltf2interface';
+import { IMSFTAudioEmitter_Clip, IMSFTAudioEmitter_Emitter, IMSFTAudioEmitter_EmittersReference, IMSFTAudioEmitter_AnimationEvent, IMSFTAudioEmitter_AnimationEventAction } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_audio_emitter";
 
-interface IClipReference {
-    clip: number;
-    weight?: number;
-}
-
-interface IEmittersReference {
-    emitters: number[];
-}
-
-const enum DistanceModel {
-    linear = "linear",
-    inverse = "inverse",
-    exponential = "exponential",
-}
-
-interface IEmitter {
-    name?: string;
-    distanceModel?: DistanceModel;
-    refDistance?: number;
-    maxDistance?: number;
-    rolloffFactor?: number;
-    innerAngle?: number;
-    outerAngle?: number;
-    loop?: boolean;
-    volume?: number;
-    clips: IClipReference[];
-}
-
-const enum AudioMimeType {
-    WAV = "audio/wav",
-}
-
-interface IClip extends IProperty {
-    uri?: string;
-    bufferView?: number;
-    mimeType?: AudioMimeType;
-}
-
-interface ILoaderClip extends IClip, IArrayItem {
+interface ILoaderClip extends IMSFTAudioEmitter_Clip, IArrayItem {
     _objectURL?: Promise<string>;
 }
 
-interface ILoaderEmitter extends IEmitter, IArrayItem {
+interface ILoaderEmitter extends IMSFTAudioEmitter_Emitter, IArrayItem {
     _babylonData?: {
         sound?: WeightedSound;
         loaded: Promise<void>;
@@ -69,20 +31,7 @@ interface IMSFTAudioEmitter {
     emitters: ILoaderEmitter[];
 }
 
-const enum AnimationEventAction {
-    play = "play",
-    pause = "pause",
-    stop = "stop",
-}
-
-interface IAnimationEvent {
-    action: AnimationEventAction;
-    emitter: number;
-    time: number;
-    startOffset?: number;
-}
-
-interface ILoaderAnimationEvent extends IAnimationEvent, IArrayItem {
+interface ILoaderAnimationEvent extends IMSFTAudioEmitter_AnimationEvent, IArrayItem {
 }
 
 interface ILoaderAnimationEvents {
@@ -136,7 +85,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IEmittersReference>(context, scene, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference>(context, scene, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
             promises.push(this._loader.loadSceneAsync(context, scene));
@@ -157,7 +106,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IEmittersReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
 
             return this._loader.loadNodeAsync(extensionContext, node, (babylonMesh) => {
@@ -266,20 +215,20 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
         return emitter._babylonData.loaded;
     }
 
-    private _getEventAction(context: string, sound: WeightedSound, action: AnimationEventAction, time: number, startOffset?: number): (currentFrame: number) => void {
+    private _getEventAction(context: string, sound: WeightedSound, action: IMSFTAudioEmitter_AnimationEventAction, time: number, startOffset?: number): (currentFrame: number) => void {
         switch (action) {
-            case AnimationEventAction.play: {
+            case IMSFTAudioEmitter_AnimationEventAction.play: {
                 return (currentFrame: number) => {
                     const frameOffset = (startOffset || 0) + (currentFrame - time);
                     sound.play(frameOffset);
                 };
             }
-            case AnimationEventAction.stop: {
+            case IMSFTAudioEmitter_AnimationEventAction.stop: {
                 return (currentFrame: number) => {
                     sound.stop();
                 };
             }
-            case AnimationEventAction.pause: {
+            case IMSFTAudioEmitter_AnimationEventAction.pause: {
                 return (currentFrame: number) => {
                     sound.pause();
                 };
