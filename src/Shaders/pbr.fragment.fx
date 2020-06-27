@@ -510,14 +510,15 @@ void main(void) {
     vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
 
     // Irradiance is diffuse * surfaceAlbedo
+    #ifdef SS_SCATTERING
     gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Lit without irradiance
     irradiance /= sqAlbedo;
-    #ifdef SS_SCATTERING
     gl_FragData[1] = vec4(tagLightingForSSS(irradiance), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
     #else
-    gl_FragData[1] = vec4(irradiance, 1.0); // Irradiance
+    gl_FragData[0] = vec4(finalColor.rgb, finalColor.a); // Lit without irradiance
+    gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0); // Irradiance
     #endif
-    gl_FragData[2] = vec4(vViewPos.z, normalW); // Linear depth + normal
+    gl_FragData[2] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
     gl_FragData[3] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
 #endif
 

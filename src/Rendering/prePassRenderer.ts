@@ -64,7 +64,9 @@ export class PrePassRenderer {
     public subSurfaceConfiguration: SubSurfaceConfiguration;
 
     // TODO
-    public ssaoConfiguration: boolean;
+    public ssaoConfiguration: boolean = false;
+
+    public materialsShouldRenderGeometry: boolean = false;
 
     private _enabled: boolean = false;
 
@@ -276,6 +278,7 @@ export class PrePassRenderer {
         this._setState(false);
         this.subSurfaceConfiguration.enabled = false;
         this.ssaoConfiguration = false;
+        this.materialsShouldRenderGeometry = true;
     }
 
     /**
@@ -302,6 +305,7 @@ export class PrePassRenderer {
         for (let i = 0; i < pipelines.length; i++) {
             if (pipelines[i] instanceof SSAO2RenderingPipeline) {
                 this.ssaoConfiguration = true;
+                this.materialsShouldRenderGeometry = true;
                 this._enable();
             }
         }

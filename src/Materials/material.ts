@@ -613,7 +613,7 @@ export class Material implements IAnimatable {
     /**
      * Stores a reference to the scene
      */
-    private _scene: Scene;
+    protected _scene: Scene;
 
     /**
      * Stores the fill mode state
