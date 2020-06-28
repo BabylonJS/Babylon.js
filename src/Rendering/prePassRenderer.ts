@@ -5,6 +5,7 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
+import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
@@ -45,6 +46,8 @@ export class PrePassRenderer {
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
+
+    private _postProcesses: PostProcess[] = [];
 
     private readonly _clearColor = new Color4(0, 0, 0, 0);
 
@@ -130,19 +133,12 @@ export class PrePassRenderer {
         this._initializeAttachments();
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
-
-        // TODO same remark as below, create PP chain
-        if (!this.subSurfaceScatteringPostProcess) {
-            this.imageProcessingPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
-        }
-
         this.imageProcessingPostProcess.autoClear = false;
     }
 
     private _createSubSurfaceScatteringEffect() {
         // TODO : Could probably be moved in subsurface configuration
         this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
-        this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
         this.subSurfaceScatteringPostProcess.autoClear = false;
     }
 
@@ -183,25 +179,10 @@ export class PrePassRenderer {
      */
     public _afterCameraDraw() {
         if (this._enabled) {
+            this._scene.postProcessManager._prepareFrame(null, this._postProcesses);
 
-            // TODO : change with list of postprocess (setup pipeline ?)
-            if (this.subSurfaceScatteringPostProcess) {
-                this.subSurfaceScatteringPostProcess.activate(this._scene.activeCamera);
-            }
-            this.imageProcessingPostProcess.activate(this._scene.activeCamera);
-
-            // TODO : same as above
-            if (this.subSurfaceScatteringPostProcess) {
-                this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], this.imageProcessingPostProcess.inputTexture);
-            }
-
-            // TODO make it a clean function in scene.ts
-            let doNotBindFB = false;
-            if (this._scene.postProcessManager) {
-                doNotBindFB = true;
-                this._scene.postProcessManager._prepareFrame();
-            }
-            this._scene.postProcessManager.directRender([this.imageProcessingPostProcess], null, false, 0, 0, doNotBindFB);
+            const firstCameraPP = this._scene.activeCamera && this._scene.activeCamera._getFirstPostProcess();
+            this._scene.postProcessManager.directRender(this._postProcesses, firstCameraPP ? firstCameraPP.inputTexture : null);
         }
     }
 
@@ -214,12 +195,7 @@ export class PrePassRenderer {
         if (width !== requiredWidth || height !== requiredHeight) {
             this.prePassRT.resize({ width: requiredWidth, height: requiredHeight });
 
-            // TODO : same as above, PP chain
-            if (!this.subSurfaceScatteringPostProcess) {
-                this.imageProcessingPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
-            } else {
-                this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
-            }
+            this._bindPostProcessChain();
         }
     }
 
@@ -263,14 +239,22 @@ export class PrePassRenderer {
     }
 
     private _enable() {
+        this._resetPostProcessChain();
+
         if (this.subSurfaceConfiguration.enabled && !this.subSurfaceScatteringPostProcess) {
-            this._createSubSurfaceScatteringEffect();
+            if (!this.subSurfaceScatteringPostProcess) {
+                this._createSubSurfaceScatteringEffect();
+            }
+
+            this._postProcesses.push(this.subSurfaceScatteringPostProcess);
         }
 
         if (!this.imageProcessingPostProcess) {
             this._createCompositionEffect();
         }
 
+        this._postProcesses.push(this.imageProcessingPostProcess);
+        this._bindPostProcessChain();
         this._setState(true);
     }
 
@@ -279,6 +263,14 @@ export class PrePassRenderer {
         this.subSurfaceConfiguration.enabled = false;
         this.ssaoConfiguration = false;
         this.materialsShouldRenderGeometry = true;
+    }
+
+    private _resetPostProcessChain() {
+        this._postProcesses = [];
+    }
+
+    private _bindPostProcessChain() {
+        this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
     }
 
     /**
@@ -290,6 +282,7 @@ export class PrePassRenderer {
 
     private _update() {
         this._disable();
+        let enablePrePass = false;
 
         // Subsurface scattering
         for (let i = 0; i < this._scene.materials.length; i++) {
@@ -297,7 +290,10 @@ export class PrePassRenderer {
 
             if (material.subSurface && material.subSurface.isScatteringEnabled) {
                 this.subSurfaceConfiguration.enabled = true;
-                this._enable();
+                enablePrePass = true;
+
+                // 1 subsurface material is enough to activate post process
+                break;
             }
         }
 
@@ -306,11 +302,16 @@ export class PrePassRenderer {
             if (pipelines[i] instanceof SSAO2RenderingPipeline) {
                 this.ssaoConfiguration = true;
                 this.materialsShouldRenderGeometry = true;
-                this._enable();
+                enablePrePass = true;
+                break;
             }
         }
 
         this._isDirty = false;
+
+        if (enablePrePass) {
+            this._enable();
+        }
 
         if (!this.enabled) {
             this._engine.bindAttachments(this._defaultAttachments);
