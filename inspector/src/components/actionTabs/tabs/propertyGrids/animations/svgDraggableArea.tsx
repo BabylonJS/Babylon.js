@@ -7,8 +7,10 @@ interface ISvgDraggableAreaProps {
   updatePosition: (updatedKeyframe: IKeyframeSvgPoint, id: string) => void;
   scale: number;
   viewBoxScale: number;
-  selectKeyframe: (id: string) => void;
+  selectKeyframe: (id: string, multiselect: boolean) => void;
   selectedControlPoint: (type: string, id: string) => void;
+  deselectKeyframes: () => void;
+  removeSelectedKeyframes: (points: IKeyframeSvgPoint[]) => void;
 }
 
 export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
@@ -61,7 +63,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
     }
 
     if (e.target.classList.contains('pannable')) {
-      if (e.buttons === 1 && e.ctrlKey) {
+      if (e.buttons === 1 && e.shiftKey) {
         this._panStart.set(e.clientX, e.clientY);
       }
     }
@@ -83,8 +85,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
           // Check for NaN values here.
           if (this._isCurrentPointControl === 'left') {
             point.leftControlPoint = coord;
+            point.isLeftActive = true;
           } else if (this._isCurrentPointControl === 'right') {
             point.rightControlPoint = coord;
+            point.isRightActive = true;
           } else {
             point.keyframePoint = coord;
           }
@@ -191,11 +195,36 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
     if (e.keyCode === 17) {
       this._draggableArea.current?.style.setProperty('cursor', 'initial');
     }
+
+    if (e.keyCode === 8) {
+      const pointsToDelete = this.props.keyframeSvgPoints.filter(
+        (kf) => kf.selected
+      );
+      this.props.removeSelectedKeyframes(pointsToDelete);
+    }
   }
 
   focus(e: React.MouseEvent<SVGSVGElement>) {
     e.preventDefault();
     this._draggableArea.current?.focus();
+
+    if ((e.target as SVGSVGElement).className.baseVal == 'linear pannable') {
+      if (this.isControlPointActive()) {
+        this.props.deselectKeyframes();
+      }
+    }
+  }
+
+  isControlPointActive() {
+    const activeControlPoints = this.props.keyframeSvgPoints.filter(
+      (x) => x.isLeftActive || x.isRightActive
+    );
+    if (activeControlPoints.length !== 0) {
+      return false;
+    } else {
+      return true;
+    }
+    console.log(activeControlPoints);
   }
 
   render() {
@@ -232,7 +261,9 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
               selectedControlPoint={(type: string, id: string) =>
                 this.props.selectedControlPoint(type, id)
               }
-              selectKeyframe={(id: string) => this.props.selectKeyframe(id)}
+              selectKeyframe={(id: string, multiselect: boolean) =>
+                this.props.selectKeyframe(id, multiselect)
+              }
             />
           ))}
         </svg>
