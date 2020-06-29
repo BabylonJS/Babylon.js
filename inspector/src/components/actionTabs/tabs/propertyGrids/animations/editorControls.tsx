@@ -25,6 +25,7 @@ interface IEditorControlsProps {
   setFps: (fps: number) => void;
   globalState: GlobalState;
   snippetServer: string;
+  deselectAnimation: () => void;
 }
 
 export class EditorControls extends React.Component<
@@ -39,6 +40,7 @@ export class EditorControls extends React.Component<
     framesPerSecond: number;
     snippetId: string;
     loopMode: number;
+    selected: Animation | undefined;
   }
 > {
   constructor(props: IEditorControlsProps) {
@@ -56,15 +58,23 @@ export class EditorControls extends React.Component<
       animationsCount: count,
       framesPerSecond: 60,
       snippetId: '',
+      selected: undefined,
     };
   }
 
   animationAdded() {
-    // select recently created animation/first coordinate...
     this.setState({
       animationsCount: this.recountAnimations(),
       isEditTabOpen: true,
       isAnimationTabOpen: false,
+    });
+  }
+
+  finishedUpdate() {
+    this.setState({
+      isEditTabOpen: true,
+      isAnimationTabOpen: false,
+      selected: undefined,
     });
   }
 
@@ -160,6 +170,16 @@ export class EditorControls extends React.Component<
     });
   }
 
+  editAnimation(selected: Animation) {
+    this.setState({
+      selected: selected,
+      isEditTabOpen: false,
+      isAnimationTabOpen: true,
+      isLoadTabOpen: false,
+      isSaveTabOpen: false,
+    });
+  }
+
   render() {
     return (
       <div className='animation-list'>
@@ -229,9 +249,11 @@ export class EditorControls extends React.Component<
             setNotificationMessage={(message: string) => {
               this.props.setNotificationMessage(message);
             }}
-            changed={() => this.animationAdded()}
+            addedNewAnimation={() => this.animationAdded()}
             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
             fps={this.state.framesPerSecond}
+            selectedToUpdate={this.state.selected}
+            finishedUpdate={() => this.finishedUpdate()}
           />
         )}
 
@@ -262,12 +284,16 @@ export class EditorControls extends React.Component<
 
         {this.state.isEditTabOpen ? (
           <AnimationListTree
+            deselectAnimation={() => this.props.deselectAnimation()}
             isTargetedAnimation={this.props.isTargetedAnimation}
             entity={this.props.entity}
             selected={this.props.selected}
             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
             empty={() => this.emptiedList()}
             selectAnimation={this.props.selectAnimation}
+            editAnimation={(selected: Animation) =>
+              this.editAnimation(selected)
+            }
           />
         ) : null}
       </div>

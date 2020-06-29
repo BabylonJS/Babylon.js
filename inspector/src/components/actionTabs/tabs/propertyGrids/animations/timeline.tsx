@@ -71,11 +71,15 @@ export class Timeline extends React.Component<
 
   calculateScrollWidth(start: number, end: number) {
     if (this._scrollContainer.current && this.props.animationLimit !== 0) {
-      const containerWidth = this._scrollContainer.current.clientWidth;
+      const containerWidth = this._scrollContainer.current.clientWidth - 6;
       const scrollFrameLimit = this.props.animationLimit;
       const scrollFrameLength = end - start;
-      const widthPercentage = (scrollFrameLength * 100) / scrollFrameLimit;
-      const scrollPixelWidth = (widthPercentage * containerWidth) / 100;
+      const widthPercentage = Math.round(
+        (scrollFrameLength * 100) / scrollFrameLimit
+      );
+      const scrollPixelWidth = Math.round(
+        (widthPercentage * containerWidth) / 100
+      );
       if (scrollPixelWidth === Infinity || scrollPixelWidth > containerWidth) {
         return containerWidth;
       }
@@ -312,7 +316,7 @@ export class Timeline extends React.Component<
       const scrollContainerWith = this._scrollContainer.current.clientWidth;
       const startPixel = moved - 233;
       const limitRight =
-        scrollContainerWith - (this.state.scrollWidth || 0) - 5;
+        scrollContainerWith - (this.state.scrollWidth || 0) - 3;
 
       if (moved > 233 && startPixel < limitRight) {
         this._scrollbarHandle.current.style.left = moved + 'px';
@@ -346,11 +350,17 @@ export class Timeline extends React.Component<
       const frameChange = (resizePercentage * this.state.end) / 100;
       const framesTo = Math.round(frameChange);
 
-      this.setState({
-        end: framesTo,
-        scrollWidth: this.calculateScrollWidth(this.state.start, framesTo),
-        selectionLength: this.range(this.state.start, framesTo),
-      });
+      if (framesTo <= this.state.start + 20) {
+        console.log('broke');
+      } else {
+        if (framesTo <= this.props.animationLimit) {
+          this.setState({
+            end: framesTo,
+            scrollWidth: this.calculateScrollWidth(this.state.start, framesTo),
+            selectionLength: this.range(this.state.start, framesTo),
+          });
+        }
+      }
     }
   }
 
@@ -365,21 +375,30 @@ export class Timeline extends React.Component<
 
       const frameChange = (resizePercentage * this.state.end) / 100;
 
-      let framesTo;
+      let framesTo: number;
       if (Math.sign(moving) === 1) {
         framesTo = this.state.start + Math.round(frameChange);
       } else {
         framesTo = this.state.start - Math.round(frameChange);
       }
-      let Toleft = framesTo * pixelFrameRatio + 233;
 
-      this._scrollbarHandle.current.style.left = Toleft + 'px';
-
-      this.setState({
-        start: framesTo,
-        scrollWidth: this.calculateScrollWidth(framesTo, this.state.end),
-        selectionLength: this.range(framesTo, this.state.end),
-      });
+      if (framesTo >= this.state.end - 20) {
+        console.log('broke');
+      } else {
+        this.setState(
+          {
+            start: framesTo,
+            scrollWidth: this.calculateScrollWidth(framesTo, this.state.end),
+            selectionLength: this.range(framesTo, this.state.end),
+          },
+          () => {
+            let Toleft = framesTo * pixelFrameRatio + 233;
+            if (this._scrollbarHandle.current) {
+              this._scrollbarHandle.current.style.left = Toleft + 'px';
+            }
+          }
+        );
+      }
     }
   }
 
