@@ -7,7 +7,7 @@ import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
 import { Size } from 'babylonjs/Maths/math.size';
 import { Color3, Color4 } from 'babylonjs/Maths/math.color';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-import { IAnimationKey } from 'babylonjs';
+import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 
 interface IAddAnimationProps {
   isOpen: boolean;
