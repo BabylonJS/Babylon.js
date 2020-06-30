@@ -2,6 +2,7 @@ import { Nullable } from "../types";
 import { ThinEngine } from '../Engines/thinEngine';
 import { WebXRRenderTarget } from "./webXRTypes";
 import { WebXRSessionManager } from './webXRSessionManager';
+import { Observable } from '../Misc/observable';
 
 /**
  * COnfiguration object for WebXR output canvas
@@ -47,6 +48,10 @@ export class WebXRManagedOutputCanvasOptions {
 export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     private _canvas: Nullable<HTMLCanvasElement> = null;
     private _engine: ThinEngine;
+    private _originalCanvasSize: {
+        width: number,
+        height: number
+    };
 
     /**
      * Rendering context of the canvas which can be used to display/mirror xr content
@@ -56,6 +61,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * xr layer for the canvas
      */
     public xrLayer: Nullable<XRWebGLLayer> = null;
+
+    public onXRLayerInitObservable: Observable<XRWebGLLayer> = new Observable();
 
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
@@ -96,7 +103,9 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      */
     public initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer> {
         const createLayer = () => {
-            return new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+            const layer = new XRWebGLLayer(xrSession, this.canvasContext, this._options.canvasOptions);
+            this.onXRLayerInitObservable.notifyObservers(layer);
+            return layer;
         };
 
         // support canvases without makeXRCompatible
@@ -115,11 +124,37 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         if (this._canvas && this._canvas !== this._engine.getRenderingCanvas()) {
             document.body.appendChild(this._canvas);
         }
+        if (this.xrLayer) {
+            this._setCanvasSize(true);
+        } else {
+            this.onXRLayerInitObservable.addOnce((layer) => {
+                this._setCanvasSize(true, layer);
+            });
+        }
+
     }
 
     private _removeCanvas() {
         if (this._canvas && document.body.contains(this._canvas) && this._canvas !== this._engine.getRenderingCanvas()) {
             document.body.removeChild(this._canvas);
+        }
+        this._setCanvasSize(false);
+    }
+
+    private _setCanvasSize(init: boolean = true, xrLayer = this.xrLayer) {
+        if (!this._canvas) {
+            return;
+        }
+        if (init) {
+            if (xrLayer) {
+                this._canvas.style.width = xrLayer.framebufferWidth + 'px';
+                this._canvas.style.height = xrLayer.framebufferHeight + 'px';
+            }
+        } else {
+            if (this._originalCanvasSize) {
+                this._canvas.style.width = this._originalCanvasSize.width + 'px';
+                this._canvas.style.height = this._originalCanvasSize.height + 'px';
+            }
         }
     }
 
@@ -129,6 +164,10 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             this._canvas = null;
             (this.canvasContext as any) = null;
         } else {
+            this._originalCanvasSize = {
+                width: canvas.offsetWidth,
+                height: canvas.offsetHeight
+            };
             this._canvas = canvas;
             this.canvasContext = <any>this._canvas.getContext('webgl2');
             if (!this.canvasContext) {
