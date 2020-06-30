@@ -267,7 +267,6 @@
       cursor: pointer;
       background-position: center;
       width: 20px;
-      margin-left: 10px;
     }
 
     &.animation-triangle {
@@ -606,6 +605,8 @@
               .scrollbar {
                 cursor: pointer;
                 width: 100%;
+                height: 66px;
+                margin-top: -10px;
               }
 
               .left-grabber,

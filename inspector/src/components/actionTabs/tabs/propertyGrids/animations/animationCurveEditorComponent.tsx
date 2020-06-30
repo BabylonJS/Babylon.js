@@ -69,6 +69,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     selectedCoordinate: number;
     animationLimit: number;
     fps: number;
+    isLooping: boolean;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -138,6 +139,8 @@ export class AnimationCurveEditorComponent extends React.Component<
           : initialPathData;
     }
 
+    this._canvasLength = 240;
+
     // will update this until we have a top scroll/zoom feature
     let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
     this.state = {
@@ -169,6 +172,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       selectedCoordinate: 0,
       animationLimit: 120,
       fps: 60,
+      isLooping: true,
     };
   }
 
@@ -202,7 +206,7 @@ export class AnimationCurveEditorComponent extends React.Component<
   }
 
   setAxesLength() {
-    let length = 20;
+    let length = this.state.animationLimit * 2;
     let newlength = Math.round(this._canvasLength * this.state.scale);
     if (!isNaN(newlength) || newlength !== undefined) {
       length = newlength;
@@ -1394,12 +1398,15 @@ export class AnimationCurveEditorComponent extends React.Component<
       if (this.props.entity instanceof TargetedAnimation) {
         target = this.props.entity.target;
       }
-      if (this.state.isPlaying) {
+      if (this.state.isPlaying && direction === 0) {
         this.props.scene.stopAnimation(target);
         this.setState({ isPlaying: false });
         this._isPlaying = false;
         this.forceUpdate();
       } else {
+        if (this.state.isPlaying) {
+          this.props.scene.stopAnimation(target);
+        }
         let keys = this.state.selected.getKeys();
         let firstFrame = keys[0].frame;
         let LastFrame = keys[keys.length - 1].frame;
@@ -1408,7 +1415,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             target,
             firstFrame,
             LastFrame,
-            true
+            this.state.isLooping,
+            this.state.fps
           );
         }
         if (direction === -1) {
@@ -1416,7 +1424,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             target,
             LastFrame,
             firstFrame,
-            true
+            this.state.isLooping,
+            this.state.fps
           );
         }
         this._isPlaying = true;
@@ -1515,6 +1524,9 @@ export class AnimationCurveEditorComponent extends React.Component<
               setFps={(fps: number) => {
                 this.setState({ fps: fps });
               }}
+              setIsLooping={() => {
+                this.setState({ isLooping: !this.state.isLooping });
+              }}
             />
 
             <div
@@ -1559,16 +1571,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                     ></path>
                   ))}
 
-                  <svg>
-                    <rect
-                      x='-4%'
-                      y='0%'
-                      width='4%'
-                      height='101%'
-                      fill='#222'
-                    ></rect>
-                  </svg>
-
                   {this.state.valueAxisLength.map((f, i) => {
                     return (
                       <svg key={i}>
@@ -1581,7 +1583,12 @@ export class AnimationCurveEditorComponent extends React.Component<
                         >
                           {f.label.toFixed(1)}
                         </text>
-                        <line x1='0' y1={f.value} x2='105%' y2={f.value}></line>
+                        <line
+                          x1='0'
+                          y1={f.value}
+                          x2={this.state.frameAxisLength.length * 10}
+                          y2={f.value}
+                        ></line>
                       </svg>
                     );
                   })}
@@ -1590,7 +1597,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     onClick={(e) => this.moveFrameTo(e)}
                     x='0%'
                     y='91%'
-                    width='105%'
+                    width={this.state.frameAxisLength.length * 10}
                     height='10%'
                     fill='#222'
                     style={{ cursor: 'pointer' }}
@@ -1611,7 +1618,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                       {f.value % this.state.fps === 0 && f.value !== 0 ? (
                         <line
                           x1={f.value}
-                          y1='-100'
+                          y1='-100%'
                           x2={f.value}
                           y2='5%'
                         ></line>

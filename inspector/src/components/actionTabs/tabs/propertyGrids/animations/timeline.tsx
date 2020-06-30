@@ -286,6 +286,8 @@ export class Timeline extends React.Component<
     e.preventDefault();
     if (e.target.className === 'scrollbar') {
       this.moveScrollbar(e.pageX);
+    } else {
+      console.log('out');
     }
 
     if (this._active === 'leftDraggable') {
