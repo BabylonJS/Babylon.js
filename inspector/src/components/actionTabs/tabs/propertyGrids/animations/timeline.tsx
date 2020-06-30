@@ -350,9 +350,7 @@ export class Timeline extends React.Component<
       const frameChange = (resizePercentage * this.state.end) / 100;
       const framesTo = Math.round(frameChange);
 
-      if (framesTo <= this.state.start + 20) {
-        console.log('broke');
-      } else {
+      if (!(framesTo <= this.state.start + 20)) {
         if (framesTo <= this.props.animationLimit) {
           this.setState({
             end: framesTo,
@@ -382,9 +380,7 @@ export class Timeline extends React.Component<
         framesTo = this.state.start - Math.round(frameChange);
       }
 
-      if (framesTo >= this.state.end - 20) {
-        console.log('broke');
-      } else {
+      if (!(framesTo >= this.state.end - 20)) {
         this.setState(
           {
             start: framesTo,

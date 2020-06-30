@@ -625,13 +625,8 @@ export class AnimationCurveEditorComponent extends React.Component<
         let keys = currentAnimation.getKeys();
 
         let filteredKeys = keys.filter((_, i) => {
-          if (indexesToRemove.find((x) => x.index === i)) {
-            return false;
-          } else {
-            return true;
-          }
+          return !indexesToRemove.find((x) => x.index === i);
         });
-
         currentAnimation.setKeys(filteredKeys);
         this.deselectKeyframes();
 
