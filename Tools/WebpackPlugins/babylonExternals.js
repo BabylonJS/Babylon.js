@@ -59,6 +59,14 @@ module.exports = function nodeExternals(options) {
                 amd: "@babylonjs/serializers"
             });
         }
+        else if (/^@babylonjs\/loaders\/glTF\/2\.0\/Extensions.*$/i.test(request)) {
+            callback(null, {
+                root: ["BABYLON", "GLTF2", "Loader", "Extensions"],
+                commonjs: "@babylonjs/loaders/glTF/2.0/Extensions",
+                commonjs2: "@babylonjs/loaders/glTF/2.0/Extensions",
+                amd: "@babylonjs/loaders/glTF/2.0/Extensions"
+            });
+        }
         else if (/^@babylonjs\/loaders.*$/i.test(request)) {
             callback(null, {
                 root: "BABYLON",
