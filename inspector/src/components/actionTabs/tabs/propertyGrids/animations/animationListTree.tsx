@@ -17,6 +17,8 @@ interface IAnimationListTreeProps {
     coordinate?: SelectedCoordinate
   ) => void;
   empty: () => void;
+  editAnimation: (selected: Animation) => void;
+  deselectAnimation: () => void;
 }
 
 interface Item {
@@ -73,6 +75,7 @@ export class AnimationListTree extends React.Component<
           .entity as IAnimatable).animations = updatedAnimations as Nullable<
           Animation[]
         >;
+        this.props.deselectAnimation();
         this._list = this.generateList();
       }
     }
@@ -94,10 +97,6 @@ export class AnimationListTree extends React.Component<
       this.props.empty();
     }
     return animationList ?? null;
-  }
-
-  editAnimation() {
-    console.log('Edit animation'); // TODO. Implement the edit options here
   }
 
   toggleProperty(index: number) {
@@ -139,7 +138,7 @@ export class AnimationListTree extends React.Component<
               <IconButtonLineComponent
                 tooltip='Options'
                 icon='small animation-options'
-                onClick={() => this.editAnimation()}
+                onClick={() => this.props.editAnimation(animation)}
               />
               {!(this.props.entity instanceof TargetedAnimation) ? (
                 this.props.selected &&
@@ -203,7 +202,7 @@ export class AnimationListTree extends React.Component<
               <IconButtonLineComponent
                 tooltip='Options'
                 icon='small animation-options'
-                onClick={() => this.editAnimation()}
+                onClick={() => this.props.editAnimation(animation)}
               />
               {!(this.props.entity instanceof TargetedAnimation) ? (
                 this.props.selected &&

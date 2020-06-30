@@ -78,12 +78,6 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
             onClick={this.props.setLerpMode}
           />
         </div>
-        <div
-          className='icon close'
-          onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
-            this.props.close(event)
-          }
-        ></div>
       </div>
     );
   }
