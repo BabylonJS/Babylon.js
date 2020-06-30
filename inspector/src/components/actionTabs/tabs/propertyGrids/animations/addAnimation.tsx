@@ -107,59 +107,45 @@ export class AddAnimation extends React.Component<
   }
 
   getAnimationTypeofChange(selected: string) {
-    let dataType = 0;
     switch (selected) {
       case 'Float':
-        dataType = Animation.ANIMATIONTYPE_FLOAT;
-        break;
+        return Animation.ANIMATIONTYPE_FLOAT;
       case 'Quaternion':
-        dataType = Animation.ANIMATIONTYPE_QUATERNION;
-        break;
+        return Animation.ANIMATIONTYPE_QUATERNION;
       case 'Vector3':
-        dataType = Animation.ANIMATIONTYPE_VECTOR3;
-        break;
+        return Animation.ANIMATIONTYPE_VECTOR3;
       case 'Vector2':
-        dataType = Animation.ANIMATIONTYPE_VECTOR2;
-        break;
+        return Animation.ANIMATIONTYPE_VECTOR2;
       case 'Size':
-        dataType = Animation.ANIMATIONTYPE_SIZE;
-        break;
+        return Animation.ANIMATIONTYPE_SIZE;
       case 'Color3':
-        dataType = Animation.ANIMATIONTYPE_COLOR3;
-        break;
+        return Animation.ANIMATIONTYPE_COLOR3;
       case 'Color4':
-        dataType = Animation.ANIMATIONTYPE_COLOR4;
-        break;
+        return Animation.ANIMATIONTYPE_COLOR4;
+      default:
+        return 0;
     }
-    return dataType;
   }
 
   getTypeAsString(type: number) {
-    let typeAsString = 'Float';
     switch (type) {
       case Animation.ANIMATIONTYPE_FLOAT:
-        typeAsString = 'Float';
-        break;
+        return 'Float';
       case Animation.ANIMATIONTYPE_QUATERNION:
-        typeAsString = 'Quaternion';
-        break;
+        return 'Quaternion';
       case Animation.ANIMATIONTYPE_VECTOR3:
-        typeAsString = 'Vector3';
-        break;
+        return 'Vector3';
       case Animation.ANIMATIONTYPE_VECTOR2:
-        typeAsString = 'Vector2';
-        break;
+        return 'Vector2';
       case Animation.ANIMATIONTYPE_SIZE:
-        typeAsString = 'Size';
-        break;
+        return 'Size';
       case Animation.ANIMATIONTYPE_COLOR3:
-        typeAsString = 'Color3';
-        break;
+        return 'Color3';
       case Animation.ANIMATIONTYPE_COLOR4:
-        typeAsString = 'Color4';
-        break;
+        return 'Color4';
+      default:
+        return 'Float';
     }
-    return typeAsString;
   }
 
   addAnimation() {
