@@ -1611,7 +1611,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                           {f.label.toFixed(1)}
                         </text>
                         <line
-                          x1='0'
+                          x1={-((this.state.frameAxisLength.length * 10) / 2)}
                           y1={f.value}
                           x2={this.state.frameAxisLength.length * 10}
                           y2={f.value}
