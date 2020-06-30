@@ -142,19 +142,6 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     this._canvasLength = 240;
 
-    // clean this before PR... if you see this... I missed it :(
-    let halfNegative = new Array(this._canvasLength / 2).fill(0).map((s, i) => {
-      return { value: -i * 10, label: -i };
-    });
-
-    let halfPositive = new Array(this._canvasLength / 2).fill(0).map((s, i) => {
-      return { value: i * 10, label: i };
-    });
-
-    let mixed = [...halfNegative, ...halfPositive];
-
-    console.log(mixed);
-
     // will update this until we have a top scroll/zoom feature
     let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
     this.state = {
@@ -171,7 +158,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         ? this._graphCanvas.current.children[0].clientWidth /
           (this._canvasLength * 10)
         : 0,
-      frameAxisLength: mixed,
+      frameAxisLength: this.setFrameAxis(this._canvasLength),
       valueAxisLength: new Array(10).fill(0).map((s, i) => {
         return { value: i * 10, label: valueInd[i] };
       }),
@@ -182,7 +169,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       isPlaying: this.isAnimationPlaying(),
       selectedPathData: initialPathData,
       selectedCoordinate: 0,
-      animationLimit: 120,
+      animationLimit: this._canvasLength / 2,
       fps: 60,
       isLooping: true,
       panningY: 0,
@@ -216,6 +203,18 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
     console.log(scaleX);
     //this.setState({ scale: scaleX }, this.setAxesLength);
+  }
+
+  setFrameAxis(currentLength: number) {
+    let halfNegative = new Array(currentLength / 2).fill(0).map((s, i) => {
+      return { value: -i * 10, label: -i };
+    });
+
+    let halfPositive = new Array(currentLength / 2).fill(0).map((s, i) => {
+      return { value: i * 10, label: i };
+    });
+
+    return [...halfNegative, ...halfPositive];
   }
 
   setAxesLength() {
@@ -1623,7 +1622,7 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                   <rect
                     onClick={(e) => this.moveFrameTo(e)}
-                    x='0%'
+                    x={-((this.state.frameAxisLength.length * 10) / 2)}
                     y={90 + this.state.panningY + '%'}
                     width={this.state.frameAxisLength.length * 10}
                     height='10%'
