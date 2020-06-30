@@ -71,7 +71,9 @@ export class Timeline extends React.Component<
 
   calculateScrollWidth(start: number, end: number) {
     if (this._scrollContainer.current && this.props.animationLimit !== 0) {
-      const containerWidth = this._scrollContainer.current.clientWidth - 6;
+      const containerMarginLeftRight = 6;
+      const containerWidth =
+        this._scrollContainer.current.clientWidth - containerMarginLeftRight;
       const scrollFrameLimit = this.props.animationLimit;
       const scrollFrameLength = end - start;
       const widthPercentage = Math.round(
