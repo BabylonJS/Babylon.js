@@ -98,8 +98,6 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     this._pixelFrameUnit = 10;
 
-    console.log(this.props.entity instanceof TargetedAnimation);
-
     let initialSelection;
     let initialPathData;
     let initialLerpMode;

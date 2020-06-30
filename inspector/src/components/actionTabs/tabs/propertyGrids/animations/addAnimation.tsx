@@ -216,9 +216,6 @@ export class AddAnimation extends React.Component<
             startValue = new Size(1, 1);
             outTangent = Size.Zero();
             break;
-          default:
-            console.log('not recognized');
-            break;
         }
 
         let alreadyAnimatedProperty = (this.props
