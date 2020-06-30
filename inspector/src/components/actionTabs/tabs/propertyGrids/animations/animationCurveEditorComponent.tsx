@@ -142,6 +142,19 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     this._canvasLength = 240;
 
+    // clean this before PR... if you see this... I missed it :(
+    let halfNegative = new Array(this._canvasLength / 2).fill(0).map((s, i) => {
+      return { value: -i * 10, label: -i };
+    });
+
+    let halfPositive = new Array(this._canvasLength / 2).fill(0).map((s, i) => {
+      return { value: i * 10, label: i };
+    });
+
+    let mixed = [...halfNegative, ...halfPositive];
+
+    console.log(mixed);
+
     // will update this until we have a top scroll/zoom feature
     let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
     this.state = {
@@ -158,9 +171,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         ? this._graphCanvas.current.children[0].clientWidth /
           (this._canvasLength * 10)
         : 0,
-      frameAxisLength: new Array(this._canvasLength).fill(0).map((s, i) => {
-        return { value: i * 10, label: i };
-      }),
+      frameAxisLength: mixed,
       valueAxisLength: new Array(10).fill(0).map((s, i) => {
         return { value: i * 10, label: valueInd[i] };
       }),
@@ -223,6 +234,18 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
+
+    let halfNegative = new Array(length / 2).fill(0).map((s, i) => {
+      return { value: -i * 10, label: -i };
+    });
+
+    let halfPositive = new Array(length / 2).fill(0).map((s, i) => {
+      return { value: i * 10, label: i };
+    });
+
+    let mixed = [...halfNegative, ...halfPositive];
+
+    console.log(mixed);
 
     let newFrameLength = new Array(length).fill(0).map((s, i) => {
       return { value: i * 10, label: i };
