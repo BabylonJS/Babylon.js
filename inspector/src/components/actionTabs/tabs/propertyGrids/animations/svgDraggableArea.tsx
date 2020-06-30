@@ -11,6 +11,7 @@ interface ISvgDraggableAreaProps {
   selectedControlPoint: (type: string, id: string) => void;
   deselectKeyframes: () => void;
   removeSelectedKeyframes: (points: IKeyframeSvgPoint[]) => void;
+  panningY: (panningY: number) => void;
 }
 
 export class SvgDraggableArea extends React.Component<
@@ -172,6 +173,7 @@ export class SvgDraggableArea extends React.Component<
       panX: Math.round(newX),
       panY: Math.round(newY),
     });
+    this.props.panningY(Math.round(newY));
     // this.setState({
     //   panX: Math.round(coord.x),
     //   panY: Math.round(coord.y),

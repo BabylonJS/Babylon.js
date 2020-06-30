@@ -1024,8 +1024,8 @@
               background-position-x: 18px;
               cursor: pointer;
               &.flip {
-                transform: rotate(180deg);
-                background-position: 2px 50%;
+                transform: rotate(-90deg);
+                background-position: 10px 13px;
               }
             }
 

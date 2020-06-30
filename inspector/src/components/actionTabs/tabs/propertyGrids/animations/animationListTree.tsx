@@ -42,22 +42,27 @@ export enum SelectedCoordinate {
   height = 1,
 }
 
+interface ItemCoordinate {
+  id: string;
+  color: string;
+  coordinate: SelectedCoordinate;
+}
+
 export class AnimationListTree extends React.Component<
   IAnimationListTreeProps,
   {
     selectedCoordinate: SelectedCoordinate;
     selectedAnimation: number;
+    animationList: Item[] | null;
   }
 > {
-  private _list: Item[] | null;
   constructor(props: IAnimationListTreeProps) {
     super(props);
-
-    this._list = this.generateList();
 
     this.state = {
       selectedCoordinate: 0,
       selectedAnimation: 0,
+      animationList: this.generateList(),
     };
   }
 
@@ -76,7 +81,7 @@ export class AnimationListTree extends React.Component<
           Animation[]
         >;
         this.props.deselectAnimation();
-        this._list = this.generateList();
+        this.setState({ animationList: this.generateList() });
       }
     }
   }
@@ -100,9 +105,14 @@ export class AnimationListTree extends React.Component<
   }
 
   toggleProperty(index: number) {
-    if (this._list !== null) {
-      let item = this._list[index];
-      item.open = !item.open;
+    if (this.state.animationList) {
+      const updated = this.state.animationList.map((a) => {
+        if (a.index === index) {
+          a.open = !a.open;
+        }
+        return a;
+      });
+      this.setState({ animationList: updated });
     }
   }
 
@@ -115,265 +125,173 @@ export class AnimationListTree extends React.Component<
     this.props.selectAnimation(animation, SelectedCoordinate.x);
   }
 
+  coordinateItem(
+    i: number,
+    animation: Animation,
+    coordinate: string,
+    color: string,
+    selectedCoordinate: SelectedCoordinate
+  ) {
+    return (
+      <li
+        key={`${i}_${coordinate}`}
+        id={`${i}_${coordinate}`}
+        className='property'
+        style={{ color: color }}
+        onClick={() =>
+          this.setSelectedCoordinate(animation, selectedCoordinate, i)
+        }
+      >
+        <div
+          className={`handle-indicator ${
+            this.state.selectedCoordinate === selectedCoordinate &&
+            this.state.selectedAnimation === i
+              ? 'show'
+              : 'hide'
+          }`}
+        ></div>
+        {animation.targetProperty} {coordinate.toUpperCase()}
+      </li>
+    );
+  }
+
+  typeAnimationItem(
+    animation: Animation,
+    i: number,
+    childrenElements: ItemCoordinate[]
+  ) {
+    return (
+      <li
+        className={
+          this.props.selected && this.props.selected.name === animation.name
+            ? 'property sub active'
+            : 'property sub'
+        }
+        key={i}
+      >
+        <div
+          className={`animation-arrow ${
+            this.state.animationList && this.state.animationList[i].open
+              ? ''
+              : 'flip'
+          }`}
+          onClick={() => this.toggleProperty(i)}
+        ></div>
+        <p onClick={() => this.props.selectAnimation(animation)}>
+          {animation.targetProperty}
+        </p>
+        <IconButtonLineComponent
+          tooltip='Options'
+          icon='small animation-options'
+          onClick={() => this.props.editAnimation(animation)}
+        />
+        {!(this.props.entity instanceof TargetedAnimation) ? (
+          this.props.selected && this.props.selected.name === animation.name ? (
+            <IconButtonLineComponent
+              tooltip='Remove'
+              icon='small animation-delete'
+              onClick={() => this.deleteAnimation()}
+            />
+          ) : (
+            <div className='spacer'></div>
+          )
+        ) : null}
+        <ul
+          className={`sub-list ${
+            this.state.animationList && this.state.animationList[i].open
+              ? ''
+              : 'hidden'
+          }`}
+        >
+          {childrenElements.map((c) =>
+            this.coordinateItem(i, animation, c.id, c.color, c.coordinate)
+          )}
+        </ul>
+      </li>
+    );
+  }
+
   setListItem(animation: Animation, i: number) {
-    let element;
-    this._list = this.generateList();
-
-    if (this._list !== null) {
-      switch (animation.dataType) {
-        case Animation.ANIMATIONTYPE_FLOAT:
-          element = (
-            <li
-              className={
-                this.props.selected &&
-                this.props.selected.name === animation.name
-                  ? 'property active'
-                  : 'property'
-              }
-              key={i}
-              onClick={() => this.props.selectAnimation(animation)}
-            >
-              <div className={`animation-bullet`}></div>
-              <p>{animation.targetProperty}</p>
-              <IconButtonLineComponent
-                tooltip='Options'
-                icon='small animation-options'
-                onClick={() => this.props.editAnimation(animation)}
-              />
-              {!(this.props.entity instanceof TargetedAnimation) ? (
-                this.props.selected &&
-                this.props.selected.name === animation.name ? (
-                  <IconButtonLineComponent
-                    tooltip='Remove'
-                    icon='small animation-delete'
-                    onClick={() => this.deleteAnimation()}
-                  />
-                ) : (
-                  <div className='spacer'></div>
-                )
-              ) : null}
-            </li>
-          );
-          break;
-        case Animation.ANIMATIONTYPE_VECTOR2:
-          element = (
-            <li
-              className={
-                this.props.selected &&
-                this.props.selected.name === animation.name
-                  ? 'property active'
-                  : 'property'
-              }
-              key={i}
-              onClick={() => this.props.selectAnimation(animation)}
-            >
-              <p>{animation.targetProperty}</p>
-              <ul>
-                <li key={`${i}_x`}>
-                  Property <strong>X</strong>
-                </li>
-                <li key={`${i}_y`}>
-                  Property <strong>Y</strong>
-                </li>
-              </ul>
-            </li>
-          );
-          break;
-        case Animation.ANIMATIONTYPE_VECTOR3:
-          element = (
-            <li
-              className={
-                this.props.selected &&
-                this.props.selected.name === animation.name
-                  ? 'property sub active'
-                  : 'property sub'
-              }
-              key={i}
-            >
-              <div
-                className={`animation-arrow ${
-                  this._list[i].open ? '' : 'flip'
-                }`}
-                onClick={() => this.toggleProperty(i)}
-              ></div>
-              <p onClick={() => this.props.selectAnimation(animation)}>
-                {animation.targetProperty}
-              </p>
-              <IconButtonLineComponent
-                tooltip='Options'
-                icon='small animation-options'
-                onClick={() => this.props.editAnimation(animation)}
-              />
-              {!(this.props.entity instanceof TargetedAnimation) ? (
-                this.props.selected &&
-                this.props.selected.name === animation.name ? (
-                  <IconButtonLineComponent
-                    tooltip='Remove'
-                    icon='small animation-delete'
-                    onClick={() => this.deleteAnimation()}
-                  />
-                ) : (
-                  <div className='spacer'></div>
-                )
-              ) : null}
-              <ul className={`sub-list ${this._list[i].open ? '' : 'hidden'}`}>
-                <li
-                  key={`${i}_x`}
-                  id={`${i}_x`}
-                  className='property'
-                  style={{ color: '#db3e3e' }}
-                  onClick={() =>
-                    this.setSelectedCoordinate(
-                      animation,
-                      SelectedCoordinate.x,
-                      i
-                    )
-                  }
-                >
-                  <div
-                    className={`handle-indicator ${
-                      this.state.selectedCoordinate === SelectedCoordinate.x &&
-                      this.state.selectedAnimation === i
-                        ? 'show'
-                        : 'hide'
-                    }`}
-                  ></div>
-                  {animation.targetProperty} X
-                </li>
-                <li
-                  key={`${i}_y`}
-                  id={`${i}_y`}
-                  className='property'
-                  style={{ color: '#51e22d' }}
-                  onClick={() =>
-                    this.setSelectedCoordinate(
-                      animation,
-                      SelectedCoordinate.y,
-                      i
-                    )
-                  }
-                >
-                  <div
-                    className={`handle-indicator ${
-                      this.state.selectedCoordinate === SelectedCoordinate.y &&
-                      this.state.selectedAnimation === i
-                        ? 'show'
-                        : 'hide'
-                    }`}
-                  ></div>
-                  {animation.targetProperty} Y
-                </li>
-                <li
-                  key={`${i}_z`}
-                  id={`${i}_z`}
-                  className='property'
-                  style={{ color: '#00a3ff' }}
-                  onClick={() =>
-                    this.setSelectedCoordinate(
-                      animation,
-                      SelectedCoordinate.z,
-                      i
-                    )
-                  }
-                >
-                  <div
-                    className={`handle-indicator ${
-                      this.state.selectedCoordinate === SelectedCoordinate.z &&
-                      this.state.selectedAnimation === i
-                        ? 'show'
-                        : 'hide'
-                    }`}
-                  ></div>
-                  {animation.targetProperty} Z
-                </li>
-              </ul>
-            </li>
-          );
-          break;
-        case Animation.ANIMATIONTYPE_QUATERNION:
-          element = (
-            <li className='property' key={i}>
-              <p>{animation.targetProperty}</p>
-              <ul>
-                <li key={`${i}_x`}>
-                  Property <strong>X</strong>
-                </li>
-                <li key={`${i}_y`}>
-                  Property <strong>Y</strong>
-                </li>
-                <li key={`${i}_z`}>
-                  Property <strong>Z</strong>
-                </li>
-                <li key={`${i}_w`}>
-                  Property <strong>W</strong>
-                </li>
-              </ul>
-            </li>
-          );
-          break;
-        case Animation.ANIMATIONTYPE_COLOR3:
-          element = (
-            <li className='property' key={i}>
-              <p>{animation.targetProperty}</p>
-              <ul>
-                <li key={`${i}_r`}>
-                  Property <strong>R</strong>
-                </li>
-                <li key={`${i}_g`}>
-                  Property <strong>G</strong>
-                </li>
-                <li key={`${i}_b`}>
-                  Property <strong>B</strong>
-                </li>
-              </ul>
-            </li>
-          );
-          break;
-        case Animation.ANIMATIONTYPE_COLOR4:
-          element = (
-            <li className='property' key={i}>
-              <p>{animation.targetProperty}</p>
-              <ul>
-                <li key={`${i}_r`}>
-                  Property <strong>R</strong>
-                </li>
-                <li key={`${i}_g`}>
-                  Property <strong>G</strong>
-                </li>
-                <li key={`${i}_b`}>
-                  Property <strong>B</strong>
-                </li>
-                <li key={`${i}_a`}>
-                  Property <strong>A</strong>
-                </li>
-              </ul>
-            </li>
-          );
-          break;
-        case Animation.ANIMATIONTYPE_SIZE:
-          element = (
-            <li className='property' key={i}>
-              <p>{animation.targetProperty}</p>
-              <ul>
-                <li key={`${i}_width`}>
-                  Property <strong>Width</strong>
-                </li>
-                <li key={`${i}_height`}>
-                  Property <strong>Height</strong>
-                </li>
-              </ul>
-            </li>
-          );
-          break;
-        default:
-          console.log('not recognized');
-          element = null;
-          break;
-      }
-
-      return element;
-    } else {
-      return null;
+    switch (animation.dataType) {
+      case Animation.ANIMATIONTYPE_FLOAT:
+        return (
+          <li
+            className={
+              this.props.selected && this.props.selected.name === animation.name
+                ? 'property active'
+                : 'property'
+            }
+            key={i}
+            onClick={() => this.props.selectAnimation(animation)}
+          >
+            <div className={`animation-bullet`}></div>
+            <p>{animation.targetProperty}</p>
+            <IconButtonLineComponent
+              tooltip='Options'
+              icon='small animation-options'
+              onClick={() => this.props.editAnimation(animation)}
+            />
+            {!(this.props.entity instanceof TargetedAnimation) ? (
+              this.props.selected &&
+              this.props.selected.name === animation.name ? (
+                <IconButtonLineComponent
+                  tooltip='Remove'
+                  icon='small animation-delete'
+                  onClick={() => this.deleteAnimation()}
+                />
+              ) : (
+                <div className='spacer'></div>
+              )
+            ) : null}
+          </li>
+        );
+      case Animation.ANIMATIONTYPE_VECTOR2:
+        return this.typeAnimationItem(animation, i, [
+          { id: 'x', color: '#db3e3e', coordinate: SelectedCoordinate.x },
+          { id: 'y', color: '#51e22d', coordinate: SelectedCoordinate.y },
+        ]);
+      case Animation.ANIMATIONTYPE_VECTOR3:
+        return this.typeAnimationItem(animation, i, [
+          { id: 'x', color: '#db3e3e', coordinate: SelectedCoordinate.x },
+          { id: 'y', color: '#51e22d', coordinate: SelectedCoordinate.y },
+          { id: 'z', color: '#00a3ff', coordinate: SelectedCoordinate.z },
+        ]);
+      case Animation.ANIMATIONTYPE_QUATERNION:
+        return this.typeAnimationItem(animation, i, [
+          { id: 'x', color: '#db3e3e', coordinate: SelectedCoordinate.x },
+          { id: 'y', color: '#51e22d', coordinate: SelectedCoordinate.y },
+          { id: 'z', color: '#00a3ff', coordinate: SelectedCoordinate.z },
+          { id: 'w', color: '#7a4ece', coordinate: SelectedCoordinate.w },
+        ]);
+      case Animation.ANIMATIONTYPE_COLOR3:
+        return this.typeAnimationItem(animation, i, [
+          { id: 'r', color: '#db3e3e', coordinate: SelectedCoordinate.r },
+          { id: 'g', color: '#51e22d', coordinate: SelectedCoordinate.g },
+          { id: 'b', color: '#00a3ff', coordinate: SelectedCoordinate.b },
+        ]);
+      case Animation.ANIMATIONTYPE_COLOR4:
+        return this.typeAnimationItem(animation, i, [
+          { id: 'r', color: '#db3e3e', coordinate: SelectedCoordinate.r },
+          { id: 'g', color: '#51e22d', coordinate: SelectedCoordinate.g },
+          { id: 'b', color: '#00a3ff', coordinate: SelectedCoordinate.b },
+          { id: 'a', color: '#7a4ece', coordinate: SelectedCoordinate.a },
+        ]);
+      case Animation.ANIMATIONTYPE_SIZE:
+        return this.typeAnimationItem(animation, i, [
+          {
+            id: 'width',
+            color: '#db3e3e',
+            coordinate: SelectedCoordinate.width,
+          },
+          {
+            id: 'height',
+            color: '#51e22d',
+            coordinate: SelectedCoordinate.height,
+          },
+        ]);
+      default:
+        console.log('not recognized');
+        return null;
     }
   }
 
