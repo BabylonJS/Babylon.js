@@ -434,14 +434,16 @@ export class AddAnimation extends React.Component<
               onChange={(e) => this.handleNameChange(e)}
             ></input>
           </div>
-          <div className='label-input'>
-            <label>Property</label>
-            <input
-              type='text'
-              value={this.state.animationTargetProperty}
-              onChange={(e) => this.handlePropertyChange(e)}
-            ></input>
-          </div>
+          {this.state.isUpdating ? null : (
+            <div className='label-input'>
+              <label>Property</label>
+              <input
+                type='text'
+                value={this.state.animationTargetProperty}
+                onChange={(e) => this.handlePropertyChange(e)}
+              ></input>
+            </div>
+          )}
           {this.state.isUpdating ? null : (
             <div className='label-input'>
               <label>Type</label>

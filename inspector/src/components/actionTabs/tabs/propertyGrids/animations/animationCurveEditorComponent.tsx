@@ -70,6 +70,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     animationLimit: number;
     fps: number;
     isLooping: boolean;
+    panningY: number;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -173,6 +174,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       animationLimit: 120,
       fps: 60,
       isLooping: true,
+      panningY: 0,
     };
   }
 
@@ -201,8 +203,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     } else {
       scaleX = this.state.scale + 0.01;
     }
-
-    this.setState({ scale: scaleX }, this.setAxesLength);
+    //this.setState({ scale: scaleX }, this.setAxesLength);
   }
 
   setAxesLength() {
@@ -1554,6 +1555,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                     updatedSvgKeyFrame: IKeyframeSvgPoint,
                     id: string
                   ) => this.renderPoints(updatedSvgKeyFrame, id)}
+                  panningY={(panningY: number) => {
+                    this.setState({ panningY: panningY });
+                  }}
                 >
                   {/* Multiple Curves  */}
                   {this.state.selectedPathData?.map((curve, i) => (
@@ -1596,7 +1600,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                   <rect
                     onClick={(e) => this.moveFrameTo(e)}
                     x='0%'
-                    y='91%'
+                    y={90 + this.state.panningY + '%'}
                     width={this.state.frameAxisLength.length * 10}
                     height='10%'
                     fill='#222'
@@ -1604,7 +1608,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                   ></rect>
 
                   {this.state.frameAxisLength.map((f, i) => (
-                    <svg key={i} x='0' y='96%'>
+                    <svg key={i} x='0' y={96 + this.state.panningY + '%'}>
                       <text
                         x={f.value}
                         y='0'
