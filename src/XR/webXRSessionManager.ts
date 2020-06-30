@@ -223,9 +223,8 @@ export class WebXRSessionManager implements IDisposable {
                 this.currentFrame = xrFrame;
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
-                    this.onXRFrameObservable.notifyObservers(xrFrame);
-                    // only run the render loop if a frame exists
                     engine.framebufferDimensionsObject = this.baseLayer!;
+                    this.onXRFrameObservable.notifyObservers(xrFrame);
                     engine._renderLoop();
                     engine.framebufferDimensionsObject = null;
                 }

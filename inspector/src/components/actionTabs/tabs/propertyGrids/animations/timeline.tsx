@@ -71,7 +71,9 @@ export class Timeline extends React.Component<
 
   calculateScrollWidth(start: number, end: number) {
     if (this._scrollContainer.current && this.props.animationLimit !== 0) {
-      const containerWidth = this._scrollContainer.current.clientWidth - 6;
+      const containerMarginLeftRight = 6;
+      const containerWidth =
+        this._scrollContainer.current.clientWidth - containerMarginLeftRight;
       const scrollFrameLimit = this.props.animationLimit;
       const scrollFrameLength = end - start;
       const widthPercentage = Math.round(
@@ -352,9 +354,7 @@ export class Timeline extends React.Component<
       const frameChange = (resizePercentage * this.state.end) / 100;
       const framesTo = Math.round(frameChange);
 
-      if (framesTo <= this.state.start + 20) {
-        console.log('broke');
-      } else {
+      if (!(framesTo <= this.state.start + 20)) {
         if (framesTo <= this.props.animationLimit) {
           this.setState({
             end: framesTo,
@@ -384,9 +384,7 @@ export class Timeline extends React.Component<
         framesTo = this.state.start - Math.round(frameChange);
       }
 
-      if (framesTo >= this.state.end - 20) {
-        console.log('broke');
-      } else {
+      if (!(framesTo >= this.state.end - 20)) {
         this.setState(
           {
             start: framesTo,
