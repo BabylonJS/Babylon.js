@@ -203,6 +203,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     } else {
       scaleX = this.state.scale + 0.01;
     }
+    console.log(scaleX);
     //this.setState({ scale: scaleX }, this.setAxesLength);
   }
 
