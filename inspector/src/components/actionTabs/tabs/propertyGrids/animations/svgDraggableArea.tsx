@@ -45,7 +45,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
         this._draggableArea.current?.clientWidth !== undefined
           ? this._draggableArea.current?.clientWidth
           : 0;
-      console.log(this._width);
     }, 500);
   }
 
@@ -224,7 +223,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
     } else {
       return true;
     }
-    console.log(activeControlPoints);
   }
 
   render() {
