@@ -24,7 +24,6 @@ export class SvgDraggableArea extends React.Component<
   private _draggableArea: React.RefObject<SVGSVGElement>;
   private _panStart: Vector2;
   private _panStop: Vector2;
-  private _width: number;
 
   constructor(props: ISvgDraggableAreaProps) {
     super(props);
@@ -47,11 +46,9 @@ export class SvgDraggableArea extends React.Component<
       this.keyUp.bind(this)
     );
     setTimeout(() => {
-      this._width =
-        this._draggableArea.current?.clientWidth !== undefined
-          ? this._draggableArea.current?.clientWidth
-          : 0;
-      console.log(this._width);
+      this._draggableArea.current?.clientWidth !== undefined
+        ? this._draggableArea.current?.clientWidth
+        : 0;
     }, 500);
   }
 
@@ -260,7 +257,6 @@ export class SvgDraggableArea extends React.Component<
     } else {
       return true;
     }
-    console.log(activeControlPoints);
   }
 
   render() {

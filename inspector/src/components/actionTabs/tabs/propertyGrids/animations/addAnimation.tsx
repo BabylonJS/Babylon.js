@@ -26,7 +26,7 @@ export class AddAnimation extends React.Component<
   {
     animationName: string;
     animationTargetProperty: string;
-    animationType: string;
+    animationType: number;
     loopMode: number;
     animationTargetPath: string;
     isUpdating: boolean;
@@ -34,30 +34,24 @@ export class AddAnimation extends React.Component<
 > {
   constructor(props: IAddAnimationProps) {
     super(props);
+    this.state = this.setInitialState(this.props.selectedToUpdate);
+  }
 
-    if (this.props.selectedToUpdate !== undefined) {
-      this.state = {
-        animationName: this.props.selectedToUpdate.name,
-        animationTargetPath: '',
-        animationType: this.getTypeAsString(
-          this.props.selectedToUpdate.dataType
-        ),
-        loopMode:
-          this.props.selectedToUpdate.loopMode ??
-          Animation.ANIMATIONLOOPMODE_CYCLE,
-        animationTargetProperty: this.props.selectedToUpdate.targetProperty,
-        isUpdating: true,
-      };
-    } else {
-      this.state = {
-        animationName: '',
-        animationTargetPath: '',
-        animationType: 'Float',
-        loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
-        animationTargetProperty: '',
-        isUpdating: this.props.selectedToUpdate ? true : false,
-      };
-    }
+  setInitialState(editingAnimation?: Animation) {
+    return {
+      animationName: editingAnimation ? editingAnimation.name : '',
+      animationTargetPath: '',
+      animationType: editingAnimation
+        ? editingAnimation.dataType
+        : Animation.ANIMATIONTYPE_FLOAT,
+      loopMode: editingAnimation
+        ? editingAnimation.loopMode ?? Animation.ANIMATIONLOOPMODE_CYCLE
+        : Animation.ANIMATIONLOOPMODE_CYCLE,
+      animationTargetProperty: editingAnimation
+        ? editingAnimation.targetProperty
+        : '',
+      isUpdating: editingAnimation ? true : false,
+    };
   }
 
   componentWillReceiveProps(nextProps: IAddAnimationProps) {
@@ -65,28 +59,10 @@ export class AddAnimation extends React.Component<
       nextProps.selectedToUpdate !== undefined &&
       nextProps.selectedToUpdate !== this.props.selectedToUpdate
     ) {
-      this.setState({
-        animationName: nextProps.selectedToUpdate.name,
-        animationTargetPath: '',
-        animationType: this.getTypeAsString(
-          nextProps.selectedToUpdate.dataType
-        ),
-        loopMode:
-          nextProps.selectedToUpdate.loopMode ??
-          Animation.ANIMATIONLOOPMODE_CYCLE,
-        animationTargetProperty: nextProps.selectedToUpdate.targetProperty,
-        isUpdating: true,
-      });
+      this.setState(this.setInitialState(nextProps.selectedToUpdate));
     } else {
       if (nextProps.isOpen === true && nextProps.isOpen !== this.props.isOpen)
-        this.setState({
-          animationName: '',
-          animationTargetPath: '',
-          animationType: 'Float',
-          loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
-          animationTargetProperty: '',
-          isUpdating: false,
-        });
+        this.setState(this.setInitialState());
     }
   }
 
@@ -120,60 +96,25 @@ export class AddAnimation extends React.Component<
     }
   }
 
-  getAnimationTypeofChange(selected: string) {
-    let dataType = 0;
-    switch (selected) {
-      case 'Float':
-        dataType = Animation.ANIMATIONTYPE_FLOAT;
-        break;
-      case 'Quaternion':
-        dataType = Animation.ANIMATIONTYPE_QUATERNION;
-        break;
-      case 'Vector3':
-        dataType = Animation.ANIMATIONTYPE_VECTOR3;
-        break;
-      case 'Vector2':
-        dataType = Animation.ANIMATIONTYPE_VECTOR2;
-        break;
-      case 'Size':
-        dataType = Animation.ANIMATIONTYPE_SIZE;
-        break;
-      case 'Color3':
-        dataType = Animation.ANIMATIONTYPE_COLOR3;
-        break;
-      case 'Color4':
-        dataType = Animation.ANIMATIONTYPE_COLOR4;
-        break;
-    }
-    return dataType;
-  }
-
   getTypeAsString(type: number) {
-    let typeAsString = 'Float';
     switch (type) {
       case Animation.ANIMATIONTYPE_FLOAT:
-        typeAsString = 'Float';
-        break;
+        return 'Float';
       case Animation.ANIMATIONTYPE_QUATERNION:
-        typeAsString = 'Quaternion';
-        break;
+        return 'Quaternion';
       case Animation.ANIMATIONTYPE_VECTOR3:
-        typeAsString = 'Vector3';
-        break;
+        return 'Vector3';
       case Animation.ANIMATIONTYPE_VECTOR2:
-        typeAsString = 'Vector2';
-        break;
+        return 'Vector2';
       case Animation.ANIMATIONTYPE_SIZE:
-        typeAsString = 'Size';
-        break;
+        return 'Size';
       case Animation.ANIMATIONTYPE_COLOR3:
-        typeAsString = 'Color3';
-        break;
+        return 'Color3';
       case Animation.ANIMATIONTYPE_COLOR4:
-        typeAsString = 'Color4';
-        break;
+        return 'Color4';
+      default:
+        return 'Float';
     }
-    return typeAsString;
   }
 
   addAnimation() {
@@ -184,9 +125,8 @@ export class AddAnimation extends React.Component<
       let matchTypeTargetProperty = this.state.animationTargetProperty.split(
         '.'
       );
-      let animationDataType = this.getAnimationTypeofChange(
-        this.state.animationType
-      );
+      let animationDataType = this.state.animationType;
+
       let matched = false;
 
       if (matchTypeTargetProperty.length === 1) {
@@ -223,9 +163,6 @@ export class AddAnimation extends React.Component<
               animationDataType === Animation.ANIMATIONTYPE_SIZE
                 ? (matched = true)
                 : (matched = false);
-              break;
-            default:
-              console.log('not recognized');
               break;
           }
         } else {
@@ -278,9 +215,6 @@ export class AddAnimation extends React.Component<
           case Animation.ANIMATIONTYPE_SIZE:
             startValue = new Size(1, 1);
             outTangent = Size.Zero();
-            break;
-          default:
-            console.log('not recognized');
             break;
         }
 
@@ -335,7 +269,7 @@ export class AddAnimation extends React.Component<
             this.setState({
               animationName: '',
               animationTargetPath: '',
-              animationType: 'Float',
+              animationType: Animation.ANIMATIONTYPE_FLOAT,
               loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
               animationTargetProperty: '',
             });
@@ -343,7 +277,9 @@ export class AddAnimation extends React.Component<
         }
       } else {
         this.props.setNotificationMessage(
-          `The property "${this.state.animationTargetProperty}" is not a "${this.state.animationType}" type`
+          `The property "${
+            this.state.animationTargetProperty
+          }" is not a "${this.getTypeAsString(this.state.animationType)}" type`
         );
       }
     } else {
@@ -395,7 +331,7 @@ export class AddAnimation extends React.Component<
 
   handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>) {
     event.preventDefault();
-    this.setState({ animationType: event.target.value });
+    this.setState({ animationType: parseInt(event.target.value) });
   }
 
   handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -451,13 +387,15 @@ export class AddAnimation extends React.Component<
                 onChange={(e) => this.handleTypeChange(e)}
                 value={this.state.animationType}
               >
-                <option value='Float'>Float</option>
-                <option value='Vector3'>Vector3</option>
-                <option value='Vector2'>Vector2</option>
-                <option value='Quaternion'>Quaternion</option>
-                <option value='Color3'>Color3</option>
-                <option value='Color4'>Color4</option>
-                <option value='Size'>Size</option>
+                <option value={Animation.ANIMATIONTYPE_FLOAT}>Float</option>
+                <option value={Animation.ANIMATIONTYPE_VECTOR3}>Vector3</option>
+                <option value={Animation.ANIMATIONTYPE_VECTOR2}>Vector2</option>
+                <option value={Animation.ANIMATIONTYPE_QUATERNION}>
+                  Quaternion
+                </option>
+                <option value={Animation.ANIMATIONTYPE_COLOR3}>Color3</option>
+                <option value={Animation.ANIMATIONTYPE_COLOR4}>Color4</option>
+                <option value={Animation.ANIMATIONTYPE_SIZE}>Size</option>
               </select>
             </div>
           )}
