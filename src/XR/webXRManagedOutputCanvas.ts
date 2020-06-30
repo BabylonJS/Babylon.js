@@ -62,6 +62,9 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      */
     public xrLayer: Nullable<XRWebGLLayer> = null;
 
+    /**
+     * Obseervers registered here will be triggered when the xr layer was initialized
+     */
     public onXRLayerInitObservable: Observable<XRWebGLLayer> = new Observable();
 
     /**
