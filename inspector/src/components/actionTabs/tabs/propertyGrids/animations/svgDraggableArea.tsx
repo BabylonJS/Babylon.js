@@ -144,59 +144,17 @@ export class SvgDraggableArea extends React.Component<
   }
 
   panDirection() {
-    // const moveX = Math.round(coord.x);
-    // const width = Math.round(this.props.scale * 200);
-    // this.setState({
-    //   panX: Math.round(coord.x),
-    //   panY: Math.round(coord.y),
-    // });
-
     let movementX = this._panStart.x - this._panStop.x;
     let movementY = this._panStart.y - this._panStop.y;
 
     let newX = this.state.panX + movementX / 20;
     let newY = this.state.panY + movementY / 20;
 
-    console.log(newX, newY);
-
-    // if (this._draggableArea.current){
-
-    //   const vb = `${movementX} ${movementY} ${Math.round(this.props.scale * 200)} ${Math.round(this.props.scale * 100)}`;
-    //  (this._draggableArea.current as SVGSVGElement).setAttribute('viewBox', vb);
-
-    // }
-
     this.setState({
       panX: Math.round(newX),
       panY: Math.round(newY),
     });
     this.props.panningY(Math.round(newY));
-    // this.setState({
-    //   panX: Math.round(coord.x),
-    //   panY: Math.round(coord.y),
-    //   });
-
-    // // Movement Right to Left
-    // if (this._panStart.x > this._panStop.x) {
-    //   console.log('right to left');
-    //   //this.panTo('right', Math.abs(this._panStart.x - this._panStop.x));
-    // }
-
-    // // Movement Right to Left
-    // if (this._panStart.x < this._panStop.x) {
-    //   //this.panTo('left', Math.abs(this._panStart.x - this._panStop.x));
-    //   console.log('left to right');
-    // }
-
-    // // Movement Bottom to Up
-    // if (this._panStart.y > this._panStop.y) {
-    //   console.log('down up');
-    // }
-
-    // // Movement Up to Bottom
-    // if (this._panStart.y < this._panStop.y) {
-    //   console.log('up down');
-    // }
   }
 
   panTo(direction: string, value: number) {
@@ -278,7 +236,6 @@ export class SvgDraggableArea extends React.Component<
           onMouseDown={(e) => this.dragStart(e)}
           onMouseUp={(e) => this.dragEnd(e)}
           onMouseLeave={(e) => this.dragEnd(e)}
-          // Add way to add new keyframe
           onClick={(e) => this.focus(e)}
           viewBox={`${this.state.panX} ${this.state.panY} ${Math.round(
             this.props.scale * 200
