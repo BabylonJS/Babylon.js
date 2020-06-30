@@ -36,28 +36,32 @@ export class AddAnimation extends React.Component<
     super(props);
 
     if (this.props.selectedToUpdate !== undefined) {
-      this.state = {
-        animationName: this.props.selectedToUpdate.name,
-        animationTargetPath: '',
-        animationType: this.getTypeAsString(
-          this.props.selectedToUpdate.dataType
-        ),
-        loopMode:
-          this.props.selectedToUpdate.loopMode ??
-          Animation.ANIMATIONLOOPMODE_CYCLE,
-        animationTargetProperty: this.props.selectedToUpdate.targetProperty,
-        isUpdating: true,
-      };
+      this.setInitialEditingState(this.props.selectedToUpdate);
     } else {
-      this.state = {
-        animationName: '',
-        animationTargetPath: '',
-        animationType: 'Float',
-        loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
-        animationTargetProperty: '',
-        isUpdating: this.props.selectedToUpdate ? true : false,
-      };
+      this.setInitialState();
     }
+  }
+
+  setInitialState() {
+    this.state = {
+      animationName: '',
+      animationTargetPath: '',
+      animationType: 'Float',
+      loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
+      animationTargetProperty: '',
+      isUpdating: this.props.selectedToUpdate ? true : false,
+    };
+  }
+
+  setInitialEditingState(editingAnimation: Animation) {
+    this.state = {
+      animationName: editingAnimation.name,
+      animationTargetPath: '',
+      animationType: this.getTypeAsString(editingAnimation.dataType),
+      loopMode: editingAnimation.loopMode ?? Animation.ANIMATIONLOOPMODE_CYCLE,
+      animationTargetProperty: editingAnimation.targetProperty,
+      isUpdating: true,
+    };
   }
 
   componentWillReceiveProps(nextProps: IAddAnimationProps) {
@@ -65,28 +69,10 @@ export class AddAnimation extends React.Component<
       nextProps.selectedToUpdate !== undefined &&
       nextProps.selectedToUpdate !== this.props.selectedToUpdate
     ) {
-      this.setState({
-        animationName: nextProps.selectedToUpdate.name,
-        animationTargetPath: '',
-        animationType: this.getTypeAsString(
-          nextProps.selectedToUpdate.dataType
-        ),
-        loopMode:
-          nextProps.selectedToUpdate.loopMode ??
-          Animation.ANIMATIONLOOPMODE_CYCLE,
-        animationTargetProperty: nextProps.selectedToUpdate.targetProperty,
-        isUpdating: true,
-      });
+      this.setInitialEditingState(nextProps.selectedToUpdate);
     } else {
       if (nextProps.isOpen === true && nextProps.isOpen !== this.props.isOpen)
-        this.setState({
-          animationName: '',
-          animationTargetPath: '',
-          animationType: 'Float',
-          loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
-          animationTargetProperty: '',
-          isUpdating: false,
-        });
+        this.setInitialState();
     }
   }
 
