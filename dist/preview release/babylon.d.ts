@@ -46044,6 +46044,7 @@ declare module BABYLON {
         private _options;
         private _canvas;
         private _engine;
+        private _originalCanvasSize;
         /**
          * Rendering context of the canvas which can be used to display/mirror xr content
          */
@@ -46052,6 +46053,10 @@ declare module BABYLON {
          * xr layer for the canvas
          */
         xrLayer: Nullable<XRWebGLLayer>;
+        /**
+         * Obseervers registered here will be triggered when the xr layer was initialized
+         */
+        onXRLayerInitObservable: Observable<XRWebGLLayer>;
         /**
          * Initializes the canvas to be added/removed upon entering/exiting xr
          * @param _xrSessionManager The XR Session manager
@@ -46070,6 +46075,7 @@ declare module BABYLON {
         initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
         private _addCanvas;
         private _removeCanvas;
+        private _setCanvasSize;
         private _setManagedOutputCanvas;
     }
 }
