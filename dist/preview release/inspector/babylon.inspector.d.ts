@@ -550,14 +550,14 @@ declare module INSPECTOR {
         rightControlPoint: BABYLON.Vector2 | null;
         id: string;
         selected: boolean;
-        selectKeyframe: (id: string) => void;
+        selectKeyframe: (id: string, multiselect: boolean) => void;
         selectedControlPoint: (type: string, id: string) => void;
         isLeftActive: boolean;
         isRightActive: boolean;
     }
     export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
         constructor(props: IKeyframeSvgPointProps);
-        select(): void;
+        select(e: React.MouseEvent<SVGImageElement>): void;
         render(): JSX.Element;
     }
 }
@@ -567,8 +567,10 @@ declare module INSPECTOR {
         updatePosition: (updatedKeyframe: IKeyframeSvgPoint, id: string) => void;
         scale: number;
         viewBoxScale: number;
-        selectKeyframe: (id: string) => void;
+        selectKeyframe: (id: string, multiselect: boolean) => void;
         selectedControlPoint: (type: string, id: string) => void;
+        deselectKeyframes: () => void;
+        removeSelectedKeyframes: (points: IKeyframeSvgPoint[]) => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
         private _active;
@@ -577,7 +579,6 @@ declare module INSPECTOR {
         private _draggableArea;
         private _panStart;
         private _panStop;
-        private _width;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
@@ -593,6 +594,7 @@ declare module INSPECTOR {
         keyDown(e: KeyboardEvent): void;
         keyUp(e: KeyboardEvent): void;
         focus(e: React.MouseEvent<SVGSVGElement>): void;
+        isControlPointActive(): boolean;
         render(): JSX.Element;
     }
 }
@@ -698,26 +700,6 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IPlayheadProps {
-        frame: number;
-        offset: number;
-        onCurrentFrameChange: (frame: number) => void;
-    }
-    export class Playhead extends React.Component<IPlayheadProps> {
-        private _direction;
-        private _active;
-        constructor(props: IPlayheadProps);
-        dragStart(e: React.TouchEvent<HTMLDivElement>): void;
-        dragStart(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
-        drag(e: React.TouchEvent<HTMLDivElement>): void;
-        drag(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
-        dragEnd(e: React.TouchEvent<HTMLDivElement>): void;
-        dragEnd(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
-        calculateMove(): string;
-        render(): JSX.Element;
-    }
-}
-declare module INSPECTOR {
-    interface IPlayheadProps {
         message: string;
         open: boolean;
         close: () => void;
@@ -756,20 +738,34 @@ declare module INSPECTOR {
         entity: BABYLON.IAnimatable;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         setNotificationMessage: (message: string) => void;
-        changed: () => void;
+        finishedUpdate: () => void;
+        addedNewAnimation: () => void;
         fps: number;
+        selectedToUpdate?: BABYLON.Animation | undefined;
     }
     export class AddAnimation extends React.Component<IAddAnimationProps, {
         animationName: string;
         animationTargetProperty: string;
-        animationType: string;
+        animationType: number;
         loopMode: number;
         animationTargetPath: string;
+        isUpdating: boolean;
     }> {
         constructor(props: IAddAnimationProps);
-        getAnimationTypeofChange(selected: string): number;
+        setInitialState(editingAnimation?: BABYLON.Animation): {
+            animationName: string;
+            animationTargetPath: string;
+            animationType: number;
+            loopMode: number;
+            animationTargetProperty: string;
+            isUpdating: boolean;
+        };
+        componentWillReceiveProps(nextProps: IAddAnimationProps): void;
+        updateAnimation(): void;
+        getTypeAsString(type: number): "Float" | "Quaternion" | "Vector3" | "Vector2" | "Size" | "Color3" | "Color4";
         addAnimation(): void;
         raiseOnPropertyChanged(newValue: BABYLON.Animation[], previousValue: BABYLON.Animation[]): void;
+        raiseOnPropertyUpdated(newValue: string | number | undefined, previousValue: string | number, property: string): void;
         handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handlePathChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void;
@@ -786,6 +782,8 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         selectAnimation: (selected: BABYLON.Animation, coordinate?: SelectedCoordinate) => void;
         empty: () => void;
+        editAnimation: (selected: BABYLON.Animation) => void;
+        deselectAnimation: () => void;
     }
     interface Item {
         index: number;
@@ -814,7 +812,6 @@ declare module INSPECTOR {
         constructor(props: IAnimationListTreeProps);
         deleteAnimation(): void;
         generateList(): Item[] | null;
-        editAnimation(): void;
         toggleProperty(index: number): void;
         setSelectedCoordinate(animation: BABYLON.Animation, coordinate: SelectedCoordinate, index: number): void;
         setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
@@ -901,6 +898,7 @@ declare module INSPECTOR {
         setFps: (fps: number) => void;
         globalState: GlobalState;
         snippetServer: string;
+        deselectAnimation: () => void;
     }
     export class EditorControls extends React.Component<IEditorControlsProps, {
         isAnimationTabOpen: boolean;
@@ -912,15 +910,18 @@ declare module INSPECTOR {
         framesPerSecond: number;
         snippetId: string;
         loopMode: number;
+        selected: BABYLON.Animation | undefined;
     }> {
         constructor(props: IEditorControlsProps);
         animationAdded(): void;
+        finishedUpdate(): void;
         recountAnimations(): number;
         changeLoopBehavior(): void;
         handleTabs(tab: number): void;
         handleChangeFps(fps: number): void;
         emptiedList(): void;
         animationsLoaded(numberOfAnimations: number): void;
+        editAnimation(selected: BABYLON.Animation): void;
         render(): JSX.Element;
     }
 }
@@ -976,6 +977,7 @@ declare module INSPECTOR {
         private _graphCanvas;
         private _svgCanvas;
         private _isTargetedAnimation;
+        private _pixelFrameUnit;
         private _onBeforeRenderObserver;
         private _mainAnimatable;
         constructor(props: IAnimationCurveEditorComponentProps);
@@ -998,8 +1000,9 @@ declare module INSPECTOR {
          * Keyframe Manipulation
          * This section handles events from SvgDraggableArea.
          */
-        selectKeyframe(id: string): void;
+        selectKeyframe(id: string, multiselect: boolean): void;
         selectedControlPoint(type: string, id: string): void;
+        deselectKeyframes(): void;
         updateValuePerCoordinate(dataType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion, newValue: number, coordinate?: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
         /**
@@ -1014,6 +1017,7 @@ declare module INSPECTOR {
         setLerpMode(): void;
         addKeyframeClick(): void;
         removeKeyframeClick(): void;
+        removeKeyframes(points: IKeyframeSvgPoint[]): void;
         addKeyFrame(event: React.MouseEvent<SVGSVGElement>): void;
         /**
          * Curve Rendering Functions
@@ -1042,6 +1046,7 @@ declare module INSPECTOR {
         curvePath(keyframes: BABYLON.IAnimationKey[], data: string, middle: number, easingFunction: BABYLON.EasingFunction): string;
         setKeyframePoint(controlPoints: BABYLON.Vector2[], index: number, keyframesCount: number): void;
         interpolateControlPoints(p0: BABYLON.Vector2, p1: BABYLON.Vector2, u: number, p2: BABYLON.Vector2, v: number, p3: BABYLON.Vector2): BABYLON.Vector2[] | undefined;
+        deselectAnimation(): void;
         /**
          * Core functions
          * This section handles main Curve Editor Functions.
@@ -2917,5 +2922,25 @@ declare module INSPECTOR {
         private static _Cleanup;
         private static _RemoveElementFromDOM;
         static Hide(): void;
+    }
+}
+declare module INSPECTOR {
+    interface IPlayheadProps {
+        frame: number;
+        offset: number;
+        onCurrentFrameChange: (frame: number) => void;
+    }
+    export class Playhead extends React.Component<IPlayheadProps> {
+        private _direction;
+        private _active;
+        constructor(props: IPlayheadProps);
+        dragStart(e: React.TouchEvent<HTMLDivElement>): void;
+        dragStart(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        drag(e: React.TouchEvent<HTMLDivElement>): void;
+        drag(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        dragEnd(e: React.TouchEvent<HTMLDivElement>): void;
+        dragEnd(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+        calculateMove(): string;
+        render(): JSX.Element;
     }
 }
