@@ -581,26 +581,29 @@ export class AnimationCurveEditorComponent extends React.Component<
         notification: 'Value input only numeric values',
       });
     } else {
-      this.setState({ currentValue: parseFloat(event.target.value) }, () => {
-        if (this.state.selected !== null) {
-          let animation = this.state.selected;
-          let keys = animation.getKeys();
+      this.setState(
+        { currentValue: parseFloat(parseFloat(event.target.value).toFixed(3)) },
+        () => {
+          if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            let keys = animation.getKeys();
 
-          let isKeyframe = keys.find(
-            (k) => k.frame === this.state.currentFrame
-          );
-          if (isKeyframe) {
-            let updatedKeys = keys.map((k) => {
-              if (k.frame === this.state.currentFrame) {
-                k.value = this.state.currentValue;
-              }
-              return k;
-            });
-            this.state.selected.setKeys(updatedKeys);
-            this.selectAnimation(animation);
+            let isKeyframe = keys.find(
+              (k) => k.frame === this.state.currentFrame
+            );
+            if (isKeyframe) {
+              let updatedKeys = keys.map((k) => {
+                if (k.frame === this.state.currentFrame) {
+                  k.value = this.state.currentValue;
+                }
+                return k;
+              });
+              this.state.selected.setKeys(updatedKeys);
+              this.selectAnimation(animation);
+            }
           }
         }
-      });
+      );
     }
   }
 
