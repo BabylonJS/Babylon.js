@@ -71,6 +71,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     fps: number;
     isLooping: boolean;
     panningY: number;
+    panningX: number;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -171,6 +172,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       fps: 60,
       isLooping: true,
       panningY: 0,
+      panningX: 0,
     };
   }
 
@@ -213,6 +215,23 @@ export class AnimationCurveEditorComponent extends React.Component<
     });
 
     return [...halfNegative, ...halfPositive];
+  }
+
+  setValueLines() {
+    const initialValues = new Array(10).fill(0).map((s, i) => {
+      return { value: i * 10, label: -i };
+    });
+
+    const valueHeight = Math.abs(Math.round(this.state.panningY / 10));
+    const sign = Math.sign(this.state.panningY);
+
+    const pannedValues = new Array(valueHeight).fill(0).map((s, i) => {
+      return sign === -1
+        ? { value: -i * 10, label: i }
+        : { value: (i + 10) * 10, label: (i + 10) * -1 };
+    });
+
+    return [...initialValues, ...pannedValues];
   }
 
   setAxesLength() {
@@ -539,29 +558,50 @@ export class AnimationCurveEditorComponent extends React.Component<
    */
   handleFrameChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
-    this.changeCurrentFrame(parseInt(event.target.value));
+    let frame = 0;
+
+    if (
+      isNaN(event.target.valueAsNumber) ||
+      event.target.value.indexOf('.') !== -1
+    ) {
+      this.setState({
+        notification: 'Frame input only accepts integer values',
+      });
+    } else {
+      frame = parseInt(event.target.value);
+      this.changeCurrentFrame(frame);
+    }
   }
 
   handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
-    this.setState({ currentValue: parseFloat(event.target.value) }, () => {
-      if (this.state.selected !== null) {
-        let animation = this.state.selected;
-        let keys = animation.getKeys();
 
-        let isKeyframe = keys.find((k) => k.frame === this.state.currentFrame);
-        if (isKeyframe) {
-          let updatedKeys = keys.map((k) => {
-            if (k.frame === this.state.currentFrame) {
-              k.value = this.state.currentValue;
-            }
-            return k;
-          });
-          this.state.selected.setKeys(updatedKeys);
-          this.selectAnimation(animation);
+    if (isNaN(event.target.valueAsNumber)) {
+      this.setState({
+        notification: 'Value input only numeric values',
+      });
+    } else {
+      this.setState({ currentValue: parseFloat(event.target.value) }, () => {
+        if (this.state.selected !== null) {
+          let animation = this.state.selected;
+          let keys = animation.getKeys();
+
+          let isKeyframe = keys.find(
+            (k) => k.frame === this.state.currentFrame
+          );
+          if (isKeyframe) {
+            let updatedKeys = keys.map((k) => {
+              if (k.frame === this.state.currentFrame) {
+                k.value = this.state.currentValue;
+              }
+              return k;
+            });
+            this.state.selected.setKeys(updatedKeys);
+            this.selectAnimation(animation);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   setFlatTangent() {
@@ -1574,6 +1614,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                   panningY={(panningY: number) => {
                     this.setState({ panningY: panningY });
                   }}
+                  panningX={(panningX: number) => {
+                    this.setState({ panningX: panningX });
+                  }}
                 >
                   {/* Multiple Curves  */}
                   {this.state.selectedPathData?.map((curve, i) => (
@@ -1591,7 +1634,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     ></path>
                   ))}
 
-                  {this.state.valueAxisLength.map((f, i) => {
+                  {/* {this.state.valueAxisLength.map((f, i) => {
                     return (
                       <svg key={i}>
                         <text
@@ -1610,6 +1653,32 @@ export class AnimationCurveEditorComponent extends React.Component<
                           y2={f.value}
                         ></line>
                       </svg>
+                    );
+                  })} */}
+
+                  {this.setValueLines().map((line, i) => {
+                    return (
+                      <text
+                        x={this.state.panningX - 5}
+                        y={line.value}
+                        dx='0'
+                        dy='1'
+                        style={{ fontSize: `${0.2 * this.state.scale}em` }}
+                      >
+                        {line.label}
+                      </text>
+                    );
+                  })}
+
+                  {this.setValueLines().map((line, i) => {
+                    return (
+                      <line
+                        key={i}
+                        x1={-((this.state.frameAxisLength.length * 10) / 2)}
+                        y1={line.value}
+                        x2={this.state.frameAxisLength.length * 10}
+                        y2={line.value}
+                      ></line>
                     );
                   })}
 

@@ -230,7 +230,7 @@ export class EditorControls extends React.Component<
           <AddAnimation
             isOpen={this.state.isAnimationTabOpen}
             close={() => {
-              this.setState({ isAnimationTabOpen: false });
+              this.setState({ isAnimationTabOpen: false, isEditTabOpen: true });
             }}
             entity={this.props.entity as IAnimatable}
             setNotificationMessage={(message: string) => {
