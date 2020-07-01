@@ -267,7 +267,6 @@
       cursor: pointer;
       background-position: center;
       width: 20px;
-      margin-left: 10px;
     }
 
     &.animation-triangle {
@@ -606,6 +605,8 @@
               .scrollbar {
                 cursor: pointer;
                 width: 100%;
+                height: 66px;
+                margin-top: -10px;
               }
 
               .left-grabber,
@@ -949,16 +950,17 @@
 
           .confirm-buttons {
             grid-column-start: 2;
+            column-count: 2;
 
             .buttonLine {
               button {
-                width: 60px;
+                width: 52px;
                 height: 20px;
                 background-color: rgb(68, 68, 68);
                 color: white;
                 font-size: 12px;
                 line-height: 11px;
-                margin: 5px;
+                margin: 4px;
                 font-size: 10px;
                 font-family: acumin-pro-condensed;
                 border: none;
@@ -1023,8 +1025,8 @@
               background-position-x: 18px;
               cursor: pointer;
               &.flip {
-                transform: rotate(180deg);
-                background-position: 2px 50%;
+                transform: rotate(-90deg);
+                background-position: 10px 13px;
               }
             }
 
@@ -1208,7 +1210,6 @@
 
   .buttonLine {
     height: 30px;
-    display: grid;
     align-items: center;
     justify-items: stretch;
 
