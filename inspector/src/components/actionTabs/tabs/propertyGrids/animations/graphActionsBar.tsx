@@ -45,9 +45,9 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
           <div className='action-input'>
             <input
               type='number'
-              value={this.props.currentValue.toFixed(3)}
+              value={this.props.currentValue}
               onChange={this.props.handleValueChange}
-              step='0.001'
+              step='0.1'
             />
           </div>
           <IconButtonLineComponent

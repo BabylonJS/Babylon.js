@@ -950,16 +950,17 @@
 
           .confirm-buttons {
             grid-column-start: 2;
+            column-count: 2;
 
             .buttonLine {
               button {
-                width: 60px;
+                width: 52px;
                 height: 20px;
                 background-color: rgb(68, 68, 68);
                 color: white;
                 font-size: 12px;
                 line-height: 11px;
-                margin: 5px;
+                margin: 4px;
                 font-size: 10px;
                 font-family: acumin-pro-condensed;
                 border: none;
@@ -1209,7 +1210,6 @@
 
   .buttonLine {
     height: 30px;
-    display: grid;
     align-items: center;
     justify-items: stretch;
 

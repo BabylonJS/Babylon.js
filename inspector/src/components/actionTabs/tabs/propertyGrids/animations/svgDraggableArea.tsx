@@ -12,6 +12,7 @@ interface ISvgDraggableAreaProps {
   deselectKeyframes: () => void;
   removeSelectedKeyframes: (points: IKeyframeSvgPoint[]) => void;
   panningY: (panningY: number) => void;
+  panningX: (panningX: number) => void;
 }
 
 export class SvgDraggableArea extends React.Component<
@@ -155,6 +156,9 @@ export class SvgDraggableArea extends React.Component<
       panY: Math.round(newY),
     });
     this.props.panningY(Math.round(newY));
+    this.props.panningX(Math.round(newX));
+
+    console.log(Math.round(newX));
   }
 
   panTo(direction: string, value: number) {
@@ -223,7 +227,7 @@ export class SvgDraggableArea extends React.Component<
         <svg
           style={{ width: 30, height: 364, position: 'absolute', zIndex: 1 }}
         >
-          <rect x='0' y='0' width='30px' height='100%' fill='#222'></rect>
+          <rect x='0' y='0' width='30px' height='100%' fill='#ffffff1c'></rect>
         </svg>
         <svg
           className='linear pannable'
@@ -242,6 +246,7 @@ export class SvgDraggableArea extends React.Component<
           )} ${Math.round(this.props.scale * 100)}`}
         >
           {this.props.children}
+
           {this.props.keyframeSvgPoints.map((keyframe, i) => (
             <KeyframeSvgPoint
               key={`${keyframe.id}_${i}`}

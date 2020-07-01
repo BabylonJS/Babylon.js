@@ -351,17 +351,6 @@ export class AddAnimation extends React.Component<
         style={{ display: this.props.isOpen ? 'block' : 'none' }}
       >
         <div className='sub-content'>
-          {this.state.isUpdating ? null : (
-            <div className='label-input'>
-              <label>Target Path</label>
-              <input
-                type='text'
-                value={this.state.animationTargetPath}
-                onChange={(e) => this.handlePathChange(e)}
-                disabled
-              ></input>
-            </div>
-          )}
           <div className='label-input'>
             <label>Display Name</label>
             <input
@@ -423,6 +412,12 @@ export class AddAnimation extends React.Component<
                   : () => this.addAnimation()
               }
             />
+            {this.props.entity.animations?.length !== 0 ? (
+              <ButtonLineComponent
+                label={'Cancel'}
+                onClick={this.props.close}
+              />
+            ) : null}
           </div>
         </div>
       </div>
