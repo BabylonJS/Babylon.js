@@ -209,13 +209,11 @@ export class Timeline extends React.Component<
       ) {
         let updatedKeyframe = this.props.keyframes[this.state.activeKeyframe];
         if (this._direction > e.clientX) {
-          console.log(`Dragging left ${this.state.activeKeyframe}`);
           let used = this.isFrameBeingUsed(updatedKeyframe.frame - 1, -1);
           if (used) {
             updatedKeyframe.frame = used;
           }
         } else {
-          console.log(`Dragging Right ${this.state.activeKeyframe}`);
           let used = this.isFrameBeingUsed(updatedKeyframe.frame + 1, 1);
           if (used) {
             updatedKeyframe.frame = used;

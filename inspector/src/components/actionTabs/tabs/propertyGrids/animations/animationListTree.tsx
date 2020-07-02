@@ -290,7 +290,6 @@ export class AnimationListTree extends React.Component<
           },
         ]);
       default:
-        console.log('not recognized');
         return null;
     }
   }
