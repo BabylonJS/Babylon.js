@@ -157,8 +157,6 @@ export class SvgDraggableArea extends React.Component<
     });
     this.props.panningY(Math.round(newY));
     this.props.panningX(Math.round(newX));
-
-    console.log(Math.round(newX));
   }
 
   panTo(direction: string, value: number) {
