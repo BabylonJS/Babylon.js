@@ -201,8 +201,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     } else {
       scaleX = this.state.scale + 0.01;
     }
-    console.log(scaleX);
-    //this.setState({ scale: scaleX }, this.setAxesLength);
   }
 
   setFrameAxis(currentLength: number) {
@@ -250,18 +248,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
-
-    let halfNegative = new Array(length / 2).fill(0).map((s, i) => {
-      return { value: -i * 10, label: -i };
-    });
-
-    let halfPositive = new Array(length / 2).fill(0).map((s, i) => {
-      return { value: i * 10, label: i };
-    });
-
-    let mixed = [...halfNegative, ...halfPositive];
-
-    console.log(mixed);
 
     let newFrameLength = new Array(length).fill(0).map((s, i) => {
       return { value: i * 10, label: i };
@@ -1198,11 +1184,8 @@ export class AnimationCurveEditorComponent extends React.Component<
           pointB
         );
 
-        if (controlPoints === undefined) {
-          console.log('error getting bezier control points');
-        } else {
+        if (controlPoints !== undefined) {
           this.setKeyframePoint(controlPoints, i, keyframes.length);
-
           data += ` C${controlPoints[1].x} ${controlPoints[1].y} ${controlPoints[2].x} ${controlPoints[2].y} ${controlPoints[3].x} ${controlPoints[3].y}`;
         }
       }
@@ -1311,17 +1294,9 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     if (coordinate === undefined) {
       this.playStopAnimation();
-
       updatedPath = this.getPathData(animation);
-
-      if (updatedPath === undefined) {
-        console.log('no keyframes in this animation');
-      }
     } else {
       let curves = this.getPathData(animation);
-      if (curves === undefined) {
-        console.log('no keyframes in this animation');
-      }
 
       updatedPath = [];
 

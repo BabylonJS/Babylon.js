@@ -27,9 +27,6 @@ export class Playhead extends React.Component<IPlayheadProps> {
     e.preventDefault();
     if (this._active) {
       let moved = e.pageX - this._direction;
-
-      let framesToMove = Math.round(Math.abs(moved) / 2);
-      console.log(framesToMove);
       if (Math.sign(moved) === -1) {
         this.props.onCurrentFrameChange(this.props.frame - 1);
       } else {
