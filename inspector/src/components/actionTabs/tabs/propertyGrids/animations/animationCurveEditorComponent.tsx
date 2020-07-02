@@ -197,10 +197,9 @@ export class AnimationCurveEditorComponent extends React.Component<
     e.nativeEvent.stopImmediatePropagation();
     let scaleX = 1;
     if (Math.sign(e.deltaY) === -1) {
-      scaleX = this.state.scale - 0.01;
-    } else {
-      scaleX = this.state.scale + 0.01;
+      scaleX = this.state.scale; //- 0.01; //+ 0.01;
     }
+    this.setState({ scale: scaleX });
   }
 
   setFrameAxis(currentLength: number) {
