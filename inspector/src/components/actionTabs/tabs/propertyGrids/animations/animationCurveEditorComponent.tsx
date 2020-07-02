@@ -197,12 +197,9 @@ export class AnimationCurveEditorComponent extends React.Component<
     e.nativeEvent.stopImmediatePropagation();
     let scaleX = 1;
     if (Math.sign(e.deltaY) === -1) {
-      scaleX = this.state.scale - 0.01;
-    } else {
-      scaleX = this.state.scale + 0.01;
+      scaleX = this.state.scale; //- 0.01; //+ 0.01;
     }
-    console.log(scaleX);
-    //this.setState({ scale: scaleX }, this.setAxesLength);
+    this.setState({ scale: scaleX });
   }
 
   setFrameAxis(currentLength: number) {
@@ -250,18 +247,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
-
-    let halfNegative = new Array(length / 2).fill(0).map((s, i) => {
-      return { value: -i * 10, label: -i };
-    });
-
-    let halfPositive = new Array(length / 2).fill(0).map((s, i) => {
-      return { value: i * 10, label: i };
-    });
-
-    let mixed = [...halfNegative, ...halfPositive];
-
-    console.log(mixed);
 
     let newFrameLength = new Array(length).fill(0).map((s, i) => {
       return { value: i * 10, label: i };
@@ -1198,11 +1183,8 @@ export class AnimationCurveEditorComponent extends React.Component<
           pointB
         );
 
-        if (controlPoints === undefined) {
-          console.log('error getting bezier control points');
-        } else {
+        if (controlPoints !== undefined) {
           this.setKeyframePoint(controlPoints, i, keyframes.length);
-
           data += ` C${controlPoints[1].x} ${controlPoints[1].y} ${controlPoints[2].x} ${controlPoints[2].y} ${controlPoints[3].x} ${controlPoints[3].y}`;
         }
       }
@@ -1311,17 +1293,9 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     if (coordinate === undefined) {
       this.playStopAnimation();
-
       updatedPath = this.getPathData(animation);
-
-      if (updatedPath === undefined) {
-        console.log('no keyframes in this animation');
-      }
     } else {
       let curves = this.getPathData(animation);
-      if (curves === undefined) {
-        console.log('no keyframes in this animation');
-      }
 
       updatedPath = [];
 
@@ -1430,6 +1404,12 @@ export class AnimationCurveEditorComponent extends React.Component<
         });
       }
     }
+  }
+
+  setCurrentFrame(direction: number) {
+    this.setState({
+      currentFrame: this.state.currentFrame + direction,
+    });
   }
 
   changeAnimationLimit(limit: number) {
@@ -1620,6 +1600,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                   panningX={(panningX: number) => {
                     this.setState({ panningX: panningX });
                   }}
+                  setCurrentFrame={(direction: number) =>
+                    this.setCurrentFrame(direction)
+                  }
                 >
                   {/* Multiple Curves  */}
                   {this.state.selectedPathData?.map((curve, i) => (
@@ -1636,28 +1619,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                       }}
                     ></path>
                   ))}
-
-                  {/* {this.state.valueAxisLength.map((f, i) => {
-                    return (
-                      <svg key={i}>
-                        <text
-                          x='-4'
-                          y={f.value}
-                          dx='0'
-                          dy='1'
-                          style={{ fontSize: `${0.2 * this.state.scale}em` }}
-                        >
-                          {f.label.toFixed(1)}
-                        </text>
-                        <line
-                          x1={-((this.state.frameAxisLength.length * 10) / 2)}
-                          y1={f.value}
-                          x2={this.state.frameAxisLength.length * 10}
-                          y2={f.value}
-                        ></line>
-                      </svg>
-                    );
-                  })} */}
 
                   {this.setValueLines().map((line, i) => {
                     return (
@@ -1737,10 +1698,13 @@ export class AnimationCurveEditorComponent extends React.Component<
                               fill='white'
                             />
                             <text
-                              x='-0.6%'
+                              x='0'
                               y='1%'
+                              textAnchor='middle'
                               style={{
                                 fontSize: `${0.17 * this.state.scale}em`,
+                                pointerEvents: 'none',
+                                fontWeight: 600,
                               }}
                             >
                               {f.label}
