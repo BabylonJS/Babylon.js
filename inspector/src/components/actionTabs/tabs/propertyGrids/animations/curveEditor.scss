@@ -614,8 +614,12 @@
                 display: flex;
                 align-items: center;
                 cursor: pointer;
+                padding-bottom: 8px;
+                height: 36px;
+                margin-top: -8px;
                 .text {
                   pointer-events: none;
+                  margin: 0;
                 }
               }
 
@@ -623,25 +627,22 @@
               .right-draggable {
                 display: flex;
                 align-items: center;
-                pointer-events: none;
+                height: 20px;
+                width: 20px;
+                justify-content: center;
                 &:active {
                   .grabber {
-                    background-color: #555555;
+                    background-color: #3d3d3d;
                   }
                 }
               }
 
-              .left-grabber {
-                padding-left: 3px;
-              }
-              .right-grabber {
-                padding-right: 3px;
-              }
               .grabber {
                 background-color: #333333;
                 width: 2px;
                 height: 16px;
                 margin-right: 2px;
+                pointer-events: none;
               }
 
               .text {
