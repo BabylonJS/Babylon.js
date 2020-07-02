@@ -267,6 +267,8 @@ export class PrePassRenderer {
 
     private _resetPostProcessChain() {
         this._postProcesses = [];
+        this.imageProcessingPostProcess.resetInputTexture();
+        this.subSurfaceScatteringPostProcess.resetInputTexture();
     }
 
     private _bindPostProcessChain() {
