@@ -4,12 +4,12 @@ import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
-import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
+import { SSAO2Configuration } from "./ssao2Configuration";
 import { SSAO2RenderingPipeline } from "../PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 
 /**
@@ -57,18 +57,18 @@ export class PrePassRenderer {
     public imageProcessingPostProcess: ImageProcessingPostProcess;
 
     /**
-     * Post process for subsurface scattering
-     */
-    public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
-
-    /**
      * Configuration for sub surface scattering post process
      */
     public subSurfaceConfiguration: SubSurfaceConfiguration;
 
-    // TODO
-    public ssaoConfiguration: boolean = false;
+    /**
+     * Configuration for ssao2 post process
+     */
+    public ssao2Configuration: SSAO2Configuration;
 
+    /**
+     * Should materials render their geometry on the MRT
+     */
     public materialsShouldRenderGeometry: boolean = false;
 
     private _enabled: boolean = false;
@@ -105,7 +105,8 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
 
-        this.subSurfaceConfiguration = new SubSurfaceConfiguration();
+        this.subSurfaceConfiguration = new SubSurfaceConfiguration(this._scene);
+        this.ssao2Configuration = new SSAO2Configuration();
     }
 
     private _initializeAttachments() {
@@ -134,12 +135,6 @@ export class PrePassRenderer {
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
         this.imageProcessingPostProcess.autoClear = false;
-    }
-
-    private _createSubSurfaceScatteringEffect() {
-        // TODO : Could probably be moved in subsurface configuration
-        this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
-        this.subSurfaceScatteringPostProcess.autoClear = false;
     }
 
     /**
@@ -179,9 +174,10 @@ export class PrePassRenderer {
      */
     public _afterCameraDraw() {
         if (this._enabled) {
-            this._scene.postProcessManager._prepareFrame(null, this._postProcesses);
-
             const firstCameraPP = this._scene.activeCamera && this._scene.activeCamera._getFirstPostProcess();
+            if (firstCameraPP) {
+                this._scene.postProcessManager._prepareFrame();
+            }
             this._scene.postProcessManager.directRender(this._postProcesses, firstCameraPP ? firstCameraPP.inputTexture : null);
         }
     }
@@ -241,12 +237,12 @@ export class PrePassRenderer {
     private _enable() {
         this._resetPostProcessChain();
 
-        if (this.subSurfaceConfiguration.enabled && !this.subSurfaceScatteringPostProcess) {
-            if (!this.subSurfaceScatteringPostProcess) {
-                this._createSubSurfaceScatteringEffect();
+        if (this.subSurfaceConfiguration.enabled) {
+            if (!this.subSurfaceConfiguration.postProcess) {
+                this.subSurfaceConfiguration.createPostProcess();
             }
 
-            this._postProcesses.push(this.subSurfaceScatteringPostProcess);
+            this._postProcesses.push(this.subSurfaceConfiguration.postProcess);
         }
 
         if (!this.imageProcessingPostProcess) {
@@ -261,14 +257,19 @@ export class PrePassRenderer {
     private _disable() {
         this._setState(false);
         this.subSurfaceConfiguration.enabled = false;
-        this.ssaoConfiguration = false;
+        this.ssao2Configuration.enabled = false;
         this.materialsShouldRenderGeometry = true;
     }
 
     private _resetPostProcessChain() {
         this._postProcesses = [];
-        this.imageProcessingPostProcess.resetInputTexture();
-        this.subSurfaceScatteringPostProcess.resetInputTexture();
+        if (this.imageProcessingPostProcess) {
+            this.imageProcessingPostProcess.restoreDefaultInputTexture();
+        }
+
+        if (this.subSurfaceConfiguration.postProcess) {
+            this.subSurfaceConfiguration.postProcess.restoreDefaultInputTexture();
+        }
     }
 
     private _bindPostProcessChain() {
@@ -302,7 +303,7 @@ export class PrePassRenderer {
         const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
         for (let i = 0; i < pipelines.length; i++) {
             if (pipelines[i] instanceof SSAO2RenderingPipeline) {
-                this.ssaoConfiguration = true;
+                this.ssao2Configuration.enabled = true;
                 this.materialsShouldRenderGeometry = true;
                 enablePrePass = true;
                 break;
@@ -325,9 +326,8 @@ export class PrePassRenderer {
      */
     public dispose() {
         this.imageProcessingPostProcess.dispose();
-        this.subSurfaceScatteringPostProcess.dispose();
-        this.prePassRT.dispose();
         this.subSurfaceConfiguration.dispose();
+        this.prePassRT.dispose();
     }
 
 }

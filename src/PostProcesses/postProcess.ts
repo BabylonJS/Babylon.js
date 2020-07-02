@@ -269,7 +269,11 @@ export class PostProcess {
         this._forcedOutputTexture = value;
     }
 
-    public resetInputTexture() {
+    /**
+    * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
+    * the only way to unset it is to use this function to restore its internal state
+    */
+    public restoreDefaultInputTexture() {
         this._forcedOutputTexture = null;
     }
 
