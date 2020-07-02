@@ -571,8 +571,13 @@ declare module INSPECTOR {
         selectedControlPoint: (type: string, id: string) => void;
         deselectKeyframes: () => void;
         removeSelectedKeyframes: (points: IKeyframeSvgPoint[]) => void;
+        panningY: (panningY: number) => void;
+        panningX: (panningX: number) => void;
     }
-    export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps> {
+    export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, {
+        panX: number;
+        panY: number;
+    }> {
         private _active;
         private _isCurrentPointControl;
         private _currentPointId;
@@ -622,6 +627,7 @@ declare module INSPECTOR {
     }
     export class Controls extends React.Component<IControlsProps, {
         selected: BABYLON.IAnimationKey;
+        playingType: string;
     }> {
         constructor(props: IControlsProps);
         playBackwards(): void;
@@ -804,16 +810,23 @@ declare module INSPECTOR {
         width = 0,
         height = 1
     }
+    interface ItemCoordinate {
+        id: string;
+        color: string;
+        coordinate: SelectedCoordinate;
+    }
     export class AnimationListTree extends React.Component<IAnimationListTreeProps, {
         selectedCoordinate: SelectedCoordinate;
         selectedAnimation: number;
+        animationList: Item[] | null;
     }> {
-        private _list;
         constructor(props: IAnimationListTreeProps);
         deleteAnimation(): void;
         generateList(): Item[] | null;
         toggleProperty(index: number): void;
         setSelectedCoordinate(animation: BABYLON.Animation, coordinate: SelectedCoordinate, index: number): void;
+        coordinateItem(i: number, animation: BABYLON.Animation, coordinate: string, color: string, selectedCoordinate: SelectedCoordinate): JSX.Element;
+        typeAnimationItem(animation: BABYLON.Animation, i: number, childrenElements: ItemCoordinate[]): JSX.Element;
         setListItem(animation: BABYLON.Animation, i: number): JSX.Element | null;
         render(): JSX.Element;
     }
@@ -896,6 +909,7 @@ declare module INSPECTOR {
         setNotificationMessage: (message: string) => void;
         selectAnimation: (selected: BABYLON.Animation, axis?: SelectedCoordinate) => void;
         setFps: (fps: number) => void;
+        setIsLooping: () => void;
         globalState: GlobalState;
         snippetServer: string;
         deselectAnimation: () => void;
@@ -909,7 +923,6 @@ declare module INSPECTOR {
         animationsCount: number;
         framesPerSecond: number;
         snippetId: string;
-        loopMode: number;
         selected: BABYLON.Animation | undefined;
     }> {
         constructor(props: IEditorControlsProps);
@@ -967,6 +980,9 @@ declare module INSPECTOR {
         selectedCoordinate: number;
         animationLimit: number;
         fps: number;
+        isLooping: boolean;
+        panningY: number;
+        panningX: number;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -993,6 +1009,14 @@ declare module INSPECTOR {
          * of the graph area.
          */
         zoom(e: React.WheelEvent<HTMLDivElement>): void;
+        setFrameAxis(currentLength: number): {
+            value: number;
+            label: number;
+        }[];
+        setValueLines(): {
+            value: number;
+            label: number;
+        }[];
         setAxesLength(): void;
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
