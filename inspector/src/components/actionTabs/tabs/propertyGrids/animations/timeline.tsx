@@ -209,13 +209,11 @@ export class Timeline extends React.Component<
       ) {
         let updatedKeyframe = this.props.keyframes[this.state.activeKeyframe];
         if (this._direction > e.clientX) {
-          console.log(`Dragging left ${this.state.activeKeyframe}`);
           let used = this.isFrameBeingUsed(updatedKeyframe.frame - 1, -1);
           if (used) {
             updatedKeyframe.frame = used;
           }
         } else {
-          console.log(`Dragging Right ${this.state.activeKeyframe}`);
           let used = this.isFrameBeingUsed(updatedKeyframe.frame + 1, 1);
           if (used) {
             updatedKeyframe.frame = used;
@@ -264,7 +262,7 @@ export class Timeline extends React.Component<
     }
 
     if (
-      e.target.className === 'left-grabber' &&
+      e.target.className === 'left-draggable' &&
       this._scrollbarHandle.current
     ) {
       this._active = 'leftDraggable';
@@ -273,7 +271,7 @@ export class Timeline extends React.Component<
     }
 
     if (
-      e.target.className === 'right-grabber' &&
+      e.target.className === 'right-draggable' &&
       this._scrollbarHandle.current
     ) {
       this._active = 'rightDraggable';
@@ -288,8 +286,6 @@ export class Timeline extends React.Component<
     e.preventDefault();
     if (e.target.className === 'scrollbar') {
       this.moveScrollbar(e.pageX);
-    } else {
-      console.log('out');
     }
 
     if (this._active === 'leftDraggable') {
@@ -318,7 +314,8 @@ export class Timeline extends React.Component<
     ) {
       const moved = pageX - this._shiftX;
       const scrollContainerWith = this._scrollContainer.current.clientWidth;
-      const startPixel = moved - 233;
+      const startPixel =
+        moved - this._scrollContainer.current.getBoundingClientRect().left;
       const limitRight =
         scrollContainerWith - (this.state.scrollWidth || 0) - 3;
 
@@ -347,12 +344,19 @@ export class Timeline extends React.Component<
   resizeScrollbarRight(clientX: number) {
     if (this._scrollContainer.current && this._scrollbarHandle.current) {
       const moving =
-        clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
+        clientX - this._scrollContainer.current.getBoundingClientRect().left;
 
-      const containerWidth = this.state.scrollWidth ?? 0;
-      const resizePercentage = (100 * Math.abs(moving)) / containerWidth;
-      const frameChange = (resizePercentage * this.state.end) / 100;
-      const framesTo = Math.round(frameChange);
+      const unit =
+        this._scrollContainer.current.clientWidth / this.props.animationLimit;
+      const priorLastFrame = this.state.end * unit;
+      const mouseMoved = moving - priorLastFrame;
+
+      let framesTo = 0;
+      if (Math.sign(mouseMoved) !== -1) {
+        framesTo = Math.round(mouseMoved / unit) + this.state.end;
+      } else {
+        framesTo = this.state.end - Math.round(Math.abs(mouseMoved) / unit);
+      }
 
       if (!(framesTo <= this.state.start + 20)) {
         if (framesTo <= this.props.animationLimit) {
@@ -369,35 +373,38 @@ export class Timeline extends React.Component<
   resizeScrollbarLeft(clientX: number) {
     if (this._scrollContainer.current && this._scrollbarHandle.current) {
       const moving =
-        clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
-      const scrollContainerWith = this._scrollContainer.current.clientWidth;
-      const pixelFrameRatio = scrollContainerWith / this.props.animationLimit;
-      const containerWidth = this.state.scrollWidth ?? 0;
-      const resizePercentage = (100 * Math.abs(moving)) / containerWidth;
+        clientX - this._scrollContainer.current.getBoundingClientRect().left;
 
-      const frameChange = (resizePercentage * this.state.end) / 100;
+      const unit =
+        this._scrollContainer.current.clientWidth / this.props.animationLimit;
+      const priorFirstFrame =
+        this.state.start !== 0 ? this.state.start * unit : 0;
+      const mouseMoved = moving - priorFirstFrame;
 
-      let framesTo: number;
-      if (Math.sign(moving) === 1) {
-        framesTo = this.state.start + Math.round(frameChange);
+      let framesTo = 0;
+
+      if (Math.sign(mouseMoved) !== -1) {
+        framesTo = Math.round(mouseMoved / unit) + this.state.start;
       } else {
-        framesTo = this.state.start - Math.round(frameChange);
+        framesTo =
+          this.state.start !== 0
+            ? this.state.start - Math.round(Math.abs(mouseMoved) / unit)
+            : 0;
       }
 
       if (!(framesTo >= this.state.end - 20)) {
-        this.setState(
-          {
-            start: framesTo,
-            scrollWidth: this.calculateScrollWidth(framesTo, this.state.end),
-            selectionLength: this.range(framesTo, this.state.end),
-          },
-          () => {
-            let Toleft = framesTo * pixelFrameRatio + 233;
-            if (this._scrollbarHandle.current) {
-              this._scrollbarHandle.current.style.left = Toleft + 'px';
-            }
-          }
-        );
+        let toleft =
+          framesTo * unit +
+          this._scrollContainer.current.getBoundingClientRect().left +
+          6;
+        if (this._scrollbarHandle.current) {
+          this._scrollbarHandle.current.style.left = toleft + 'px';
+        }
+        this.setState({
+          start: framesTo,
+          scrollWidth: this.calculateScrollWidth(framesTo, this.state.end),
+          selectionLength: this.range(framesTo, this.state.end),
+        });
       }
     }
   }
