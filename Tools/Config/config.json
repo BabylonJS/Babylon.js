@@ -47,7 +47,8 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor"
+        "nodeEditor",
+        "textureEditor"
     ],
     "es6modules": [
         "core",
@@ -59,7 +60,8 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor"
+        "nodeEditor",
+        "textureEditor"
     ],
     "lintModules": [
         "core",
@@ -771,6 +773,60 @@
                 }
             ],
             "legacyPackageOutputDirectory": "../../../Viewer/build/assets/"
+        }
+    },
+    "textureEditor": {
+        "libraries": [
+            {
+                "output": "babylon.textureEditor.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {            
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "mainFolder": "./textureEditor/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom",
+                "dagre",
+                "re-resizable",
+                "glTF",
+                "file-saver"
+            ],
+            "umd": {
+                "packageName": "babylonjs-texture-editor",
+                "webpackRoot": "TEXTUREEDITOR",
+                "processDeclaration": {
+                    "filename": "babylon.textureEditor.module.d.ts",
+                    "moduleName": "TEXTUREEDITOR",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false,
+                        "react-contextmenu": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "node_modules/re-resizable/lib/index.es5.js",
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/node-editor",
+                "readme": "dist/preview release/textureEditor/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.textureEditor.max.js",
+                    "babylon.textureEditor.max.js.map",
+                    "babylon.textureEditor.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.textureEditor.module.d.ts",
+                "index": "babylon.textureEditor.max.js"
+            }
         }
     }
 }

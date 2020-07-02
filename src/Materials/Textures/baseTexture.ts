@@ -9,11 +9,25 @@ import { Constants } from "../../Engines/constants";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { GUID } from '../../Misc/guid';
 import { ISize, Size } from '../../Maths/math.size';
+import { Tools } from '../../Misc/tools';
+import { Engine } from '../../Engines/engine';
 
 import "../../Misc/fileTools";
 import { ThinEngine } from '../../Engines/thinEngine';
 
 declare type Animation = import("../../Animations/animation").Animation;
+
+// declare TEXTUREEDITOR namespace for compilation issue
+declare var TEXTUREEDITOR: any;
+declare var BABYLON: any;
+
+/**
+ * Interface used to configure the node material editor
+ */
+export interface ITextureEditorOptions {
+    /** Define the URl to load node editor script */
+    editorURL?: string;
+}
 
 /**
  * Base class of all the textures in babylon.
@@ -21,6 +35,57 @@ declare type Animation = import("../../Animations/animation").Animation;
  * in order to make a correct use of the texture.
  */
 export class BaseTexture implements IAnimatable {
+    /** Define the Url to load node editor script */
+    public static EditorURL = `https://unpkg.com/babylonjs-node-editor@${Engine.Version}/babylon.nodeEditor.js`;
+
+    private BJSTEXTUREEDITOR = this._getGlobalTextureEditor();
+
+    /** Get the inspector from bundle or global */
+    private _getGlobalTextureEditor(): any {
+        // UMD Global name detection from Webpack Bundle UMD Name.
+        if (typeof TEXTUREEDITOR !== 'undefined') {
+            return TEXTUREEDITOR;
+        }
+
+        // In case of module let's check the global emitted from the editor entry point.
+        if (typeof BABYLON !== 'undefined' && typeof BABYLON.TextureEditor !== 'undefined') {
+            return BABYLON;
+        }
+
+    }
+
+    /** Creates the texture editor window. */
+    private _createTextureEditor() {
+        this.BJSTEXTUREEDITOR = this.BJSTEXTUREEDITOR || this._getGlobalTextureEditor();
+
+        this.BJSTEXTUREEDITOR.TextureEditor.Show({
+            texture: this
+        });
+    }
+
+    /**
+     * Launch the texture editor
+     * @param config Define the configuration of the editor
+     * @return a promise fulfilled when the texture editor is visible
+     */
+    public edit(config?: ITextureEditorOptions): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (typeof this.BJSTEXTUREEDITOR == 'undefined') {
+                const editorUrl = config && config.editorURL ? config.editorURL : BaseTexture.EditorURL;
+
+                // Load editor and add it to the DOM
+                Tools.LoadScript(editorUrl, () => {
+                    this._createTextureEditor();
+                    resolve();
+                });
+            } else {
+                // Otherwise creates the editor
+                this._createTextureEditor();
+                resolve();
+            }
+        });
+    }
+
     /**
      * Default anisotropic filtering level for the application.
      * It is set to 4 as a good tradeoff between perf and quality.
@@ -724,10 +789,6 @@ export class BaseTexture implements IAnimatable {
             return this._texture._lodTextureLow;
         }
         return null;
-    }
-
-    public edit(): void {
-
     }
 
     /**

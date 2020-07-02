@@ -6,6 +6,7 @@ import { Observable } from "babylonjs/Misc/observable";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
+import { Engine } from 'babylonjs/Engines/engine';
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
@@ -93,8 +94,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
     }
 
     edit() {
-        window.alert("test");
-        // this.props.texture.edit();
+        this.props.texture.edit();
     }
 
     foreceRefresh() {
@@ -137,12 +137,14 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             }
         }
 
+        const editable = texture.textureType != Engine.TEXTURETYPE_FLOAT && texture.textureType != Engine.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV && texture.textureType !== Engine.TEXTURETYPE_HALF_FLOAT;
+
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
-                    <ButtonLineComponent label="Edit" onClick={() => this.edit()} />
+                    {editable && <ButtonLineComponent label="Edit" onClick={() => this.edit()} />}
                     <TextInputLineComponent label="URL" value={textureUrl} lockObject={this.props.lockObject} onChange={url => {
                         (texture as Texture).updateURL(url);
                         this.foreceRefresh();
