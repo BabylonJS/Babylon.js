@@ -1406,6 +1406,12 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
+  setCurrentFrame(direction: number) {
+    this.setState({
+      currentFrame: this.state.currentFrame + direction,
+    });
+  }
+
   changeAnimationLimit(limit: number) {
     this.setState({
       animationLimit: limit,
@@ -1594,6 +1600,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                   panningX={(panningX: number) => {
                     this.setState({ panningX: panningX });
                   }}
+                  setCurrentFrame={(direction: number) =>
+                    this.setCurrentFrame(direction)
+                  }
                 >
                   {/* Multiple Curves  */}
                   {this.state.selectedPathData?.map((curve, i) => (
@@ -1610,28 +1619,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                       }}
                     ></path>
                   ))}
-
-                  {/* {this.state.valueAxisLength.map((f, i) => {
-                    return (
-                      <svg key={i}>
-                        <text
-                          x='-4'
-                          y={f.value}
-                          dx='0'
-                          dy='1'
-                          style={{ fontSize: `${0.2 * this.state.scale}em` }}
-                        >
-                          {f.label.toFixed(1)}
-                        </text>
-                        <line
-                          x1={-((this.state.frameAxisLength.length * 10) / 2)}
-                          y1={f.value}
-                          x2={this.state.frameAxisLength.length * 10}
-                          y2={f.value}
-                        ></line>
-                      </svg>
-                    );
-                  })} */}
 
                   {this.setValueLines().map((line, i) => {
                     return (
@@ -1711,10 +1698,13 @@ export class AnimationCurveEditorComponent extends React.Component<
                               fill='white'
                             />
                             <text
-                              x='-0.6%'
+                              x='0'
                               y='1%'
+                              textAnchor='middle'
                               style={{
                                 fontSize: `${0.17 * this.state.scale}em`,
+                                pointerEvents: 'none',
+                                fontWeight: 600,
                               }}
                             >
                               {f.label}

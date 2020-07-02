@@ -13,6 +13,7 @@ interface ISvgDraggableAreaProps {
   removeSelectedKeyframes: (points: IKeyframeSvgPoint[]) => void;
   panningY: (panningY: number) => void;
   panningX: (panningX: number) => void;
+  setCurrentFrame: (direction: number) => void;
 }
 
 export class SvgDraggableArea extends React.Component<
@@ -25,6 +26,7 @@ export class SvgDraggableArea extends React.Component<
   private _draggableArea: React.RefObject<SVGSVGElement>;
   private _panStart: Vector2;
   private _panStop: Vector2;
+  private _playheadDrag: number;
 
   constructor(props: ISvgDraggableAreaProps) {
     super(props);
@@ -33,6 +35,7 @@ export class SvgDraggableArea extends React.Component<
     this._draggableArea = React.createRef();
     this._panStart = new Vector2(0, 0);
     this._panStop = new Vector2(0, 0);
+    this._playheadDrag = 0;
 
     this.state = { panX: 0, panY: 0 };
   }
@@ -66,6 +69,11 @@ export class SvgDraggableArea extends React.Component<
       }
     }
 
+    if (e.target.classList.contains('svg-playhead')) {
+      this._active = true;
+      this._playheadDrag = e.clientX;
+    }
+
     if (e.target.classList.contains('pannable')) {
       this._active = true;
       this._panStart.set(e.clientX, e.clientY);
@@ -85,6 +93,13 @@ export class SvgDraggableArea extends React.Component<
           if (this._panStart.x !== 0 && this._panStart.y !== 0) {
             this._panStop.set(e.clientX, e.clientY);
             this.panDirection();
+          }
+        }
+        if (e.target.classList.contains('svg-playhead')) {
+          if (this._playheadDrag < e.clientX) {
+            this.props.setCurrentFrame(1);
+          } else {
+            this.props.setCurrentFrame(-1);
           }
         } else {
           var newPoints = [...this.props.keyframeSvgPoints];
@@ -223,7 +238,13 @@ export class SvgDraggableArea extends React.Component<
     return (
       <>
         <svg
-          style={{ width: 30, height: 364, position: 'absolute', zIndex: 1 }}
+          style={{
+            width: 30,
+            height: 364,
+            position: 'absolute',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
         >
           <rect x='0' y='0' width='30px' height='100%' fill='#ffffff1c'></rect>
         </svg>
