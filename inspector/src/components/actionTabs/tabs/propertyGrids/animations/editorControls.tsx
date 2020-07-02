@@ -23,6 +23,7 @@ interface IEditorControlsProps {
   setNotificationMessage: (message: string) => void;
   selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
   setFps: (fps: number) => void;
+  setIsLooping: () => void;
   globalState: GlobalState;
   snippetServer: string;
   deselectAnimation: () => void;
@@ -39,7 +40,6 @@ export class EditorControls extends React.Component<
     animationsCount: number;
     framesPerSecond: number;
     snippetId: string;
-    loopMode: number;
     selected: Animation | undefined;
   }
 > {
@@ -53,8 +53,7 @@ export class EditorControls extends React.Component<
       isEditTabOpen: count === 0 ? false : true,
       isSaveTabOpen: false,
       isLoadTabOpen: false,
-      isLoopActive: false,
-      loopMode: Animation.ANIMATIONLOOPMODE_CYCLE,
+      isLoopActive: true,
       animationsCount: count,
       framesPerSecond: 60,
       snippetId: '',
@@ -83,22 +82,10 @@ export class EditorControls extends React.Component<
   }
 
   changeLoopBehavior() {
-    let loopMode = this.state.loopMode;
-    const animation = this.props.selected;
-    if (loopMode === 2) {
-      loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
-    } else {
-      loopMode = Animation.ANIMATIONLOOPMODE_CONSTANT;
-    }
-    if (animation) {
-      // Notify observers
-      animation.loopMode = loopMode;
-    }
-
     this.setState({
       isLoopActive: !this.state.isLoopActive,
-      loopMode: loopMode,
     });
+    this.props.setIsLooping();
   }
 
   handleTabs(tab: number) {
@@ -243,7 +230,7 @@ export class EditorControls extends React.Component<
           <AddAnimation
             isOpen={this.state.isAnimationTabOpen}
             close={() => {
-              this.setState({ isAnimationTabOpen: false });
+              this.setState({ isAnimationTabOpen: false, isEditTabOpen: true });
             }}
             entity={this.props.entity as IAnimatable}
             setNotificationMessage={(message: string) => {
