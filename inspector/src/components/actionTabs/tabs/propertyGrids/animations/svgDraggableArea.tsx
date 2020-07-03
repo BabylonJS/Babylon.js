@@ -14,6 +14,9 @@ interface ISvgDraggableAreaProps {
   panningY: (panningY: number) => void;
   panningX: (panningX: number) => void;
   setCurrentFrame: (direction: number) => void;
+  positionCanvas?: number;
+  repositionCanvas?: boolean;
+  canvasPositionEnded: () => void;
 }
 
 export class SvgDraggableArea extends React.Component<
@@ -54,6 +57,18 @@ export class SvgDraggableArea extends React.Component<
         ? this._draggableArea.current?.clientWidth
         : 0;
     }, 500);
+  }
+
+  componentWillReceiveProps(newProps: ISvgDraggableAreaProps) {
+    if (
+      newProps.positionCanvas !== this.props.positionCanvas &&
+      newProps.positionCanvas !== undefined &&
+      newProps.repositionCanvas
+    ) {
+      this.setState({ panX: newProps.positionCanvas }, () => {
+        this.props.canvasPositionEnded();
+      });
+    }
   }
 
   dragStart(e: React.TouchEvent<SVGSVGElement>): void;
