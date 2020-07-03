@@ -920,6 +920,7 @@ declare module INSPECTOR {
         globalState: GlobalState;
         snippetServer: string;
         deselectAnimation: () => void;
+        fps: number;
     }
     export class EditorControls extends React.Component<IEditorControlsProps, {
         isAnimationTabOpen: boolean;
@@ -933,6 +934,7 @@ declare module INSPECTOR {
         selected: BABYLON.Animation | undefined;
     }> {
         constructor(props: IEditorControlsProps);
+        componentWillReceiveProps(newProps: IEditorControlsProps): void;
         animationAdded(): void;
         finishedUpdate(): void;
         recountAnimations(): number;
@@ -1085,7 +1087,7 @@ declare module INSPECTOR {
          */
         selectAnimation(animation: BABYLON.Animation, coordinate?: SelectedCoordinate): void;
         isAnimationPlaying(): boolean;
-        playStopAnimation(): boolean;
+        stopAnimation(): void;
         analizeAnimationForLerp(animation: BABYLON.Animation | null): boolean;
         /**
          * Timeline
