@@ -27,6 +27,7 @@ interface IEditorControlsProps {
   globalState: GlobalState;
   snippetServer: string;
   deselectAnimation: () => void;
+  fps: number;
 }
 
 export class EditorControls extends React.Component<
@@ -55,10 +56,16 @@ export class EditorControls extends React.Component<
       isLoadTabOpen: false,
       isLoopActive: true,
       animationsCount: count,
-      framesPerSecond: 60,
+      framesPerSecond: this.props.fps,
       snippetId: '',
       selected: undefined,
     };
+  }
+
+  componentWillReceiveProps(newProps: IEditorControlsProps) {
+    if (newProps.fps !== this.props.fps) {
+      this.setState({ framesPerSecond: newProps.fps });
+    }
   }
 
   animationAdded() {
@@ -137,6 +144,9 @@ export class EditorControls extends React.Component<
   handleChangeFps(fps: number) {
     this.props.setFps(fps);
     this.setState({ framesPerSecond: fps });
+    if (this.props.selected) {
+      this.props.selected.framePerSecond = fps;
+    }
   }
 
   emptiedList() {
