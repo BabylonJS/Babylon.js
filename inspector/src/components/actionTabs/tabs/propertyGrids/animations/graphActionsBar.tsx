@@ -32,7 +32,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
         </div>
         <div
           className='buttons-container'
-          style={{ display: this.props.enabled ? 'flex' : 'none' }}
+          style={{ pointerEvents: this.props.enabled ? 'all' : 'none' }}
         >
           <div className='action-input'>
             <input

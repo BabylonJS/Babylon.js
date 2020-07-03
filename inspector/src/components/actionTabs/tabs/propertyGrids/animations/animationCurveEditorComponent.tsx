@@ -72,6 +72,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     isLooping: boolean;
     panningY: number;
     panningX: number;
+    repositionCanvas: boolean;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -173,6 +174,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       isLooping: true,
       panningY: 0,
       panningX: 0,
+      repositionCanvas: false,
     };
   }
 
@@ -1406,6 +1408,10 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
+  setCanvasPosition(frame: number) {
+    this.setState({ panningX: (frame - 10) * 10, repositionCanvas: true });
+  }
+
   setCurrentFrame(direction: number) {
     this.setState({
       currentFrame: this.state.currentFrame + direction,
@@ -1603,6 +1609,11 @@ export class AnimationCurveEditorComponent extends React.Component<
                   setCurrentFrame={(direction: number) =>
                     this.setCurrentFrame(direction)
                   }
+                  positionCanvas={this.state.panningX}
+                  repositionCanvas={this.state.repositionCanvas}
+                  canvasPositionEnded={() =>
+                    this.setState({ repositionCanvas: false })
+                  }
                 >
                   {/* Multiple Curves  */}
                   {this.state.selectedPathData?.map((curve, i) => (
@@ -1736,6 +1747,9 @@ export class AnimationCurveEditorComponent extends React.Component<
               keyframes={this.state.selected && this.state.selected.getKeys()}
               selected={this.state.selected && this.state.selected.getKeys()[0]}
               fps={this.state.fps}
+              repositionCanvas={(frame: number) =>
+                this.setCanvasPosition(frame)
+              }
             ></Timeline>
           </div>
         </div>
