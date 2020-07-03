@@ -853,6 +853,12 @@
             "title": "GLTF Extension KHR_materials_variants",
             "playgroundId": "#BKGTKL#2",
             "referenceImage": "gltfExtensionKhrMaterialsVariants.png"
+        },
+        {
+            "title": "OBJ loader test",
+            "playgroundId": "#SYQW69#311",
+            "referenceImage": "objTestLoader.png",
+            "renderCount": 10
         }
     ]
 }
