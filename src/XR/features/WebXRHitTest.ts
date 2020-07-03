@@ -32,6 +32,12 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
      * Instead of using viewer space for hit tests, use the reference space defined in the session manager
      */
     useReferenceSpace?: boolean;
+
+    /**
+     * Should alerts that something wrong has happened be disabled.
+     * This feature is using the alert() function! Disable it to error silently
+     */
+    disableUserErrorAlerts?: boolean;
 }
 
 /**
@@ -88,6 +94,9 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             Tools.Warn('waiting for viewer reference space to initialize');
             return;
         }
+        if (!this.options.disableUserErrorAlerts && !this._xrSessionManager.session.requestHitTestSource) {
+            alert('hit-tests are not available in this browser.');
+        }
         this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
             if (this._xrHitTestSource) {
                 this._xrHitTestSource.cancel();
@@ -133,7 +142,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
          */
         public readonly options: IWebXRHitTestOptions = {}) {
         super(_xrSessionManager);
-        Tools.Warn('Hit test is an experimental and unstable feature. make sure you enable optionalFeatures when creating the XR session');
+        Tools.Warn('Hit test is an experimental feature. make sure you enable optionalFeatures when creating the XR session');
     }
 
     /**

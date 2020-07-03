@@ -21,6 +21,12 @@ export interface IWebXRAnchorSystemOptions {
      * If not defined, anchors will be removed from the array when the feature is detached or the session ended.
      */
     doNotRemoveAnchorsOnSessionEnded?: boolean;
+
+    /**
+     * Should alerts that something wrong has happened be disabled.
+     * This feature is using the alert() function! Disable it to error silently
+     */
+    disableUserErrorAlerts?: boolean;
 }
 
 /**
@@ -155,7 +161,11 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         const m = new XRRigidTransform({x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z},
                                        {x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w});
         if (!hitTestResult.xrHitResult.createAnchor) {
-            throw new Error('Anchors not enabled in this browsed. Add "anchors" to optional features');
+            const error = 'Anchors not enabled in this browser. Enable it in chrome://flags';
+            if (!this._options.disableUserErrorAlerts) {
+                alert(error);
+            }
+            throw new Error(error + ' and make sure to add it in the optionalFeatures of the xr session');
         } else {
             try {
                 return hitTestResult.xrHitResult.createAnchor(m);

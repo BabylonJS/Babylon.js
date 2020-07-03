@@ -61,16 +61,18 @@ export class WebXRExperienceHelper implements IDisposable {
      * @param scene the scene to attach the experience helper to
      * @returns a promise for the experience helper
      */
-    public static CreateAsync(scene: Scene): Promise<WebXRExperienceHelper> {
+    public static async CreateAsync(scene: Scene): Promise<WebXRExperienceHelper> {
         var helper = new WebXRExperienceHelper(scene);
-        return helper.sessionManager.initializeAsync().then(() => {
+        try {
+            await helper.sessionManager.initializeAsync();
             helper._supported = true;
             return helper;
-        }).catch((e) => {
+        }
+        catch (e) {
             helper._setState(WebXRState.NOT_IN_XR);
             helper.dispose();
             throw e;
-        });
+        }
     }
 
     /**

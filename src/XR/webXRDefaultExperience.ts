@@ -57,7 +57,13 @@ export class WebXRDefaultExperienceOptions {
      * A list of optional features to init the session with
      * If set to true, all features we support will be added
      */
-    optionalFeatures?: boolean | string[];
+    public optionalFeatures?: boolean | string[];
+
+    /**
+     * Alerts using the alert() function of the browser will be displayed if a browser-related exception is thrown.
+     * Use this to error silently (and handle errors on your own)
+     */
+    public disableUserErrorAlerts?: boolean;
 }
 
 /**
@@ -98,11 +104,12 @@ export class WebXRDefaultExperience {
      * @param options options for basic configuration
      * @returns resulting WebXRDefaultExperience
      */
-    public static CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
+    public static async CreateAsync(scene: Scene, options: WebXRDefaultExperienceOptions = {}) {
         var result = new WebXRDefaultExperience();
 
         // Create base experience
-        return WebXRExperienceHelper.CreateAsync(scene).then((xrHelper) => {
+        try {
+            const xrHelper = await WebXRExperienceHelper.CreateAsync(scene);
             result.baseExperience = xrHelper;
 
             if (options.ignoreNativeCameraTransformation) {
@@ -116,20 +123,22 @@ export class WebXRDefaultExperience {
                 },
                 ...(options.inputOptions || {})
             });
-            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest",
-            <IWebXRControllerPointerSelectionOptions>{
-                xrInput: result.input,
-                renderingGroupId: options.renderingGroupId
-            });
+            result.pointerSelection = (<WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest",
+                (
+                    <IWebXRControllerPointerSelectionOptions>{
+                        xrInput: result.input,
+                        renderingGroupId: options.renderingGroupId
+                    })));
 
             // Add default teleportation, including rotation
             if (!options.disableTeleportation) {
-                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest",
-                <IWebXRTeleportationOptions>{
-                    floorMeshes: options.floorMeshes,
-                    xrInput: result.input,
-                    renderingGroupId: options.renderingGroupId
-                });
+                result.teleportation = (<WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest",
+                    (
+                        <IWebXRTeleportationOptions>{
+                            floorMeshes: options.floorMeshes,
+                            xrInput: result.input,
+                            renderingGroupId: options.renderingGroupId
+                        })));
                 result.teleportation.setSelectionFeature(result.pointerSelection);
             }
 
@@ -140,29 +149,34 @@ export class WebXRDefaultExperience {
 
                 const uiOptions: WebXREnterExitUIOptions = {
                     renderTarget: result.renderTarget,
+                    disableUserErrorAlerts: options.disableUserErrorAlerts,
                     ...(options.uiOptions || {})
                 };
                 if (options.optionalFeatures) {
                     if (typeof options.optionalFeatures === 'boolean') {
                         uiOptions.optionalFeatures = ['hit-test', 'anchors', 'planes', 'hand-tracking'];
-                    } else {
+                    }
+                    else {
                         uiOptions.optionalFeatures = options.optionalFeatures;
                     }
                 }
                 // Create ui for entering/exiting xr
-                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, uiOptions).then((ui) => {
-                    result.enterExitUI = ui;
-                });
-            } else {
-                return;
+                const ui = await WebXREnterExitUI.CreateAsync(scene, result.baseExperience, uiOptions);
+                result.enterExitUI = ui;
+                return result;
             }
-        }).then(() => {
-            return result;
-        }).catch((error) => {
+            else {
+                return result;
+            }
+        }
+        catch (error) {
             Logger.Error("Error initializing XR");
             Logger.Error(error);
+            if (!options.disableUserErrorAlerts) {
+                alert('Error initializing WebXR. make sure you use a supported browser and load the page over HTTPS');
+            }
             return result;
-        });
+        }
     }
 
     /**

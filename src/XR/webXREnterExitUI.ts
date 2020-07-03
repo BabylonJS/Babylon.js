@@ -58,6 +58,12 @@ export class WebXREnterExitUIOptions {
      * A list of optional features to init the session with
      */
     optionalFeatures?: string[];
+
+    /**
+     * An alert using the alert() function will be displayed for the user when XR or this session mode is not available.
+     * Use this to error silently
+     */
+    disableUserErrorAlerts?: boolean;
 }
 /**
  * UI to allow the user to enter/exit XR mode
@@ -164,14 +170,22 @@ export class WebXREnterExitUI implements IDisposable {
                                     ui._updateButtons(null);
                                     const element = ui._buttons[i].element;
                                     const prevTitle = element.title;
-                                    element.title = "Error entering XR session : " + prevTitle;
+                                    const error = "Error entering WebXR session : " + prevTitle;
+                                    if (!options.disableUserErrorAlerts) {
+                                        alert(error);
+                                    }
+                                    element.title = error;
                                     element.classList.add("xr-error");
                                 }
                             }
                         }
                     };
                 } else {
-                    Tools.Warn(`Session mode "${ui._buttons[i].sessionMode}" not supported in browser`);
+                    const error = `WebXR Session mode "${ui._buttons[i].sessionMode}" is not supported in this browser`;
+                    if (!options.disableUserErrorAlerts) {
+                        alert(error);
+                    }
+                    Tools.Warn(error);
                 }
             });
             return ui;
