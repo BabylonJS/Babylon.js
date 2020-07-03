@@ -13,6 +13,7 @@ interface ITimelineProps {
   isPlaying: boolean;
   animationLimit: number;
   fps: number;
+  repositionCanvas: (frame: number) => void;
 }
 
 export class Timeline extends React.Component<
@@ -119,6 +120,7 @@ export class Timeline extends React.Component<
       );
       const frame = Math.round((event.clientX - 233) / unit) + this.state.start;
       this.props.onCurrentFrameChange(frame);
+      this.props.repositionCanvas(frame);
     }
   }
 
