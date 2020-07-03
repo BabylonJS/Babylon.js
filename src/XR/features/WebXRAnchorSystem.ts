@@ -340,7 +340,11 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 throw new Error(error);
             }
         } else {
-            throw new Error('Anchors are not enabled in your browser');
+            const error = 'Anchors not enabled in this browser. Enable it in chrome://flags';
+            if (!this._options.disableUserErrorAlerts) {
+                alert(error);
+            }
+            throw new Error(error);
         }
     }
 }
