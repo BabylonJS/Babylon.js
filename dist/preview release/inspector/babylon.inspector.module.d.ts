@@ -650,6 +650,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         panningY: (panningY: number) => void;
         panningX: (panningX: number) => void;
         setCurrentFrame: (direction: number) => void;
+        positionCanvas?: number;
+        repositionCanvas?: boolean;
+        canvasPositionEnded: () => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, {
         panX: number;
@@ -664,6 +667,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _playheadDrag;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
+        componentWillReceiveProps(newProps: ISvgDraggableAreaProps): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
         dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
         drag(e: React.TouchEvent<SVGSVGElement>): void;
@@ -735,6 +739,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         isPlaying: boolean;
         animationLimit: number;
         fps: number;
+        repositionCanvas: (frame: number) => void;
     }
     export class Timeline extends React.Component<ITimelineProps, {
         selected: IAnimationKey;
@@ -1118,6 +1123,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         isLooping: boolean;
         panningY: number;
         panningX: number;
+        repositionCanvas: boolean;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -1219,6 +1225,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
          * This section controls the timeline.
          */
         changeCurrentFrame(frame: number): void;
+        setCanvasPosition(frame: number): void;
         setCurrentFrame(direction: number): void;
         changeAnimationLimit(limit: number): void;
         updateFrameInKeyFrame(frame: number, index: number): void;
@@ -4228,6 +4235,9 @@ declare module INSPECTOR {
         panningY: (panningY: number) => void;
         panningX: (panningX: number) => void;
         setCurrentFrame: (direction: number) => void;
+        positionCanvas?: number;
+        repositionCanvas?: boolean;
+        canvasPositionEnded: () => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, {
         panX: number;
@@ -4242,6 +4252,7 @@ declare module INSPECTOR {
         private _playheadDrag;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
+        componentWillReceiveProps(newProps: ISvgDraggableAreaProps): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
         dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
         drag(e: React.TouchEvent<SVGSVGElement>): void;
@@ -4308,6 +4319,7 @@ declare module INSPECTOR {
         isPlaying: boolean;
         animationLimit: number;
         fps: number;
+        repositionCanvas: (frame: number) => void;
     }
     export class Timeline extends React.Component<ITimelineProps, {
         selected: BABYLON.IAnimationKey;
@@ -4639,6 +4651,7 @@ declare module INSPECTOR {
         isLooping: boolean;
         panningY: number;
         panningX: number;
+        repositionCanvas: boolean;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -4740,6 +4753,7 @@ declare module INSPECTOR {
          * This section controls the timeline.
          */
         changeCurrentFrame(frame: number): void;
+        setCanvasPosition(frame: number): void;
         setCurrentFrame(direction: number): void;
         changeAnimationLimit(limit: number): void;
         updateFrameInKeyFrame(frame: number, index: number): void;
