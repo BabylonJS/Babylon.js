@@ -142,6 +142,8 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     this._canvasLength = 240;
 
+    this.stopAnimation();
+
     // will update this until we have a top scroll/zoom feature
     let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
     this.state = {
@@ -166,7 +168,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       currentPoint: undefined,
       scale: 1,
       playheadPos: 0,
-      isPlaying: this.isAnimationPlaying(),
+      isPlaying: false,
       selectedPathData: initialPathData,
       selectedCoordinate: 0,
       animationLimit: this._canvasLength / 2,
@@ -179,7 +181,7 @@ export class AnimationCurveEditorComponent extends React.Component<
   }
 
   componentDidMount() {
-    setTimeout(() => this.resetPlayheadOffset(), 500);
+    this.state.selected && this.selectAnimation(this.state.selected);
   }
 
   /**
@@ -743,7 +745,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     keyframes.forEach((key, i) => {
       // identify type of value and split...
       var point = new Vector2(0, 0);
-      point.x = key.frame;
+      point.x = key.frame * this._pixelFrameUnit;
       point.y = this._heightScale - key.value * middle;
       this.setKeyframePointLinear(point, i);
 
@@ -884,9 +886,7 @@ export class AnimationCurveEditorComponent extends React.Component<
           startKey.frame * this._pixelFrameUnit
         }, ${this._heightScale - startValue[d] * middle}`; //
 
-        if (this.state && this.state.lerpMode) {
-          data = this.linearInterpolation(keyframes, data, middle);
-        } else {
+        if (this.state) {
           if (usesTangents) {
             data = this.curvePathWithTangents(
               keyframes,
@@ -926,8 +926,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                   d,
                   id
                 );
-              } else {
-                data = this.linearInterpolation(keyframes, data, middle);
               }
             }
           }
@@ -1294,7 +1292,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     let selectedCurve = 0;
 
     if (coordinate === undefined) {
-      this.playStopAnimation();
+      this.stopAnimation();
       updatedPath = this.getPathData(animation);
     } else {
       let curves = this.getPathData(animation);
@@ -1327,6 +1325,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes,
       selectedPathData: updatedPath,
       selectedCoordinate: selectedCurve,
+      fps: animation.framePerSecond,
     });
   }
 
@@ -1339,7 +1338,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     return this.props.scene.getAllAnimatablesByTarget(target).length > 0;
   }
 
-  playStopAnimation() {
+  stopAnimation() {
     let target = this.props.entity;
     if (this.props.entity instanceof TargetedAnimation) {
       target = this.props.entity.target;
@@ -1348,10 +1347,6 @@ export class AnimationCurveEditorComponent extends React.Component<
       this.props.scene.getAllAnimatablesByTarget(target).length > 0;
     if (this._isPlaying) {
       this.props.playOrPause && this.props.playOrPause();
-      return true;
-    } else {
-      this._isPlaying = false;
-      return false;
     }
   }
 
@@ -1567,6 +1562,7 @@ export class AnimationCurveEditorComponent extends React.Component<
               }}
               globalState={this.props.globalState}
               snippetServer={this._snippetUrl}
+              fps={this.state.fps}
               setFps={(fps: number) => {
                 this.setState({ fps: fps });
               }}
@@ -1634,6 +1630,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                   {this.setValueLines().map((line, i) => {
                     return (
                       <text
+                        key={`value_inline_${i}`}
                         x={this.state.panningX - 5}
                         y={line.value}
                         dx='0'
