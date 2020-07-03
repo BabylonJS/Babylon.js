@@ -163,6 +163,9 @@ export class WebXREnterExitUI implements IDisposable {
                         } else if (helper.state == WebXRState.NOT_IN_XR) {
                             if (options.renderTarget) {
                                 try {
+                                    const element = ui._buttons[i].element;
+                                    element.title = `${ui._buttons[i].sessionMode} - ${ui._buttons[i].referenceSpaceType}`;
+                                    element.classList.remove("xr-error");
                                     await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.renderTarget, {optionalFeatures: options.optionalFeatures});
                                     ui._updateButtons(ui._buttons[i]);
                                 } catch (e) {
@@ -172,7 +175,7 @@ export class WebXREnterExitUI implements IDisposable {
                                     const prevTitle = element.title;
                                     const error = "Error entering WebXR session : " + prevTitle;
                                     if (!options.disableUserErrorAlerts) {
-                                        alert(error);
+                                        alert(error + '. Please make sure your browser supports WebXR.');
                                     }
                                     element.title = error;
                                     element.classList.add("xr-error");
