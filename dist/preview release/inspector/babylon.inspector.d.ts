@@ -573,6 +573,7 @@ declare module INSPECTOR {
         removeSelectedKeyframes: (points: IKeyframeSvgPoint[]) => void;
         panningY: (panningY: number) => void;
         panningX: (panningX: number) => void;
+        setCurrentFrame: (direction: number) => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, {
         panX: number;
@@ -584,6 +585,7 @@ declare module INSPECTOR {
         private _draggableArea;
         private _panStart;
         private _panStop;
+        private _playheadDrag;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
         dragStart(e: React.TouchEvent<SVGSVGElement>): void;
@@ -1084,6 +1086,7 @@ declare module INSPECTOR {
          * This section controls the timeline.
          */
         changeCurrentFrame(frame: number): void;
+        setCurrentFrame(direction: number): void;
         changeAnimationLimit(limit: number): void;
         updateFrameInKeyFrame(frame: number, index: number): void;
         playPause(direction: number): void;
