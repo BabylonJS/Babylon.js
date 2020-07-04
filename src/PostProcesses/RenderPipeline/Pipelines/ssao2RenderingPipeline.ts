@@ -102,6 +102,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
+     * Force rendering the geometry through geometry buffer
+     */
+    public forceGeometryBuffer: boolean = false;
+
+    /**
      * Ratio object used for SSAO ratio and blur ratio
      */
     @serialize()
@@ -183,11 +188,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
      * @param cameras The array of cameras that the rendering pipeline will be attached to
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]) {
+    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false) {
         super(scene.getEngine(), name);
 
         this._scene = scene;
         this._ratio = ratio;
+        this.forceGeometryBuffer = forceGeometryBuffer;
 
         if (!this.isSupported) {
             Logger.Error("SSAO 2 needs WebGL 2 support.");
@@ -198,8 +204,13 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         var blurRatio = this._ratio.blurRatio || ratio;
 
         // Set up assets
-        this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
-        this._prePassRenderer.markAsDirty();
+        if (this.forceGeometryBuffer) {
+            scene.enableGeometryBufferRenderer();
+        } else {
+            this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
+            this._prePassRenderer.markAsDirty();
+        }
+
         this._createRandomTexture();
 
         this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);

@@ -4,7 +4,7 @@ export interface PrePassEffectConfiguration {
     /**
      * Post process to attach for this effect
      */
-    postProcess?: PostProcess;
+    postProcess: PostProcess;
     /**
      * Is the effect enabled
      */
@@ -16,5 +16,5 @@ export interface PrePassEffectConfiguration {
     /**
      * Disposes the effect configuration
      */
-    createPostProcess?: () => PostProcess;
+    createPostProcess: () => PostProcess;
 }

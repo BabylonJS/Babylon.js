@@ -9,7 +9,6 @@ import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
-import { SSAO2Configuration } from "./ssao2Configuration";
 import { SSAO2RenderingPipeline } from "../PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 
 /**
@@ -62,11 +61,6 @@ export class PrePassRenderer {
     public subSurfaceConfiguration: SubSurfaceConfiguration;
 
     /**
-     * Configuration for ssao2 post process
-     */
-    public ssao2Configuration: SSAO2Configuration;
-
-    /**
      * Should materials render their geometry on the MRT
      */
     public materialsShouldRenderGeometry: boolean = false;
@@ -106,7 +100,6 @@ export class PrePassRenderer {
         PrePassRenderer._SceneComponentInitialization(this._scene);
 
         this.subSurfaceConfiguration = new SubSurfaceConfiguration(this._scene);
-        this.ssao2Configuration = new SSAO2Configuration();
     }
 
     private _initializeAttachments() {
@@ -257,8 +250,7 @@ export class PrePassRenderer {
     private _disable() {
         this._setState(false);
         this.subSurfaceConfiguration.enabled = false;
-        this.ssao2Configuration.enabled = false;
-        this.materialsShouldRenderGeometry = true;
+        this.materialsShouldRenderGeometry = false;
     }
 
     private _resetPostProcessChain() {
@@ -303,7 +295,6 @@ export class PrePassRenderer {
         const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
         for (let i = 0; i < pipelines.length; i++) {
             if (pipelines[i] instanceof SSAO2RenderingPipeline) {
-                this.ssao2Configuration.enabled = true;
                 this.materialsShouldRenderGeometry = true;
                 enablePrePass = true;
                 break;
