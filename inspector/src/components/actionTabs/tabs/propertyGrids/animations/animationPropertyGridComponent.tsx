@@ -152,9 +152,7 @@ export class AnimationGridComponent extends React.Component<
 
   onCloseAnimationCurveEditor(window: Window | null) {
     this._isCurveEditorOpen = false;
-    if (window === null) {
-      console.log('Window already closed');
-    } else {
+    if (window !== null) {
       window.close();
     }
   }

@@ -537,7 +537,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
         impostor.object.position.set(impostor.physicsBody.position.x, impostor.physicsBody.position.y, impostor.physicsBody.position.z);
         if (impostor.object.rotationQuaternion) {
-            const q = impostor.object.rotationQuaternion;
+            const q = impostor.physicsBody.quaternion;
             impostor.object.rotationQuaternion.set(q.x, q.y, q.z, q.w);
         }
     }

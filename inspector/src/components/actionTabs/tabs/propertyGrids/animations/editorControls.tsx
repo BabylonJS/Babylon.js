@@ -22,8 +22,12 @@ interface IEditorControlsProps {
   onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
   setNotificationMessage: (message: string) => void;
   selectAnimation: (selected: Animation, axis?: SelectedCoordinate) => void;
+  setFps: (fps: number) => void;
+  setIsLooping: () => void;
   globalState: GlobalState;
   snippetServer: string;
+  deselectAnimation: () => void;
+  fps: number;
 }
 
 export class EditorControls extends React.Component<
@@ -37,6 +41,7 @@ export class EditorControls extends React.Component<
     animationsCount: number;
     framesPerSecond: number;
     snippetId: string;
+    selected: Animation | undefined;
   }
 > {
   constructor(props: IEditorControlsProps) {
@@ -49,15 +54,21 @@ export class EditorControls extends React.Component<
       isEditTabOpen: count === 0 ? false : true,
       isSaveTabOpen: false,
       isLoadTabOpen: false,
-      isLoopActive: false,
+      isLoopActive: true,
       animationsCount: count,
-      framesPerSecond: 60,
+      framesPerSecond: this.props.fps,
       snippetId: '',
+      selected: undefined,
     };
   }
 
+  componentWillReceiveProps(newProps: IEditorControlsProps) {
+    if (newProps.fps !== this.props.fps) {
+      this.setState({ framesPerSecond: newProps.fps });
+    }
+  }
+
   animationAdded() {
-    // select recently created animation/first coordinate...
     this.setState({
       animationsCount: this.recountAnimations(),
       isEditTabOpen: true,
@@ -65,8 +76,23 @@ export class EditorControls extends React.Component<
     });
   }
 
+  finishedUpdate() {
+    this.setState({
+      isEditTabOpen: true,
+      isAnimationTabOpen: false,
+      selected: undefined,
+    });
+  }
+
   recountAnimations() {
     return (this.props.entity as IAnimatable).animations?.length ?? 0;
+  }
+
+  changeLoopBehavior() {
+    this.setState({
+      isLoopActive: !this.state.isLoopActive,
+    });
+    this.props.setIsLooping();
   }
 
   handleTabs(tab: number) {
@@ -116,7 +142,11 @@ export class EditorControls extends React.Component<
   }
 
   handleChangeFps(fps: number) {
+    this.props.setFps(fps);
     this.setState({ framesPerSecond: fps });
+    if (this.props.selected) {
+      this.props.selected.framePerSecond = fps;
+    }
   }
 
   emptiedList() {
@@ -132,6 +162,16 @@ export class EditorControls extends React.Component<
       animationsCount: numberOfAnimations,
       isEditTabOpen: true,
       isAnimationTabOpen: false,
+      isLoadTabOpen: false,
+      isSaveTabOpen: false,
+    });
+  }
+
+  editAnimation(selected: Animation) {
+    this.setState({
+      selected: selected,
+      isEditTabOpen: false,
+      isAnimationTabOpen: true,
       isLoadTabOpen: false,
       isSaveTabOpen: false,
     });
@@ -155,12 +195,14 @@ export class EditorControls extends React.Component<
             icon='medium load'
             onClick={() => this.handleTabs(1)}
           ></IconButtonLineComponent>
-          <IconButtonLineComponent
-            active={this.state.isSaveTabOpen}
-            tooltip='Save Animation'
-            icon='medium save'
-            onClick={() => this.handleTabs(2)}
-          ></IconButtonLineComponent>
+          {this.state.animationsCount === 0 ? null : (
+            <IconButtonLineComponent
+              active={this.state.isSaveTabOpen}
+              tooltip='Save Animation'
+              icon='medium save'
+              onClick={() => this.handleTabs(2)}
+            ></IconButtonLineComponent>
+          )}
           {this.state.animationsCount === 0 ? null : (
             <IconButtonLineComponent
               active={this.state.isEditTabOpen}
@@ -190,9 +232,7 @@ export class EditorControls extends React.Component<
                   ? 'loop-active last'
                   : 'loop-inactive last'
               }`}
-              onClick={() => {
-                this.setState({ isLoopActive: !this.state.isLoopActive });
-              }}
+              onClick={() => this.changeLoopBehavior()}
             ></IconButtonLineComponent>
           ) : null}
         </div>
@@ -200,14 +240,17 @@ export class EditorControls extends React.Component<
           <AddAnimation
             isOpen={this.state.isAnimationTabOpen}
             close={() => {
-              this.setState({ isAnimationTabOpen: false });
+              this.setState({ isAnimationTabOpen: false, isEditTabOpen: true });
             }}
             entity={this.props.entity as IAnimatable}
             setNotificationMessage={(message: string) => {
               this.props.setNotificationMessage(message);
             }}
-            changed={() => this.animationAdded()}
+            addedNewAnimation={() => this.animationAdded()}
             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+            fps={this.state.framesPerSecond}
+            selectedToUpdate={this.state.selected}
+            finishedUpdate={() => this.finishedUpdate()}
           />
         )}
 
@@ -238,12 +281,16 @@ export class EditorControls extends React.Component<
 
         {this.state.isEditTabOpen ? (
           <AnimationListTree
+            deselectAnimation={() => this.props.deselectAnimation()}
             isTargetedAnimation={this.props.isTargetedAnimation}
             entity={this.props.entity}
             selected={this.props.selected}
             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
             empty={() => this.emptiedList()}
             selectAnimation={this.props.selectAnimation}
+            editAnimation={(selected: Animation) =>
+              this.editAnimation(selected)
+            }
           />
         ) : null}
       </div>

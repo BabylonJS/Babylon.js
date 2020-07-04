@@ -32,7 +32,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
         </div>
         <div
           className='buttons-container'
-          style={{ display: this.props.enabled ? 'flex' : 'none' }}
+          style={{ pointerEvents: this.props.enabled ? 'all' : 'none' }}
         >
           <div className='action-input'>
             <input
@@ -45,9 +45,9 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
           <div className='action-input'>
             <input
               type='number'
-              value={this.props.currentValue.toFixed(3)}
+              value={this.props.currentValue}
               onChange={this.props.handleValueChange}
-              step='0.001'
+              step='0.1'
             />
           </div>
           <IconButtonLineComponent
@@ -56,7 +56,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
             onClick={this.props.addKeyframe}
           />
           <IconButtonLineComponent
-            tooltip={'Remove Keyframe'}
+            tooltip={'Frame selected keyframes'}
             icon='frame'
             onClick={this.props.removeKeyframe}
           />
@@ -78,12 +78,6 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
             onClick={this.props.setLerpMode}
           />
         </div>
-        <div
-          className='icon close'
-          onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
-            this.props.close(event)
-          }
-        ></div>
       </div>
     );
   }

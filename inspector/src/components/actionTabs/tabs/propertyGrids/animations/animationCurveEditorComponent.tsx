@@ -8,7 +8,6 @@ import { IAnimationKey } from 'babylonjs/Animations/animationKey';
 import { IKeyframeSvgPoint } from './keyframeSvgPoint';
 import { SvgDraggableArea } from './svgDraggableArea';
 import { Timeline } from './timeline';
-import { Playhead } from './playhead';
 import { Notification } from './notification';
 import { GraphActionsBar } from './graphActionsBar';
 import { Scene } from 'babylonjs/scene';
@@ -68,6 +67,12 @@ export class AnimationCurveEditorComponent extends React.Component<
     isPlaying: boolean;
     selectedPathData: ICurveData[] | undefined;
     selectedCoordinate: number;
+    animationLimit: number;
+    fps: number;
+    isLooping: boolean;
+    panningY: number;
+    panningX: number;
+    repositionCanvas: boolean;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -83,6 +88,8 @@ export class AnimationCurveEditorComponent extends React.Component<
   private _svgCanvas: React.RefObject<SvgDraggableArea>;
   private _isTargetedAnimation: boolean;
 
+  private _pixelFrameUnit: number;
+
   private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
   private _mainAnimatable: Nullable<Animatable>;
   constructor(props: IAnimationCurveEditorComponentProps) {
@@ -93,7 +100,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     //this._selectedCurve = React.createRef();
     this._svgCanvas = React.createRef();
 
-    console.log(this.props.entity instanceof TargetedAnimation);
+    this._pixelFrameUnit = 10;
 
     let initialSelection;
     let initialPathData;
@@ -133,6 +140,10 @@ export class AnimationCurveEditorComponent extends React.Component<
           : initialPathData;
     }
 
+    this._canvasLength = 240;
+
+    this.stopAnimation();
+
     // will update this until we have a top scroll/zoom feature
     let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
     this.state = {
@@ -149,9 +160,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         ? this._graphCanvas.current.children[0].clientWidth /
           (this._canvasLength * 10)
         : 0,
-      frameAxisLength: new Array(this._canvasLength).fill(0).map((s, i) => {
-        return { value: i * 10, label: i * 10 };
-      }),
+      frameAxisLength: this.setFrameAxis(this._canvasLength),
       valueAxisLength: new Array(10).fill(0).map((s, i) => {
         return { value: i * 10, label: valueInd[i] };
       }),
@@ -159,14 +168,20 @@ export class AnimationCurveEditorComponent extends React.Component<
       currentPoint: undefined,
       scale: 1,
       playheadPos: 0,
-      isPlaying: this.isAnimationPlaying(),
+      isPlaying: false,
       selectedPathData: initialPathData,
       selectedCoordinate: 0,
+      animationLimit: this._canvasLength / 2,
+      fps: 60,
+      isLooping: true,
+      panningY: 0,
+      panningX: 0,
+      repositionCanvas: false,
     };
   }
 
   componentDidMount() {
-    setTimeout(() => this.resetPlayheadOffset(), 500);
+    this.state.selected && this.selectAnimation(this.state.selected);
   }
 
   /**
@@ -184,20 +199,45 @@ export class AnimationCurveEditorComponent extends React.Component<
    */
   zoom(e: React.WheelEvent<HTMLDivElement>) {
     e.nativeEvent.stopImmediatePropagation();
-    //console.log(e.deltaY);
     let scaleX = 1;
     if (Math.sign(e.deltaY) === -1) {
-      scaleX = this.state.scale - 0.01;
-    } else {
-      scaleX = this.state.scale + 0.01;
+      scaleX = this.state.scale; //- 0.01; //+ 0.01;
     }
+    this.setState({ scale: scaleX });
+  }
 
-    this.setState({ scale: scaleX }, this.setAxesLength);
+  setFrameAxis(currentLength: number) {
+    let halfNegative = new Array(currentLength / 2).fill(0).map((s, i) => {
+      return { value: -i * 10, label: -i };
+    });
+
+    let halfPositive = new Array(currentLength / 2).fill(0).map((s, i) => {
+      return { value: i * 10, label: i };
+    });
+
+    return [...halfNegative, ...halfPositive];
+  }
+
+  setValueLines() {
+    const initialValues = new Array(10).fill(0).map((s, i) => {
+      return { value: i * 10, label: -i };
+    });
+
+    const valueHeight = Math.abs(Math.round(this.state.panningY / 10));
+    const sign = Math.sign(this.state.panningY);
+
+    const pannedValues = new Array(valueHeight).fill(0).map((s, i) => {
+      return sign === -1
+        ? { value: -i * 10, label: i }
+        : { value: (i + 10) * 10, label: (i + 10) * -1 };
+    });
+
+    return [...initialValues, ...pannedValues];
   }
 
   setAxesLength() {
-    let length = 20;
-    let newlength = Math.round(this._canvasLength * this.state.scale); // Check Undefined, or NaN
+    let length = this.state.animationLimit * 2;
+    let newlength = Math.round(this._canvasLength * this.state.scale);
     if (!isNaN(newlength) || newlength !== undefined) {
       length = newlength;
     }
@@ -211,9 +251,9 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
-    console.log(highestFrame);
+
     let newFrameLength = new Array(length).fill(0).map((s, i) => {
-      return { value: i * 10, label: i * 10 };
+      return { value: i * 10, label: i };
     });
     let newValueLength = new Array(valueLines).fill(0).map((s, i) => {
       return { value: i * 10, label: this.getValueLabel(i * 10) };
@@ -253,10 +293,16 @@ export class AnimationCurveEditorComponent extends React.Component<
    * Keyframe Manipulation
    * This section handles events from SvgDraggableArea.
    */
-  selectKeyframe(id: string) {
+  selectKeyframe(id: string, multiselect: boolean) {
+    let selectedKeyFrame = this.state.svgKeyframes?.find((kf) => kf.id === id)
+      ?.selected;
+    if (!multiselect) {
+      this.deselectKeyframes();
+    }
+
     let updatedKeyframes = this.state.svgKeyframes?.map((kf) => {
       if (kf.id === id) {
-        kf.selected = !kf.selected;
+        kf.selected = !selectedKeyFrame;
       }
       return kf;
     });
@@ -276,6 +322,16 @@ export class AnimationCurveEditorComponent extends React.Component<
           kf.isLeftActive = false;
         }
       }
+      return kf;
+    });
+    this.setState({ svgKeyframes: updatedKeyframes });
+  }
+
+  deselectKeyframes() {
+    let updatedKeyframes = this.state.svgKeyframes?.map((kf) => {
+      kf.isLeftActive = false;
+      kf.isRightActive = false;
+      kf.selected = false;
       return kf;
     });
     this.setState({ svgKeyframes: updatedKeyframes });
@@ -395,7 +451,9 @@ export class AnimationCurveEditorComponent extends React.Component<
       ) {
         newFrame = 1;
       } else {
-        newFrame = Math.round(updatedSvgKeyFrame.keyframePoint.x);
+        newFrame = Math.round(
+          updatedSvgKeyFrame.keyframePoint.x / this._pixelFrameUnit
+        );
       }
     }
 
@@ -489,29 +547,53 @@ export class AnimationCurveEditorComponent extends React.Component<
    */
   handleFrameChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
-    this.changeCurrentFrame(parseInt(event.target.value));
+    let frame = 0;
+
+    if (
+      isNaN(event.target.valueAsNumber) ||
+      event.target.value.indexOf('.') !== -1
+    ) {
+      this.setState({
+        notification: 'Frame input only accepts integer values',
+      });
+    } else {
+      frame = parseInt(event.target.value);
+      this.changeCurrentFrame(frame);
+    }
   }
 
   handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
-    this.setState({ currentValue: parseFloat(event.target.value) }, () => {
-      if (this.state.selected !== null) {
-        let animation = this.state.selected;
-        let keys = animation.getKeys();
 
-        let isKeyframe = keys.find((k) => k.frame === this.state.currentFrame);
-        if (isKeyframe) {
-          let updatedKeys = keys.map((k) => {
-            if (k.frame === this.state.currentFrame) {
-              k.value = this.state.currentValue;
+    if (isNaN(event.target.valueAsNumber)) {
+      this.setState({
+        notification: 'Value input only numeric values',
+      });
+    } else {
+      this.setState(
+        { currentValue: parseFloat(parseFloat(event.target.value).toFixed(3)) },
+        () => {
+          if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            let keys = animation.getKeys();
+
+            let isKeyframe = keys.find(
+              (k) => k.frame === this.state.currentFrame
+            );
+            if (isKeyframe) {
+              let updatedKeys = keys.map((k) => {
+                if (k.frame === this.state.currentFrame) {
+                  k.value = this.state.currentValue;
+                }
+                return k;
+              });
+              this.state.selected.setKeys(updatedKeys);
+              this.selectAnimation(animation);
             }
-            return k;
-          });
-          this.state.selected.setKeys(updatedKeys);
-          this.selectAnimation(animation);
+          }
         }
-      }
-    });
+      );
+    }
   }
 
   setFlatTangent() {
@@ -586,6 +668,31 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
+  removeKeyframes(points: IKeyframeSvgPoint[]) {
+    if (this.state.selected !== null) {
+      let currentAnimation = this.state.selected;
+
+      const indexesToRemove = points.map((p) => {
+        return {
+          index: parseInt(p.id.split('_')[3]),
+          coordinate: parseInt(p.id.split('_')[2]),
+        };
+      });
+
+      if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
+        let keys = currentAnimation.getKeys();
+
+        let filteredKeys = keys.filter((_, i) => {
+          return !indexesToRemove.find((x) => x.index === i);
+        });
+        currentAnimation.setKeys(filteredKeys);
+        this.deselectKeyframes();
+
+        this.selectAnimation(currentAnimation);
+      }
+    }
+  }
+
   addKeyFrame(event: React.MouseEvent<SVGSVGElement>) {
     event.preventDefault();
 
@@ -638,7 +745,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     keyframes.forEach((key, i) => {
       // identify type of value and split...
       var point = new Vector2(0, 0);
-      point.x = key.frame;
+      point.x = key.frame * this._pixelFrameUnit;
       point.y = this._heightScale - key.value * middle;
       this.setKeyframePointLinear(point, i);
 
@@ -775,13 +882,11 @@ export class AnimationCurveEditorComponent extends React.Component<
         const curveColor =
           valueType === Animation.ANIMATIONTYPE_FLOAT ? colors[4] : colors[d];
         // START OF LINE/CURVE
-        let data: string | undefined = `M${startKey.frame}, ${
-          this._heightScale - startValue[d] * middle
-        }`; //
+        let data: string | undefined = `M${
+          startKey.frame * this._pixelFrameUnit
+        }, ${this._heightScale - startValue[d] * middle}`; //
 
-        if (this.state && this.state.lerpMode) {
-          data = this.linearInterpolation(keyframes, data, middle);
-        } else {
+        if (this.state) {
           if (usesTangents) {
             data = this.curvePathWithTangents(
               keyframes,
@@ -821,8 +926,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                   d,
                   id
                 );
-              } else {
-                data = this.linearInterpolation(keyframes, data, middle);
               }
             }
           }
@@ -909,13 +1012,18 @@ export class AnimationCurveEditorComponent extends React.Component<
       let inTangent;
       let defaultWeight = 5;
 
+      let defaultTangent: number | null = null;
+      if (i !== 0 || i !== keyframes.length - 1) {
+        defaultTangent = 0;
+      }
+
       var inT =
         key.inTangent === undefined
-          ? null
+          ? defaultTangent
           : this.getValueAsArray(type, key.inTangent)[coordinate];
       var outT =
         key.outTangent === undefined
-          ? null
+          ? defaultTangent
           : this.getValueAsArray(type, key.outTangent)[coordinate];
 
       let y = this._heightScale - keyframe_valueAsArray * middle;
@@ -934,14 +1042,20 @@ export class AnimationCurveEditorComponent extends React.Component<
 
       if (inT !== null) {
         let valueIn = y * inT + y;
-        inTangent = new Vector2(key.frame - defaultWeight, valueIn);
+        inTangent = new Vector2(
+          key.frame * this._pixelFrameUnit - defaultWeight,
+          valueIn
+        );
       } else {
         inTangent = null;
       }
 
       if (outT !== null) {
         let valueOut = y * outT + y;
-        outTangent = new Vector2(key.frame + defaultWeight, valueOut);
+        outTangent = new Vector2(
+          key.frame * this._pixelFrameUnit + defaultWeight,
+          valueOut
+        );
       } else {
         outTangent = null;
       }
@@ -949,7 +1063,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       if (i === 0) {
         svgKeyframe = {
           keyframePoint: new Vector2(
-            key.frame,
+            key.frame * this._pixelFrameUnit,
             this._heightScale - keyframe_valueAsArray * middle
           ),
           rightControlPoint: outTangent,
@@ -965,7 +1079,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       } else {
         svgKeyframe = {
           keyframePoint: new Vector2(
-            key.frame,
+            key.frame * this._pixelFrameUnit,
             this._heightScale - keyframe_valueAsArray * middle
           ),
           rightControlPoint: outTangent,
@@ -1069,11 +1183,8 @@ export class AnimationCurveEditorComponent extends React.Component<
           pointB
         );
 
-        if (controlPoints === undefined) {
-          console.log('error getting bezier control points');
-        } else {
+        if (controlPoints !== undefined) {
           this.setKeyframePoint(controlPoints, i, keyframes.length);
-
           data += ` C${controlPoints[1].x} ${controlPoints[1].y} ${controlPoints[2].x} ${controlPoints[2].y} ${controlPoints[3].x} ${controlPoints[3].y}`;
         }
       }
@@ -1161,6 +1272,15 @@ export class AnimationCurveEditorComponent extends React.Component<
     return [controlA, controlB, controlC, controlD];
   }
 
+  deselectAnimation() {
+    this.setState({
+      selected: null,
+      svgKeyframes: [],
+      selectedPathData: [],
+      selectedCoordinate: 0,
+    });
+  }
+
   /**
    * Core functions
    * This section handles main Curve Editor Functions.
@@ -1172,18 +1292,10 @@ export class AnimationCurveEditorComponent extends React.Component<
     let selectedCurve = 0;
 
     if (coordinate === undefined) {
-      this.playStopAnimation();
-
+      this.stopAnimation();
       updatedPath = this.getPathData(animation);
-
-      if (updatedPath === undefined) {
-        console.log('no keyframes in this animation');
-      }
     } else {
       let curves = this.getPathData(animation);
-      if (curves === undefined) {
-        console.log('no keyframes in this animation');
-      }
 
       updatedPath = [];
 
@@ -1213,6 +1325,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes,
       selectedPathData: updatedPath,
       selectedCoordinate: selectedCurve,
+      fps: animation.framePerSecond,
     });
   }
 
@@ -1225,7 +1338,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     return this.props.scene.getAllAnimatablesByTarget(target).length > 0;
   }
 
-  playStopAnimation() {
+  stopAnimation() {
     let target = this.props.entity;
     if (this.props.entity instanceof TargetedAnimation) {
       target = this.props.entity.target;
@@ -1234,10 +1347,6 @@ export class AnimationCurveEditorComponent extends React.Component<
       this.props.scene.getAllAnimatablesByTarget(target).length > 0;
     if (this._isPlaying) {
       this.props.playOrPause && this.props.playOrPause();
-      return true;
-    } else {
-      this._isPlaying = false;
-      return false;
     }
   }
 
@@ -1294,6 +1403,22 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
+  setCanvasPosition(frame: number) {
+    this.setState({ panningX: (frame - 10) * 10, repositionCanvas: true });
+  }
+
+  setCurrentFrame(direction: number) {
+    this.setState({
+      currentFrame: this.state.currentFrame + direction,
+    });
+  }
+
+  changeAnimationLimit(limit: number) {
+    this.setState({
+      animationLimit: limit,
+    });
+  }
+
   updateFrameInKeyFrame(frame: number, index: number) {
     if (this.state && this.state.selected) {
       let animation = this.state.selected;
@@ -1314,12 +1439,15 @@ export class AnimationCurveEditorComponent extends React.Component<
       if (this.props.entity instanceof TargetedAnimation) {
         target = this.props.entity.target;
       }
-      if (this.state.isPlaying) {
+      if (this.state.isPlaying && direction === 0) {
         this.props.scene.stopAnimation(target);
         this.setState({ isPlaying: false });
         this._isPlaying = false;
         this.forceUpdate();
       } else {
+        if (this.state.isPlaying) {
+          this.props.scene.stopAnimation(target);
+        }
         let keys = this.state.selected.getKeys();
         let firstFrame = keys[0].frame;
         let LastFrame = keys[keys.length - 1].frame;
@@ -1328,7 +1456,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             target,
             firstFrame,
             LastFrame,
-            true
+            this.state.isLooping,
+            this.state.fps
           );
         }
         if (direction === -1) {
@@ -1336,7 +1465,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             target,
             LastFrame,
             firstFrame,
-            true
+            this.state.isLooping,
+            this.state.fps
           );
         }
         this._isPlaying = true;
@@ -1355,7 +1485,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         (e.clientX - CTM.e) / CTM.a,
         (e.clientY - CTM.f) / CTM.d
       );
-      let selectedFrame = Math.round(position.x);
+      let selectedFrame = Math.round(position.x / this._pixelFrameUnit);
       this.setState({ currentFrame: selectedFrame });
     }
   }
@@ -1380,6 +1510,10 @@ export class AnimationCurveEditorComponent extends React.Component<
       );
       this._onBeforeRenderObserver = null;
     }
+  }
+
+  isCurrentFrame(frame: number) {
+    return this.state.currentFrame === frame;
   }
 
   render() {
@@ -1414,6 +1548,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         <div className='content'>
           <div className='row'>
             <EditorControls
+              deselectAnimation={() => this.deselectAnimation()}
               selectAnimation={(
                 animation: Animation,
                 axis?: SelectedCoordinate
@@ -1427,6 +1562,13 @@ export class AnimationCurveEditorComponent extends React.Component<
               }}
               globalState={this.props.globalState}
               snippetServer={this._snippetUrl}
+              fps={this.state.fps}
+              setFps={(fps: number) => {
+                this.setState({ fps: fps });
+              }}
+              setIsLooping={() => {
+                this.setState({ isLooping: !this.state.isLooping });
+              }}
             />
 
             <div
@@ -1437,17 +1579,37 @@ export class AnimationCurveEditorComponent extends React.Component<
               {this.state.svgKeyframes && (
                 <SvgDraggableArea
                   ref={this._svgCanvas}
-                  selectKeyframe={(id: string) => this.selectKeyframe(id)}
+                  selectKeyframe={(id: string, multiselect: boolean) =>
+                    this.selectKeyframe(id, multiselect)
+                  }
                   viewBoxScale={this.state.frameAxisLength.length}
                   scale={this.state.scale}
                   keyframeSvgPoints={this.state.svgKeyframes}
+                  removeSelectedKeyframes={(points: IKeyframeSvgPoint[]) =>
+                    this.removeKeyframes(points)
+                  }
                   selectedControlPoint={(type: string, id: string) =>
                     this.selectedControlPoint(type, id)
                   }
+                  deselectKeyframes={() => this.deselectKeyframes()}
                   updatePosition={(
                     updatedSvgKeyFrame: IKeyframeSvgPoint,
                     id: string
                   ) => this.renderPoints(updatedSvgKeyFrame, id)}
+                  panningY={(panningY: number) => {
+                    this.setState({ panningY: panningY });
+                  }}
+                  panningX={(panningX: number) => {
+                    this.setState({ panningX: panningX });
+                  }}
+                  setCurrentFrame={(direction: number) =>
+                    this.setCurrentFrame(direction)
+                  }
+                  positionCanvas={this.state.panningX}
+                  repositionCanvas={this.state.repositionCanvas}
+                  canvasPositionEnded={() =>
+                    this.setState({ repositionCanvas: false })
+                  }
                 >
                   {/* Multiple Curves  */}
                   {this.state.selectedPathData?.map((curve, i) => (
@@ -1465,68 +1627,102 @@ export class AnimationCurveEditorComponent extends React.Component<
                     ></path>
                   ))}
 
-                  <svg>
-                    <rect
-                      x='-4%'
-                      y='0%'
-                      width='5%'
-                      height='101%'
-                      fill='#222'
-                    ></rect>
-                  </svg>
-
-                  {this.state.valueAxisLength.map((f, i) => {
+                  {this.setValueLines().map((line, i) => {
                     return (
-                      <svg key={i}>
-                        <text
-                          x='-4'
-                          y={f.value}
-                          dx='0'
-                          dy='1'
-                          style={{ fontSize: `${0.2 * this.state.scale}em` }}
-                        >
-                          {f.label.toFixed(1)}
-                        </text>
-                        <line x1='0' y1={f.value} x2='105%' y2={f.value}></line>
-                      </svg>
+                      <text
+                        key={`value_inline_${i}`}
+                        x={this.state.panningX - 5}
+                        y={line.value}
+                        dx='0'
+                        dy='1'
+                        style={{ fontSize: `${0.2 * this.state.scale}em` }}
+                      >
+                        {line.label}
+                      </text>
+                    );
+                  })}
+
+                  {this.setValueLines().map((line, i) => {
+                    return (
+                      <line
+                        key={i}
+                        x1={-((this.state.frameAxisLength.length * 10) / 2)}
+                        y1={line.value}
+                        x2={this.state.frameAxisLength.length * 10}
+                        y2={line.value}
+                      ></line>
                     );
                   })}
 
                   <rect
                     onClick={(e) => this.moveFrameTo(e)}
-                    x='0%'
-                    y='91%'
-                    width='105%'
+                    x={-((this.state.frameAxisLength.length * 10) / 2)}
+                    y={90 + this.state.panningY + '%'}
+                    width={this.state.frameAxisLength.length * 10}
                     height='10%'
                     fill='#222'
                     style={{ cursor: 'pointer' }}
                   ></rect>
 
                   {this.state.frameAxisLength.map((f, i) => (
-                    <svg key={i} x='0' y='96%'>
+                    <svg key={i} x='0' y={96 + this.state.panningY + '%'}>
                       <text
                         x={f.value}
                         y='0'
                         dx='2px'
-                        style={{ fontSize: `${0.2 * this.state.scale}em` }}
+                        style={{ fontSize: `${0.17 * this.state.scale}em` }}
                       >
-                        {f.value}
+                        {f.label}
                       </text>
                       <line x1={f.value} y1='0' x2={f.value} y2='5%'></line>
+
+                      {f.value % this.state.fps === 0 && f.value !== 0 ? (
+                        <line
+                          x1={f.value}
+                          y1='-100%'
+                          x2={f.value}
+                          y2='5%'
+                        ></line>
+                      ) : null}
+
+                      {this.isCurrentFrame(f.label) ? (
+                        <svg>
+                          <line
+                            x1={f.value}
+                            y1='0'
+                            x2={f.value}
+                            y2='-100%'
+                            style={{
+                              stroke: 'white',
+                              strokeWidth: 0.4,
+                            }}
+                          />
+                          <svg x={f.value} y='-1'>
+                            <circle
+                              className='svg-playhead'
+                              cx='0'
+                              cy='0'
+                              r='2%'
+                              fill='white'
+                            />
+                            <text
+                              x='0'
+                              y='1%'
+                              textAnchor='middle'
+                              style={{
+                                fontSize: `${0.17 * this.state.scale}em`,
+                                pointerEvents: 'none',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {f.label}
+                            </text>
+                          </svg>
+                        </svg>
+                      ) : null}
                     </svg>
                   ))}
                 </SvgDraggableArea>
-              )}
-
-              {this.state.selected === null ||
-              this.state.selected === undefined ? null : (
-                <Playhead
-                  frame={this.state.currentFrame}
-                  offset={this.state.playheadOffset}
-                  onCurrentFrameChange={(frame: number) =>
-                    this.changeCurrentFrame(frame)
-                  }
-                />
               )}
             </div>
           </div>
@@ -1541,8 +1737,16 @@ export class AnimationCurveEditorComponent extends React.Component<
               onCurrentFrameChange={(frame: number) =>
                 this.changeCurrentFrame(frame)
               }
+              onAnimationLimitChange={(limit: number) =>
+                this.changeAnimationLimit(limit)
+              }
+              animationLimit={this.state.animationLimit}
               keyframes={this.state.selected && this.state.selected.getKeys()}
               selected={this.state.selected && this.state.selected.getKeys()[0]}
+              fps={this.state.fps}
+              repositionCanvas={(frame: number) =>
+                this.setCanvasPosition(frame)
+              }
             ></Timeline>
           </div>
         </div>

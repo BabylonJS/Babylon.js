@@ -2,6 +2,7 @@
   background-color: rgb(51, 51, 51);
 
   font-family: acumin-pro-condensed;
+  background-color: #333333;
 
   .last {
     margin-left: 3px;
@@ -266,7 +267,6 @@
       cursor: pointer;
       background-position: center;
       width: 20px;
-      margin-left: 10px;
     }
 
     &.animation-triangle {
@@ -505,7 +505,7 @@
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
-    height: 462px;
+    height: 465px;
 
     .row {
       width: 1024px;
@@ -533,12 +533,12 @@
         height: 2.5rem;
 
         .display-line {
-          width: 75vw;
           height: 40px;
           overflow: hidden;
           margin-right: 0px;
           padding-left: 10px;
           padding-right: 10px;
+          width: 782px;
 
           &::-webkit-scrollbar {
             height: 0.4em;
@@ -558,6 +558,9 @@
           width: 60px;
           margin-left: 10px;
           margin-right: 10px;
+          position: absolute;
+          right: 9px;
+          bottom: 11px;
 
           input {
             text-align: center;
@@ -589,6 +592,8 @@
             height: 25px;
             display: flex;
             align-items: center;
+            padding-left: 2px;
+            padding-right: 2px;
             .handle {
               display: flex;
               flex-direction: row;
@@ -600,6 +605,8 @@
               .scrollbar {
                 cursor: pointer;
                 width: 100%;
+                height: 66px;
+                margin-top: -10px;
               }
 
               .left-grabber,
@@ -607,19 +614,35 @@
                 display: flex;
                 align-items: center;
                 cursor: pointer;
+                padding-bottom: 8px;
+                height: 36px;
+                margin-top: -8px;
+                .text {
+                  pointer-events: none;
+                  margin: 0;
+                }
               }
 
-              .left-grabber {
-                padding-left: 3px;
+              .left-draggable,
+              .right-draggable {
+                display: flex;
+                align-items: center;
+                height: 20px;
+                width: 20px;
+                justify-content: center;
+                &:active {
+                  .grabber {
+                    background-color: #3d3d3d;
+                  }
+                }
               }
-              .right-grabber {
-                padding-right: 3px;
-              }
+
               .grabber {
                 background-color: #333333;
                 width: 2px;
                 height: 16px;
                 margin-right: 2px;
+                pointer-events: none;
               }
 
               .text {
@@ -634,7 +657,7 @@
         }
 
         .timeline-wrapper {
-          margin-top: -40px;
+          margin-top: -45px;
           margin-left: -2px;
         }
 
@@ -928,16 +951,17 @@
 
           .confirm-buttons {
             grid-column-start: 2;
+            column-count: 2;
 
             .buttonLine {
               button {
-                width: 60px;
+                width: 52px;
                 height: 20px;
                 background-color: rgb(68, 68, 68);
                 color: white;
                 font-size: 12px;
                 line-height: 11px;
-                margin: 5px;
+                margin: 4px;
                 font-size: 10px;
                 font-family: acumin-pro-condensed;
                 border: none;
@@ -1002,8 +1026,8 @@
               background-position-x: 18px;
               cursor: pointer;
               &.flip {
-                transform: rotate(180deg);
-                background-position: 2px 50%;
+                transform: rotate(-90deg);
+                background-position: 10px 13px;
               }
             }
 
@@ -1103,6 +1127,10 @@
         width: 100%;
         outline: none;
 
+        .svg-playhead {
+          cursor: pointer;
+        }
+
         svg {
           overflow: visible;
         }
@@ -1187,7 +1215,6 @@
 
   .buttonLine {
     height: 30px;
-    display: grid;
     align-items: center;
     justify-items: stretch;
 
