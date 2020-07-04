@@ -2,7 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Scene } from "../scene";
 import { Color3 } from "../Maths/math.color";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
-import { PrePassEffectConfiguration } from "./prepassEffectConfiguration";
+import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 /**
  * Contains all parameters needed for the prepass to perform
  * screen space subsurface scattering
