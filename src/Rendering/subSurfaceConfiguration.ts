@@ -38,6 +38,9 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
         return this._ssFilterRadii;
     }
 
+    /**
+     * Is subsurface enabled
+     */
     public enabled = false;
 
     /**
@@ -58,6 +61,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
 
     /**
      * Builds a subsurface configuration object
+     * @param scene The scene
      */
     constructor(scene: Scene) {
         // Adding default diffusion profile
@@ -95,6 +99,9 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
         return this._ssDiffusionD.length - 1;
     }
 
+    /**
+     * Creates the sss post process
+     */
     public createPostProcess() : SubSurfaceScatteringPostProcess {
         this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._scene.getEngine());
         this.postProcess.autoClear = false;
