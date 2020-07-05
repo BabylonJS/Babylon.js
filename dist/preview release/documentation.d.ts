@@ -45652,6 +45652,10 @@ declare module BABYLON {
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild?: boolean): void;
         /**
+         * If the post process is supported.
+         */
+        get isSupported(): boolean;
+        /**
          * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
         get colorCurves(): Nullable<ColorCurves>;
