@@ -1,4 +1,4 @@
-import { Nullable } from "../types";
+import { Nullable, IndicesArray } from "../types";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -41,9 +41,9 @@ AbstractMesh.prototype.disableEdgesRendering = function(): AbstractMesh {
     return this;
 };
 
-AbstractMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false): AbstractMesh {
+AbstractMesh.prototype.enableEdgesRendering = function(epsilon = 0.95, checkVerticesInsteadOfIndices = false, options?: IEdgesRendererOptions): AbstractMesh {
     this.disableEdgesRendering();
-    this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices);
+    this._edgesRenderer = new EdgesRenderer(this, epsilon, checkVerticesInsteadOfIndices, true, options);
     return this;
 };
 
@@ -130,6 +130,13 @@ export interface IEdgesRenderer extends IDisposable {
     customInstances: SmartArray<Matrix>;
 }
 
+export interface IEdgesRendererOptions {
+    useAlternateEdgeFinder?: boolean;
+    epsilonVertexMerge?: number;
+    applyTessellation?: boolean;
+    epsilonVertexAligned?: number;
+}
+
 /**
  * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
  */
@@ -157,6 +164,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     protected _buffers: { [key: string]: Nullable<VertexBuffer> } = {};
     protected _buffersForInstances: { [key: string]: Nullable<VertexBuffer> } = {};
     protected _checkVerticesInsteadOfIndices = false;
+    protected _options: Nullable<IEdgesRendererOptions>;
 
     private _meshRebuildObserver: Nullable<Observer<AbstractMesh>>;
     private _meshDisposeObserver: Nullable<Observer<Node>>;
@@ -194,15 +202,20 @@ export class EdgesRenderer implements IEdgesRenderer {
      * @param  checkVerticesInsteadOfIndices bases the edges detection on vertices vs indices
      * @param  generateEdgesLines - should generate Lines or only prepare resources.
      */
-    constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false, generateEdgesLines = true) {
+    constructor(source: AbstractMesh, epsilon = 0.95, checkVerticesInsteadOfIndices = false, generateEdgesLines = true, options?: IEdgesRendererOptions) {
         this._source = source;
         this._checkVerticesInsteadOfIndices = checkVerticesInsteadOfIndices;
+        this._options = options ?? null;
 
         this._epsilon = epsilon;
 
         this._prepareRessources();
         if (generateEdgesLines) {
-            this._generateEdgesLines();
+            if (options && options.useAlternateEdgeFinder) {
+                this._generateEdgesLinesAlternate();
+            } else {
+                this._generateEdgesLines();
+            }
         }
 
         this._meshRebuildObserver = this._source.onRebuildObservable.add(() => {
@@ -280,15 +293,16 @@ export class EdgesRenderer implements IEdgesRenderer {
     }
 
     protected _processEdgeForAdjacenciesWithVertices(pa: Vector3, pb: Vector3, p0: Vector3, p1: Vector3, p2: Vector3): number {
-        if (pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p1) || pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p0)) {
+        const eps = 1e-10;
+        if (pa.equalsWithEpsilon(p0, eps) && pb.equalsWithEpsilon(p1, eps) || pa.equalsWithEpsilon(p1, eps) && pb.equalsWithEpsilon(p0, eps)) {
             return 0;
         }
 
-        if (pa.equalsWithEpsilon(p1) && pb.equalsWithEpsilon(p2) || pa.equalsWithEpsilon(p2) && pb.equalsWithEpsilon(p1)) {
+        if (pa.equalsWithEpsilon(p1, eps) && pb.equalsWithEpsilon(p2, eps) || pa.equalsWithEpsilon(p2, eps) && pb.equalsWithEpsilon(p1, eps)) {
             return 1;
         }
 
-        if (pa.equalsWithEpsilon(p2) && pb.equalsWithEpsilon(p0) || pa.equalsWithEpsilon(p0) && pb.equalsWithEpsilon(p2)) {
+        if (pa.equalsWithEpsilon(p2, eps) && pb.equalsWithEpsilon(p0, eps) || pa.equalsWithEpsilon(p0, eps) && pb.equalsWithEpsilon(p2, eps)) {
             return 2;
         }
 
@@ -348,6 +362,233 @@ export class EdgesRenderer implements IEdgesRenderer {
         );
     }
 
+    _generateEdgesLinesAlternate(): void {
+        var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
+        var indices = this._source.getIndices();
+
+        if (!indices || !positions) {
+            return;
+        }
+
+        if (!Array.isArray(indices)) {
+            indices = Array.from(indices);
+        }
+
+        console.time("processing time - alternate");
+
+        /**
+         * Find all vertices that are at the same location (with an epsilon) and remapp them on the same vertex
+         */
+        const epsVertexMerge = this._options?.epsilonVertexMerge ?? 1e-6;
+        const remapVertexIndices = [];
+        const uniquePositions = []; // list of unique index of vertices - needed for tessellation
+
+        for (let v1 = 0; v1 < positions.length - 1; v1 += 3) {
+            const x1 = positions[v1 + 0], y1 = positions[v1 + 1], z1 = positions[v1 + 2];
+
+            let found = false;
+            for (let v2 = 0; v2 < v1 && !found; v2 += 3) {
+                const x2 = positions[v2 + 0], y2 = positions[v2 + 1], z2 = positions[v2 + 2];
+
+                if (Math.abs(x1 - x2) < epsVertexMerge && Math.abs(y1 - y2) < epsVertexMerge && Math.abs(z1 - z2) < epsVertexMerge) {
+                    remapVertexIndices.push(v2 / 3);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                remapVertexIndices.push(v1 / 3);
+                uniquePositions.push(v1 / 3);
+            }
+        }
+
+        if (this._options?.applyTessellation) {
+            /**
+             * Tessellate triangles if necessary:
+             *
+             *               A
+             *               +
+             *               |\
+             *               | \
+             *               |  \
+             *             E +   \
+             *              /|    \
+             *             / |     \
+             *            /  |      \
+             *           +---+-------+ B
+             *           D   C
+             *
+             * For the edges to be rendered correctly, the ABC triangle has to be split into ABE and BCE, else AC is considered to be an edge, whereas only AE should be.
+             *
+             * The tessellation process looks for the vertices like E that are in-between two other vertices making of an edge and create new triangles as necessary
+             */
+
+            // First step: collect the triangles to tessellate
+            const epsVertexAligned = this._options?.epsilonVertexAligned ?? 1e-6;
+            const mustTesselate: any[] = []; // liste of triangles that must be tessellated
+            for (let index = 0; index < indices.length; index += 3) { // loop over all triangles
+                let triangleToTessellate: any;
+                for (let i = 0; i < 3; ++i) { // loop over the 3 edges of the triangle
+                    let p0Index = remapVertexIndices[indices[index + i]];
+                    let p1Index = remapVertexIndices[indices[index + (i + 1) % 3]];
+                    let p2Index = remapVertexIndices[indices[index + (i + 2) % 3]];
+
+                    if (p0Index === p1Index) { continue; } // degenerated triangle - don't process
+
+                    const p0x = positions[p0Index * 3 + 0], p0y = positions[p0Index * 3 + 1], p0z = positions[p0Index * 3 + 2];
+                    const p1x = positions[p1Index * 3 + 0], p1y = positions[p1Index * 3 + 1], p1z = positions[p1Index * 3 + 2];
+
+                    const p0p1 = Math.sqrt((p1x - p0x) * (p1x - p0x) + (p1y - p0y) * (p1y - p0y) + (p1z - p0z) * (p1z - p0z));
+
+                    for (let v = 0; v < uniquePositions.length - 1; v++) { // loop over all (unique) vertices and look for the ones that would be in-between p0 and p1
+                        const vIndex = uniquePositions[v];
+
+                        if (vIndex === p0Index || vIndex === p1Index || vIndex === p2Index) { continue; } // don't handle the vertex if it is a vertex of the current triangle
+
+                        const x = positions[vIndex * 3 + 0], y = positions[vIndex * 3 + 1], z = positions[vIndex * 3 + 2];
+
+                        const p0p = Math.sqrt((x - p0x) * (x - p0x) + (y - p0y) * (y - p0y) + (z - p0z) * (z - p0z));
+                        const pp1 = Math.sqrt((x - p1x) * (x - p1x) + (y - p1y) * (y - p1y) + (z - p1z) * (z - p1z));
+
+                        if (Math.abs(p0p + pp1 - p0p1) < epsVertexAligned) {
+                            if (!triangleToTessellate) {
+                                triangleToTessellate = {
+                                    index: index,
+                                    edges: [[], [], []],
+                                };
+                                mustTesselate.push(triangleToTessellate);
+                            }
+                            triangleToTessellate.edges[i].push([vIndex, p0p]);
+                        }
+                    }
+                }
+            }
+
+            console.log(mustTesselate.length);
+
+            // Second step: tesselate the triangles
+            for (let t = 0; t < mustTesselate.length; ++t) {
+                const triangle = mustTesselate[t];
+                const index = triangle.index;
+
+                let p0: number, p1: number, p2: number;
+                let vertices: Array<[number, number]>;
+
+                if (triangle.edges[0].length > 0) {
+                    p0 = remapVertexIndices[indices[index + 0]];
+                    p1 = remapVertexIndices[indices[index + 1]];
+                    p2 = remapVertexIndices[indices[index + 2]];
+                    vertices = triangle.edges[0];
+                }
+                if (triangle.edges[1].length > 0) {
+                    p0 = remapVertexIndices[indices[index + 1]];
+                    p1 = remapVertexIndices[indices[index + 2]];
+                    p2 = remapVertexIndices[indices[index + 0]];
+                    vertices = triangle.edges[1];
+                }
+                if (triangle.edges[2].length > 0) {
+                    p0 = remapVertexIndices[indices[index + 2]];
+                    p1 = remapVertexIndices[indices[index + 0]];
+                    p2 = remapVertexIndices[indices[index + 1]];
+                    vertices = triangle.edges[2];
+                }
+
+                vertices!.sort((a, b) => a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
+
+                indices[index + 0] = p0!;
+                indices[index + 1] = vertices![0][0];
+                indices[index + 2] = p2!;
+
+                for (let i = 0; i < vertices!.length - 1; ++i) {
+                    indices.push(vertices![i][0], vertices![i + 1][0], p2!);
+                }
+
+                indices.push(vertices![vertices!.length - 1][0], p1!, p2!);
+            }
+        }
+
+        /**
+         * Collect the edges to render
+         */
+        const edges: Map<string, { normal: Vector3, done: boolean, index: number, i: number }> = new Map();
+
+        for (let index = 0; index < indices.length; index += 3) {
+            let faceNormal;
+            for (let i = 0; i < 3; ++i) {
+                let p0Index = remapVertexIndices[indices[index + i]];
+                let p1Index = remapVertexIndices[indices[index + (i + 1) % 3]];
+                let p2Index = remapVertexIndices[indices[index + (i + 2) % 3]];
+
+                if (p0Index === p1Index) { continue; }
+
+                TmpVectors.Vector3[0].copyFromFloats(positions[p0Index * 3 + 0], positions[p0Index * 3 + 1], positions[p0Index * 3 + 2]);
+                TmpVectors.Vector3[1].copyFromFloats(positions[p1Index * 3 + 0], positions[p1Index * 3 + 1], positions[p1Index * 3 + 2]);
+                TmpVectors.Vector3[2].copyFromFloats(positions[p2Index * 3 + 0], positions[p2Index * 3 + 1], positions[p2Index * 3 + 2]);
+
+                if (!faceNormal) {
+                    faceNormal = Vector3.Cross(TmpVectors.Vector3[1].subtract(TmpVectors.Vector3[0]), TmpVectors.Vector3[2].subtract(TmpVectors.Vector3[1]));
+                    faceNormal.normalize();
+                }
+
+                if (p0Index > p1Index) {
+                    const tmp = p0Index;
+                    p0Index = p1Index;
+                    p1Index = tmp;
+                }
+
+                const key = p0Index + "_" + p1Index;
+                const ei = edges.get(key);
+
+                if (ei) {
+                    if (!ei.done) {
+                        const dotProduct = Vector3.Dot(faceNormal, ei.normal);
+
+                        if (dotProduct < this._epsilon) {
+                            this.createLine(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this._linesPositions.length / 3);
+                        }
+
+                        ei.done = true;
+                    }
+                } else {
+                    edges.set(key, { normal: faceNormal, done: false, index: index, i: i });
+                }
+            }
+        }
+
+        const iterator = edges.entries();
+        for (let entry = iterator.next(); entry.done !== true; entry = iterator.next()) {
+            const ei = entry.value[1];
+            if (!ei.done) {
+                // Orphaned edge - we must display it
+                let p0Index = remapVertexIndices[indices[ei.index + ei.i]];
+                let p1Index = remapVertexIndices[indices[ei.index + (ei.i + 1) % 3]];
+
+                TmpVectors.Vector3[0].copyFromFloats(positions[p0Index * 3 + 0], positions[p0Index * 3 + 1], positions[p0Index * 3 + 2]);
+                TmpVectors.Vector3[1].copyFromFloats(positions[p1Index * 3 + 0], positions[p1Index * 3 + 1], positions[p1Index * 3 + 2]);
+
+                this.createLine(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this._linesPositions.length / 3);
+            }
+        }
+
+        console.timeEnd("processing time - alternate");
+
+        /**
+         * Merge into a single mesh
+         */
+        var engine = this._source.getScene().getEngine();
+
+        this._buffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, this._linesPositions, VertexBuffer.PositionKind, false);
+        this._buffers[VertexBuffer.NormalKind] = new VertexBuffer(engine, this._linesNormals, VertexBuffer.NormalKind, false, false, 4);
+
+        this._buffersForInstances[VertexBuffer.PositionKind] = this._buffers[VertexBuffer.PositionKind];
+        this._buffersForInstances[VertexBuffer.NormalKind] = this._buffers[VertexBuffer.NormalKind];
+
+        this._ib = engine.createIndexBuffer(this._linesIndices);
+
+        this._indicesCount = this._linesIndices.length;
+    }
+
     /**
      * Generates lines edges from adjacencjes
      * @private
@@ -359,6 +600,8 @@ export class EdgesRenderer implements IEdgesRenderer {
         if (!indices || !positions) {
             return;
         }
+
+        console.time("processing time");
 
         // First let's find adjacencies
         var adjacencies = new Array<FaceAdjacencies>();
@@ -460,6 +703,8 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._checkEdge(index, current.edges[1], faceNormals, current.p1, current.p2);
             this._checkEdge(index, current.edges[2], faceNormals, current.p2, current.p0);
         }
+
+        console.timeEnd("processing time");
 
         // Merge into a single mesh
         var engine = this._source.getScene().getEngine();
