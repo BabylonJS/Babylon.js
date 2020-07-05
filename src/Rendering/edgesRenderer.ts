@@ -511,7 +511,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         /**
          * Collect the edges to render
          */
-        const edges: Map<string, { normal: Vector3, done: boolean, index: number, i: number }> = new Map();
+        const edges: { [key: string] : { normal: Vector3, done: boolean, index: number, i: number } } = { };
 
         for (let index = 0; index < indices.length; index += 3) {
             let faceNormal;
@@ -538,7 +538,7 @@ export class EdgesRenderer implements IEdgesRenderer {
                 }
 
                 const key = p0Index + "_" + p1Index;
-                const ei = edges.get(key);
+                const ei = edges[key];
 
                 if (ei) {
                     if (!ei.done) {
@@ -551,14 +551,13 @@ export class EdgesRenderer implements IEdgesRenderer {
                         ei.done = true;
                     }
                 } else {
-                    edges.set(key, { normal: faceNormal, done: false, index: index, i: i });
+                    edges[key] = { normal: faceNormal, done: false, index: index, i: i };
                 }
             }
         }
 
-        const iterator = edges.entries();
-        for (let entry = iterator.next(); entry.done !== true; entry = iterator.next()) {
-            const ei = entry.value[1];
+        for (const key in edges) {
+            const ei = edges[key];
             if (!ei.done) {
                 // Orphaned edge - we must display it
                 let p0Index = remapVertexIndices[indices[ei.index + ei.i]];
