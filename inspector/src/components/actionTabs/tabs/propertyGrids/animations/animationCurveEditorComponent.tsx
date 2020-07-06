@@ -1665,7 +1665,12 @@ export class AnimationCurveEditorComponent extends React.Component<
                   ></rect>
 
                   {this.state.frameAxisLength.map((f, i) => (
-                    <svg key={i} x='0' y={96 + this.state.panningY + '%'}>
+                    <svg
+                      key={i}
+                      x='0'
+                      y={96 + this.state.panningY + '%'}
+                      className='frame-contain'
+                    >
                       <text
                         x={f.value}
                         y='0'
