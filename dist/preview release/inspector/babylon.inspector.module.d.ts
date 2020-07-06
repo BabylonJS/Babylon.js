@@ -665,6 +665,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         private _panStart;
         private _panStop;
         private _playheadDrag;
+        private _playheadSelected;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
         componentWillReceiveProps(newProps: ISvgDraggableAreaProps): void;
@@ -4252,6 +4253,7 @@ declare module INSPECTOR {
         private _panStart;
         private _panStop;
         private _playheadDrag;
+        private _playheadSelected;
         constructor(props: ISvgDraggableAreaProps);
         componentDidMount(): void;
         componentWillReceiveProps(newProps: ISvgDraggableAreaProps): void;
