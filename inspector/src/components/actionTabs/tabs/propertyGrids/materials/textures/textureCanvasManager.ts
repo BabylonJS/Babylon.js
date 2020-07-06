@@ -4,12 +4,12 @@ import { Vector3 } from 'babylonjs/Maths/math.vector';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { PlaneBuilder } from 'babylonjs/Meshes/Builders/planeBuilder';
 import { Mesh } from 'babylonjs/Meshes/mesh';
-import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { Camera } from 'babylonjs/Cameras/camera';
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { DynamicTexture } from 'babylonjs/Materials/Textures/dynamicTexture';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-import { Color4, Color3, Texture, NodeMaterial } from 'babylonjs';
+import { Color4 } from 'babylonjs/Maths/math.color';
+import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { TextureEditorMaterial } from './textureEditorMaterial';
 
 
@@ -25,10 +25,6 @@ export class TextureCanvasManager {
     private _isPanning : boolean;
     private _mouseX : number;
     private _mouseY : number;
-
-    private _backgroundTexture : Texture;
-    private _backgroundPlane : Mesh;
-    private _backgroundPlaneMaterial : NodeMaterial;
 
     private _plane : Mesh;
     private _planeMaterial : NodeMaterial;
@@ -71,24 +67,6 @@ export class TextureCanvasManager {
 
         this._texture.updateSamplingMode(Engine.TEXTURE_NEAREST_LINEAR);
         const textureRatio = this._texture.getSize().width / this._texture.getSize().height;
-        
-        // this._backgroundTexture = new DynamicTexture("texture", 8, this._scene, false);
-        // const ctx = this._backgroundTexture.getContext();
-        // ctx.fillStyle = '#FFFFFF';
-        // ctx.fillRect(0,0,8,8);
-        // ctx.fillStyle = '#DDDDDD';
-        // ctx.fillRect(0,0,4,4);
-        // ctx.fillRect(4,4,4,4);
-        // this._backgroundTexture.update();
-        // this._backgroundTexture = new Texture("https://storage.googleapis.com/tensorflow-lucid/notebooks/rgba/checkerboard-pattern.png", this._scene);
-        // this._backgroundTexture.uScale = 10 * textureRatio;
-        // this._backgroundTexture.vScale = 10;
-        // this._backgroundTexture.updateSamplingMode(Engine.TEXTURE_NEAREST_LINEAR);
-        // this._backgroundPlane = PlaneBuilder.CreatePlane("bg", {width: textureRatio, height: 1}, this._scene);
-        // this._backgroundPlaneMaterial = new PBRMaterial("bgMaterial", this._scene);
-        // this._backgroundPlaneMaterial.unlit = true;
-        // this._backgroundPlaneMaterial.albedoTexture = this._backgroundTexture;
-        // this._backgroundPlane.material = this._backgroundPlaneMaterial;
 
         this._plane = PlaneBuilder.CreatePlane("plane", {width: textureRatio, height: 1}, this._scene);
         this._planeMaterial = TextureEditorMaterial(this._texture);
@@ -112,10 +90,6 @@ export class TextureCanvasManager {
             this._camera.orthoTop = this._scale;
             this._camera.orthoLeft = -this._scale * ratio;
             this._camera.orthoRight = this._scale * ratio;
-
-            // this._backgroundTexture.uScale = Math.floor(2 * textureRatio / this._scale);
-            // this._backgroundTexture.vScale = Math.floor(2 / this._scale);
-
         })
 
         this._scene.onPointerObservable.add((pointerInfo) => {

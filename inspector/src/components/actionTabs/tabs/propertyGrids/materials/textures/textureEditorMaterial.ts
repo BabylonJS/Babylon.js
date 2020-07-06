@@ -119,10 +119,7 @@ export function TextureEditorMaterial(texture : Texture) : NodeMaterial {
     
     // OneMinusBlock
     let Oneminus = new OneMinusBlock("One minus");
-    
-    // ColorMergerBlock
-    let ColorMerger1 = new ColorMergerBlock("ColorMerger");
-    
+
     // InputBlock
     let Float2 = new InputBlock("Float");
     Float2.value = 1;
@@ -165,8 +162,6 @@ export function TextureEditorMaterial(texture : Texture) : NodeMaterial {
     ColorMerger.rgb.connectTo(CombineTextures.right);
     Texture.a.connectTo(Oneminus.input);
     Oneminus.output.connectTo(CombineTextures.gradient);
-    CombineTextures.output.connectTo(ColorMerger1.rgb );
-    Float2.output.connectTo(ColorMerger1.a);
     CombineTextures.output.connectTo(FragmentOutput.rgb);
     
     // Output nodes
