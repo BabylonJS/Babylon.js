@@ -10,9 +10,10 @@ export interface ICheckBoxLineComponentProps {
     onSelect?: (value: boolean) => void;
     onValueChanged?: () => void;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    disabled?: boolean;
 }
 
-export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean }> {
+export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, { isSelected: boolean, isDisabled?: boolean }> {
     private static _UniqueIdSeed = 0;
     private _uniqueId: number;
     private _localChange = false;
@@ -26,9 +27,13 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         } else {
             this.state = { isSelected: this.props.target[this.props.propertyName!] == true };
         }
+
+        if (this.props.disabled) {
+            this.state = { ...this.state, isDisabled: this.props.disabled };
+        }
     }
 
-    shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean }) {
+    shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean, isDisabled: boolean }) {
         var currentState: boolean;
 
         if (nextProps.isSelected) {
@@ -42,7 +47,12 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
             this._localChange = false;
             return true;
         }
-        return nextProps.label !== this.props.label;
+
+        if(nextProps.disabled !== !!nextState.isDisabled){
+            return true;
+        }
+        
+        return nextProps.label !== this.props.label || nextProps.target !== this.props.target;
     }
 
     onChange() {
@@ -76,8 +86,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                     {this.props.label}
                 </div>
                 <div className="checkBox">
-                    <input type="checkbox" id={"checkbox" + this._uniqueId} className="cbx hidden" checked={this.state.isSelected} onChange={() => this.onChange()} />
-                    <label htmlFor={"checkbox" + this._uniqueId} className="lbl"></label>
+                    <input type="checkbox" id={"checkbox" + this._uniqueId} className="cbx hidden" checked={this.state.isSelected} onChange={() => this.onChange()} disabled={!!this.props.disabled}/>
+                    <label htmlFor={"checkbox" + this._uniqueId} className={`lbl${!!this.props.disabled ? ' disabled' : ''}`}></label>
                 </div>
             </div>
         );

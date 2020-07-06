@@ -216,9 +216,9 @@ ThinEngine.prototype._setCubeMapTextureParams = function(loadMipmap: boolean): v
 };
 
 ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
-    var gl = this._gl;
+    const gl = this._gl;
 
-    var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
+    const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
     texture.isCube = true;
     texture.url = rootUrl;
     texture.generateMipMaps = !noMipmap;
@@ -230,8 +230,13 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
         texture._files = files;
     }
 
-    var lastDot = rootUrl.lastIndexOf('.');
-    var extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
+    const originalRootUrl = rootUrl;
+    if (this._transformTextureUrl && !fallback) {
+        rootUrl = this._transformTextureUrl(rootUrl);
+    }
+
+    const lastDot = rootUrl.lastIndexOf('.');
+    const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "");
 
     let loader: Nullable<IInternalTextureLoader> = null;
     for (let availableLoader of ThinEngine._TextureLoaders) {
@@ -241,9 +246,16 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
         }
     }
 
-    let onInternalError = (request?: IWebRequest, exception?: any) => {
-        if (onError && request) {
-            onError(request.status + " " + request.statusText, exception);
+    const onInternalError = (request?: IWebRequest, exception?: any) => {
+        if (rootUrl === originalRootUrl) {
+            if (onError && request) {
+                onError(request.status + " " + request.statusText, exception);
+            }
+        }
+        else {
+            // fall back to the original url if the transformed url fails to load
+            Logger.Warn(`Failed to load ${rootUrl}, falling back to the ${originalRootUrl}`);
+            this.createCubeTexture(originalRootUrl, scene, files, noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, texture);
         }
     };
 
@@ -274,10 +286,10 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
         }
 
         this._cascadeLoadImgs(scene, (imgs) => {
-            var width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
-            var height = width;
+            const width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
+            const height = width;
 
-            var faces = [
+            const faces = [
                 gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                 gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
             ];
@@ -285,7 +297,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             this._unpackFlipY(false);
 
-            let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+            const internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
             for (var index = 0; index < faces.length; index++) {
                 if (imgs[index].width !== width || imgs[index].height !== height) {
 

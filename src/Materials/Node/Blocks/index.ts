@@ -45,3 +45,6 @@ export * from "./rotate2dBlock";
 export * from "./reflectBlock";
 export * from "./refractBlock";
 export * from "./desaturateBlock";
+export * from "./PBR/index";
+export * from "./Particle/index";
+export * from "./modBlock";

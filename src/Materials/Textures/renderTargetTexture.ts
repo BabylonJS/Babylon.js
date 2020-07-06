@@ -81,7 +81,7 @@ export class RenderTargetTexture extends Texture {
 
             var result = oldPush.apply(array, items);
 
-            if (wasEmpty) {
+            if (wasEmpty && this.getScene()) {
                 this.getScene()!.meshes.forEach((mesh) => {
                     mesh._markSubMeshesAsLightDirty();
                 });
@@ -120,6 +120,10 @@ export class RenderTargetTexture extends Texture {
      * Define the camera used to render the texture.
      */
     public activeCamera: Nullable<Camera>;
+    /**
+     * Override the mesh isReady function with your own one.
+     */
+    public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number) => boolean;
     /**
      * Override the render function of the texture with your own one.
      */
@@ -240,8 +244,6 @@ export class RenderTargetTexture extends Texture {
         return this._renderTargetOptions;
     }
 
-    protected _engine: Engine;
-
     protected _onRatioRescale(): void {
         if (this._sizeRatio) {
             this.resize(this._initialSizeParameter);
@@ -305,13 +307,11 @@ export class RenderTargetTexture extends Texture {
     constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
         super(null, scene, !generateMipMaps);
         scene = this.getScene();
-
         if (!scene) {
             return;
         }
 
         this.renderList = new Array<AbstractMesh>();
-        this._engine = scene.getEngine();
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;
@@ -382,9 +382,10 @@ export class RenderTargetTexture extends Texture {
     private _processSizeParameter(size: number | { width: number, height: number } | { ratio: number }): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
+            const engine = this._getEngine()!;
             this._size = {
-                width: this._bestReflectionRenderTargetDimension(this._engine.getRenderWidth(), this._sizeRatio),
-                height: this._bestReflectionRenderTargetDimension(this._engine.getRenderHeight(), this._sizeRatio)
+                width: this._bestReflectionRenderTargetDimension(engine.getRenderWidth(), this._sizeRatio),
+                height: this._bestReflectionRenderTargetDimension(engine.getRenderHeight(), this._sizeRatio)
             };
         } else {
             this._size = <number | { width: number, height: number, layers?: number }>size;
@@ -745,7 +746,13 @@ export class RenderTargetTexture extends Texture {
             var mesh = currentRenderList[meshIndex];
 
             if (mesh) {
-                if (!mesh.isReady(this.refreshRate === 0)) {
+                if (this.customIsReadyFunction) {
+                    if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                        this.resetRefreshCounter();
+                        continue;
+                    }
+                }
+                else if (!mesh.isReady(this.refreshRate === 0)) {
                     this.resetRefreshCounter();
                     continue;
                 }
@@ -764,7 +771,9 @@ export class RenderTargetTexture extends Texture {
                         if (!mesh.isAnInstance) {
                             mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
                         } else {
-                            mesh = (mesh as InstancedMesh).sourceMesh;
+                            if (!mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
+                                mesh = (mesh as InstancedMesh).sourceMesh;
+                            }
                         }
                         mesh._internalAbstractMeshDataInfo._isActiveIntermediate = true;
 

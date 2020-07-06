@@ -72,7 +72,7 @@ compileAndRun = function (parent, fpsLabel) {
                 });
             }
 
-            var zipVariables = "var engine = null;\r\nvar scene = null;\r\n";
+            var zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
             var defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
 
             if (code.indexOf("createEngine") !== -1) {
@@ -101,7 +101,14 @@ compileAndRun = function (parent, fpsLabel) {
 
                 parent.zipTool.ZipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
-                code += "\r\n\r\nengine = " + createEngineFunction + "();";
+                code += `
+var engine;
+try {
+    engine = ${createEngineFunction}();
+} catch(e) {
+    console.log("the available createEngine function failed. Creating the default engine instead");
+    engine = createDefaultEngine();
+}`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 if (parent.settingsPG.ScriptLanguage == "JS") {
@@ -125,11 +132,14 @@ compileAndRun = function (parent, fpsLabel) {
                     return;
                 }
 
+                let sceneToRenderCode = 'sceneToRender = scene';
+
                 // if scene returns a promise avoid checks
                 if (scene.then) {
                     checkCamera = false;
                     checkSceneCount = false;
-                }
+                    sceneToRenderCode = 'scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n';
+                } 
 
                 var createEngineZip = (createEngineFunction === "createEngine") ?
                     zipVariables :
@@ -137,7 +147,8 @@ compileAndRun = function (parent, fpsLabel) {
 
                 parent.zipTool.zipCode =
                     createEngineZip + ";\r\n" +
-                    code;
+                    code + ";\r\n" +
+                    sceneToRenderCode;
             }
 
             engine = engine;
@@ -164,7 +175,12 @@ compileAndRun = function (parent, fpsLabel) {
                     sceneToRender.render();
                 }
 
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                // Update FPS if camera is not a webxr camera
+                if(!(sceneToRender.activeCamera && 
+                    sceneToRender.activeCamera.getClassName && 
+                    sceneToRender.activeCamera.getClassName() === 'WebXRCamera')) {
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                }
             }.bind(this));
 
             if (checkSceneCount && engine.scenes.length === 0) {
@@ -220,7 +236,7 @@ class Main {
     constructor(parent) {
         this.parent = parent;
 
-        if (typeof BABYLON !== 'undefined') {
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine) {
             BABYLON.Engine.ShadersRepository = "/src/Shaders/";
         }
         this.snippetV3Url = "https://snippet.babylonjs.com"
@@ -391,16 +407,19 @@ class Main {
             }.bind(this));
         }
         // Safe mode
+        this.parent.settingsPG.restoreSafeMode();
         this.parent.utils.setToMultipleID("safemodeToggle", 'click', function () {
             document.getElementById("safemodeToggle1280").classList.toggle('checked');
-            if (document.getElementById("safemodeToggle1280").classList.contains('checked')) {
-                this.parent.utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
-            } else {
-                this.parent.utils.setToMultipleID("safemodeToggle", "innerHTML", 'Safe mode <i class="fa fa-square" aria-hidden="true"></i>');
-            }
+            this.parent.settingsPG.setSafeMode(document.getElementById("safemodeToggle1280").classList.contains('checked'));
         }.bind(this));
         // Editor
         this.parent.utils.setToMultipleID("editorButton", "click", this.toggleEditor.bind(this));
+        // CTRL + S        
+        this.parent.settingsPG.restoreCTRLS();
+        this.parent.utils.setToMultipleID("ctrlsToggle", 'click', function () {
+            document.getElementById("ctrlsToggle1280").classList.toggle('checked');            
+            this.parent.settingsPG.setCTRLS(document.getElementById("ctrlsToggle1280").classList.contains('checked'));
+        }.bind(this));        
         // FullScreen
         this.parent.utils.setToMultipleID("fullscreenButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
@@ -441,7 +460,7 @@ class Main {
         this.parent.menuPG.resizeBigCanvas();
 
         // HotKeys
-        document.onkeydown = function (e) {
+        document.onkeydown = (e) => {
             // Alt+Enter to Run
             if (e.altKey && (e.key === 'Enter' || event.which === 13)) {
                 handleRun();
@@ -460,6 +479,9 @@ class Main {
                 (e.key === 'S' || event.which === 83)
             ) {
                 e.preventDefault();
+                if (!this.checkCTRLSMode()) {
+                    return;
+                }
                 handleSave();
             }
         };
@@ -504,7 +526,7 @@ class Main {
                     if (!this.checkTypescriptSupport(xhr)) return;
 
                     xhr.onreadystatechange = null;
-                    this.parent.monacoCreator.addOnMoncaoLoadedCallback(function () {
+                    this.parent.monacoCreator.addOnMonacoLoadedCallback(function () {
                         this.parent.monacoCreator.BlockEditorChange = true;
                         this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
                         this.parent.monacoCreator.JsEditor.setPosition({
@@ -548,69 +570,6 @@ class Main {
                     this.scripts.sort(sortScriptsList);
 
                     if (exampleList) {
-                        for (var i = 0; i < this.scripts.length; i++) {
-                            this.scripts[i].samples.sort(sortScriptsList);
-
-                            var exampleCategory = document.createElement("div");
-                            exampleCategory.classList.add("categoryContainer");
-
-                            var exampleCategoryTitle = document.createElement("p");
-                            exampleCategoryTitle.innerText = this.scripts[i].title;
-                            exampleCategory.appendChild(exampleCategoryTitle);
-
-                            for (var ii = 0; ii < this.scripts[i].samples.length; ii++) {
-                                var example = document.createElement("div");
-                                example.classList.add("itemLine");
-                                example.id = ii;
-
-                                var exampleImg = document.createElement("img");
-                                exampleImg.setAttribute("data-src", this.scripts[i].samples[ii].icon.replace("icons", "https://doc.babylonjs.com/examples/icons"));
-                                exampleImg.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
-
-                                var exampleContent = document.createElement("div");
-                                exampleContent.classList.add("itemContent");
-                                exampleContent.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
-
-                                var exampleContentLink = document.createElement("div");
-                                exampleContentLink.classList.add("itemContentLink");
-
-                                var exampleTitle = document.createElement("h3");
-                                exampleTitle.classList.add("exampleCategoryTitle");
-                                exampleTitle.innerText = this.scripts[i].samples[ii].title;
-                                var exampleDescr = document.createElement("div");
-                                exampleDescr.classList.add("itemLineChild");
-                                exampleDescr.innerText = this.scripts[i].samples[ii].description;
-
-                                var exampleDocLink = document.createElement("a");
-                                exampleDocLink.classList.add("itemLineDocLink");
-                                exampleDocLink.innerText = "Documentation";
-                                exampleDocLink.href = this.scripts[i].samples[ii].doc;
-                                exampleDocLink.target = "_blank";
-
-                                var examplePGLink = document.createElement("a");
-                                examplePGLink.id = "PGLink_" + this.scripts[i].samples[ii].PGID;
-                                examplePGLink.classList.add("itemLinePGLink");
-                                examplePGLink.innerText = "Display";
-                                examplePGLink.href = this.scripts[i].samples[ii].PGID;
-                                examplePGLink.addEventListener("click", function () {
-                                    location.href = this.href;
-                                    location.reload();
-                                });
-
-                                exampleContentLink.appendChild(exampleTitle);
-                                exampleContentLink.appendChild(exampleDescr);
-                                exampleContent.appendChild(exampleContentLink);
-                                exampleContent.appendChild(exampleDocLink);
-                                exampleContent.appendChild(examplePGLink);
-
-                                example.appendChild(exampleImg);
-                                example.appendChild(exampleContent);
-
-                                exampleCategory.appendChild(example);
-                            }
-
-                            exampleList.appendChild(exampleCategory);
-                        }
 
                         var noResultContainer = document.createElement("div");
                         noResultContainer.id = "noResultsContainer";
@@ -620,7 +579,7 @@ class Main {
                         exampleList.appendChild(noResultContainer);
                     }
 
-                    if (!location.hash && restoreVersionResult == false) {
+                    if (!location.hash && restoreVersionResult == false && location.pathname.indexOf('pg/') === -1) {
                         // Query string
                         var queryString = window.location.search;
 
@@ -734,7 +693,9 @@ class Main {
                                         newPG = "";
                                         break;
                                 }
-                                window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
+                                // reset pathname if it is a 'pg/' location
+                                const pathname = location.pathname.match(/\/pg\//) ? '/' : location.pathname;
+                                window.location.href = location.protocol + "//" + location.host + pathname + "#" + newPG;
                             } else if (query.indexOf("=") === -1) {
                                 this.loadScript("scripts/" + query + ".js", query);
                             } else if (query.indexOf('pg=') === -1 && !location.pathname.match(/\/pg\//)) {
@@ -758,6 +719,10 @@ class Main {
         // Check if safe mode is on, and ask if it is
         if (!this.checkSafeMode("Are you sure you want to create a new playground?")) return;
         location.hash = "";
+        if(location.pathname.indexOf('pg/') !== -1) {
+            // reload to create a new pg if in full-path playground mode.
+            window.location.pathname = '';
+        }
         this.currentSnippetToken = null;
         this.currentSnippetTitle = null;
         this.currentSnippetDescription = null;
@@ -808,6 +773,14 @@ class Main {
         } else {
             return true;
         }
+    };
+
+    checkCTRLSMode() {
+        if (document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()) &&
+            document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+            return true;
+        }
+        return false;
     };
 
     /**
@@ -883,6 +856,7 @@ class Main {
                         // default behavior!
                         var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                         var newUrl = baseUrl + "#" + snippet.id;
+                        newUrl = newUrl.replace('##', '#');
                         this.currentSnippetToken = snippet.id;
                         if (snippet.version && snippet.version !== "0") {
                             newUrl += "#" + snippet.version;
@@ -1010,15 +984,23 @@ class Main {
      */
     toggleEditor() {
         var editorButton = document.getElementById("editorButton1280");
+        var gutter = document.querySelector(".gutter");
+        var canvas = document.getElementById("canvasZone");
+        var jsEditor = document.getElementById("jsEditor");
         var scene = engine.scenes[0];
 
         // If the editor is present
         if (editorButton.classList.contains('checked')) {
             this.parent.utils.setToMultipleID("editorButton", "removeClass", 'checked');
+            gutter.style.display = "none";
+            jsEditor.style.display = "none";
             this.parent.splitInstance.collapse(0);
+            canvas.style.width = "100%";
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square" aria-hidden="true"></i>');
         } else {
             this.parent.utils.setToMultipleID("editorButton", "addClass", 'checked');
+            gutter.style.display = "";            
+            jsEditor.style.display = "";
             this.parent.splitInstance.setSizes([50, 50]); // Reset
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
@@ -1050,7 +1032,8 @@ class Main {
      * HASH part
      */
     cleanHash() {
-        var splits = decodeURIComponent(location.hash.substr(1)).split("#");
+        var substr = location.hash[1]==='#' ? 2 : 1
+        var splits = decodeURIComponent(location.hash.substr(substr)).split("#");
 
         if (splits.length > 2) {
             splits.splice(2, splits.length - 2);
@@ -1060,14 +1043,14 @@ class Main {
     };
     checkHash() {
         let pgHash = "";
-        if (location.search) {
+        if (location.search && (!location.pathname  || location.pathname === '/') && !location.hash) {
             var query = this.parseQuery(location.search);
             if (query.pg) {
                 pgHash = "#" + query.pg + "#" + (query.revision || "0")
             }
-
         } else if (location.hash) {
             if (this.previousHash !== location.hash) {
+                this.cleanHash();
                 pgHash = location.hash;
             }
         } else if (location.pathname) {
@@ -1133,9 +1116,17 @@ class Main {
 
                         this.updateMetadata();
 
-                        this.parent.monacoCreator.addOnMoncaoLoadedCallback(function () {
-                            this.parent.monacoCreator.BlockEditorChange = true;
-                            this.parent.monacoCreator.JsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
+                        var code = JSON.parse(snippet.jsonPayload).code.toString();
+                        var editorSpace = document.getElementById('jsEditor');
+                        if (editorSpace) {
+                            // editorSpace.style.overflow = "overlay";
+                            // editorSpace.innerHTML = '<pre class="loading-pre">' + code + "</pre>";
+                            // this.parent.menuPG.resizeBigJsEditor();
+                        }
+
+                        this.parent.monacoCreator.addOnMonacoLoadedCallback(function () {
+                            this.parent.monacoCreatorjs = true;
+                            this.parent.monacoCreator.JsEditor.setValue(code);
 
                             this.parent.monacoCreator.JsEditor.setPosition({
                                 lineNumber: 0,

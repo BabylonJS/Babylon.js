@@ -153,7 +153,12 @@ compileAndRun = function(parent, fpsLabel) {
                         scene.render();
                     }
 
-                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                    // Update FPS if camera is not a webxr camera
+                    if(!(scene.activeCamera && 
+                        scene.activeCamera.getClassName && 
+                        scene.activeCamera.getClassName() === 'WebXRCamera')) {
+                        fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                    }
                 }.bind(this));
 
                 if (checkSceneCount && engine.scenes.length === 0) {
@@ -432,6 +437,9 @@ class Main {
               (e.key === 'S' || event.which === 83)
             ) {
                 e.preventDefault();
+                if (!this.checkCTRLSMode()) {
+                    return;
+                }
                 handleSave();
             }
         };
@@ -703,6 +711,14 @@ class Main {
             return true;
         }
     };
+
+    checkCTRLSMode() {
+        if (document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()) &&
+            document.getElementById("ctrlsToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+            return true;
+        }
+        return false;
+    };    
 
     /**
      * Metadatas form

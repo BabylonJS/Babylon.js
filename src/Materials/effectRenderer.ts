@@ -1,5 +1,6 @@
 import { Nullable } from '../types';
-import { Texture } from '../Materials/Textures/texture';
+import { InternalTexture } from './Textures/internalTexture';
+import { RenderTargetTexture } from './Textures/renderTargetTexture';
 import { ThinEngine } from '../Engines/thinEngine';
 import { VertexBuffer } from '../Meshes/buffer';
 import { Viewport } from '../Maths/math.viewport';
@@ -7,8 +8,6 @@ import { Constants } from '../Engines/constants';
 import { Observable } from '../Misc/observable';
 import { Effect } from './effect';
 import { DataBuffer } from '../Meshes/dataBuffer';
-
-import "../Engines/Extensions/engine.renderTarget";
 
 // Prevents ES6 Crash if not imported.
 import "../Shaders/postprocess.vertex";
@@ -28,49 +27,20 @@ export interface IEffectRendererOptions {
 }
 
 /**
- * Helper class to render one or more effects
+ * Helper class to render one or more effects.
+ * You can access the previous rendering in your shader by declaring a sampler named textureSampler
  */
 export class EffectRenderer {
     // Fullscreen quad buffers by default.
     private static _DefaultOptions: IEffectRendererOptions = {
         positions: [1, 1, -1, 1, -1, -1, 1, -1],
-        indices: [0, 1, 2, 0, 2, 3]
+        indices: [0, 1, 2, 0, 2, 3],
     };
 
     private _vertexBuffers: {[key: string]: VertexBuffer};
     private _indexBuffer: DataBuffer;
 
-    private _ringBufferIndex = 0;
-    private _ringScreenBuffer: Nullable<Array<Texture>> = null;
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
-
-    private _getNextFrameBuffer(incrementIndex = true) {
-        if (!this._ringScreenBuffer) {
-            this._ringScreenBuffer = [];
-            for (var i = 0; i < 2; i++) {
-                var internalTexture = this.engine.createRenderTargetTexture(
-                    {
-                        width: this.engine.getRenderWidth(true),
-                        height: this.engine.getRenderHeight(true),
-                    },
-                    {
-                        generateDepthBuffer: false,
-                        generateStencilBuffer: false,
-                        generateMipMaps: false,
-                        samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
-                    },
-                );
-                var texture = new Texture("", null);
-                texture._texture = internalTexture;
-                this._ringScreenBuffer.push(texture);
-            }
-        }
-        var ret = this._ringScreenBuffer[this._ringBufferIndex];
-        if (incrementIndex) {
-            this._ringBufferIndex = (this._ringBufferIndex + 1) % 2;
-        }
-        return ret;
-    }
 
     /**
      * Creates an effect renderer
@@ -87,10 +57,6 @@ export class EffectRenderer {
             [VertexBuffer.PositionKind]: new VertexBuffer(engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
         };
         this._indexBuffer = engine.createIndexBuffer(options.indices!);
-
-        // No need here for full screen render.
-        engine.depthCullingState.depthTest = false;
-        engine.stencilState.stencilTest = false;
     }
 
     /**
@@ -116,9 +82,19 @@ export class EffectRenderer {
      * @param effectWrapper Defines the effect to draw with
      */
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
+        this.engine.depthCullingState.depthTest = false;
+        this.engine.stencilState.stencilTest = false;
         this.engine.enableEffect(effectWrapper.effect);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
+    }
+
+    /**
+     * Restores engine states
+     */
+    public restoreStates(): void {
+        this.engine.depthCullingState.depthTest = true;
+        this.engine.stencilState.stencilTest = true;
     }
 
     /**
@@ -128,67 +104,45 @@ export class EffectRenderer {
         this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
     }
 
+    private isRenderTargetTexture(texture: InternalTexture | RenderTargetTexture): texture is RenderTargetTexture  {
+        return (texture as RenderTargetTexture).renderList !== undefined;
+    }
+
     /**
      * renders one or more effects to a specified texture
-     * @param effectWrappers list of effects to renderer
-     * @param outputTexture texture to draw to, if null it will render to the screen
+     * @param effectWrapper the effect to renderer
+     * @param outputTexture texture to draw to, if null it will render to the screen.
      */
-    public render(effectWrappers: Array<EffectWrapper> | EffectWrapper, outputTexture: Nullable<Texture> = null) {
-        if (!Array.isArray(effectWrappers)) {
-            effectWrappers = [effectWrappers];
+    public render(effectWrapper: EffectWrapper, outputTexture: Nullable<InternalTexture | RenderTargetTexture> = null) {
+        // Ensure effect is ready
+        if (!effectWrapper.effect.isReady()) {
+            return;
         }
 
-        // Ensure all effects are ready
-        for (var wrapper of effectWrappers) {
-            if (!wrapper.effect.isReady()) {
-                return;
-            }
+        // Reset state
+        this.setViewport();
+
+        const out = outputTexture === null ? null : this.isRenderTargetTexture(outputTexture) ? outputTexture.getInternalTexture()! : outputTexture;
+
+        if (out) {
+            this.engine.bindFramebuffer(out);
         }
 
-        effectWrappers.forEach((effectWrapper, i) => {
-            var renderTo = outputTexture;
+        this.applyEffectWrapper(effectWrapper);
 
-            // for any next effect make it's input the output of the previous effect
-            if (i !== 0) {
-                effectWrapper.effect.onBindObservable.addOnce(() => {
-                    effectWrapper.effect.setTexture("textureSampler", this._getNextFrameBuffer(false));
-                });
-            }
+        this.draw();
 
-            // Set the output to the next screenbuffer
-            if ((effectWrappers as Array<EffectWrapper>).length > 1 && i != (effectWrappers as Array<EffectWrapper>).length - 1) {
-                renderTo = this._getNextFrameBuffer();
-            } else {
-                renderTo = outputTexture;
-            }
+        if (out) {
+            this.engine.unBindFramebuffer(out);
+        }
 
-            // Reset state
-            this.setViewport();
-            this.applyEffectWrapper(effectWrapper);
-
-            if (renderTo) {
-                this.engine.bindFramebuffer(renderTo.getInternalTexture()!);
-            }
-
-            this.draw();
-
-            if (renderTo) {
-                this.engine.unBindFramebuffer(renderTo.getInternalTexture()!);
-            }
-        });
+        this.restoreStates();
     }
 
     /**
      * Disposes of the effect renderer
      */
     dispose() {
-        if (this._ringScreenBuffer) {
-            this._ringScreenBuffer.forEach((b) => {
-                b.dispose();
-            });
-            this._ringScreenBuffer = null;
-        }
-
         var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];
         if (vertexBuffer) {
             vertexBuffer.dispose();
@@ -214,6 +168,10 @@ interface EffectWrapperCreationOptions {
      */
     fragmentShader: string;
     /**
+     * Use the shader store instead of direct source code
+     */
+    useShaderStore?: boolean;
+    /**
      * Vertex shader for the effect
      */
     vertexShader?: string;
@@ -229,6 +187,14 @@ interface EffectWrapperCreationOptions {
      * Texture sampler names to use in the shader
      */
     samplerNames?: Array<string>;
+    /**
+      * Defines to use in the shader
+      */
+    defines?: Array<string>;
+    /**
+      * Callback when effect is compiled
+      */
+    onCompiled?: Nullable<(effect: Effect) => void>;
     /**
      * The friendly name of the effect displayed in Spector.
      */
@@ -255,6 +221,7 @@ export class EffectWrapper {
     constructor(creationOptions: EffectWrapperCreationOptions) {
         let effectCreationOptions: any;
         const uniformNames = creationOptions.uniformNames || [];
+
         if (creationOptions.vertexShader) {
             effectCreationOptions = {
                 fragmentSource: creationOptions.fragmentShader,
@@ -278,11 +245,36 @@ export class EffectWrapper {
             });
         }
 
-        this.effect = new Effect(effectCreationOptions,
-            creationOptions.attributeNames || ["position"],
-            uniformNames,
-            creationOptions.samplerNames,
-            creationOptions.engine);
+        const defines = creationOptions.defines ? creationOptions.defines.join("\n") : "";
+
+        if (creationOptions.useShaderStore) {
+            effectCreationOptions.fragment = effectCreationOptions.fragmentSource;
+            if (!effectCreationOptions.vertex) {
+                effectCreationOptions.vertex = effectCreationOptions.vertexSource;
+            }
+
+            delete effectCreationOptions.fragmentSource;
+            delete effectCreationOptions.vertexSource;
+
+            this.effect = creationOptions.engine.createEffect(effectCreationOptions.spectorName,
+                creationOptions.attributeNames || ["position"],
+                uniformNames,
+                creationOptions.samplerNames,
+                defines,
+                undefined,
+                creationOptions.onCompiled
+            );
+        } else {
+            this.effect = new Effect(effectCreationOptions,
+                creationOptions.attributeNames || ["position"],
+                uniformNames,
+                creationOptions.samplerNames,
+                creationOptions.engine,
+                defines,
+                undefined,
+                creationOptions.onCompiled,
+            );
+        }
     }
 
     /**

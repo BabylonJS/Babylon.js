@@ -54,7 +54,6 @@ export class HtmlElementTexture extends BaseTexture {
     };
 
     private _textureMatrix: Matrix;
-    private _engine: ThinEngine;
     private _isVideo: boolean;
     private _generateMipMaps: boolean;
     private _samplingMode: number;
@@ -67,7 +66,7 @@ export class HtmlElementTexture extends BaseTexture {
      * @param options Defines the other none mandatory texture creation options
      */
     constructor(name: string, element: HTMLVideoElement | HTMLCanvasElement, options: IHtmlElementTextureOptions) {
-        super(options.scene);
+        super(options.scene || options.engine);
 
         if (!element || (!options.engine && !options.scene)) {
             return;
@@ -78,7 +77,6 @@ export class HtmlElementTexture extends BaseTexture {
             ...options
         };
 
-        this._engine = options.engine || options.scene!.getEngine();
         this._generateMipMaps = options.generateMipMaps!;
         this._samplingMode = options.samplingMode!;
         this._textureMatrix = Matrix.Identity();
@@ -104,12 +102,15 @@ export class HtmlElementTexture extends BaseTexture {
             height = this.element.height;
         }
 
-        this._texture = this._engine.createDynamicTexture(
-            width,
-            height,
-            this._generateMipMaps,
-            this._samplingMode
-        );
+        const engine = this._getEngine();
+        if (engine) {
+            this._texture = engine.createDynamicTexture(
+                width,
+                height,
+                this._generateMipMaps,
+                this._samplingMode
+            );
+        }
 
         this.update();
     }
@@ -126,7 +127,8 @@ export class HtmlElementTexture extends BaseTexture {
      * @param invertY Defines wether the texture should be inverted on Y (false by default on video and true on canvas)
      */
     public update(invertY: Nullable<boolean> = null): void {
-        if (this._texture == null) {
+        const engine = this._getEngine();
+        if (this._texture == null || engine == null) {
             return;
         }
 
@@ -136,13 +138,13 @@ export class HtmlElementTexture extends BaseTexture {
                 return;
             }
 
-            this._engine.updateVideoTexture(this._texture,
+            engine.updateVideoTexture(this._texture,
                 videoElement,
                 invertY === null ? true : invertY);
         }
         else {
             const canvasElement = this.element as HTMLCanvasElement;
-            this._engine.updateDynamicTexture(this._texture,
+            engine.updateDynamicTexture(this._texture,
                 canvasElement,
                 invertY === null ? true : invertY,
                 false);

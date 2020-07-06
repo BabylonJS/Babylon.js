@@ -10,7 +10,6 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
-import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/imageProcessing.fragment";
@@ -82,7 +81,12 @@ export class ImageProcessingPostProcess extends PostProcess {
                 scene = EngineStore.LastCreatedScene;
             }
 
-            this._imageProcessingConfiguration = (<Scene>scene).imageProcessingConfiguration;
+            if (scene) {
+                this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
+            }
+            else {
+                this._imageProcessingConfiguration = new ImageProcessingConfiguration();
+            }
         }
         else {
             this._imageProcessingConfiguration = configuration;
@@ -99,6 +103,14 @@ export class ImageProcessingPostProcess extends PostProcess {
         if (!doNotBuild) {
             this._updateParameters();
         }
+    }
+
+    /**
+     * If the post process is supported.
+     */
+    public get isSupported(): boolean {
+        const effect = this.getEffect();
+        return !effect || effect.isSupported;
     }
 
     /**

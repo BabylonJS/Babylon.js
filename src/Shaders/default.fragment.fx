@@ -153,6 +153,7 @@ varying vec3 vDirectionW;
 
 #include<imageProcessingFunctions>
 
+#include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>
@@ -195,7 +196,7 @@ void main(void) {
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
 
-	#ifdef ALPHATEST
+	#if defined(ALPHATEST) && !defined(ALPHATEST_AFTERALLALPHACOMPUTATIONS)
 		if (baseColor.a < alphaCutOff)
 			discard;
 	#endif
@@ -215,6 +216,10 @@ void main(void) {
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
+#endif
+
+#ifdef DETAIL
+    baseColor.rgb = baseColor.rgb * 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
 #endif
 
 #define CUSTOM_FRAGMENT_UPDATE_DIFFUSE
@@ -253,13 +258,17 @@ void main(void) {
 	float shadow = 1.;
 
 #ifdef LIGHTMAP
-	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb * vLightmapInfos.y;
+	vec4 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset);
+    #ifdef RGBDLIGHTMAP
+        lightmapColor.rgb = fromRGBD(lightmapColor);
+    #endif
+	lightmapColor.rgb *= vLightmapInfos.y;
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]
 
 	// Refraction
-	vec3 refractionColor = vec3(0., 0., 0.);
+	vec4 refractionColor = vec4(0., 0., 0., 1.);
 
 #ifdef REFRACTION
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
@@ -267,7 +276,7 @@ void main(void) {
 		refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
 		if (dot(refractionVector, viewDirectionW) < 1.0) {
-			refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb;
+			refractionColor = textureCube(refractionCubeSampler, refractionVector);
 		}
 	#else
 		vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
@@ -276,16 +285,19 @@ void main(void) {
 
 		refractionCoords.y = 1.0 - refractionCoords.y;
 		
-		refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb;
+		refractionColor = texture2D(refraction2DSampler, refractionCoords);
 	#endif
+    #ifdef RGBDREFRACTION
+        refractionColor.rgb = fromRGBD(refractionColor);
+    #endif
 	#ifdef IS_REFRACTION_LINEAR
-		refractionColor = toGammaSpace(refractionColor);
+		refractionColor.rgb = toGammaSpace(refractionColor.rgb);
 	#endif
-	refractionColor *= vRefractionInfos.x;
+	refractionColor.rgb *= vRefractionInfos.x;
 #endif
 
 // Reflection
-vec3 reflectionColor = vec3(0., 0., 0.);
+vec4 reflectionColor = vec4(0., 0., 0., 1.);
 
 #ifdef REFLECTION
 	vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
@@ -302,9 +314,9 @@ vec3 reflectionColor = vec3(0., 0., 0.);
 				#endif
 			#endif
 
-			reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb;
+			reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias);
 		#else
-			reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb;
+			reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW);
 		#endif
 	#else
 		vec2 coords = vReflectionUVW.xy;
@@ -314,23 +326,26 @@ vec3 reflectionColor = vec3(0., 0., 0.);
 		#endif
 
 		coords.y = 1.0 - coords.y;
-		reflectionColor = texture2D(reflection2DSampler, coords).rgb;
+		reflectionColor = texture2D(reflection2DSampler, coords);
 	#endif
+    #ifdef RGBDREFLECTION
+        reflectionColor.rgb = fromRGBD(reflectionColor);
+    #endif
 	#ifdef IS_REFLECTION_LINEAR
-		reflectionColor = toGammaSpace(reflectionColor);
+		reflectionColor.rgb = toGammaSpace(reflectionColor.rgb);
 	#endif
-	reflectionColor *= vReflectionInfos.x;
+	reflectionColor.rgb *= vReflectionInfos.x;
 	#ifdef REFLECTIONFRESNEL
 		float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);
 
 		#ifdef REFLECTIONFRESNELFROMSPECULAR
 			#ifdef SPECULARTERM
-				reflectionColor *= specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
+				reflectionColor.rgb *= specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
 			#else
-				reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
+				reflectionColor.rgb *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
 			#endif
 		#else
-			reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
+			reflectionColor.rgb *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
 		#endif
 	#endif
 #endif
@@ -338,7 +353,7 @@ vec3 reflectionColor = vec3(0., 0., 0.);
 #ifdef REFRACTIONFRESNEL
 	float refractionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, refractionRightColor.a, refractionLeftColor.a);
 
-	refractionColor *= refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * refractionRightColor.rgb;
+	refractionColor.rgb *= refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * refractionRightColor.rgb;
 #endif
 
 #ifdef OPACITY
@@ -361,6 +376,17 @@ vec3 reflectionColor = vec3(0., 0., 0.);
 	float opacityFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);
 
 	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
+#endif
+
+#ifdef ALPHATEST
+    #ifdef ALPHATEST_AFTERALLALPHACOMPUTATIONS
+        if (alpha < alphaCutOff)
+            discard;
+    #endif
+    #ifndef ALPHABLEND
+        // Prevent to blend with the canvas.
+        alpha = 1.0;
+    #endif
 #endif
 
 	// Emissive
@@ -403,23 +429,23 @@ vec3 reflectionColor = vec3(0., 0., 0.);
 #endif
 
 #ifdef REFLECTIONOVERALPHA
-	alpha = clamp(alpha + dot(reflectionColor, vec3(0.3, 0.59, 0.11)), 0., 1.);
+	alpha = clamp(alpha + dot(reflectionColor.rgb, vec3(0.3, 0.59, 0.11)), 0., 1.);
 #endif
 
 	// Composition
 #ifdef EMISSIVEASILLUMINATION
-	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + emissiveColor + refractionColor, 0.0, 1.0), alpha);
+	vec4 color = vec4(clamp(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor.rgb + emissiveColor + refractionColor.rgb, 0.0, 1.0), alpha);
 #else
-	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + refractionColor, alpha);
+	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor.rgb + refractionColor.rgb, alpha);
 #endif
 
 //Old lightmap calculation method
 #ifdef LIGHTMAP
     #ifndef LIGHTMAPEXCLUDED
         #ifdef USELIGHTMAPASSHADOWMAP
-            color.rgb *= lightmapColor;
+            color.rgb *= lightmapColor.rgb;
         #else
-            color.rgb += lightmapColor;
+            color.rgb += lightmapColor.rgb;
         #endif
     #endif
 #endif
@@ -449,4 +475,5 @@ color.rgb = max(color.rgb, 0.);
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 	gl_FragColor = color;
+
 }

@@ -77,7 +77,8 @@ export interface ITreeItemComponentProps {
     items?: Nullable<any[]>,
     label: string,
     offset: number,
-    filter: Nullable<string>,
+    filter: Nullable<string>,    
+    forceSubitems?: boolean,
     globalState: GlobalState,
     entity?: any,
     selectedEntity: any,
@@ -145,20 +146,24 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
     }
 
     render() {
-        const items = this.props.items;
+        let items = this.props.items;
 
         const marginStyle = {
             paddingLeft: (10 * (this.props.offset + 0.5)) + "px"
         }
 
         if (!items) {
-            return (
-                <div className="groupContainer" style={marginStyle}>
-                    <div>
-                        {this.props.label}
+            if (this.props.forceSubitems) {
+                items = [];
+            } else {
+                return (
+                    <div className="groupContainer" style={marginStyle}>
+                        <div>
+                            {this.props.label}
+                        </div>
                     </div>
-                </div>
-            )
+                )
+            }
         }
 
         if (!items.length) {

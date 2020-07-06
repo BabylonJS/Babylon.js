@@ -20,11 +20,12 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
     /**
      * This returns if the loader support the current file information.
      * @param extension defines the file extension of the file being loaded
+     * @param mimeType defines the optional mime type of the file being loaded
      * @returns true if the loader can load the specified file
      */
-    public canLoad(extension: string): boolean {
+    public canLoad(extension: string, mimeType?: string): boolean {
         // The ".ktx2" file extension is still up for debate: https://github.com/KhronosGroup/KTX-Specification/issues/18
-        return StringTools.EndsWith(extension, ".ktx") || StringTools.EndsWith(extension, ".ktx2");
+        return StringTools.EndsWith(extension, ".ktx") || StringTools.EndsWith(extension, ".ktx2") || mimeType === "image/ktx" || mimeType === "image/ktx2";
     }
 
     /**
@@ -90,6 +91,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
             });
         }
         else {
+            Logger.Error("texture missing KTX identifier");
             callback(0, 0, false, false, () => {}, true);
         }
     }

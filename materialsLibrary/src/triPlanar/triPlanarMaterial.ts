@@ -110,8 +110,6 @@ export class TriPlanarMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public maxSimultaneousLights: number;
 
-    private _renderId: number;
-
     constructor(name: string, scene: Scene) {
         super(name, scene);
     }
@@ -143,10 +141,8 @@ export class TriPlanarMaterial extends PushMaterial {
         var defines = <TriPlanarMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -268,7 +264,7 @@ export class TriPlanarMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
+        defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
 
         return true;

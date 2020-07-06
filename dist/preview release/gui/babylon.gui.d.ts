@@ -11,7 +11,7 @@ declare module BABYLON.GUI {
         private _originalUnit;
         /**
          * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
-         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
          */
         ignoreAdaptiveScaling: boolean;
         /**
@@ -323,7 +323,7 @@ declare module BABYLON.GUI {
     }
     /**
     * Class used to create texture to support 2D GUI elements
-    * @see http://doc.babylonjs.com/how_to/gui
+    * @see https://doc.babylonjs.com/how_to/gui
     */
     export class AdvancedDynamicTexture extends BABYLON.DynamicTexture {
         private _isDirty;
@@ -367,6 +367,7 @@ declare module BABYLON.GUI {
         private _renderScale;
         private _rootElement;
         private _cursorChanged;
+        private _defaultMousePointerId;
         /** @hidden */
         _numLayoutCalls: number;
         /** Gets the number of layout calls made the last time the ADT has been rendered */
@@ -420,32 +421,32 @@ declare module BABYLON.GUI {
         /**
         * Gets or sets the ideal width used to design controls.
         * The GUI will then rescale everything accordingly
-        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
         get idealWidth(): number;
         set idealWidth(value: number);
         /**
         * Gets or sets the ideal height used to design controls.
         * The GUI will then rescale everything accordingly
-        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
         get idealHeight(): number;
         set idealHeight(value: number);
         /**
         * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
-        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
         get useSmallestIdeal(): boolean;
         set useSmallestIdeal(value: boolean);
         /**
         * Gets or sets a boolean indicating if adaptive scaling must be used
-        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
         get renderAtIdealSize(): boolean;
         set renderAtIdealSize(value: boolean);
         /**
          * Gets the ratio used when in "ideal mode"
-        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+        * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
          * */
         get idealRatio(): number;
         /**
@@ -527,7 +528,7 @@ declare module BABYLON.GUI {
         /**
         * Helper function used to create a new style
         * @returns a new style
-        * @see http://doc.babylonjs.com/how_to/gui#styles
+        * @see https://doc.babylonjs.com/how_to/gui#styles
         */
         createStyle(): Style;
         /**
@@ -627,7 +628,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Root class used for all 2D controls
-     * @see http://doc.babylonjs.com/how_to/gui#controls
+     * @see https://doc.babylonjs.com/how_to/gui#controls
      */
     export class Control {
         /** defines the name of the control */
@@ -821,6 +822,10 @@ declare module BABYLON.GUI {
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
         /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: BABYLON.Observable<Control>;
+        /**
          * Get the hosting AdvancedDynamicTexture
          */
         get host(): AdvancedDynamicTexture;
@@ -844,63 +849,63 @@ declare module BABYLON.GUI {
         get isHighlighted(): boolean;
         set isHighlighted(value: boolean);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
-         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
         get scaleX(): number;
         set scaleX(value: number);
         /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
-         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
         get scaleY(): number;
         set scaleY(value: number);
         /** Gets or sets the rotation angle (0 by default)
-         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
         get rotation(): number;
         set rotation(value: number);
         /** Gets or sets the transformation center on Y axis (0 by default)
-         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
         get transformCenterY(): number;
         set transformCenterY(value: number);
         /** Gets or sets the transformation center on X axis (0 by default)
-         * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+         * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
         get transformCenterX(): number;
         set transformCenterX(value: number);
         /**
          * Gets or sets the horizontal alignment
-         * @see http://doc.babylonjs.com/how_to/gui#alignments
+         * @see https://doc.babylonjs.com/how_to/gui#alignments
          */
         get horizontalAlignment(): number;
         set horizontalAlignment(value: number);
         /**
          * Gets or sets the vertical alignment
-         * @see http://doc.babylonjs.com/how_to/gui#alignments
+         * @see https://doc.babylonjs.com/how_to/gui#alignments
          */
         get verticalAlignment(): number;
         set verticalAlignment(value: number);
         /**
          * Gets or sets control width
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get width(): string | number;
         set width(value: string | number);
         /**
          * Gets or sets the control width in pixel
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get widthInPixels(): number;
         set widthInPixels(value: number);
         /**
          * Gets or sets control height
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get height(): string | number;
         set height(value: string | number);
         /**
          * Gets or sets control height in pixel
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get heightInPixels(): number;
         set heightInPixels(value: number);
@@ -915,7 +920,7 @@ declare module BABYLON.GUI {
         set fontWeight(value: string);
         /**
          * Gets or sets style
-         * @see http://doc.babylonjs.com/how_to/gui#styles
+         * @see https://doc.babylonjs.com/how_to/gui#styles
          */
         get style(): BABYLON.Nullable<Style>;
         set style(value: BABYLON.Nullable<Style>);
@@ -947,97 +952,97 @@ declare module BABYLON.GUI {
         get linkedMesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get paddingLeft(): string | number;
         set paddingLeft(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the left of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get paddingLeftInPixels(): number;
         set paddingLeftInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get paddingRight(): string | number;
         set paddingRight(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the right of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get paddingRightInPixels(): number;
         set paddingRightInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get paddingTop(): string | number;
         set paddingTop(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the top of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get paddingTopInPixels(): number;
         set paddingTopInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get paddingBottom(): string | number;
         set paddingBottom(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get paddingBottomInPixels(): number;
         set paddingBottomInPixels(value: number);
         /**
          * Gets or sets a value indicating the left coordinate of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get left(): string | number;
         set left(value: string | number);
         /**
          * Gets or sets a value indicating the left coordinate in pixels of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get leftInPixels(): number;
         set leftInPixels(value: number);
         /**
          * Gets or sets a value indicating the top coordinate of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get top(): string | number;
         set top(value: string | number);
         /**
          * Gets or sets a value indicating the top coordinate in pixels of the control
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get topInPixels(): number;
         set topInPixels(value: number);
         /**
          * Gets or sets a value indicating the offset on X axis to the linked mesh
-         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         get linkOffsetX(): string | number;
         set linkOffsetX(value: string | number);
         /**
          * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
-         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         get linkOffsetXInPixels(): number;
         set linkOffsetXInPixels(value: number);
         /**
          * Gets or sets a value indicating the offset on Y axis to the linked mesh
-         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         get linkOffsetY(): string | number;
         set linkOffsetY(value: string | number);
         /**
          * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
-         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         get linkOffsetYInPixels(): number;
         set linkOffsetYInPixels(value: number);
@@ -1119,7 +1124,7 @@ declare module BABYLON.GUI {
         /**
          * Link current control with a target mesh
          * @param mesh defines the mesh to link with
-         * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+         * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
         linkWithMesh(mesh: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
         /** @hidden */
@@ -1246,7 +1251,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Root class for 2D containers
-     * @see http://doc.babylonjs.com/how_to/gui#containers
+     * @see https://doc.babylonjs.com/how_to/gui#containers
      */
     export class Container extends Control {
         name?: string | undefined;
@@ -1419,6 +1424,10 @@ declare module BABYLON.GUI {
         * An event triggered after the text was broken up into lines
         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
+        /**
+         * Function used to split a string into words. By default, a string is split at each space character found
+         */
+        wordSplittingFunction: BABYLON.Nullable<(line: string) => string[]>;
         /**
          * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
          */
@@ -1614,7 +1623,7 @@ declare module BABYLON.GUI {
         get svgAttributesComputationCompleted(): boolean;
         /**
          * Gets or sets a boolean indicating if the image can force its container to adapt its size
-         * @see http://doc.babylonjs.com/how_to/gui#image
+         * @see https://doc.babylonjs.com/how_to/gui#image
          */
         get autoScale(): boolean;
         set autoScale(value: boolean);
@@ -1647,19 +1656,19 @@ declare module BABYLON.GUI {
         private _getSVGAttribs;
         /**
          * Gets or sets the cell width to use when animation sheet is enabled
-         * @see http://doc.babylonjs.com/how_to/gui#image
+         * @see https://doc.babylonjs.com/how_to/gui#image
          */
         get cellWidth(): number;
         set cellWidth(value: number);
         /**
          * Gets or sets the cell height to use when animation sheet is enabled
-         * @see http://doc.babylonjs.com/how_to/gui#image
+         * @see https://doc.babylonjs.com/how_to/gui#image
          */
         get cellHeight(): number;
         set cellHeight(value: number);
         /**
          * Gets or sets the cell id to use (this will turn on the animation sheet mode)
-         * @see http://doc.babylonjs.com/how_to/gui#image
+         * @see https://doc.babylonjs.com/how_to/gui#image
          */
         get cellId(): number;
         set cellId(value: number);
@@ -2271,13 +2280,13 @@ declare module BABYLON.GUI {
         set value(value: BABYLON.Color3);
         /**
          * Gets or sets control width
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get width(): string | number;
         set width(value: string | number);
         /**
          * Gets or sets control height
-         * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+         * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
         get height(): string | number;
         /** Gets or sets control height */
@@ -2782,7 +2791,7 @@ declare module BABYLON.GUI {
         _setSelectorButtonBackground(selectorNb: number, color: string): void;
     }
     /** Class used to hold the controls for the checkboxes, radio buttons and sliders
-     * @see http://doc.babylonjs.com/how_to/selector
+     * @see https://doc.babylonjs.com/how_to/selector
     */
     export class SelectionPanel extends Rectangle {
         /** name of SelectionPanel */
@@ -2918,6 +2927,7 @@ declare module BABYLON.GUI {
         private _dispatchInBuckets;
         private _updateMeasures;
         private _updateChildrenMeasures;
+        private _restoreMeasures;
         /**
         * Creates a new ScrollViewerWindow
         * @param name of ScrollViewerWindow
@@ -3055,6 +3065,8 @@ declare module BABYLON.GUI {
         private _barImageHeight;
         private _horizontalBarImageHeight;
         private _verticalBarImageHeight;
+        private _oldWindowContentsWidth;
+        private _oldWindowContentsHeight;
         /**
          * Gets the horizontal scrollbar
          */
@@ -3456,7 +3468,7 @@ declare module BABYLON.GUI {
 declare module BABYLON.GUI {
     /**
      * Class used to manage 3D user interface
-     * @see http://doc.babylonjs.com/how_to/gui3d
+     * @see https://doc.babylonjs.com/how_to/gui3d
      */
     export class GUI3DManager implements BABYLON.IDisposable {
         private _scene;
@@ -3598,19 +3610,19 @@ declare module BABYLON.GUI {
         private _behaviors;
         /**
          * Gets the list of attached behaviors
-         * @see http://doc.babylonjs.com/features/behaviour
+         * @see https://doc.babylonjs.com/features/behaviour
          */
         get behaviors(): BABYLON.Behavior<Control3D>[];
         /**
          * Attach a behavior to the control
-         * @see http://doc.babylonjs.com/features/behaviour
+         * @see https://doc.babylonjs.com/features/behaviour
          * @param behavior defines the behavior to attach
          * @returns the current control
          */
         addBehavior(behavior: BABYLON.Behavior<Control3D>): Control3D;
         /**
          * Remove an attached behavior
-         * @see http://doc.babylonjs.com/features/behaviour
+         * @see https://doc.babylonjs.com/features/behaviour
          * @param behavior defines the behavior to attach
          * @returns the current control
          */
@@ -3618,7 +3630,7 @@ declare module BABYLON.GUI {
         /**
          * Gets an attached behavior by name
          * @param name defines the name of the behavior to look for
-         * @see http://doc.babylonjs.com/features/behaviour
+         * @see https://doc.babylonjs.com/features/behaviour
          * @returns null if behavior was not found else the requested behavior
          */
         getBehaviorByName(name: string): BABYLON.Nullable<BABYLON.Behavior<Control3D>>;

@@ -12,6 +12,7 @@ import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 
 interface ICommonPostProcessPropertyGridComponentProps {
     globalState: GlobalState;
@@ -32,6 +33,7 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
             <div>
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="Class" value={postProcess.getClassName()} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={postProcess} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     {
                         postProcess.width &&
                         <TextLineComponent label="Width" value={postProcess.width.toString()} />

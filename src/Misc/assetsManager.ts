@@ -248,7 +248,7 @@ export class MeshAssetTask extends AbstractAssetTask {
      * @param name defines the name of the task
      * @param meshesNames defines the list of mesh's names you want to load
      * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
-     * @param sceneFilename defines the filename of the scene to load from
+     * @param sceneFilename defines the filename or File of the scene to load from
      */
     constructor(
         /**
@@ -264,9 +264,9 @@ export class MeshAssetTask extends AbstractAssetTask {
          */
         public rootUrl: string,
         /**
-         * Defines the filename of the scene to load from
+         * Defines the filename or File of the scene to load from
          */
-        public sceneFilename: string) {
+        public sceneFilename: string | File) {
         super(name);
     }
 
@@ -490,7 +490,7 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
      * @param name defines the name of the task
      * @param url defines the location of the file to load
      * @param noMipmap defines if mipmap should not be generated (default is false)
-     * @param invertY defines if texture must be inverted on Y axis (default is false)
+     * @param invertY defines if texture must be inverted on Y axis (default is true)
      * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
      */
     constructor(
@@ -507,9 +507,9 @@ export class TextureAssetTask extends AbstractAssetTask implements ITextureAsset
          */
         public noMipmap?: boolean,
         /**
-         * Defines if texture must be inverted on Y axis (default is false)
+         * Defines if texture must be inverted on Y axis (default is true)
          */
-        public invertY?: boolean,
+        public invertY: boolean = true,
         /**
          * Defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          */
@@ -763,7 +763,7 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
 
 /**
  * This class can be used to easily import assets into a scene
- * @see http://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+ * @see https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
  */
 export class AssetsManager {
     private _scene: Scene;
@@ -815,7 +815,7 @@ export class AssetsManager {
 
     /**
      * Gets or sets a boolean defining if the AssetsManager should use the default loading screen
-     * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
      */
     public useDefaultLoadingScreen = true;
 

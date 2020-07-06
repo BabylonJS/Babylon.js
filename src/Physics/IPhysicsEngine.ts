@@ -69,7 +69,7 @@ export interface IPhysicsEnginePlugin {
 
 /**
  * Interface used to define a physics engine
- * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export interface IPhysicsEngine {
     /**

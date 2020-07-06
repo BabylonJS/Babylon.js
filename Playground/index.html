@@ -71,6 +71,9 @@
                         <div class="option checked noSubSelect" id="editorButton1280">Editor
                             <i class="fa fa-check-square" aria-hidden="true"></i>
                         </div>
+                        <div class="option noSubSelect" id="ctrlsToggle1280">CTRL+S to save
+                            <i class="fa fa-square" aria-hidden="true"></i>
+                        </div>
                         <div class="option noSubSelect" id="fullscreenButton1280">Fullscreen</div>
                         <div class="option noSubSelect" id="editorFullscreenButton1280">Editor Fullscreen</div>
                         <div class="option noSubSelect" id="formatButton1280">Format code</div>
@@ -156,6 +159,9 @@
                         </div>
                         <div class="option checked noSubSelect" id="editorButton1024">Editor
                             <i class="fa fa-check-square" aria-hidden="true"></i>
+                        </div>
+                        <div class="option noSubSelect" id="ctrlsToggle1024">CTRL+S to save
+                            <i class="fa fa-square" aria-hidden="true"></i>
                         </div>
                         <div class="option noSubSelect" id="fullscreenButton1024">Fullscreen</div>
                         <div class="option noSubSelect" id="editorFullscreenButton1024">Editor Fullscreen</div>
@@ -244,6 +250,9 @@
                         <div style="display: none;" class="option checked noSubSelect" id="editorButtonMobile">Editor
                             <i class="fa fa-check-square" aria-hidden="true"></i>
                         </div>
+                        <div style="display: none;" class="option noSubSelect" id="ctrlsToggleMobile">CTRL+S to save
+                            <i class="fa fa-square" aria-hidden="true"></i>
+                        </div>                            
                         <div style="display: none;" class="option nosubselect" id="fullscreenButtonMobile"
                             style="display: none">Fullscreen</div>
                         <div style="display: none;" class="option nosubselect" id="editorFullscreenButtonMobile"
@@ -398,7 +407,6 @@
         <!-- Babylon.js -->
         <script src="https://preview.babylonjs.com/babylon.js"></script>
         <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
-        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
         <script src="https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js"></script>
         <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
         <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js">
@@ -406,17 +414,42 @@
         <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
         <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+         <!-- Dependencies -->
+         <script src="https://preview.babylonjs.com/ammo.js"></script>
+         <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+         <script src="https://preview.babylonjs.com/recast.js"></script>
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/oimo/1.0.9/oimo.min.js"></script>
+         <script src="https://preview.babylonjs.com/libktx.js"></script>
+ 
+         <!-- Extensions -->
+         <script
+             src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
+             >
+         </script>
+         <script
+             src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"
+             ></script>
+ 
+         <!-- Scene Manager -->
+         <script
+             src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.manager.js">
+         </script>
+         <script
+             src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
+         </script>
 
         <!-- Monaco -->
         <script src="/node_modules/monaco-editor/dev/vs/loader.js"></script>
 
         <!-- jQuery -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script src="https://rawcdn.githack.com/jeromeetienne/jquery-qrcode/master/jquery.qrcode.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 
         <!-- Main scripts -->
         <script src="/js/config_versions.js"></script>
-        <script src="/js/pbt.js"></script>
         <script src="/js/examples.js"></script>
         <script src="/js/main.js"></script>
         <script src="/js/menuPG.js"></script>
@@ -425,41 +458,6 @@
         <script src="/js/utils.js"></script>
         <script src="/js/zipTool.js"></script>
         <script src="/js/index.js"></script>
-
-        <script>
-            // when loading the following resources, use the global scope and not AMD
-            window.def = window.define;
-            window.define = undefined;
-        </script>
-
-        <!-- Dependencies -->
-        <script src="https://rawcdn.githack.com/BabylonJS/Babylon.js/991ff1bafc4d8ad6d501e9354d70a5e2b2bd3ea2/dist/preview%20release/ammo.js"></script>
-        <script src="https://rawcdn.githack.com/BabylonJS/Babylon.js/54684912728536933561b5cf61ddb2aa9735d9f2/dist/preview%20release/earcut.min.js"></script>
-        <script src="https://preview.babylonjs.com/recast.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/oimo/1.0.9/oimo.min.js"></script>
-        <script src="https://preview.babylonjs.com/libktx.js"></script>
-
-        <!-- Extensions -->
-        <script
-            src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
-            async>
-        </script>
-        <script
-            src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"
-            async></script>
-
-        <!-- Scene Manager -->
-        <script
-            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.manager.js">
-        </script>
-        <script
-            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
-        </script>
-        <script>
-            // bring me back my AMD!
-            window.define = window.def;
-        </script>
     </body>
 
 </html>

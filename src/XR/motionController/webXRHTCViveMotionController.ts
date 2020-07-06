@@ -1,7 +1,7 @@
 import {
     IMotionControllerLayoutMap,
     IMinimalMotionControllerObject,
-    MotionControllerHandness,
+    MotionControllerHandedness,
     WebXRAbstractMotionController
 } from "./webXRAbstractMotionController";
 import { Scene } from '../../scene';
@@ -31,12 +31,12 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
      * Create a new Vive motion controller object
      * @param scene the scene to use to create this controller
      * @param gamepadObject the corresponding gamepad object
-     * @param handness the handness of the controller
+     * @param handedness the handedness of the controller
      */
     constructor(scene: Scene,
         gamepadObject: IMinimalMotionControllerObject,
-        handness: MotionControllerHandness) {
-        super(scene, HTCViveLayout[handness], gamepadObject, handness);
+        handedness: MotionControllerHandedness) {
+        super(scene, HTCViveLayout[handedness], gamepadObject, handedness);
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string; } {
@@ -75,12 +75,14 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
 
         meshes.forEach((mesh) => { mesh.isPickable = false; });
         this._modelRootNode = meshes[1];
         this._modelRootNode.parent = this.rootMesh;
-        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        if (!this.scene.useRightHandedSystem) {
+            this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        }
     }
 
     protected _updateModel(): void {

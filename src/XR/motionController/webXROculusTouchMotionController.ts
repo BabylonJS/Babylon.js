@@ -1,7 +1,7 @@
 import {
     WebXRAbstractMotionController,
     IMinimalMotionControllerObject,
-    MotionControllerHandness,
+    MotionControllerHandedness,
     IMotionControllerLayoutMap
 } from "./webXRAbstractMotionController";
 import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
@@ -38,15 +38,15 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
 
     constructor(scene: Scene,
         gamepadObject: IMinimalMotionControllerObject,
-        handness: MotionControllerHandness,
+        handedness: MotionControllerHandedness,
         legacyMapping: boolean = false,
         private _forceLegacyControllers: boolean = false) {
-        super(scene, OculusTouchLayouts[handness], gamepadObject, handness);
+        super(scene, OculusTouchLayouts[handedness], gamepadObject, handedness);
     }
 
     protected _getFilenameAndPath(): { filename: string; path: string; } {
         let filename = "";
-        if (this.handness === 'left') {
+        if (this.handedness === 'left') {
             filename = WebXROculusTouchMotionController.MODEL_LEFT_FILENAME;
         }
         else { // Right is the default if no hand is specified
@@ -66,7 +66,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
 
     protected _processLoadedModel(_meshes: AbstractMesh[]): void {
         const isQuest = this._isQuest();
-        const triggerDirection = this.handness === 'right' ? -1 : 1;
+        const triggerDirection = this.handedness === 'right' ? -1 : 1;
 
         this.getComponentIds().forEach((id) => {
             const comp = id && this.getComponent(id);
@@ -118,8 +118,10 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handness, this.scene);
-        this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
+        if (!this.scene.useRightHandedSystem) {
+            this.rootMesh.rotationQuaternion = Quaternion.FromEulerAngles(0, Math.PI, 0);
+        }
 
         meshes.forEach((mesh) => { mesh.isPickable = false; });
         if (this._isQuest()) {

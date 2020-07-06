@@ -11,14 +11,27 @@ import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection, Node
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { DataStorage } from '../dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
-import { IEditorData } from '../nodeLocationInfo';
+import { IEditorData, IFrameData } from '../nodeLocationInfo';
+import { FrameNodePort } from './frameNodePort';
 
 require("./graphCanvas.scss");
 
 export interface IGraphCanvasComponentProps {
     globalState: GlobalState
+}
+
+export type FramePortData = {
+    frame: GraphFrame,
+    port: FrameNodePort
+}
+
+export const isFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
+    if (variableToCheck) {
+        return (variableToCheck as FramePortData).port !== undefined;
+    }
+    else return false;
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
@@ -39,18 +52,19 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _dropPointY = 0;
     private _selectionStartX = 0;
     private _selectionStartY = 0;
+    private _candidateLinkedHasMoved = false;
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
     private _selectedNodes: GraphNode[] = [];
     private _selectedLink: Nullable<NodeLink> = null;
+    private _selectedPort: Nullable<NodePort> = null;
     private _candidateLink: Nullable<NodeLink> = null;
-    private _candidatePort: Nullable<NodePort> = null;
+    private _candidatePort: Nullable<NodePort | FrameNodePort> = null;
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;   
     private _selectedFrame: Nullable<GraphFrame> = null;   
-    private _frameCandidate: Nullable<HTMLDivElement> = null;  
-
+    private _frameCandidate: Nullable<HTMLDivElement> = null;
     private _frames: GraphFrame[] = [];
 
     private _altKeyIsPressed = false;
@@ -131,6 +145,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._selectedFrame;
     }
 
+    public get selectedPort() {
+        return this._selectedPort;
+    }
+
     public get canvasContainer() {
         return this._graphCanvas;
     }
@@ -160,16 +178,19 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this._selectedNodes = [];
                 this._selectedLink = null;
                 this._selectedFrame = null;
+                this._selectedPort = null;
             } else {
                 if (selection instanceof NodeLink) {
                     this._selectedNodes = [];
                     this._selectedFrame = null;
                     this._selectedLink = selection;
+                    this._selectedPort = null;
                 } else if (selection instanceof GraphFrame) {
                     this._selectedNodes = [];
                     this._selectedFrame = selection;
                     this._selectedLink = null;
-                } else{
+                    this._selectedPort = null;
+                } else if (selection instanceof GraphNode){
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedNodes.indexOf(selection) === -1) {
                             this._selectedNodes.push(selection);
@@ -177,11 +198,23 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     } else {                    
                         this._selectedNodes = [selection];
                     }
+                } else if(selection instanceof NodePort && !selection.hasLabel()){ // if node port is uneditable, select graphNode instead
+                    props.globalState.onSelectionChangedObservable.notifyObservers(selection.node)
+                } else if(selection instanceof NodePort){
+                    this._selectedNodes = [];
+                    this._selectedFrame = null;
+                    this._selectedLink = null;
+                    this._selectedPort = selection;
+                } else {
+                    this._selectedNodes = [];
+                    this._selectedFrame = null;
+                    this._selectedLink = null;
+                    this._selectedPort = selection.port;
                 }
             }
         });
 
-        props.globalState.onCandidatePortSelected.add(port => {
+        props.globalState.onCandidatePortSelectedObservable.add(port => {
             this._candidatePort = port;
         });
 
@@ -200,14 +233,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }, false);     
 
         // Store additional data to serialization object
-        this.props.globalState.storeEditorData = (editorData) => {
-            editorData.zoom = this.zoom;
-            editorData.x = this.x;
-            editorData.y = this.y;
-
+        this.props.globalState.storeEditorData = (editorData, graphFrame) => {
             editorData.frames = [];
-            for (var frame of this._frames) {
-                editorData.frames.push(frame.serialize());
+            if (graphFrame) {
+                editorData.frames.push(graphFrame!.serialize());
+            } else {
+                editorData.x = this.x;
+                editorData.y = this.y;
+                editorData.zoom = this.zoom;
+                for (var frame of this._frames) {
+                    editorData.frames.push(frame.serialize());
+                }
             }
         }
     }
@@ -379,7 +415,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Update graph
         let dagreNodes = graph.nodes().map(node => graph.node(node));
-        dagreNodes.forEach(dagreNode => {
+        dagreNodes.forEach((dagreNode: any) => {
             if (dagreNode.type === "node") {
                 for (var node of this._nodes) {
                     if (node.id === dagreNode.id) {
@@ -480,6 +516,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._dropPointY = (evt.pageY - rootRect.top) / this.zoom;
 
             this._candidateLink.update(this._dropPointX, this._dropPointY, true);
+            this._candidateLinkedHasMoved = true;
             
             return;
         }          
@@ -562,6 +599,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             if (!this._candidateLink) {
                 let portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
                 this._candidateLink = new NodeLink(this, portElement, portElement.node);
+                this._candidateLinkedHasMoved = false;
             }  
             return;
         }
@@ -577,9 +615,25 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer.releasePointerCapture(evt.pointerId);   
         this._oldY = -1; 
 
-        if (this._candidateLink) {        
-            this.processCandidatePort();          
-            this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+        if (this._candidateLink) {       
+            if (this._candidateLinkedHasMoved) {
+                this.processCandidatePort();          
+                this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+            } else { // is a click event on NodePort
+                if(this._candidateLink.portA instanceof FrameNodePort) { //only on Frame Node Ports
+                    const port = this._candidateLink.portA;
+                    const frame = this.frames.find((frame: GraphFrame) => frame.id === port.parentFrameId);
+                    if (frame) {
+                        const data: FramePortData = {
+                            frame,
+                            port
+                        }
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
+                    }
+                } else if(this._candidateLink.portA instanceof NodePort){
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA );
+                }
+            }
             this._candidateLink.dispose();
             this._candidateLink = null;
             this._candidatePort = null;
@@ -688,8 +742,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             // No destination so let's spin a new input block
-            let inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
-            pointA = inputBlock.output;
+            let pointName = "output", inputBlock;
+            let customInputBlock = this._candidateLink!.portA.connectionPoint.createCustomInputBlock();
+            if (!customInputBlock) {
+                inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
+            } else {
+                [inputBlock, pointName] = customInputBlock;
+            }
+            this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
+            pointA = (inputBlock as any)[pointName];
             nodeA = this.appendBlock(inputBlock);
             
             nodeA.x = this._dropPointX - 200;
@@ -725,6 +786,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Check compatibility
         let isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
         let compatibilityState = pointA.checkCompatibilityState(pointB);
+        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) && compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible && !(pointA instanceof InputBlock)) {
+            compatibilityState = pointB.checkCompatibilityState(pointA);
+        }
         if (compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible) {
             if (isFragmentOutput) {
                 let fragmentBlock = pointB.ownerBlock as FragmentOutputBlock;
@@ -784,7 +848,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         this._frames = [];
-
         this.x = editorData.x || 0;
         this.y = editorData.y || 0;
         this.zoom = editorData.zoom || 1;
@@ -794,8 +857,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             for (var frameData of editorData.frames) {
                 var frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
-            }
+            }  
         }
+    }
+
+    addFrame(frameData: IFrameData) {
+            const frame = GraphFrame.Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
+            this._frames.push(frame);
+            this.globalState.onSelectionChangedObservable.notifyObservers(frame);
     }
  
     render() {

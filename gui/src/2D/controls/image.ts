@@ -239,7 +239,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets a boolean indicating if the image can force its container to adapt its size
-     * @see http://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/how_to/gui#image
      */
     public get autoScale(): boolean {
         return this._autoScale;
@@ -560,7 +560,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell width to use when animation sheet is enabled
-     * @see http://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/how_to/gui#image
      */
     get cellWidth(): number {
         return this._cellWidth;
@@ -576,7 +576,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell height to use when animation sheet is enabled
-     * @see http://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/how_to/gui#image
      */
     get cellHeight(): number {
         return this._cellHeight;
@@ -592,7 +592,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell id to use (this will turn on the animation sheet mode)
-     * @see http://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/how_to/gui#image
      */
     get cellId(): number {
         return this._cellId;

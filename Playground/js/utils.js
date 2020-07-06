@@ -15,7 +15,6 @@ class Utils {
         if (this.parent.monacoCreator.BlockEditorChange) return;
 
         this.setToMultipleID("safemodeToggle", "addClass", "checked");
-        !
         this.setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
     };
 

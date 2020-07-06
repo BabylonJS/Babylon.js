@@ -35,6 +35,19 @@ type XREye =
     | "left"
     | "right";
 
+type XREventType =
+    | "devicechange"
+    | "visibilitychange"
+    | "end"
+    | "inputsourceschange"
+    | "select"
+    | "selectstart"
+    | "selectend"
+    | "squeeze"
+    | "squeezestart"
+    | "squeezeend"
+    | "reset";
+
 interface XRSpace extends EventTarget {
 
 }
@@ -56,11 +69,11 @@ interface XRInputSource {
 }
 
 interface XRSessionInit {
-    optionalFeatures?: XRReferenceSpaceType[];
-    requiredFeatures?: XRReferenceSpaceType[];
+    optionalFeatures?: string[];
+    requiredFeatures?: string[];
 }
 
-interface XRSession extends XRAnchorCreator {
+interface XRSession {
     addEventListener: Function;
     removeEventListener: Function;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
@@ -70,9 +83,14 @@ interface XRSession extends XRAnchorCreator {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
-    // AR hit test
+    // hit test
+    requestHitTestSource(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
+    requestHitTestSourceForTransientInput(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
+
+    // legacy AR hit test
     requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
+    // legacy plane detection
     updateWorldTrackingState(options: {
         planeDetectionState?: { enabled: boolean; }
     }): void;
@@ -91,8 +109,12 @@ interface XRFrame {
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
 
+    // AR
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult> ;
+    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
+    createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
     // Planes
     worldInformation: {
         detectedPlanes?: XRPlaneSet;
@@ -161,26 +183,54 @@ declare class XRRay {
     matrix: Float32Array;
 }
 
+declare enum XRHitTestTrackableType {
+    "point",
+    "plane"
+}
+
 interface XRHitResult {
     hitMatrix: Float32Array;
 }
 
-interface XRAnchor {
-    // remove?
-    id?: string;
-    anchorSpace: XRSpace;
-    lastChangedTime: number;
-    detach(): void;
+interface XRTransientInputHitTestResult {
+    readonly inputSource: XRInputSource;
+    readonly results: Array<XRHitTestResult>;
 }
 
-interface XRPlane extends XRAnchorCreator {
+interface XRHitTestResult {
+    getPose(baseSpace: XRSpace): XRPose | undefined;
+    // When anchor system is enabled
+    createAnchor?(pose: XRRigidTransform): Promise<XRAnchor>;
+}
+
+interface XRHitTestSource {
+    cancel(): void;
+}
+
+interface XRTransientInputHitTestSource {
+    cancel(): void;
+}
+
+interface XRHitTestOptionsInit {
+    space: XRSpace;
+    entityTypes?: Array<XRHitTestTrackableType>;
+    offsetRay?: XRRay;
+}
+
+interface XRTransientInputHitTestOptionsInit {
+    profile: string;
+    entityTypes?: Array<XRHitTestTrackableType>;
+    offsetRay?: XRRay;
+}
+
+interface XRAnchor {
+    anchorSpace: XRSpace;
+    delete(): void;
+}
+
+interface XRPlane {
     orientation: "Horizontal" | "Vertical";
     planeSpace: XRSpace;
     polygon: Array<DOMPointReadOnly>;
     lastChangedTime: number;
-}
-
-interface XRAnchorCreator {
-    // AR Anchors
-    createAnchor(pose: XRPose | XRRigidTransform, referenceSpace: XRReferenceSpace): Promise<XRAnchor>;
 }

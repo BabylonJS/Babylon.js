@@ -39,6 +39,7 @@ vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
+#define inline
 vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
     vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
     strq /= strq.w;
@@ -143,9 +144,13 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         // vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
         float fresnel = 1.;
         float distribution = normalDistributionFunction_CharlieSheen(NdotH, alphaG);
-        float ashikhminvisibility = visibility_Ashikhmin(info.NdotL, info.NdotV);
+        /*#ifdef SHEEN_SOFTER
+            float visibility = visibility_CharlieSheen(info.NdotL, info.NdotV, alphaG);
+        #else */
+            float visibility = visibility_Ashikhmin(info.NdotL, info.NdotV);
+        /* #endif */
 
-        float sheenTerm = fresnel * distribution * ashikhminvisibility;
+        float sheenTerm = fresnel * distribution * visibility;
         return sheenTerm * info.attenuation * info.NdotL * lightColor;
     }
 #endif

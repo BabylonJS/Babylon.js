@@ -48,6 +48,11 @@ export class BaseParticleSystem {
     public animations: Animation[] = [];
 
     /**
+     * Gets or sets the unique id of the particle system
+     */
+    public uniqueId: number;
+
+    /**
      * The id of the Particle system.
      */
     public id: string;
@@ -58,6 +63,11 @@ export class BaseParticleSystem {
     public name: string;
 
     /**
+     * Snippet ID if the particle system was created from the snippet server
+     */
+    public snippetId: string;
+
+    /**
      * The rendering group used by the Particle system to chose when to render.
      */
     public renderingGroupId = 0;
@@ -65,7 +75,7 @@ export class BaseParticleSystem {
     /**
      * The emitter represents the Mesh or position we are attaching the particle system to.
      */
-    public emitter: Nullable<AbstractMesh | Vector3> = null;
+    public emitter: Nullable<AbstractMesh | Vector3> = Vector3.Zero();
 
     /**
      * The maximum number of particles to emit per frame

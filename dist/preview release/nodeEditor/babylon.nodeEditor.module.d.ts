@@ -18,6 +18,7 @@ declare module "babylonjs-node-editor/blockTools" {
     import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
     import { NormalizeBlock } from 'babylonjs/Materials/Node/Blocks/normalizeBlock';
     import { AddBlock } from 'babylonjs/Materials/Node/Blocks/addBlock';
+    import { ModBlock } from 'babylonjs/Materials/Node/Blocks/modBlock';
     import { ScaleBlock } from 'babylonjs/Materials/Node/Blocks/scaleBlock';
     import { TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
     import { ClampBlock } from 'babylonjs/Materials/Node/Blocks/clampBlock';
@@ -62,20 +63,26 @@ declare module "babylonjs-node-editor/blockTools" {
     import { RefractBlock } from 'babylonjs/Materials/Node/Blocks/refractBlock';
     import { ReflectBlock } from 'babylonjs/Materials/Node/Blocks/reflectBlock';
     import { DesaturateBlock } from 'babylonjs/Materials/Node/Blocks/desaturateBlock';
+    import { PBRMetallicRoughnessBlock } from 'babylonjs/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock';
+    import { SheenBlock } from 'babylonjs/Materials/Node/Blocks/PBR/sheenBlock';
+    import { AmbientOcclusionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/ambientOcclusionBlock';
+    import { ReflectivityBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectivityBlock';
+    import { AnisotropyBlock } from 'babylonjs/Materials/Node/Blocks/PBR/anisotropyBlock';
+    import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
+    import { ClearCoatBlock } from 'babylonjs/Materials/Node/Blocks/PBR/clearCoatBlock';
+    import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
+    import { SubSurfaceBlock } from 'babylonjs/Materials/Node/Blocks/PBR/subSurfaceBlock';
+    import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
+    import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
+    import { ParticleRampGradientBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleRampGradientBlock';
+    import { ParticleBlendMultiplyBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock';
+    import { FragCoordBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragCoordBlock';
+    import { ScreenSizeBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/screenSizeBlock';
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial): DesaturateBlock | RefractBlock | ReflectBlock | DerivativeBlock | Rotate2dBlock | NormalBlendBlock | WorleyNoise3DBlock | SimplexPerlin3DBlock | BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | NLerpBlock | DivideBlock | SubtractBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | FrontFacingBlock | WaveBlock | InputBlock | null;
+        static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial): DesaturateBlock | RefractBlock | ReflectBlock | DerivativeBlock | Rotate2dBlock | NormalBlendBlock | WorleyNoise3DBlock | SimplexPerlin3DBlock | BonesBlock | InstancesBlock | MorphTargetsBlock | DiscardBlock | ImageProcessingBlock | ColorMergerBlock | VectorMergerBlock | ColorSplitterBlock | VectorSplitterBlock | TextureBlock | ReflectionTextureBlock | LightBlock | FogBlock | VertexOutputBlock | FragmentOutputBlock | AddBlock | ClampBlock | ScaleBlock | CrossBlock | DotBlock | PowBlock | MultiplyBlock | TransformBlock | TrigonometryBlock | RemapBlock | NormalizeBlock | FresnelBlock | LerpBlock | NLerpBlock | DivideBlock | SubtractBlock | ModBlock | StepBlock | SmoothStepBlock | OneMinusBlock | ReciprocalBlock | ViewDirectionBlock | LightInformationBlock | MaxBlock | MinBlock | LengthBlock | DistanceBlock | NegateBlock | PerturbNormalBlock | RandomNumberBlock | ReplaceColorBlock | PosterizeBlock | ArcTan2Block | GradientBlock | FrontFacingBlock | WaveBlock | InputBlock | PBRMetallicRoughnessBlock | SheenBlock | AmbientOcclusionBlock | ReflectivityBlock | AnisotropyBlock | ReflectionBlock | ClearCoatBlock | RefractionBlock | SubSurfaceBlock | CurrentScreenBlock | ParticleTextureBlock | ParticleRampGradientBlock | ParticleBlendMultiplyBlock | FragCoordBlock | ScreenSizeBlock | null;
         static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): NodeMaterialBlockConnectionPointTypes.Float | NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Matrix | NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
-    }
-}
-declare module "babylonjs-node-editor/dataStorage" {
-    export class DataStorage {
-        private static _InMemoryStorage;
-        static ReadBoolean(key: string, defaultValue: boolean): boolean;
-        static StoreBoolean(key: string, value: boolean): void;
-        static ReadNumber(key: string, defaultValue: number): number;
-        static StoreNumber(key: string, value: number): void;
     }
 }
 declare module "babylonjs-node-editor/components/log/logComponent" {
@@ -98,15 +105,21 @@ declare module "babylonjs-node-editor/components/log/logComponent" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/components/preview/previewMeshType" {
-    export enum PreviewMeshType {
+declare module "babylonjs-node-editor/components/preview/previewType" {
+    export enum PreviewType {
         Sphere = 0,
         Box = 1,
         Torus = 2,
         Cylinder = 3,
         Plane = 4,
         ShaderBall = 5,
-        Custom = 6
+        DefaultParticleSystem = 6,
+        Bubbles = 7,
+        Smoke = 8,
+        Rain = 9,
+        Explosion = 10,
+        Fire = 11,
+        Custom = 12
     }
 }
 declare module "babylonjs-node-editor/diagram/display/displayManager" {
@@ -117,27 +130,6 @@ declare module "babylonjs-node-editor/diagram/display/displayManager" {
         updatePreviewContent(block: NodeMaterialBlock, contentArea: HTMLDivElement): void;
         getBackgroundColor(block: NodeMaterialBlock): string;
         getHeaderText(block: NodeMaterialBlock): string;
-    }
-}
-declare module "babylonjs-node-editor/diagram/nodePort" {
-    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-    import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { Nullable } from 'babylonjs/types';
-    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
-    import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
-    export class NodePort {
-        connectionPoint: NodeMaterialConnectionPoint;
-        node: GraphNode;
-        private _element;
-        private _img;
-        private _globalState;
-        private _onCandidateLinkMovedObserver;
-        delegatedPort: Nullable<NodePort>;
-        get element(): HTMLDivElement;
-        refresh(): void;
-        constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
-        dispose(): void;
-        static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, globalState: GlobalState): NodePort;
     }
 }
 declare module "babylonjs-node-editor/nodeLocationInfo" {
@@ -171,11 +163,13 @@ declare module "babylonjs-node-editor/nodeLocationInfo" {
 declare module "babylonjs-node-editor/serializationTools" {
     import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    import { Nullable } from 'babylonjs/types';
+    import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
     export class SerializationTools {
-        static UpdateLocations(material: NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: NodeMaterial, globalState: GlobalState, selectedBlocks?: NodeMaterialBlock[]): string;
+        static UpdateLocations(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>): void;
+        static Serialize(material: NodeMaterial, globalState: GlobalState, frame?: Nullable<GraphFrame>): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
+        static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: NodeMaterial): void;
     }
 }
 declare module "babylonjs-node-editor/stringTools" {
@@ -195,6 +189,33 @@ declare module "babylonjs-node-editor/stringTools" {
         static DownloadAsFile(document: HTMLDocument, content: string, filename: string): void;
     }
 }
+declare module "babylonjs-node-editor/diagram/frameNodePort" {
+    import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
+    import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
+    import { FramePortPosition } from "babylonjs-node-editor/diagram/graphFrame";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
+    import { Observable } from 'babylonjs/Misc/observable';
+    import { Nullable } from 'babylonjs/types';
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    export class FrameNodePort extends NodePort {
+        connectionPoint: NodeMaterialConnectionPoint;
+        node: GraphNode;
+        private _parentFrameId;
+        private _isInput;
+        private _framePortPosition;
+        private _framePortId;
+        private _onFramePortPositionChangedObservable;
+        get parentFrameId(): number;
+        get onFramePortPositionChangedObservable(): Observable<FrameNodePort>;
+        get isInput(): boolean;
+        get framePortId(): number;
+        get framePortPosition(): FramePortPosition;
+        set framePortPosition(position: FramePortPosition);
+        constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number);
+        static CreateFrameNodePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number): FrameNodePort;
+    }
+}
 declare module "babylonjs-node-editor/diagram/graphFrame" {
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { GraphCanvasComponent } from "babylonjs-node-editor/diagram/graphCanvas";
@@ -202,9 +223,16 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
     import { Observable } from 'babylonjs/Misc/observable';
     import { IFrameData } from "babylonjs-node-editor/nodeLocationInfo";
     import { Color3 } from 'babylonjs/Maths/math.color';
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
+    export enum FramePortPosition {
+        Top = 0,
+        Middle = 1,
+        Bottom = 2
+    }
     export class GraphFrame {
         private readonly CollapsedWidth;
         private static _FrameCounter;
+        private static _FramePortCounter;
         private _name;
         private _color;
         private _x;
@@ -228,8 +256,12 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _onSelectionChangedObserver;
+        private _onGraphNodeRemovalObserver;
+        private _onExposePortOnFrameObserver;
+        private _onNodeLinkDisposedObservers;
         private _isCollapsed;
-        private _ports;
+        private _frameInPorts;
+        private _frameOutPorts;
         private _controlledPorts;
         private _id;
         private _comments;
@@ -245,8 +277,12 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         get id(): number;
         get isCollapsed(): boolean;
         private _createInputPort;
+        private _markFramePortPositions;
+        private _createFramePorts;
+        private _redrawFramePorts;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
+        get ports(): FrameNodePort[];
         get name(): string;
         set name(value: string);
         get color(): Color3;
@@ -272,24 +308,53 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _onUp;
         private _moveFrame;
         private _onMove;
+        moveFramePortUp(nodePort: FrameNodePort): void;
+        private _movePortUp;
+        moveFramePortDown(nodePort: FrameNodePort): void;
+        private _movePortDown;
         private initResizing;
         private cleanUpResizing;
+        private updateMinHeightWithComments;
+        private _isResizingTop;
+        private _isResizingRight;
+        private _isResizingBottom;
+        private _isResizingLeft;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
-        private _expandRight;
+        private _moveRightHandle;
         private _onRightHandlePointerUp;
         private _onBottomHandlePointerDown;
         private _onBottomHandlePointerMove;
-        private _expandBottom;
+        private _moveBottomHandle;
         private _onBottomHandlePointerUp;
         private _onLeftHandlePointerDown;
         private _onLeftHandlePointerMove;
-        private _expandLeft;
+        private _moveLeftHandle;
         private _onLeftHandlePointerUp;
         private _onTopHandlePointerDown;
         private _onTopHandlePointerMove;
-        private _expandTop;
+        private _moveTopHandle;
         private _onTopHandlePointerUp;
+        private _onTopRightHandlePointerDown;
+        private _onTopRightHandlePointerMove;
+        private _moveTopRightHandle;
+        private _onTopRightHandlePointerUp;
+        private _onBottomRightHandlePointerDown;
+        private _onBottomRightHandlePointerMove;
+        private _moveBottomRightHandle;
+        private _onBottomRightHandlePointerUp;
+        private _onBottomLeftHandlePointerDown;
+        private _onBottomLeftHandlePointerMove;
+        private _moveBottomLeftHandle;
+        private _onBottomLeftHandlePointerUp;
+        private _onTopLeftHandlePointerDown;
+        private _onTopLeftHandlePointerMove;
+        private _moveTopLeftHandle;
+        private _onTopLeftHandlePointerUp;
+        private _expandLeft;
+        private _expandTop;
+        private _expandRight;
+        private _expandBottom;
         dispose(): void;
         serialize(): IFrameData;
         export(): void;
@@ -298,11 +363,49 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         }): GraphFrame;
     }
 }
+declare module "babylonjs-node-editor/diagram/nodePort" {
+    import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { Nullable } from 'babylonjs/types';
+    import { Observer } from 'babylonjs/Misc/observable';
+    import { Vector2 } from 'babylonjs/Maths/math.vector';
+    import { IDisplayManager } from "babylonjs-node-editor/diagram/display/displayManager";
+    import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
+    import { NodeLink } from "babylonjs-node-editor/diagram/nodeLink";
+    import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
+    import { FramePortData } from "babylonjs-node-editor/diagram/graphCanvas";
+    export class NodePort {
+        connectionPoint: NodeMaterialConnectionPoint;
+        node: GraphNode;
+        protected _element: HTMLDivElement;
+        protected _img: HTMLImageElement;
+        protected _globalState: GlobalState;
+        protected _portLabelElement: Element;
+        protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
+        protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+        protected _exposedOnFrame: boolean;
+        delegatedPort: Nullable<FrameNodePort>;
+        get element(): HTMLDivElement;
+        get portName(): string;
+        set portName(newName: string);
+        get disabled(): boolean;
+        hasLabel(): boolean;
+        get exposedOnFrame(): boolean;
+        set exposedOnFrame(value: boolean);
+        private _isConnectedToNodeOutsideOfFrame;
+        refresh(): void;
+        constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
+        dispose(): void;
+        static CreatePortElement(connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: Nullable<IDisplayManager>, globalState: GlobalState): NodePort;
+    }
+}
 declare module "babylonjs-node-editor/diagram/nodeLink" {
     import { GraphCanvasComponent } from "babylonjs-node-editor/diagram/graphCanvas";
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
     import { Observable } from 'babylonjs/Misc/observable';
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     export class NodeLink {
         private _graphCanvas;
         private _portA;
@@ -316,8 +419,8 @@ declare module "babylonjs-node-editor/diagram/nodeLink" {
         onDisposedObservable: Observable<NodeLink>;
         get isVisible(): boolean;
         set isVisible(value: boolean);
-        get portA(): NodePort;
-        get portB(): NodePort | undefined;
+        get portA(): FrameNodePort | NodePort;
+        get portB(): FrameNodePort | NodePort | undefined;
         get nodeA(): GraphNode;
         get nodeB(): GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
@@ -333,12 +436,19 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { Nullable } from 'babylonjs/types';
     import { NodeLink } from "babylonjs-node-editor/diagram/nodeLink";
+    import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
     import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
-    import { IEditorData } from "babylonjs-node-editor/nodeLocationInfo";
+    import { IEditorData, IFrameData } from "babylonjs-node-editor/nodeLocationInfo";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
     }
+    export type FramePortData = {
+        frame: GraphFrame;
+        port: FrameNodePort;
+    };
+    export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
         private readonly MinZoom;
         private readonly MaxZoom;
@@ -356,11 +466,13 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         private _dropPointY;
         private _selectionStartX;
         private _selectionStartY;
+        private _candidateLinkedHasMoved;
         private _x;
         private _y;
         private _zoom;
         private _selectedNodes;
         private _selectedLink;
+        private _selectedPort;
         private _candidateLink;
         private _candidatePort;
         private _gridSize;
@@ -388,6 +500,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         get selectedNodes(): GraphNode[];
         get selectedLink(): Nullable<NodeLink>;
         get selectedFrame(): Nullable<GraphFrame>;
+        get selectedPort(): Nullable<NodePort>;
         get canvasContainer(): HTMLDivElement;
         get hostCanvas(): HTMLDivElement;
         get svgCanvas(): HTMLElement;
@@ -412,6 +525,7 @@ declare module "babylonjs-node-editor/diagram/graphCanvas" {
         zoomToFit(): void;
         processCandidatePort(): void;
         processEditorData(editorData: IEditorData): void;
+        addFrame(frameData: IFrameData): void;
         render(): JSX.Element;
     }
 }
@@ -567,6 +681,38 @@ declare module "babylonjs-node-editor/components/propertyTab/properties/vector2P
         inputBlock: InputBlock;
     }
     export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/colorPickerComponent" {
+    import * as React from "react";
+    import { Color4, Color3 } from 'babylonjs/Maths/math.color';
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    export interface IColorPickerComponentProps {
+        value: Color4 | Color3;
+        onColorChanged: (newOne: string) => void;
+        globalState: GlobalState;
+        disableAlpha?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: {
+            r: number;
+            g: number;
+            b: number;
+            a?: number;
+        };
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        setPickerState(enabled: boolean): void;
         render(): JSX.Element;
     }
 }
@@ -742,6 +888,7 @@ declare module "babylonjs-node-editor/sharedComponents/optionsLineComponent" {
         private _localChange;
         private _getValue;
         constructor(props: IOptionsLineComponentProps);
+        setValue(value: string | number): void;
         shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
             value: number;
         }): boolean;
@@ -865,14 +1012,6 @@ declare module "babylonjs-node-editor/sharedComponents/textLineComponent" {
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/diagram/properties/genericNodePropertyComponent" {
-    import * as React from "react";
-    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -885,9 +1024,11 @@ declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
         onSelect?: (value: boolean) => void;
         onValueChanged?: () => void;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        disabled?: boolean;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
+        isDisabled?: boolean;
     }> {
         private static _UniqueIdSeed;
         private _uniqueId;
@@ -895,8 +1036,29 @@ declare module "babylonjs-node-editor/sharedComponents/checkBoxLineComponent" {
         constructor(props: ICheckBoxLineComponentProps);
         shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
             isSelected: boolean;
+            isDisabled: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/diagram/properties/genericNodePropertyComponent" {
+    import * as React from "react";
+    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
+    export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(notifiers?: {
+            "rebuild"?: boolean;
+            "update"?: boolean;
+        }): void;
         render(): JSX.Element;
     }
 }
@@ -968,31 +1130,6 @@ declare module "babylonjs-node-editor/diagram/properties/transformNodePropertyCo
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/diagram/properties/PerturbNormalNodePropertyComponent" {
-    import * as React from "react";
-    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    export class PerturbNormalPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/diagram/properties/worleyNoise3DNodePropertyComponent" {
-    import * as React from "react";
-    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    export class WorleyNoise3DNodePropertyComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module "babylonjs-node-editor/diagram/properties/clampNodePropertyComponent" {
-    import * as React from "react";
-    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    export class ClampPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-node-editor/diagram/properties/gradientStepComponent" {
     import * as React from 'react';
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1053,23 +1190,16 @@ declare module "babylonjs-node-editor/diagram/properties/lightInformationPropert
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-node-editor/diagram/properties/remapNodePropertyComponent" {
-    import * as React from "react";
-    import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
-    export class RemapPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(): void;
-        render(): JSX.Element;
-    }
-}
 declare module "babylonjs-node-editor/sharedComponents/fileButtonLineComponent" {
     import * as React from "react";
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
         accept: string;
+        uploadName?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private uploadRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
@@ -1079,12 +1209,18 @@ declare module "babylonjs-node-editor/diagram/properties/texturePropertyTabCompo
     import * as React from "react";
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
     import { ReflectionTextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/reflectionTextureBlock';
+    import { ReflectionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/reflectionBlock';
+    import { RefractionBlock } from 'babylonjs/Materials/Node/Blocks/PBR/refractionBlock';
     import { TextureBlock } from 'babylonjs/Materials/Node/Blocks/Dual/textureBlock';
+    import { CurrentScreenBlock } from 'babylonjs/Materials/Node/Blocks/Dual/currentScreenBlock';
+    import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
+    type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
+    type AnyTexture = TextureBlock | ReflectionTexture | CurrentScreenBlock | ParticleTextureBlock;
     export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {
         isEmbedded: boolean;
         loadAsCubeTexture: boolean;
     }> {
-        get textureBlock(): TextureBlock | ReflectionTextureBlock;
+        get textureBlock(): AnyTexture;
         constructor(props: IPropertyComponentProps);
         UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: {
             isEmbedded: boolean;
@@ -1205,6 +1341,7 @@ declare module "babylonjs-node-editor/sharedComponents/textureLineComponent" {
         face: number;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, ITextureLineComponentState> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             displayRed: boolean;
@@ -1287,8 +1424,10 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         private _isSelected;
         private _displayManager;
         private _isVisible;
+        private _enclosingFrameId;
         get isVisible(): boolean;
         set isVisible(value: boolean);
+        private _upateNodePortNames;
         get outputPorts(): NodePort[];
         get inputPorts(): NodePort[];
         get links(): NodeLink[];
@@ -1303,6 +1442,8 @@ declare module "babylonjs-node-editor/diagram/graphNode" {
         get id(): number;
         get name(): string;
         get isSelected(): boolean;
+        get enclosingFrameId(): number;
+        set enclosingFrameId(value: number);
         set isSelected(value: boolean);
         constructor(block: NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
@@ -1326,19 +1467,22 @@ declare module "babylonjs-node-editor/globalState" {
     import { Observable } from 'babylonjs/Misc/observable';
     import { LogEntry } from "babylonjs-node-editor/components/log/logComponent";
     import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
-    import { PreviewMeshType } from "babylonjs-node-editor/components/preview/previewMeshType";
+    import { PreviewType } from "babylonjs-node-editor/components/preview/previewType";
     import { Color4 } from 'babylonjs/Maths/math.color';
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { Vector2 } from 'babylonjs/Maths/math.vector';
     import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
     import { NodeLink } from "babylonjs-node-editor/diagram/nodeLink";
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
+    import { FramePortData } from "babylonjs-node-editor/diagram/graphCanvas";
+    import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
     export class GlobalState {
         nodeMaterial: NodeMaterial;
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: Observable<Nullable<GraphNode | GraphFrame | NodeLink>>;
+        onSelectionChangedObservable: Observable<Nullable<GraphFrame | GraphNode | NodePort | NodeLink | FramePortData>>;
         onRebuildRequiredObservable: Observable<void>;
         onBuiltObservable: Observable<void>;
         onResetRequiredObservable: Observable<void>;
@@ -1348,7 +1492,7 @@ declare module "babylonjs-node-editor/globalState" {
         onLogRequiredObservable: Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: Observable<string>;
         onIsLoadingChanged: Observable<boolean>;
-        onPreviewCommandActivated: Observable<void>;
+        onPreviewCommandActivated: Observable<boolean>;
         onLightUpdated: Observable<void>;
         onPreviewBackgroundChanged: Observable<void>;
         onBackFaceCullingChanged: Observable<void>;
@@ -1356,12 +1500,16 @@ declare module "babylonjs-node-editor/globalState" {
         onAnimationCommandActivated: Observable<void>;
         onCandidateLinkMoved: Observable<Nullable<Vector2>>;
         onSelectionBoxMoved: Observable<DOMRect | ClientRect>;
-        onFrameCreated: Observable<GraphFrame>;
-        onCandidatePortSelected: Observable<Nullable<NodePort>>;
+        onFrameCreatedObservable: Observable<GraphFrame>;
+        onCandidatePortSelectedObservable: Observable<Nullable<FrameNodePort | NodePort>>;
+        onImportFrameObservable: Observable<any>;
+        onGraphNodeRemovalObservable: Observable<GraphNode>;
         onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: Observable<void>;
-        previewMeshType: PreviewMeshType;
-        previewMeshFile: File;
+        onExposePortOnFrameObservable: Observable<GraphNode>;
+        previewType: PreviewType;
+        previewFile: File;
+        listOfCustomPreviewFiles: File[];
         rotatePreview: boolean;
         backgroundColor: Color4;
         backFaceCulling: boolean;
@@ -1371,7 +1519,12 @@ declare module "babylonjs-node-editor/globalState" {
         directionalLight0: boolean;
         directionalLight1: boolean;
         controlCamera: boolean;
-        storeEditorData: (serializationObject: any) => void;
+        storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
+        _mode: NodeMaterialModes;
+        /** Gets the mode */
+        get mode(): NodeMaterialModes;
+        /** Sets the mode */
+        set mode(m: NodeMaterialModes);
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
@@ -1399,8 +1552,10 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
     export class NodeListComponent extends React.Component<INodeListComponentProps, {
         filter: string;
     }> {
+        private _onResetRequiredObserver;
         private static _Tooltips;
         constructor(props: INodeListComponentProps);
+        componentWillUnmount(): void;
         filterContent(filter: string): void;
         render(): JSX.Element;
     }
@@ -1421,6 +1576,42 @@ declare module "babylonjs-node-editor/diagram/properties/framePropertyComponent"
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/diagram/properties/frameNodePortPropertyComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
+    export interface IFrameNodePortPropertyTabComponentProps {
+        globalState: GlobalState;
+        frameNodePort: FrameNodePort;
+        frame: GraphFrame;
+    }
+    export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps, {
+        port: FrameNodePort;
+    }> {
+        private _onFramePortPositionChangedObserver;
+        private _onSelectionChangedObserver;
+        constructor(props: IFrameNodePortPropertyTabComponentProps);
+        componentWillUnmount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/diagram/properties/nodePortPropertyComponent" {
+    import * as React from "react";
+    import { GlobalState } from "babylonjs-node-editor/globalState";
+    import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
+    export interface IFrameNodePortPropertyTabComponentProps {
+        globalState: GlobalState;
+        nodePort: NodePort;
+    }
+    export class NodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps> {
+        private _onSelectionChangedObserver;
+        constructor(props: IFrameNodePortPropertyTabComponentProps);
+        componentWillUnmount(): void;
+        toggleExposeOnFrame(value: boolean): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1428,22 +1619,32 @@ declare module "babylonjs-node-editor/components/propertyTab/propertyTabComponen
     import { GraphNode } from "babylonjs-node-editor/diagram/graphNode";
     import { GraphFrame } from "babylonjs-node-editor/diagram/graphFrame";
     import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+    import { FrameNodePort } from "babylonjs-node-editor/diagram/frameNodePort";
+    import { NodePort } from "babylonjs-node-editor/diagram/nodePort";
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
+    interface IPropertyTabComponentState {
         currentNode: Nullable<GraphNode>;
         currentFrame: Nullable<GraphFrame>;
-    }> {
+        currentFrameNodePort: Nullable<FrameNodePort>;
+        currentNodePort: Nullable<NodePort>;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
+        private _modeSelect;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         processInputBlockUpdate(ib: InputBlock): void;
         renderInputBlock(block: InputBlock): JSX.Element | null;
         load(file: File): void;
+        loadFrame(file: File): void;
         save(): void;
         customSave(): void;
+        saveToSnippetServer(): void;
+        loadFromSnippet(): void;
+        changeMode(value: any, force?: boolean, loadDefault?: boolean): boolean;
         render(): JSX.Element;
     }
 }
@@ -1491,11 +1692,14 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _globalState;
         private _currentType;
         private _lightParent;
+        private _postprocess;
+        private _particleSystem;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;
-        private _prepareMeshes;
+        private _prepareScene;
         private _refreshPreviewMesh;
+        private _loadParticleSystem;
         private _forceCompilationAsync;
         private _updatePreview;
         dispose(): void;
@@ -1504,15 +1708,18 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
 declare module "babylonjs-node-editor/components/preview/previewMeshControlComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
-    import { PreviewMeshType } from "babylonjs-node-editor/components/preview/previewMeshType";
+    import { PreviewType } from "babylonjs-node-editor/components/preview/previewType";
     interface IPreviewMeshControlComponent {
         globalState: GlobalState;
         togglePreviewAreaComponent: () => void;
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
         private colorInputRef;
+        private filePickerRef;
+        private _onResetRequiredObserver;
         constructor(props: IPreviewMeshControlComponent);
-        changeMeshType(newOne: PreviewMeshType): void;
+        componentWillUnmount(): void;
+        changeMeshType(newOne: PreviewType): void;
         useCustomMesh(evt: any): void;
         onPopUp(): void;
         changeAnimation(): void;
@@ -1531,7 +1738,10 @@ declare module "babylonjs-node-editor/components/preview/previewAreaComponent" {
     export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
         isLoading: boolean;
     }> {
+        private _onIsLoadingChangedObserver;
+        private _onResetRequiredObserver;
         constructor(props: IPreviewAreaComponentProps);
+        componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
         render(): JSX.Element;
@@ -1584,13 +1794,14 @@ declare module "babylonjs-node-editor/graphEditor" {
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
-        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number): void;
+        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): GraphNode[] | undefined;
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
+        loadGraph(): void;
         showWaitScreen(): void;
         hideWaitScreen(): void;
-        reOrganize(editorData?: Nullable<IEditorData>): void;
+        reOrganize(editorData?: Nullable<IEditorData>, isImportingAFrame?: boolean): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -1602,15 +1813,15 @@ declare module "babylonjs-node-editor/graphEditor" {
         createPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
         copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
-        createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: HTMLElement | null) => void;
-        createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: HTMLElement | null) => void;
+        createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => void;
+        createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: Nullable<HTMLElement>) => void;
         fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
     }
 }
 declare module "babylonjs-node-editor/sharedComponents/popup" {
     export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): import("babylonjs/types").Nullable<HTMLDivElement>;
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         private static _CopyStyles;
     }
 }
@@ -1653,19 +1864,10 @@ declare module "babylonjs-node-editor" {
 /// <reference types="react" />
 declare module NODEEDITOR {
     export class BlockTools {
-        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | null;
+        static GetBlockFromString(data: string, scene: BABYLON.Scene, nodeMaterial: BABYLON.NodeMaterial): BABYLON.DesaturateBlock | BABYLON.RefractBlock | BABYLON.ReflectBlock | BABYLON.DerivativeBlock | BABYLON.Rotate2dBlock | BABYLON.NormalBlendBlock | BABYLON.WorleyNoise3DBlock | BABYLON.SimplexPerlin3DBlock | BABYLON.BonesBlock | BABYLON.InstancesBlock | BABYLON.MorphTargetsBlock | BABYLON.DiscardBlock | BABYLON.ImageProcessingBlock | BABYLON.ColorMergerBlock | BABYLON.VectorMergerBlock | BABYLON.ColorSplitterBlock | BABYLON.VectorSplitterBlock | BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock | BABYLON.LightBlock | BABYLON.FogBlock | BABYLON.VertexOutputBlock | BABYLON.FragmentOutputBlock | BABYLON.AddBlock | BABYLON.ClampBlock | BABYLON.ScaleBlock | BABYLON.CrossBlock | BABYLON.DotBlock | BABYLON.PowBlock | BABYLON.MultiplyBlock | BABYLON.TransformBlock | BABYLON.TrigonometryBlock | BABYLON.RemapBlock | BABYLON.NormalizeBlock | BABYLON.FresnelBlock | BABYLON.LerpBlock | BABYLON.NLerpBlock | BABYLON.DivideBlock | BABYLON.SubtractBlock | BABYLON.ModBlock | BABYLON.StepBlock | BABYLON.SmoothStepBlock | BABYLON.OneMinusBlock | BABYLON.ReciprocalBlock | BABYLON.ViewDirectionBlock | BABYLON.LightInformationBlock | BABYLON.MaxBlock | BABYLON.MinBlock | BABYLON.LengthBlock | BABYLON.DistanceBlock | BABYLON.NegateBlock | BABYLON.PerturbNormalBlock | BABYLON.RandomNumberBlock | BABYLON.ReplaceColorBlock | BABYLON.PosterizeBlock | BABYLON.ArcTan2Block | BABYLON.GradientBlock | BABYLON.FrontFacingBlock | BABYLON.WaveBlock | BABYLON.InputBlock | BABYLON.PBRMetallicRoughnessBlock | BABYLON.SheenBlock | BABYLON.AmbientOcclusionBlock | BABYLON.ReflectivityBlock | BABYLON.AnisotropyBlock | BABYLON.ReflectionBlock | BABYLON.ClearCoatBlock | BABYLON.RefractionBlock | BABYLON.SubSurfaceBlock | BABYLON.CurrentScreenBlock | BABYLON.ParticleTextureBlock | BABYLON.ParticleRampGradientBlock | BABYLON.ParticleBlendMultiplyBlock | BABYLON.FragCoordBlock | BABYLON.ScreenSizeBlock | null;
         static GetColorFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): string;
         static GetConnectionNodeTypeFromString(type: string): BABYLON.NodeMaterialBlockConnectionPointTypes.Float | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector2 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Vector4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color3 | BABYLON.NodeMaterialBlockConnectionPointTypes.Color4 | BABYLON.NodeMaterialBlockConnectionPointTypes.Matrix | BABYLON.NodeMaterialBlockConnectionPointTypes.AutoDetect;
         static GetStringFromConnectionNodeType(type: BABYLON.NodeMaterialBlockConnectionPointTypes): "Float" | "Vector2" | "Vector3" | "Vector4" | "Matrix" | "Color3" | "Color4" | "";
-    }
-}
-declare module NODEEDITOR {
-    export class DataStorage {
-        private static _InMemoryStorage;
-        static ReadBoolean(key: string, defaultValue: boolean): boolean;
-        static StoreBoolean(key: string, value: boolean): void;
-        static ReadNumber(key: string, defaultValue: number): number;
-        static StoreNumber(key: string, value: number): void;
     }
 }
 declare module NODEEDITOR {
@@ -1687,14 +1889,20 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export enum PreviewMeshType {
+    export enum PreviewType {
         Sphere = 0,
         Box = 1,
         Torus = 2,
         Cylinder = 3,
         Plane = 4,
         ShaderBall = 5,
-        Custom = 6
+        DefaultParticleSystem = 6,
+        Bubbles = 7,
+        Smoke = 8,
+        Rain = 9,
+        Explosion = 10,
+        Fire = 11,
+        Custom = 12
     }
 }
 declare module NODEEDITOR {
@@ -1704,22 +1912,6 @@ declare module NODEEDITOR {
         updatePreviewContent(block: BABYLON.NodeMaterialBlock, contentArea: HTMLDivElement): void;
         getBackgroundColor(block: BABYLON.NodeMaterialBlock): string;
         getHeaderText(block: BABYLON.NodeMaterialBlock): string;
-    }
-}
-declare module NODEEDITOR {
-    export class NodePort {
-        connectionPoint: BABYLON.NodeMaterialConnectionPoint;
-        node: GraphNode;
-        private _element;
-        private _img;
-        private _globalState;
-        private _onCandidateLinkMovedObserver;
-        delegatedPort: BABYLON.Nullable<NodePort>;
-        get element(): HTMLDivElement;
-        refresh(): void;
-        constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
-        dispose(): void;
-        static CreatePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState): NodePort;
     }
 }
 declare module NODEEDITOR {
@@ -1752,9 +1944,10 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class SerializationTools {
-        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState): void;
-        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState, selectedBlocks?: BABYLON.NodeMaterialBlock[]): string;
+        static UpdateLocations(material: BABYLON.NodeMaterial, globalState: GlobalState, frame?: BABYLON.Nullable<GraphFrame>): void;
+        static Serialize(material: BABYLON.NodeMaterial, globalState: GlobalState, frame?: BABYLON.Nullable<GraphFrame>): string;
         static Deserialize(serializationObject: any, globalState: GlobalState): void;
+        static AddFrameToMaterial(serializationObject: any, globalState: GlobalState, currentMaterial: BABYLON.NodeMaterial): void;
     }
 }
 declare module NODEEDITOR {
@@ -1774,9 +1967,34 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export class FrameNodePort extends NodePort {
+        connectionPoint: BABYLON.NodeMaterialConnectionPoint;
+        node: GraphNode;
+        private _parentFrameId;
+        private _isInput;
+        private _framePortPosition;
+        private _framePortId;
+        private _onFramePortPositionChangedObservable;
+        get parentFrameId(): number;
+        get onFramePortPositionChangedObservable(): BABYLON.Observable<FrameNodePort>;
+        get isInput(): boolean;
+        get framePortId(): number;
+        get framePortPosition(): FramePortPosition;
+        set framePortPosition(position: FramePortPosition);
+        constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number);
+        static CreateFrameNodePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState, isInput: boolean, framePortId: number, parentFrameId: number): FrameNodePort;
+    }
+}
+declare module NODEEDITOR {
+    export enum FramePortPosition {
+        Top = 0,
+        Middle = 1,
+        Bottom = 2
+    }
     export class GraphFrame {
         private readonly CollapsedWidth;
         private static _FrameCounter;
+        private static _FramePortCounter;
         private _name;
         private _color;
         private _x;
@@ -1800,8 +2018,12 @@ declare module NODEEDITOR {
         private _mouseStartPointX;
         private _mouseStartPointY;
         private _onSelectionChangedObserver;
+        private _onGraphNodeRemovalObserver;
+        private _onExposePortOnFrameObserver;
+        private _onNodeLinkDisposedObservers;
         private _isCollapsed;
-        private _ports;
+        private _frameInPorts;
+        private _frameOutPorts;
         private _controlledPorts;
         private _id;
         private _comments;
@@ -1817,8 +2039,12 @@ declare module NODEEDITOR {
         get id(): number;
         get isCollapsed(): boolean;
         private _createInputPort;
+        private _markFramePortPositions;
+        private _createFramePorts;
+        private _redrawFramePorts;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
+        get ports(): FrameNodePort[];
         get name(): string;
         set name(value: string);
         get color(): BABYLON.Color3;
@@ -1844,30 +2070,85 @@ declare module NODEEDITOR {
         private _onUp;
         private _moveFrame;
         private _onMove;
+        moveFramePortUp(nodePort: FrameNodePort): void;
+        private _movePortUp;
+        moveFramePortDown(nodePort: FrameNodePort): void;
+        private _movePortDown;
         private initResizing;
         private cleanUpResizing;
+        private updateMinHeightWithComments;
+        private _isResizingTop;
+        private _isResizingRight;
+        private _isResizingBottom;
+        private _isResizingLeft;
         private _onRightHandlePointerDown;
         private _onRightHandlePointerMove;
-        private _expandRight;
+        private _moveRightHandle;
         private _onRightHandlePointerUp;
         private _onBottomHandlePointerDown;
         private _onBottomHandlePointerMove;
-        private _expandBottom;
+        private _moveBottomHandle;
         private _onBottomHandlePointerUp;
         private _onLeftHandlePointerDown;
         private _onLeftHandlePointerMove;
-        private _expandLeft;
+        private _moveLeftHandle;
         private _onLeftHandlePointerUp;
         private _onTopHandlePointerDown;
         private _onTopHandlePointerMove;
-        private _expandTop;
+        private _moveTopHandle;
         private _onTopHandlePointerUp;
+        private _onTopRightHandlePointerDown;
+        private _onTopRightHandlePointerMove;
+        private _moveTopRightHandle;
+        private _onTopRightHandlePointerUp;
+        private _onBottomRightHandlePointerDown;
+        private _onBottomRightHandlePointerMove;
+        private _moveBottomRightHandle;
+        private _onBottomRightHandlePointerUp;
+        private _onBottomLeftHandlePointerDown;
+        private _onBottomLeftHandlePointerMove;
+        private _moveBottomLeftHandle;
+        private _onBottomLeftHandlePointerUp;
+        private _onTopLeftHandlePointerDown;
+        private _onTopLeftHandlePointerMove;
+        private _moveTopLeftHandle;
+        private _onTopLeftHandlePointerUp;
+        private _expandLeft;
+        private _expandTop;
+        private _expandRight;
+        private _expandBottom;
         dispose(): void;
         serialize(): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
             [key: number]: number;
         }): GraphFrame;
+    }
+}
+declare module NODEEDITOR {
+    export class NodePort {
+        connectionPoint: BABYLON.NodeMaterialConnectionPoint;
+        node: GraphNode;
+        protected _element: HTMLDivElement;
+        protected _img: HTMLImageElement;
+        protected _globalState: GlobalState;
+        protected _portLabelElement: Element;
+        protected _onCandidateLinkMovedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<BABYLON.Vector2>>>;
+        protected _onSelectionChangedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
+        protected _exposedOnFrame: boolean;
+        delegatedPort: BABYLON.Nullable<FrameNodePort>;
+        get element(): HTMLDivElement;
+        get portName(): string;
+        set portName(newName: string);
+        get disabled(): boolean;
+        hasLabel(): boolean;
+        get exposedOnFrame(): boolean;
+        set exposedOnFrame(value: boolean);
+        private _isConnectedToNodeOutsideOfFrame;
+        refresh(): void;
+        constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
+        dispose(): void;
+        static CreatePortElement(connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, root: HTMLElement, displayManager: BABYLON.Nullable<IDisplayManager>, globalState: GlobalState): NodePort;
     }
 }
 declare module NODEEDITOR {
@@ -1884,8 +2165,8 @@ declare module NODEEDITOR {
         onDisposedObservable: BABYLON.Observable<NodeLink>;
         get isVisible(): boolean;
         set isVisible(value: boolean);
-        get portA(): NodePort;
-        get portB(): NodePort | undefined;
+        get portA(): FrameNodePort | NodePort;
+        get portB(): FrameNodePort | NodePort | undefined;
         get nodeA(): GraphNode;
         get nodeB(): GraphNode | undefined;
         update(endX?: number, endY?: number, straight?: boolean): void;
@@ -1898,6 +2179,11 @@ declare module NODEEDITOR {
     export interface IGraphCanvasComponentProps {
         globalState: GlobalState;
     }
+    export type FramePortData = {
+        frame: GraphFrame;
+        port: FrameNodePort;
+    };
+    export const isFramePortData: (variableToCheck: any) => variableToCheck is FramePortData;
     export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
         private readonly MinZoom;
         private readonly MaxZoom;
@@ -1915,11 +2201,13 @@ declare module NODEEDITOR {
         private _dropPointY;
         private _selectionStartX;
         private _selectionStartY;
+        private _candidateLinkedHasMoved;
         private _x;
         private _y;
         private _zoom;
         private _selectedNodes;
         private _selectedLink;
+        private _selectedPort;
         private _candidateLink;
         private _candidatePort;
         private _gridSize;
@@ -1947,6 +2235,7 @@ declare module NODEEDITOR {
         get selectedNodes(): GraphNode[];
         get selectedLink(): BABYLON.Nullable<NodeLink>;
         get selectedFrame(): BABYLON.Nullable<GraphFrame>;
+        get selectedPort(): BABYLON.Nullable<NodePort>;
         get canvasContainer(): HTMLDivElement;
         get hostCanvas(): HTMLDivElement;
         get svgCanvas(): HTMLElement;
@@ -1971,6 +2260,7 @@ declare module NODEEDITOR {
         zoomToFit(): void;
         processCandidatePort(): void;
         processEditorData(editorData: IEditorData): void;
+        addFrame(frameData: IFrameData): void;
         render(): JSX.Element;
     }
 }
@@ -2106,6 +2396,35 @@ declare module NODEEDITOR {
         inputBlock: BABYLON.InputBlock;
     }
     export class Vector2PropertyTabComponent extends React.Component<IVector2PropertyTabComponentProps> {
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IColorPickerComponentProps {
+        value: BABYLON.Color4 | BABYLON.Color3;
+        onColorChanged: (newOne: string) => void;
+        globalState: GlobalState;
+        disableAlpha?: boolean;
+    }
+    interface IColorPickerComponentState {
+        pickerEnabled: boolean;
+        color: {
+            r: number;
+            g: number;
+            b: number;
+            a?: number;
+        };
+        hex: string;
+    }
+    export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+        private _floatRef;
+        private _floatHostRef;
+        constructor(props: IColorPickerComponentProps);
+        syncPositions(): void;
+        shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState): boolean;
+        componentDidUpdate(): void;
+        componentDidMount(): void;
+        setPickerState(enabled: boolean): void;
         render(): JSX.Element;
     }
 }
@@ -2254,6 +2573,7 @@ declare module NODEEDITOR {
         private _localChange;
         private _getValue;
         constructor(props: IOptionsLineComponentProps);
+        setValue(value: string | number): void;
         shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: {
             value: number;
         }): boolean;
@@ -2362,12 +2682,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     export interface ICheckBoxLineComponentProps {
         label: string;
         target?: any;
@@ -2376,9 +2690,11 @@ declare module NODEEDITOR {
         onSelect?: (value: boolean) => void;
         onValueChanged?: () => void;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        disabled?: boolean;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
         isSelected: boolean;
+        isDisabled?: boolean;
     }> {
         private static _UniqueIdSeed;
         private _uniqueId;
@@ -2386,8 +2702,27 @@ declare module NODEEDITOR {
         constructor(props: ICheckBoxLineComponentProps);
         shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: {
             isSelected: boolean;
+            isDisabled: boolean;
         }): boolean;
         onChange(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        render(): JSX.Element;
+    }
+    export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(notifiers?: {
+            "rebuild"?: boolean;
+            "update"?: boolean;
+        }): void;
         render(): JSX.Element;
     }
 }
@@ -2447,25 +2782,6 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class PerturbNormalPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class WorleyNoise3DNodePropertyComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
-    export class ClampPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     interface IGradientStepComponentProps {
         globalState: GlobalState;
         step: BABYLON.GradientBlockColorStep;
@@ -2515,30 +2831,27 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
-    export class RemapPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-        constructor(props: IPropertyComponentProps);
-        forceRebuild(): void;
-        render(): JSX.Element;
-    }
-}
-declare module NODEEDITOR {
     interface IFileButtonLineComponentProps {
         label: string;
         onClick: (file: File) => void;
         accept: string;
+        uploadName?: string;
     }
     export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+        private uploadRef;
         constructor(props: IFileButtonLineComponentProps);
         onChange(evt: any): void;
         render(): JSX.Element;
     }
 }
 declare module NODEEDITOR {
+    type ReflectionTexture = BABYLON.ReflectionTextureBlock | BABYLON.ReflectionBlock | BABYLON.RefractionBlock;
+    type AnyTexture = BABYLON.TextureBlock | ReflectionTexture | BABYLON.CurrentScreenBlock | BABYLON.ParticleTextureBlock;
     export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, {
         isEmbedded: boolean;
         loadAsCubeTexture: boolean;
     }> {
-        get textureBlock(): BABYLON.TextureBlock | BABYLON.ReflectionTextureBlock;
+        get textureBlock(): AnyTexture;
         constructor(props: IPropertyComponentProps);
         UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: {
             isEmbedded: boolean;
@@ -2641,6 +2954,7 @@ declare module NODEEDITOR {
         face: number;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, ITextureLineComponentState> {
+        private canvasRef;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
             displayRed: boolean;
@@ -2711,8 +3025,10 @@ declare module NODEEDITOR {
         private _isSelected;
         private _displayManager;
         private _isVisible;
+        private _enclosingFrameId;
         get isVisible(): boolean;
         set isVisible(value: boolean);
+        private _upateNodePortNames;
         get outputPorts(): NodePort[];
         get inputPorts(): NodePort[];
         get links(): NodeLink[];
@@ -2727,6 +3043,8 @@ declare module NODEEDITOR {
         get id(): number;
         get name(): string;
         get isSelected(): boolean;
+        get enclosingFrameId(): number;
+        set enclosingFrameId(value: number);
         set isSelected(value: boolean);
         constructor(block: BABYLON.NodeMaterialBlock, globalState: GlobalState);
         isOverlappingFrame(frame: GraphFrame): boolean;
@@ -2750,7 +3068,7 @@ declare module NODEEDITOR {
         hostElement: HTMLElement;
         hostDocument: HTMLDocument;
         hostWindow: Window;
-        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphNode | GraphFrame | NodeLink>>;
+        onSelectionChangedObservable: BABYLON.Observable<BABYLON.Nullable<GraphFrame | GraphNode | NodePort | NodeLink | FramePortData>>;
         onRebuildRequiredObservable: BABYLON.Observable<void>;
         onBuiltObservable: BABYLON.Observable<void>;
         onResetRequiredObservable: BABYLON.Observable<void>;
@@ -2760,7 +3078,7 @@ declare module NODEEDITOR {
         onLogRequiredObservable: BABYLON.Observable<LogEntry>;
         onErrorMessageDialogRequiredObservable: BABYLON.Observable<string>;
         onIsLoadingChanged: BABYLON.Observable<boolean>;
-        onPreviewCommandActivated: BABYLON.Observable<void>;
+        onPreviewCommandActivated: BABYLON.Observable<boolean>;
         onLightUpdated: BABYLON.Observable<void>;
         onPreviewBackgroundChanged: BABYLON.Observable<void>;
         onBackFaceCullingChanged: BABYLON.Observable<void>;
@@ -2768,12 +3086,16 @@ declare module NODEEDITOR {
         onAnimationCommandActivated: BABYLON.Observable<void>;
         onCandidateLinkMoved: BABYLON.Observable<BABYLON.Nullable<BABYLON.Vector2>>;
         onSelectionBoxMoved: BABYLON.Observable<DOMRect | ClientRect>;
-        onFrameCreated: BABYLON.Observable<GraphFrame>;
-        onCandidatePortSelected: BABYLON.Observable<BABYLON.Nullable<NodePort>>;
+        onFrameCreatedObservable: BABYLON.Observable<GraphFrame>;
+        onCandidatePortSelectedObservable: BABYLON.Observable<BABYLON.Nullable<FrameNodePort | NodePort>>;
+        onImportFrameObservable: BABYLON.Observable<any>;
+        onGraphNodeRemovalObservable: BABYLON.Observable<GraphNode>;
         onGetNodeFromBlock: (block: BABYLON.NodeMaterialBlock) => GraphNode;
         onGridSizeChanged: BABYLON.Observable<void>;
-        previewMeshType: PreviewMeshType;
-        previewMeshFile: File;
+        onExposePortOnFrameObservable: BABYLON.Observable<GraphNode>;
+        previewType: PreviewType;
+        previewFile: File;
+        listOfCustomPreviewFiles: File[];
         rotatePreview: boolean;
         backgroundColor: BABYLON.Color4;
         backFaceCulling: boolean;
@@ -2783,7 +3105,12 @@ declare module NODEEDITOR {
         directionalLight0: boolean;
         directionalLight1: boolean;
         controlCamera: boolean;
-        storeEditorData: (serializationObject: any) => void;
+        storeEditorData: (serializationObject: any, frame?: BABYLON.Nullable<GraphFrame>) => void;
+        _mode: BABYLON.NodeMaterialModes;
+        /** Gets the mode */
+        get mode(): BABYLON.NodeMaterialModes;
+        /** Sets the mode */
+        set mode(m: BABYLON.NodeMaterialModes);
         customSave?: {
             label: string;
             action: (data: string) => Promise<void>;
@@ -2808,8 +3135,10 @@ declare module NODEEDITOR {
     export class NodeListComponent extends React.Component<INodeListComponentProps, {
         filter: string;
     }> {
+        private _onResetRequiredObserver;
         private static _Tooltips;
         constructor(props: INodeListComponentProps);
+        componentWillUnmount(): void;
         filterContent(filter: string): void;
         render(): JSX.Element;
     }
@@ -2828,22 +3157,59 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IFrameNodePortPropertyTabComponentProps {
+        globalState: GlobalState;
+        frameNodePort: FrameNodePort;
+        frame: GraphFrame;
+    }
+    export class FrameNodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps, {
+        port: FrameNodePort;
+    }> {
+        private _onFramePortPositionChangedObserver;
+        private _onSelectionChangedObserver;
+        constructor(props: IFrameNodePortPropertyTabComponentProps);
+        componentWillUnmount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    export interface IFrameNodePortPropertyTabComponentProps {
+        globalState: GlobalState;
+        nodePort: NodePort;
+    }
+    export class NodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps> {
+        private _onSelectionChangedObserver;
+        constructor(props: IFrameNodePortPropertyTabComponentProps);
+        componentWillUnmount(): void;
+        toggleExposeOnFrame(value: boolean): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface IPropertyTabComponentProps {
         globalState: GlobalState;
     }
-    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, {
+    interface IPropertyTabComponentState {
         currentNode: BABYLON.Nullable<GraphNode>;
         currentFrame: BABYLON.Nullable<GraphFrame>;
-    }> {
+        currentFrameNodePort: BABYLON.Nullable<FrameNodePort>;
+        currentNodePort: BABYLON.Nullable<NodePort>;
+    }
+    export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
         private _onBuiltObserver;
+        private _modeSelect;
         constructor(props: IPropertyTabComponentProps);
         componentDidMount(): void;
         componentWillUnmount(): void;
         processInputBlockUpdate(ib: BABYLON.InputBlock): void;
         renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
         load(file: File): void;
+        loadFrame(file: File): void;
         save(): void;
         customSave(): void;
+        saveToSnippetServer(): void;
+        loadFromSnippet(): void;
+        changeMode(value: any, force?: boolean, loadDefault?: boolean): boolean;
         render(): JSX.Element;
     }
 }
@@ -2886,11 +3252,14 @@ declare module NODEEDITOR {
         private _globalState;
         private _currentType;
         private _lightParent;
+        private _postprocess;
+        private _particleSystem;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;
-        private _prepareMeshes;
+        private _prepareScene;
         private _refreshPreviewMesh;
+        private _loadParticleSystem;
         private _forceCompilationAsync;
         private _updatePreview;
         dispose(): void;
@@ -2903,8 +3272,11 @@ declare module NODEEDITOR {
     }
     export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
         private colorInputRef;
+        private filePickerRef;
+        private _onResetRequiredObserver;
         constructor(props: IPreviewMeshControlComponent);
-        changeMeshType(newOne: PreviewMeshType): void;
+        componentWillUnmount(): void;
+        changeMeshType(newOne: PreviewType): void;
         useCustomMesh(evt: any): void;
         onPopUp(): void;
         changeAnimation(): void;
@@ -2921,7 +3293,10 @@ declare module NODEEDITOR {
     export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentProps, {
         isLoading: boolean;
     }> {
+        private _onIsLoadingChangedObserver;
+        private _onResetRequiredObserver;
         constructor(props: IPreviewAreaComponentProps);
+        componentWillUnmount(): void;
         changeBackFaceCulling(value: boolean): void;
         changeDepthPrePass(value: boolean): void;
         render(): JSX.Element;
@@ -2967,13 +3342,14 @@ declare module NODEEDITOR {
         componentWillUnmount(): void;
         constructor(props: IGraphEditorProps);
         reconnectNewNodes(nodeIndex: number, newNodes: GraphNode[], sourceNodes: GraphNode[], done: boolean[]): void;
-        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number): void;
+        pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, selectNew?: boolean): GraphNode[] | undefined;
         zoomToFit(): void;
         buildMaterial(): void;
         build(): void;
+        loadGraph(): void;
         showWaitScreen(): void;
         hideWaitScreen(): void;
-        reOrganize(editorData?: BABYLON.Nullable<IEditorData>): void;
+        reOrganize(editorData?: BABYLON.Nullable<IEditorData>, isImportingAFrame?: boolean): void;
         onPointerDown(evt: React.PointerEvent<HTMLDivElement>): void;
         onPointerUp(evt: React.PointerEvent<HTMLDivElement>): void;
         resizeColumns(evt: React.PointerEvent<HTMLDivElement>, forLeft?: boolean): void;
@@ -2985,15 +3361,15 @@ declare module NODEEDITOR {
         createPopUp: () => void;
         createPopupWindow: (title: string, windowVariableName: string, width?: number, height?: number) => Window | null;
         copyStyles: (sourceDoc: HTMLDocument, targetDoc: HTMLDocument) => void;
-        createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: HTMLElement | null) => void;
-        createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: HTMLElement | null) => void;
+        createPreviewMeshControlHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
+        createPreviewHost: (options: IInternalPreviewAreaOptions, parentControl: BABYLON.Nullable<HTMLElement>) => void;
         fixPopUpStyles: (document: Document) => void;
         render(): JSX.Element;
     }
 }
 declare module NODEEDITOR {
     export class Popup {
-        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): Nullable<HTMLDivElement>;
+        static CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
         private static _CopyStyles;
     }
 }

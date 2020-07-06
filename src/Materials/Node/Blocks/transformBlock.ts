@@ -6,6 +6,9 @@ import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint
 import { _TypeStore } from '../../../Misc/typeStore';
 import { Scene } from '../../../scene';
 import { InputBlock } from './Input/inputBlock';
+import { AbstractMesh } from '../../../Meshes/abstractMesh';
+import { NodeMaterial, NodeMaterialDefines } from '../nodeMaterial';
+import { SubMesh } from '../../../Meshes/subMesh';
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
@@ -31,6 +34,7 @@ export class TransformBlock extends NodeMaterialBlock {
         this.registerInput("vector", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerInput("transform", NodeMaterialBlockConnectionPointTypes.Matrix);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._inputs[0].onConnectionObservable.add((other) => {
             if (other.ownerBlock.isInput) {
@@ -66,6 +70,13 @@ export class TransformBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the xyz output component
+     */
+    public get xyz(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
      * Gets the matrix transform input
      */
     public get transform(): NodeMaterialConnectionPoint {
@@ -75,26 +86,72 @@ export class TransformBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        let output = this._outputs[0];
         let vector = this.vector;
         let transform = this.transform;
 
         if (vector.connectedPoint) {
-            switch (vector.connectedPoint.type) {
-                case NodeMaterialBlockConnectionPointTypes.Vector2:
-                    state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
-                    break;
-                case NodeMaterialBlockConnectionPointTypes.Vector3:
-                case NodeMaterialBlockConnectionPointTypes.Color3:
-                    state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
-                    break;
-                default:
-                    state.compilationString += this._declareOutput(output, state) + ` = ${transform.associatedVariableName} * ${vector.associatedVariableName};\r\n`;
-                    break;
+
+            // None uniform scaling case.
+            if (this.complementW === 0) {
+                let comments = `//${this.name}`;
+                state._emitFunctionFromInclude("helperFunctions", comments);
+                state.sharedData.blocksWithDefines.push(this);
+
+                const transformName = state._getFreeVariableName(`${transform.associatedVariableName}_NUS`);
+                state.compilationString += `mat3 ${transformName} = mat3(${transform.associatedVariableName});\r\n`;
+                state.compilationString += `#ifdef NONUNIFORMSCALING\r\n`;
+                state.compilationString += `${transformName} = transposeMat3(inverseMat3(${transformName}));\r\n`;
+                state.compilationString += `#endif\r\n`;
+                switch (vector.connectedPoint.type) {
+                    case NodeMaterialBlockConnectionPointTypes.Vector2:
+                        state.compilationString += this._declareOutput(this.output, state) + ` = vec4(${transformName} * vec3(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}), ${this._writeFloat(this.complementW)});\r\n`;
+                        break;
+                    case NodeMaterialBlockConnectionPointTypes.Vector3:
+                    case NodeMaterialBlockConnectionPointTypes.Color3:
+                        state.compilationString += this._declareOutput(this.output, state) + ` = vec4(${transformName} * ${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
+                        break;
+                    default:
+                        state.compilationString += this._declareOutput(this.output, state) + ` = vec4(${transformName} * ${vector.associatedVariableName}.xyz, ${this._writeFloat(this.complementW)});\r\n`;
+                        break;
+                }
+            }
+            else {
+                const transformName = transform.associatedVariableName;
+                switch (vector.connectedPoint.type) {
+                    case NodeMaterialBlockConnectionPointTypes.Vector2:
+                        state.compilationString += this._declareOutput(this.output, state) + ` = ${transformName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\r\n`;
+                        break;
+                    case NodeMaterialBlockConnectionPointTypes.Vector3:
+                    case NodeMaterialBlockConnectionPointTypes.Color3:
+                        state.compilationString += this._declareOutput(this.output, state) + ` = ${transformName} * vec4(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\r\n`;
+                        break;
+                    default:
+                        state.compilationString += this._declareOutput(this.output, state) + ` = ${transformName} * ${vector.associatedVariableName};\r\n`;
+                        break;
+                }
+            }
+
+            if (this.xyz.hasEndpoints) {
+                state.compilationString += this._declareOutput(this.xyz, state) + ` = ${this.output.associatedVariableName}.xyz;\r\n`;
             }
         }
 
         return this;
+    }
+
+    /**
+     * Update defines for shader compilation
+     * @param mesh defines the mesh to be rendered
+     * @param nodeMaterial defines the node material requesting the update
+     * @param defines defines the material defines to update
+     * @param useInstances specifies that instances should be used
+     * @param subMesh defines which submesh to render
+     */
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
+        // Do nothing
+        if (mesh.nonUniformScaling) {
+            defines.setValue("NONUNIFORMSCALING", true);
+        }
     }
 
     public serialize(): any {

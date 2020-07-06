@@ -14,13 +14,13 @@ declare type Collider = import("../Collisions/collider").Collider;
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
  * Please consider using the new UniversalCamera instead as it adds more functionality like the gamepad.
- * @see http://doc.babylonjs.com/features/cameras#universal-camera
+ * @see https://doc.babylonjs.com/features/cameras#universal-camera
  */
 export class FreeCamera extends TargetCamera {
     /**
      * Define the collision ellipsoid of the camera.
      * This is helpful to simulate a camera body like the player body around the camera
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
      */
     @serializeAsVector3()
     public ellipsoid = new Vector3(0.5, 1, 0.5);
@@ -94,6 +94,25 @@ export class FreeCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the list of keyboard keys used to control the upward move of the camera.
+     */
+    public get keysUpward(): number[] {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysUpward;
+        }
+
+        return [];
+    }
+
+    public set keysUpward(value: number[]) {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysUpward = value;
+        }
+    }
+
+    /**
      * Gets or Set the list of keyboard keys used to control the backward move of the camera.
      */
     public get keysDown(): number[] {
@@ -109,6 +128,25 @@ export class FreeCamera extends TargetCamera {
         var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
         if (keyboard) {
             keyboard.keysDown = value;
+        }
+    }
+
+     /**
+     * Gets or Set the list of keyboard keys used to control the downward move of the camera.
+     */
+    public get keysDownward(): number[] {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysDownward;
+        }
+
+        return [];
+    }
+
+    public set keysDownward(value: number[]) {
+        var keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysDownward = value;
         }
     }
 
@@ -170,7 +208,7 @@ export class FreeCamera extends TargetCamera {
      * Instantiates a Free Camera.
      * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
      * Please consider using the new UniversalCamera instead as it adds more functionality like touch to this camera.
-     * @see http://doc.babylonjs.com/features/cameras#universal-camera
+     * @see https://doc.babylonjs.com/features/cameras#universal-camera
      * @param name Define the name of the camera in the scene
      * @param position Define the start position of the camera in the scene
      * @param scene Define the scene the camera belongs to

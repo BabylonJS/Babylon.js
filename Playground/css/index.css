@@ -221,32 +221,6 @@ body {
     background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==");
 }
 
-.pbt-fade {
-    opacity: 0.5
-}
-
-.pbt-darken {
-    opacity: 1
-}
-
-.pbt-back-highlight {
-    background-color: #CDC8F9;
-}
-
-.pbt-margin-decor-on {
-    background-color: #364249;
-    width: 5px;
-}
-
-.pbt-back-highlight-dark {
-    background-color: #364249;
-}
-
-.pbt-margin-decor-on-dark {
-    background-color: #CDC8F9;
-    width: 5px;
-}
-
 #exampleList {
     z-index: 10;
     display: none;
@@ -393,6 +367,10 @@ body {
     background-color: #1e1e1e;
 }
 
+.wrapper #jsEditor pre.loading-pre {
+    margin: 20px;
+}
+
 .wrapper #canvasZone {
     height: 100%;
 }
@@ -440,7 +418,7 @@ body {
     -ms-user-select: none;
     user-select: none;
     position: relative;
-    z-index: 5;
+    z-index: 11;
 }
 
 .navbar a {
@@ -903,7 +881,7 @@ body {
     top: 80px;
     left: calc(50% - 205px);
     width: 410px;
-    height: 370px;
+    height: 390px;
     padding-top: 15px;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
@@ -914,6 +892,10 @@ body {
 
 .save-layer .save-form img {
     display: none;
+}
+
+#saveFormDescription {
+    height: 80px;
 }
 
 .save-layer .save-form .separator {

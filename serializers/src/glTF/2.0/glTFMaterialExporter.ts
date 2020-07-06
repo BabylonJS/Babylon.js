@@ -1138,7 +1138,7 @@ export class _GLTFMaterialExporter {
         return this._finishMaterial(promises, glTFMaterial, babylonPBRMaterial, mimeType);
     }
 
-    private getPixelsFromTexture(babylonTexture: BaseTexture): Uint8Array | Float32Array {
+    private getPixelsFromTexture(babylonTexture: BaseTexture): Nullable<Uint8Array | Float32Array> {
         const pixels = babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_INT ? babylonTexture.readPixels() as Uint8Array : babylonTexture.readPixels() as Float32Array;
         return pixels;
     }
@@ -1170,6 +1170,11 @@ export class _GLTFMaterialExporter {
                 return this._textureMap[textureUid];
             }
             else {
+                const pixels = this.getPixelsFromTexture(babylonTexture);
+                if (!pixels) {
+                    return null;
+                }
+
                 const samplers = this._exporter._samplers;
                 const sampler = this._getGLTFTextureSampler(babylonTexture);
                 let samplerIndex: Nullable<number> = null;
@@ -1184,6 +1189,7 @@ export class _GLTFMaterialExporter {
                         break;
                     }
                 }
+
                 if (foundSamplerIndex == null) {
                     samplers.push(sampler);
                     samplerIndex = samplers.length - 1;
@@ -1191,7 +1197,6 @@ export class _GLTFMaterialExporter {
                 else {
                     samplerIndex = foundSamplerIndex;
                 }
-                const pixels = this.getPixelsFromTexture(babylonTexture);
                 const size = babylonTexture.getSize();
 
                 return this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then((base64Data) => {

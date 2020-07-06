@@ -120,7 +120,10 @@ var BABYLONDEVTOOLS;
         Loader.prototype.dequeue = function() {
             if (queue.length + esmQueue.length === 0) {
                 console.log('Scripts loaded');
-                BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+
+                if (BABYLON) {
+                    BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+                }
                 if (callback) {
                     callback();
                 }

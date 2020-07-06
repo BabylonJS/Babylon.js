@@ -71,11 +71,26 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
             const dracoData = new decoderModule.DracoFloat32Array();
             try {
                 decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
-                const babylonData = new Float32Array(numPoints * attribute.num_components());
-                for (let i = 0; i < babylonData.length; i++) {
-                    babylonData[i] = dracoData.GetValue(i);
+                const numComponents = attribute.num_components();
+                if (numComponents) {
+                    if (kind === "color" && numComponents === 3) {
+                        const babylonData = new Float32Array(numPoints * 4);
+                        for (let i = 0, j = 0; i < babylonData.length; i += 4, j += numComponents) {
+                            babylonData[i + 0] = dracoData.GetValue(j + 0);
+                            babylonData[i + 1] = dracoData.GetValue(j + 1);
+                            babylonData[i + 2] = dracoData.GetValue(j + 2);
+                            babylonData[i + 3] = 1;
+                        }
+                        onAttributeData(kind, babylonData);
+                    }
+                    else {
+                        const babylonData = new Float32Array(numPoints * numComponents);
+                        for (let i = 0; i < babylonData.length; i++) {
+                            babylonData[i] = dracoData.GetValue(i);
+                        }
+                        onAttributeData(kind, babylonData);
+                    }
                 }
-                onAttributeData(kind, babylonData);
             }
             finally {
                 decoderModule.destroy(dracoData);
@@ -120,7 +135,7 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
  * The worker function that gets converted to a blob url to pass into a worker.
  */
 function worker(): void {
-    let decoderPromise: Promise<any> | undefined;
+    let decoderPromise: PromiseLike<any> | undefined;
 
     onmessage = (event) => {
         const data = event.data;
@@ -129,7 +144,7 @@ function worker(): void {
                 const decoder = data.decoder;
                 if (decoder.url) {
                     importScripts(decoder.url);
-                    decoderPromise = createDecoderAsync(decoder.wasmBinary);
+                    decoderPromise = DracoDecoderModule({ wasmBinary: decoder.wasmBinary });
                 }
                 postMessage("done");
                 break;
@@ -139,7 +154,7 @@ function worker(): void {
                     throw new Error("Draco decoder module is not available");
                 }
                 decoderPromise.then((decoder) => {
-                    decodeMesh(decoder.module, data.dataView, data.attributes, (indices) => {
+                    decodeMesh(decoder, data.dataView, data.attributes, (indices) => {
                         postMessage({ id: "indices", value: indices }, [indices.buffer]);
                     }, (kind, data) => {
                         postMessage({ id: kind, value: data }, [data.buffer]);
@@ -291,7 +306,7 @@ export class DracoCompression implements IDisposable {
 
         if (numWorkers && typeof Worker === "function") {
             this._workerPoolPromise = decoderInfo.wasmBinaryPromise.then((decoderWasmBinary) => {
-                const workerContent = `${createDecoderAsync}${decodeMesh}(${worker})()`;
+                const workerContent = `${decodeMesh}(${worker})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
                 const workerPromises = new Array<Promise<Worker>>(numWorkers);
                 for (let i = 0; i < workerPromises.length; i++) {

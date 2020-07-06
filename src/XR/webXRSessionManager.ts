@@ -13,7 +13,7 @@ interface IRenderTargetProvider {
 
 /**
  * Manages an XRSession to work with Babylon's engine
- * @see https://doc.babylonjs.com/how_to/webxr
+ * @see https://doc.babylonjs.com/how_to/webxr_session_manager
  */
 export class WebXRSessionManager implements IDisposable {
     private _referenceSpace: XRReferenceSpace;
@@ -176,6 +176,8 @@ export class WebXRSessionManager implements IDisposable {
                 this._sessionEnded = true;
                 // Remove render target texture and notify frame observers
                 this._rttProvider = null;
+                // make sure dimensions object is restored
+                engine.framebufferDimensionsObject = null;
 
                 // Restore frame buffer to avoid clear on xr framebuffer after session end
                 engine.restoreDefaultFramebuffer();
@@ -221,9 +223,10 @@ export class WebXRSessionManager implements IDisposable {
                 this.currentFrame = xrFrame;
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
+                    engine.framebufferDimensionsObject = this.baseLayer!;
                     this.onXRFrameObservable.notifyObservers(xrFrame);
-                    // only run the render loop if a frame exists
                     engine._renderLoop();
+                    engine.framebufferDimensionsObject = null;
                 }
             }
         };
@@ -234,6 +237,7 @@ export class WebXRSessionManager implements IDisposable {
             // Create render target texture from xr's webgl render target
             const rtt = this._createRenderTargetTexture(this.baseLayer!.framebufferWidth, this.baseLayer!.framebufferHeight, this.baseLayer!.framebuffer);
             this._rttProvider = { getRenderTargetForEye: () => rtt };
+            engine.framebufferDimensionsObject = this.baseLayer;
         }
 
         // Stop window's animation frame and trigger sessions animation frame
@@ -262,12 +266,14 @@ export class WebXRSessionManager implements IDisposable {
                 throw "XR initialization failed: required \"viewer\" reference space type not supported.";
             });
         }).then((referenceSpace) => {
+            // create viewer reference space before setting the first reference space
+            return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace: XRReferenceSpace) => {
+                this.viewerReferenceSpace = viewerReferenceSpace;
+                return referenceSpace;
+            });
+        }).then((referenceSpace) => {
             // initialize the base and offset (currently the same)
             this.referenceSpace = this.baseReferenceSpace = referenceSpace;
-
-            this.session.requestReferenceSpace("viewer").then((referenceSpace: XRReferenceSpace) => {
-                this.viewerReferenceSpace = referenceSpace;
-            });
             return this.referenceSpace;
         });
     }

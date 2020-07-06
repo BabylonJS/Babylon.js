@@ -33,8 +33,9 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         let tmpVector = TmpVectors.Vector3[0];
 
         if (this.particleDestinationGenerator) {
@@ -49,6 +50,11 @@ export class CustomParticleEmitter implements IParticleEmitterType {
             tmpVector.set(0, 0, 0);
         }
 
+        if (isLocal) {
+            directionToUpdate.copyFrom(tmpVector);
+            return;
+        }
+
         Vector3.TransformNormalToRef(tmpVector, worldMatrix, directionToUpdate);
     }
 
@@ -57,14 +63,20 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         let tmpVector = TmpVectors.Vector3[0];
 
         if (this.particlePositionGenerator) {
             this.particlePositionGenerator(-1, particle, tmpVector);
         } else {
             tmpVector.set(0, 0, 0);
+        }
+
+        if (isLocal) {
+            positionToUpdate.copyFrom(tmpVector);
+            return;
         }
 
         Vector3.TransformCoordinatesToRef(tmpVector, worldMatrix, positionToUpdate);

@@ -17,6 +17,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
     private _positions: Nullable<FloatArray> = null;
     private _normals: Nullable<FloatArray> = null;
     private _storedNormal = Vector3.Zero();
+    private _mesh: Nullable<AbstractMesh> = null;
 
     /**
      * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
@@ -32,19 +33,35 @@ export class MeshParticleEmitter implements IParticleEmitterType {
      */
     public useMeshNormalsForDirection = true;
 
+    /** Defines the mesh to use as source */
+    public get mesh(): Nullable<AbstractMesh> {
+        return this._mesh;
+    }
+
+    public set mesh(value: Nullable<AbstractMesh>) {
+        if (this._mesh === value) {
+            return;
+        }
+
+        this._mesh = value;
+
+        if (value) {
+            this._indices = value.getIndices();
+            this._positions = value.getVerticesData(VertexBuffer.PositionKind);
+            this._normals = value.getVerticesData(VertexBuffer.NormalKind);
+        } else {
+            this._indices = null;
+            this._positions = null;
+            this._normals = null;
+        }
+    }
+
     /**
      * Creates a new instance MeshParticleEmitter
      * @param mesh defines the mesh to use as source
      */
-    constructor(
-        /** Defines the mesh to use as source */
-        public mesh?: AbstractMesh) {
-
-        if (mesh) {
-            this._indices = mesh.getIndices();
-            this._positions = mesh.getVerticesData(VertexBuffer.PositionKind);
-            this._normals = mesh.getVerticesData(VertexBuffer.NormalKind);
-        }
+    constructor(mesh: Nullable<AbstractMesh> = null) {
+        this.mesh = mesh;
     }
 
     /**
@@ -52,8 +69,9 @@ export class MeshParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         if (this.useMeshNormalsForDirection && this._normals) {
             Vector3.TransformNormalToRef(this._storedNormal, worldMatrix, directionToUpdate);
             return;
@@ -63,6 +81,11 @@ export class MeshParticleEmitter implements IParticleEmitterType {
         var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
         var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
 
+        if (isLocal) {
+            directionToUpdate.copyFromFloats(randX, randY, randZ);
+            return;
+        }
+
         Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, worldMatrix, directionToUpdate);
     }
 
@@ -71,8 +94,9 @@ export class MeshParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         if (!this._indices || !this._positions) {
             return;
         }
@@ -98,7 +122,11 @@ export class MeshParticleEmitter implements IParticleEmitterType {
         randomVertex.y = bu * vertexA.y + bv * vertexB.y + bw * vertexC.y;
         randomVertex.z = bu * vertexA.z + bv * vertexB.z + bw * vertexC.z;
 
-        Vector3.TransformCoordinatesFromFloatsToRef(randomVertex.x, randomVertex.y, randomVertex.z, worldMatrix, positionToUpdate);
+        if (isLocal) {
+            positionToUpdate.copyFromFloats(randomVertex.x, randomVertex.y, randomVertex.z);
+        } else {
+            Vector3.TransformCoordinatesFromFloatsToRef(randomVertex.x, randomVertex.y, randomVertex.z, worldMatrix, positionToUpdate);
+        }
 
         if (this.useMeshNormalsForDirection && this._normals) {
             Vector3.FromArrayToRef(this._normals, faceIndexA * 3, vertexA);
@@ -174,7 +202,7 @@ export class MeshParticleEmitter implements IParticleEmitterType {
         Vector3.FromArrayToRef(serializationObject.direction2, 0, this.direction2);
 
         if (serializationObject.meshId) {
-            this.mesh = scene.getLastMeshByID(serializationObject.meshId) || undefined;
+            this.mesh = scene.getLastMeshByID(serializationObject.meshId);
         }
 
         this.useMeshNormalsForDirection = serializationObject.useMeshNormalsForDirection;

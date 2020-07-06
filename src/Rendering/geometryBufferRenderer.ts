@@ -216,13 +216,14 @@ export class GeometryBufferRenderer {
         // Alpha test
         if (material) {
             let needUv = false;
-            if (material.needAlphaBlending()) {
+            if (material.needAlphaTesting()) {
                 defines.push("#define ALPHATEST");
                 needUv = true;
             }
 
             if (material.bumpTexture && StandardMaterial.BumpTextureEnabled) {
                 defines.push("#define BUMP");
+                defines.push("#define BUMPDIRECTUV 0");
                 needUv = true;
             }
 
@@ -300,6 +301,9 @@ export class GeometryBufferRenderer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Setup textures count
@@ -390,7 +394,8 @@ export class GeometryBufferRenderer {
 
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var mesh = subMesh.getRenderingMesh();
+            var renderingMesh = subMesh.getRenderingMesh();
+            var effectiveMesh = subMesh.getEffectiveMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
             let material = <any> subMesh.getMaterial();
@@ -399,18 +404,18 @@ export class GeometryBufferRenderer {
                 return;
             }
 
-            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+            effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
             // Velocity
-            if (this._enableVelocity && !this._previousTransformationMatrices[mesh.uniqueId]) {
-                this._previousTransformationMatrices[mesh.uniqueId] = {
+            if (this._enableVelocity && !this._previousTransformationMatrices[effectiveMesh.uniqueId]) {
+                this._previousTransformationMatrices[effectiveMesh.uniqueId] = {
                     world: Matrix.Identity(),
                     viewProjection: scene.getTransformMatrix()
                 };
 
-                if (mesh.skeleton) {
-                    const bonesTransformations = mesh.skeleton.getTransformMatrices(mesh);
-                    this._previousBonesTransformationMatrices[mesh.uniqueId] = this._copyBonesTransformationMatrices(bonesTransformations, new Float32Array(bonesTransformations.length));
+                if (renderingMesh.skeleton) {
+                    const bonesTransformations = renderingMesh.skeleton.getTransformMatrices(renderingMesh);
+                    this._previousBonesTransformationMatrices[renderingMesh.uniqueId] = this._copyBonesTransformationMatrices(bonesTransformations, new Float32Array(bonesTransformations.length));
                 }
             }
 
@@ -418,17 +423,18 @@ export class GeometryBufferRenderer {
             engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
 
             // Managing instances
-            var batch = mesh._getInstancesRenderList(subMesh._id);
+            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
+            var world = effectiveMesh.getWorldMatrix();
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 engine.enableEffect(this._effect);
-                mesh._bind(subMesh, this._effect, material.fillMode);
+                renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 this._effect.setMatrix("view", scene.getViewMatrix());
@@ -464,33 +470,33 @@ export class GeometryBufferRenderer {
                 }
 
                 // Bones
-                if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                    this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
                     if (this._enableVelocity) {
-                        this._effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[mesh.uniqueId]);
+                        this._effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[renderingMesh.uniqueId]);
                     }
                 }
 
                 // Morph targets
-                MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+                MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
 
                 // Velocity
                 if (this._enableVelocity) {
-                    this._effect.setMatrix("previousWorld", this._previousTransformationMatrices[mesh.uniqueId].world);
-                    this._effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[mesh.uniqueId].viewProjection);
+                    this._effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
+                    this._effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
                 }
 
                 // Draw
-                mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
-                    (isInstance, world) => this._effect.setMatrix("world", world));
+                renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
+                    (isInstance, w) => this._effect.setMatrix("world", w));
             }
 
             // Velocity
             if (this._enableVelocity) {
-                this._previousTransformationMatrices[mesh.uniqueId].world = mesh.getWorldMatrix().clone();
-                this._previousTransformationMatrices[mesh.uniqueId].viewProjection = this._scene.getTransformMatrix().clone();
-                if (mesh.skeleton) {
-                    this._copyBonesTransformationMatrices(mesh.skeleton.getTransformMatrices(mesh), this._previousBonesTransformationMatrices[mesh.uniqueId]);
+                this._previousTransformationMatrices[effectiveMesh.uniqueId].world = world.clone();
+                this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection = this._scene.getTransformMatrix().clone();
+                if (renderingMesh.skeleton) {
+                    this._copyBonesTransformationMatrices(renderingMesh.skeleton.getTransformMatrices(renderingMesh), this._previousBonesTransformationMatrices[effectiveMesh.uniqueId]);
                 }
             }
         };

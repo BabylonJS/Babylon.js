@@ -343,6 +343,20 @@
                 grid-column: 9;
             }
         }
+        
+        .targetedAnimationTools {
+            grid-column: 2;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+            min-width: 0;
+           
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }
 
         .animationGroupTools {
             grid-column: 2;
@@ -415,9 +429,45 @@
                 width: 20px;
                 grid-column: 3;
             }
-        }
+        }        
+        
+        .spriteTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }   
+
+        .spriteManagerTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }        
 
         .materialTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }
+
+        .particleSystemTools {
             grid-column: 2;
             display: grid;
             grid-template-columns: 1fr auto 5px;

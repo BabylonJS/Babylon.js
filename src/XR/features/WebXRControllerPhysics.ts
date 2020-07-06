@@ -85,7 +85,8 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         if (!this._xrSessionManager.scene.isPhysicsEnabled()) {
             Logger.Warn("physics engine not enabled, skipped. Please add this controller manually.");
         }
-        if (this._options.physicsProperties!.useControllerMesh) {
+        // if no motion controller available, create impostors!
+        if (this._options.physicsProperties!.useControllerMesh && xrController.inputSource.gamepad) {
             xrController.onMotionControllerInitObservable.addOnce((motionController) => {
                 motionController.onModelLoadedObservable.addOnce(() => {
                     const impostor = new PhysicsImpostor(motionController.rootMesh!, PhysicsImpostor.MeshImpostor, {

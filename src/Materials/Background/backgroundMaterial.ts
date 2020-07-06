@@ -95,6 +95,11 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public USEHIGHLIGHTANDSHADOWCOLORS = false;
 
     /**
+     * True if only shadows must be rendered
+     */
+    public BACKMAT_SHADOWONLY = false;
+
+    /**
      * True to add noise in order to reduce the banding effect.
      */
     public NOISE = false;
@@ -412,6 +417,14 @@ export class BackgroundMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public maxSimultaneousLights: int = 4;
 
+    @serialize()
+    private _shadowOnly: boolean = false;
+    /**
+     * Make the material only render shadows
+     */
+    @expandToProperty("_markAllSubMeshesAsLightsDirty")
+    public shadowOnly: boolean = false;
+
     /**
      * Default configuration related to image processing available in the Background Material.
      */
@@ -642,7 +655,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns true if blending is enable
      */
     public needAlphaBlending(): boolean {
-        return ((this.alpha < 0) || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha));
+        return (this.alpha < 1) || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._shadowOnly;
     }
 
     /**
@@ -665,10 +678,9 @@ export class BackgroundMaterial extends PushMaterial {
 
         var scene = this.getScene();
         var defines = <BackgroundMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === scene.getRenderId()) {
-                return true;
-            }
+
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -800,6 +812,7 @@ export class BackgroundMaterial extends PushMaterial {
 
         if (defines._areLightsDirty) {
             defines.USEHIGHLIGHTANDSHADOWCOLORS = !this._useRGBColor && (this._primaryColorShadowLevel !== 0 || this._primaryColorHighlightLevel !== 0);
+            defines.BACKMAT_SHADOWONLY = this._shadowOnly;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
@@ -814,7 +827,7 @@ export class BackgroundMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // Attribs
         if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {

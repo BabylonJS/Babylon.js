@@ -57,7 +57,7 @@
             #ifdef HEMILIGHT{X}
                 info.diffuse = computeHemisphericDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb, light{X}.vLightGround);
             #elif defined(SS_TRANSLUCENCY)
-                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, light{X}.vLightDiffuse.rgb, transmittance);
+                info.diffuse = computeDiffuseAndTransmittedLighting(preInfo, light{X}.vLightDiffuse.rgb, subSurfaceOut.transmittance);
             #else
                 info.diffuse = computeDiffuseLighting(preInfo, light{X}.vLightDiffuse.rgb);
             #endif
@@ -65,9 +65,9 @@
             // Specular contribution
             #ifdef SPECULARTERM
                 #ifdef ANISOTROPIC
-                    info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, anisotropicTangent, anisotropicBitangent, anisotropy, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
+                    info.specular = computeAnisotropicSpecularLighting(preInfo, viewDirectionW, normalW, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
                 #else
-                    info.specular = computeSpecularLighting(preInfo, normalW, specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
+                    info.specular = computeSpecularLighting(preInfo, normalW, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
                 #endif
             #endif
 
@@ -75,25 +75,31 @@
             #ifdef SHEEN
                 #ifdef SHEEN_LINKWITHALBEDO
                     // BE Carefull: Sheen intensity is replacing the roughness value.
-                    preInfo.roughness = sheenIntensity;
+                    preInfo.roughness = sheenOut.sheenIntensity;
+                #else
+                    #ifdef HEMILIGHT{X}
+                        preInfo.roughness = sheenOut.sheenRoughness;
+                    #else
+                        preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
+                    #endif
                 #endif
-                info.sheen = computeSheenLighting(preInfo, normalW, sheenColor, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
+                info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactors.x, light{X}.vLightDiffuse.rgb);
             #endif
 
             // Clear Coat contribution
             #ifdef CLEARCOAT
                 // Simulates Light radius
                 #ifdef HEMILIGHT{X}
-                    preInfo.roughness = clearCoatRoughness;
+                    preInfo.roughness = clearcoatOut.clearCoatRoughness;
                 #else
-                    preInfo.roughness = adjustRoughnessFromLightProperties(clearCoatRoughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
+                    preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, light{X}.vLightSpecular.a, preInfo.lightDistance);
                 #endif
 
-                info.clearCoat = computeClearCoatLighting(preInfo, clearCoatNormalW, clearCoatAARoughnessFactors.x, clearCoatIntensity, light{X}.vLightDiffuse.rgb);
+                info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, light{X}.vLightDiffuse.rgb);
                 
                 #ifdef CLEARCOAT_TINT
                     // Absorption
-                    absorption = computeClearCoatLightingAbsorption(clearCoatNdotVRefract, preInfo.L, clearCoatNormalW, clearCoatColor, clearCoatThickness, clearCoatIntensity);
+                    absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
                     info.diffuse *= absorption;
                     #ifdef SPECULARTERM
                         info.specular *= absorption;

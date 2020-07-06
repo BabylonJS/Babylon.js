@@ -75,6 +75,17 @@
     uniform sampler2D microSurfaceSampler;
 #endif
 
+#ifdef METALLIC_REFLECTANCE
+    #if METALLIC_REFLECTANCEDIRECTUV == 1
+        #define vMetallicReflectanceUV vMainUV1
+    #elif METALLIC_REFLECTANCEDIRECTUV == 2
+        #define vMetallicReflectanceUV vMainUV2
+    #else
+        varying vec2 vMetallicReflectanceUV;
+    #endif
+    uniform sampler2D metallicReflectanceSampler;
+#endif
+
 #ifdef CLEARCOAT
     #ifdef CLEARCOAT_TEXTURE
         #if CLEARCOAT_TEXTUREDIRECTUV == 1
@@ -205,8 +216,8 @@
             #ifdef LODBASEDMICROSFURACE
                 #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
             #else
-                uniform samplerCube refractionSamplerLow;
-                uniform samplerCube refractionSamplerHigh;
+                uniform sampler2D refractionSamplerLow;
+                uniform sampler2D refractionSamplerHigh;
             #endif
         #endif
     #endif

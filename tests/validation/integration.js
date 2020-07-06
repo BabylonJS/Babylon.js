@@ -5,6 +5,7 @@ var xhr = new XMLHttpRequest();
 
 xhr.open("GET", "/tests/validation/config.json", true);
 
+
 xhr.addEventListener("load", function () {
     if (xhr.status === 200) {
 

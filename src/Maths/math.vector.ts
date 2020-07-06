@@ -5,6 +5,7 @@ import { DeepImmutable, Nullable, FloatArray, float } from "../types";
 import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
 import { _TypeStore } from '../Misc/typeStore';
+import { Plane } from './math.plane';
 
 /**
  * Class representing a vector containing 2 coordinates
@@ -672,6 +673,48 @@ export class Vector3 {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
+    /** @hidden */
+    public _x: number;
+
+    /** @hidden */
+    public _y: number;
+
+    /** @hidden */
+    public _z: number;
+
+    /** @hidden */
+    public _isDirty = true;
+
+    /** Gets or sets the x coordinate */
+    public get x() {
+        return this._x;
+    }
+
+    public set x(value: number) {
+        this._x = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the y coordinate */
+    public get y() {
+        return this._y;
+    }
+
+    public set y(value: number) {
+        this._y = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the z coordinate */
+    public get z() {
+        return this._z;
+    }
+
+    public set z(value: number) {
+        this._z = value;
+        this._isDirty = true;
+    }
+
     /**
      * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
      * @param x defines the first coordinates (on X axis)
@@ -679,19 +722,13 @@ export class Vector3 {
      * @param z defines the third coordinates (on Z axis)
      */
     constructor(
-        /**
-         * Defines the first coordinates (on X axis)
-         */
-        public x: number = 0,
-        /**
-         * Defines the second coordinates (on Y axis)
-         */
-        public y: number = 0,
-        /**
-         * Defines the third coordinates (on Z axis)
-         */
-        public z: number = 0
+        x: number = 0,
+        y: number = 0,
+        z: number = 0
     ) {
+        this._x = x;
+        this._y = y;
+        this._z = z;
     }
 
     /**
@@ -699,7 +736,7 @@ export class Vector3 {
      * @returns a string with the Vector3 coordinates.
      */
     public toString(): string {
-        return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
+        return "{X: " + this._x + " Y:" + this._y + " Z:" + this._z + "}";
     }
 
     /**
@@ -715,9 +752,9 @@ export class Vector3 {
      * @returns a number which tends to be unique between Vector3 instances
      */
     public getHashCode(): number {
-        let hash = this.x | 0;
-        hash = (hash * 397) ^ (this.y | 0);
-        hash = (hash * 397) ^ (this.z | 0);
+        let hash = this._x | 0;
+        hash = (hash * 397) ^ (this._y | 0);
+        hash = (hash * 397) ^ (this._z | 0);
         return hash;
     }
 
@@ -740,9 +777,9 @@ export class Vector3 {
      * @returns the current Vector3
      */
     public toArray(array: FloatArray, index: number = 0): Vector3 {
-        array[index] = this.x;
-        array[index + 1] = this.y;
-        array[index + 2] = this.z;
+        array[index] = this._x;
+        array[index + 1] = this._y;
+        array[index + 2] = this._z;
         return this;
     }
 
@@ -751,7 +788,7 @@ export class Vector3 {
      * @returns a new Quaternion object, computed from the Vector3 coordinates
      */
     public toQuaternion(): Quaternion {
-        return Quaternion.RotationYawPitchRoll(this.y, this.x, this.z);
+        return Quaternion.RotationYawPitchRoll(this._y, this._x, this._z);
     }
 
     /**
@@ -760,7 +797,7 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public addInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return this.addInPlaceFromFloats(otherVector.x, otherVector.y, otherVector.z);
+        return this.addInPlaceFromFloats(otherVector._x, otherVector._y, otherVector._z);
     }
 
     /**
@@ -783,7 +820,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public add(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
+        return new Vector3(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
     }
 
     /**
@@ -793,7 +830,7 @@ export class Vector3 {
      * @returns the current Vector3
      */
     public addToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
-        return result.copyFromFloats(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
+        return result.copyFromFloats(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
     }
 
     /**
@@ -802,9 +839,9 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public subtractInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
-        this.x -= otherVector.x;
-        this.y -= otherVector.y;
-        this.z -= otherVector.z;
+        this.x -= otherVector._x;
+        this.y -= otherVector._y;
+        this.z -= otherVector._z;
         return this;
     }
 
@@ -814,7 +851,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public subtract(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
+        return new Vector3(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
     }
 
     /**
@@ -824,7 +861,7 @@ export class Vector3 {
      * @returns the current Vector3
      */
     public subtractToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
-        return this.subtractFromFloatsToRef(otherVector.x, otherVector.y, otherVector.z, result);
+        return this.subtractFromFloatsToRef(otherVector._x, otherVector._y, otherVector._z, result);
     }
 
     /**
@@ -835,7 +872,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public subtractFromFloats(x: number, y: number, z: number): Vector3 {
-        return new Vector3(this.x - x, this.y - y, this.z - z);
+        return new Vector3(this._x - x, this._y - y, this._z - z);
     }
 
     /**
@@ -847,7 +884,7 @@ export class Vector3 {
      * @returns the current Vector3
      */
     public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
-        return result.copyFromFloats(this.x - x, this.y - y, this.z - z);
+        return result.copyFromFloats(this._x - x, this._y - y, this._z - z);
     }
 
     /**
@@ -855,7 +892,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public negate(): Vector3 {
-        return new Vector3(-this.x, -this.y, -this.z);
+        return new Vector3(-this._x, -this._y, -this._z);
     }
 
     /**
@@ -875,7 +912,7 @@ export class Vector3 {
      * @returns the current Vector3
      */
     public negateToRef(result: Vector3): Vector3 {
-        return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1);
+        return result.copyFromFloats(this._x * -1, this._y * -1, this._z * -1);
     }
 
     /**
@@ -896,7 +933,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public scale(scale: number): Vector3 {
-        return new Vector3(this.x * scale, this.y * scale, this.z * scale);
+        return new Vector3(this._x * scale, this._y * scale, this._z * scale);
     }
 
     /**
@@ -906,7 +943,7 @@ export class Vector3 {
      * @returns the current Vector3
      */
     public scaleToRef(scale: number, result: Vector3): Vector3 {
-        return result.copyFromFloats(this.x * scale, this.y * scale, this.z * scale);
+        return result.copyFromFloats(this._x * scale, this._y * scale, this._z * scale);
     }
 
     /**
@@ -916,7 +953,46 @@ export class Vector3 {
      * @returns the unmodified current Vector3
      */
     public scaleAndAddToRef(scale: number, result: Vector3): Vector3 {
-        return result.addInPlaceFromFloats(this.x * scale, this.y * scale, this.z * scale);
+        return result.addInPlaceFromFloats(this._x * scale, this._y * scale, this._z * scale);
+    }
+
+    /**
+     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * @param origin defines the origin of the projection ray
+     * @param plane defines the plane to project to
+     * @returns the projected vector3
+     */
+    public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
+        let result = Vector3.Zero();
+
+        this.projectOnPlaneToRef(plane, origin, result);
+
+        return result;
+    }
+
+    /**
+     * Projects the current vector3 to a plane along a ray starting from a specified origin and directed towards the point.
+     * @param origin defines the origin of the projection ray
+     * @param plane defines the plane to project to
+     * @param result defines the Vector3 where to store the result
+     */
+    public projectOnPlaneToRef(plane: Plane, origin: Vector3, result: Vector3): void {
+        let n = plane.normal;
+        let d = plane.d;
+
+        let V  = MathTmp.Vector3[0];
+
+        // ray direction
+        this.subtractToRef(origin, V);
+
+        V.normalize();
+
+        let denom = Vector3.Dot(V, n);
+        let t = -(Vector3.Dot(origin, n) + d) / denom;
+
+        // P = P0 + t*V
+        let scaledV = V.scaleInPlace(t);
+        origin.addToRef(scaledV, result);
     }
 
     /**
@@ -925,7 +1001,7 @@ export class Vector3 {
      * @returns true if both vectors are equals
      */
     public equals(otherVector: DeepImmutable<Vector3>): boolean {
-        return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
+        return otherVector && this._x === otherVector._x && this._y === otherVector._y && this._z === otherVector._z;
     }
 
     /**
@@ -935,7 +1011,7 @@ export class Vector3 {
      * @returns true if both vectors are distant less than epsilon
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector3>, epsilon: number = Epsilon): boolean {
-        return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon);
+        return otherVector && Scalar.WithinEpsilon(this._x, otherVector._x, epsilon) && Scalar.WithinEpsilon(this._y, otherVector._y, epsilon) && Scalar.WithinEpsilon(this._z, otherVector._z, epsilon);
     }
 
     /**
@@ -946,7 +1022,7 @@ export class Vector3 {
      * @returns true if both vectors are equals
      */
     public equalsToFloats(x: number, y: number, z: number): boolean {
-        return this.x === x && this.y === y && this.z === z;
+        return this._x === x && this._y === y && this._z === z;
     }
 
     /**
@@ -955,9 +1031,9 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public multiplyInPlace(otherVector: DeepImmutable<Vector3>): Vector3 {
-        this.x *= otherVector.x;
-        this.y *= otherVector.y;
-        this.z *= otherVector.z;
+        this.x *= otherVector._x;
+        this.y *= otherVector._y;
+        this.z *= otherVector._z;
         return this;
     }
 
@@ -967,7 +1043,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public multiply(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return this.multiplyByFloats(otherVector.x, otherVector.y, otherVector.z);
+        return this.multiplyByFloats(otherVector._x, otherVector._y, otherVector._z);
     }
 
     /**
@@ -977,7 +1053,7 @@ export class Vector3 {
      * @returns the current Vector3
      */
     public multiplyToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
-        return result.copyFromFloats(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
+        return result.copyFromFloats(this._x * otherVector._x, this._y * otherVector._y, this._z * otherVector._z);
     }
 
     /**
@@ -988,7 +1064,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public multiplyByFloats(x: number, y: number, z: number): Vector3 {
-        return new Vector3(this.x * x, this.y * y, this.z * z);
+        return new Vector3(this._x * x, this._y * y, this._z * z);
     }
 
     /**
@@ -997,7 +1073,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public divide(otherVector: DeepImmutable<Vector3>): Vector3 {
-        return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
+        return new Vector3(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
     }
 
     /**
@@ -1007,7 +1083,7 @@ export class Vector3 {
      * @returns the current Vector3
      */
     public divideToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
-        return result.copyFromFloats(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
+        return result.copyFromFloats(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
     }
 
     /**
@@ -1025,7 +1101,7 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public minimizeInPlace(other: DeepImmutable<Vector3>): Vector3 {
-        return this.minimizeInPlaceFromFloats(other.x, other.y, other.z);
+        return this.minimizeInPlaceFromFloats(other._x, other._y, other._z);
     }
 
     /**
@@ -1034,7 +1110,7 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public maximizeInPlace(other: DeepImmutable<Vector3>): Vector3 {
-        return this.maximizeInPlaceFromFloats(other.x, other.y, other.z);
+        return this.maximizeInPlaceFromFloats(other._x, other._y, other._z);
     }
 
     /**
@@ -1045,9 +1121,9 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public minimizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
-        if (x < this.x) { this.x = x; }
-        if (y < this.y) { this.y = y; }
-        if (z < this.z) { this.z = z; }
+        if (x < this._x) { this.x = x; }
+        if (y < this._y) { this.y = y; }
+        if (z < this._z) { this.z = z; }
         return this;
     }
 
@@ -1059,9 +1135,9 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public maximizeInPlaceFromFloats(x: number, y: number, z: number): Vector3 {
-        if (x > this.x) { this.x = x; }
-        if (y > this.y) { this.y = y; }
-        if (z > this.z) { this.z = z; }
+        if (x > this._x) { this.x = x; }
+        if (y > this._y) { this.y = y; }
+        if (z > this._z) { this.z = z; }
         return this;
     }
 
@@ -1072,13 +1148,13 @@ export class Vector3 {
      * @returns if the the vector is non uniform to a certain number of decimal places
      */
     public isNonUniformWithinEpsilon(epsilon: number) {
-        let absX = Math.abs(this.x);
-        let absY = Math.abs(this.y);
+        let absX = Math.abs(this._x);
+        let absY = Math.abs(this._y);
         if (!Scalar.WithinEpsilon(absX, absY, epsilon)) {
             return true;
         }
 
-        let absZ = Math.abs(this.z);
+        let absZ = Math.abs(this._z);
         if (!Scalar.WithinEpsilon(absX, absZ, epsilon)) {
             return true;
         }
@@ -1094,18 +1170,14 @@ export class Vector3 {
      * Gets a boolean indicating that the vector is non uniform meaning x, y or z are not all the same
      */
     public get isNonUniform(): boolean {
-        let absX = Math.abs(this.x);
-        let absY = Math.abs(this.y);
+        let absX = Math.abs(this._x);
+        let absY = Math.abs(this._y);
         if (absX !== absY) {
             return true;
         }
 
-        let absZ = Math.abs(this.z);
+        let absZ = Math.abs(this._z);
         if (absX !== absZ) {
-            return true;
-        }
-
-        if (absY !== absZ) {
             return true;
         }
 
@@ -1117,7 +1189,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public floor(): Vector3 {
-        return new Vector3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
+        return new Vector3(Math.floor(this._x), Math.floor(this._y), Math.floor(this._z));
     }
 
     /**
@@ -1125,7 +1197,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public fract(): Vector3 {
-        return new Vector3(this.x - Math.floor(this.x), this.y - Math.floor(this.y), this.z - Math.floor(this.z));
+        return new Vector3(this._x - Math.floor(this._x), this._y - Math.floor(this._y), this._z - Math.floor(this._z));
     }
 
     // Properties
@@ -1134,7 +1206,7 @@ export class Vector3 {
      * @returns the length of the Vector3
      */
     public length(): number {
-        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+        return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
     }
 
     /**
@@ -1142,7 +1214,7 @@ export class Vector3 {
      * @returns squared length of the Vector3
      */
     public lengthSquared(): number {
-        return (this.x * this.x + this.y * this.y + this.z * this.z);
+        return (this._x * this._x + this._y * this._y + this._z * this._z);
     }
 
     /**
@@ -1236,10 +1308,10 @@ export class Vector3 {
      * @param reference define the Vector3 to update
      * @returns the updated Vector3
      */
-    public normalizeToRef(reference: DeepImmutable<Vector3>): Vector3 {
+    public normalizeToRef(reference: Vector3): Vector3 {
         var len = this.length();
         if (len === 0 || len === 1.0) {
-            return reference.copyFromFloats(this.x, this.y, this.z);
+            return reference.copyFromFloats(this._x, this._y, this._z);
         }
 
         return this.scaleToRef(1.0 / len, reference);
@@ -1250,7 +1322,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public clone(): Vector3 {
-        return new Vector3(this.x, this.y, this.z);
+        return new Vector3(this._x, this._y, this._z);
     }
 
     /**
@@ -1259,7 +1331,7 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public copyFrom(source: DeepImmutable<Vector3>): Vector3 {
-        return this.copyFromFloats(source.x, source.y, source.z);
+        return this.copyFromFloats(source._x, source._y, source._z);
     }
 
     /**
@@ -1435,17 +1507,19 @@ export class Vector3 {
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+     * @param rightHandedSystem is the scene right-handed (negative z)
      * @returns a new forward Vector3
      */
-    public static Forward(): Vector3 {
-        return new Vector3(0.0, 0.0, 1.0);
+    public static Forward(rightHandedSystem: boolean = false): Vector3 {
+        return new Vector3(0.0, 0.0, (rightHandedSystem ? -1.0 : 1.0));
     }
     /**
      * Returns a new Vector3 set to (0.0, 0.0, -1.0)
+     * @param rightHandedSystem is the scene right-handed (negative-z)
      * @returns a new forward Vector3
      */
-    public static Backward(): Vector3 {
-        return new Vector3(0.0, 0.0, -1.0);
+    public static Backward(rightHandedSystem: boolean = false): Vector3 {
+        return new Vector3(0.0, 0.0, (rightHandedSystem ? 1.0 : -1.0));
     }
     /**
      * Returns a new Vector3 set to (1.0, 0.0, 0.0)
@@ -1483,7 +1557,7 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public static TransformCoordinatesToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
-        Vector3.TransformCoordinatesFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
+        Vector3.TransformCoordinatesFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
     }
 
     /**
@@ -1528,7 +1602,7 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public static TransformNormalToRef(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>, result: Vector3): void {
-        this.TransformNormalFromFloatsToRef(vector.x, vector.y, vector.z, transformation, result);
+        this.TransformNormalFromFloatsToRef(vector._x, vector._y, vector._z, transformation, result);
     }
 
     /**
@@ -1560,17 +1634,17 @@ export class Vector3 {
         var squared = amount * amount;
         var cubed = amount * squared;
 
-        var x = 0.5 * ((((2.0 * value2.x) + ((-value1.x + value3.x) * amount)) +
-            (((((2.0 * value1.x) - (5.0 * value2.x)) + (4.0 * value3.x)) - value4.x) * squared)) +
-            ((((-value1.x + (3.0 * value2.x)) - (3.0 * value3.x)) + value4.x) * cubed));
+        var x = 0.5 * ((((2.0 * value2._x) + ((-value1._x + value3._x) * amount)) +
+            (((((2.0 * value1._x) - (5.0 * value2._x)) + (4.0 * value3._x)) - value4._x) * squared)) +
+            ((((-value1._x + (3.0 * value2._x)) - (3.0 * value3._x)) + value4._x) * cubed));
 
-        var y = 0.5 * ((((2.0 * value2.y) + ((-value1.y + value3.y) * amount)) +
-            (((((2.0 * value1.y) - (5.0 * value2.y)) + (4.0 * value3.y)) - value4.y) * squared)) +
-            ((((-value1.y + (3.0 * value2.y)) - (3.0 * value3.y)) + value4.y) * cubed));
+        var y = 0.5 * ((((2.0 * value2._y) + ((-value1._y + value3._y) * amount)) +
+            (((((2.0 * value1._y) - (5.0 * value2._y)) + (4.0 * value3._y)) - value4._y) * squared)) +
+            ((((-value1._y + (3.0 * value2._y)) - (3.0 * value3._y)) + value4._y) * cubed));
 
-        var z = 0.5 * ((((2.0 * value2.z) + ((-value1.z + value3.z) * amount)) +
-            (((((2.0 * value1.z) - (5.0 * value2.z)) + (4.0 * value3.z)) - value4.z) * squared)) +
-            ((((-value1.z + (3.0 * value2.z)) - (3.0 * value3.z)) + value4.z) * cubed));
+        var z = 0.5 * ((((2.0 * value2._z) + ((-value1._z + value3._z) * amount)) +
+            (((((2.0 * value1._z) - (5.0 * value2._z)) + (4.0 * value3._z)) - value4._z) * squared)) +
+            ((((-value1._z + (3.0 * value2._z)) - (3.0 * value3._z)) + value4._z) * cubed));
 
         return new Vector3(x, y, z);
     }
@@ -1599,17 +1673,17 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public static ClampToRef(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>, result: Vector3): void {
-        var x = value.x;
-        x = (x > max.x) ? max.x : x;
-        x = (x < min.x) ? min.x : x;
+        var x = value._x;
+        x = (x > max._x) ? max._x : x;
+        x = (x < min._x) ? min._x : x;
 
-        var y = value.y;
-        y = (y > max.y) ? max.y : y;
-        y = (y < min.y) ? min.y : y;
+        var y = value._y;
+        y = (y > max._y) ? max._y : y;
+        y = (y < min._y) ? min._y : y;
 
-        var z = value.z;
-        z = (z > max.z) ? max.z : z;
-        z = (z < min.z) ? min.z : z;
+        var z = value._z;
+        z = (z > max._z) ? max._z : z;
+        z = (z < min._z) ? min._z : z;
 
         result.copyFromFloats(x, y, z);
     }
@@ -1642,9 +1716,9 @@ export class Vector3 {
         var part3 = (cubed - (2.0 * squared)) + amount;
         var part4 = cubed - squared;
 
-        var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
-        var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
-        var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
+        var x = (((value1._x * part1) + (value2._x * part2)) + (tangent1._x * part3)) + (tangent2._x * part4);
+        var y = (((value1._y * part1) + (value2._y * part2)) + (tangent1._y * part3)) + (tangent2._y * part4);
+        var z = (((value1._z * part1) + (value2._z * part2)) + (tangent1._z * part3)) + (tangent2._z * part4);
         return new Vector3(x, y, z);
     }
 
@@ -1669,9 +1743,9 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public static LerpToRef(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number, result: Vector3): void {
-        result.x = start.x + ((end.x - start.x) * amount);
-        result.y = start.y + ((end.y - start.y) * amount);
-        result.z = start.z + ((end.z - start.z) * amount);
+        result.x = start._x + ((end._x - start._x) * amount);
+        result.y = start._y + ((end._y - start._y) * amount);
+        result.z = start._z + ((end._z - start._z) * amount);
     }
 
     /**
@@ -1681,7 +1755,7 @@ export class Vector3 {
      * @returns the dot product
      */
     public static Dot(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): number {
-        return (left.x * right.x + left.y * right.y + left.z * right.z);
+        return (left._x * right._x + left._y * right._y + left._z * right._z);
     }
 
     /**
@@ -1704,10 +1778,10 @@ export class Vector3 {
      * @param right defines the right operand
      * @param result defines the Vector3 where to store the result
      */
-    public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-        const x = left.y * right.z - left.z * right.y;
-        const y = left.z * right.x - left.x * right.z;
-        const z = left.x * right.y - left.y * right.x;
+    public static CrossToRef(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>, result: Vector3): void {
+        const x = left._y * right._z - left._z * right._y;
+        const y = left._z * right._x - left._x * right._z;
+        const z = left._x * right._y - left._y * right._x;
         result.copyFromFloats(x, y, z);
     }
 
@@ -1764,7 +1838,7 @@ export class Vector3 {
     public static _UnprojectFromInvertedMatrixToRef(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: Vector3) {
         Vector3.TransformCoordinatesToRef(source, matrix, result);
         const m = matrix.m;
-        var num = source.x * m[3] + source.y * m[7] + source.z * m[11] + m[15];
+        var num = source._x * m[3] + source._y * m[7] + source._z * m[11] + m[15];
         if (Scalar.WithinEpsilon(num, 1.0)) {
             result.scaleInPlace(1.0 / num);
         }
@@ -1783,8 +1857,8 @@ export class Vector3 {
         var matrix = MathTmp.Matrix[0];
         world.multiplyToRef(transform, matrix);
         matrix.invert();
-        source.x = source.x / viewportWidth * 2 - 1;
-        source.y = -(source.y / viewportHeight * 2 - 1);
+        source.x = source._x / viewportWidth * 2 - 1;
+        source.y = -(source._y / viewportHeight * 2 - 1);
         const vector = new Vector3();
         Vector3._UnprojectFromInvertedMatrixToRef(source, matrix, vector);
         return vector;
@@ -1819,7 +1893,7 @@ export class Vector3 {
      * @param result defines the Vector3 where to store the result
      */
     public static UnprojectToRef(source: DeepImmutable<Vector3>, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>, result: Vector3): void {
-        Vector3.UnprojectFloatsToRef(source.x, source.y, source.z, viewportWidth, viewportHeight, world, view, projection, result);
+        Vector3.UnprojectFloatsToRef(source._x, source._y, source._z, viewportWidth, viewportHeight, world, view, projection, result);
     }
 
     /**
@@ -1887,9 +1961,9 @@ export class Vector3 {
      * @returns the squared distance
      */
     public static DistanceSquared(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>): number {
-        var x = value1.x - value2.x;
-        var y = value1.y - value2.y;
-        var z = value1.z - value2.z;
+        var x = value1._x - value2._x;
+        var y = value1._y - value2._y;
+        var z = value1._z - value2._z;
 
         return (x * x) + (y * y) + (z * z);
     }
@@ -2641,17 +2715,70 @@ export class Vector4 {
      * @returns a new Vector4
      */
     public static FromVector3(source: Vector3, w: number = 0) {
-        return new Vector4(source.x, source.y, source.z, w);
+        return new Vector4(source._x, source._y, source._z, w);
     }
 }
 
 /**
  * Class used to store quaternion data
  * @see https://en.wikipedia.org/wiki/Quaternion
- * @see http://doc.babylonjs.com/features/position,_rotation,_scaling
+ * @see https://doc.babylonjs.com/features/position,_rotation,_scaling
  */
 export class Quaternion {
+    /** @hidden */
+    public _x: number;
 
+    /** @hidden */
+    public _y: number;
+
+    /** @hidden */
+    public _z: number;
+
+    /** @hidden */
+    public _w: number;
+
+    /** @hidden */
+    public _isDirty = true;
+
+    /** Gets or sets the x coordinate */
+    public get x() {
+        return this._x;
+    }
+
+    public set x(value: number) {
+        this._x = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the y coordinate */
+    public get y() {
+        return this._y;
+    }
+
+    public set y(value: number) {
+        this._y = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the z coordinate */
+    public get z() {
+        return this._z;
+    }
+
+    public set z(value: number) {
+        this._z = value;
+        this._isDirty = true;
+    }
+
+    /** Gets or sets the w coordinate */
+    public get w() {
+        return this._w;
+    }
+
+    public set w(value: number) {
+        this._w = value;
+        this._isDirty = true;
+    }
     /**
      * Creates a new Quaternion from the given floats
      * @param x defines the first component (0 by default)
@@ -2660,14 +2787,14 @@ export class Quaternion {
      * @param w defines the fourth component (1.0 by default)
      */
     constructor(
-        /** defines the first component (0 by default) */
-        public x: number = 0.0,
-        /** defines the second component (0 by default) */
-        public y: number = 0.0,
-        /** defines the third component (0 by default) */
-        public z: number = 0.0,
-        /** defines the fourth component (1.0 by default) */
-        public w: number = 1.0) {
+        x: number = 0.0,
+        y: number = 0.0,
+        z: number = 0.0,
+        w: number = 1.0) {
+            this._x = x;
+            this._y = y;
+            this._z = z;
+            this._w = w;
     }
 
     /**
@@ -2675,7 +2802,7 @@ export class Quaternion {
      * @returns a string with the Quaternion coordinates
      */
     public toString(): string {
-        return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + " W:" + this.w + "}";
+        return "{X: " + this._x + " Y:" + this._y + " Z:" + this._z + " W:" + this._w + "}";
     }
 
     /**
@@ -2691,10 +2818,10 @@ export class Quaternion {
      * @returns the quaternion hash code
      */
     public getHashCode(): number {
-        let hash = this.x | 0;
-        hash = (hash * 397) ^ (this.y | 0);
-        hash = (hash * 397) ^ (this.z | 0);
-        hash = (hash * 397) ^ (this.w | 0);
+        let hash = this._x | 0;
+        hash = (hash * 397) ^ (this._y | 0);
+        hash = (hash * 397) ^ (this._z | 0);
+        hash = (hash * 397) ^ (this._w | 0);
         return hash;
     }
 
@@ -2703,7 +2830,7 @@ export class Quaternion {
      * @returns a new array populated with 4 elements from the quaternion coordinates
      */
     public asArray(): number[] {
-        return [this.x, this.y, this.z, this.w];
+        return [this._x, this._y, this._z, this._w];
     }
     /**
      * Check if two quaternions are equals
@@ -2711,7 +2838,7 @@ export class Quaternion {
      * @return true if the current quaternion and the given one coordinates are strictly equals
      */
     public equals(otherQuaternion: DeepImmutable<Quaternion>): boolean {
-        return otherQuaternion && this.x === otherQuaternion.x && this.y === otherQuaternion.y && this.z === otherQuaternion.z && this.w === otherQuaternion.w;
+        return otherQuaternion && this._x === otherQuaternion._x && this._y === otherQuaternion._y && this._z === otherQuaternion._z && this._w === otherQuaternion._w;
     }
 
     /**
@@ -2722,10 +2849,10 @@ export class Quaternion {
      */
     public equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
         return otherQuaternion
-            && Scalar.WithinEpsilon(this.x, otherQuaternion.x, epsilon)
-            && Scalar.WithinEpsilon(this.y, otherQuaternion.y, epsilon)
-            && Scalar.WithinEpsilon(this.z, otherQuaternion.z, epsilon)
-            && Scalar.WithinEpsilon(this.w, otherQuaternion.w, epsilon);
+            && Scalar.WithinEpsilon(this._x, otherQuaternion._x, epsilon)
+            && Scalar.WithinEpsilon(this._y, otherQuaternion._y, epsilon)
+            && Scalar.WithinEpsilon(this._z, otherQuaternion._z, epsilon)
+            && Scalar.WithinEpsilon(this._w, otherQuaternion._w, epsilon);
     }
 
     /**
@@ -2733,7 +2860,7 @@ export class Quaternion {
      * @returns a new quaternion copied from the current one
      */
     public clone(): Quaternion {
-        return new Quaternion(this.x, this.y, this.z, this.w);
+        return new Quaternion(this._x, this._y, this._z, this._w);
     }
 
     /**
@@ -2742,10 +2869,10 @@ export class Quaternion {
      * @returns the updated current quaternion
      */
     public copyFrom(other: DeepImmutable<Quaternion>): Quaternion {
-        this.x = other.x;
-        this.y = other.y;
-        this.z = other.z;
-        this.w = other.w;
+        this.x = other._x;
+        this.y = other._y;
+        this.z = other._z;
+        this.w = other._w;
         return this;
     }
 
@@ -2783,7 +2910,7 @@ export class Quaternion {
      * @returns a new quaternion as the addition result of the given one and the current quaternion
      */
     public add(other: DeepImmutable<Quaternion>): Quaternion {
-        return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
+        return new Quaternion(this._x + other._x, this._y + other._y, this._z + other._z, this._w + other._w);
     }
 
     /**
@@ -2792,10 +2919,10 @@ export class Quaternion {
      * @returns the current quaternion
      */
     public addInPlace(other: DeepImmutable<Quaternion>): Quaternion {
-        this.x += other.x;
-        this.y += other.y;
-        this.z += other.z;
-        this.w += other.w;
+        this._x += other._x;
+        this._y += other._y;
+        this._z += other._z;
+        this._w += other._w;
         return this;
     }
     /**
@@ -2804,7 +2931,7 @@ export class Quaternion {
      * @returns a new quaternion as the subtraction result of the given one from the current one
      */
     public subtract(other: Quaternion): Quaternion {
-        return new Quaternion(this.x - other.x, this.y - other.y, this.z - other.z, this.w - other.w);
+        return new Quaternion(this._x - other._x, this._y - other._y, this._z - other._z, this._w - other._w);
     }
 
     /**
@@ -2813,7 +2940,7 @@ export class Quaternion {
      * @returns a new quaternion set by multiplying the current quaternion coordinates by the float "scale"
      */
     public scale(value: number): Quaternion {
-        return new Quaternion(this.x * value, this.y * value, this.z * value, this.w * value);
+        return new Quaternion(this._x * value, this._y * value, this._z * value, this._w * value);
     }
 
     /**
@@ -2823,10 +2950,10 @@ export class Quaternion {
      * @returns the unmodified current quaternion
      */
     public scaleToRef(scale: number, result: Quaternion): Quaternion {
-        result.x = this.x * scale;
-        result.y = this.y * scale;
-        result.z = this.z * scale;
-        result.w = this.w * scale;
+        result.x = this._x * scale;
+        result.y = this._y * scale;
+        result.z = this._z * scale;
+        result.w = this._w * scale;
         return this;
     }
 
@@ -2851,10 +2978,10 @@ export class Quaternion {
      * @returns the unmodified current quaternion
      */
     public scaleAndAddToRef(scale: number, result: Quaternion): Quaternion {
-        result.x += this.x * scale;
-        result.y += this.y * scale;
-        result.z += this.z * scale;
-        result.w += this.w * scale;
+        result.x += this._x * scale;
+        result.y += this._y * scale;
+        result.z += this._z * scale;
+        result.w += this._w * scale;
         return this;
     }
 
@@ -2875,10 +3002,10 @@ export class Quaternion {
      * @returns the current quaternion
      */
     public multiplyToRef(q1: DeepImmutable<Quaternion>, result: Quaternion): Quaternion {
-        var x = this.x * q1.w + this.y * q1.z - this.z * q1.y + this.w * q1.x;
-        var y = -this.x * q1.z + this.y * q1.w + this.z * q1.x + this.w * q1.y;
-        var z = this.x * q1.y - this.y * q1.x + this.z * q1.w + this.w * q1.z;
-        var w = -this.x * q1.x - this.y * q1.y - this.z * q1.z + this.w * q1.w;
+        var x = this._x * q1._w + this._y * q1._z - this._z * q1._y + this._w * q1._x;
+        var y = -this._x * q1._z + this._y * q1._w + this._z * q1._x + this._w * q1._y;
+        var z = this._x * q1._y - this._y * q1._x + this._z * q1._w + this._w * q1._z;
+        var w = -this._x * q1._x - this._y * q1._y - this._z * q1._z + this._w * q1._w;
         result.copyFromFloats(x, y, z, w);
         return this;
     }
@@ -2899,7 +3026,7 @@ export class Quaternion {
      * @returns the current quaternion
      */
     public conjugateToRef(ref: Quaternion): Quaternion {
-        ref.copyFromFloats(-this.x, -this.y, -this.z, this.w);
+        ref.copyFromFloats(-this._x, -this._y, -this._z, this._w);
         return this;
     }
 
@@ -2919,7 +3046,7 @@ export class Quaternion {
      * @returns a new quaternion
      */
     public conjugate(): Quaternion {
-        var result = new Quaternion(-this.x, -this.y, -this.z, this.w);
+        var result = new Quaternion(-this._x, -this._y, -this._z, this._w);
         return result;
     }
 
@@ -2928,7 +3055,7 @@ export class Quaternion {
      * @returns the quaternion length (float)
      */
     public length(): number {
-        return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z) + (this.w * this.w));
+        return Math.sqrt((this._x * this._x) + (this._y * this._y) + (this._z * this._z) + (this._w * this._w));
     }
 
     /**
@@ -2969,10 +3096,10 @@ export class Quaternion {
      */
     public toEulerAnglesToRef(result: Vector3): Quaternion {
 
-        var qz = this.z;
-        var qx = this.x;
-        var qy = this.y;
-        var qw = this.w;
+        var qz = this._z;
+        var qx = this._x;
+        var qy = this._y;
+        var qw = this._w;
 
         var sqw = qw * qw;
         var sqz = qz * qz;
@@ -3088,7 +3215,7 @@ export class Quaternion {
      * @returns the dot product
      */
     public static Dot(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>): number {
-        return (left.x * right.x + left.y * right.y + left.z * right.z + left.w * right.w);
+        return (left._x * right._x + left._y * right._y + left._z * right._z + left._w * right._w);
     }
 
     /**
@@ -3117,7 +3244,7 @@ export class Quaternion {
      * @returns a new quaternion as the inverted current quaternion
      */
     public static Inverse(q: DeepImmutable<Quaternion>): Quaternion {
-        return new Quaternion(-q.x, -q.y, -q.z, q.w);
+        return new Quaternion(-q._x, -q._y, -q._z, q._w);
     }
 
     /**
@@ -3127,7 +3254,7 @@ export class Quaternion {
      * @returns the result quaternion
      */
     public static InverseToRef(q: Quaternion, result: Quaternion): Quaternion {
-        result.set(-q.x, -q.y, -q.z, q.w);
+        result.set(-q._x, -q._y, -q._z, q._w);
         return result;
     }
 
@@ -3145,7 +3272,7 @@ export class Quaternion {
      * @returns true if the quaternion is identity
      */
     public static IsIdentity(quaternion: DeepImmutable<Quaternion>): boolean {
-        return quaternion && quaternion.x === 0 && quaternion.y === 0 && quaternion.z === 0 && quaternion.w === 1;
+        return quaternion && quaternion._x === 0 && quaternion._y === 0 && quaternion._z === 0 && quaternion._w === 1;
     }
 
     /**
@@ -3169,9 +3296,9 @@ export class Quaternion {
         var sin = Math.sin(angle / 2);
         axis.normalize();
         result.w = Math.cos(angle / 2);
-        result.x = axis.x * sin;
-        result.y = axis.y * sin;
-        result.z = axis.z * sin;
+        result.x = axis._x * sin;
+        result.y = axis._y * sin;
+        result.z = axis._z * sin;
         return result;
     }
 
@@ -3186,6 +3313,19 @@ export class Quaternion {
             offset = 0;
         }
         return new Quaternion(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+    }
+
+    /**
+     * Updates the given quaternion "result" from the starting index of the given array.
+     * @param array the array to pull values from
+     * @param offset the offset into the array to start at
+     * @param result the quaternion to store the result in
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number, result: Quaternion): void {
+        result.x = array[offset];
+        result.y = array[offset + 1];
+        result.z = array[offset + 2];
+        result.w = array[offset + 3];
     }
 
     /**
@@ -3221,7 +3361,7 @@ export class Quaternion {
      */
     public static FromEulerVector(vec: DeepImmutable<Vector3>): Quaternion {
         var q = new Quaternion();
-        Quaternion.RotationYawPitchRollToRef(vec.y, vec.x, vec.z, q);
+        Quaternion.RotationYawPitchRollToRef(vec._y, vec._x, vec._z, q);
         return q;
     }
 
@@ -3232,7 +3372,7 @@ export class Quaternion {
      * @returns the updated quaternion
      */
     public static FromEulerVectorToRef(vec: DeepImmutable<Vector3>, result: Quaternion): Quaternion {
-        Quaternion.RotationYawPitchRollToRef(vec.y, vec.x, vec.z, result);
+        Quaternion.RotationYawPitchRollToRef(vec._y, vec._x, vec._z, result);
         return result;
     }
 
@@ -3358,7 +3498,7 @@ export class Quaternion {
     public static SlerpToRef(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>, amount: number, result: Quaternion): void {
         var num2;
         var num3;
-        var num4 = (((left.x * right.x) + (left.y * right.y)) + (left.z * right.z)) + (left.w * right.w);
+        var num4 = (((left._x * right._x) + (left._y * right._y)) + (left._z * right._z)) + (left._w * right._w);
         var flag = false;
 
         if (num4 < 0) {
@@ -3377,10 +3517,10 @@ export class Quaternion {
             num2 = flag ? ((-Math.sin(amount * num5)) * num6) : ((Math.sin(amount * num5)) * num6);
         }
 
-        result.x = (num3 * left.x) + (num2 * right.x);
-        result.y = (num3 * left.y) + (num2 * right.y);
-        result.z = (num3 * left.z) + (num2 * right.z);
-        result.w = (num3 * left.w) + (num2 * right.w);
+        result.x = (num3 * left._x) + (num2 * right._x);
+        result.y = (num3 * left._y) + (num2 * right._y);
+        result.z = (num3 * left._z) + (num2 * right._z);
+        result.w = (num3 * left._w) + (num2 * right._w);
     }
 
     /**
@@ -3400,10 +3540,10 @@ export class Quaternion {
         var part3 = (cubed - (2.0 * squared)) + amount;
         var part4 = cubed - squared;
 
-        var x = (((value1.x * part1) + (value2.x * part2)) + (tangent1.x * part3)) + (tangent2.x * part4);
-        var y = (((value1.y * part1) + (value2.y * part2)) + (tangent1.y * part3)) + (tangent2.y * part4);
-        var z = (((value1.z * part1) + (value2.z * part2)) + (tangent1.z * part3)) + (tangent2.z * part4);
-        var w = (((value1.w * part1) + (value2.w * part2)) + (tangent1.w * part3)) + (tangent2.w * part4);
+        var x = (((value1._x * part1) + (value2._x * part2)) + (tangent1._x * part3)) + (tangent2._x * part4);
+        var y = (((value1._y * part1) + (value2._y * part2)) + (tangent1._y * part3)) + (tangent2._y * part4);
+        var z = (((value1._z * part1) + (value2._z * part2)) + (tangent1._z * part3)) + (tangent2._z * part4);
+        var w = (((value1._w * part1) + (value2._w * part2)) + (tangent1._w * part3)) + (tangent2._w * part4);
         return new Quaternion(x, y, z, w);
     }
 }
@@ -3760,7 +3900,7 @@ export class Matrix {
      * @returns the current updated matrix
      */
     public setTranslation(vector3: DeepImmutable<Vector3>): Matrix {
-        return this.setTranslationFromFloats(vector3.x, vector3.y, vector3.z);
+        return this.setTranslationFromFloats(vector3._x, vector3._y, vector3._z);
     }
 
     /**
@@ -4006,7 +4146,7 @@ export class Matrix {
             scale.y *= -1;
         }
 
-        if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
+        if (scale._x === 0 || scale._y === 0 || scale._z === 0) {
             if (rotation) {
                 rotation.copyFromFloats(0.0, 0.0, 0.0, 1.0);
             }
@@ -4014,7 +4154,7 @@ export class Matrix {
         }
 
         if (rotation) {
-            const sx = 1 / scale.x, sy = 1 / scale.y, sz = 1 / scale.z;
+            const sx = 1 / scale._x, sy = 1 / scale._y, sz = 1 / scale._z;
             Matrix.FromValuesToRef(
                 m[0] * sx, m[1] * sx, m[2] * sx, 0.0,
                 m[4] * sy, m[5] * sy, m[6] * sy, 0.0,
@@ -4173,7 +4313,7 @@ export class Matrix {
         }
 
         const m = this._m;
-        const sx = 1 / scale.x, sy = 1 / scale.y, sz = 1 / scale.z;
+        const sx = 1 / scale._x, sy = 1 / scale._y, sz = 1 / scale._z;
         Matrix.FromValuesToRef(
             m[0] * sx, m[1] * sx, m[2] * sx, 0.0,
             m[4] * sy, m[5] * sy, m[6] * sy, 0.0,
@@ -4347,13 +4487,13 @@ export class Matrix {
      */
     public static ComposeToRef(scale: DeepImmutable<Vector3>, rotation: DeepImmutable<Quaternion>, translation: DeepImmutable<Vector3>, result: Matrix): void {
         let m = result._m;
-        var x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w;
+        var x = rotation._x, y = rotation._y, z = rotation._z, w = rotation._w;
         var x2 = x + x, y2 = y + y, z2 = z + z;
         var xx = x * x2, xy = x * y2, xz = x * z2;
         var yy = y * y2, yz = y * z2, zz = z * z2;
         var wx = w * x2, wy = w * y2, wz = w * z2;
 
-        var sx = scale.x, sy = scale.y, sz = scale.z;
+        var sx = scale._x, sy = scale._y, sz = scale._z;
 
         m[0] = (1 - (yy + zz)) * sx;
         m[1] = (xy + wz) * sx;
@@ -4370,9 +4510,9 @@ export class Matrix {
         m[10] = (1 - (xx + yy)) * sz;
         m[11] = 0;
 
-        m[12] = translation.x;
-        m[13] = translation.y;
-        m[14] = translation.z;
+        m[12] = translation._x;
+        m[13] = translation._y;
+        m[14] = translation._z;
         m[15] = 1;
 
         result._markAsUpdated();
@@ -4547,19 +4687,19 @@ export class Matrix {
 
         axis.normalize();
         const m = result._m;
-        m[0] = (axis.x * axis.x) * c1 + c;
-        m[1] = (axis.x * axis.y) * c1 - (axis.z * s);
-        m[2] = (axis.x * axis.z) * c1 + (axis.y * s);
+        m[0] = (axis._x * axis._x) * c1 + c;
+        m[1] = (axis._x * axis._y) * c1 - (axis._z * s);
+        m[2] = (axis._x * axis._z) * c1 + (axis._y * s);
         m[3] = 0.0;
 
-        m[4] = (axis.y * axis.x) * c1 + (axis.z * s);
-        m[5] = (axis.y * axis.y) * c1 + c;
-        m[6] = (axis.y * axis.z) * c1 - (axis.x * s);
+        m[4] = (axis._y * axis._x) * c1 + (axis._z * s);
+        m[5] = (axis._y * axis._y) * c1 + c;
+        m[6] = (axis._y * axis._z) * c1 - (axis._x * s);
         m[7] = 0.0;
 
-        m[8] = (axis.z * axis.x) * c1 - (axis.y * s);
-        m[9] = (axis.z * axis.y) * c1 + (axis.x * s);
-        m[10] = (axis.z * axis.z) * c1 + c;
+        m[8] = (axis._z * axis._x) * c1 - (axis._y * s);
+        m[9] = (axis._z * axis._y) * c1 + (axis._x * s);
+        m[10] = (axis._z * axis._z) * c1 + c;
         m[11] = 0.0;
 
         m[12] = 0.0;
@@ -4583,9 +4723,9 @@ export class Matrix {
         const k = 1 / (1 + c);
 
         const m = result._m;
-        m[0] = v.x * v.x * k + c; m[1] = v.y * v.x * k - v.z; m[2] = v.z * v.x * k + v.y; m[3] = 0;
-        m[4] = v.x * v.y * k + v.z; m[5] = v.y * v.y * k + c; m[6] = v.z * v.y * k - v.x; m[7] = 0;
-        m[8] = v.x * v.z * k - v.y; m[9] = v.y * v.z * k + v.x; m[10] = v.z * v.z * k + c; m[11] = 0;
+        m[0] = v._x * v._x * k + c; m[1] = v._y * v._x * k - v._z; m[2] = v._z * v._x * k + v._y; m[3] = 0;
+        m[4] = v._x * v._y * k + v._z; m[5] = v._y * v._y * k + c; m[6] = v._z * v._y * k - v._x; m[7] = 0;
+        m[8] = v._x * v._z * k - v._y; m[9] = v._y * v._z * k + v._x; m[10] = v._z * v._z * k + c; m[11] = 0;
         m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
 
         result._markAsUpdated();
@@ -4808,9 +4948,9 @@ export class Matrix {
         var ez = -Vector3.Dot(zAxis, eye);
 
         Matrix.FromValuesToRef(
-            xAxis.x, yAxis.x, zAxis.x, 0.0,
-            xAxis.y, yAxis.y, zAxis.y, 0.0,
-            xAxis.z, yAxis.z, zAxis.z, 0.0,
+            xAxis._x, yAxis._x, zAxis._x, 0.0,
+            xAxis._y, yAxis._y, zAxis._y, 0.0,
+            xAxis._z, yAxis._z, zAxis._z, 0.0,
             ex, ey, ez, 1.0,
             result
         );
@@ -4867,9 +5007,9 @@ export class Matrix {
         var ez = -Vector3.Dot(zAxis, eye);
 
         Matrix.FromValuesToRef(
-            xAxis.x, yAxis.x, zAxis.x, 0.0,
-            xAxis.y, yAxis.y, zAxis.y, 0.0,
-            xAxis.z, yAxis.z, zAxis.z, 0.0,
+            xAxis._x, yAxis._x, zAxis._x, 0.0,
+            xAxis._y, yAxis._y, zAxis._y, 0.0,
+            xAxis._z, yAxis._z, zAxis._z, 0.0,
             ex, ey, ez, 1.0,
             result
         );
@@ -5340,9 +5480,9 @@ export class Matrix {
      */
     public static FromXYZAxesToRef(xaxis: DeepImmutable<Vector3>, yaxis: DeepImmutable<Vector3>, zaxis: DeepImmutable<Vector3>, result: Matrix) {
         Matrix.FromValuesToRef(
-            xaxis.x, xaxis.y, xaxis.z, 0.0,
-            yaxis.x, yaxis.y, yaxis.z, 0.0,
-            zaxis.x, zaxis.y, zaxis.z, 0.0,
+            xaxis._x, xaxis._y, xaxis._z, 0.0,
+            yaxis._x, yaxis._y, yaxis._z, 0.0,
+            zaxis._x, zaxis._y, zaxis._z, 0.0,
             0.0, 0.0, 0.0, 1.0,
             result
         );
@@ -5354,15 +5494,15 @@ export class Matrix {
      * @param result defines the target matrix
      */
     public static FromQuaternionToRef(quat: DeepImmutable<Quaternion>, result: Matrix) {
-        var xx = quat.x * quat.x;
-        var yy = quat.y * quat.y;
-        var zz = quat.z * quat.z;
-        var xy = quat.x * quat.y;
-        var zw = quat.z * quat.w;
-        var zx = quat.z * quat.x;
-        var yw = quat.y * quat.w;
-        var yz = quat.y * quat.z;
-        var xw = quat.x * quat.w;
+        var xx = quat._x * quat._x;
+        var yy = quat._y * quat._y;
+        var zz = quat._z * quat._z;
+        var xy = quat._x * quat._y;
+        var zw = quat._z * quat._w;
+        var zx = quat._z * quat._x;
+        var yw = quat._y * quat._w;
+        var yz = quat._y * quat._z;
+        var xw = quat._x * quat._w;
 
         result._m[0] = 1.0 - (2.0 * (yy + zz));
         result._m[1] = 2.0 * (xy + zw);

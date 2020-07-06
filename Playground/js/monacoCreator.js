@@ -21,12 +21,25 @@ class MonacoCreator {
         this.blockEditorChange = false;
         this.definitionWorker = null;
         this.deprecatedCandidates = [];
+        this.templates = [];
 
         this.compilerTriggerTimeoutID = null;
 
-        this.addOnMoncaoLoadedCallback(
+        this.addOnMonacoLoadedCallback(
             function () {
                 this.parent.main.run();
+
+                // Register a global observable for inspector to request code changes
+                window.Playground = {
+                    onRequestCodeChangeObservable: new BABYLON.Observable()
+                }
+
+                window.Playground.onRequestCodeChangeObservable.add((options) => {
+                    let code = this.getCode();
+                    code = code.replace(options.regex, options.replace);
+
+                    this.setCode(code);
+                });
             },
             this
         );
@@ -65,10 +78,24 @@ class MonacoCreator {
 
     // FUNCTIONS
 
+    waitForDefine() {
+        return new Promise(function (resolve, reject) {
+            function timeout() {
+                if (!window.define) {
+                    setTimeout(timeout, 200);
+                } else {
+                    resolve();
+                }
+            }
+            timeout();
+        });
+    }
+
     /**
      * Load the Monaco Node module.
      */
     async loadMonaco(typings) {
+        await this.waitForDefine();
         let response = await fetch(typings || "https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok) {
             return;
@@ -87,6 +114,12 @@ class MonacoCreator {
 
         this.setupDefinitionWorker(libContent);
 
+        // Load code templates
+        response = await fetch("/templates.json");
+        if (response.ok) {
+            this.templates = await response.json();
+        }
+
         // WARNING !!! We need the 'dev' version of Monaco, as we use monkey-patching to hook into the suggestion adapter
         require.config({
             paths: {
@@ -100,6 +133,13 @@ class MonacoCreator {
 
             // This is used for a vscode-like color preview for ColorX types
             this.setupMonacoColorProvider();
+
+            // enhance templates with extra properties
+            for (const template of this.templates) {
+                template.kind = monaco.languages.CompletionItemKind.Snippet,
+                template.sortText = "!" + template.label; // make sure templates are on top of the completion window
+                template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+            }
 
             // As explained above, we need the 'dev' version of Monaco to access this adapter!
             require(['vs/language/typescript/languageFeatures'], module => {
@@ -126,7 +166,7 @@ class MonacoCreator {
      * @param {Function} func the function to call when monaco is available
      * @param {*} context The context of this function
      */
-    addOnMoncaoLoadedCallback(func, context) {
+    addOnMonacoLoadedCallback(func, context) {
         this.onMonacoLoadedCallbacks = this.onMonacoLoadedCallbacks || [];
         if (this.monacoLoaded) {
             func.call(context, this);
@@ -263,6 +303,17 @@ class MonacoCreator {
                 }
             }
 
+            // add our own templates when invoked without context
+            if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
+                for (const template of owner.templates) {
+                    if (template.language && owner.monacoMode != template.language)
+                        continue;
+
+                    template.range = undefined;
+                    suggestions.push(template);
+                }
+            }
+
             // preserve incomplete flag or force it when the definition is not yet analyzed
             const incomplete = (result.incomplete && result.incomplete == true) || owner.deprecatedCandidates.length == 0;
 
@@ -380,7 +431,10 @@ class MonacoCreator {
             }
         };
         editorOptions.minimap.enabled = document.getElementById("minimapToggle1280").classList.contains('checked');
-        this.jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
+        var editorElement = document.getElementById('jsEditor');
+        editorElement.innerHTML = "";
+        editorElement.style.overflow = "unset";
+        this.jsEditor = monaco.editor.create(editorElement, editorOptions);
         this.jsEditor.setValue(oldCode);
 
         // We cannot call 'analyzeCode' on every keystroke, that's time consuming

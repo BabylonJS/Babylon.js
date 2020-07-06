@@ -25,7 +25,7 @@ declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * This is the base class of all the camera used in the application.
- * @see http://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/cameras
  */
 export class Camera extends Node {
     /** @hidden */
@@ -311,7 +311,7 @@ export class Camera extends Node {
     /**
      * Instantiates a new camera object.
      * This should not be used directly but through the inherited cameras: ArcRotate, Free...
-     * @see http://doc.babylonjs.com/features/cameras
+     * @see https://doc.babylonjs.com/features/cameras
      * @param name Defines the name of the camera in the scene
      * @param position Defines the position of the camera
      * @param scene Defines the scene the camera belongs too
@@ -598,7 +598,7 @@ export class Camera extends Node {
 
     /**
      * Attach a post process to the camera.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
      * @param postProcess The post process to attach to the camera
      * @param insertAt The position of the post process in case several of them are in use in the scene
      * @returns the position the post process has been inserted at
@@ -622,7 +622,7 @@ export class Camera extends Node {
 
     /**
      * Detach a post process to the camera.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
      * @param postProcess The post process to detach from the camera
      */
     public detachPostProcess(postProcess: PostProcess): void {
@@ -752,18 +752,18 @@ export class Camera extends Node {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
             if (scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(this.orthoLeft || -halfWidth,
-                    this.orthoRight || halfWidth,
-                    this.orthoBottom || -halfHeight,
-                    this.orthoTop || halfHeight,
+                Matrix.OrthoOffCenterRHToRef(this.orthoLeft ?? -halfWidth,
+                    this.orthoRight ?? halfWidth,
+                    this.orthoBottom ?? -halfHeight,
+                    this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix);
             } else {
-                Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth,
-                    this.orthoRight || halfWidth,
-                    this.orthoBottom || -halfHeight,
-                    this.orthoTop || halfHeight,
+                Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
+                    this.orthoRight ?? halfWidth,
+                    this.orthoBottom ?? -halfHeight,
+                    this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix);

@@ -157,13 +157,16 @@ export class OutlineRenderer implements ISceneComponent {
         var scene = this.scene;
         var engine = scene.getEngine();
 
-        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
+        var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || subMesh.getRenderingMesh().hasThinInstances);
 
         if (!this.isReady(subMesh, hardwareInstancedRendering)) {
             return;
         }
 
-        var mesh = subMesh.getRenderingMesh();
+        var ownerMesh = subMesh.getMesh();
+        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var renderingMesh = subMesh.getRenderingMesh();
+        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
         var material = subMesh.getMaterial();
 
         if (!material || !scene.activeCamera) {
@@ -177,19 +180,19 @@ export class OutlineRenderer implements ISceneComponent {
             this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
         }
 
-        this._effect.setFloat("offset", useOverlay ? 0 : mesh.outlineWidth);
-        this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : material.alpha);
+        this._effect.setFloat("offset", useOverlay ? 0 : renderingMesh.outlineWidth);
+        this._effect.setColor4("color", useOverlay ? renderingMesh.overlayColor : renderingMesh.outlineColor, useOverlay ? renderingMesh.overlayAlpha : material.alpha);
         this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
         // Bones
-        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+        if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+            this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
         }
 
         // Morph targets
-        MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+        MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
 
-        mesh._bind(subMesh, this._effect, material.fillMode);
+        renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
         // Alpha test
         if (material && material.needAlphaTesting()) {
@@ -201,8 +204,7 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         engine.setZOffset(-this.zOffset);
-
-        mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
+        renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
             (isInstance, world) => { this._effect.setMatrix("world", world); });
 
         engine.setZOffset(0);
@@ -272,6 +274,9 @@ export class OutlineRenderer implements ISceneComponent {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Get correct effect
@@ -294,7 +299,7 @@ export class OutlineRenderer implements ISceneComponent {
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
             var material = subMesh.getMaterial();
-            if (material && material.needAlphaBlending()) {
+            if (material && material.needAlphaBlendingForMesh(mesh)) {
                 this._engine.cacheStencilState();
                 // Draw only to stencil buffer for the original mesh
                 // The resulting stencil buffer will be used so the outline is not visible inside the mesh when the mesh is transparent
@@ -316,7 +321,7 @@ export class OutlineRenderer implements ISceneComponent {
             this.render(subMesh, batch);
             this._engine.setDepthWrite(this._savedDepthWrite);
 
-            if (material && material.needAlphaBlending()) {
+            if (material && material.needAlphaBlendingForMesh(mesh)) {
                 this._engine.restoreStencilState();
             }
         }

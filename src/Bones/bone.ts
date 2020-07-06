@@ -13,7 +13,7 @@ declare type AnimationPropertiesOverride = import("../Animations/animationProper
 
 /**
  * Class used to store bone information
- * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+ * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
  */
 export class Bone extends Node {
 

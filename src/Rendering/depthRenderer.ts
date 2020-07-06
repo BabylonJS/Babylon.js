@@ -94,12 +94,13 @@ export class DepthRenderer {
 
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var mesh = subMesh.getRenderingMesh();
+            var renderingMesh = subMesh.getRenderingMesh();
+            var effectiveMesh = subMesh.getEffectiveMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
             let material = subMesh.getMaterial();
 
-            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+            effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
             if (!material) {
                 return;
@@ -109,18 +110,18 @@ export class DepthRenderer {
             engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
 
             // Managing instances
-            var batch = mesh._getInstancesRenderList(subMesh._id);
+            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
 
             var camera = this._camera || scene.activeCamera;
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 engine.enableEffect(this._effect);
-                mesh._bind(subMesh, this._effect, material.fillMode);
+                renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
                 this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -137,15 +138,15 @@ export class DepthRenderer {
                 }
 
                 // Bones
-                if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                    this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
                 }
 
                 // Morph targets
-                MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+                MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
 
                 // Draw
-                mesh._processRendering(subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
+                renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
                     (isInstance, world) => this._effect.setMatrix("world", world));
             }
         };
@@ -234,6 +235,9 @@ export class DepthRenderer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // None linear depth

@@ -109,6 +109,7 @@ function main(isCore) {
             if (isCore) {
                 if (isInclude) {
                     effectLocation = "../../Materials/effect";
+                    includeText = includeText.replace(/ShadersInclude\//g, "");
                 }
                 else {
                     effectLocation = "../Materials/effect";

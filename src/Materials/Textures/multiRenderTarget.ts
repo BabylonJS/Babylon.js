@@ -60,12 +60,13 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _internalTextures: InternalTexture[];
     private _textures: Texture[];
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
+    private _count: number;
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
      */
     public get isSupported(): boolean {
-        return this._engine.webGLVersion > 1 || this._engine.getCaps().drawBuffersExtension;
+        return this._getEngine()!.webGLVersion > 1 || this._getEngine()!.getCaps().drawBuffersExtension;
     }
 
     /**
@@ -73,6 +74,13 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public get textures(): Texture[] {
         return this._textures;
+    }
+
+    /**
+     * Gets the number of textures in this MRT. This number can be different from `_textures.length` in case a depth texture is generated.
+     */
+    public get count(): number {
+        return this._count;
     }
 
     /**
@@ -125,8 +133,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
 
-        this._engine = scene.getEngine();
-
         if (!this.isSupported) {
             this.dispose();
             return;
@@ -163,6 +169,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
             textureCount: count
         };
 
+        this._count = count;
+
         this._createInternalTextures();
         this._createTextures();
     }
@@ -179,10 +187,14 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         // Keeps references to frame buffer and stencil/depth buffer
         this._texture = this._internalTextures[0];
+
+        if (this.samples !== 1) {
+            this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, this.samples);
+        }
     }
 
     private _createInternalTextures(): void {
-        this._internalTextures = this._engine.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
+        this._internalTextures = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
     }
 
     private _createTextures(): void {
@@ -209,7 +221,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
-        this._samples = this._engine.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
+        this._samples = this._getEngine()!.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
     }
 
     /**
@@ -218,9 +230,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param size Define the new size
      */
     public resize(size: any) {
-        this.releaseInternalTextures();
         this._size = size;
-        this._createInternalTextures();
+        this._rebuild();
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {

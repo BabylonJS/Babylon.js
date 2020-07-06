@@ -82,6 +82,30 @@ export class NoiseProceduralTexture extends ProceduralTexture {
     }
 
     /**
+     * Clone the texture.
+     * @returns the cloned texture
+     */
+    public clone(): NoiseProceduralTexture {
+        var textureSize = this.getSize();
+        var newTexture = new NoiseProceduralTexture(this.name, textureSize.width, this.getScene(), this._fallbackTexture ? this._fallbackTexture : undefined, this._generateMipMaps);
+
+        // Base texture
+        newTexture.hasAlpha = this.hasAlpha;
+        newTexture.level = this.level;
+
+        // RenderTarget Texture
+        newTexture.coordinatesMode = this.coordinatesMode;
+
+        // Noise Specifics
+        newTexture.brightness = this.brightness;
+        newTexture.octaves = this.octaves;
+        newTexture.persistence = this.persistence;
+        newTexture.animationSpeedFactor = this.animationSpeedFactor;
+
+        return newTexture;
+    }
+
+    /**
      * Creates a NoiseProceduralTexture from parsed noise procedural texture data
      * @param parsedTexture defines parsed texture data
      * @param scene defines the current scene

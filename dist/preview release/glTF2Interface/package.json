@@ -1,7 +1,7 @@
 {
     "name": "babylonjs-gltf2interface",
     "description": "A typescript declaration of babylon's gltf2 inteface.",
-    "version": "4.1.0-rc.1",
+    "version": "4.2.0-alpha.23",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"

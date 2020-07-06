@@ -5,6 +5,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Material } from "../Materials/material";
 import { Effect } from "../Materials/effect";
+import { SubMesh } from '../Meshes/subMesh';
 /**
  * Base class of materials working in push mode in babylon JS
  * @hidden
@@ -14,13 +15,6 @@ export class PushMaterial extends Material {
     protected _activeEffect: Effect;
 
     protected _normalMatrix: Matrix = new Matrix();
-
-    /**
-     * Gets or sets a boolean indicating that the material is allowed to do shader hot swapping.
-     * This means that the material can keep using a previous shader while a new one is being compiled.
-     * This is mostly used when shader parallel compilation is supported (true by default)
-     */
-    public allowShaderHotSwapping = true;
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
@@ -41,6 +35,17 @@ export class PushMaterial extends Material {
         }
 
         return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
+    }
+
+    protected _isReadyForSubMesh(subMesh: SubMesh) {
+        const defines = subMesh._materialDefines;
+        if (!this.checkReadyOnEveryCall && subMesh.effect && defines) {
+            if (defines._renderId === this.getScene().getRenderId()) {
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     /**

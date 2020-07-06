@@ -38,4 +38,12 @@ export class WebGLPipelineContext implements IPipelineContext {
             onCompiled(this.program);
         }
     }
+
+    public _getVertexShaderCode(): string | null {
+        return this.vertexShader ? this.engine._getShaderSource(this.vertexShader) : null;
+    }
+
+    public _getFragmentShaderCode(): string | null {
+        return this.fragmentShader ? this.engine._getShaderSource(this.fragmentShader) : null;
+    }
 }

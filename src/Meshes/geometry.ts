@@ -107,6 +107,17 @@ export class Geometry implements IGetSetVerticesData {
         return geometry;
     }
 
+    /** Get the list of meshes using this geometry */
+    public get meshes(): Mesh[] {
+        return this._meshes;
+    }
+
+    /**
+     * If set to true (false by defaut), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
+     * and won't be computed based on the vertex positions (which is what we get when useBoundingInfoFromGeometry = false)
+     */
+    public useBoundingInfoFromGeometry = false;
+
     /**
      * Creates a new geometry
      * @param id defines the unique ID
@@ -691,11 +702,18 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     private _updateExtend(data: Nullable<FloatArray> = null) {
-        if (!data) {
-            data = this.getVerticesData(VertexBuffer.PositionKind)!;
-        }
+        if (this.useBoundingInfoFromGeometry && this._boundingInfo) {
+            this._extend = {
+                minimum: this._boundingInfo.minimum.clone(),
+                maximum: this._boundingInfo.maximum.clone()
+            };
+        } else {
+            if (!data) {
+                data = this.getVerticesData(VertexBuffer.PositionKind)!;
+            }
 
-        this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+            this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+        }
     }
 
     private _applyToMesh(mesh: Mesh): void {

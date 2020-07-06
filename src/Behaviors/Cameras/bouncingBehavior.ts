@@ -10,7 +10,7 @@ import { Animation } from "../../Animations/animation";
 
 /**
  * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius
- * @see http://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
+ * @see https://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
  */
 export class BouncingBehavior implements Behavior<ArcRotateCamera> {
     /**

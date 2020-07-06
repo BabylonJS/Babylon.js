@@ -24,6 +24,7 @@ Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
             if (this._texture.isReady) {
                 this._texture._sphericalPolynomial =
                     CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
+                return this._texture._sphericalPolynomial;
             }
         }
 

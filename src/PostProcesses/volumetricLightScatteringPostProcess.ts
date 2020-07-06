@@ -206,6 +206,9 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Get correct effect
@@ -291,12 +294,13 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         // Custom render function for submeshes
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var mesh = subMesh.getRenderingMesh();
-            if (this._meshExcluded(mesh)) {
+            var renderingMesh = subMesh.getRenderingMesh();
+            var effectiveMesh = subMesh.getEffectiveMesh();
+            if (this._meshExcluded(renderingMesh)) {
                 return;
             }
 
-            mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+            effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
             let material = subMesh.getMaterial();
 
@@ -304,24 +308,24 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 return;
             }
 
-            var scene = mesh.getScene();
+            var scene = renderingMesh.getScene();
             var engine = scene.getEngine();
 
             // Culling
             engine.setState(material.backFaceCulling);
 
             // Managing instances
-            var batch = mesh._getInstancesRenderList(subMesh._id);
+            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
 
             if (this._isReady(subMesh, hardwareInstancedRendering)) {
                 var effect: Effect = this._volumetricLightScatteringPass;
-                if (mesh === this.mesh) {
+                if (renderingMesh === this.mesh) {
                     if (subMesh.effect) {
                         effect = subMesh.effect;
                     } else {
@@ -330,10 +334,10 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                 }
 
                 engine.enableEffect(effect);
-                mesh._bind(subMesh, effect, material.fillMode);
+                renderingMesh._bind(subMesh, effect, material.fillMode);
 
-                if (mesh === this.mesh) {
-                    material.bind(mesh.getWorldMatrix(), mesh);
+                if (renderingMesh === this.mesh) {
+                    material.bind(effectiveMesh.getWorldMatrix(), renderingMesh);
                 }
                 else {
                     this._volumetricLightScatteringPass.setMatrix("viewProjection", scene.getTransformMatrix());
@@ -350,13 +354,13 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
                     }
 
                     // Bones
-                    if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                        this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                    if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                        this._volumetricLightScatteringPass.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
                     }
                 }
 
                 // Draw
-                mesh._processRendering(subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+                renderingMesh._processRendering(effectiveMesh, subMesh, this._volumetricLightScatteringPass, Material.TriangleFillMode, batch, hardwareInstancedRendering,
                     (isInstance, world) => effect.setMatrix("world", world));
             }
         };

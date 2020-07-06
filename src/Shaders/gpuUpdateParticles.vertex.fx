@@ -5,7 +5,9 @@
 uniform float currentCount;
 uniform float timeDelta;
 uniform float stopFactor;
+#ifndef LOCAL
 uniform mat4 emitterWM;
+#endif
 uniform vec2 lifeTime;
 uniform vec2 emitPower;
 uniform vec2 sizeRange;
@@ -322,7 +324,11 @@ void main() {
 
     float power = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
 
-    outPosition = (emitterWM * vec4(newPosition, 1.)).xyz;
+    #ifdef LOCAL
+        outPosition = newPosition;
+    #else
+        outPosition = (emitterWM * vec4(newPosition, 1.)).xyz;
+    #endif
 
 #ifdef CUSTOMEMITTER
     outDirection = direction;
@@ -330,7 +336,11 @@ void main() {
         outInitialDirection = direction;
     #endif
 #else
-    vec3 initial = (emitterWM * vec4(newDirection, 0.)).xyz;
+    #ifdef LOCAL
+        vec3 initial = newDirection;
+    #else 
+        vec3 initial = (emitterWM * vec4(newDirection, 0.)).xyz;
+    #endif
     outDirection = initial * power;
     #ifndef BILLBOARD        
         outInitialDirection = initial;
@@ -404,8 +414,6 @@ void main() {
     outDirection = updatedDirection;
 
     #ifdef NOISE
-        vec3 localPosition = outPosition - emitterWM[3].xyz;
-
         float fetchedR = texture(noiseSampler, vec2(noiseCoordinates1.x, noiseCoordinates1.y) * vec2(0.5) + vec2(0.5)).r;
         float fetchedG = texture(noiseSampler, vec2(noiseCoordinates1.z, noiseCoordinates2.x) * vec2(0.5) + vec2(0.5)).r;
         float fetchedB = texture(noiseSampler, vec2(noiseCoordinates2.y, noiseCoordinates2.z) * vec2(0.5) + vec2(0.5)).r;
@@ -433,6 +441,8 @@ void main() {
 #ifdef ANIMATESHEETRANDOMSTART
     outCellStartOffset = cellStartOffset;
     offsetAge += cellStartOffset;
+#else
+    float cellStartOffset = 0.;
 #endif    
 
     float ratio = clamp(mod(cellStartOffset + cellInfos.z * offsetAge, life) / life, 0., 1.0);

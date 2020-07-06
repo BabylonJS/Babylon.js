@@ -1,4 +1,4 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
+import { WebXRFeaturesManager, WebXRFeatureName, IWebXRFeature } from '../webXRFeaturesManager';
 import { WebXRSessionManager } from '../webXRSessionManager';
 import { Observable } from '../../Misc/observable';
 import { Vector3, Matrix } from '../../Maths/math.vector';
@@ -8,9 +8,19 @@ import { WebXRAbstractFeature } from './WebXRAbstractFeature';
 // the plugin is registered at the end of the file
 
 /**
+ * An interface for all Hit test features
+ */
+export interface IWebXRHitTestFeature<T extends IWebXRLegacyHitResult> extends IWebXRFeature {
+    /**
+     * Triggered when new babylon (transformed) hit test results are available
+     */
+    onHitTestResultObservable: Observable<T[]>;
+}
+
+/**
  * Options used for hit testing
  */
-export interface IWebXRHitTestOptions {
+export interface IWebXRLegacyHitTestOptions {
     /**
      * Only test when user interacted with the scene. Default - hit test every frame
      */
@@ -24,7 +34,7 @@ export interface IWebXRHitTestOptions {
 /**
  * Interface defining the babylon result of raycasting/hit-test
  */
-export interface IWebXRHitResult {
+export interface IWebXRLegacyHitResult {
     /**
      * Transformation matrix that can be applied to a node that will put it in the hit point location
      */
@@ -32,7 +42,7 @@ export interface IWebXRHitResult {
     /**
      * The native hit test result
      */
-    xrHitResult: XRHitResult;
+    xrHitResult: XRHitResult | XRHitTestResult;
 }
 
 /**
@@ -40,7 +50,7 @@ export interface IWebXRHitResult {
  * Hit test (or Ray-casting) is used to interact with the real world.
  * For further information read here - https://github.com/immersive-web/hit-test
  */
-export class WebXRHitTestLegacy extends WebXRAbstractFeature {
+export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRHitTestFeature<IWebXRLegacyHitResult> {
     // in XR space z-forward is negative
     private _direction = new Vector3(0, 0, -1);
     private _mat = new Matrix();
@@ -65,7 +75,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature {
     /**
      * Triggered when new babylon (transformed) hit test results are available
      */
-    public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
+    public onHitTestResultObservable: Observable<IWebXRLegacyHitResult[]> = new Observable();
 
     /**
      * Creates a new instance of the (legacy version) hit test feature
@@ -76,7 +86,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature {
         /**
          * options to use when constructing this feature
          */
-        public readonly options: IWebXRHitTestOptions = {}) {
+        public readonly options: IWebXRLegacyHitTestOptions = {}) {
         super(_xrSessionManager);
     }
 
@@ -204,4 +214,4 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature {
 //register the plugin versions
 WebXRFeaturesManager.AddWebXRFeature(WebXRHitTestLegacy.Name, (xrSessionManager, options) => {
     return () => new WebXRHitTestLegacy(xrSessionManager, options);
-}, WebXRHitTestLegacy.Version, true);
+}, WebXRHitTestLegacy.Version, false);

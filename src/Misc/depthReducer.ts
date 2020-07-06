@@ -98,7 +98,10 @@ export class DepthReducer extends MinMaxReducer {
         super.dispose(disposeAll);
 
         if (this._depthRenderer && disposeAll) {
-            delete this._depthRenderer.getDepthMap().getScene()?._depthRenderer[this._depthRendererId];
+            const scene = this._depthRenderer.getDepthMap().getScene();
+            if (scene) {
+                delete scene._depthRenderer[this._depthRendererId];
+            }
 
             this._depthRenderer.dispose();
             this._depthRenderer = null;
