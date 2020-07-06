@@ -150,13 +150,21 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         }
         if (init) {
             if (xrLayer) {
-                this._canvas.style.width = xrLayer.framebufferWidth + 'px';
-                this._canvas.style.height = xrLayer.framebufferHeight + 'px';
+                if (this._canvas !== this._engine.getRenderingCanvas()) {
+                    this._canvas.style.width = xrLayer.framebufferWidth + 'px';
+                    this._canvas.style.height = xrLayer.framebufferHeight + 'px';
+                } else {
+                    this._engine.setSize(xrLayer.framebufferWidth, xrLayer.framebufferHeight);
+                }
             }
         } else {
             if (this._originalCanvasSize) {
-                this._canvas.style.width = this._originalCanvasSize.width + 'px';
-                this._canvas.style.height = this._originalCanvasSize.height + 'px';
+                if (this._canvas !== this._engine.getRenderingCanvas()) {
+                    this._canvas.style.width = this._originalCanvasSize.width + 'px';
+                    this._canvas.style.height = this._originalCanvasSize.height + 'px';
+                } else {
+                    this._engine.setSize(this._originalCanvasSize.width, this._originalCanvasSize.height);
+                }
             }
         }
     }
