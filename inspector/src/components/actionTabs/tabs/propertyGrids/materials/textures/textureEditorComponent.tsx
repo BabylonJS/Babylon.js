@@ -24,7 +24,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
 
     render() {
         return <div id='texture-editor'>
-            <canvas id="texture-canvas" ref={this.reactCanvas}></canvas>
+            <canvas id="texture-canvas" ref={this.reactCanvas} tabIndex={1}></canvas>
         </div>
     }
 }
