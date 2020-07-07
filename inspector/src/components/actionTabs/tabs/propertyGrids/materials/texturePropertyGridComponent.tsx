@@ -28,7 +28,7 @@ import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 import { Engine } from 'babylonjs/Engines/engine';
-import { PopupComponent } from '../animations/popupComponent';
+import { PopupComponent } from '../../../../popupComponent';
 import { TextureEditorComponent } from './textures/textureEditorComponent';
 
 interface ITexturePropertyGridComponentProps {

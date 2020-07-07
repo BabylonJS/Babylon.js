@@ -19,7 +19,7 @@ import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { TextLineComponent } from '../../../lines/textLineComponent';
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { AnimationCurveEditorComponent } from '../animations/animationCurveEditorComponent';
-import { PopupComponent } from '../animations/popupComponent';
+import { PopupComponent } from '../../../../popupComponent';
 
 interface IAnimationGridComponentProps {
   globalState: GlobalState;

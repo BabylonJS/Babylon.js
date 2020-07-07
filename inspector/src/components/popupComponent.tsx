@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
-import { Inspector } from '../../../../../../inspector';
+import { Inspector } from '../inspector';
 
 interface IPopupComponentProps {
     id: string,
