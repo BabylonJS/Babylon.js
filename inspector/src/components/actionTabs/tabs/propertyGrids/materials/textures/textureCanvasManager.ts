@@ -10,9 +10,6 @@ import { DynamicTexture } from 'babylonjs/Materials/Textures/dynamicTexture';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Color4 } from 'babylonjs/Maths/math.color';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-import { TextureEditorMaterial } from './textureEditorMaterial';
-
-
 
 export class TextureCanvasManager {
     private _engine: Engine;
@@ -69,8 +66,12 @@ export class TextureCanvasManager {
         const textureRatio = this._texture.getSize().width / this._texture.getSize().height;
 
         this._plane = PlaneBuilder.CreatePlane("plane", {width: textureRatio, height: 1}, this._scene);
-        this._planeMaterial = TextureEditorMaterial(this._texture);
-        this._plane.material = this._planeMaterial;
+        NodeMaterial.ParseFromSnippetAsync("#TPSEV2#3", this._scene)
+            .then((material) => {
+                this._planeMaterial = material;
+                this._planeMaterial.getTextureBlocks()[0].texture = this._texture;
+                this._plane.material = this._planeMaterial;
+            });
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
         this._plane.edgesColor = new Color4(1,1,1,1);
