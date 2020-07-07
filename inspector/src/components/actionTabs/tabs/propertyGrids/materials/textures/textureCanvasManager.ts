@@ -137,12 +137,6 @@ export class TextureCanvasManager {
                         this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
                     }
                     this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE), TextureCanvasManager.MAX_SCALE);
-                    if (kbInfo.event.key == " ") {
-                        const ctx = this._texture.getContext();
-                        ctx.fillStyle = 'pink';
-                        ctx.fillRect(0,0, this._texture.getSize().width, this._texture.getSize().height);
-                        this._texture.update();
-                    }
                     break;
             }
         })
