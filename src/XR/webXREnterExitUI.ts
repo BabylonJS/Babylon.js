@@ -58,6 +58,11 @@ export class WebXREnterExitUIOptions {
      * A list of optional features to init the session with
      */
     optionalFeatures?: string[];
+
+    /**
+     * A list of optional features to init the session with
+     */
+    requiredFeatures?: string[];
 }
 /**
  * UI to allow the user to enter/exit XR mode
@@ -157,7 +162,7 @@ export class WebXREnterExitUI implements IDisposable {
                         } else if (helper.state == WebXRState.NOT_IN_XR) {
                             if (options.renderTarget) {
                                 try {
-                                    await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.renderTarget, {optionalFeatures: options.optionalFeatures});
+                                    await helper.enterXRAsync(ui._buttons[i].sessionMode, ui._buttons[i].referenceSpaceType, options.renderTarget, {optionalFeatures: options.optionalFeatures, requiredFeatures: options.requiredFeatures});
                                     ui._updateButtons(ui._buttons[i]);
                                 } catch (e) {
                                     // make sure button is visible

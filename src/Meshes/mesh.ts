@@ -2806,7 +2806,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var pstring: Array<string> = new Array(); //lists facet vertex positions (a,b,c) as string "a|b|c"
 
             var indexPtr: number = 0; // pointer to next available index value
-            var uniquePositions: Array<string> = new Array(); // unique vertex positions
+            var uniquePositions: { [key: string]: number } = {}; // unique vertex positions
             var ptr: number; // pointer to element in uniquePositions
             var facet: Array<number>;
 
@@ -2822,7 +2822,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         }
                         pstring[j] += currentPositions[3 * facet[j] + k] + "|";
                     }
-                    pstring[j] = pstring[j].slice(0, -1);
                 }
                 //check facet vertices to see that none are repeated
                 // do not process any facet that has a repeated vertex, ie is a line
@@ -2831,9 +2830,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     // if not listed add to uniquePositions and set index pointer
                     // if listed use its index in uniquePositions and new index pointer
                     for (var j = 0; j < 3; j++) {
-                        ptr = uniquePositions.indexOf(pstring[j]);
-                        if (ptr < 0) {
-                            uniquePositions.push(pstring[j]);
+                        ptr = uniquePositions[pstring[j]];
+                        if (ptr === undefined) {
+                            uniquePositions[pstring[j]] = indexPtr;
                             ptr = indexPtr++;
                             //not listed so add individual x, y, z coordinates to positions
                             for (var k = 0; k < 3; k++) {
