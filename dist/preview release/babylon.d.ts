@@ -48149,6 +48149,10 @@ declare module BABYLON {
          * A list of optional features to init the session with
          */
         optionalFeatures?: string[];
+        /**
+         * A list of optional features to init the session with
+         */
+        requiredFeatures?: string[];
     }
     /**
      * UI to allow the user to enter/exit XR mode
