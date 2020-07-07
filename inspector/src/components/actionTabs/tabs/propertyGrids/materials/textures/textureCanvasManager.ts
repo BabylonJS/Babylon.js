@@ -1,15 +1,18 @@
 import { Engine } from 'babylonjs/Engines/engine';
 import { Scene } from 'babylonjs/scene';
 import { Vector3 } from 'babylonjs/Maths/math.vector';
+import { Color4 } from 'babylonjs/Maths/math.color';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
+
 import { PlaneBuilder } from 'babylonjs/Meshes/Builders/planeBuilder';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { Camera } from 'babylonjs/Cameras/camera';
-import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { DynamicTexture } from 'babylonjs/Materials/Textures/dynamicTexture';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-import { Color4 } from 'babylonjs/Maths/math.color';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+
+import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { KeyboardEventTypes } from 'babylonjs/Events/keyboardEvents';
 
 export class TextureCanvasManager {
     private _engine: Engine;
@@ -124,7 +127,7 @@ export class TextureCanvasManager {
 
         this._scene.onKeyboardObservable.add((kbInfo) => {
             switch(kbInfo.type) {
-                case BABYLON.KeyboardEventTypes.KEYDOWN:
+                case KeyboardEventTypes.KEYDOWN:
                     if (kbInfo.event.key == "+") {
                         this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
                     }
