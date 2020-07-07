@@ -698,7 +698,7 @@
         "build": {            
             "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
-            "mainFolder": "./playground/",
+            "mainFolder": "./Playground/",
             "uncheckedLintImports": [
                 "react",
                 "react-dom",
