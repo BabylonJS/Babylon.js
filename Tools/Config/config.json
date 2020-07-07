@@ -701,7 +701,8 @@
             "mainFolder": "./playground/",
             "uncheckedLintImports": [
                 "react",
-                "react-dom"
+                "react-dom",
+                "monaco"
             ],
             "umd": {
                 "packageName": "babylonjs-playground",
