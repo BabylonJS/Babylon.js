@@ -27,6 +27,10 @@ import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
+import { Engine } from 'babylonjs/Engines/engine';
+import { PopupComponent } from '../../../../popupComponent';
+import { TextureEditorComponent } from './textures/textureEditorComponent';
+
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
     lockObject: LockObject,
@@ -38,6 +42,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
     private textureLineRef: React.RefObject<TextureLineComponent>;
+
+    private _isTextureEditorOpen = false;
     
 
     constructor(props: ITexturePropertyGridComponentProps) {
@@ -83,16 +89,27 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         extension = ".env";
                     }
 
-                    (texture as CubeTexture).updateURL(base64data, extension, () => this.foreceRefresh());
+                    (texture as CubeTexture).updateURL(base64data, extension, () => this.forceRefresh());
                 } else {
-                    (texture as Texture).updateURL(base64data, null, () => this.foreceRefresh());
+                    (texture as Texture).updateURL(base64data, null, () => this.forceRefresh());
                 }
             };
 
         }, undefined, true);
-    }    
+    }
 
-    foreceRefresh() {
+    onOpenTextureEditor() {
+        this._isTextureEditorOpen = true;
+    }
+    
+    onCloseTextureEditor(window: Window | null) {
+        this._isTextureEditorOpen = false;
+        if (window !== null) {
+            window.close();
+        }
+    }
+
+    forceRefresh() {
         this.forceUpdate();
         (this.textureLineRef.current as TextureLineComponent).updatePreview();
     }
@@ -132,16 +149,36 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             }
         }
 
+        const editable = texture.textureType != Engine.TEXTURETYPE_FLOAT && texture.textureType != Engine.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV && texture.textureType !== Engine.TEXTURETYPE_HALF_FLOAT;
+
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                    {editable &&
+                        <ButtonLineComponent label="View" onClick={() => this.onOpenTextureEditor()} />
+                    }
                     <TextInputLineComponent label="URL" value={textureUrl} lockObject={this.props.lockObject} onChange={url => {
                         (texture as Texture).updateURL(url);
-                        this.foreceRefresh();
+                        this.forceRefresh();
                     }} />
                 </LineContainerComponent>
+                {this._isTextureEditorOpen && (
+                <PopupComponent
+                  id='texture-editor'
+                  title='Texture Editor'
+                  size={{ width: 1024, height: 490 }}
+                  onOpen={(window: Window) => {}}
+                  onClose={(window: Window) =>
+                    this.onCloseTextureEditor(window)
+                  }
+                >
+                    <TextureEditorComponent
+                        globalState={this.props.globalState}
+                        texture={this.props.texture}
+                    />
+                </PopupComponent>)}
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

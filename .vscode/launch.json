@@ -86,7 +86,7 @@
             "type": "edge",
             "version": "dev",
             "request": "launch",
-            "url": "http://localhost:1338/Playground/index-local.html",
+            "url": "http://localhost:1338/Playground/public/index-local.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",

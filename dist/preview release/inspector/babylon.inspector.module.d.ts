@@ -63,6 +63,9 @@ declare module "babylonjs-inspector/components/globalState" {
         glTFLoaderDefaults: {
             [key: string]: any;
         };
+        glTFLoaderExtenstions: {
+            [key: string]: IGLTFLoaderExtension;
+        };
         blockMutationUpdates: boolean;
         selectedLineContainerTitles: Array<string>;
         selectedLineContainerTitlesNoFocus: Array<string>;
@@ -1240,7 +1243,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/popupComponent" {
+declare module "babylonjs-inspector/components/popupComponent" {
     import * as React from "react";
     interface IPopupComponentProps {
         id: string;
@@ -1433,6 +1436,46 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager" {
+    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    export class TextureCanvasManager {
+        private _engine;
+        private _scene;
+        private _texture;
+        private _camera;
+        private _canvas;
+        private _scale;
+        private _isPanning;
+        private _mouseX;
+        private _mouseY;
+        private _plane;
+        private _planeMaterial;
+        private static ZOOM_MOUSE_SPEED;
+        private static ZOOM_KEYBOARD_SPEED;
+        private static PAN_SPEED;
+        private static PAN_BUTTON;
+        private static MIN_SCALE;
+        private static MAX_SCALE;
+        constructor(targetCanvas: HTMLCanvasElement, texture: BaseTexture);
+        dispose(): void;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent" {
+    import * as React from 'react';
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    interface TextureEditorComponentProps {
+        globalState: GlobalState;
+        texture: BaseTexture;
+    }
+    export class TextureEditorComponent extends React.Component<TextureEditorComponentProps> {
+        private _textureCanvasManager;
+        private reactCanvas;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -1449,10 +1492,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
         private textureLineRef;
+        private _isTextureEditorOpen;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
-        foreceRefresh(): void;
+        onOpenTextureEditor(): void;
+        onCloseTextureEditor(window: Window | null): void;
+        forceRefresh(): void;
         render(): JSX.Element;
     }
 }
@@ -1765,6 +1811,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/var
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
         private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
+        private _getVariantsExtension;
         render(): JSX.Element | null;
     }
 }
@@ -3714,6 +3761,9 @@ declare module INSPECTOR {
         glTFLoaderDefaults: {
             [key: string]: any;
         };
+        glTFLoaderExtenstions: {
+            [key: string]: BABYLON.IGLTFLoaderExtension;
+        };
         blockMutationUpdates: boolean;
         selectedLineContainerTitles: Array<string>;
         selectedLineContainerTitlesNoFocus: Array<string>;
@@ -4928,6 +4978,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class TextureCanvasManager {
+        private _engine;
+        private _scene;
+        private _texture;
+        private _camera;
+        private _canvas;
+        private _scale;
+        private _isPanning;
+        private _mouseX;
+        private _mouseY;
+        private _plane;
+        private _planeMaterial;
+        private static ZOOM_MOUSE_SPEED;
+        private static ZOOM_KEYBOARD_SPEED;
+        private static PAN_SPEED;
+        private static PAN_BUTTON;
+        private static MIN_SCALE;
+        private static MAX_SCALE;
+        constructor(targetCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture);
+        dispose(): void;
+    }
+}
+declare module INSPECTOR {
+    interface TextureEditorComponentProps {
+        globalState: GlobalState;
+        texture: BABYLON.BaseTexture;
+    }
+    export class TextureEditorComponent extends React.Component<TextureEditorComponentProps> {
+        private _textureCanvasManager;
+        private reactCanvas;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITexturePropertyGridComponentProps {
         texture: BABYLON.BaseTexture;
         lockObject: LockObject;
@@ -4937,10 +5023,13 @@ declare module INSPECTOR {
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
         private textureLineRef;
+        private _isTextureEditorOpen;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
-        foreceRefresh(): void;
+        onOpenTextureEditor(): void;
+        onCloseTextureEditor(window: Window | null): void;
+        forceRefresh(): void;
         render(): JSX.Element;
     }
 }
@@ -5174,6 +5263,7 @@ declare module INSPECTOR {
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
         private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
+        private _getVariantsExtension;
         render(): JSX.Element | null;
     }
 }
