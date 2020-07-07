@@ -21,9 +21,6 @@ var config = babylonWebpackConfig({
         {
             test: /\.css$/,
             use: ['style-loader', 'css-loader']
-        },{
-            test: /\.ttf$/,
-            use: ['file-loader']
         },
         {
             test: /\.svg$/,
@@ -35,7 +32,10 @@ var config = babylonWebpackConfig({
                 },
               },
             ],
-          }
+        }, {
+            test: /\.ttf$/,
+            use: ['file-loader']
+        }
     ],
     plugins: [
         new MiniCssExtractPlugin({
@@ -45,8 +45,9 @@ var config = babylonWebpackConfig({
             chunkFilename: "[id].css"
         }),
         new MonacoWebpackPlugin({
+            // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
             languages: ['javascript', 'typescript']
-        })
+          })
     ]
 });
 
