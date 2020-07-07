@@ -1,0 +1,21 @@
+html {
+    --background: #2A2342;
+    --footer-background: #201936;
+    --footer-height: 70px;
+    --button-hover-color: #BB464B;
+    --button-hover-hover: #e0684b;
+    --button-hover-background:  #162D3A;
+    --font-size: 20px;
+}
+
+html, body, #root {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--font-size);
+    background: var(--background);
+    font-family: "acumin-pro-condensed";
+    font-weight: normal;    
+}

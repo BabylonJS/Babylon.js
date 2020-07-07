@@ -48,7 +48,8 @@
         "gui",
         "inspector",
         "nodeEditor",
-        "sandbox"
+        "sandbox",
+        "playground"
     ],
     "es6modules": [
         "core",
@@ -61,7 +62,8 @@
         "inspector",
         "viewer",
         "nodeEditor",
-        "sandbox"
+        "sandbox",
+        "playground"
     ],
     "lintModules": [
         "core",
@@ -683,6 +685,54 @@
                 ],
                 "typings": "babylon.sandbox.module.d.ts",
                 "index": "babylon.sandbox.max.js"
+            }
+        }
+    },
+    "playground": {
+        "libraries": [
+            {
+                "output": "babylon.playground.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {            
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "mainFolder": "./playground/",
+            "uncheckedLintImports": [
+                "react",
+                "react-dom"
+            ],
+            "umd": {
+                "packageName": "babylonjs-playground",
+                "webpackRoot": "PLAYGROUND",
+                "processDeclaration": {
+                    "filename": "babylon.playground.module.d.ts",
+                    "moduleName": "PLAYGROUND",
+                    "importsToRemove": [],
+                    "classMap": {
+                        "babylonjs": "BABYLON",
+                        "react": "React",
+                        "@babylonjs/core": "BABYLON",
+                        "@fortawesome": false
+                    }
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                    "Tools/**/*"
+                ],
+                "packageName": "@babylonjs/playground",
+                "readme": "dist/preview release/playground/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.playground.max.js",
+                    "babylon.playground.max.js.map",
+                    "babylon.playground.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.playground.module.d.ts",
+                "index": "babylon.playground.max.js"
             }
         }
     },
