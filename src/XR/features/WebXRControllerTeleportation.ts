@@ -237,6 +237,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             return false;
         }
 
+        // Safety reset
+        this._currentTeleportationControllerId = '';
+
         this._options.xrInput.controllers.forEach(this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
@@ -257,6 +260,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         });
 
         this._setTargetMeshVisibility(false);
+        this._currentTeleportationControllerId = '';
 
         return true;
     }
