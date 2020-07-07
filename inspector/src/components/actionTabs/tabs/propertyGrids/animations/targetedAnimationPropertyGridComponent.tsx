@@ -11,7 +11,7 @@ import { TextLineComponent } from '../../../lines/textLineComponent';
 import { LockObject } from '../lockObject';
 import { GlobalState } from '../../../../globalState';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
-import { PopupComponent } from '../animations/popupComponent';
+import { PopupComponent } from '../../../../popupComponent';
 import { AnimationCurveEditorComponent } from '../animations/animationCurveEditorComponent';
 import { AnimationGroup } from 'babylonjs/Animations/animationGroup';
 
