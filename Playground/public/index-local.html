@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>Babylon.js Playground</title>
+        <meta charset='utf-8' />
+        <meta name="viewport" content="width=device-width, user-scalable=no">
+        <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico">
+        <meta name="description" content="Babylon.js playground is a live editor for Babylon.js WebGL 3D scenes">
+        <meta name="keywords" content="Babylon.js,WebGL,3D">
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
+        <link rel="stylesheet" href="/css/index.css" />
+        <link rel="stylesheet" href="/css/index_mobile.css" />
+
+        <!-- Pep -->
+        <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
+        <!--For canvas/code separator-->
+        <script src="libs/split.js"></script>
+
+        <!-- DatGUI -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <!-- jszip -->
+        <script src="libs/jszip.min.js"></script>
+        <script src="libs/fileSaver.js"></script>
+
+        <!-- Dependencies -->
+        <script src="/dist/preview%20release/ammo.js"></script>
+        <script src="/dist/preview%20release/recast.js"></script>
+        <script src="/dist/preview%20release/cannon.js"></script>
+        <script src="/dist/preview%20release/Oimo.js"></script>
+        <script src="/dist/preview%20release/libktx.js"></script>
+        <script src="/dist/preview%20release/earcut.min.js"></script>
+        <!-- Monaco -->
+
+        <!-- Babylon.js -->
+        <script src="/Tools/DevLoader/BabylonLoader.js"></script>
+
+        <style>
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+    
+            #host-element {
+                width: 100%;
+                height: 100%;
+            }
+        </style>        
+    </head>
+
+    <body>        
+        <div id="host-element">
+        </div>
+        <script>
+            // Load the scripts + map file to allow vscode debug.
+            BABYLONDEVTOOLS.Loader            
+                .require("index.js")
+                .load(() => {
+                });
+        </script>
+    </body>
+
+</html>
