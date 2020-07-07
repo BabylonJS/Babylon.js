@@ -1,6 +1,7 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const babylonWebpackConfig = require('../Tools/WebpackPlugins/babylonWebpackConfig');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 var config = babylonWebpackConfig({
     module: "playground",
@@ -20,6 +21,9 @@ var config = babylonWebpackConfig({
         {
             test: /\.css$/,
             use: ['style-loader', 'css-loader']
+        },{
+            test: /\.ttf$/,
+            use: ['file-loader']
         },
         {
             test: /\.svg$/,
@@ -39,6 +43,9 @@ var config = babylonWebpackConfig({
             // both options are optional
             filename: "[name].css",
             chunkFilename: "[id].css"
+        }),
+        new MonacoWebpackPlugin({
+            languages: ['javascript', 'typescript']
         })
     ]
 });
