@@ -74,6 +74,7 @@ export class TextureCanvasManager {
                 this._planeMaterial = material;
                 this._planeMaterial.getTextureBlocks()[0].texture = this._texture;
                 this._plane.material = this._planeMaterial;
+                this._canvas.focus();
             });
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
@@ -122,6 +123,7 @@ export class TextureCanvasManager {
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
                     }
+                    break;
             }
         })
 
@@ -142,7 +144,9 @@ export class TextureCanvasManager {
     }
 
     public dispose() {
-        this._planeMaterial.dispose();
+        if (this._planeMaterial) {
+            this._planeMaterial.dispose();
+        }
         this._texture.dispose();
         this._plane.dispose();
         this._camera.dispose();
