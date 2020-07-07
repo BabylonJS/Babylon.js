@@ -12,7 +12,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     private _editor: monaco.editor.IStandaloneCodeEditor;
     private _definitionWorker: Worker;
     private _deprecatedCandidates: string[];
-    private _templates: string[];
+   // private _templates: string[];
     
     public constructor(props: IMonacoComponentProps) {
         super(props);
@@ -64,7 +64,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
         // Load code templates
         response = await fetch("/templates.json");
         if (response.ok) {
-            this._templates = await response.json();
+      //      this._templates = await response.json();
         }
 
         // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
