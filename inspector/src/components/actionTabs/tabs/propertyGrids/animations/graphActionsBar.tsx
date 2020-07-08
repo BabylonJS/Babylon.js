@@ -34,11 +34,11 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
           className='buttons-container'
           style={{ pointerEvents: this.props.enabled ? 'all' : 'none' }}
         >
-          <div className='action-input'>
+          <div className='action-input frame-input'>
             <input
               type='number'
+              readOnly
               value={this.props.currentFrame}
-              onChange={this.props.handleFrameChange}
               step='1'
             />
           </div>
