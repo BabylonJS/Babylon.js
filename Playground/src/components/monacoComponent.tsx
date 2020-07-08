@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as monaco from 'monaco-editor'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 
 require("../scss/monaco.scss");
 
@@ -20,22 +20,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
         this._hostReference = React.createRef();
     }
 
-    waitForDefine() {
-        return new Promise(function (resolve, reject) {
-            function timeout() {
-                if (!(window as any).define) {
-                    setTimeout(timeout, 200);
-                } else {
-                    resolve();
-                }
-            }
-            timeout();
-        });
-    }
-
     async setupMonaco() {        
-        await this.waitForDefine();            
-        
         let response = await fetch("https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok) {
             return;
