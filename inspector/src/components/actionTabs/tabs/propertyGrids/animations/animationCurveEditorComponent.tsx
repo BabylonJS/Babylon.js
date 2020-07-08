@@ -457,9 +457,28 @@ export class AnimationCurveEditorComponent extends React.Component<
       }
     }
 
-    keys[index].frame = newFrame; // This value comes as percentage/frame/time
+    if (newFrame > keys[index].frame) {
+      const nextKf = keys[index + 1];
 
-    // Calculate value for Vector3...
+      if (nextKf) {
+        if (nextKf.frame <= newFrame) {
+          keys[index].frame = keys[index].frame;
+        } else {
+          keys[index].frame = newFrame;
+        }
+      }
+    }
+
+    if (newFrame < keys[index].frame) {
+      const prevKf = keys[index - 1];
+      if (prevKf) {
+        if (prevKf.frame >= newFrame) {
+          keys[index].frame = keys[index].frame;
+        } else {
+          keys[index].frame = newFrame;
+        }
+      }
+    }
 
     let updatedValue =
       ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) /
@@ -473,6 +492,30 @@ export class AnimationCurveEditorComponent extends React.Component<
       coordinate
     );
 
+    this.updateLeftControlPoint(
+      updatedSvgKeyFrame,
+      keys[index],
+      animation.dataType,
+      coordinate
+    );
+    this.updateRightControlPoint(
+      updatedSvgKeyFrame,
+      keys[index],
+      animation.dataType,
+      coordinate
+    );
+
+    animation.setKeys(keys);
+
+    this.selectAnimation(animation, coordinate);
+  }
+
+  updateLeftControlPoint(
+    updatedSvgKeyFrame: IKeyframeSvgPoint,
+    key: IAnimationKey,
+    dataType: number,
+    coordinate: number
+  ) {
     if (updatedSvgKeyFrame.isLeftActive) {
       if (updatedSvgKeyFrame.leftControlPoint !== null) {
         // Rotate
@@ -488,9 +531,9 @@ export class AnimationCurveEditorComponent extends React.Component<
 
         let updatedValue = keyframeValue - newValue;
 
-        keys[index].inTangent = this.updateValuePerCoordinate(
-          animation.dataType,
-          keys[index].inTangent,
+        key.inTangent = this.updateValuePerCoordinate(
+          dataType,
+          key.inTangent,
           updatedValue,
           coordinate
         );
@@ -499,12 +542,19 @@ export class AnimationCurveEditorComponent extends React.Component<
           // Right control point if exists
           if (updatedSvgKeyFrame.rightControlPoint !== null) {
             // Sets opposite value
-            keys[index].outTangent = keys[index].inTangent * -1;
+            key.outTangent = key.inTangent * -1;
           }
         }
       }
     }
+  }
 
+  updateRightControlPoint(
+    updatedSvgKeyFrame: IKeyframeSvgPoint,
+    key: IAnimationKey,
+    dataType: number,
+    coordinate: number
+  ) {
     if (updatedSvgKeyFrame.isRightActive) {
       if (updatedSvgKeyFrame.rightControlPoint !== null) {
         // Rotate
@@ -520,9 +570,9 @@ export class AnimationCurveEditorComponent extends React.Component<
 
         let updatedValue = keyframeValue - newValue;
 
-        keys[index].outTangent = this.updateValuePerCoordinate(
-          animation.dataType,
-          keys[index].outTangent,
+        key.outTangent = this.updateValuePerCoordinate(
+          dataType,
+          key.outTangent,
           updatedValue,
           coordinate
         );
@@ -530,15 +580,11 @@ export class AnimationCurveEditorComponent extends React.Component<
         if (!this.state.isBrokenMode) {
           if (updatedSvgKeyFrame.leftControlPoint !== null) {
             // Sets opposite value
-            keys[index].inTangent = keys[index].outTangent * -1;
+            key.inTangent = key.outTangent * -1;
           }
         }
       }
     }
-
-    animation.setKeys(keys);
-
-    this.selectAnimation(animation, coordinate);
   }
 
   /**
