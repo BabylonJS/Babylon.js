@@ -1043,6 +1043,8 @@ declare module INSPECTOR {
         deselectKeyframes(): void;
         updateValuePerCoordinate(dataType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion, newValue: number, coordinate?: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
+        updateLeftControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
+        updateRightControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
         /**
          * Actions
          * This section handles events from GraphActionsBar.

@@ -1176,6 +1176,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         deselectKeyframes(): void;
         updateValuePerCoordinate(dataType: number, value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion, newValue: number, coordinate?: number): number | Vector3 | Quaternion | Color3 | Color4 | Vector2 | Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
+        updateLeftControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: IAnimationKey, dataType: number, coordinate: number): void;
+        updateRightControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: IAnimationKey, dataType: number, coordinate: number): void;
         /**
          * Actions
          * This section handles events from GraphActionsBar.
@@ -4754,6 +4756,8 @@ declare module INSPECTOR {
         deselectKeyframes(): void;
         updateValuePerCoordinate(dataType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion, newValue: number, coordinate?: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
+        updateLeftControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
+        updateRightControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
         /**
          * Actions
          * This section handles events from GraphActionsBar.
