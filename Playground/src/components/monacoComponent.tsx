@@ -50,35 +50,30 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
 
         libContent += await response.text();
 
-        // require.config({
-        //     paths: {
-        //         'vs': 'node_modules/monaco-editor/dev/vs'
-        //     }
-        // });
 
-            let hostElement = this._hostReference.current!;  
-            var editorOptions = {
-                value: "",
-                language: this.props.language == "JS" ? "javascript" : "typescript",
-                lineNumbers: "on",
-                roundedSelection: true,
-                automaticLayout: true,
-                scrollBeyondLastLine: false,
-                readOnly: false,
-                theme: "vs",
-                contextmenu: false,
-                folding: true,
-                showFoldingControls: "always",
-                renderIndentGuides: true,
-                minimap: {
-                    enabled: true
-                }
-            };      
+        let hostElement = this._hostReference.current!;  
+        var editorOptions = {
+            value: "",
+            language: this.props.language == "JS" ? "javascript" : "typescript",
+            lineNumbers: "on",
+            roundedSelection: true,
+            automaticLayout: true,
+            scrollBeyondLastLine: false,
+            readOnly: false,
+            theme: "vs",
+            contextmenu: false,
+            folding: true,
+            showFoldingControls: "always",
+            renderIndentGuides: true,
+            minimap: {
+                enabled: true
+            }
+        };      
 
-            this._editor = monaco.editor.create(
-                hostElement,
-                editorOptions as any
-            );
+        this._editor = monaco.editor.create(
+            hostElement,
+            editorOptions as any
+        );
 
         //   this.setupDefinitionWorker(libContent);
 
