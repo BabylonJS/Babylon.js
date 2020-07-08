@@ -1,5 +1,8 @@
 import * as React from "react";
-import 'monaco-editor/esm/vs/editor/editor.api'
+import 'monaco-editor/esm/vs/editor/editor.api';
+
+declare type IStandaloneCodeEditor = import('monaco-editor/esm/vs/editor/editor.api').editor.IStandaloneCodeEditor;
+declare type IEditorConstructionOptions = import('monaco-editor/esm/vs/editor/editor.api').editor.IEditorConstructionOptions;
 
 declare var monaco: any;
 
@@ -11,7 +14,7 @@ interface IMonacoComponentProps {
 
 export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     private _hostReference: React.RefObject<HTMLDivElement>;
-    private _editor: any;
+    private _editor: IStandaloneCodeEditor;
     private _definitionWorker: Worker;
     private _deprecatedCandidates: string[];
    // private _templates: string[];
@@ -23,31 +26,44 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     }
 
     async setupMonaco() {        
-        let response = await fetch("https://preview.babylonjs.com/babylon.d.ts");
-        if (!response.ok) {
-            return;
-        }
+        // let response = await fetch("https://preview.babylonjs.com/babylon.d.ts");
+        // if (!response.ok) {
+        //     return;
+        // }
 
-        let libContent = await response.text();
+        // let libContent = await response.text();
 
-        response = await fetch("https://preview.babylonjs.com/gui/babylon.gui.d.ts");
-        if (!response.ok) {
-            return;
-        }
+        // response = await fetch("https://preview.babylonjs.com/gui/babylon.gui.d.ts");
+        // if (!response.ok) {
+        //     return;
+        // }
 
-        libContent += await response.text();
+        // libContent += await response.text();
 
+        //   this.setupDefinitionWorker(libContent);
+
+            // Load code templates
+        //   response = await fetch("/templates.json");
+        // if (response.ok) {
+        //      this._templates = await response.json();
+            //}
+
+        // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
+        //this.setupMonacoCompilationPipeline(libContent);
+
+            // This is used for a vscode-like color preview for ColorX types
+            //this.setupMonacoColorProvider();
 
         let hostElement = this._hostReference.current!;  
-        var editorOptions = {
+        var editorOptions: IEditorConstructionOptions = {
             value: "",
-            language: this.props.language == "JS" ? "javascript" : "typescript",
+            language: this.props.language === "JS" ? "javascript" : "typescript",
             lineNumbers: "on",
             roundedSelection: true,
             automaticLayout: true,
             scrollBeyondLastLine: false,
             readOnly: false,
-            theme: "vs",
+            theme: "vs-dark",
             contextmenu: false,
             folding: true,
             showFoldingControls: "always",
@@ -60,21 +76,44 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
         this._editor = monaco.editor.create(
             hostElement,
             editorOptions as any
-        );
+        );        
+        
+        this._editor.setValue(`var createScene = function () {
 
-        //   this.setupDefinitionWorker(libContent);
+            // This creates a basic Babylon Scene object (non-mesh)
+            var scene = new BABYLON.Scene(engine);
+        
+            // This creates and positions a free camera (non-mesh)
+            var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+        
+            // This targets the camera to scene origin
+            camera.setTarget(BABYLON.Vector3.Zero());
+        
+            // This attaches the camera to the canvas
+            camera.attachControl(canvas, true);
+        
+            // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+            var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+        
+            // Default intensity is 1. Let's dim the light a small amount
+            light.intensity = 0.7;
+        
+            // Our built-in 'sphere' shape.
+            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
+        
+            // Move the sphere upward 1/2 its height
+            sphere.position.y = 1;
+        
+            // Our built-in 'ground' shape.
+            var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
+        
+            return scene;
+        
+        };`);
+        const model = this._editor.getModel();
+        monaco.editor.setModelLanguage(model, "javascript");
+        console.log(model)
 
-            // Load code templates
-        //   response = await fetch("/templates.json");
-        // if (response.ok) {
-        //      this._templates = await response.json();
-            //}
-
-            // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
-            this.setupMonacoCompilationPipeline(libContent);
-
-            // This is used for a vscode-like color preview for ColorX types
-            //this.setupMonacoColorProvider();
     }
 
       // Provide an adornment for BABYLON.ColorX types: color preview
@@ -127,15 +166,6 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     // Setup both JS and TS compilation pipelines to work with our scripts. 
     setupMonacoCompilationPipeline(libContent: string) {
         var typescript = monaco.languages.typescript;
-
-        // if (!typescript) {
-        //     setTimeout(() => {
-        //             console.log("Retry")
-        //         this.setupMonacoCompilationPipeline(libContent);
-
-        //     }, 500)
-        //     return;
-        // }
 
         if (this.props.language === "JS") {
             typescript.javascriptDefaults.setCompilerOptions({
