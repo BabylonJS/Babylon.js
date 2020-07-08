@@ -1,7 +1,8 @@
 import * as React from "react";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 require("../scss/monaco.scss");
+
+declare var monaco:any;
 
 interface IMonacoComponentProps {
     language: "JS" | "TS";
@@ -9,7 +10,7 @@ interface IMonacoComponentProps {
 
 export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     private _hostReference: React.RefObject<HTMLDivElement>;
-    private _editor: monaco.editor.IStandaloneCodeEditor;
+    private _editor: any;
     private _definitionWorker: Worker;
     private _deprecatedCandidates: string[];
    // private _templates: string[];
@@ -20,9 +21,24 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
         this._hostReference = React.createRef();
     }
 
-    async setupMonaco() {
+    waitForDefine() {
+        return new Promise(function (resolve, reject) {
+            function timeout() {
+                if (!(window as any).define) {
+                    setTimeout(timeout, 200);
+                } else {
+                    resolve();
+                }
+            }
+            timeout();
+        });
+    }
+
+    async setupMonaco() {        
+        await this.waitForDefine();
+        
         let hostElement = this._hostReference.current!;  
-        var editorOptions: monaco.editor.IEditorConstructionOptions = {
+        var editorOptions = {
             value: "",
             language: this.props.language == "JS" ? "javascript" : "typescript",
             lineNumbers: "on",
@@ -59,25 +75,25 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
 
         libContent += await response.text();
 
-        this.setupDefinitionWorker(libContent);
+     //   this.setupDefinitionWorker(libContent);
 
         // Load code templates
-        response = await fetch("/templates.json");
-        if (response.ok) {
+     //   response = await fetch("/templates.json");
+       // if (response.ok) {
       //      this._templates = await response.json();
-        }
+        //}
 
         // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
         this.setupMonacoCompilationPipeline(libContent);
 
         // This is used for a vscode-like color preview for ColorX types
-        this.setupMonacoColorProvider();
+        //this.setupMonacoColorProvider();
     }
 
       // Provide an adornment for BABYLON.ColorX types: color preview
       setupMonacoColorProvider() {
         monaco.languages.registerColorProvider(this.props.language == "JS" ? "javascript" : "typescript", {
-            provideColorPresentations: (model, colorInfo) => {
+            provideColorPresentations: (model: any, colorInfo: any) => {
                 const color = colorInfo.color;
 
                 const precision = 100.0;
@@ -95,7 +111,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
                 }];
             },
 
-            provideDocumentColors: (model) => {
+            provideDocumentColors: (model: any) => {
                 const digitGroup = "\\s*(\\d*(?:\\.\\d+)?)\\s*";
                 // we add \n{0} to workaround a Monaco bug, when setting regex options on their side
                 const regex = `BABYLON\\.Color(?:3|4)\\s*\\(${digitGroup},${digitGroup},${digitGroup}(?:,${digitGroup})?\\)\\n{0}`;
@@ -103,7 +119,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
 
                 const converter = (g: string) => g === undefined ? undefined : Number(g);
 
-                return matches.map(match => ({
+                return matches.map((match: any) => ({
                     color: {
                         red: converter(match.matches![1])!,
                         green: converter(match.matches![2])!,
@@ -123,7 +139,16 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
 
     // Setup both JS and TS compilation pipelines to work with our scripts. 
     setupMonacoCompilationPipeline(libContent: string) {
-        const typescript = monaco.languages.typescript;
+        var typescript = monaco.languages.typescript;
+
+        if (!typescript) {
+            setTimeout(() => {
+                    console.log("Retry")
+                this.setupMonacoCompilationPipeline(libContent);
+
+            }, 500)
+            return;
+        }
 
         if (this.props.language === "JS") {
             typescript.javascriptDefaults.setCompilerOptions({
@@ -194,7 +219,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
             startColumn: number,
             endColumn: number,
             message: string,
-            severity: monaco.MarkerSeverity.Warning,
+            severity: number,
             source: string,
         }[] = [];
 
