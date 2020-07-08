@@ -82,6 +82,8 @@
         "mini-css-extract-plugin": "^0.9.0",
         "minimist": "^1.2.5",
         "mocha": "^7.2.0",
+        "monaco-editor": "~0.20.0",
+        "monaco-editor-webpack-plugin": "~1.9.0",
         "node-sass": "^4.14.1",
         "plugin-error": "^1.0.1",
         "prompt": "^1.0.0",

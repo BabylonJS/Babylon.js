@@ -45652,6 +45652,10 @@ declare module BABYLON {
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild?: boolean): void;
         /**
+         * If the post process is supported.
+         */
+        get isSupported(): boolean;
+        /**
          * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
         get colorCurves(): Nullable<ColorCurves>;
@@ -46261,10 +46265,6 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
-        /**
-         * Overriding the _getViewMatrix function, as it is computed by WebXR
-         */
-        _getViewMatrix(): Matrix;
         private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
@@ -48149,6 +48149,10 @@ declare module BABYLON {
          * A list of optional features to init the session with
          */
         optionalFeatures?: string[];
+        /**
+         * A list of optional features to init the session with
+         */
+        requiredFeatures?: string[];
     }
     /**
      * UI to allow the user to enter/exit XR mode

@@ -30,6 +30,7 @@ export class SvgDraggableArea extends React.Component<
   private _panStart: Vector2;
   private _panStop: Vector2;
   private _playheadDrag: number;
+  private _playheadSelected: boolean;
 
   constructor(props: ISvgDraggableAreaProps) {
     super(props);
@@ -39,6 +40,7 @@ export class SvgDraggableArea extends React.Component<
     this._panStart = new Vector2(0, 0);
     this._panStop = new Vector2(0, 0);
     this._playheadDrag = 0;
+    this._playheadSelected = false;
 
     this.state = { panX: 0, panY: 0 };
   }
@@ -86,7 +88,9 @@ export class SvgDraggableArea extends React.Component<
 
     if (e.target.classList.contains('svg-playhead')) {
       this._active = true;
-      this._playheadDrag = e.clientX;
+      this._playheadSelected = true;
+      this._playheadDrag =
+        e.clientX - e.currentTarget.getBoundingClientRect().left;
     }
 
     if (e.target.classList.contains('pannable')) {
@@ -110,11 +114,22 @@ export class SvgDraggableArea extends React.Component<
             this.panDirection();
           }
         }
-        if (e.target.classList.contains('svg-playhead')) {
-          if (this._playheadDrag < e.clientX) {
-            this.props.setCurrentFrame(1);
-          } else {
-            this.props.setCurrentFrame(-1);
+        if (
+          e.currentTarget.classList.contains('linear') &&
+          this._playheadDrag !== 0 &&
+          this._playheadSelected
+        ) {
+          const moving =
+            e.clientX - e.currentTarget.getBoundingClientRect().left;
+
+          const distance = moving - this._playheadDrag;
+          const draggableAreaWidth = e.currentTarget.clientWidth;
+          const framesInCavas = 20;
+          const unit = draggableAreaWidth / framesInCavas;
+
+          if (Math.abs(distance) >= unit / 1.25) {
+            this.props.setCurrentFrame(Math.sign(distance));
+            this._playheadDrag = this._playheadDrag + distance;
           }
         } else {
           var newPoints = [...this.props.keyframeSvgPoints];
@@ -147,6 +162,8 @@ export class SvgDraggableArea extends React.Component<
     this._isCurrentPointControl = '';
     this._panStart.set(0, 0);
     this._panStop.set(0, 0);
+    this._playheadDrag = 0;
+    this._playheadSelected = false;
   }
 
   getMousePosition(e: React.TouchEvent<SVGSVGElement>): Vector2 | undefined;

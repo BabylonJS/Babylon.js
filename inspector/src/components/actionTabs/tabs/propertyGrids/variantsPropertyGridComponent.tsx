@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
+import { Nullable } from 'babylonjs/types';
 
 import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
@@ -9,7 +10,8 @@ import { GlobalState } from "../../../globalState";
 // import { OptionsLineComponent } from '../../lines/optionsLineComponent';
 import { ButtonLineComponent } from '../../lines/buttonLineComponent';
 import { CheckBoxLineComponent } from '../../lines/checkBoxLineComponent';
-import { KHR_materials_variants } from 'babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants';
+
+declare type KHR_materials_variants = import("babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants").KHR_materials_variants;
 
 interface IVariantsPropertyGridComponentProps {
     globalState: GlobalState;
@@ -26,14 +28,22 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
         super(props);
     }
 
+    private _getVariantsExtension(): Nullable<KHR_materials_variants> {
+        return this.props.globalState?.glTFLoaderExtenstions["KHR_materials_variants"] as KHR_materials_variants;
+    }
+
     render() {
-        let variants: string[] = KHR_materials_variants.GetAvailableVariants(this.props.host);
+        const extension = this._getVariantsExtension();
+        if (!extension) {
+            return null;
+        }
+        let variants: string[] = extension.getAvailableVariants(this.props.host);
 
         if (!variants || variants.length === 0) {
             return null;
         }
 
-        let lastPickedVariants = KHR_materials_variants.GetLastSelectedVariant(this.props.host);
+        let lastPickedVariants = extension.getLastSelectedVariant(this.props.host);
 
         variants.sort((a, b) => {
             let aIsActive = lastPickedVariants && lastPickedVariants.indexOf ? lastPickedVariants.indexOf(a) > -1 : lastPickedVariants === a;
@@ -93,7 +103,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                                         onSelect={(value) => {
                                             if (value) {
                                                 this._selectedTags.push(v);
-                                                KHR_materials_variants.SelectVariant(this.props.host, v);
+                                                extension.selectVariant(this.props.host, v);
                                             } else {
                                                 // Do something on extension?
                                                 let index = this._selectedTags.indexOf(v);
@@ -135,7 +145,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         }}
                     /> */}
                     <ButtonLineComponent label="Reset" onClick={() => {
-                        KHR_materials_variants.Reset(this.props.host);
+                        extension.reset(this.props.host);
                         this._selectedTags = [];
                         this.forceUpdate();
                     }} />
