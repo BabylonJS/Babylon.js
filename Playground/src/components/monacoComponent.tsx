@@ -10,10 +10,11 @@ require("../scss/monaco.scss");
 
 interface IMonacoComponentProps {
     language: "JS" | "TS";
+    className: string;
+    refObject: React.RefObject<HTMLDivElement>;
 }
 
 export class MonacoComponent extends React.Component<IMonacoComponentProps> {
-    private _hostReference: React.RefObject<HTMLDivElement>;
     private _editor: IStandaloneCodeEditor;
     private _definitionWorker: Worker;
     private _deprecatedCandidates: string[];
@@ -21,8 +22,6 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     
     public constructor(props: IMonacoComponentProps) {
         super(props);
-
-        this._hostReference = React.createRef();
     }
 
     async setupMonaco() {        
@@ -54,7 +53,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
             // This is used for a vscode-like color preview for ColorX types
             //this.setupMonacoColorProvider();
 
-        let hostElement = this._hostReference.current!;  
+        let hostElement = this.props.refObject.current!;  
         var editorOptions: IEditorConstructionOptions = {
             value: "",
             language: this.props.language === "JS" ? "javascript" : "typescript",
@@ -297,7 +296,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     public render() {
 
         return (
-            <div id="monacoHost" ref={this._hostReference}>               
+            <div id="monacoHost" ref={this.props.refObject} className={this.props.className}>               
             </div>   
         )
     }
