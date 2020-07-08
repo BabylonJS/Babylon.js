@@ -12,10 +12,12 @@ interface TextureEditorComponentProps {
 
 export class TextureEditorComponent extends React.Component<TextureEditorComponentProps> {
     private _textureCanvasManager: TextureCanvasManager;
-    private reactCanvas = React.createRef<HTMLCanvasElement>();
+    private canvasUI = React.createRef<HTMLCanvasElement>();
+    private canvas2D = React.createRef<HTMLCanvasElement>();
+    private canvasTexture = React.createRef<HTMLCanvasElement>();
 
     componentDidMount() {
-        this._textureCanvasManager = new TextureCanvasManager(this.reactCanvas.current!, this.props.texture);
+        this._textureCanvasManager = new TextureCanvasManager(this.canvasUI.current!, this.props.texture, this.canvas2D.current!);
     }
 
     componentWillUnmount() {
@@ -24,7 +26,9 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
 
     render() {
         return <div id='texture-editor'>
-            <canvas id="texture-canvas" ref={this.reactCanvas} tabIndex={1}></canvas>
+            <canvas id="canvas-ui" ref={this.canvasUI} tabIndex={1}></canvas>
+            <canvas id="canvas-texture" ref={this.canvasTexture} width={this.props.texture.getSize().width} height={this.props.texture.getSize().height} hidden={true}></canvas>
+            <canvas id="canvas-2D" width={this.props.texture.getSize().width} height={this.props.texture.getSize().height} hidden={true} ref={this.canvas2D}></canvas>
         </div>
     }
 }
