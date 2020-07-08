@@ -10,7 +10,7 @@ jobs:
   steps:
   - script: 'npm install netlify-cli'
     displayName: 'npm install netlify'
-  - script: 'npm install --prefix Playground/'
+  - script: 'npm install --prefix playground/'
     displayName: 'npm install playground'
   - script: 'npm install typescript'
     displayName: 'npm install typescript'
