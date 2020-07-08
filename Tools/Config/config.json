@@ -698,7 +698,7 @@
         "build": {            
             "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
-            "mainFolder": "./playground/",
+            "mainFolder": "./Playground/",
             "uncheckedLintImports": [
                 "react",
                 "react-dom",
@@ -725,7 +725,7 @@
                     "Tools/**/*"
                 ],
                 "packageName": "@babylonjs/playground",
-                "readme": "dist/preview release/playground/readme-es6.md",
+                "readme": "dist/preview release/Playground/readme-es6.md",
                 "packagesFiles": [
                     "babylon.playground.max.js",
                     "babylon.playground.max.js.map",
