@@ -680,7 +680,8 @@ export class StandardMaterial extends PushMaterial {
      * Should this material render to several textures at once
      */
     public get shouldRenderToMRT() {
-        return (!!this._scene.prePassRenderer && this._scene.prePassRenderer.materialsShouldRenderGeometry);
+        const ppr = this.getScene().prePassRenderer;
+        return (!!ppr && ppr.materialsShouldRenderGeometry);
     }
 
     /**
