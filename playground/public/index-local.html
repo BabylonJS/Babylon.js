@@ -31,6 +31,8 @@
         <script src="/dist/preview%20release/libktx.js"></script>
         <script src="/dist/preview%20release/earcut.min.js"></script>
         <!-- Monaco -->
+        
+        <script src="/Tools/DevLoader/BabylonLoader.js"></script>
 
         <!-- Babylon.js -->
         <script src="/Tools/DevLoader/BabylonLoader.js"></script>
@@ -58,6 +60,7 @@
         <script>
             // Load the scripts + map file to allow vscode debug.
             BABYLONDEVTOOLS.Loader       
+                .require('node_modules/monaco-editor/dev/vs/loader.js')
                 .require("index.js")
                 .load(() => {
                 });
