@@ -7,3 +7,24 @@ html, body, #root {
     font-family: "acumin-pro-condensed";
     font-weight: normal;    
 }
+
+#split {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;
+
+    .split-part {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;         
+    }
+
+    .gutter.gutter-horizontal {
+        background-image: none;
+        background: #444444;
+        cursor: col-resize;
+    }
+}
