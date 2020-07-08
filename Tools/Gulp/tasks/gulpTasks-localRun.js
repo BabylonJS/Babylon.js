@@ -31,8 +31,8 @@ gulp.task("webserver", function () {
                 let referer = req.headers['referer'];
                 if (!baseUrl && referer) {
                     referer = referer.toLowerCase();
-                    if (referer.indexOf('/playground/') !== -1 && req.url.indexOf('/Playground/') === -1) {
-                        req.url = "/Playground/" + req.url;
+                    if (referer.indexOf('/playground/') !== -1 && req.url.toLowerCase().indexOf('/playground/') === -1) {
+                        req.url = "/playground/" + req.url;
                         res.writeHead(301, {
                             'Location': req.url
                         });
@@ -40,7 +40,7 @@ gulp.task("webserver", function () {
                     }
                     if (referer.indexOf('/localdev/') !== -1 && referer.indexOf(req.originalUrl) === -1) {
                         if (!fs.existsSync(rootRelativePath + req.originalUrl)) {
-                            req.url = "/Playground/" + req.url.replace(/localDev/ig, "");
+                            req.url = "/playground/" + req.url.replace(/localDev/ig, "");
                         }
                     }
                 }
