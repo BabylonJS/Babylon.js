@@ -645,7 +645,7 @@ export class AnimationCurveEditorComponent extends React.Component<
   setFlatTangent() {
     if (this.state.selected !== null) {
       let animation = this.state.selected;
-      this.setState({ isFlatTangentMode: !this.state.isFlatTangentMode }, () =>
+      this.setState({ isFlatTangentMode: true }, () =>
         this.selectAnimation(animation)
       );
     }
@@ -833,6 +833,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     } else {
       flattened = keyframes;
     }
+    this.setState({ isFlatTangentMode: false });
     return flattened;
   }
 
@@ -1078,12 +1079,12 @@ export class AnimationCurveEditorComponent extends React.Component<
       let prevKeyframe = keyframes[i - 1];
       if (nextKeyframe !== undefined) {
         let distance = keyframes[i + 1].frame - key.frame;
-        defaultWeight = distance * 0.33;
+        defaultWeight = distance * 1; // Adjust for scaled
       }
 
       if (prevKeyframe !== undefined) {
         let distance = key.frame - keyframes[i - 1].frame;
-        defaultWeight = distance * 0.33;
+        defaultWeight = distance * 1; // Adjust for scaled
       }
 
       if (inT !== null) {
