@@ -1,5 +1,7 @@
 import * as React from "react";
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
+import 'monaco-editor/esm/vs/editor/editor.api'
+
+declare var monaco: any;
 
 require("../scss/monaco.scss");
 
