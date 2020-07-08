@@ -1,6 +1,0 @@
-church : 0, 5000
-foghorn : 5100, 6600
-scream : 12000, 1600
-manwalk : 14000, 9200
-womanwalk : 23000, 7900
-door : 31000, 2800
