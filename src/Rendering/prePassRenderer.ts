@@ -65,6 +65,11 @@ export class PrePassRenderer {
      */
     public materialsShouldRenderGeometry: boolean = false;
 
+    /**
+     * Should materials render the irradiance information on the MRT
+     */
+    public materialsShouldRenderIrradiance: boolean = false;
+
     private _enabled: boolean = false;
 
     /**
@@ -251,6 +256,7 @@ export class PrePassRenderer {
         this._setState(false);
         this.subSurfaceConfiguration.enabled = false;
         this.materialsShouldRenderGeometry = false;
+        this.materialsShouldRenderIrradiance = false;
     }
 
     private _resetPostProcessChain() {
@@ -285,6 +291,7 @@ export class PrePassRenderer {
 
             if (material.subSurface && material.subSurface.isScatteringEnabled) {
                 this.subSurfaceConfiguration.enabled = true;
+                this.materialsShouldRenderIrradiance = true;
                 enablePrePass = true;
 
                 // 1 subsurface material is enough to activate post process
