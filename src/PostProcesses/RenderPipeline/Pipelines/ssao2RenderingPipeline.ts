@@ -75,8 +75,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     * Number of samples used for the SSAO calculations. Default value is 8
     */
     public set samples(n: number) {
-        this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
         this._samples = n;
+        this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
         this._sampleSphere = this._generateHemisphere();
     }
     public get samples(): number {
