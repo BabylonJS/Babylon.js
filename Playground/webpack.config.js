@@ -44,7 +44,9 @@ var config = babylonWebpackConfig({
             filename: "[name].css",
             chunkFilename: "[id].css"
         }),
-        new MonacoWebpackPlugin()
+        new MonacoWebpackPlugin({
+			languages: ["typescript", "javascript"],
+		})
     ]
 });
 
