@@ -9,7 +9,7 @@
     "readme": "https://github.com/BabylonJS/Babylon.js/edit/master/readme.md",
     "license": "(Apache-2.0)",
     "scripts": {
-        "install": "cd ../../ && npm install && cd ../../Viewer && npm install && cd ../Tools/Gulp/",
+        "install": "cd ../../ && npm install && cd ./Viewer && npm install && cd ../Tools/Gulp/",
         "build": "gulp --max-old-space-size=8192 --tsLintFix",
         "start": "gulp run --max-old-space-size=8192",
         "start-public-ssl": "gulp run --max-old-space-size=8192 --public --ssl"
