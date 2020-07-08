@@ -194,6 +194,13 @@ export class _GLTFUtilities {
         }
     }
 
+    public static _NormalizeMatricesWeightsFromRef(matricesWeights: Vector4) {
+        const sum = matricesWeights.x + matricesWeights.y + matricesWeights.z + matricesWeights.w;
+        if (sum > 0){
+            matricesWeights.scaleInPlace(1/sum);
+        }
+    }
+
     public static _GetRightHandedMatrixFromRef(matrix: Matrix) {
         const m = matrix.m;
         Matrix.FromValuesToRef(
