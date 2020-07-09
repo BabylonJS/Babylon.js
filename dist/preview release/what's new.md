@@ -186,6 +186,10 @@
 
 - Added support for custom word splitting function for `TextBlock` ([Popov72](https://github.com/Popov72))
 
+### Post Processes
+
+- SSAO 2 is now using the brand new `PrePassRenderer` to avoid rendering the scene twice ([CraigFeldpsar](https://github.com/craigfeldspar)
+
 ## Bugs
 
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72))
