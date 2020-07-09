@@ -412,27 +412,45 @@ export class EdgesRenderer implements IEdgesRenderer {
         /**
          * Find all vertices that are at the same location (with an epsilon) and remapp them on the same vertex
          */
-        const epsVertexMerge = this._options?.epsilonVertexMerge ?? 1e-6;
-        const remapVertexIndices = [];
-        const uniquePositions = []; // list of unique index of vertices - needed for tessellation
+        const useFastVertexMerger = this._options?.useFastVertexMerger ?? true;
+        const epsVertexMerge = useFastVertexMerger ? Math.round(-Math.log(this._options?.epsilonVertexMerge ?? 1e-6) / Math.log(10)) : this._options?.epsilonVertexMerge ?? 1e-6;
+        const remapVertexIndices: Array<number> = [];
+        const uniquePositions: Array<number> = []; // list of unique index of vertices - needed for tessellation
 
-        for (let v1 = 0; v1 < positions.length - 1; v1 += 3) {
-            const x1 = positions[v1 + 0], y1 = positions[v1 + 1], z1 = positions[v1 + 2];
+        if (useFastVertexMerger) {
+            const mapVertices: { [key: string]: number} = {};
+            for (let v1 = 0; v1 < positions.length; v1 += 3) {
+                const x1 = positions[v1 + 0], y1 = positions[v1 + 1], z1 = positions[v1 + 2];
 
-            let found = false;
-            for (let v2 = 0; v2 < v1 && !found; v2 += 3) {
-                const x2 = positions[v2 + 0], y2 = positions[v2 + 1], z2 = positions[v2 + 2];
+                const key = x1.toFixed(epsVertexMerge) + "|" + y1.toFixed(epsVertexMerge) + "|" + z1.toFixed(epsVertexMerge);
 
-                if (Math.abs(x1 - x2) < epsVertexMerge && Math.abs(y1 - y2) < epsVertexMerge && Math.abs(z1 - z2) < epsVertexMerge) {
-                    remapVertexIndices.push(v2 / 3);
-                    found = true;
-                    break;
+                if (mapVertices[key] !== undefined) {
+                    remapVertexIndices.push(mapVertices[key]);
+                } else {
+                    const idx = v1 / 3;
+                    mapVertices[key] = idx;
+                    remapVertexIndices.push(idx);
+                    uniquePositions.push(idx);
                 }
             }
+        } else {
+            for (let v1 = 0; v1 < positions.length; v1 += 3) {
+                const x1 = positions[v1 + 0], y1 = positions[v1 + 1], z1 = positions[v1 + 2];
+                let found = false;
+                for (let v2 = 0; v2 < v1 && !found; v2 += 3) {
+                    const x2 = positions[v2 + 0], y2 = positions[v2 + 1], z2 = positions[v2 + 2];
 
-            if (!found) {
-                remapVertexIndices.push(v1 / 3);
-                uniquePositions.push(v1 / 3);
+                    if (Math.abs(x1 - x2) < epsVertexMerge && Math.abs(y1 - y2) < epsVertexMerge && Math.abs(z1 - z2) < epsVertexMerge) {
+                        remapVertexIndices.push(v2 / 3);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    remapVertexIndices.push(v1 / 3);
+                    uniquePositions.push(v1 / 3);
+                }
             }
         }
 
