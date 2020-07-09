@@ -196,8 +196,8 @@ export class _GLTFUtilities {
 
     public static _NormalizeMatricesWeightsFromRef(matricesWeights: Vector4) {
         const sum = matricesWeights.x + matricesWeights.y + matricesWeights.z + matricesWeights.w;
-        if (sum > 0){
-            matricesWeights.scaleInPlace(1/sum);
+        if (sum > 0) {
+            matricesWeights.scaleInPlace(1 / sum);
         }
     }
 
