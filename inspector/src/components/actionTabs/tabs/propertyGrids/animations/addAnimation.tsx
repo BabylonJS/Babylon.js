@@ -376,15 +376,14 @@ export class AddAnimation extends React.Component<
                 onChange={(e) => this.handleTypeChange(e)}
                 value={this.state.animationType}
               >
+                <option value={Animation.ANIMATIONTYPE_COLOR3}>Color3</option>
+                <option value={Animation.ANIMATIONTYPE_COLOR4}>Color4</option>
                 <option value={Animation.ANIMATIONTYPE_FLOAT}>Float</option>
                 <option value={Animation.ANIMATIONTYPE_VECTOR3}>Vector3</option>
                 <option value={Animation.ANIMATIONTYPE_VECTOR2}>Vector2</option>
                 <option value={Animation.ANIMATIONTYPE_QUATERNION}>
                   Quaternion
                 </option>
-                <option value={Animation.ANIMATIONTYPE_COLOR3}>Color3</option>
-                <option value={Animation.ANIMATIONTYPE_COLOR4}>Color4</option>
-                <option value={Animation.ANIMATIONTYPE_SIZE}>Size</option>
               </select>
             </div>
           )}
