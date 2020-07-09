@@ -398,7 +398,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     /**
      * See https://playground.babylonjs.com/#R3JR6V#1 for a visual display of the algorithm
      */
-    _tessellateTriangle(edgePoints: Array<Array<[number, number]>>, indexTriangle: number, indices: Array<number>, remapVertexIndices: Array<number>): void {
+    private _tessellateTriangle(edgePoints: Array<Array<[number, number]>>, indexTriangle: number, indices: Array<number>, remapVertexIndices: Array<number>): void {
 
         const makePointList = (edgePoints: Array<[number, number]>, pointIndices: Array<number>, firstIndex: number) => {
             if (firstIndex >= 0) {
@@ -488,7 +488,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         indices.length = indices.length - 3;
     }
 
-    _generateEdgesLinesAlternate(): void {
+    private _generateEdgesLinesAlternate(): void {
         var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
         var indices = this._source.getIndices();
 
