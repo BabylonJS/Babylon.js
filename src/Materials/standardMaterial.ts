@@ -677,6 +677,14 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
+     * Should this material render to several textures at once
+     */
+    public get shouldRenderToMRT() {
+        const ppr = this.getScene().prePassRenderer;
+        return (!!ppr && ppr.materialsShouldRenderGeometry);
+    }
+
+    /**
      * Defines the detail map parameters for the material.
      */
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
@@ -824,6 +832,9 @@ export class StandardMaterial extends PushMaterial {
 
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+
+        // PrePass
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.shouldRenderToMRT);
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1207,6 +1218,7 @@ export class StandardMaterial extends PushMaterial {
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
                 processFinalCode: csnrOptions.processFinalCode,
+                multiTarget: this.shouldRenderToMRT
             }, engine);
 
             if (effect) {

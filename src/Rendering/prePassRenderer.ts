@@ -4,11 +4,12 @@ import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
-import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
+import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
+import { SSAO2RenderingPipeline } from "../PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 
 /**
  * Renders a pre pass of the scene
@@ -45,6 +46,8 @@ export class PrePassRenderer {
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
 
+    private _postProcesses: PostProcess[] = [];
+
     private readonly _clearColor = new Color4(0, 0, 0, 0);
 
     /**
@@ -53,14 +56,19 @@ export class PrePassRenderer {
     public imageProcessingPostProcess: ImageProcessingPostProcess;
 
     /**
-     * Post process for subsurface scattering
-     */
-    public subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
-
-    /**
      * Configuration for sub surface scattering post process
      */
     public subSurfaceConfiguration: SubSurfaceConfiguration;
+
+    /**
+     * Should materials render their geometry on the MRT
+     */
+    public materialsShouldRenderGeometry: boolean = false;
+
+    /**
+     * Should materials render the irradiance information on the MRT
+     */
+    public materialsShouldRenderIrradiance: boolean = false;
 
     private _enabled: boolean = false;
 
@@ -79,8 +87,8 @@ export class PrePassRenderer {
     }
 
     public set samples(n: number) {
-        if (!this.subSurfaceScatteringPostProcess) {
-            this._createEffects();
+        if (!this.imageProcessingPostProcess) {
+            this._createCompositionEffect();
         }
 
         this.prePassRT.samples = n;
@@ -96,7 +104,7 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
 
-        this.subSurfaceConfiguration = new SubSurfaceConfiguration();
+        this.subSurfaceConfiguration = new SubSurfaceConfiguration(this._scene);
     }
 
     private _initializeAttachments() {
@@ -116,7 +124,7 @@ export class PrePassRenderer {
         }
     }
 
-    private _createEffects() {
+    private _createCompositionEffect() {
         this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtTypes });
         this.prePassRT.samples = 1;
@@ -124,9 +132,7 @@ export class PrePassRenderer {
         this._initializeAttachments();
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
-        this.subSurfaceScatteringPostProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._engine);
-        this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
-        this.subSurfaceScatteringPostProcess.autoClear = false;
+        this.imageProcessingPostProcess.autoClear = false;
     }
 
     /**
@@ -166,10 +172,11 @@ export class PrePassRenderer {
      */
     public _afterCameraDraw() {
         if (this._enabled) {
-            this.subSurfaceScatteringPostProcess.activate(this._scene.activeCamera);
-            this.imageProcessingPostProcess.activate(this._scene.activeCamera);
-            this._scene.postProcessManager.directRender([this.subSurfaceScatteringPostProcess], this.imageProcessingPostProcess.inputTexture);
-            this._scene.postProcessManager.directRender([this.imageProcessingPostProcess], null, false, 0, 0, false);
+            const firstCameraPP = this._scene.activeCamera && this._scene.activeCamera._getFirstPostProcess();
+            if (firstCameraPP) {
+                this._scene.postProcessManager._prepareFrame();
+            }
+            this._scene.postProcessManager.directRender(this._postProcesses, firstCameraPP ? firstCameraPP.inputTexture : null);
         }
     }
 
@@ -181,7 +188,8 @@ export class PrePassRenderer {
 
         if (width !== requiredWidth || height !== requiredHeight) {
             this.prePassRT.resize({ width: requiredWidth, height: requiredHeight });
-            this.subSurfaceScatteringPostProcess.inputTexture = this.prePassRT.getInternalTexture()!;
+
+            this._bindPostProcessChain();
         }
     }
 
@@ -218,19 +226,52 @@ export class PrePassRenderer {
     private _setState(enabled: boolean) {
         this._enabled = enabled;
         this._scene.prePass = enabled;
-        this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
+
+        if (this.imageProcessingPostProcess) {
+            this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
+        }
     }
 
     private _enable() {
-        if (!this.subSurfaceScatteringPostProcess) {
-            this._createEffects();
+        this._resetPostProcessChain();
+
+        if (this.subSurfaceConfiguration.enabled) {
+            if (!this.subSurfaceConfiguration.postProcess) {
+                this.subSurfaceConfiguration.createPostProcess();
+            }
+
+            this._postProcesses.push(this.subSurfaceConfiguration.postProcess);
         }
 
+        if (!this.imageProcessingPostProcess) {
+            this._createCompositionEffect();
+        }
+
+        this._postProcesses.push(this.imageProcessingPostProcess);
+        this._bindPostProcessChain();
         this._setState(true);
     }
 
     private _disable() {
         this._setState(false);
+        this.subSurfaceConfiguration.enabled = false;
+        this.materialsShouldRenderGeometry = false;
+        this.materialsShouldRenderIrradiance = false;
+    }
+
+    private _resetPostProcessChain() {
+        this._postProcesses = [];
+        if (this.imageProcessingPostProcess) {
+            this.imageProcessingPostProcess.restoreDefaultInputTexture();
+        }
+
+        if (this.subSurfaceConfiguration.postProcess) {
+            this.subSurfaceConfiguration.postProcess.restoreDefaultInputTexture();
+        }
+    }
+
+    private _bindPostProcessChain() {
+        this._postProcesses[0].inputTexture = this.prePassRT.getInternalTexture()!;
     }
 
     /**
@@ -242,19 +283,36 @@ export class PrePassRenderer {
 
     private _update() {
         this._disable();
+        let enablePrePass = false;
 
         // Subsurface scattering
         for (let i = 0; i < this._scene.materials.length; i++) {
             const material = this._scene.materials[i] as PBRBaseMaterial;
 
             if (material.subSurface && material.subSurface.isScatteringEnabled) {
-                this._enable();
+                this.subSurfaceConfiguration.enabled = true;
+                this.materialsShouldRenderIrradiance = true;
+                enablePrePass = true;
+
+                // 1 subsurface material is enough to activate post process
+                break;
             }
         }
 
-        // add SSAO 2 etc..
+        const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
+        for (let i = 0; i < pipelines.length; i++) {
+            if (pipelines[i] instanceof SSAO2RenderingPipeline) {
+                this.materialsShouldRenderGeometry = true;
+                enablePrePass = true;
+                break;
+            }
+        }
 
         this._isDirty = false;
+
+        if (enablePrePass) {
+            this._enable();
+        }
 
         if (!this.enabled) {
             this._engine.bindAttachments(this._defaultAttachments);
@@ -266,9 +324,8 @@ export class PrePassRenderer {
      */
     public dispose() {
         this.imageProcessingPostProcess.dispose();
-        this.subSurfaceScatteringPostProcess.dispose();
-        this.prePassRT.dispose();
         this.subSurfaceConfiguration.dispose();
+        this.prePassRT.dispose();
     }
 
 }

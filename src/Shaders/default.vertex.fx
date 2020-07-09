@@ -27,6 +27,10 @@ attribute vec4 color;
 // Uniforms
 #include<instancesDeclaration>
 
+#ifdef PREPASS
+varying vec3 vViewPos;
+#endif
+
 #ifdef MAINUV1
 	varying vec2 vMainUV1;
 #endif
@@ -156,6 +160,9 @@ void main(void) {
 #endif	
 
 	vPositionW = vec3(worldPos);
+	#ifdef PREPASS
+	    vViewPos = (view * worldPos).rgb;
+	#endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 	vDirectionW = normalize(vec3(finalWorld * vec4(positionUpdated, 0.0)));
