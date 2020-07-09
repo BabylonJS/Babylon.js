@@ -737,8 +737,7 @@ declare module INSPECTOR {
         setLerpMode: () => void;
         brokenMode: boolean;
         lerpMode: boolean;
-        currentValue: number;
-        currentFrame: number;
+        actionableKeyframe: IActionableKeyFrame;
         title: string;
         close: (event: any) => void;
         enabled: boolean;
@@ -964,6 +963,10 @@ declare module INSPECTOR {
         value: number;
         label: number;
     }
+    export interface IActionableKeyFrame {
+        frame: number;
+        value: any;
+    }
     interface ICurveData {
         pathData: string;
         pathLength: number;
@@ -997,6 +1000,7 @@ declare module INSPECTOR {
         panningY: number;
         panningX: number;
         repositionCanvas: boolean;
+        actionableKeyframe: IActionableKeyFrame;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -1094,6 +1098,8 @@ declare module INSPECTOR {
         selectAnimation(animation: BABYLON.Animation, coordinate?: SelectedCoordinate): void;
         isAnimationPlaying(): boolean;
         stopAnimation(): void;
+        setIsLooping(): void;
+        setFramesPerSecond(fps: number): void;
         analizeAnimationForLerp(animation: BABYLON.Animation | null): boolean;
         /**
          * Timeline
