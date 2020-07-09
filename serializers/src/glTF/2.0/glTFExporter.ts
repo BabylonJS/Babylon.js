@@ -752,7 +752,6 @@ export class _Exporter {
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
                     const vertexData = Vector4.FromArray(meshAttributeArray, index);
-                    _GLTFUtilities._NormalizeMatricesWeightsFromRef(vertexData);
                     vertexAttributes.push(vertexData.asArray());
                 }
                 break;
