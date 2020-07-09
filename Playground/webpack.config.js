@@ -1,10 +1,24 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const babylonWebpackConfig = require('../Tools/WebpackPlugins/babylonWebpackConfig');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 var config = babylonWebpackConfig({
     module: "playground",
+    entry: {
+        "babylon.playground": "./index.ts",
+        "editor.worker": "monaco-editor/esm/vs/editor/editor.worker.js",
+        "ts.worker": "monaco-editor/esm/vs/language/typescript/ts.worker"
+    },
+    output: {
+        globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)',
+        filename: "[name].bundle.js",
+        path: path.resolve(__dirname, "public/dist"),
+        libraryTarget: 'umd',
+        library: {
+            root: ["PLAYGROUND"],
+        },
+        umdNamedDefine: true
+    },
     resolve: {
         extensions: [".js", '.ts', ".tsx"],
     },
@@ -36,11 +50,7 @@ var config = babylonWebpackConfig({
             // both options are optional
             filename: "[name].css",
             chunkFilename: "[id].css"
-        }),
-        new MonacoWebpackPlugin({
-            languages: ["typescript", "javascript"],
-            publicPath: "/dist/preview release/Playground"
-		})
+        })
     ]
 });
 
