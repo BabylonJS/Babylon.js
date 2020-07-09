@@ -136,6 +136,7 @@ export interface IEdgesRenderer extends IDisposable {
 export interface IEdgesRendererOptions {
     /**
      * Gets or sets a boolean indicating that the alternate edge finder algorithm must be used
+     * If not defined, the default value is true
      */
     useAlternateEdgeFinder?: boolean;
 
@@ -244,7 +245,7 @@ export class EdgesRenderer implements IEdgesRenderer {
 
         this._prepareRessources();
         if (generateEdgesLines) {
-            if (options?.useAlternateEdgeFinder) {
+            if (options?.useAlternateEdgeFinder ?? true) {
                 this._generateEdgesLinesAlternate();
             } else {
                 this._generateEdgesLines();
