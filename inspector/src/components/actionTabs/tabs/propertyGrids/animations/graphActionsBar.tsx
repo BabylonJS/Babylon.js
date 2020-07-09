@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { IconButtonLineComponent } from '../../../lines/iconButtonLineComponent';
+import { IActionableKeyFrame } from './animationCurveEditorComponent';
 
 interface IGraphActionsBarProps {
   addKeyframe: () => void;
@@ -11,8 +12,7 @@ interface IGraphActionsBarProps {
   setLerpMode: () => void;
   brokenMode: boolean;
   lerpMode: boolean;
-  currentValue: number;
-  currentFrame: number;
+  actionableKeyframe: IActionableKeyFrame;
   title: string;
   close: (event: any) => void;
   enabled: boolean;
@@ -37,17 +37,17 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
           <div className='action-input frame-input'>
             <input
               type='number'
-              readOnly
-              value={this.props.currentFrame}
+              onChange={this.props.handleFrameChange}
+              value={this.props.actionableKeyframe.frame}
               step='1'
             />
           </div>
           <div className='action-input'>
             <input
               type='number'
-              value={this.props.currentValue}
+              value={this.props.actionableKeyframe.value}
               onChange={this.props.handleValueChange}
-              step='0.1'
+              step='0.01'
             />
           </div>
           <IconButtonLineComponent
