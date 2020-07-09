@@ -101,6 +101,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
 
     /**
      * Creates the sss post process
+     * @return The created post process
      */
     public createPostProcess() : SubSurfaceScatteringPostProcess {
         this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._scene.getEngine());

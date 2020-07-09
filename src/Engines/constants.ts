@@ -501,7 +501,7 @@ export class Constants {
     public static readonly PREPASS_DEPTHNORMAL_INDEX = 2;
 
     /**
-     * Prepass texture index for depth + normal
+     * Prepass texture index for albedo
      */
     public static readonly PREPASS_ALBEDO_INDEX = 3;
 }
