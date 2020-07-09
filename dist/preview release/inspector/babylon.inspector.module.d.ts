@@ -810,6 +810,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/graphActionsBar" {
     import * as React from 'react';
+    import { IActionableKeyFrame } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent";
     interface IGraphActionsBarProps {
         addKeyframe: () => void;
         removeKeyframe: () => void;
@@ -820,8 +821,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         setLerpMode: () => void;
         brokenMode: boolean;
         lerpMode: boolean;
-        currentValue: number;
-        currentFrame: number;
+        actionableKeyframe: IActionableKeyFrame;
         title: string;
         close: (event: any) => void;
         enabled: boolean;
@@ -1097,6 +1097,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         value: number;
         label: number;
     }
+    export interface IActionableKeyFrame {
+        frame: number;
+        value: any;
+    }
     interface ICurveData {
         pathData: string;
         pathLength: number;
@@ -1130,6 +1134,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         panningY: number;
         panningX: number;
         repositionCanvas: boolean;
+        actionableKeyframe: IActionableKeyFrame;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -1227,6 +1232,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         selectAnimation(animation: Animation, coordinate?: SelectedCoordinate): void;
         isAnimationPlaying(): boolean;
         stopAnimation(): void;
+        setIsLooping(): void;
+        setFramesPerSecond(fps: number): void;
         analizeAnimationForLerp(animation: Animation | null): boolean;
         /**
          * Timeline
@@ -4450,8 +4457,7 @@ declare module INSPECTOR {
         setLerpMode: () => void;
         brokenMode: boolean;
         lerpMode: boolean;
-        currentValue: number;
-        currentFrame: number;
+        actionableKeyframe: IActionableKeyFrame;
         title: string;
         close: (event: any) => void;
         enabled: boolean;
@@ -4677,6 +4683,10 @@ declare module INSPECTOR {
         value: number;
         label: number;
     }
+    export interface IActionableKeyFrame {
+        frame: number;
+        value: any;
+    }
     interface ICurveData {
         pathData: string;
         pathLength: number;
@@ -4710,6 +4720,7 @@ declare module INSPECTOR {
         panningY: number;
         panningX: number;
         repositionCanvas: boolean;
+        actionableKeyframe: IActionableKeyFrame;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -4807,6 +4818,8 @@ declare module INSPECTOR {
         selectAnimation(animation: BABYLON.Animation, coordinate?: SelectedCoordinate): void;
         isAnimationPlaying(): boolean;
         stopAnimation(): void;
+        setIsLooping(): void;
+        setFramesPerSecond(fps: number): void;
         analizeAnimationForLerp(animation: BABYLON.Animation | null): boolean;
         /**
          * Timeline
