@@ -500,8 +500,6 @@ export class EdgesRenderer implements IEdgesRenderer {
             indices = Array.from(indices);
         }
 
-        console.time("processing time - alternate");
-
         /**
          * Find all vertices that are at the same location (with an epsilon) and remapp them on the same vertex
          */
@@ -682,8 +680,6 @@ export class EdgesRenderer implements IEdgesRenderer {
                 this.createLine(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this._linesPositions.length / 3);
             }
         }
-
-        console.timeEnd("processing time - alternate");
 
         /**
          * Merge into a single mesh
