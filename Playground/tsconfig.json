@@ -4,6 +4,7 @@
         "jsx": "react",
         "baseUrl": "./src/",
         "rootDir": "./src/",
+        "include": ["custom.d.ts"],
         "paths": {
             "babylonjs-gui/*": [
                 "../../dist/preview release/gui/babylon.gui.module.d.ts"
