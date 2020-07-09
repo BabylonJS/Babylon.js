@@ -40,6 +40,7 @@
         "@fortawesome/free-regular-svg-icons": "~5.13.0",
         "@fortawesome/free-solid-svg-icons": "~5.13.0",
         "@fortawesome/react-fontawesome": "~0.1.10",
+        "@svgr/webpack": "^5.4.0",
         "@types/chai": "^4.2.11",
         "@types/dagre": "^0.7.44",
         "@types/mocha": "^7.0.2",
