@@ -638,7 +638,9 @@ export class EdgesRenderer implements IEdgesRenderer {
                 TmpVectors.Vector3[2].copyFromFloats(positions[p2Index * 3 + 0], positions[p2Index * 3 + 1], positions[p2Index * 3 + 2]);
 
                 if (!faceNormal) {
-                    faceNormal = Vector3.Cross(TmpVectors.Vector3[1].subtract(TmpVectors.Vector3[0]), TmpVectors.Vector3[2].subtract(TmpVectors.Vector3[1]));
+                    TmpVectors.Vector3[1].subtractToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[3]);
+                    TmpVectors.Vector3[2].subtractToRef(TmpVectors.Vector3[1], TmpVectors.Vector3[4]);
+                    faceNormal = Vector3.Cross(TmpVectors.Vector3[3], TmpVectors.Vector3[4]);
                     faceNormal.normalize();
                 }
 
