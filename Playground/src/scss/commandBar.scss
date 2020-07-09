@@ -1,0 +1,24 @@
+.commands {
+    grid-row: 1;
+    grid-column: 3;
+    display: flex;
+
+    .command-button {
+        cursor: pointer;
+        width: 55px;
+        
+        img {
+            filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
+            &.active {
+                filter: invert(100%);
+            }
+        }
+
+        &:hover {
+            background-color: white;
+            img {
+                filter: invert(17%) !important;
+            }
+        }        
+    }
+}
