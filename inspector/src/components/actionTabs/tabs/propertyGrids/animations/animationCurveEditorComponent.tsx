@@ -715,8 +715,8 @@ export class AnimationCurveEditorComponent extends React.Component<
 
       if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
         let keys = currentAnimation.getKeys();
-        let x = this.state.currentFrame;
-        let y = this.state.currentValue;
+        let x = this.state.actionableKeyframe.frame;
+        let y = this.state.actionableKeyframe.value;
 
         keys.push({ frame: x, value: y, inTangent: 0, outTangent: 0 });
         keys.sort((a, b) => a.frame - b.frame);
@@ -1104,18 +1104,6 @@ export class AnimationCurveEditorComponent extends React.Component<
           : this.getValueAsArray(type, key.outTangent)[coordinate];
 
       let y = this._heightScale - keyframe_valueAsArray * middle;
-
-      let nextKeyframe = keyframes[i + 1];
-      let prevKeyframe = keyframes[i - 1];
-      if (nextKeyframe !== undefined) {
-        let distance = keyframes[i + 1].frame - key.frame;
-        defaultWeight = distance * 1; // Adjust for scaled
-      }
-
-      if (prevKeyframe !== undefined) {
-        let distance = key.frame - keyframes[i - 1].frame;
-        defaultWeight = distance * 1; // Adjust for scaled
-      }
 
       if (inT !== null) {
         let valueIn = y * inT + y;
