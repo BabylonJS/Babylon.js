@@ -679,7 +679,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Should this material render to several textures at once
      */
     public get shouldRenderToMRT() {
-        return this.subSurface.isScatteringEnabled;
+        const ppr = this.getScene().prePassRenderer;
+
+        return (!!ppr &&
+            (ppr.materialsShouldRenderGeometry ||
+            ppr.materialsShouldRenderIrradiance));
     }
 
     /**
