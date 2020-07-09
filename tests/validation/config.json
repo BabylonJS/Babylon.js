@@ -588,6 +588,16 @@
             "errorRatio": 1.1
         },
         {
+            "title": "GLTF Serializer Skinning and Animation",
+            "playgroundId": "#DMZBX1#1",
+            "referenceImage": "gltfSerializerSkinningAndAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer Skinning and Animation (Right Handed)",
+            "playgroundId": "#DMZBX1#2",
+            "referenceImage": "gltfSerializerSkinningAndAnimation.png"
+        },
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
