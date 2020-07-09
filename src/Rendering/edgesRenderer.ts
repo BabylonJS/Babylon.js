@@ -709,8 +709,6 @@ export class EdgesRenderer implements IEdgesRenderer {
             return;
         }
 
-        console.time("processing time");
-
         // First let's find adjacencies
         var adjacencies = new Array<FaceAdjacencies>();
         var faceNormals = new Array<Vector3>();
@@ -811,8 +809,6 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._checkEdge(index, current.edges[1], faceNormals, current.p1, current.p2);
             this._checkEdge(index, current.edges[2], faceNormals, current.p2, current.p0);
         }
-
-        console.timeEnd("processing time");
 
         // Merge into a single mesh
         var engine = this._source.getScene().getEngine();
