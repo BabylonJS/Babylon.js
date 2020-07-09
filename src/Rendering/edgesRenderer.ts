@@ -1,4 +1,4 @@
-import { Nullable, IndicesArray } from "../types";
+import { Nullable } from "../types";
 import { VertexBuffer } from "../Meshes/buffer";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -244,7 +244,7 @@ export class EdgesRenderer implements IEdgesRenderer {
 
         this._prepareRessources();
         if (generateEdgesLines) {
-            if (options && options.useAlternateEdgeFinder) {
+            if (options?.useAlternateEdgeFinder) {
                 this._generateEdgesLinesAlternate();
             } else {
                 this._generateEdgesLines();
@@ -395,6 +395,99 @@ export class EdgesRenderer implements IEdgesRenderer {
         );
     }
 
+    /**
+     * See https://playground.babylonjs.com/#R3JR6V#1 for a visual display of the algorithm
+     */
+    _tessellateTriangle(edgePoints: Array<Array<[number, number]>>, indexTriangle: number, indices: Array<number>, remapVertexIndices: Array<number>): void {
+
+        const makePointList = (edgePoints: Array<[number, number]>, pointIndices: Array<number>, firstIndex: number) => {
+            if (firstIndex >= 0) {
+                pointIndices.push(firstIndex);
+            }
+
+            for (let i = 0; i < edgePoints.length; ++i) {
+                pointIndices.push(edgePoints[i][0]);
+            }
+        };
+
+        let startEdge = 0;
+
+        if (edgePoints[1].length >= edgePoints[0].length && edgePoints[1].length >= edgePoints[2].length) {
+            startEdge = 1;
+        } else if (edgePoints[2].length >= edgePoints[0].length && edgePoints[2].length >= edgePoints[1].length) {
+            startEdge = 2;
+        }
+
+        for (let e = 0; e < 3; ++e) {
+            if (e === startEdge) {
+                edgePoints[e].sort((a, b) => a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
+            } else {
+                edgePoints[e].sort((a, b) => a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0);
+            }
+        }
+
+        const mainPointIndices: Array<number> = [], otherPointIndices: Array<number> = [];
+
+        makePointList(edgePoints[startEdge], mainPointIndices, -1);
+
+        let numMainPoints = mainPointIndices.length;
+
+        for (let i = startEdge + 2; i >= startEdge + 1; --i) {
+            makePointList(edgePoints[i % 3], otherPointIndices, i !== startEdge + 2 ? remapVertexIndices[indices[indexTriangle + ((i + 1) % 3)]] : -1);
+        }
+
+        const numOtherPoints = otherPointIndices.length;
+
+        let idxMain = 0;
+        let idxOther = 0;
+
+        indices.push(remapVertexIndices[indices[indexTriangle + startEdge]], mainPointIndices[0], otherPointIndices[0]);
+        indices.push(remapVertexIndices[indices[indexTriangle + ((startEdge + 1) % 3)]], otherPointIndices[numOtherPoints - 1], mainPointIndices[numMainPoints - 1]);
+
+        const bucketIsMain = numMainPoints <= numOtherPoints;
+
+        const bucketStep = bucketIsMain ? numMainPoints : numOtherPoints;
+        const bucketLimit = bucketIsMain ? numOtherPoints : numMainPoints;
+        const bucketIdxLimit = bucketIsMain ? numMainPoints - 1 : numOtherPoints - 1;
+        const winding = bucketIsMain ? 0 : 1;
+
+        let numTris = numMainPoints + numOtherPoints - 2;
+
+        let bucketIdx = bucketIsMain ? idxMain : idxOther;
+        let nbucketIdx = bucketIsMain ? idxOther : idxMain;
+        let bucketPoints = bucketIsMain ? mainPointIndices : otherPointIndices;
+        let nbucketPoints = bucketIsMain ? otherPointIndices : mainPointIndices;
+
+        let bucket = 0;
+
+        while (numTris-- > 0) {
+            if (winding) {
+                indices.push(bucketPoints[bucketIdx], nbucketPoints[nbucketIdx]);
+            } else {
+                indices.push(nbucketPoints[nbucketIdx], bucketPoints[bucketIdx]);
+            }
+
+            bucket += bucketStep;
+
+            let lastIdx;
+
+            if (bucket >= bucketLimit && bucketIdx < bucketIdxLimit) {
+                lastIdx = bucketPoints[++bucketIdx];
+                bucket -= bucketLimit;
+            } else {
+                lastIdx = nbucketPoints[++nbucketIdx];
+            }
+
+            indices.push(lastIdx);
+        }
+
+        indices[indexTriangle + 0] = indices[indices.length - 3];
+        indices[indexTriangle + 1] = indices[indices.length - 2];
+        indices[indexTriangle + 2] = indices[indices.length - 1];
+
+        indices.length = indices.length - 3;
+    }
+
     _generateEdgesLinesAlternate(): void {
         var positions = this._source.getVerticesData(VertexBuffer.PositionKind);
         var indices = this._source.getIndices();
@@ -477,9 +570,11 @@ export class EdgesRenderer implements IEdgesRenderer {
 
             // First step: collect the triangles to tessellate
             const epsVertexAligned = this._options?.epsilonVertexAligned ?? 1e-6;
-            const mustTesselate: any[] = []; // liste of triangles that must be tessellated
+            const mustTesselate: Array<{ index: number, edgesPoints: Array<Array<[number, number]>> }> = []; // liste of triangles that must be tessellated
+
             for (let index = 0; index < indices.length; index += 3) { // loop over all triangles
-                let triangleToTessellate: any;
+                let triangleToTessellate: { index: number, edgesPoints: Array<Array<[number, number]>> } | undefined;
+
                 for (let i = 0; i < 3; ++i) { // loop over the 3 edges of the triangle
                     let p0Index = remapVertexIndices[indices[index + i]];
                     let p1Index = remapVertexIndices[indices[index + (i + 1) % 3]];
@@ -502,61 +597,28 @@ export class EdgesRenderer implements IEdgesRenderer {
                         const p0p = Math.sqrt((x - p0x) * (x - p0x) + (y - p0y) * (y - p0y) + (z - p0z) * (z - p0z));
                         const pp1 = Math.sqrt((x - p1x) * (x - p1x) + (y - p1y) * (y - p1y) + (z - p1z) * (z - p1z));
 
-                        if (Math.abs(p0p + pp1 - p0p1) < epsVertexAligned) {
+                        if (Math.abs(p0p + pp1 - p0p1) < epsVertexAligned) { // vertices are aligned and p in-between p0 and p1 if distance(p0, p) + distance (p, p1) ~ distance(p0, p1)
                             if (!triangleToTessellate) {
                                 triangleToTessellate = {
                                     index: index,
-                                    edges: [[], [], []],
+                                    edgesPoints: [[], [], []],
                                 };
                                 mustTesselate.push(triangleToTessellate);
                             }
-                            triangleToTessellate.edges[i].push([vIndex, p0p]);
+                            triangleToTessellate.edgesPoints[i].push([vIndex, p0p]);
                         }
                     }
                 }
             }
 
-            console.log(mustTesselate.length);
-
             // Second step: tesselate the triangles
             for (let t = 0; t < mustTesselate.length; ++t) {
                 const triangle = mustTesselate[t];
-                const index = triangle.index;
 
-                let p0: number, p1: number, p2: number;
-                let vertices: Array<[number, number]>;
-
-                if (triangle.edges[0].length > 0) {
-                    p0 = remapVertexIndices[indices[index + 0]];
-                    p1 = remapVertexIndices[indices[index + 1]];
-                    p2 = remapVertexIndices[indices[index + 2]];
-                    vertices = triangle.edges[0];
-                }
-                if (triangle.edges[1].length > 0) {
-                    p0 = remapVertexIndices[indices[index + 1]];
-                    p1 = remapVertexIndices[indices[index + 2]];
-                    p2 = remapVertexIndices[indices[index + 0]];
-                    vertices = triangle.edges[1];
-                }
-                if (triangle.edges[2].length > 0) {
-                    p0 = remapVertexIndices[indices[index + 2]];
-                    p1 = remapVertexIndices[indices[index + 0]];
-                    p2 = remapVertexIndices[indices[index + 1]];
-                    vertices = triangle.edges[2];
-                }
-
-                vertices!.sort((a, b) => a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
-
-                indices[index + 0] = p0!;
-                indices[index + 1] = vertices![0][0];
-                indices[index + 2] = p2!;
-
-                for (let i = 0; i < vertices!.length - 1; ++i) {
-                    indices.push(vertices![i][0], vertices![i + 1][0], p2!);
-                }
-
-                indices.push(vertices![vertices!.length - 1][0], p1!, p2!);
+                this._tessellateTriangle(triangle.edgesPoints, triangle.index, indices, remapVertexIndices);
             }
+
+            (mustTesselate as any) = null;
         }
 
         /**
