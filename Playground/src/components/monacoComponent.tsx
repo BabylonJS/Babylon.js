@@ -9,7 +9,6 @@ interface IMonacoComponentProps {
     refObject: React.RefObject<HTMLDivElement>;
     globalState: GlobalState;
 }
-
 export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     private _monacoManager: MonacoManager;
     
