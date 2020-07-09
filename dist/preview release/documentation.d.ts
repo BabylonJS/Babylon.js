@@ -1049,6 +1049,22 @@ declare module BABYLON {
          * Detailled logging while loading
          */
         static readonly SCENELOADER_DETAILED_LOGGING: number;
+        /**
+         * Prepass texture index for color
+         */
+        static readonly PREPASS_COLOR_INDEX: number;
+        /**
+         * Prepass texture index for irradiance
+         */
+        static readonly PREPASS_IRRADIANCE_INDEX: number;
+        /**
+         * Prepass texture index for depth + normal
+         */
+        static readonly PREPASS_DEPTHNORMAL_INDEX: number;
+        /**
+         * Prepass texture index for albedo
+         */
+        static readonly PREPASS_ALBEDO_INDEX: number;
     }
 }
 declare module BABYLON {
@@ -22468,6 +22484,11 @@ declare module BABYLON {
         get inputTexture(): InternalTexture;
         set inputTexture(value: InternalTexture);
         /**
+        * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
+        * the only way to unset it is to use this function to restore its internal state
+        */
+        restoreDefaultInputTexture(): void;
+        /**
         * Gets the camera which post process is applied to.
         * @returns The camera the post process is applied to.
         */
@@ -29149,6 +29170,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var prePassDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var lightFragmentDeclaration: {
         name: string;
         shader: string;
@@ -29870,6 +29898,10 @@ declare module BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         set cameraColorCurves(value: Nullable<ColorCurves>);
+        /**
+         * Should this material render to several textures at once
+         */
+        get shouldRenderToMRT(): boolean;
         /**
          * Defines the detail map parameters for the material.
          */
@@ -45652,6 +45684,10 @@ declare module BABYLON {
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild?: boolean): void;
         /**
+         * If the post process is supported.
+         */
+        get isSupported(): boolean;
+        /**
          * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
         get colorCurves(): Nullable<ColorCurves>;
@@ -46261,10 +46297,6 @@ declare module BABYLON {
          * @returns the class name
          */
         getClassName(): string;
-        /**
-         * Overriding the _getViewMatrix function, as it is computed by WebXR
-         */
-        _getViewMatrix(): Matrix;
         private _rotate180;
         private _updateFromXRSession;
         private _updateNumberOfRigCameras;
@@ -48149,6 +48181,10 @@ declare module BABYLON {
          * A list of optional features to init the session with
          */
         optionalFeatures?: string[];
+        /**
+         * A list of optional features to init the session with
+         */
+        requiredFeatures?: string[];
     }
     /**
      * UI to allow the user to enter/exit XR mode
@@ -54845,13 +54881,6 @@ declare module BABYLON {
          */
         parse(source: any, scene: Scene, rootUrl: string): void;
     }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var prePassDeclaration: {
-        name: string;
-        shader: string;
-    };
 }
 declare module BABYLON {
     /** @hidden */
@@ -69635,6 +69664,251 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var fibonacci: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var diffusionProfile: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var subSurfaceScatteringPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Sub surface scattering post process
+     */
+    export class SubSurfaceScatteringPostProcess extends PostProcess {
+        /** @hidden */
+        texelWidth: number;
+        /** @hidden */
+        texelHeight: number;
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface for defining prepass effects in the prepass post-process pipeline
+     */
+    export interface PrePassEffectConfiguration {
+        /**
+         * Post process to attach for this effect
+         */
+        postProcess: PostProcess;
+        /**
+         * Is the effect enabled
+         */
+        enabled: boolean;
+        /**
+         * Disposes the effect configuration
+         */
+        dispose(): void;
+        /**
+         * Disposes the effect configuration
+         */
+        createPostProcess: () => PostProcess;
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains all parameters needed for the prepass to perform
+     * screen space subsurface scattering
+     */
+    export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
+        private _ssDiffusionS;
+        private _ssFilterRadii;
+        private _ssDiffusionD;
+        /**
+         * Post process to attach for screen space subsurface scattering
+         */
+        postProcess: SubSurfaceScatteringPostProcess;
+        /**
+         * Diffusion profile color for subsurface scattering
+         */
+        get ssDiffusionS(): number[];
+        /**
+         * Diffusion profile max color channel value for subsurface scattering
+         */
+        get ssDiffusionD(): number[];
+        /**
+         * Diffusion profile filter radius for subsurface scattering
+         */
+        get ssFilterRadii(): number[];
+        /**
+         * Is subsurface enabled
+         */
+        enabled: boolean;
+        /**
+         * Diffusion profile colors for subsurface scattering
+         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
+         * See ...
+         * Note that you can only store up to 5 of them
+         */
+        ssDiffusionProfileColors: Color3[];
+        /**
+         * Defines the ratio real world => scene units.
+         * Used for subsurface scattering
+         */
+        metersPerUnit: number;
+        private _scene;
+        /**
+         * Builds a subsurface configuration object
+         * @param scene The scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Adds a new diffusion profile.
+         * Useful for more realistic subsurface scattering on diverse materials.
+         * @param color The color of the diffusion profile. Should be the average color of the material.
+         * @return The index of the diffusion profile for the material subsurface configuration
+         */
+        addDiffusionProfile(color: Color3): number;
+        /**
+         * Creates the sss post process
+         * @return The created post process
+         */
+        createPostProcess(): SubSurfaceScatteringPostProcess;
+        /**
+         * Deletes all diffusion profiles.
+         * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
+         */
+        clearAllDiffusionProfiles(): void;
+        /**
+         * Disposes this object
+         */
+        dispose(): void;
+        /**
+         * @hidden
+         * https://zero-radiance.github.io/post/sampling-diffusion/
+         *
+         * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
+         * ------------------------------------------------------------------------------------
+         * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
+         * PDF[r, phi, s] = r * R[r, phi, s]
+         * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
+         * ------------------------------------------------------------------------------------
+         * We importance sample the color channel with the widest scattering distance.
+         */
+        getDiffusionProfileParameters(color: Color3): number;
+        /**
+         * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
+         * 'u' is the random number (the value of the CDF): [0, 1).
+         * rcp(s) = 1 / ShapeParam = ScatteringDistance.
+         * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
+         */
+        private _sampleBurleyDiffusionProfile;
+    }
+}
+declare module BABYLON {
+    /**
+     * Renders a pre pass of the scene
+     * This means every mesh in the scene will be rendered to a render target texture
+     * And then this texture will be composited to the rendering canvas with post processes
+     * It is necessary for effects like subsurface scattering or deferred shading
+     */
+    export class PrePassRenderer {
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        private _scene;
+        private _engine;
+        private _isDirty;
+        /**
+         * Number of textures in the multi render target texture where the scene is directly rendered
+         */
+        readonly mrtCount: number;
+        /**
+         * The render target where the scene is directly rendered
+         */
+        prePassRT: MultiRenderTarget;
+        private _mrtTypes;
+        private _multiRenderAttachments;
+        private _defaultAttachments;
+        private _clearAttachments;
+        private _postProcesses;
+        private readonly _clearColor;
+        /**
+         * Image processing post process for composition
+         */
+        imageProcessingPostProcess: ImageProcessingPostProcess;
+        /**
+         * Configuration for sub surface scattering post process
+         */
+        subSurfaceConfiguration: SubSurfaceConfiguration;
+        /**
+         * Should materials render their geometry on the MRT
+         */
+        materialsShouldRenderGeometry: boolean;
+        /**
+         * Should materials render the irradiance information on the MRT
+         */
+        materialsShouldRenderIrradiance: boolean;
+        private _enabled;
+        /**
+         * Indicates if the prepass is enabled
+         */
+        get enabled(): boolean;
+        /**
+         * How many samples are used for MSAA of the scene render target
+         */
+        get samples(): number;
+        set samples(n: number);
+        /**
+         * Instanciates a prepass renderer
+         * @param scene The scene
+         */
+        constructor(scene: Scene);
+        private _initializeAttachments;
+        private _createCompositionEffect;
+        /**
+         * Indicates if rendering a prepass is supported
+         */
+        get isSupported(): boolean;
+        /**
+         * Sets the proper output textures to draw in the engine.
+         * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
+         */
+        bindAttachmentsForEffect(effect: Effect): void;
+        /**
+         * @hidden
+         */
+        _beforeCameraDraw(): void;
+        /**
+         * @hidden
+         */
+        _afterCameraDraw(): void;
+        private _checkRTSize;
+        private _bindFrameBuffer;
+        /**
+         * Clears the scene render target (in the sense of settings pixels to the scene clear color value)
+         */
+        clear(): void;
+        private _setState;
+        private _enable;
+        private _disable;
+        private _resetPostProcessChain;
+        private _bindPostProcessChain;
+        /**
+         * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
+         */
+        markAsDirty(): void;
+        private _update;
+        /**
+         * Disposes the prepass renderer.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var ssao2PixelShader: {
         name: string;
         shader: string;
@@ -69702,6 +69976,10 @@ declare module BABYLON {
         set textureSamples(n: number);
         get textureSamples(): number;
         /**
+         * Force rendering the geometry through geometry buffer
+         */
+        private _forceGeometryBuffer;
+        /**
          * Ratio object used for SSAO ratio and blur ratio
          */
         private _ratio;
@@ -69733,14 +70011,13 @@ declare module BABYLON {
         */
         static get IsSupported(): boolean;
         private _scene;
-        private _depthTexture;
-        private _normalTexture;
         private _randomTexture;
         private _originalColorPostProcess;
         private _ssaoPostProcess;
         private _blurHPostProcess;
         private _blurVPostProcess;
         private _ssaoCombinePostProcess;
+        private _prePassRenderer;
         /**
          * Gets active scene
          */
@@ -69751,8 +70028,9 @@ declare module BABYLON {
          * @param scene The scene linked to this pipeline
          * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
          * @param cameras The array of cameras that the rendering pipeline will be attached to
+         * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
          */
-        constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]);
+        constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer?: boolean);
         /**
          * Get the class name
          * @returns "SSAO2RenderingPipeline"
@@ -69770,6 +70048,7 @@ declare module BABYLON {
         private _hammersley;
         private _hemisphereSample_uniform;
         private _generateHemisphere;
+        private _getDefinesForSSAO;
         private _createSSAOPostProcess;
         private _createSSAOCombinePostProcess;
         private _createRandomTexture;
@@ -70709,207 +70988,6 @@ declare module BABYLON {
         dispose(): void;
         private _gatherRenderTargets;
         private _gatherActiveCameraRenderTargets;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var fibonacci: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var diffusionProfile: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var subSurfaceScatteringPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Sub surface scattering post process
-     */
-    export class SubSurfaceScatteringPostProcess extends PostProcess {
-        /** @hidden */
-        texelWidth: number;
-        /** @hidden */
-        texelHeight: number;
-        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
-    }
-}
-declare module BABYLON {
-    /**
-     * Contains all parameters needed for the prepass to perform
-     * screen space subsurface scattering
-     */
-    export class SubSurfaceConfiguration {
-        private _ssDiffusionS;
-        private _ssFilterRadii;
-        private _ssDiffusionD;
-        /**
-         * Diffusion profile color for subsurface scattering
-         */
-        get ssDiffusionS(): number[];
-        /**
-         * Diffusion profile max color channel value for subsurface scattering
-         */
-        get ssDiffusionD(): number[];
-        /**
-         * Diffusion profile filter radius for subsurface scattering
-         */
-        get ssFilterRadii(): number[];
-        /**
-         * Diffusion profile colors for subsurface scattering
-         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
-         * See ...
-         * Note that you can only store up to 5 of them
-         */
-        ssDiffusionProfileColors: Color3[];
-        /**
-         * Defines the ratio real world => scene units.
-         * Used for subsurface scattering
-         */
-        metersPerUnit: number;
-        /**
-         * Builds a subsurface configuration object
-         * @param scene The scene
-         */
-        constructor();
-        /**
-         * Adds a new diffusion profile.
-         * Useful for more realistic subsurface scattering on diverse materials.
-         * @param color The color of the diffusion profile. Should be the average color of the material.
-         * @return The index of the diffusion profile for the material subsurface configuration
-         */
-        addDiffusionProfile(color: Color3): number;
-        /**
-         * Deletes all diffusion profiles.
-         * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
-         */
-        clearAllDiffusionProfiles(): void;
-        /**
-         * Disposes this object
-         */
-        dispose(): void;
-        /**
-         * @hidden
-         * https://zero-radiance.github.io/post/sampling-diffusion/
-         *
-         * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
-         * ------------------------------------------------------------------------------------
-         * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
-         * PDF[r, phi, s] = r * R[r, phi, s]
-         * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
-         * ------------------------------------------------------------------------------------
-         * We importance sample the color channel with the widest scattering distance.
-         */
-        getDiffusionProfileParameters(color: Color3): number;
-        /**
-         * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
-         * 'u' is the random number (the value of the CDF): [0, 1).
-         * rcp(s) = 1 / ShapeParam = ScatteringDistance.
-         * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
-         */
-        private _sampleBurleyDiffusionProfile;
-    }
-}
-declare module BABYLON {
-    /**
-     * Renders a pre pass of the scene
-     * This means every mesh in the scene will be rendered to a render target texture
-     * And then this texture will be composited to the rendering canvas with post processes
-     * It is necessary for effects like subsurface scattering or deferred shading
-     */
-    export class PrePassRenderer {
-        /** @hidden */
-        static _SceneComponentInitialization: (scene: Scene) => void;
-        private _scene;
-        private _engine;
-        private _isDirty;
-        /**
-         * Number of textures in the multi render target texture where the scene is directly rendered
-         */
-        readonly mrtCount: number;
-        /**
-         * The render target where the scene is directly rendered
-         */
-        prePassRT: MultiRenderTarget;
-        private _mrtTypes;
-        private _multiRenderAttachments;
-        private _defaultAttachments;
-        private _clearAttachments;
-        private readonly _clearColor;
-        /**
-         * Image processing post process for composition
-         */
-        imageProcessingPostProcess: ImageProcessingPostProcess;
-        /**
-         * Post process for subsurface scattering
-         */
-        subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
-        /**
-         * Configuration for sub surface scattering post process
-         */
-        subSurfaceConfiguration: SubSurfaceConfiguration;
-        private _enabled;
-        /**
-         * Indicates if the prepass is enabled
-         */
-        get enabled(): boolean;
-        /**
-         * How many samples are used for MSAA of the scene render target
-         */
-        get samples(): number;
-        set samples(n: number);
-        /**
-         * Instanciates a prepass renderer
-         * @param scene The scene
-         */
-        constructor(scene: Scene);
-        private _initializeAttachments;
-        private _createEffects;
-        /**
-         * Indicates if rendering a prepass is supported
-         */
-        get isSupported(): boolean;
-        /**
-         * Sets the proper output textures to draw in the engine.
-         * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
-         */
-        bindAttachmentsForEffect(effect: Effect): void;
-        /**
-         * @hidden
-         */
-        _beforeCameraDraw(): void;
-        /**
-         * @hidden
-         */
-        _afterCameraDraw(): void;
-        private _checkRTSize;
-        private _bindFrameBuffer;
-        /**
-         * Clears the scene render target (in the sense of settings pixels to the scene clear color value)
-         */
-        clear(): void;
-        private _setState;
-        private _enable;
-        private _disable;
-        /**
-         * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
-         */
-        markAsDirty(): void;
-        private _update;
-        /**
-         * Disposes the prepass renderer.
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -80808,22 +80886,45 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
+         * Gets the list of available variant tag names for this asset.
+         * @param rootMesh The glTF root mesh
+         * @returns the list of all the variant names for this model
+         */
+        getAvailableVariants(rootMesh: Mesh): string[];
+        /**
          * Select a variant given a variant tag name or a list of variant tag names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
         /**
+         * Select a variant given a variant tag name or a list of variant tag names.
+         * @param rootMesh The glTF root mesh
+         * @param variantName The variant name(s) to select.
+         */
+        selectVariant(rootMesh: Mesh, variantName: string | string[]): void;
+        /**
          * Reset back to the original before selecting a variant.
          * @param rootMesh The glTF root mesh
          */
         static Reset(rootMesh: Mesh): void;
+        /**
+         * Reset back to the original before selecting a variant.
+         * @param rootMesh The glTF root mesh
+         */
+        reset(rootMesh: Mesh): void;
         /**
          * Gets the last selected variant tag name(s) or null if original.
          * @param rootMesh The glTF root mesh
          * @returns The selected variant tag name(s).
          */
         static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
+        /**
+         * Gets the last selected variant tag name(s) or null if original.
+         * @param rootMesh The glTF root mesh
+         * @returns The selected variant tag name(s).
+         */
+        getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         private static _GetExtensionMetadata;
         /** @hidden */
         _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;

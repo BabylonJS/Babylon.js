@@ -3865,6 +3865,14 @@ var KHR_materials_variants = /** @class */ (function () {
         return Object.keys(extensionMetadata.variants);
     };
     /**
+     * Gets the list of available variant tag names for this asset.
+     * @param rootMesh The glTF root mesh
+     * @returns the list of all the variant names for this model
+     */
+    KHR_materials_variants.prototype.getAvailableVariants = function (rootMesh) {
+        return KHR_materials_variants.GetAvailableVariants(rootMesh);
+    };
+    /**
      * Select a variant given a variant tag name or a list of variant tag names.
      * @param rootMesh The glTF root mesh
      * @param variantName The variant name(s) to select.
@@ -3895,6 +3903,14 @@ var KHR_materials_variants = /** @class */ (function () {
         extensionMetadata.lastSelected = variantName;
     };
     /**
+     * Select a variant given a variant tag name or a list of variant tag names.
+     * @param rootMesh The glTF root mesh
+     * @param variantName The variant name(s) to select.
+     */
+    KHR_materials_variants.prototype.selectVariant = function (rootMesh, variantName) {
+        return KHR_materials_variants.SelectVariant(rootMesh, variantName);
+    };
+    /**
      * Reset back to the original before selecting a variant.
      * @param rootMesh The glTF root mesh
      */
@@ -3910,6 +3926,13 @@ var KHR_materials_variants = /** @class */ (function () {
         extensionMetadata.lastSelected = null;
     };
     /**
+     * Reset back to the original before selecting a variant.
+     * @param rootMesh The glTF root mesh
+     */
+    KHR_materials_variants.prototype.reset = function (rootMesh) {
+        return KHR_materials_variants.Reset(rootMesh);
+    };
+    /**
      * Gets the last selected variant tag name(s) or null if original.
      * @param rootMesh The glTF root mesh
      * @returns The selected variant tag name(s).
@@ -3920,6 +3943,14 @@ var KHR_materials_variants = /** @class */ (function () {
             throw new Error("Cannot get the last selected variant on a glTF mesh that does not have the " + NAME + " extension");
         }
         return extensionMetadata.lastSelected;
+    };
+    /**
+     * Gets the last selected variant tag name(s) or null if original.
+     * @param rootMesh The glTF root mesh
+     * @returns The selected variant tag name(s).
+     */
+    KHR_materials_variants.prototype.getLastSelectedVariant = function (rootMesh) {
+        return KHR_materials_variants.GetLastSelectedVariant(rootMesh);
     };
     KHR_materials_variants._GetExtensionMetadata = function (rootMesh) {
         var _a, _b;
