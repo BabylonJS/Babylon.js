@@ -10,7 +10,7 @@ var config = require("../../Config/config.js");
 /**
  * Build a single app
  */
-var buildApp = function(libraries, settings, isMin) {
+var buildApp = function(settings, isMin) {
     // Convert Module to Namespace for globals
     var outputDirectory = settings.computed.distDirectory;
 
@@ -50,7 +50,7 @@ function buildAppLibraries(settings) {
     // Creates the required tasks.
     var tasks = [];
 
-    var buildMin = function() { return buildApp(settings.libraries, settings, true) };
+    var buildMin = function() { return buildApp(settings, true) };
 
     tasks.push(buildMin);
 

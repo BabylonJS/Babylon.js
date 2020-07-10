@@ -4,6 +4,18 @@ const babylonWebpackConfig = require('../Tools/WebpackPlugins/babylonWebpackConf
 
 var config = babylonWebpackConfig({
     module: "sandbox",
+    entry: "./legacy/legacy.ts",
+    output: {
+        globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)',
+        filename: "babylon.sandbox.bundle.js",
+        path: path.resolve(__dirname, "public/dist"),
+        publicPath: "./dist/",
+        libraryTarget: 'umd',
+        library: {
+           root: ["SANDBOX"],
+        },
+        umdNamedDefine: true
+    },
     resolve: {
         extensions: [".js", '.ts', ".tsx"],
     },

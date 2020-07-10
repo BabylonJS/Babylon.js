@@ -14,8 +14,10 @@ gulp.task("watchApps", function startWatch() {
     var tasks = [];
 
     config.apps.map(function(module) {
+        // Convert Module to Namespace for globals
         var settings = config[module].computed;
-        if (!config[module].isCore && settings) {
+
+        if (settings) {
             var wpConfig = require(settings.webpackConfigPath);
 
             // watch on.
@@ -35,7 +37,7 @@ gulp.task("watchApps", function startWatch() {
                 return `../../../${path.relative(config.computed.rootFolder, info.resourcePath).replace(/\\/g, "/")}`;
             };
 
-            var outputDirectory = settings.localDevUMDDirectory;
+            var outputDirectory = settings.distDirectory;
             tasks.push(
                 webpackStream(wpConfig, webpack)
                     .pipe(gulp.dest(outputDirectory))

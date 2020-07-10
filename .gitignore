@@ -200,3 +200,4 @@ gui/dist/
 # Local Netlify folder
 .netlify
 Playground/public/dist/
+Sandbox/public/dist/
