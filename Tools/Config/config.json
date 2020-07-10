@@ -641,7 +641,7 @@
         }
     },
     "playground": {
-        "distFile": "/Playground/public/dist/babylon.playground.bundle.js",
+        "distFile": "/Playground/public/dist/babylon.playground.js",
         "build": {
             "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
@@ -650,7 +650,7 @@
         }
     },
     "sandbox": {
-        "distFile": "/sandbox/public/dist/babylon.sandbox.bundle.js",
+        "distFile": "/sandbox/public/dist/babylon.sandbox.js",
         "build": {
             "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
