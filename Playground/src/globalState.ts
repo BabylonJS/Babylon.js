@@ -14,6 +14,7 @@ export class GlobalState {
     public mobileDefaultMode = EditionMode.RenderingOnly;
 
     public onRunRequiredObservable = new Observable<void>();
+    public onNewRequiredObservable = new Observable<void>();
     public onErrorObservable = new Observable<string>();    
     public onMobileDefaultModeChangedObservable = new Observable<void>();
 }

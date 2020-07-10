@@ -39,7 +39,8 @@ var config = babylonWebpackConfig({
         {
             test: /\.svg$/,
             use: ['@svgr/webpack']
-        }, {
+        }, 
+        {
             test: /\.ttf$/,
             use: ['file-loader']
         }
