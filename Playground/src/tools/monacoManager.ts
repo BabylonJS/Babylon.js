@@ -13,7 +13,21 @@ export class MonacoManager {
     // private _templates: string[];
 
     public constructor(public globalState: GlobalState) {
+        globalState.onNewRequiredObservable.add(() => {
+            this._editor?.setValue(`// You have to create a function called createScene. This function must return a BABYLON.Scene object
+// You can reference the following variables: scene, canvas
+// You must at least define a camera
+            
+var createScene = function() {
+    var scene = new BABYLON.Scene(engine);
+    var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, true);
 
+    return scene;
+};
+`);
+            globalState.onRunRequiredObservable.notifyObservers();
+        });
     }
     
     public async setupMonacoAsync(hostElement: HTMLDivElement) {        
