@@ -472,6 +472,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/quaternionLineCo
         shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: {
             isExpanded: boolean;
             value: Quaternion;
+            eulerValue: Vector3;
         }): boolean;
         switchExpandState(): void;
         raiseOnPropertyChanged(currentValue: Quaternion, previousValue: Quaternion): void;
@@ -4138,6 +4139,7 @@ declare module INSPECTOR {
         shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: {
             isExpanded: boolean;
             value: BABYLON.Quaternion;
+            eulerValue: BABYLON.Vector3;
         }): boolean;
         switchExpandState(): void;
         raiseOnPropertyChanged(currentValue: BABYLON.Quaternion, previousValue: BABYLON.Quaternion): void;
