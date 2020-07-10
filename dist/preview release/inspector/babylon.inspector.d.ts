@@ -50,6 +50,9 @@ declare module INSPECTOR {
         glTFLoaderDefaults: {
             [key: string]: any;
         };
+        glTFLoaderExtenstions: {
+            [key: string]: BABYLON.IGLTFLoaderExtension;
+        };
         blockMutationUpdates: boolean;
         selectedLineContainerTitles: Array<string>;
         selectedLineContainerTitlesNoFocus: Array<string>;
@@ -415,6 +418,7 @@ declare module INSPECTOR {
         shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: {
             isExpanded: boolean;
             value: BABYLON.Quaternion;
+            eulerValue: BABYLON.Vector3;
         }): boolean;
         switchExpandState(): void;
         raiseOnPropertyChanged(currentValue: BABYLON.Quaternion, previousValue: BABYLON.Quaternion): void;
@@ -734,8 +738,7 @@ declare module INSPECTOR {
         setLerpMode: () => void;
         brokenMode: boolean;
         lerpMode: boolean;
-        currentValue: number;
-        currentFrame: number;
+        actionableKeyframe: IActionableKeyFrame;
         title: string;
         close: (event: any) => void;
         enabled: boolean;
@@ -961,6 +964,10 @@ declare module INSPECTOR {
         value: number;
         label: number;
     }
+    export interface IActionableKeyFrame {
+        frame: number;
+        value: any;
+    }
     interface ICurveData {
         pathData: string;
         pathLength: number;
@@ -994,6 +1001,7 @@ declare module INSPECTOR {
         panningY: number;
         panningX: number;
         repositionCanvas: boolean;
+        actionableKeyframe: IActionableKeyFrame;
     }> {
         private _snippetUrl;
         private _heightScale;
@@ -1040,6 +1048,8 @@ declare module INSPECTOR {
         deselectKeyframes(): void;
         updateValuePerCoordinate(dataType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion, newValue: number, coordinate?: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
+        updateLeftControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
+        updateRightControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
         /**
          * Actions
          * This section handles events from GraphActionsBar.
@@ -1089,6 +1099,8 @@ declare module INSPECTOR {
         selectAnimation(animation: BABYLON.Animation, coordinate?: SelectedCoordinate): void;
         isAnimationPlaying(): boolean;
         stopAnimation(): void;
+        setIsLooping(): void;
+        setFramesPerSecond(fps: number): void;
         analizeAnimationForLerp(animation: BABYLON.Animation | null): boolean;
         /**
          * Timeline
@@ -1264,6 +1276,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export class TextureCanvasManager {
+        private _engine;
+        private _scene;
+        private _texture;
+        private _camera;
+        private _canvas;
+        private _scale;
+        private _isPanning;
+        private _mouseX;
+        private _mouseY;
+        private _plane;
+        private _planeMaterial;
+        private static ZOOM_MOUSE_SPEED;
+        private static ZOOM_KEYBOARD_SPEED;
+        private static PAN_SPEED;
+        private static PAN_BUTTON;
+        private static MIN_SCALE;
+        private static MAX_SCALE;
+        constructor(targetCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture);
+        dispose(): void;
+    }
+}
+declare module INSPECTOR {
+    interface TextureEditorComponentProps {
+        globalState: GlobalState;
+        texture: BABYLON.BaseTexture;
+    }
+    export class TextureEditorComponent extends React.Component<TextureEditorComponentProps> {
+        private _textureCanvasManager;
+        private reactCanvas;
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITexturePropertyGridComponentProps {
         texture: BABYLON.BaseTexture;
         lockObject: LockObject;
@@ -1273,10 +1321,13 @@ declare module INSPECTOR {
     export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
         private _adtInstrumentation;
         private textureLineRef;
+        private _isTextureEditorOpen;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
-        foreceRefresh(): void;
+        onOpenTextureEditor(): void;
+        onCloseTextureEditor(window: Window | null): void;
+        forceRefresh(): void;
         render(): JSX.Element;
     }
 }
@@ -1510,6 +1561,7 @@ declare module INSPECTOR {
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
         private _selectedTags;
         constructor(props: IVariantsPropertyGridComponentProps);
+        private _getVariantsExtension;
         render(): JSX.Element | null;
     }
 }

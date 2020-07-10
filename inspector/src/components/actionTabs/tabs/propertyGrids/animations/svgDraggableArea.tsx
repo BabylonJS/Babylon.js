@@ -145,6 +145,8 @@ export class SvgDraggableArea extends React.Component<
               point.isRightActive = true;
             } else {
               point.keyframePoint = coord;
+              point.isRightActive = false;
+              point.isLeftActive = false;
             }
             this.props.updatePosition(point, this._currentPointId);
           }
