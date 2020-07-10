@@ -127,13 +127,13 @@ engine = createDefaultEngine();
                 return;
             }
 
-            let sceneToRenderCode = 'sceneToRender = scene';
+            // let sceneToRenderCode = 'sceneToRender = scene';
 
             // if scene returns a promise avoid checks
             if (globalObject.scene.then) {
                 checkCamera = false;
                 checkSceneCount = false;
-                sceneToRenderCode = 'scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n';
+                // sceneToRenderCode = 'scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n';
             } 
 
             // let createEngineZip = (createEngineFunction === "createEngine") ?
