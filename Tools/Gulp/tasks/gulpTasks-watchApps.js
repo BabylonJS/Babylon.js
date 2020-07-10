@@ -39,7 +39,7 @@ gulp.task("watchApps", function startWatch() {
 
             var outputDirectory = settings.distDirectory;
             tasks.push(
-                webpackStream(wpConfig, webpack)
+                webpackStream({ config: wpConfig }, webpack)
                     .pipe(gulp.dest(outputDirectory))
             );
         }
