@@ -8,6 +8,7 @@
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: 100%;
+    background: #201936;
 
     .logo-area {
         grid-column: 1;
@@ -50,14 +51,6 @@
         width: 100%;
         grid-template-columns: 74px 144px 1fr;
         grid-template-rows: 100%;
-
-        .background-ts {
-            background-color: #bb464b;
-        }
-
-        .background-js {
-            background-color: #3f3461;
-        }
 
         .language-button {        
             grid-row: 1;

@@ -36,7 +36,7 @@ export class FooterComponent extends React.Component<IFooterComponentProps> {
 
     public render() {
         return (
-            <div id="footer">   
+            <div id="footer" className={(this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>   
                 {
                     window.innerWidth < this.props.globalState.MobileSizeTrigger &&
                     <div className="modeBar">
