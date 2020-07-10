@@ -241,6 +241,9 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadApp = function(appName, app) {
+            if (!window || !window.location || window.location.pathname.indexOf(appName) === -1) {
+                return;
+            }
             this.loadScript(app.distFile);
         }
 
