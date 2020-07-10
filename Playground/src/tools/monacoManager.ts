@@ -1,4 +1,8 @@
 import 'monaco-editor/esm/vs/editor/editor.api';
+
+import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
+import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
+
 import { GlobalState } from '../globalState';
 
 declare type IStandaloneCodeEditor = import('monaco-editor/esm/vs/editor/editor.api').editor.IStandaloneCodeEditor;
@@ -29,8 +33,8 @@ var createScene = function() {
             globalState.onRunRequiredObservable.notifyObservers();
         });
     }
-    
-    public async setupMonacoAsync(hostElement: HTMLDivElement) {        
+
+    public async setupMonacoAsync(hostElement: HTMLDivElement) {
         // let response = await fetch("https://preview.babylonjs.com/babylon.d.ts");
         // if (!response.ok) {
         //     return;
