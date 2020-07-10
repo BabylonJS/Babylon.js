@@ -51,7 +51,7 @@ gulp.task("watchLibraries", function startWatch() {
 
                 var outputDirectory = settings.localDevUMDDirectory;
                 tasks.push(
-                    webpackStream({ config: wpConfig }, webpack)
+                    webpackStream(wpConfig, webpack)
                         .pipe(gulp.dest(outputDirectory))
                 );
 
