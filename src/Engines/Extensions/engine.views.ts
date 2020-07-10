@@ -141,9 +141,8 @@ Engine.prototype._renderViews = function() {
                 canvas.height = canvas.clientHeight;
                 parent.width = canvas.clientWidth;
                 parent.height = canvas.clientHeight;
-                this.resize();
             }
-            
+            this.resize();
         }
 
         if (!parent.width || !parent.height) {
