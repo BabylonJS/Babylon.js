@@ -3,7 +3,7 @@ import { GlobalState } from '../../../../../globalState';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { TextureCanvasManager } from './textureCanvasManager';
 import { TextureChannelToDisplay } from '../../../../../../textureHelper';
-import { Tool } from './tools';
+import { Tool, Toolbar } from './toolbar';
 
 require('./textureEditor.scss');
 
@@ -15,7 +15,7 @@ interface TextureEditorComponentProps {
 interface TextureEditorComponentState {
     channel: TextureChannelToDisplay;
     tools: Tool[];
-    toolURL: string;
+    activeToolIndex: number;
 }
 
 export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
@@ -37,8 +37,10 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this.state = {
             channel: TextureChannelToDisplay.All,
             tools: [],
-            toolURL: ""
+            activeToolIndex: -1
         }
+        this.loadTool = this.loadTool.bind(this);
+        this.changeTool = this.changeTool.bind(this);
     }
 
     componentDidMount() {
@@ -58,40 +60,39 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this._textureCanvasManager.dispose();
     }
 
+    loadTool(url : string) {
+        fetch(url)
+            .then(response => response.text())
+            .then(text => {
+                const toolData = eval(text);
+                const tool : Tool = {
+                    ...toolData,
+                    instance: new toolData.type(this._textureCanvasManager.scene, this._textureCanvasManager.canvas2D, this._textureCanvasManager.size, () => {this._textureCanvasManager.updateTexture()})
+                }
+                const newTools = this.state.tools.concat(tool);
+                this.setState({tools: newTools})
+                console.log(tool);
+            });
+    }
+
+    changeTool(index : number) {
+        if (index != -1) {
+            this._textureCanvasManager.tool = this.state.tools[index];
+        } else {
+            this._textureCanvasManager.tool = null;
+        }
+        this.setState({activeToolIndex: index});
+    }
+
     render() {
         return <div id="texture-editor">
             <div id="toolbar">
-                <div id="tools">
-                    <select id="tool-select">
-                        <option value={-1}>NO TOOL SELECTED</option>
-                        {this.state.tools.map(
-                            (item, index) => {
-                                return <option value={index}>{item.name}</option>
-                            }
-                        )}
-                    </select>
-                    <form
-                        id="tool-loading"
-                        onSubmit={(event) => {
-                            this._textureCanvasManager.loadTool(this.state.toolURL).then( () => {
-                                    this._textureCanvasManager.activeTool = 0;
-                                }
-                            );
-                            this.setState({toolURL: ""});
-                            event.preventDefault();
-                        }}>
-                        <label>
-                            Tool URL:
-                            <input
-                                onChange={(event) => this.setState({toolURL: event.target.value})}
-                                type="text"
-                                value={this.state.toolURL}
-                                placeholder="http://..."
-                            />
-                        </label>
-                        <button>Add Tool</button>
-                    </form>
-                </div>
+                <Toolbar
+                    tools={this.state.tools}
+                    activeToolIndex={this.state.activeToolIndex}
+                    addTool={this.loadTool}
+                    changeTool={this.changeTool}
+                />
                 <div id="channels">
                     {this.channels.map(
                         item => {

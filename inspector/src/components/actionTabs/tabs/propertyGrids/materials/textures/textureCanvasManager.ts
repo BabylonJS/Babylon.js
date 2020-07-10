@@ -17,7 +17,7 @@ import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { KeyboardEventTypes } from 'babylonjs/Events/keyboardEvents';
 import { TextureHelper, TextureChannelToDisplay } from '../../../../../../textureHelper';
 import { ISize } from 'babylonjs';
-import { Tool } from './tools';
+import { Tool } from './toolbar';
 
 export class TextureCanvasManager {
     private _engine: Engine;
@@ -65,8 +65,7 @@ export class TextureCanvasManager {
     private static PAINT_BUTTON : number = 0; // LMB
     private _isPainting : boolean = false;
     private _paintColor : Color4;
-    private _tools : Tool[] = [];
-    private _activeTool : number = -1;
+    private _tool : Nullable<Tool>;
 
     private static MIN_SCALE : number = 0.01;
     private static MAX_SCALE : number = 10;
@@ -219,7 +218,7 @@ export class TextureCanvasManager {
         return new Color4(Math.random(), Math.random(), Math.random(), 1.0);
     }
 
-    private updateTexture() {
+    public updateTexture() {
         this._texture.update();
         if (!this._targetTexture) {
             this._originalInternalTexture = this._originalTexture._texture;
@@ -268,36 +267,55 @@ export class TextureCanvasManager {
         ctx.globalCompositeOperation = globalCompositeOperation;
     }
 
-    public loadTool(url : string) {
-        return new Promise((resolve, reject) => {
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    const toolData = eval(text);
-                    const tool : Tool = {
-                        ...toolData,
-                        instance: new toolData.type(this._scene, this._2DCanvas, this._size, () => {this.updateTexture()})
-                    }
-                    this._tools.push(tool);
-                    console.log(tool);
-                    resolve();
-                });
-        });
-    }
+    // public loadTool(url : string) {
+    //     return new Promise((resolve, reject) => {
+    //         fetch(url)
+    //             .then(response => response.text())
+    //             .then(text => {
+    //                 const toolData = eval(text);
+    //                 const tool : Tool = {
+    //                     ...toolData,
+    //                     instance: new toolData.type(this._scene, this._2DCanvas, this._size, () => {this.updateTexture()})
+    //                 }
+    //                 this._tools.push(tool);
+    //                 console.log(tool);
+    //                 resolve();
+    //             });
+    //     });
+    // }
 
-    public set activeTool(tool: number) {
-        console.log(this._tools);
-        console.log(tool);
-        if (this._activeTool != -1) {
-            this._tools[this._activeTool].instance.cleanup();
+    public set tool(tool: Nullable<Tool>) {
+        // console.log(this._tools);
+        // console.log(tool);
+        // if (this._activeTool != -1) {
+        //     this._tools[this._activeTool].instance.cleanup();
+        // }
+        // this._activeTool = tool;
+        // this._tools[this._activeTool].instance.setup();
+        // console.log("Selected: " + this._tools[this._activeTool].name);
+        if (this._tool != null) {
+            this._tool.instance.cleanup();
         }
-        this._activeTool = tool;
-        this._tools[this._activeTool].instance.setup();
-        console.log("Selected: " + this._tools[this._activeTool].name);
+        this._tool = tool;
+        if (this._tool != null) {
+            this._tool.instance.setup();
+        }
     }
 
-    public get activeTool(): number {
-        return this._activeTool;
+    public get tool(): Nullable<Tool> {
+        return this._tool;
+    }
+
+    public get scene() : Scene {
+        return this._scene;
+    }
+
+    public get canvas2D() : HTMLCanvasElement {
+        return this._2DCanvas;
+    }
+
+    public get size() : ISize {
+        return this._size;
     }
 
     public dispose() {
