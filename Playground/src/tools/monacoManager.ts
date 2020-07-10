@@ -125,7 +125,7 @@ var createScene = function() {
     }
 
     // Provide an adornment for BABYLON.ColorX types: color preview
-    private _setupMonacoColorProvider() {
+    protected _setupMonacoColorProvider() {
         monaco.languages.registerColorProvider(this.globalState.language == "JS" ? "javascript" : "typescript", {
             provideColorPresentations: (model: any, colorInfo: any) => {
                 const color = colorInfo.color;
@@ -172,7 +172,7 @@ var createScene = function() {
     }
 
     // Setup both JS and TS compilation pipelines to work with our scripts. 
-    private _setupMonacoCompilationPipeline(libContent: string) {
+    protected _setupMonacoCompilationPipeline(libContent: string) {
         var typescript = monaco.languages.typescript;
 
         if (this.globalState.language === "JS") {
@@ -201,7 +201,7 @@ var createScene = function() {
         }
     }
 
-    private _setupDefinitionWorker(libContent: string) {
+    protected _setupDefinitionWorker(libContent: string) {
         this._definitionWorker = new Worker('workers/definitionWorker.js');
         this._definitionWorker.addEventListener('message', ({
             data
