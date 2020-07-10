@@ -741,10 +741,10 @@ export class _GLTFAnimation {
             if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
                 if (tangentValue) {
                     if (useQuaternion) {
-                        tangent = (tangentValue as Quaternion).scale(frameDelta).asArray();
+                        tangent = (tangentValue as Quaternion).asArray();
                     }
                     else {
-                        const array = (tangentValue as Vector3).scale(frameDelta);
+                        const array = (tangentValue as Vector3);
                         tangent = Quaternion.RotationYawPitchRoll(array.y, array.x, array.z).asArray();
                     }
 
@@ -761,7 +761,7 @@ export class _GLTFAnimation {
             }
             else {
                 if (tangentValue) {
-                    tangent = (tangentValue as Vector3).scale(frameDelta).asArray();
+                    tangent = (tangentValue as Vector3).asArray();
                     if (convertToRightHandedSystem) {
                         if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
                             _GLTFUtilities._GetRightHandedPositionArray3FromRef(tangent);

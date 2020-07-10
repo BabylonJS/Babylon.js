@@ -81992,6 +81992,7 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
         static _NormalizeTangentFromRef(tangent: Vector4): void;
+        static _GetRightHandedMatrixFromRef(matrix: Matrix): void;
     }
 }
 declare module BABYLON.GLTF2.Exporter {
@@ -82043,6 +82044,10 @@ declare module BABYLON.GLTF2.Exporter {
          * Stores all the texture samplers
          */
         _samplers: ISampler[];
+        /**
+         * Stores all the generated glTF skins
+         */
+        _skins: ISkin[];
         /**
          * Stores all the generated animation samplers, which is referenced by glTF animations
          */
@@ -82202,11 +82207,11 @@ declare module BABYLON.GLTF2.Exporter {
          * Returns the bytelength of the data
          * @param vertexBufferKind Indicates what kind of vertex data is being passed in
          * @param meshAttributeArray Array containing the attribute data
+         * @param byteStride Specifies the space between data
          * @param binaryWriter The buffer to write the binary data to
-         * @param indices Used to specify the order of the vertex data
          * @param convertToRightHandedSystem Converts the values to right-handed
          */
-        writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, byteStride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean): void;
+        writeAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, babylonTransformNode: TransformNode): void;
         /**
          * Generates glTF json data
          * @param shouldUseGlb Indicates whether the json should be written for a glb file
@@ -82248,6 +82253,7 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Creates a bufferview based on the vertices type for the Babylon mesh
          * @param kind Indicates the type of vertices data
+         * @param componentType Indicates the numerical type used to store the data
          * @param babylonTransformNode The Babylon mesh to get the vertices data from
          * @param binaryWriter The buffer to write the bufferview data to
          * @param convertToRightHandedSystem Converts the values to right-handed
@@ -82309,6 +82315,14 @@ declare module BABYLON.GLTF2.Exporter {
          * @returns glTF node
          */
         private createNodeAsync;
+        /**
+         * Creates a glTF skin from a Babylon skeleton
+         * @param babylonScene Babylon Scene
+         * @param nodes Babylon transform nodes
+         * @param binaryWriter Buffer to write binary data to
+         * @returns Node mapping of unique id to index
+         */
+        private createSkinsAsync;
     }
     /**
      * @hidden
@@ -82354,6 +82368,12 @@ declare module BABYLON.GLTF2.Exporter {
          * @param byteOffset If defined, specifies where to set the value as an offset.
          */
         setUInt8(entry: number, byteOffset?: number): void;
+        /**
+         * Stores an UInt16 in the array buffer
+         * @param entry
+         * @param byteOffset If defined, specifies where to set the value as an offset.
+         */
+        setUInt16(entry: number, byteOffset?: number): void;
         /**
          * Gets an UInt32 in the array buffer
          * @param entry
