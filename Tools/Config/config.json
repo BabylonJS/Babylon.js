@@ -62,7 +62,8 @@
         "nodeEditor"
     ],
     "apps": [
-        "playground"
+        "playground",
+        "sandbox"
     ],
     "lintModules": [
         "core",
@@ -639,66 +640,22 @@
             }
         }
     },
-    "sandbox": {
-        "libraries": [
-            {
-                "output": "babylon.sandbox.js",
-                "entry": "./legacy/legacy.ts"
-            }
-        ],
-        "build": {            
-            "ignoreInWorkerMode": true,
-            "ignoreInTestMode": true,
-            "mainFolder": "./sandbox/",
-            "uncheckedLintImports": [
-                "react",
-                "react-dom"
-            ],
-            "umd": {
-                "packageName": "babylonjs-sandbox",
-                "webpackRoot": "SANDBOX",
-                "processDeclaration": {
-                    "filename": "babylon.sandbox.module.d.ts",
-                    "moduleName": "SANDBOX",
-                    "importsToRemove": [],
-                    "classMap": {
-                        "babylonjs": "BABYLON",
-                        "react": "React",
-                        "@babylonjs/core": "BABYLON",
-                        "@fortawesome": false
-                    }
-                }
-            },
-            "es6": {
-                "webpackBuild": true,
-                "buildDependencies": [
-                    "Tools/**/*"
-                ],
-                "packageName": "@babylonjs/sandbox",
-                "readme": "dist/preview release/sandbox/readme-es6.md",
-                "packagesFiles": [
-                    "babylon.sandbox.max.js",
-                    "babylon.sandbox.max.js.map",
-                    "babylon.sandbox.module.d.ts",
-                    "readme.md"
-                ],
-                "typings": "babylon.sandbox.module.d.ts",
-                "index": "babylon.sandbox.max.js"
-            }
-        }
-    },
     "playground": {
         "distFile": "/Playground/public/dist/babylon.playground.bundle.js",
         "build": {
             "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
-            "distOutputDirectory": "../../playground/public/dist/",
-            "mainFolder": "./Playground/",
-            "uncheckedLintImports": [
-                "react",
-                "react-dom",
-                "monaco"
-            ]
+            "distOutputDirectory": "../../Playground/public/dist/",
+            "mainFolder": "./Playground/"
+        }
+    },
+    "sandbox": {
+        "distFile": "/sandbox/public/dist/babylon.sandbox.bundle.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../sandbox/public/dist/",
+            "mainFolder": "./sandbox/"
         }
     },
     "viewer": {
