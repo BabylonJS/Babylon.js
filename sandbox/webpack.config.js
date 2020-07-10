@@ -7,7 +7,7 @@ var config = babylonWebpackConfig({
     entry: "./legacy/legacy.ts",
     output: {
         globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)',
-        filename: "babylon.sandbox.bundle.js",
+        filename: "babylon.sandbox.js",
         path: path.resolve(__dirname, "public/dist"),
         publicPath: "./dist/",
         libraryTarget: 'umd',

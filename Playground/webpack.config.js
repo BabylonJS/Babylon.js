@@ -9,7 +9,7 @@ var config = babylonWebpackConfig({
     entry: "./legacy/legacy.ts",
     output: {
         globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)',
-        filename: "babylon.playground.bundle.js",
+        filename: "babylon.playground.js",
         path: path.resolve(__dirname, "public/dist"),
         publicPath: "./dist/",
         libraryTarget: 'umd',
