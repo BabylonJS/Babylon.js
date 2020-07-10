@@ -3,7 +3,8 @@ import * as ReactDOM from "react-dom";
 import { MonacoComponent } from './components/monacoComponent';
 import { RenderingComponent } from './components/rendererComponent';
 import { GlobalState, EditionMode } from './globalState';
-import { FooterComponent } from './components/footerComponent.';
+import { FooterComponent } from './components/footerComponent';
+import { HeaderComponent } from './components/headerComponent';
 
 require("./scss/main.scss");
 const Split = require('split.js').default;
@@ -80,7 +81,8 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
     public render() {
 
         return (
-            <div id="root">  
+            <div id="root">              
+                <HeaderComponent globalState={this._globalState}/>
                 <div ref={this.splitRef} id="split">
                     <MonacoComponent globalState={this._globalState} className="split-part" refObject={this.monacoRef}/>    
                     <div ref={this.renderingRef} className="split-part">
