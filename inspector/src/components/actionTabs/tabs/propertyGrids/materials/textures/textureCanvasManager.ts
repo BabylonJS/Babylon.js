@@ -12,11 +12,12 @@ import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { HtmlElementTexture } from 'babylonjs/Materials/Textures/htmlElementTexture';
 import { InternalTexture } from 'babylonjs/Materials/Textures/internalTexture';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+import { TextureHelper, TextureChannelToDisplay } from '../../../../../../textureHelper';
+import { ISize } from 'babylonjs/Maths/math.size';
+
 
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { KeyboardEventTypes } from 'babylonjs/Events/keyboardEvents';
-import { TextureHelper, TextureChannelToDisplay } from '../../../../../../textureHelper';
-import { ISize } from 'babylonjs';
 import { Tool } from './toolbar';
 
 export class TextureCanvasManager {
@@ -62,9 +63,6 @@ export class TextureCanvasManager {
     private static PAN_MOUSE_BUTTON : number = 0; // RMB
     private static PAN_KEY : string = ' ';
 
-    private static PAINT_BUTTON : number = 0; // LMB
-    private _isPainting : boolean = false;
-    private _paintColor : Color4;
     private _tool : Nullable<Tool>;
 
     private static MIN_SCALE : number = 0.01;
@@ -103,10 +101,6 @@ export class TextureCanvasManager {
         this._displayTexture.updateSamplingMode(Engine.TEXTURE_NEAREST_LINEAR);
 
         const textureRatio = this._size.width / this._size.height;
-
-        /*this.loadTool("https://darraghburkems.github.io/BJSTools/Floodfill.js").then(() => {
-            this.activeTool = 0;
-        })*/
         
         this._plane = PlaneBuilder.CreatePlane("plane", {width: textureRatio, height: 1}, this._scene);
         NodeMaterial.ParseFromSnippetAsync("#TPSEV2#4", this._scene)
@@ -156,17 +150,10 @@ export class TextureCanvasManager {
                         this._mouseY = pointerInfo.event.y;
                         pointerInfo.event.preventDefault();
                     }
-                    else if (pointerInfo.event.button === TextureCanvasManager.PAINT_BUTTON) {
-                        this._isPainting = true;
-                        this._paintColor = this.randomColor();
-                    }
                     break;
                 case PointerEventTypes.POINTERUP:
                     if (pointerInfo.event.button === TextureCanvasManager.PAN_MOUSE_BUTTON) {
                         this._isPanning = false;
-                    }
-                    if (pointerInfo.event.button === TextureCanvasManager.PAINT_BUTTON) {
-                        this._isPainting = false;
                     }
                     break;
                 case PointerEventTypes.POINTERMOVE:
@@ -175,18 +162,6 @@ export class TextureCanvasManager {
                         this._camera.position.y += (pointerInfo.event.y - this._mouseY) * this._scale * TextureCanvasManager.PAN_SPEED;
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
-                    }
-                    if (this._isPainting) {
-                        if (pointerInfo.pickInfo?.hit) {
-                            const ctx = this._2DCanvas.getContext("2d")!;
-                            ctx.fillStyle = this._paintColor.toHexString();
-                            const x = pointerInfo.pickInfo.getTextureCoordinates()!.x * this._size.width;
-                            const y = (1 - pointerInfo.pickInfo.getTextureCoordinates()!.y) * this._size.height;
-                            ctx.beginPath();
-                            ctx.ellipse(x, y, 30, 30, 0, 0, Math.PI * 2);
-                            ctx.fill();
-                            this.updateTexture();
-                        }
                     }
                     break;
             }
@@ -212,10 +187,6 @@ export class TextureCanvasManager {
             }
         })
 
-    }
-
-    private randomColor() : Color4 {
-        return new Color4(Math.random(), Math.random(), Math.random(), 1.0);
     }
 
     public updateTexture() {
@@ -267,32 +238,7 @@ export class TextureCanvasManager {
         ctx.globalCompositeOperation = globalCompositeOperation;
     }
 
-    // public loadTool(url : string) {
-    //     return new Promise((resolve, reject) => {
-    //         fetch(url)
-    //             .then(response => response.text())
-    //             .then(text => {
-    //                 const toolData = eval(text);
-    //                 const tool : Tool = {
-    //                     ...toolData,
-    //                     instance: new toolData.type(this._scene, this._2DCanvas, this._size, () => {this.updateTexture()})
-    //                 }
-    //                 this._tools.push(tool);
-    //                 console.log(tool);
-    //                 resolve();
-    //             });
-    //     });
-    // }
-
     public set tool(tool: Nullable<Tool>) {
-        // console.log(this._tools);
-        // console.log(tool);
-        // if (this._activeTool != -1) {
-        //     this._tools[this._activeTool].instance.cleanup();
-        // }
-        // this._activeTool = tool;
-        // this._tools[this._activeTool].instance.setup();
-        // console.log("Selected: " + this._tools[this._activeTool].name);
         if (this._tool != null) {
             this._tool.instance.cleanup();
         }
