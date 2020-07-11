@@ -4,6 +4,7 @@ import {Engine} from "babylonjs/Engines/engine"
 import { Nullable } from 'babylonjs/types';
 import { Scene } from 'babylonjs/scene';
 import { Utilities } from '../tools/utilities';
+import { DownloadManager } from '../tools/downloadManager';
 
 require("../scss/rendering.scss");
 
@@ -15,6 +16,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _engine: Nullable<Engine>;
     private _scene: Nullable<Scene>;
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
+    private _downloadManager: DownloadManager;
 
     public constructor(props: IRenderingComponentProps) {
         super(props);
@@ -28,6 +30,15 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onRunRequiredObservable.add(() => {
            this.compileAndRun();
+        });
+
+        
+        this._downloadManager = new DownloadManager();
+        this.props.globalState.onDownloadRequiredObservable.add(() => {
+            if (!this._engine) {
+                return;
+            }
+            this._downloadManager.download(this._engine);
         });
     }
 
