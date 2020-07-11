@@ -19,6 +19,11 @@
             img {
                 filter: invert(17%) !important;
             }
-        }        
+        } 
+        
+        &:active {
+            transform-origin: center;
+            transform: scale(0.95);
+        }
     }
 }
