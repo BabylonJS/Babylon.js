@@ -134,21 +134,21 @@ Engine.prototype._renderViews = function() {
         }
 
         // Set sizes
-        if (canvas.clientWidth && canvas.clientHeight) {
-            const dimensionsMismatch = canvas.clientWidth !== parent.width || canvas.clientHeight !== parent.height;
-            if(dimensionsMismatch) {
-                canvas.width = canvas.clientWidth;
-                canvas.height = canvas.clientHeight;
-                parent.width = canvas.clientWidth;
-                parent.height = canvas.clientHeight;
-            }
+        const dimsChanged =
+            canvas.width !== canvas.clientWidth ||
+            canvas.height !== canvas.clientHeight;
+        if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            parent.width = canvas.clientWidth;
+            parent.height = canvas.clientHeight;
             this.resize();
         }
 
         if (!parent.width || !parent.height) {
             return false;
         }
-        
+
         // Render the frame
         this._renderFrame();
 
