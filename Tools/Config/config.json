@@ -641,11 +641,11 @@
         }
     },
     "playground": {
-        "distFile": "/Playground/public/dist/babylon.playground.js",
+        "distFile": "/Playground/dist/babylon.playground.js",
         "build": {
             "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
-            "distOutputDirectory": "../../Playground/public/dist/",
+            "distOutputDirectory": "../../Playground/dist/",
             "mainFolder": "./Playground/"
         }
     },

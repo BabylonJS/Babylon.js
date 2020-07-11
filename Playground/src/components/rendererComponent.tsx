@@ -27,15 +27,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
 
         this.props.globalState.onRunRequiredObservable.add(() => {
-            this.compileAndRun();
-        })
-    }
-
-    componentDidMount() {
-        this.compileAndRun();
+           this.compileAndRun();
+        });
     }
 
     compileAndRun() {
+        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+
         if (this._engine) {
             try {
                 this._engine.dispose();

@@ -14,7 +14,7 @@
 var ts = null;
 var define = (id, dependencies, callback) => ts = callback();
 
-importScripts("../node_modules/monaco-editor/dev/vs/language/typescript/lib/typescriptServices.js");
+importScripts("https://unpkg.com/monaco-editor@0.20.0/dev/vs/language/typescript/lib/typescriptServices.js");
 
 // store deprecated names
 var deprecatedCandidates = [];

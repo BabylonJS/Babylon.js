@@ -5,6 +5,10 @@ import { RenderingComponent } from './components/rendererComponent';
 import { GlobalState, EditionMode } from './globalState';
 import { FooterComponent } from './components/footerComponent';
 import { HeaderComponent } from './components/headerComponent';
+import { SaveManager } from './tools/saveManager';
+import { LoadManager } from './tools/loadManager';
+import { WaitRingComponent } from './components/waitRingComponent';
+import { MetadataComponent } from './components/metadataComponent';
 
 require("./scss/main.scss");
 const Split = require('split.js').default;
@@ -19,6 +23,9 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
 
     private _globalState: GlobalState;
     private _splitInstance: any;
+    
+    public saveManager: SaveManager;
+    public loadManager: LoadManager;
     
     public constructor(props: IPlaygroundProps) {
        super(props);
@@ -36,7 +43,11 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
 
        this._globalState.onMobileDefaultModeChangedObservable.add(() => {
            this.setState({mode: this._globalState.mobileDefaultMode});
-       })
+       });
+
+       // Managers
+       this.saveManager = new SaveManager(this._globalState);
+       this.loadManager = new LoadManager(this._globalState);
     }
 
     componentDidMount() {
@@ -90,6 +101,8 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
                     </div>
                 </div>
                 <FooterComponent globalState={this._globalState}/>
+                <WaitRingComponent globalState={this._globalState}/>
+                <MetadataComponent globalState={this._globalState}/>
             </div>   
         )
     }
