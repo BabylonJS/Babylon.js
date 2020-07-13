@@ -177,15 +177,18 @@ export class InputBlock extends NodeMaterialBlock {
         this.registerOutput("output", type);
     }
 
+    /**
+    * Validates if a name is a reserve word. 
+    * @param newName the new name to be given to the node.
+    * @returns false if the name is a reserve word, else true.
+    */
     public validateBlockName(newName: string) {
-
         if(!this.isAttribute)
         {
             return super.validateBlockName(newName);
         }
         return true;
     }
-
 
     /**
      * Gets the output component
@@ -200,7 +203,6 @@ export class InputBlock extends NodeMaterialBlock {
      * @returns the current connection point
      */
     public setAsAttribute(attributeName?: string): InputBlock {
-
         this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
         if (attributeName) {
             this.name = attributeName;
@@ -720,10 +722,12 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        
+        this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);
 
         this._type = serializationObject.type;
-        this._mode = serializationObject.mode;
+
         this._systemValue = serializationObject.systemValue || serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
         this.visibleInInspector = serializationObject.visibleInInspector;

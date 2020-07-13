@@ -41,15 +41,16 @@ export class NodeMaterialBlock {
     public _preparationId: number;
 
     /**
-     * Gets or sets the name of the block
+     * Gets the name of the block
      */
-
     public get name (): string {
          return this._name;
     }
     
+    /**
+     * Sets the name of the block. Will check if the name is valid.
+     */
     public set name (newName: string) {
-
         if(!this.validateBlockName(newName))
         {
             return;
@@ -451,36 +452,37 @@ export class NodeMaterialBlock {
         }
     }
 
+    /**
+    * Validates the new name for the block node. 
+    * @param newName the new name to be given to the node.
+    * @returns false if the name is a reserve word, else true.
+    */
     public validateBlockName(newName: string)
      {
-        //if(this._isInput)
-        //{
-            let reservedNames: Array<string> = [
-            "position",
-            "normal",
-            "tangent",
-            "particle_positionw",
-            "uv",
-            "uv2",
-            "position2d",
-            "particle_uv",
-            "matricesIndices",
-            "matricesWeights",
-            "world0",
-            "world1",
-            "world2",
-            "world3",
-            "color",
-            "particle_color",
-            "particle_texturemask"]; 
-            for (var reservedName of reservedNames)
+        let reservedNames: Array<string> = [
+        "position",
+        "normal",
+        "tangent",
+        "particle_positionw",
+        "uv",
+        "uv2",
+        "position2d",
+        "particle_uv",
+        "matricesIndices",
+        "matricesWeights",
+        "world0",
+        "world1",
+        "world2",
+        "world3",   
+        "particle_color",
+        "particle_texturemask"]; 
+        for (var reservedName of reservedNames)
+        {
+            if(newName == reservedName)
             {
-                if(newName == reservedName)
-                {
-                    return false;
-                }
-            };
-        //}
+                return false;
+            }
+        };
         return true;
     }
 
