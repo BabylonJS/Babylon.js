@@ -44,7 +44,8 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
                     <form
                         id="tool-loading"
                         onSubmit={(event) => {
-                            this.props.addTool(this.state.toolURL);
+                            const urls = this.state.toolURL.split(",");
+                            urls.forEach((url) => this.props.addTool(url));
                             this.setState({toolURL: ""});
                             event.preventDefault();
                         }}>
