@@ -23,6 +23,14 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
     super(props);
   }
 
+  onBlur(e: React.ChangeEvent<HTMLInputElement>) {
+    e.preventDefault();
+    if (this.props.actionableKeyframe.value === '') {
+      e.target.value = '0';
+      this.props.handleValueChange(e);
+    }
+  }
+
   render() {
     return (
       <div className='actions-wrapper'>
@@ -38,15 +46,16 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
             <input
               type='number'
               onChange={this.props.handleFrameChange}
-              value={this.props.actionableKeyframe.frame}
+              value={this.props.actionableKeyframe.frame ?? '-'}
               step='1'
             />
           </div>
           <div className='action-input'>
             <input
               type='number'
-              value={this.props.actionableKeyframe.value}
+              value={this.props.actionableKeyframe.value ?? '-'}
               onChange={this.props.handleValueChange}
+              onBlur={(e) => this.onBlur(e)}
               step='0.01'
             />
           </div>
