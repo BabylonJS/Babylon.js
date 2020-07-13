@@ -1447,26 +1447,51 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager" {
+    import { Scene } from 'babylonjs/scene';
     import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import { TextureChannelToDisplay } from "babylonjs-inspector/textureHelper";
+    import { ISize } from 'babylonjs/Maths/math.size';
     export class TextureCanvasManager {
         private _engine;
         private _scene;
-        private _texture;
         private _camera;
-        private _canvas;
         private _scale;
         private _isPanning;
         private _mouseX;
         private _mouseY;
+        private _UICanvas;
+        private _size;
+        private _2DCanvas;
+        private _texture;
+        private _displayCanvas;
+        private _displayChannel;
+        private _displayTexture;
+        private _originalTexture;
+        private _targetTexture;
+        private _originalInternalTexture;
         private _plane;
         private _planeMaterial;
+        private keyMap;
         private static ZOOM_MOUSE_SPEED;
         private static ZOOM_KEYBOARD_SPEED;
+        private static ZOOM_IN_KEY;
+        private static ZOOM_OUT_KEY;
         private static PAN_SPEED;
-        private static PAN_BUTTON;
+        private static PAN_MOUSE_BUTTON;
+        private static PAN_KEY;
         private static MIN_SCALE;
         private static MAX_SCALE;
-        constructor(targetCanvas: HTMLCanvasElement, texture: BaseTexture);
+        metadata: any;
+        constructor(texture: BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement);
+        updateTexture(): void;
+        private copyTextureToDisplayTexture;
+        set displayChannel(channel: TextureChannelToDisplay);
+        get displayChannel(): TextureChannelToDisplay;
+        static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
+        static flipCanvas(canvas: HTMLCanvasElement): void;
+        get scene(): Scene;
+        get canvas2D(): HTMLCanvasElement;
+        get size(): ISize;
         dispose(): void;
     }
 }
@@ -1474,14 +1499,23 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import * as React from 'react';
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import { TextureChannelToDisplay } from "babylonjs-inspector/textureHelper";
     interface TextureEditorComponentProps {
         globalState: GlobalState;
         texture: BaseTexture;
     }
-    export class TextureEditorComponent extends React.Component<TextureEditorComponentProps> {
+    interface TextureEditorComponentState {
+        channel: TextureChannelToDisplay;
+    }
+    export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
         private _textureCanvasManager;
-        private reactCanvas;
+        private canvasUI;
+        private canvas2D;
+        private canvasDisplay;
+        private channels;
+        constructor(props: TextureEditorComponentProps);
         componentDidMount(): void;
+        componentDidUpdate(): void;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
@@ -5000,22 +5034,44 @@ declare module INSPECTOR {
     export class TextureCanvasManager {
         private _engine;
         private _scene;
-        private _texture;
         private _camera;
-        private _canvas;
         private _scale;
         private _isPanning;
         private _mouseX;
         private _mouseY;
+        private _UICanvas;
+        private _size;
+        private _2DCanvas;
+        private _texture;
+        private _displayCanvas;
+        private _displayChannel;
+        private _displayTexture;
+        private _originalTexture;
+        private _targetTexture;
+        private _originalInternalTexture;
         private _plane;
         private _planeMaterial;
+        private keyMap;
         private static ZOOM_MOUSE_SPEED;
         private static ZOOM_KEYBOARD_SPEED;
+        private static ZOOM_IN_KEY;
+        private static ZOOM_OUT_KEY;
         private static PAN_SPEED;
-        private static PAN_BUTTON;
+        private static PAN_MOUSE_BUTTON;
+        private static PAN_KEY;
         private static MIN_SCALE;
         private static MAX_SCALE;
-        constructor(targetCanvas: HTMLCanvasElement, texture: BABYLON.BaseTexture);
+        metadata: any;
+        constructor(texture: BABYLON.BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement);
+        updateTexture(): void;
+        private copyTextureToDisplayTexture;
+        set displayChannel(channel: TextureChannelToDisplay);
+        get displayChannel(): TextureChannelToDisplay;
+        static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
+        static flipCanvas(canvas: HTMLCanvasElement): void;
+        get scene(): BABYLON.Scene;
+        get canvas2D(): HTMLCanvasElement;
+        get size(): BABYLON.ISize;
         dispose(): void;
     }
 }
@@ -5024,10 +5080,18 @@ declare module INSPECTOR {
         globalState: GlobalState;
         texture: BABYLON.BaseTexture;
     }
-    export class TextureEditorComponent extends React.Component<TextureEditorComponentProps> {
+    interface TextureEditorComponentState {
+        channel: TextureChannelToDisplay;
+    }
+    export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
         private _textureCanvasManager;
-        private reactCanvas;
+        private canvasUI;
+        private canvas2D;
+        private canvasDisplay;
+        private channels;
+        constructor(props: TextureEditorComponentProps);
         componentDidMount(): void;
+        componentDidUpdate(): void;
         componentWillUnmount(): void;
         render(): JSX.Element;
     }
