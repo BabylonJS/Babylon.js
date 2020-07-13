@@ -2629,7 +2629,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     break;
                 case "CylinderParticleEmitter":
                     emitterType = new CylinderParticleEmitter();
-                    break;                    
+                    break;
                 case "CylinderDirectedParticleEmitter":
                     emitterType = new CylinderDirectedParticleEmitter();
                     break;
