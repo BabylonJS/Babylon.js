@@ -16,6 +16,7 @@ interface TextureEditorComponentState {
     channel: TextureChannelToDisplay;
     tools: Tool[];
     activeToolIndex: number;
+    metadata: any;
 }
 
 export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
@@ -37,10 +38,15 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this.state = {
             channel: TextureChannelToDisplay.All,
             tools: [],
-            activeToolIndex: -1
+            activeToolIndex: -1,
+            metadata: {
+                color: '#ffffff',
+                opacity: 1
+            }
         }
         this.loadTool = this.loadTool.bind(this);
         this.changeTool = this.changeTool.bind(this);
+        this.setMetadata = this.setMetadata.bind(this);
     }
 
     componentDidMount() {
@@ -54,6 +60,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
 
     componentDidUpdate() {
         this._textureCanvasManager.displayChannel = this.state.channel;
+        this._textureCanvasManager.metadata = this.state.metadata;
     }
 
     componentWillUnmount() {
@@ -67,7 +74,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
                 const toolData = eval(text);
                 const tool : Tool = {
                     ...toolData,
-                    instance: new toolData.type(this._textureCanvasManager.scene, this._textureCanvasManager.canvas2D, this._textureCanvasManager.size, () => {this._textureCanvasManager.updateTexture()})
+                    instance: new toolData.type(this._textureCanvasManager.scene, this._textureCanvasManager.canvas2D, this._textureCanvasManager.size, () => this._textureCanvasManager.updateTexture(), () => this.state.metadata, (data: any)  => this.setMetadata(data))
                 }
                 const newTools = this.state.tools.concat(tool);
                 this.setState({tools: newTools})
@@ -84,14 +91,24 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this.setState({activeToolIndex: index});
     }
 
+    setMetadata(newMetadata : any) {
+        const data = {
+            ...this.state.metadata,
+            ...newMetadata
+        }
+        this.setState({metadata: data});
+    }
+
     render() {
         return <div id="texture-editor">
-            <div id="toolbar">
+            <div id="controls">
                 <Toolbar
                     tools={this.state.tools}
                     activeToolIndex={this.state.activeToolIndex}
                     addTool={this.loadTool}
                     changeTool={this.changeTool}
+                    metadata={this.state.metadata}
+                    setMetadata={this.setMetadata}
                 />
                 <div id="channels">
                     {this.channels.map(

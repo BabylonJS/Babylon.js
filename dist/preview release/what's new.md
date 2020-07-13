@@ -68,7 +68,7 @@
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
-- View textures in pop out window with zoom & pan ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- Edit textures in pop out window with zoom & pan. Load tools from URLs. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Cameras
 

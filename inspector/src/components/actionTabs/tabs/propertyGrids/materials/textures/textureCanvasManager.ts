@@ -54,6 +54,7 @@ export class TextureCanvasManager {
     private _plane : Mesh;
     private _planeMaterial : NodeMaterial;
 
+    /* Tracks which keys are currently pressed */
     private keyMap : any = {};
 
     private static ZOOM_MOUSE_SPEED : number = 0.0005;
@@ -67,6 +68,11 @@ export class TextureCanvasManager {
 
     private static MIN_SCALE : number = 0.01;
     private static MAX_SCALE : number = 10;
+
+    public metadata : any = {
+        color: '#ffffff',
+        opacity: 1.0
+    };
 
     public constructor(texture: BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement) {
         this._UICanvas = canvasUI;
@@ -239,11 +245,11 @@ export class TextureCanvasManager {
     }
 
     public set tool(tool: Nullable<Tool>) {
-        if (this._tool != null) {
+        if (this._tool) {
             this._tool.instance.cleanup();
         }
         this._tool = tool;
-        if (this._tool != null) {
+        if (this._tool) {
             this._tool.instance.setup();
         }
     }
@@ -270,6 +276,9 @@ export class TextureCanvasManager {
         }
         if (this._originalInternalTexture) {
             this._originalInternalTexture.dispose();
+        }
+        if (this._tool) {
+            this._tool.instance.cleanup();
         }
         this._displayTexture.dispose();
         this._texture.dispose();
