@@ -93,15 +93,6 @@ export class TextureCanvasManager {
             const pixelData = this._originalTexture.readPixels()!;
             TextureCanvasManager.paintPixelsOnCanvas(new Uint8Array(pixelData.buffer), this._2DCanvas);
             this._texture.update();
-        } else {
-            /* If we don't have a texture to start with, just generate a white rectangle */
-            const ctx = this._2DCanvas.getContext("2d")!;
-            ctx.globalAlpha = 1.0;
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.resetTransform();
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, this._2DCanvas.width, this._2DCanvas.height);
-            this._texture.update();
         }
 
         this._displayTexture = new HtmlElementTexture("display", this._displayCanvas, {engine: this._engine, scene: this._scene});
@@ -238,6 +229,7 @@ export class TextureCanvasManager {
         const ctx = canvas.getContext('2d')!;
         const transform = ctx.getTransform();
         ctx.globalCompositeOperation = 'copy';
+        ctx.globalAlpha = 1.0;
         ctx.translate(0,canvas.height);
         ctx.scale(1,-1);
         ctx.drawImage(canvas, 0, 0);
