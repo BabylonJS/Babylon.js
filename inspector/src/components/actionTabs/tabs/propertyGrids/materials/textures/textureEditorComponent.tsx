@@ -3,7 +3,6 @@ import { GlobalState } from '../../../../../globalState';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { TextureCanvasManager } from './textureCanvasManager';
 import { TextureChannelToDisplay } from '../../../../../../textureHelper';
-import { Tool, Toolbar } from './toolbar';
 
 require('./textureEditor.scss');
 
@@ -14,9 +13,6 @@ interface TextureEditorComponentProps {
 
 interface TextureEditorComponentState {
     channel: TextureChannelToDisplay;
-    tools: Tool[];
-    activeToolIndex: number;
-    metadata: any;
 }
 
 export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
@@ -37,16 +33,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         super(props);
         this.state = {
             channel: TextureChannelToDisplay.All,
-            tools: [],
-            activeToolIndex: -1,
-            metadata: {
-                color: '#ffffff',
-                opacity: 1
-            }
         }
-        this.loadTool = this.loadTool.bind(this);
-        this.changeTool = this.changeTool.bind(this);
-        this.setMetadata = this.setMetadata.bind(this);
     }
 
     componentDidMount() {
@@ -60,63 +47,15 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
 
     componentDidUpdate() {
         this._textureCanvasManager.displayChannel = this.state.channel;
-        this._textureCanvasManager.metadata = this.state.metadata;
     }
 
     componentWillUnmount() {
         this._textureCanvasManager.dispose();
     }
 
-    loadTool(url : string) {
-        fetch(url)
-            .then(response => response.text())
-            .then(text => {
-                const toolData = eval(text);
-                const tool : Tool = {
-                    ...toolData,
-                    instance: new toolData.type({
-                        scene: this._textureCanvasManager.scene,
-                        canvas2D: this._textureCanvasManager.canvas2D,
-                        size: this._textureCanvasManager.size,
-                        updateTexture: () => this._textureCanvasManager.updateTexture(),
-                        getMetadata: () => this.state.metadata,
-                        setMetadata: (data : any) => this.setMetadata(data)
-                    })
-                }
-                const newTools = this.state.tools.concat(tool);
-                this.setState({tools: newTools})
-                console.log(tool);
-            });
-    }
-
-    changeTool(index : number) {
-        if (index != -1) {
-            this._textureCanvasManager.tool = this.state.tools[index];
-        } else {
-            this._textureCanvasManager.tool = null;
-        }
-        this.setState({activeToolIndex: index});
-    }
-
-    setMetadata(newMetadata : any) {
-        const data = {
-            ...this.state.metadata,
-            ...newMetadata
-        }
-        this.setState({metadata: data});
-    }
-
     render() {
         return <div id="texture-editor">
             <div id="controls">
-                <Toolbar
-                    tools={this.state.tools}
-                    activeToolIndex={this.state.activeToolIndex}
-                    addTool={this.loadTool}
-                    changeTool={this.changeTool}
-                    metadata={this.state.metadata}
-                    setMetadata={this.setMetadata}
-                />
                 <div id="channels">
                     {this.channels.map(
                         item => {

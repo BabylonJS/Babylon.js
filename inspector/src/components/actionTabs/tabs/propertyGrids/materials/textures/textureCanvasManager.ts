@@ -18,7 +18,6 @@ import { ISize } from 'babylonjs/Maths/math.size';
 
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { KeyboardEventTypes } from 'babylonjs/Events/keyboardEvents';
-import { Tool } from './toolbar';
 
 export class TextureCanvasManager {
     private _engine: Engine;
@@ -65,8 +64,6 @@ export class TextureCanvasManager {
     private static PAN_SPEED : number = 0.002;
     private static PAN_MOUSE_BUTTON : number = 0; // RMB
     private static PAN_KEY : string = ' ';
-
-    private _tool : Nullable<Tool>;
 
     private static MIN_SCALE : number = 0.01;
     private static MAX_SCALE : number = 10;
@@ -247,20 +244,6 @@ export class TextureCanvasManager {
         ctx.setTransform(transform);
     }
 
-    public set tool(tool: Nullable<Tool>) {
-        if (this._tool) {
-            this._tool.instance.cleanup();
-        }
-        this._tool = tool;
-        if (this._tool) {
-            this._tool.instance.setup();
-        }
-    }
-
-    public get tool(): Nullable<Tool> {
-        return this._tool;
-    }
-
     public get scene() : Scene {
         return this._scene;
     }
@@ -279,9 +262,6 @@ export class TextureCanvasManager {
         }
         if (this._originalInternalTexture) {
             this._originalInternalTexture.dispose();
-        }
-        if (this._tool) {
-            this._tool.instance.cleanup();
         }
         this._displayTexture.dispose();
         this._texture.dispose();
