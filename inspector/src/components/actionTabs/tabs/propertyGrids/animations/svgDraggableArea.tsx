@@ -17,6 +17,7 @@ interface ISvgDraggableAreaProps {
   positionCanvas?: number;
   repositionCanvas?: boolean;
   canvasPositionEnded: () => void;
+  resetActionableKeyframe: () => void;
 }
 
 export class SvgDraggableArea extends React.Component<
@@ -254,6 +255,8 @@ export class SvgDraggableArea extends React.Component<
       if (this.isNotControlPointActive()) {
         this.props.deselectKeyframes();
       }
+
+      this.props.resetActionableKeyframe();
     }
   }
 
