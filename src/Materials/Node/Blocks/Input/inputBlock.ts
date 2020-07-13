@@ -177,6 +177,16 @@ export class InputBlock extends NodeMaterialBlock {
         this.registerOutput("output", type);
     }
 
+    public validateBlockName(newName: string) {
+
+        if(!this.isAttribute)
+        {
+            return super.validateBlockName(newName);
+        }
+        return true;
+    }
+
+
     /**
      * Gets the output component
      */
@@ -190,10 +200,11 @@ export class InputBlock extends NodeMaterialBlock {
      * @returns the current connection point
      */
     public setAsAttribute(attributeName?: string): InputBlock {
+
+        this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
         if (attributeName) {
             this.name = attributeName;
         }
-        this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
         return this;
     }
 

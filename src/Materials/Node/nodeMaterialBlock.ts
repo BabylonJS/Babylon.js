@@ -23,6 +23,7 @@ export class NodeMaterialBlock {
     private _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
     private _isInput = false;
+    private _name = "";
     protected _isUnique = false;
 
     /** Gets or sets a boolean indicating that only one input can be connected at a time */
@@ -42,7 +43,20 @@ export class NodeMaterialBlock {
     /**
      * Gets or sets the name of the block
      */
-    public name: string;
+
+    public get name (): string {
+         return this._name;
+    }
+    
+    public set name (newName: string) {
+
+        if(!this.validateBlockName(newName))
+        {
+            return;
+        }
+        
+        this._name = newName;
+    }
 
     /**
      * Gets or sets the unique id of the node
@@ -150,12 +164,11 @@ export class NodeMaterialBlock {
      * @param isInput defines a boolean indicating that this block is an input (e.g. it sends data to the shader). Default is false
      */
     public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isInput = false) {
-        this.name = name;
 
         this._target = target;
-
         this._isFinalMerger = isFinalMerger;
         this._isInput = isInput;
+        this._name = name;
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
@@ -436,6 +449,39 @@ export class NodeMaterialBlock {
                 input._enforceAssociatedVariableName = true;
             }
         }
+    }
+
+    public validateBlockName(newName: string)
+     {
+        //if(this._isInput)
+        //{
+            let reservedNames: Array<string> = [
+            "position",
+            "normal",
+            "tangent",
+            "particle_positionw",
+            "uv",
+            "uv2",
+            "position2d",
+            "particle_uv",
+            "matricesIndices",
+            "matricesWeights",
+            "world0",
+            "world1",
+            "world2",
+            "world3",
+            "color",
+            "particle_color",
+            "particle_texturemask"]; 
+            for (var reservedName of reservedNames)
+            {
+                if(newName == reservedName)
+                {
+                    return false;
+                }
+            };
+        //}
+        return true;
     }
 
     /**
