@@ -394,7 +394,10 @@ export class ImageProcessingPostProcess extends PostProcess {
         return "ImageProcessingPostProcess";
     }
 
-    protected _updateParameters(): void {
+    /**
+     * @hidden
+     */
+    public _updateParameters(): void {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;
         this.imageProcessingConfiguration.prepareDefines(this._defines, true);
         var defines = "";
