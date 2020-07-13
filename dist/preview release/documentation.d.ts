@@ -4834,9 +4834,9 @@ declare module BABYLON {
          */
         radians(): number;
         /**
-         * Gets a new Angle object valued with the angle value in radians between the two given vectors
-         * @param a defines first vector
-         * @param b defines second vector
+         * Gets a new Angle object valued with the gradient angle, in radians, of the line joining two points
+         * @param a defines first point as the origin
+         * @param b defines point
          * @returns a new Angle
          */
         static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle;
@@ -16775,6 +16775,41 @@ declare module BABYLON {
         customInstances: SmartArray<Matrix>;
     }
     /**
+     * Defines the additional options of the edges renderer
+     */
+    export interface IEdgesRendererOptions {
+        /**
+         * Gets or sets a boolean indicating that the alternate edge finder algorithm must be used
+         * If not defined, the default value is true
+         */
+        useAlternateEdgeFinder?: boolean;
+        /**
+         * Gets or sets a boolean indicating that the vertex merger fast processing must be used.
+         * If not defined, the default value is true.
+         * You should normally leave it undefined (or set it to true), except if you see some artifacts in the edges rendering (can happen with complex geometries)
+         * This option is used only if useAlternateEdgeFinder = true
+         */
+        useFastVertexMerger?: boolean;
+        /**
+         * During edges processing, the vertices are merged if they are close enough: epsilonVertexMerge is the limit whithin which vertices are considered to be equal.
+         * The default value is 1e-6
+         * This option is used only if useAlternateEdgeFinder = true
+         */
+        epsilonVertexMerge?: number;
+        /**
+         * Gets or sets a boolean indicating that tessellation should be applied before finding the edges. You may need to activate this option if your geometry is a bit
+         * unusual, like having a vertex of a triangle in-between two vertices of an edge of another triangle. It happens often when using CSG to construct meshes.
+         * This option is used only if useAlternateEdgeFinder = true
+         */
+        applyTessellation?: boolean;
+        /**
+         * The limit under which 3 vertices are considered to be aligned. 3 vertices PQR are considered aligned if distance(PQ) + distance(QR) - distance(PR) < epsilonVertexAligned
+         * The default value is 1e-6
+         * This option is used only if useAlternateEdgeFinder = true
+         */
+        epsilonVertexAligned?: number;
+    }
+    /**
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
      */
     export class EdgesRenderer implements IEdgesRenderer {
@@ -16801,6 +16836,7 @@ declare module BABYLON {
             [key: string]: Nullable<VertexBuffer>;
         };
         protected _checkVerticesInsteadOfIndices: boolean;
+        protected _options: Nullable<IEdgesRendererOptions>;
         private _meshRebuildObserver;
         private _meshDisposeObserver;
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
@@ -16815,10 +16851,11 @@ declare module BABYLON {
          * Beware when you use this class with complex objects as the adjacencies computation can be really long
          * @param  source Mesh used to create edges
          * @param  epsilon sum of angles in adjacency to check for edge
-         * @param  checkVerticesInsteadOfIndices bases the edges detection on vertices vs indices
+         * @param  checkVerticesInsteadOfIndices bases the edges detection on vertices vs indices. Note that this parameter is not used if options.useAlternateEdgeFinder = true
          * @param  generateEdgesLines - should generate Lines or only prepare resources.
+         * @param  options The options to apply when generating the edges
          */
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean);
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean, options?: IEdgesRendererOptions);
         protected _prepareRessources(): void;
         /** @hidden */
         _rebuild(): void;
@@ -16843,6 +16880,11 @@ declare module BABYLON {
          * @protected
          */
         protected createLine(p0: Vector3, p1: Vector3, offset: number): void;
+        /**
+         * See https://playground.babylonjs.com/#R3JR6V#1 for a visual display of the algorithm
+         */
+        private _tessellateTriangle;
+        private _generateEdgesLinesAlternate;
         /**
          * Generates lines edges from adjacencjes
          * @private
@@ -56717,9 +56759,13 @@ declare module BABYLON {
          */
         protected _material: BackgroundMaterial;
         /**
-         * The surface used for the skybox
+         * The surface used for the video dome
          */
         protected _mesh: Mesh;
+        /**
+         * Gets the mesh used for the video dome.
+         */
+        get mesh(): Mesh;
         /**
          * A mesh that will be used to mask the back of the video dome in case it is a 180 degree movie.
          */

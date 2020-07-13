@@ -253,6 +253,7 @@
 - Fix crash when loading a .obj file with vertex colors ([Popov72](https://github.com/Popov72))
 - Fix skeleton viewer still visible when `isEnabled = false` ([Popov72](https://github.com/Popov72))
 - Fix crash with CSG when no uvs defined ([Popov72](https://github.com/Popov72))
+- Fix an issue causing views to render blank when scene rendering is skipped for a given iteration of the render loop ([elInfidel](https://github.com/elInfidel))
 
 ## Breaking changes
 
