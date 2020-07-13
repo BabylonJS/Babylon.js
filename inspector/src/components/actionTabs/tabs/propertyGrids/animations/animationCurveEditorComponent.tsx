@@ -746,54 +746,52 @@ export class AnimationCurveEditorComponent extends React.Component<
     if (this.state.selected !== null) {
       let currentAnimation = this.state.selected;
 
-      if (currentAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
-        if (
-          this.state.actionableKeyframe.frame &&
-          this.state.actionableKeyframe.value
-        ) {
-          let keys = currentAnimation.getKeys();
-          let x = this.state.actionableKeyframe.frame;
-          let y = this.state.actionableKeyframe.value;
+      if (
+        this.state.actionableKeyframe.frame &&
+        this.state.actionableKeyframe.value
+      ) {
+        let keys = currentAnimation.getKeys();
+        let x = this.state.actionableKeyframe.frame;
+        let y = this.state.actionableKeyframe.value;
 
-          console.log(this.state.selectedCoordinate);
-          // check if value exists...
-          let arrayValue: any = [];
-          let emptyValue = this.returnZero(currentAnimation.dataType);
-          let existValue = keys.find((k) => k.frame === x);
-          if (existValue) {
+        console.log(this.state.selectedCoordinate);
+        // check if value exists...
+        let arrayValue: any = [];
+        let emptyValue = this.returnZero(currentAnimation.dataType);
+        let existValue = keys.find((k) => k.frame === x);
+        if (existValue !== undefined) {
+          arrayValue = this.getValueAsArray(
+            currentAnimation.dataType,
+            existValue.value
+          );
+        } else {
+          // Set empty if doesn't exist
+          if (emptyValue) {
             arrayValue = this.getValueAsArray(
               currentAnimation.dataType,
-              existValue.value
+              emptyValue
             );
-          } else {
-            // Set empty if doesn't exist
-            if (emptyValue) {
-              arrayValue = this.getValueAsArray(
-                currentAnimation.dataType,
-                emptyValue
-              );
-            }
           }
-
-          arrayValue[this.state.selectedCoordinate] = y;
-
-          let actualValue = this.setValueAsType(
-            currentAnimation.dataType,
-            arrayValue
-          );
-
-          keys.push({
-            frame: x,
-            value: actualValue,
-            inTangent: 0,
-            outTangent: 0,
-          });
-          keys.sort((a, b) => a.frame - b.frame);
-
-          currentAnimation.setKeys(keys);
-
-          this.selectAnimation(currentAnimation);
         }
+
+        arrayValue[this.state.selectedCoordinate] = y;
+
+        let actualValue = this.setValueAsType(
+          currentAnimation.dataType,
+          arrayValue
+        );
+
+        keys.push({
+          frame: x,
+          value: actualValue,
+          inTangent: emptyValue,
+          outTangent: emptyValue,
+        });
+        keys.sort((a, b) => a.frame - b.frame);
+
+        currentAnimation.setKeys(keys);
+
+        this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
       }
     }
   }
@@ -938,31 +936,24 @@ export class AnimationCurveEditorComponent extends React.Component<
   }
 
   returnZero(dataType: number) {
-    let type;
     switch (dataType) {
       case Animation.ANIMATIONTYPE_FLOAT:
-        type = 0;
-        break;
+        return 0;
       case Animation.ANIMATIONTYPE_VECTOR3:
-        type = Vector3.Zero();
-        break;
+        return Vector3.Zero();
       case Animation.ANIMATIONTYPE_VECTOR2:
-        type = Vector2.Zero();
-        break;
+        return Vector2.Zero();
       case Animation.ANIMATIONTYPE_QUATERNION:
-        type = Quaternion.Zero();
-        break;
+        return Quaternion.Zero();
       case Animation.ANIMATIONTYPE_COLOR3:
-        type = new Color3(0, 0, 0);
-        break;
+        return new Color3(0, 0, 0);
       case Animation.ANIMATIONTYPE_COLOR4:
-        type = new Color4(0, 0, 0, 0);
-        break;
+        return new Color4(0, 0, 0, 0);
       case Animation.ANIMATIONTYPE_SIZE:
-        type = new Size(0, 0);
-        break;
+        return new Size(0, 0);
+      default:
+        return 0;
     }
-    return type;
   }
 
   getValueAsArray(
