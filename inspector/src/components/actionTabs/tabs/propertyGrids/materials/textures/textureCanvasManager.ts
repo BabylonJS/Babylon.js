@@ -59,6 +59,8 @@ export class TextureCanvasManager {
 
     private static ZOOM_MOUSE_SPEED : number = 0.0005;
     private static ZOOM_KEYBOARD_SPEED : number = 0.2;
+    private static ZOOM_IN_KEY : string = '+';
+    private static ZOOM_OUT_KEY : string = '-';
 
     private static PAN_SPEED : number = 0.002;
     private static PAN_MOUSE_BUTTON : number = 0; // RMB
@@ -97,6 +99,9 @@ export class TextureCanvasManager {
         } else {
             /* If we don't have a texture to start with, just generate a white rectangle */
             const ctx = this._2DCanvas.getContext("2d")!;
+            ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.resetTransform();
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, this._2DCanvas.width, this._2DCanvas.height);
             this._texture.update();
@@ -177,10 +182,10 @@ export class TextureCanvasManager {
             switch(kbInfo.type) {
                 case KeyboardEventTypes.KEYDOWN:
                     this.keyMap[kbInfo.event.key] = true;
-                    if (kbInfo.event.key === '+') {
+                    if (kbInfo.event.key === TextureCanvasManager.ZOOM_IN_KEY) {
                         this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
                     }
-                    if (kbInfo.event.key === "-") {
+                    if (kbInfo.event.key === TextureCanvasManager.ZOOM_OUT_KEY) {
                         this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
                     }
                     break;
@@ -234,14 +239,12 @@ export class TextureCanvasManager {
     /* When copying from a WebGL texture to a Canvas, the y axis is inverted. This function flips it back */
     public static flipCanvas(canvas: HTMLCanvasElement) {
         const ctx = canvas.getContext('2d')!;
-        const globalCompositeOperation = ctx.globalCompositeOperation;
         const transform = ctx.getTransform();
         ctx.globalCompositeOperation = 'copy';
         ctx.translate(0,canvas.height);
         ctx.scale(1,-1);
         ctx.drawImage(canvas, 0, 0);
         ctx.setTransform(transform);
-        ctx.globalCompositeOperation = globalCompositeOperation;
     }
 
     public set tool(tool: Nullable<Tool>) {

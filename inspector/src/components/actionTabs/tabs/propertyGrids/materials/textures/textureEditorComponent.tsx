@@ -74,7 +74,14 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
                 const toolData = eval(text);
                 const tool : Tool = {
                     ...toolData,
-                    instance: new toolData.type(this._textureCanvasManager.scene, this._textureCanvasManager.canvas2D, this._textureCanvasManager.size, () => this._textureCanvasManager.updateTexture(), () => this.state.metadata, (data: any)  => this.setMetadata(data))
+                    instance: new toolData.type({
+                        scene: this._textureCanvasManager.scene,
+                        canvas2D: this._textureCanvasManager.canvas2D,
+                        size: this._textureCanvasManager.size,
+                        updateTexture: () => this._textureCanvasManager.updateTexture(),
+                        getMetadata: () => this.state.metadata,
+                        setMetadata: (data : any) => this.setMetadata(data)
+                    })
                 }
                 const newTools = this.state.tools.concat(tool);
                 this.setState({tools: newTools})
