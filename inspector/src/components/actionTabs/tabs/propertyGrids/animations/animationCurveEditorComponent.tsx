@@ -38,7 +38,7 @@ interface ICanvasAxis {
 }
 
 export interface IActionableKeyFrame {
-  frame?: number;
+  frame?: number | string;
   value?: any;
 }
 
@@ -336,6 +336,12 @@ export class AnimationCurveEditorComponent extends React.Component<
     });
   }
 
+  resetActionableKeyframe() {
+    this.setState({
+      actionableKeyframe: { frame: undefined, value: undefined },
+    });
+  }
+
   selectedControlPoint(type: string, id: string) {
     let updatedKeyframes = this.state.svgKeyframes?.map((kf) => {
       if (kf.id === id) {
@@ -629,49 +635,74 @@ export class AnimationCurveEditorComponent extends React.Component<
    */
   handleFrameChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
-    let frame = 0;
+    let frame: number | undefined | string = undefined;
 
-    if (event.target.value !== '-') {
-      if (
-        isNaN(event.target.valueAsNumber) ||
-        event.target.value.indexOf('.') !== -1
-      ) {
-        this.setState({
-          notification: 'Frame input only accepts integer values',
-        });
-      } else {
-        if (this.state.selected !== null) {
-          let animation = this.state.selected;
-          let keys = animation.getKeys();
-          frame = parseInt(event.target.value);
+    let oldFrame: number;
 
-          let isKeyframe = keys.find((k) => k.frame === frame);
+    if (this.state.selected !== null) {
+      let animation = this.state.selected;
+      let keys = animation.getKeys();
 
-          let value = this.state.actionableKeyframe.value;
+      let isKeyframe = keys.find(
+        (k) => k.frame === this.state.actionableKeyframe.frame
+      );
 
-          if (isKeyframe) {
-            value = isKeyframe.value;
-          }
-
-          this.setState({
-            actionableKeyframe: {
-              frame: frame,
-              value: value,
-            },
-          });
-        }
+      if (isKeyframe) {
+        oldFrame = keys.indexOf(isKeyframe);
       }
+    }
+
+    if (event.target.value !== undefined) {
+      if (event.target.value !== '') {
+        frame = parseInt(event.target.value);
+      } else {
+        frame = '';
+      }
+
+      this.setState(
+        {
+          actionableKeyframe: {
+            frame: frame,
+            value: this.state.actionableKeyframe.value,
+          },
+        },
+        () => {
+          if (this.state.selected !== null) {
+            let animation = this.state.selected;
+            let keys = animation.getKeys();
+
+            let isKeyframe = keys[oldFrame];
+            if (isKeyframe) {
+              let updatedKeys = keys.map((k, i) => {
+                if (
+                  i === oldFrame &&
+                  this.state.actionableKeyframe.frame !== undefined
+                ) {
+                  k.frame = parseInt(
+                    this.state.actionableKeyframe.frame.toString()
+                  );
+                }
+                return k;
+              });
+              this.state.selected.setKeys(updatedKeys);
+              this.selectAnimation(animation);
+            }
+          }
+        }
+      );
     }
   }
 
   handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
 
-    let value: string | number = '';
+    let value: number | undefined | string = undefined;
 
-    if (event.target.value !== '-') {
+    if (event.target.value !== undefined) {
       if (event.target.value !== '') {
         value = parseFloat(event.target.value);
+      } else {
+        value = '';
       }
 
       this.setState(
@@ -746,53 +777,46 @@ export class AnimationCurveEditorComponent extends React.Component<
     if (this.state.selected !== null) {
       let currentAnimation = this.state.selected;
 
-      if (
-        this.state.actionableKeyframe.frame &&
-        this.state.actionableKeyframe.value
-      ) {
-        let keys = currentAnimation.getKeys();
-        let x = this.state.actionableKeyframe.frame;
-        let y = this.state.actionableKeyframe.value;
-
-        console.log(this.state.selectedCoordinate);
-        // check if value exists...
-        let arrayValue: any = [];
-        let emptyValue = this.returnZero(currentAnimation.dataType);
-        let existValue = keys.find((k) => k.frame === x);
-        if (existValue !== undefined) {
+      let keys = currentAnimation.getKeys();
+      let x = this.state.currentFrame;
+      let y = this.state.actionableKeyframe.value ?? 1;
+      // check if value exists...
+      let arrayValue: any = [];
+      let emptyValue = this.returnZero(currentAnimation.dataType);
+      let existValue = keys.find((k) => k.frame === x);
+      if (existValue !== undefined) {
+        arrayValue = this.getValueAsArray(
+          currentAnimation.dataType,
+          existValue.value
+        );
+      } else {
+        // Set empty if doesn't exist
+        if (emptyValue) {
           arrayValue = this.getValueAsArray(
             currentAnimation.dataType,
-            existValue.value
+            emptyValue
           );
-        } else {
-          // Set empty if doesn't exist
-          if (emptyValue) {
-            arrayValue = this.getValueAsArray(
-              currentAnimation.dataType,
-              emptyValue
-            );
-          }
         }
-
-        arrayValue[this.state.selectedCoordinate] = y;
-
-        let actualValue = this.setValueAsType(
-          currentAnimation.dataType,
-          arrayValue
-        );
-
-        keys.push({
-          frame: x,
-          value: actualValue,
-          inTangent: emptyValue,
-          outTangent: emptyValue,
-        });
-        keys.sort((a, b) => a.frame - b.frame);
-
-        currentAnimation.setKeys(keys);
-
-        this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
       }
+
+      arrayValue[this.state.selectedCoordinate] = y;
+
+      let actualValue = this.setValueAsType(
+        currentAnimation.dataType,
+        arrayValue
+      );
+
+      keys.push({
+        frame: x,
+        value: actualValue,
+        inTangent: emptyValue,
+        outTangent: emptyValue,
+      });
+      keys.sort((a, b) => a.frame - b.frame);
+
+      currentAnimation.setKeys(keys);
+
+      this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
     }
   }
 
@@ -1775,6 +1799,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                   canvasPositionEnded={() =>
                     this.setState({ repositionCanvas: false })
                   }
+                  resetActionableKeyframe={() => this.resetActionableKeyframe()}
                 >
                   {/* Multiple Curves  */}
                   {this.state.selectedPathData?.map((curve, i) => (
