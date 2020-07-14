@@ -393,9 +393,9 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrix3x3(name: string, value: Float32Array): ShaderMaterial {
+    public setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
-        this._matrices3x3[name] = value;
+        this._matrices3x3[name] = Array.isArray(value) ? new Float32Array(value) : value;
 
         return this;
     }
@@ -406,9 +406,9 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrix2x2(name: string, value: Float32Array): ShaderMaterial {
+    public setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
-        this._matrices2x2[name] = value;
+        this._matrices2x2[name] = Array.isArray(value) ? new Float32Array(value) : value;
 
         return this;
     }
