@@ -19,6 +19,9 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
         return (
             <div className="command-button" onClick={this.props.onClick} title={this.props.tooltip}>
                 <img src={"imgs/" + this.props.icon + ".svg"} className={this.props.isActive ? "active" : ""}/>
+                <div className="command-label">
+                    {this.props.tooltip}
+                </div>
             </div>
         );
     }

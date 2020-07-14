@@ -20,6 +20,8 @@ export class GlobalState {
     public currentSnippetTags = "";
     public currentSnippetToken = "";
 
+    public zipCode = "";
+
     public onRunRequiredObservable = new Observable<void>();
     public onNewRequiredObservable = new Observable<void>();
     public onClearRequiredObservable = new Observable<void>();

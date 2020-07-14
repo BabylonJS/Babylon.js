@@ -9,6 +9,7 @@ import { SaveManager } from './tools/saveManager';
 import { LoadManager } from './tools/loadManager';
 import { WaitRingComponent } from './components/waitRingComponent';
 import { MetadataComponent } from './components/metadataComponent';
+import { HamburgerMenuComponent } from './components/hamburgerMenu';
 
 require("./scss/main.scss");
 const Split = require('split.js').default;
@@ -100,7 +101,8 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
                         <RenderingComponent globalState={this._globalState}/>
                     </div>
                 </div>
-                <FooterComponent globalState={this._globalState}/>
+                <HamburgerMenuComponent globalState={this._globalState}/>
+                <FooterComponent globalState={this._globalState}/>                
                 <WaitRingComponent globalState={this._globalState}/>
                 <MetadataComponent globalState={this._globalState}/>
             </div>   
