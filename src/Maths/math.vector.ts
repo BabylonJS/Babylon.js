@@ -3554,7 +3554,7 @@ export class Quaternion {
 export class Matrix {
     private static _Use64Bits = true;
 
-    private static _trackPrecisionChange = true;
+    private static _TrackPrecisionChange = true;
     private static _TrackedMatrices: Array<Matrix> = [];
 
     /**
@@ -3572,7 +3572,7 @@ export class Matrix {
             return;
         }
 
-        Matrix._trackPrecisionChange = false;
+        Matrix._TrackPrecisionChange = false;
         Matrix._Use64Bits = true;
 
         for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
@@ -3585,11 +3585,13 @@ export class Matrix {
                 matrix._m[i] = values[i];
             }
         }
+
+        (Matrix._TrackedMatrices as any) = null; // reclaim some memory, as we don't need this anymore
     }
 
     /** @hidden */
     public static _StopTrackingInstances() {
-        Matrix._trackPrecisionChange = false;
+        Matrix._TrackPrecisionChange = false;
     }
 
     private static _updateFlagSeed = 0;
@@ -3635,7 +3637,7 @@ export class Matrix {
      * Creates an empty matrix (filled with zeros)
      */
     public constructor() {
-        if (Matrix._trackPrecisionChange) {
+        if (Matrix._TrackPrecisionChange) {
             Matrix._TrackedMatrices.push(this);
         }
 
