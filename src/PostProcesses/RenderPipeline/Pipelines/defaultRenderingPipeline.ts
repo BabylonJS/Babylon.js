@@ -581,6 +581,14 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             } else {
                 this._scene.imageProcessingConfiguration.applyByPostProcess = false;
             }
+
+            if (!this.cameras || this.cameras.length === 0) {
+                this._scene.imageProcessingConfiguration.applyByPostProcess = false;
+            }
+
+            if (!this.imageProcessing.getEffect()) {
+                this.imageProcessing._updateParameters();
+            }
         }
 
         if (this.sharpenEnabled) {
