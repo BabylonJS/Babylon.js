@@ -3569,10 +3569,13 @@ export class Matrix {
      */
     public static SwitchTo64Bits() {
         if (Matrix._Use64Bits) {
+            if (Matrix._TrackPrecisionChange) { // note: will be removed when _Use64Bits is defaulted to false when the PR is accepted
+                Matrix._StopTrackingInstances();
+            }
             return;
         }
 
-        Matrix._TrackPrecisionChange = false;
+        Matrix._StopTrackingInstances();
         Matrix._Use64Bits = true;
 
         for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
@@ -3592,6 +3595,19 @@ export class Matrix {
     /** @hidden */
     public static _StopTrackingInstances() {
         Matrix._TrackPrecisionChange = false;
+
+        // replace the constructor with the right one depending on the precision, making sure we don't loose performance
+        if (Matrix._Use64Bits) {
+            Matrix.prototype.constructor = function() {
+                (this._m as any) = new Array(16);
+                this._updateIdentityStatus(false);
+            };
+        } else {
+            Matrix.prototype.constructor = function() {
+                (this._m as any) = new Float32Array(16);
+                this._updateIdentityStatus(false);
+            };
+        }
     }
 
     private static _updateFlagSeed = 0;
@@ -3637,9 +3653,7 @@ export class Matrix {
      * Creates an empty matrix (filled with zeros)
      */
     public constructor() {
-        if (Matrix._TrackPrecisionChange) {
-            Matrix._TrackedMatrices.push(this);
-        }
+        Matrix._TrackedMatrices.push(this);
 
         this._m = Matrix._Use64Bits ? new Array(16) : new Float32Array(16);
         this._updateIdentityStatus(false);
