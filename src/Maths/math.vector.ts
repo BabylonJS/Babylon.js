@@ -5427,7 +5427,8 @@ export class Matrix {
      */
     public static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array | Array<number> {
         const m = matrix.m;
-        return new Float32Array([m[0], m[1], m[4], m[5]]);
+        const arr = [m[0], m[1], m[4], m[5]];
+        return Matrix._Use64Bits ? arr : new Float32Array(arr);
     }
     /**
      * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
@@ -5436,11 +5437,12 @@ export class Matrix {
      */
     public static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array | Array<number> {
         const m = matrix.m;
-        return new Float32Array([
+        const arr = [
             m[0], m[1], m[2],
             m[4], m[5], m[6],
             m[8], m[9], m[10]
-        ]);
+        ];
+        return Matrix. _Use64Bits ? arr : new Float32Array(arr);
     }
 
     /**
