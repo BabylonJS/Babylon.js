@@ -3552,7 +3552,32 @@ export class Quaternion {
  * Class used to store matrix data (4x4)
  */
 export class Matrix {
-    public static Use64Bits = true;
+    private static _Use64Bits = true;
+
+    private static _TrackedMatrices: Array<Matrix> = [];
+
+    public static get Use64Bits(): boolean {
+        return Matrix._Use64Bits;
+    }
+
+    public static set Use64Bits(value: boolean) {
+        if (Matrix._Use64Bits === value) {
+            return;
+        }
+
+        Matrix._Use64Bits = value;
+
+        for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
+            const matrix = Matrix._TrackedMatrices[m];
+            const values = matrix._m;
+
+            (matrix._m as any) = value ? new Array(16) : new Float32Array(16);
+
+            for (let i = 0; i < 16; ++i) {
+                matrix._m[i] = values[i];
+            }
+        }
+    }
 
     private static _updateFlagSeed = 0;
     private static _identityReadOnly = Matrix.Identity() as DeepImmutable<Matrix>;
@@ -3596,7 +3621,11 @@ export class Matrix {
     /**
      * Creates an empty matrix (filled with zeros)
      */
-    public constructor() {
+    public constructor(trackPrecisionChange = false) {
+        if (trackPrecisionChange) {
+            Matrix._TrackedMatrices.push(this);
+        }
+
         this._m = Matrix.Use64Bits ? new Array(16) : new Float32Array(16);
         this._updateIdentityStatus(false);
     }
@@ -5549,7 +5578,11 @@ export class TmpVectors {
     public static Vector3: Vector3[] = ArrayTools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
     public static Vector4: Vector4[] = ArrayTools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
     public static Quaternion: Quaternion[] = ArrayTools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
+    public static Matrix: Matrix[] = ArrayTools.BuildArray(8, () => {
+        const matrix = new Matrix(true);
+        Matrix.IdentityToRef(matrix);
+        return matrix;
+    }); // 8 temp Matrices at once should be enough
 }
 
 _TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;
