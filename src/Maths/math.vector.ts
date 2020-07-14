@@ -3558,31 +3558,38 @@ export class Matrix {
     private static _TrackedMatrices: Array<Matrix> = [];
 
     /**
-     * Gets or sets the precision of matrix computations
-     * Note that changing the precision can only be done a single time, and should be performed early in your application
+     * Gets the precision of matrix computations
      */
     public static get Use64Bits(): boolean {
         return Matrix._Use64Bits;
     }
 
-    public static set Use64Bits(value: boolean) {
-        if (Matrix._Use64Bits === value || !Matrix._trackPrecisionChange) {
+    /**
+     * Switch the matrix computations to 64 bits mode
+     */
+    public static switchTo64Bits() {
+        if (Matrix._Use64Bits) {
             return;
         }
 
         Matrix._trackPrecisionChange = false;
-        Matrix._Use64Bits = value;
+        Matrix._Use64Bits = true;
 
         for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
             const matrix = Matrix._TrackedMatrices[m];
             const values = matrix._m;
 
-            (matrix._m as any) = value ? new Array(16) : new Float32Array(16);
+            (matrix._m as any) = new Array(16);
 
             for (let i = 0; i < 16; ++i) {
                 matrix._m[i] = values[i];
             }
         }
+    }
+
+    /** @hidden */
+    public static _StopTrackingInstances() {
+        Matrix._trackPrecisionChange = false;
     }
 
     private static _updateFlagSeed = 0;
@@ -3632,7 +3639,7 @@ export class Matrix {
             Matrix._TrackedMatrices.push(this);
         }
 
-        this._m = Matrix.Use64Bits ? new Array(16) : new Float32Array(16);
+        this._m = Matrix._Use64Bits ? new Array(16) : new Float32Array(16);
         this._updateIdentityStatus(false);
     }
 
