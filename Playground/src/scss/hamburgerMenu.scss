@@ -1,17 +1,29 @@
-.commands {
-    grid-row: 1;
-    grid-column: 3;
+.hambuger-menu {
+    grid-row: 1 / 4;
+    grid-column: 1;
     display: flex;
+    flex-direction: column;
+    position: absolute;
+    left:0;
+    top:55px;
 
     .command-button {
         cursor: pointer;
-        width: 55px;
+        width: 200px;
+        display: grid;
+        grid-template-columns: 55px 1fr;
+        grid-template-rows: 100%;
 
         .command-label {
-            display: none;
+            color: white;
+            grid-column: 2;
+            grid-row: 1;
+            align-self: center;
         }
         
         img {
+            grid-column: 1;
+            grid-row: 1;
             filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
             &.active {
                 filter: invert(100%);
@@ -22,6 +34,10 @@
             background-color: white;
             img {
                 filter: invert(17%) !important;
+            }
+            
+            .command-label {
+                color: black;
             }
         } 
         

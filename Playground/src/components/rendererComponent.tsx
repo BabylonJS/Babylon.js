@@ -33,7 +33,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         });
 
         
-        this._downloadManager = new DownloadManager();
+        this._downloadManager = new DownloadManager(this.props.globalState);
         this.props.globalState.onDownloadRequiredObservable.add(() => {
             if (!this._engine) {
                 return;
@@ -66,8 +66,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             });
         }
 
-       // let zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
-       // let defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
+        let zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
+        let defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
         let code = this.props.globalState.currentCode;        
         let createEngineFunction = "createDefaultEngine";
         let createSceneFunction = "";
@@ -101,7 +101,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             Utilities.FastEval("runScript = function(scene, canvas) {" + code + "}");
             runScript(this._scene, canvas);            
 
-            //parent.zipTool.ZipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+            this.props.globalState.zipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
         } else {
             code += `
 var engine;
@@ -136,23 +136,23 @@ engine = createDefaultEngine();
                 return;
             }
 
-            // let sceneToRenderCode = 'sceneToRender = scene';
+            let sceneToRenderCode = 'sceneToRender = scene';
 
             // if scene returns a promise avoid checks
             if (globalObject.scene.then) {
                 checkCamera = false;
                 checkSceneCount = false;
-                // sceneToRenderCode = 'scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n';
+                sceneToRenderCode = 'scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n';
             } 
 
-            // let createEngineZip = (createEngineFunction === "createEngine") ?
-            //     zipVariables :
-            //     zipVariables + defaultEngineZip;
+            let createEngineZip = (createEngineFunction === "createEngine") ?
+                zipVariables :
+                zipVariables + defaultEngineZip;
 
-            // parent.zipTool.zipCode =
-            //     createEngineZip + ";\r\n" +
-            //     code + ";\r\n" +
-            //     sceneToRenderCode;
+                this.props.globalState.zipCode =
+                createEngineZip + ";\r\n" +
+                code + ";\r\n" +
+                sceneToRenderCode;
         }
 
         if (globalObject.scene.then) {
