@@ -3557,6 +3557,10 @@ export class Matrix {
     private static _trackPrecisionChange = true;
     private static _TrackedMatrices: Array<Matrix> = [];
 
+    /**
+     * Gets or sets the precision of matrix computations
+     * Note that changing the precision can only be done a single time, and should be performed early in your application
+     */
     public static get Use64Bits(): boolean {
         return Matrix._Use64Bits;
     }
