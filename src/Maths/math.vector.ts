@@ -3554,6 +3554,7 @@ export class Quaternion {
 export class Matrix {
     private static _Use64Bits = true;
 
+    private static _trackPrecisionChange = true;
     private static _TrackedMatrices: Array<Matrix> = [];
 
     public static get Use64Bits(): boolean {
@@ -3561,10 +3562,11 @@ export class Matrix {
     }
 
     public static set Use64Bits(value: boolean) {
-        if (Matrix._Use64Bits === value) {
+        if (Matrix._Use64Bits === value || !Matrix._trackPrecisionChange) {
             return;
         }
 
+        Matrix._trackPrecisionChange = false;
         Matrix._Use64Bits = value;
 
         for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
@@ -3621,8 +3623,8 @@ export class Matrix {
     /**
      * Creates an empty matrix (filled with zeros)
      */
-    public constructor(trackPrecisionChange = false) {
-        if (trackPrecisionChange) {
+    public constructor() {
+        if (Matrix._trackPrecisionChange) {
             Matrix._TrackedMatrices.push(this);
         }
 
@@ -5578,11 +5580,7 @@ export class TmpVectors {
     public static Vector3: Vector3[] = ArrayTools.BuildArray(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
     public static Vector4: Vector4[] = ArrayTools.BuildArray(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
     public static Quaternion: Quaternion[] = ArrayTools.BuildArray(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-    public static Matrix: Matrix[] = ArrayTools.BuildArray(8, () => {
-        const matrix = new Matrix(true);
-        Matrix.IdentityToRef(matrix);
-        return matrix;
-    }); // 8 temp Matrices at once should be enough
+    public static Matrix: Matrix[] = ArrayTools.BuildArray(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
 
 _TypeStore.RegisteredTypes["BABYLON.Vector2"] = Vector2;
