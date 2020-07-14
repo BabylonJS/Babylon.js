@@ -3567,7 +3567,7 @@ export class Matrix {
     /**
      * Switch the matrix computations to 64 bits mode
      */
-    public static switchTo64Bits() {
+    public static SwitchTo64Bits() {
         if (Matrix._Use64Bits) {
             return;
         }
