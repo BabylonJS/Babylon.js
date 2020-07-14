@@ -81,7 +81,7 @@
                 "--enable-unsafe-es3-apis"
             ]
         },
-        {
+        { 
             "name": "Launch playground (Edge)",
             "type": "edge",
             "version": "dev",
