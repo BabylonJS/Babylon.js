@@ -11,7 +11,7 @@
         "distES6FolderName": "distES6",
         "packageES6FolderName": "packageES6",
         "packageES6DevFolderName": "packageES6Dev",
-        "playgroundDirectory": "../../Playground/",
+        "playgroundDirectory": "../../playground/",
         "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
