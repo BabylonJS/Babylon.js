@@ -6,7 +6,8 @@ interface ICommandDropdownComponentProps {
     globalState: GlobalState;
     icon: string; 
     tooltip: string;
-    items: {label: string, onClick?: () => void, onCheck?: (value: boolean) => void, storeKey?: string}[]
+    items: {label: string, onClick?: () => void, onCheck?: (value: boolean) => void, storeKey?: string, 
+        defaultValue?: boolean;}[]
 }
 
 export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, {isExpanded: boolean}> {    
@@ -37,7 +38,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                         return (
                                             <div className="command-dropdown-label" key={m.label} onClick={() => {
                                                 if (! m.onClick) {
-                                                    let newValue = !Utilities.ReadBoolFromStore(m.storeKey!);
+                                                    let newValue = !Utilities.ReadBoolFromStore(m.storeKey!, m.defaultValue || false);
                                                     Utilities.StoreBoolFromStore(m.storeKey!, newValue);
                                                     this.forceUpdate();
                                                     m.onCheck!(newValue);
@@ -57,7 +58,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                             this.forceUpdate();
                                                             m.onCheck!(evt.target.checked);
                                                         }}
-                                                        checked={Utilities.ReadBoolFromStore(m.storeKey!)}/>
+                                                        checked={Utilities.ReadBoolFromStore(m.storeKey!, m.defaultValue || false)}/>
                                                 }
                                             </div>
                                         )

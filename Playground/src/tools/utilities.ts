@@ -23,7 +23,11 @@ export class Utilities {
         return query;
     }
 
-    public static ReadBoolFromStore(key: string): boolean {
+    public static ReadBoolFromStore(key: string, defaultValue: boolean): boolean {
+        if (localStorage.getItem(key) === null) {
+            return defaultValue;
+        }
+
         return localStorage.getItem(key) === "true";
     }
 

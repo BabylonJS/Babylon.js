@@ -39,12 +39,12 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
        this.monacoRef = React.createRef();
        this.renderingRef = React.createRef();
 
-       let defaultDesktop = Utilities.ReadBoolFromStore("editor") ? EditionMode.Desktop : EditionMode.RenderingOnly;
+       let defaultDesktop = Utilities.ReadBoolFromStore("editor", true) ? EditionMode.Desktop : EditionMode.RenderingOnly;
 
        this.state = {errorMessage: "", mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop};
 
        window.addEventListener("resize", () => {
-            let defaultDesktop = Utilities.ReadBoolFromStore("editor") ? EditionMode.Desktop : EditionMode.RenderingOnly;
+            let defaultDesktop = Utilities.ReadBoolFromStore("editor", true) ? EditionMode.Desktop : EditionMode.RenderingOnly;
            this.setState({mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop});
        });
 
