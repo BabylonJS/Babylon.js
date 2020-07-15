@@ -111,6 +111,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Make the canvas XR Compatible for XR sessions
      */
     xrCompatible?: boolean;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -477,8 +482,6 @@ export class ThinEngine {
      */
     constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext | WebGL2RenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
 
-        Matrix._StopTrackingInstances();
-
         let canvas: Nullable<HTMLCanvasElement> = null;
 
         if (!canvasOrContext) {
@@ -486,6 +489,8 @@ export class ThinEngine {
         }
 
         options = options || {};
+
+        Matrix.SetPrecision(!!options.useHighPrecisionMatrix);
 
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
