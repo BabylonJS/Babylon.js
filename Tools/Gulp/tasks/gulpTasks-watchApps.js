@@ -15,10 +15,17 @@ gulp.task("watchApps", function startWatch() {
 
     config.apps.map(function(module) {
         // Convert Module to Namespace for globals
-        var settings = config[module].computed;
+        const moduleConfig = config[module];
+        const pathDepth = moduleConfig.distFile.split('/').length - 2;
+        let mapPathPrefix = "";
+        for (let i = 0; i < pathDepth; i++) {
+            mapPathPrefix += "../";
+        }
+
+        const settings = moduleConfig.computed;
 
         if (settings) {
-            var wpConfig = require(settings.webpackConfigPath);
+            const wpConfig = require(settings.webpackConfigPath);
 
             // watch on.
             wpConfig.watch = true;
@@ -34,10 +41,10 @@ gulp.task("watchApps", function startWatch() {
                     info.resourcePath = path.join(settings.srcDirectory, info.resourcePath);
                 }
 
-                return `../../../${path.relative(config.computed.rootFolder, info.resourcePath).replace(/\\/g, "/")}`;
+                return `${mapPathPrefix}${path.relative(config.computed.rootFolder, info.resourcePath).replace(/\\/g, "/")}`;
             };
 
-            var outputDirectory = settings.distDirectory;
+            const outputDirectory = settings.distDirectory;
             tasks.push(
                 webpackStream(wpConfig , webpack)
                     .pipe(gulp.dest(outputDirectory))
