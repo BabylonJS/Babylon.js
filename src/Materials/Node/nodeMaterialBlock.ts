@@ -51,8 +51,7 @@ export class NodeMaterialBlock {
      * Sets the name of the block. Will check if the name is valid.
      */
     public set name (newName: string) {
-        if(!this.validateBlockName(newName))
-        {
+        if(!this.validateBlockName(newName)) {
             return;
         }
         
@@ -457,8 +456,7 @@ export class NodeMaterialBlock {
     * @param newName the new name to be given to the node.
     * @returns false if the name is a reserve word, else true.
     */
-    public validateBlockName(newName: string)
-     {
+    public validateBlockName(newName: string) {
         let reservedNames: Array<string> = [
         "position",
         "normal",
@@ -476,10 +474,8 @@ export class NodeMaterialBlock {
         "world3",   
         "particle_color",
         "particle_texturemask"]; 
-        for (var reservedName of reservedNames)
-        {
-            if(newName == reservedName)
-            {
+        for (var reservedName of reservedNames) {
+            if (newName === reservedName) {
                 return false;
             }
         };

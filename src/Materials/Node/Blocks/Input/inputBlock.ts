@@ -183,8 +183,7 @@ export class InputBlock extends NodeMaterialBlock {
     * @returns false if the name is a reserve word, else true.
     */
     public validateBlockName(newName: string) {
-        if(!this.isAttribute)
-        {
+        if(!this.isAttribute) {
             return super.validateBlockName(newName);
         }
         return true;
