@@ -39,12 +39,13 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     {
                         (!this.props.block.isInput || !(this.props.block as InputBlock).isAttribute) &&
                         <TextInputLineComponent globalState={this.props.globalState} label="Name" propertyName="name" target={this.props.block}
-                            onChange={ newName => 
+                            onChange={() => this.props.globalState.onUpdateRequiredObservable.notifyObservers()}
+                            validator={ newName => 
                             {if(!this.props.block.validateBlockName(newName)){ 
-                                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`"${newName}" is a reserved name, please choose another`); 
-                                //revert name back to original?
+                                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(`"${newName}" is a reserved name, please choose another`);
+                                return false;
                             }
-                            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            return true;
                             }} />
                     }
                     <TextLineComponent label="Type" value={this.props.block.getClassName()} />
