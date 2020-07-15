@@ -1,18 +1,32 @@
 import * as React from 'react';
 import { GlobalState } from '../../../../../globalState';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-import { TextureCanvasManager } from './textureCanvasManager';
-import { TextureChannelToDisplay } from '../../../../../../textureHelper';
+import { TextureCanvasManager, PixelData } from './textureCanvasManager';
+import { Tool, ToolBar } from './toolBar';
+import { PropertiesBar } from './propertiesBar';
+import { Channel, ChannelsBar } from './channelsBar';
+import { BottomBar } from './bottomBar';
+import { Tools } from "babylonjs/Misc/tools";
+import { TextureCanvasComponent } from './textureCanvasComponent';
 
 require('./textureEditor.scss');
 
 interface TextureEditorComponentProps {
     globalState: GlobalState;
     texture: BaseTexture;
+    url: string;
 }
 
 interface TextureEditorComponentState {
-    channel: TextureChannelToDisplay;
+    tools: Tool[];
+    activeToolIndex: number;
+    metadata: any;
+    channels: Channel[];
+    pixelData : PixelData;
+}
+
+declare global {
+    var _TOOL_DATA_ : any;
 }
 
 export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
@@ -21,19 +35,27 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
     private canvas2D = React.createRef<HTMLCanvasElement>();
     private canvasDisplay = React.createRef<HTMLCanvasElement>();
 
-    private channels = [
-        {name: "RGBA", channel: TextureChannelToDisplay.All, className: "all"},
-        {name: "R", channel: TextureChannelToDisplay.R, className: "red"},
-        {name: "G", channel: TextureChannelToDisplay.G, className: "green"},
-        {name: "B", channel: TextureChannelToDisplay.B, className: "blue"},
-        {name: "A", channel: TextureChannelToDisplay.A, className: "alpha"},
-    ]
-
     constructor(props : TextureEditorComponentProps) {
         super(props);
         this.state = {
-            channel: TextureChannelToDisplay.All,
+            tools: [],
+            activeToolIndex: -1,
+            metadata: {
+                color: '#ffffff',
+                opacity: 1
+            },
+            channels: [
+                {name: "Red", visible: true, editable: true, id: "R", icon: require('./assets/channelR.svg')},
+                {name: "Green", visible: true, editable: true, id: "G", icon: require('./assets/channelG.svg')},
+                {name: "Blue", visible: true, editable: true, id: "B", icon: require('./assets/channelB.svg')},
+                {name: "Alpha", visible: true, editable: true, id: "A", icon: require('./assets/channelA.svg')}
+            ],
+            pixelData: {}
         }
+        this.loadTool = this.loadTool.bind(this);
+        this.changeTool = this.changeTool.bind(this);
+        this.setMetadata = this.setMetadata.bind(this);
+        this.saveTexture = this.saveTexture.bind(this);
     }
 
     componentDidMount() {
@@ -41,35 +63,87 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
             this.props.texture,
             this.canvasUI.current!,
             this.canvas2D.current!,
-            this.canvasDisplay.current!
+            this.canvasDisplay.current!,
+            (data : PixelData) => {this.setState({pixelData: data})}
         );
+        this.loadTool('https://darraghburkems.github.io/BJSTools/Paintbrush.js');
+        this.loadTool('https://darraghburkems.github.io/BJSTools/Floodfill.js');
+        this.loadTool('https://darraghburkems.github.io/BJSTools/Eyedropper.js');
     }
 
     componentDidUpdate() {
-        this._textureCanvasManager.displayChannel = this.state.channel;
+        let channelsClone : Channel[] = [];
+        this.state.channels.forEach(channel => channelsClone.push({...channel}));
+        this._textureCanvasManager.channels = channelsClone;
+        this._textureCanvasManager.metadata = {...this.state.metadata};
     }
 
     componentWillUnmount() {
         this._textureCanvasManager.dispose();
     }
 
+    loadTool(url : string) {
+        Tools.LoadScript(url,
+            () => {
+                const tool : Tool = {
+                    ..._TOOL_DATA_,
+                    instance: new _TOOL_DATA_.type({
+                        scene: this._textureCanvasManager.scene,
+                        canvas2D: this._textureCanvasManager.canvas2D,
+                        size: this._textureCanvasManager.size,
+                        updateTexture: () => this._textureCanvasManager.updateTexture(),
+                        getMetadata: () => this.state.metadata,
+                        setMetadata: (data : any) => this.setMetadata(data)
+                    })
+                };
+                const newTools = this.state.tools.concat(tool);
+                this.setState({tools: newTools});
+                console.log(tool);
+            });
+    }
+
+
+    changeTool(index : number) {
+        if (index != -1) {
+            this._textureCanvasManager.tool = this.state.tools[index];
+        } else {
+            this._textureCanvasManager.tool = null;
+        }
+        this.setState({activeToolIndex: index});
+    }
+
+    setMetadata(newMetadata : any) {
+        const data = {
+            ...this.state.metadata,
+            ...newMetadata
+        }
+        this.setState({metadata: data});
+    }
+
+    saveTexture() {
+        Tools.ToBlob(this.canvas2D.current!, (blob) => {
+            Tools.Download(blob!, this.props.url);
+        });
+    }
+
     render() {
         return <div id="texture-editor">
-            <div id="controls">
-                <div id="channels">
-                    {this.channels.map(
-                        item => {
-                            const classNames = (item.channel === this.state.channel) ? "selected command " + item.className : "command " + item.className;
-                            return <button className={classNames} key={item.name} onClick={() => this.setState({channel: item.channel})}>{item.name}</button>
-                        }
-                    )}
-                </div>
-            </div>
-            <div id="editing-area">
-                <canvas id="canvas-ui" ref={this.canvasUI} tabIndex={1}></canvas>
-            </div>
-            <canvas id="canvas-display" ref={this.canvasDisplay} width={this.props.texture.getSize().width} height={this.props.texture.getSize().height} hidden={true}></canvas>
-            <canvas id="canvas-2D" ref={this.canvas2D} width={this.props.texture.getSize().width} height={this.props.texture.getSize().height} hidden={true}></canvas>
+            <PropertiesBar
+                texture={this.props.texture}
+                saveTexture={this.saveTexture}
+                pixelData={this.state.pixelData}
+            />
+            <ToolBar
+                tools={this.state.tools}
+                activeToolIndex={this.state.activeToolIndex}
+                addTool={this.loadTool}
+                changeTool={this.changeTool}
+                metadata={this.state.metadata}
+                setMetadata={this.setMetadata}
+            />
+            <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
+            <TextureCanvasComponent canvas2D={this.canvas2D} canvasDisplay={this.canvasDisplay} canvasUI={this.canvasUI} texture={this.props.texture}/>
+            <BottomBar name={this.props.url}/>
         </div>
     }
 }

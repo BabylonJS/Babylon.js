@@ -7,17 +7,16 @@ import { RenderTargetTexture } from 'babylonjs/Materials/Textures/renderTargetTe
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Nullable } from 'babylonjs/types';
 
-export enum TextureChannelToDisplay {
-    R,
-    G,
-    B,
-    A,
-    All
+export interface TextureChannelsToDisplay {
+    R: boolean;
+    G: boolean;
+    B: boolean;
+    A: boolean;
 }
 
 export class TextureHelper {
 
-    private static _ProcessAsync(texture: BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState: Nullable<GlobalState>, resolve: (result: Uint8Array) => void, reject: () => void) {
+    private static _ProcessAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState: Nullable<GlobalState>, resolve: (result: Uint8Array) => void, reject: () => void) {
         var scene = texture.getScene()!;
         var engine = scene.getEngine();
 
@@ -37,7 +36,7 @@ export class TextureHelper {
             passPostProcess.dispose();
 
             setTimeout(() => {
-                this._ProcessAsync(texture, width, height, face, channel, globalState, resolve, reject);
+                this._ProcessAsync(texture, width, height, face, channels, globalState, resolve, reject);
             }, 250);
 
             return;
@@ -69,32 +68,53 @@ export class TextureHelper {
             var data = engine.readPixels(0, 0, width, height);
 
             if (!texture.isCube) {
-                if (channel != TextureChannelToDisplay.All) {
+                if (!channels.R || !channels.G || !channels.B || !channels.A) {
                     for (var i = 0; i < width * height * 4; i += 4) {
-
-                        switch (channel) {
-                            case TextureChannelToDisplay.R:
-                                data[i + 1] = data[i];
-                                data[i + 2] = data[i];
-                                data[i + 3] = 255;
-                                break;
-                            case TextureChannelToDisplay.G:
-                                data[i] = data[i + 1];
-                                data[i + 2] = data[i];
-                                data[i + 3] = 255;
-                                break;
-                            case TextureChannelToDisplay.B:
-                                data[i] = data[i + 2];
-                                data[i + 1] = data[i + 2];
-                                data[i + 3] = 255;
-                                break;
-                            case TextureChannelToDisplay.A:
-                                data[i] = data[i + 3];
-                                data[i + 1] = data[i + 3];
-                                data[i + 2] = data[i + 3];
-                                data[i + 3] = 255;
-                                break;
+                        // If alpha is the only channel, just display alpha across all channels
+                        if (channels.A && !channels.R && !channels.G && !channels.B) {
+                            data[i] = data[i+3];
+                            data[i+1] = data[i+3];
+                            data[i+2] = data[i+3];
+                            data[i+3] = 255;
+                            continue;
                         }
+                        let r = data[i], g = data[i+1], b = data[i + 2], a = data[i+3];
+                        // If alpha is not visible, make everything 100% alpha
+                        if (!channels.A) {
+                            a = 255;
+                        }
+                        // If only one color channel is selected, map both colors to it. If two are selected, the unused one gets set to 0
+                        if (!channels.R) {
+                            if (channels.G && !channels.B) {
+                                r = g;
+                            } else if (channels.B && !channels.G) {
+                                r = b;
+                            } else {
+                                r = 0;
+                            }
+                        }
+                        if (!channels.G) {
+                            if (channels.R && !channels.B) {
+                                g = r;
+                            } else if (channels.B && !channels.R) {
+                                g = b;
+                            } else {
+                                g = 0;
+                            }
+                        }
+                        if (!channels.B) {
+                            if (channels.R && !channels.G) {
+                                b = r;
+                            } else if (channels.G && !channels.R) {
+                                b = g;
+                            } else {
+                                b = 0;
+                            }
+                        }
+                        data[i] = r;
+                        data[i + 1] = g;
+                        data[i + 2] = b;
+                        data[i + 3] = a;
                     }
                 }
             }
@@ -130,16 +150,16 @@ export class TextureHelper {
         }
     }
 
-    public static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState?: GlobalState): Promise<Uint8Array> {
+    public static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState): Promise<Uint8Array> {
         return new Promise((resolve, reject) => {
             if (!texture.isReady() && texture._texture) {
                 texture._texture.onLoadedObservable.addOnce(() => {
-                    this._ProcessAsync(texture, width, height, face, channel, globalState || null, resolve, reject);
+                    this._ProcessAsync(texture, width, height, face, channels, globalState || null, resolve, reject);
                 });
                 return;
             }        
 
-            this._ProcessAsync(texture, width, height, face, channel, globalState || null, resolve, reject);
+            this._ProcessAsync(texture, width, height, face, channels, globalState || null, resolve, reject);
         });
     }
 }

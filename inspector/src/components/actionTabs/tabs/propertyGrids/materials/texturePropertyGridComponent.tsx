@@ -177,6 +177,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextureEditorComponent
                         globalState={this.props.globalState}
                         texture={this.props.texture}
+                        url={textureUrl}
                     />
                 </PopupComponent>)}
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}

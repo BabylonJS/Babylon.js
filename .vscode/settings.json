@@ -58,5 +58,6 @@
     },
     "editor.tabSize": 4,
     "typescript.tsdk": "node_modules\\typescript\\lib",
-    "typescript.preferences.importModuleSpecifier": "relative"
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "svg.preview.background": "black"
 }

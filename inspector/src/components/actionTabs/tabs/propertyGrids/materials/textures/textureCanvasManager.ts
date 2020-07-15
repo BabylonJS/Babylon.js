@@ -1,6 +1,6 @@
 import { Engine } from 'babylonjs/Engines/engine';
 import { Scene } from 'babylonjs/scene';
-import { Vector3 } from 'babylonjs/Maths/math.vector';
+import { Vector3, Vector2 } from 'babylonjs/Maths/math.vector';
 import { Color4 } from 'babylonjs/Maths/math.color';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { Nullable } from 'babylonjs/types'
@@ -12,12 +12,24 @@ import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { HtmlElementTexture } from 'babylonjs/Materials/Textures/htmlElementTexture';
 import { InternalTexture } from 'babylonjs/Materials/Textures/internalTexture';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
-import { TextureHelper, TextureChannelToDisplay } from '../../../../../../textureHelper';
+import { TextureHelper, TextureChannelsToDisplay } from '../../../../../../textureHelper';
 import { ISize } from 'babylonjs/Maths/math.size';
 
-
-import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 import { KeyboardEventTypes } from 'babylonjs/Events/keyboardEvents';
+
+import { Tool } from './toolBar';
+import { Channel } from './channelsBar';
+
+export interface PixelData {
+    x? : number;
+    y? : number;
+    r? : number;
+    g? : number;
+    b? : number;
+    a? : number;
+}
+
 
 export class TextureCanvasManager {
     private _engine: Engine;
@@ -39,7 +51,7 @@ export class TextureCanvasManager {
     private _texture: HtmlElementTexture;
 
     private _displayCanvas : HTMLCanvasElement;
-    private _displayChannel : TextureChannelToDisplay = TextureChannelToDisplay.All;
+    private _channels : Channel[] = [];
     /* This is the actual texture that is being displayed. Sometimes it's just a single channel from _textures */
     private _displayTexture : HtmlElementTexture;
 
@@ -54,7 +66,7 @@ export class TextureCanvasManager {
     private _planeMaterial : NodeMaterial;
 
     /* Tracks which keys are currently pressed */
-    private keyMap : any = {};
+    private _keyMap : any = {};
 
     private static ZOOM_MOUSE_SPEED : number = 0.0005;
     private static ZOOM_KEYBOARD_SPEED : number = 0.2;
@@ -68,22 +80,33 @@ export class TextureCanvasManager {
     private static MIN_SCALE : number = 0.01;
     private static MAX_SCALE : number = 10;
 
+    private _tool : Nullable<Tool>;
+
+    private _setPixelData : any;
+
     public metadata : any = {
         color: '#ffffff',
         opacity: 1.0
     };
 
-    public constructor(texture: BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement) {
+    public constructor(
+        texture: BaseTexture,
+        canvasUI: HTMLCanvasElement,
+        canvas2D: HTMLCanvasElement,
+        canvasDisplay: HTMLCanvasElement,
+        setPixelData: any
+    ) {
         this._UICanvas = canvasUI;
         this._2DCanvas = canvas2D;
         this._displayCanvas = canvasDisplay;
+        this._setPixelData = setPixelData;
 
         this._originalTexture = texture;
         this._size = this._originalTexture.getSize();
 
         this._engine = new Engine(this._UICanvas, true);
         this._scene = new Scene(this._engine);
-        this._scene.clearColor = new Color4(0.2, 0.2, 0.2, 1.0);
+        this._scene.clearColor = new Color4(0.11, 0.11, 0.11, 1.0);
 
         this._camera = new FreeCamera("Camera", new Vector3(0, 0, -1), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
@@ -118,32 +141,32 @@ export class TextureCanvasManager {
             this._engine.resize();
             this._scene.render();
             let cursor = 'initial';
-            if (this.keyMap[TextureCanvasManager.PAN_KEY]) {
+            if (this._keyMap[TextureCanvasManager.PAN_KEY]) {
                 cursor = 'pointer';
             }
             this._UICanvas.parentElement!.style.cursor = cursor;
         });
 
-        this._scale = 1;
+        this._scale = 1.8;
         this._isPanning = false;
 
         this._scene.onBeforeRenderObservable.add(() => {
             this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE), TextureCanvasManager.MAX_SCALE);
             const ratio = this._UICanvas?.width / this._UICanvas?.height;
-            this._camera.orthoBottom = -this._scale;
-            this._camera.orthoTop = this._scale;
-            this._camera.orthoLeft = -this._scale * ratio;
-            this._camera.orthoRight = this._scale * ratio;
+            this._camera.orthoBottom = -1 / this._scale;
+            this._camera.orthoTop = 1 / this._scale;
+            this._camera.orthoLeft =  ratio / -this._scale;
+            this._camera.orthoRight = ratio / this._scale;
         })
 
         this._scene.onPointerObservable.add((pointerInfo) => {
             switch (pointerInfo.type) {
                 case PointerEventTypes.POINTERWHEEL:
                     const event = pointerInfo.event as MouseWheelEvent;
-                    this._scale += (event.deltaY * TextureCanvasManager.ZOOM_MOUSE_SPEED * this._scale);
+                    this._scale -= (event.deltaY * TextureCanvasManager.ZOOM_MOUSE_SPEED * this._scale);
                     break;
                 case PointerEventTypes.POINTERDOWN:
-                    if (pointerInfo.event.button === TextureCanvasManager.PAN_MOUSE_BUTTON && this.keyMap[TextureCanvasManager.PAN_KEY]) {
+                    if (pointerInfo.event.button === TextureCanvasManager.PAN_MOUSE_BUTTON && this._keyMap[TextureCanvasManager.PAN_KEY]) {
                         this._isPanning = true;
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
@@ -157,10 +180,16 @@ export class TextureCanvasManager {
                     break;
                 case PointerEventTypes.POINTERMOVE:
                     if (this._isPanning) {
-                        this._camera.position.x -= (pointerInfo.event.x - this._mouseX) * this._scale * TextureCanvasManager.PAN_SPEED;
-                        this._camera.position.y += (pointerInfo.event.y - this._mouseY) * this._scale * TextureCanvasManager.PAN_SPEED;
+                        this._camera.position.x -= (pointerInfo.event.x - this._mouseX) / this._scale * TextureCanvasManager.PAN_SPEED;
+                        this._camera.position.y += (pointerInfo.event.y - this._mouseY) / this._scale * TextureCanvasManager.PAN_SPEED;
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
+                    }
+                    if (pointerInfo.pickInfo?.hit) {
+                        const pos = this.getMouseCoordinates(pointerInfo);
+                        const ctx = this._2DCanvas.getContext('2d');
+                        const pixel = ctx?.getImageData(pos.x, pos.y, 1, 1).data!;
+                        this._setPixelData({x: pos.x, y: pos.y, r:pixel[0], g:pixel[1], b:pixel[2], a:pixel[3]});
                     }
                     break;
             }
@@ -169,16 +198,16 @@ export class TextureCanvasManager {
         this._scene.onKeyboardObservable.add((kbInfo) => {
             switch(kbInfo.type) {
                 case KeyboardEventTypes.KEYDOWN:
-                    this.keyMap[kbInfo.event.key] = true;
+                    this._keyMap[kbInfo.event.key] = true;
                     if (kbInfo.event.key === TextureCanvasManager.ZOOM_IN_KEY) {
-                        this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                        this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
                     }
                     if (kbInfo.event.key === TextureCanvasManager.ZOOM_OUT_KEY) {
-                        this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                        this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
                     }
                     break;
                 case KeyboardEventTypes.KEYUP:
-                    this.keyMap[kbInfo.event.key] = false;
+                    this._keyMap[kbInfo.event.key] = false;
                     if (kbInfo.event.key == TextureCanvasManager.PAN_KEY) {
                         this._isPanning = false;
                     }
@@ -200,20 +229,39 @@ export class TextureCanvasManager {
     }
 
     private copyTextureToDisplayTexture() {
-        TextureHelper.GetTextureDataAsync(this._texture, this._size.width, this._size.height, 0, this._displayChannel)
+        let channelsToDisplay : TextureChannelsToDisplay = {
+            R: true,
+            G: true,
+            B: true,
+            A: true
+        }
+        this._channels.forEach(channel => channelsToDisplay[channel.id] = channel.visible);
+        TextureHelper.GetTextureDataAsync(this._texture, this._size.width, this._size.height, 0, channelsToDisplay)
             .then(data => {
                 TextureCanvasManager.paintPixelsOnCanvas(data, this._displayCanvas);
                 this._displayTexture.update();
             })
     }
 
-    public set displayChannel(channel: TextureChannelToDisplay) {
-        this._displayChannel = channel;
-        this.copyTextureToDisplayTexture();
-    }
-
-    public get displayChannel() : TextureChannelToDisplay {
-        return this._displayChannel;
+    public set channels(channels: Channel[]) {
+        // Determine if we need to re-render the texture. This is an expensive operation, so we should only do it if channel visibility has changed.
+        let needsRender = false;
+        if (channels.length !== this._channels.length) {
+            needsRender = true;
+        }
+        else {
+            channels.forEach(
+                (channel,index) => {
+                    if (channel.visible !== this._channels[index].visible) {
+                        needsRender = true;
+                    }
+                }
+            );
+        }
+        this._channels = channels;
+        if (needsRender) {
+            this.copyTextureToDisplayTexture();
+        }
     }
 
     public static paintPixelsOnCanvas(pixelData : Uint8Array, canvas: HTMLCanvasElement) {
@@ -236,6 +284,16 @@ export class TextureCanvasManager {
         ctx.setTransform(transform);
     }
 
+    public getMouseCoordinates(pointerInfo : PointerInfo) : Vector2 {
+        if (pointerInfo.pickInfo?.hit) {
+            const x = Math.floor(pointerInfo.pickInfo.getTextureCoordinates()!.x * this._size.width);
+            const y = Math.floor((1 - pointerInfo.pickInfo.getTextureCoordinates()!.y) * this._size.height);
+            return new Vector2(x,y);
+        } else {
+            return new Vector2();
+        }
+    }
+
     public get scene() : Scene {
         return this._scene;
     }
@@ -248,12 +306,29 @@ export class TextureCanvasManager {
         return this._size;
     }
 
+    public set tool(tool: Nullable<Tool>) {
+        if (this._tool) {
+            this._tool.instance.cleanup();
+        }
+        this._tool = tool;
+        if (this._tool) {
+            this._tool.instance.setup();
+        }
+    }
+
+    public get tool(): Nullable<Tool> {
+        return this._tool;
+    }
+
     public dispose() {
         if (this._planeMaterial) {
             this._planeMaterial.dispose();
         }
         if (this._originalInternalTexture) {
             this._originalInternalTexture.dispose();
+        }
+        if (this._tool) {
+            this._tool.instance.cleanup();
         }
         this._displayTexture.dispose();
         this._texture.dispose();
