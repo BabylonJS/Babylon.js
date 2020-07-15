@@ -45878,7 +45878,10 @@ declare module BABYLON {
          * @returns "ImageProcessingPostProcess"
          */
         getClassName(): string;
-        protected _updateParameters(): void;
+        /**
+         * @hidden
+         */
+        _updateParameters(): void;
         dispose(camera?: Camera): void;
     }
 }
