@@ -9,7 +9,7 @@ export class SaveManager {
                     if (status) {
                         this._saveSnippet();
                     }
-                })
+                });
                 this.globalState.onDisplayMetadataObservable.notifyObservers(true);
                 return;
             }
@@ -50,6 +50,8 @@ export class SaveManager {
                         location.href = newUrl;     
                         this.globalState.onRunRequiredObservable.notifyObservers();               
                     }
+                    
+                this.globalState.onSavedObservable.notifyObservers();
                 } else {
                     this.globalState.onErrorObservable.notifyObservers("Unable to save your code. It may be too long.");
                 }

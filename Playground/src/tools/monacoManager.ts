@@ -24,9 +24,11 @@ export class MonacoManager {
         sortText: string, 
         insertTextRules: number}[];
 
+    private _isDirty = false;
+
     public constructor(public globalState: GlobalState) {
         window.addEventListener('beforeunload', (evt) => {
-            if (Utilities.ReadBoolFromStore("safe-mode", false)) {
+            if (this._isDirty && Utilities.ReadBoolFromStore("safe-mode", false)) {
                 var message = 'Are you sure you want to leave. You have unsaved work.';
                 evt.preventDefault();
                 evt.returnValue = message;
@@ -36,6 +38,7 @@ export class MonacoManager {
         globalState.onNewRequiredObservable.add(() => {
             if (this._checkSafeMode("Are you sure you want to create a new playground?")) {
                 this._setNewContent();
+                this._isDirty = true;
             }
         });
 
@@ -43,8 +46,13 @@ export class MonacoManager {
             if (this._checkSafeMode("Are you sure you want to remove all your code?")) {
                 this._editor?.setValue("");
                 location.hash = "";
+                this._isDirty = true;
             }
         });
+
+        globalState.onSavedObservable.add(() => {
+            this._isDirty = false;
+        })
 
         globalState.onCodeLoaded.add(code => {
             if (!code) {
@@ -153,7 +161,11 @@ export class MonacoManager {
         );     
         
         this._editor.onDidChangeModelContent(() => {
-            this.globalState.currentCode = this._editor.getValue();
+            let newCode = this._editor.getValue();
+            if (this.globalState.currentCode !== newCode) {
+                this.globalState.currentCode = newCode;
+                this._isDirty = true;
+            }
         });
         
         if (!this.globalState.loadingCodeInProgress) {
@@ -218,6 +230,7 @@ export class MonacoManager {
 
 };`
         );
+        this._isDirty = false;
             
         this.globalState.onRunRequiredObservable.notifyObservers();
     }

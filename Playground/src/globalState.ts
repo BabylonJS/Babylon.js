@@ -23,6 +23,7 @@ export class GlobalState {
     public zipCode = "";
 
     public onRunRequiredObservable = new Observable<void>();
+    public onSavedObservable = new Observable<void>();
     public onNewRequiredObservable = new Observable<void>();
     public onClearRequiredObservable = new Observable<void>();
     public onSaveRequiredObservable = new Observable<void>();
