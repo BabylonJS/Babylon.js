@@ -47,6 +47,16 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         this.setState({isExpanded: false});
     }
 
+    onFormatCode() {
+        this.props.globalState.onFormatCodeRequiredObservable.notifyObservers();
+        this.setState({isExpanded: false});
+    }
+
+    onMetadata() {
+        this.props.globalState.onDisplayMetadataObservable.notifyObservers(true);
+        this.setState({isExpanded: false});
+    }
+
     switch() {
         this.setState({isExpanded: !this.state.isExpanded});
     }
@@ -65,10 +75,12 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                 <div className={"hambuger-menu " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts") + (this.state.isExpanded ? " expanded" : "")}>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" isActive={true} onClick={()=> this.onPlay()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" isActive={false} onClick={()=> this.onSave()}/>
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={()=> this.onInspector()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Download" icon="download" isActive={false} onClick={()=> this.onDownload()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Create new" icon="new" isActive={false} onClick={()=> this.onNew()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Clear code" icon="clear" isActive={false} onClick={()=> this.onClear()}/>
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={()=> this.onInspector()}/>
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Format code" icon="options" isActive={false} onClick={()=> this.onFormatCode()}/>
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Metadata" icon="options" isActive={false} onClick={()=> this.onMetadata()}/>
                 </div>
             </>
         );
