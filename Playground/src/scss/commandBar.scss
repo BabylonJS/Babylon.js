@@ -96,6 +96,10 @@
             &:hover {
                 background-color: white;
                 color: black;
+
+                .sub-items {
+                    display: block;
+                }
             } 
 
             .command-dropdown-label-text {
@@ -107,6 +111,35 @@
                 grid-column: 2;
                 grid-row: 1;
             }
+
+            .sub-items {
+                position: absolute;
+                left: 200px;
+                top: 0;
+                width: 150px;
+                background: white;
+                display: none;        
+    
+                &.background-js {
+                    .sub-item {                      
+                        &:hover {
+                            background-color: #3f3461;
+                        }
+                    }
+                }   
+                                    
+                .sub-item {                      
+                    font-family: "acumin-pro-extra-condensed";
+                    color:black;
+                    padding: 5px;
+                    padding-left: 10px;
+                    height: 35px;
+    
+                    &:hover {
+                        color: white;
+                    } 
+                }
+            }            
         }
     }
 
