@@ -46,7 +46,7 @@ export class NodeMaterialBlock {
     public get name (): string {
          return this._name;
     }
-    
+
     /**
      * Sets the name of the block. Will check if the name is valid.
      */
