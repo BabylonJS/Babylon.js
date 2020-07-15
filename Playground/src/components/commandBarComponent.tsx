@@ -50,6 +50,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 <CommandButtonComponent globalState={this.props.globalState} tooltip="Clear code" icon="clear" isActive={false} onClick={()=> this.onClear()}/>
                 <CommandDropdownComponent globalState={this.props.globalState} icon="options" tooltip="Options" items={[
                     {
+                        label: "Theme",
+                        storeKey: "theme",
+                        defaultValue: "Light",
+                        subItems: [
+                            "Light",
+                            "Dark"
+                        ],
+                        onClick: () => {}
+                    },  {
                         label: "Safe mode",
                         storeKey: "safe-mode",
                         defaultValue: false,
