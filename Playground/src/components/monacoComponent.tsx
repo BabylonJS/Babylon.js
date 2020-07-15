@@ -16,6 +16,17 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
         super(props);
 
         this._monacoManager = new MonacoManager(this.props.globalState);
+
+        this.props.globalState.onEditorFullcreenRequiredObservable.add(() => {
+            let editorDiv = this.props.refObject.current! as any;
+            if (editorDiv.requestFullscreen) {
+                editorDiv.requestFullscreen();
+            } else if (editorDiv.mozRequestFullScreen) {
+                editorDiv.mozRequestFullScreen();
+            } else if (editorDiv.webkitRequestFullscreen) {
+                editorDiv.webkitRequestFullscreen();
+            }
+        });
     }
     
     componentDidMount() {        

@@ -10,6 +10,8 @@ import { LoadManager } from './tools/loadManager';
 import { WaitRingComponent } from './components/waitRingComponent';
 import { MetadataComponent } from './components/metadataComponent';
 import { HamburgerMenuComponent } from './components/hamburgerMenu';
+import { Utilities } from './tools/utilities';
+import { ShortcutManager } from './tools/shortcutManager';
 
 require("./scss/main.scss");
 const Split = require('split.js').default;
@@ -27,6 +29,7 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
     
     public saveManager: SaveManager;
     public loadManager: LoadManager;
+    public shortcutManager: ShortcutManager;
     
     public constructor(props: IPlaygroundProps) {
        super(props);
@@ -36,19 +39,27 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
        this.monacoRef = React.createRef();
        this.renderingRef = React.createRef();
 
-       this.state = {errorMessage: "", mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : EditionMode.Desktop};
+       let defaultDesktop = Utilities.ReadBoolFromStore("editor") ? EditionMode.Desktop : EditionMode.RenderingOnly;
+
+       this.state = {errorMessage: "", mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop};
 
        window.addEventListener("resize", () => {
-           this.setState({mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : EditionMode.Desktop});
+            let defaultDesktop = Utilities.ReadBoolFromStore("editor") ? EditionMode.Desktop : EditionMode.RenderingOnly;
+           this.setState({mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop});
        });
 
        this._globalState.onMobileDefaultModeChangedObservable.add(() => {
            this.setState({mode: this._globalState.mobileDefaultMode});
        });
 
+       this._globalState.onEditorDisplayChangedObservable.add(value => {
+        this.setState({mode: value ? EditionMode.Desktop : EditionMode.RenderingOnly});
+       });
+
        // Managers
        this.saveManager = new SaveManager(this._globalState);
        this.loadManager = new LoadManager(this._globalState);
+       this.shortcutManager = new ShortcutManager(this._globalState);
     }
 
     componentDidMount() {
@@ -93,15 +104,18 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
     public render() {
 
         return (
-            <div id="root">              
+            <div id="pg-root">              
                 <HeaderComponent globalState={this._globalState}/>
-                <div ref={this.splitRef} id="split">
-                    <MonacoComponent globalState={this._globalState} className="split-part" refObject={this.monacoRef}/>    
-                    <div ref={this.renderingRef} className="split-part">
+                <div ref={this.splitRef} id="pg-split">
+                    <MonacoComponent globalState={this._globalState} className="pg-split-part" refObject={this.monacoRef}/>    
+                    <div ref={this.renderingRef} className="pg-split-part">
                         <RenderingComponent globalState={this._globalState}/>
                     </div>
                 </div>
-                <HamburgerMenuComponent globalState={this._globalState}/>
+                {
+                    window.innerWidth < 1024 &&
+                    <HamburgerMenuComponent globalState={this._globalState}/>
+                }
                 <FooterComponent globalState={this._globalState}/>                
                 <WaitRingComponent globalState={this._globalState}/>
                 <MetadataComponent globalState={this._globalState}/>

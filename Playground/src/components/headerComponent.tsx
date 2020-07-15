@@ -26,10 +26,10 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
     
     public render() {
         return (
-            <div id="header">   
+            <div id="pg-header">   
                 <div className="logo-area">
                     <LogoImage />
-                    <div className="version">Playground&nbsp;<span className="version-number" ref={this._refVersionNumber}></span></div>
+                    <div className="version"><div className="version-text">Playground&nbsp;</div><span className="version-number" ref={this._refVersionNumber}></span></div>
                 </div>
                 <div className="command-bar">
                     {
