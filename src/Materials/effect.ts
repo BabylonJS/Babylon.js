@@ -1173,9 +1173,9 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
+    public setMatrix3x3(uniformName: string, matrix: Float32Array | Array<number>): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix3x3(this._uniforms[uniformName], matrix);
+        this._engine.setMatrix3x3(this._uniforms[uniformName], Array.isArray(matrix) ? new Float32Array(matrix) : matrix);
 
         return this;
     }
@@ -1186,9 +1186,9 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
+    public setMatrix2x2(uniformName: string, matrix: Float32Array | Array<number>): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix2x2(this._uniforms[uniformName], matrix);
+        this._engine.setMatrix2x2(this._uniforms[uniformName], Array.isArray(matrix) ? new Float32Array(matrix) : matrix);
 
         return this;
     }
