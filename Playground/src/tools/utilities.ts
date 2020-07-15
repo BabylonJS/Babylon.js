@@ -22,4 +22,12 @@ export class Utilities {
         }
         return query;
     }
+
+    public static ReadBoolFromStore(key: string): boolean {
+        return localStorage.getItem(key) === "true";
+    }
+
+    public static StoreBoolFromStore(key: string, value: boolean): void {
+        localStorage.setItem(key, value ? "true" : "false");
+    }
 }

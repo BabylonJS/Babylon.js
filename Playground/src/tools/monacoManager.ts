@@ -6,6 +6,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/languageFeatures";
 
 import { GlobalState } from '../globalState';
+import { Utilities } from './utilities';
 
 declare type IStandaloneCodeEditor = import('monaco-editor/esm/vs/editor/editor.api').editor.IStandaloneCodeEditor;
 declare type IStandaloneEditorConstructionOptions = import('monaco-editor/esm/vs/editor/editor.api').editor.IStandaloneEditorConstructionOptions;
@@ -24,13 +25,25 @@ export class MonacoManager {
         insertTextRules: number}[];
 
     public constructor(public globalState: GlobalState) {
-        globalState.onNewRequiredObservable.add(() => {
-            this._setNewContent();
+        window.addEventListener('beforeunload', (evt) => {
+            if (Utilities.ReadBoolFromStore("safe-mode")) {
+                var message = 'Are you sure you want to leave. You have unsaved work.';
+                evt.preventDefault();
+                evt.returnValue = message;
+            }
         });
 
-        globalState.onClearRequiredObservable.add(() => {
-            this._editor?.setValue("");
-            location.hash = "";
+        globalState.onNewRequiredObservable.add(() => {
+            if (this._checkSafeMode("Are you sure you want to create a new playground?")) {
+                this._setNewContent();
+            }
+        });
+
+        globalState.onClearRequiredObservable.add(() => {            
+            if (this._checkSafeMode("Are you sure you want to remove all your code?")) {
+                this._editor?.setValue("");
+                location.hash = "";
+            }
         });
 
         globalState.onCodeLoaded.add(code => {
@@ -41,6 +54,18 @@ export class MonacoManager {
 
             this._editor?.setValue(code);            
             this.globalState.onRunRequiredObservable.notifyObservers();
+        });
+
+        globalState.onFormatCodeRequiredObservable.add(() => {
+            this._editor?.getAction('editor.action.formatDocument').run();
+        });
+
+        globalState.onMinimapChangedObservable.add(value => {
+            this._editor?.updateOptions({
+                minimap: {
+                    enabled: value
+                }
+            });
         });
 
         // Register a global observable for inspector to request code changes
@@ -81,6 +106,14 @@ export class MonacoManager {
         }        
     }
 
+    private _checkSafeMode(message: string) {
+        if (Utilities.ReadBoolFromStore("safe-mode")) {
+            return window.confirm(message);
+        }
+
+        return true;
+    };
+
     public async setupMonacoAsync(hostElement: HTMLDivElement) {
         let response = await fetch("https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok) {
@@ -110,7 +143,7 @@ export class MonacoManager {
             showFoldingControls: "always",
             renderIndentGuides: true,
             minimap: {
-                enabled: true
+                enabled: Utilities.ReadBoolFromStore("minimap")
             }
         };      
 

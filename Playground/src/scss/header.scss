@@ -1,4 +1,4 @@
-#header {
+#pg-header {
     width: 100%;
     height: 100%;
     grid-column: 2;
@@ -72,6 +72,42 @@
                 margin-right: -5px;
                 transform: translateX(10px);
             }
+        }
+    }
+}
+
+
+@media screen and (max-width: 1280px) {
+    #pg-header {
+        .logo-area {
+            width: 300px;
+                
+            .version {
+                .version-text {
+                    display: none;
+                }
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    #pg-header {
+        grid-template-columns: 100%;
+
+        .logo-area {
+            width: 100%;
+                
+            .version {
+                .version-text {
+                    display: none;
+                }
+            }
+        }
+
+        
+        .command-bar {  
+            display: none;
         }
     }
 }

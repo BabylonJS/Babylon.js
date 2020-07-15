@@ -40,6 +40,25 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
             this._downloadManager.download(this._engine);
         });
+
+        this.props.globalState.onInspectorRequiredObservable.add(() => {
+            if (!this._scene) {
+                return;
+            }
+
+            if (this._scene.debugLayer.isVisible()) {
+                this._scene.debugLayer.hide();
+            } else {
+                this._scene.debugLayer.show({
+                    embedMode: true
+                });
+            }
+        });
+
+        this.props.globalState.onFullcreenRequiredObservable.add(() => {
+            this._engine?.switchFullscreen(false);
+        });
+
     }
 
     compileAndRun() {

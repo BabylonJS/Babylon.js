@@ -33,6 +33,12 @@ export class GlobalState {
     public onMetadataUpdatedObservable = new Observable<void>();  
     public onMetadataWindowHiddenObservable = new Observable<boolean>();
     public onDownloadRequiredObservable = new Observable<void>();
+    public onInspectorRequiredObservable = new Observable<void>();    
+    public onFormatCodeRequiredObservable = new Observable<void>();  
+    public onFullcreenRequiredObservable = new Observable<void>();
+    public onEditorFullcreenRequiredObservable = new Observable<void>();
+    public onMinimapChangedObservable = new Observable<boolean>();
+    public onEditorDisplayChangedObservable = new Observable<boolean>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();
