@@ -6,6 +6,7 @@ import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
 import { _TypeStore } from '../Misc/typeStore';
 import { Plane } from './math.plane';
+import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
 
 /**
  * Class representing a vector containing 2 coordinates
@@ -3552,41 +3553,12 @@ export class Quaternion {
  * Class used to store matrix data (4x4)
  */
 export class Matrix {
-    private static _Use64Bits = false;
-
-    private static _TrackPrecisionChange = true;
-    private static _TrackedMatrices: Array<Matrix> | null = [];
-    private static _CurrentType: any = Float32Array;
 
     /**
      * Gets the precision of matrix computations
      */
     public static get Use64Bits(): boolean {
-        return Matrix._Use64Bits;
-    }
-
-    /** @hidden */
-    public static SetPrecision(use64bits: boolean) {
-        Matrix._TrackPrecisionChange = false;
-
-        if (use64bits && !Matrix._Use64Bits) {
-            if (Matrix._TrackedMatrices) {
-                for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
-                    const matrix = Matrix._TrackedMatrices[m];
-                    const values = matrix._m;
-
-                    (matrix._m as any) = new Array(16);
-
-                    for (let i = 0; i < 16; ++i) {
-                        matrix._m[i] = values[i];
-                    }
-                }
-            }
-        }
-
-        Matrix._Use64Bits = use64bits;
-        Matrix._CurrentType = Matrix._Use64Bits ? Array : Float32Array;
-        Matrix._TrackedMatrices = null; // reclaim some memory, as we don't need _TrackedMatrices anymore
+        return PerformanceConfigurator.MatrixUse64Bits;
     }
 
     private static _updateFlagSeed = 0;
@@ -3632,11 +3604,11 @@ export class Matrix {
      * Creates an empty matrix (filled with zeros)
      */
     public constructor() {
-        if (Matrix._TrackPrecisionChange) {
-            Matrix._TrackedMatrices!.push(this);
+        if (PerformanceConfigurator.MatrixTrackPrecisionChange) {
+            PerformanceConfigurator.MatrixTrackedMatrices!.push(this);
         }
 
-        this._m = new Matrix._CurrentType(16);
+        this._m = new PerformanceConfigurator.MatrixCurrentType(16);
         this._updateIdentityStatus(false);
     }
 
@@ -5423,7 +5395,7 @@ export class Matrix {
     public static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array | Array<number> {
         const m = matrix.m;
         const arr = [m[0], m[1], m[4], m[5]];
-        return Matrix._Use64Bits ? arr : new Float32Array(arr);
+        return PerformanceConfigurator.MatrixUse64Bits ? arr : new Float32Array(arr);
     }
     /**
      * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
@@ -5437,7 +5409,7 @@ export class Matrix {
             m[4], m[5], m[6],
             m[8], m[9], m[10]
         ];
-        return Matrix. _Use64Bits ? arr : new Float32Array(arr);
+        return PerformanceConfigurator.MatrixUse64Bits ? arr : new Float32Array(arr);
     }
 
     /**

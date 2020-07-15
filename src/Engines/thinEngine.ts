@@ -28,7 +28,7 @@ import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
-import { Matrix } from '../Maths/math.vector';
+import { PerformanceConfigurator } from './performanceConfigurator';
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -490,7 +490,7 @@ export class ThinEngine {
 
         options = options || {};
 
-        Matrix.SetPrecision(!!options.useHighPrecisionMatrix);
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;

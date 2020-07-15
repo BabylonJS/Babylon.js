@@ -10,7 +10,7 @@ import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
-import { Matrix } from '../Maths/math.vector';
+import { PerformanceConfigurator } from './performanceConfigurator';
 
 declare const global: any;
 
@@ -100,7 +100,7 @@ export class NullEngine extends Engine {
 
         this._options = options;
 
-        Matrix.SetPrecision(!!options.useHighPrecisionMatrix);
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
         // Init caps
         // We consider we are on a webgl1 capable device
