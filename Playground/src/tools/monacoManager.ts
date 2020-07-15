@@ -26,7 +26,7 @@ export class MonacoManager {
 
     public constructor(public globalState: GlobalState) {
         window.addEventListener('beforeunload', (evt) => {
-            if (Utilities.ReadBoolFromStore("safe-mode")) {
+            if (Utilities.ReadBoolFromStore("safe-mode", false)) {
                 var message = 'Are you sure you want to leave. You have unsaved work.';
                 evt.preventDefault();
                 evt.returnValue = message;
@@ -107,7 +107,7 @@ export class MonacoManager {
     }
 
     private _checkSafeMode(message: string) {
-        if (Utilities.ReadBoolFromStore("safe-mode")) {
+        if (Utilities.ReadBoolFromStore("safe-mode", false)) {
             return window.confirm(message);
         }
 
@@ -143,7 +143,7 @@ export class MonacoManager {
             showFoldingControls: "always",
             renderIndentGuides: true,
             minimap: {
-                enabled: Utilities.ReadBoolFromStore("minimap")
+                enabled: Utilities.ReadBoolFromStore("minimap", true)
             }
         };      
 

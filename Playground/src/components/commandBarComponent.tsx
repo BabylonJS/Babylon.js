@@ -52,20 +52,24 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     {
                         label: "Safe mode",
                         storeKey: "safe-mode",
+                        defaultValue: false,
                         onCheck: () => {}
                     },                     
                     {
                         label: "CTRL+S to save",
                         storeKey: "ctrl-s-to-save",
+                        defaultValue: true,
                         onCheck: () => {}
                     }, 
                     {
                         label: "editor",
                         storeKey: "editor",
+                        defaultValue: true,
                         onCheck: (value) => {this.props.globalState.onEditorDisplayChangedObservable.notifyObservers(value)}
                     }, {
                         label: "minimap",
                         storeKey: "minimap",
+                        defaultValue: true,
                         onCheck: (value) => {this.props.globalState.onMinimapChangedObservable.notifyObservers(value)}
                     }, {
                         label: "fullscreen",

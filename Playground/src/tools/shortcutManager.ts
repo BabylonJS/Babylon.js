@@ -32,7 +32,7 @@ export class ShortcutManager {
                 (e.keyCode === 83)
             ) {
                 e.preventDefault();
-                if (!Utilities.ReadBoolFromStore("ctrl-s-to-save")) {
+                if (!Utilities.ReadBoolFromStore("ctrl-s-to-save", true)) {
                     return;
                 }
                 this.globalState.onSaveRequiredObservable.notifyObservers();
