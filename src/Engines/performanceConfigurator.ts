@@ -1,4 +1,4 @@
-/** @hiddden */
+/** @hidden */
 export class PerformanceConfigurator {
     /** @hidden */
     public static MatrixUse64Bits = false;
