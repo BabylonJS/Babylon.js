@@ -3570,7 +3570,6 @@ export class Matrix {
         Matrix._TrackPrecisionChange = false;
 
         if (use64bits && !Matrix._Use64Bits) {
-            Matrix._Use64Bits = true;
             if (Matrix._TrackedMatrices) {
                 for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
                     const matrix = Matrix._TrackedMatrices[m];
@@ -3585,6 +3584,7 @@ export class Matrix {
             }
         }
 
+        Matrix._Use64Bits = use64bits;
         Matrix._CurrentType = Matrix._Use64Bits ? Array : Float32Array;
         Matrix._TrackedMatrices = null; // reclaim some memory, as we don't need _TrackedMatrices anymore
     }
@@ -3723,14 +3723,14 @@ export class Matrix {
     // Methods
 
     /**
-     * Returns the matrix as a Float32Array
+     * Returns the matrix as a Float32Array or Array<number>
      * @returns the matrix underlying array
      */
     public toArray(): DeepImmutable<Float32Array | Array<number>> {
         return this._m;
     }
     /**
-     * Returns the matrix as a Float32Array
+     * Returns the matrix as a Float32Array or Array<number>
     * @returns the matrix underlying array.
     */
     public asArray(): DeepImmutable<Float32Array | Array<number>> {
