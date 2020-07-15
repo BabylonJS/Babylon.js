@@ -3552,10 +3552,11 @@ export class Quaternion {
  * Class used to store matrix data (4x4)
  */
 export class Matrix {
-    private static _Use64Bits = true;
+    private static _Use64Bits = false;
 
     private static _TrackPrecisionChange = true;
-    private static _TrackedMatrices: Array<Matrix> = [];
+    private static _TrackedMatrices: Array<Matrix> | null = [];
+    private static _CurrentType: any = Float32Array;
 
     /**
      * Gets the precision of matrix computations
@@ -3564,50 +3565,28 @@ export class Matrix {
         return Matrix._Use64Bits;
     }
 
-    /**
-     * Switch the matrix computations to 64 bits mode
-     */
-    public static SwitchTo64Bits() {
-        if (Matrix._Use64Bits) {
-            if (Matrix._TrackPrecisionChange) { // note: will be removed when _Use64Bits is defaulted to false when the PR is accepted
-                Matrix._StopTrackingInstances();
-            }
-            return;
-        }
-
-        Matrix._StopTrackingInstances();
-        Matrix._Use64Bits = true;
-
-        for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
-            const matrix = Matrix._TrackedMatrices[m];
-            const values = matrix._m;
-
-            (matrix._m as any) = new Array(16);
-
-            for (let i = 0; i < 16; ++i) {
-                matrix._m[i] = values[i];
-            }
-        }
-
-        (Matrix._TrackedMatrices as any) = null; // reclaim some memory, as we don't need this anymore
-    }
-
     /** @hidden */
-    public static _StopTrackingInstances() {
+    public static SetPrecision(use64bits: boolean) {
         Matrix._TrackPrecisionChange = false;
 
-        // replace the constructor with the right one depending on the precision, making sure we don't loose performance
-        if (Matrix._Use64Bits) {
-            Matrix.prototype.constructor = function() {
-                (this._m as any) = new Array(16);
-                this._updateIdentityStatus(false);
-            };
-        } else {
-            Matrix.prototype.constructor = function() {
-                (this._m as any) = new Float32Array(16);
-                this._updateIdentityStatus(false);
-            };
+        if (use64bits && !Matrix._Use64Bits) {
+            Matrix._Use64Bits = true;
+            if (Matrix._TrackedMatrices) {
+                for (let m = 0; m < Matrix._TrackedMatrices.length; ++m) {
+                    const matrix = Matrix._TrackedMatrices[m];
+                    const values = matrix._m;
+
+                    (matrix._m as any) = new Array(16);
+
+                    for (let i = 0; i < 16; ++i) {
+                        matrix._m[i] = values[i];
+                    }
+                }
+            }
         }
+
+        Matrix._CurrentType = Matrix._Use64Bits ? Array : Float32Array;
+        Matrix._TrackedMatrices = null; // reclaim some memory, as we don't need _TrackedMatrices anymore
     }
 
     private static _updateFlagSeed = 0;
@@ -3653,9 +3632,11 @@ export class Matrix {
      * Creates an empty matrix (filled with zeros)
      */
     public constructor() {
-        Matrix._TrackedMatrices.push(this);
+        if (Matrix._TrackPrecisionChange) {
+            Matrix._TrackedMatrices!.push(this);
+        }
 
-        this._m = Matrix._Use64Bits ? new Array(16) : new Float32Array(16);
+        this._m = new Matrix._CurrentType(16);
         this._updateIdentityStatus(false);
     }
 
