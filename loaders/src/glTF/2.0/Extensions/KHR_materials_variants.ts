@@ -63,6 +63,15 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
+     * Gets the list of available variant tag names for this asset.
+     * @param rootMesh The glTF root mesh
+     * @returns the list of all the variant names for this model
+     */
+    public getAvailableVariants(rootMesh: Mesh): string[] {
+        return KHR_materials_variants.GetAvailableVariants(rootMesh);
+    }
+
+    /**
      * Select a variant given a variant tag name or a list of variant tag names.
      * @param rootMesh The glTF root mesh
      * @param variantName The variant name(s) to select.
@@ -94,6 +103,15 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
+     * Select a variant given a variant tag name or a list of variant tag names.
+     * @param rootMesh The glTF root mesh
+     * @param variantName The variant name(s) to select.
+     */
+    public selectVariant(rootMesh: Mesh, variantName: string | string[]): void {
+        return KHR_materials_variants.SelectVariant(rootMesh, variantName);
+    }
+
+    /**
      * Reset back to the original before selecting a variant.
      * @param rootMesh The glTF root mesh
      */
@@ -111,6 +129,14 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
+     * Reset back to the original before selecting a variant.
+     * @param rootMesh The glTF root mesh
+     */
+    public reset(rootMesh: Mesh): void {
+        return KHR_materials_variants.Reset(rootMesh);
+    }
+
+    /**
      * Gets the last selected variant tag name(s) or null if original.
      * @param rootMesh The glTF root mesh
      * @returns The selected variant tag name(s).
@@ -122,6 +148,15 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         }
 
         return extensionMetadata.lastSelected;
+    }
+
+    /**
+     * Gets the last selected variant tag name(s) or null if original.
+     * @param rootMesh The glTF root mesh
+     * @returns The selected variant tag name(s).
+     */
+    public getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
+        return KHR_materials_variants.GetLastSelectedVariant(rootMesh);
     }
 
     private static _GetExtensionMetadata(rootMesh: Mesh): Nullable<IExtensionMetadata> {

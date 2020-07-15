@@ -55,9 +55,15 @@ export class VideoDome extends TransformNode {
     protected _material: BackgroundMaterial;
 
     /**
-     * The surface used for the skybox
+     * The surface used for the video dome
      */
     protected _mesh: Mesh;
+    /**
+     * Gets the mesh used for the video dome.
+     */
+    public get mesh(): Mesh {
+        return this._mesh;
+    }
 
     /**
      * A mesh that will be used to mask the back of the video dome in case it is a 180 degree movie.

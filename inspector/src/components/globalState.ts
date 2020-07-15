@@ -29,6 +29,7 @@ export class GlobalState {
     public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {};
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
+    public glTFLoaderExtenstions: { [key: string]: IGLTFLoaderExtension } = { };
 
     public blockMutationUpdates = false;
     public selectedLineContainerTitles:Array<string> = [];    
@@ -85,6 +86,7 @@ export class GlobalState {
     }
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
+        this.glTFLoaderExtenstions = { };
         var loaderState = this.glTFLoaderDefaults;
         if (loaderState !== undefined) {
             for (const key in loaderState) {
@@ -99,6 +101,8 @@ export class GlobalState {
                     (extension as any)[key] = extensionState[key];
                 }
             }
+
+            this.glTFLoaderExtenstions[extension.name] = extension;
         });
 
         if (this.validationResults) {

@@ -163,7 +163,7 @@ export class PostProcess {
     protected _indexParameters: any;
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
-    private _forcedOutputTexture: InternalTexture;
+    private _forcedOutputTexture: Nullable<InternalTexture>;
 
     /**
      * Returns the fragment url or shader name used in the post process.
@@ -267,6 +267,14 @@ export class PostProcess {
 
     public set inputTexture(value: InternalTexture) {
         this._forcedOutputTexture = value;
+    }
+
+    /**
+    * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
+    * the only way to unset it is to use this function to restore its internal state
+    */
+    public restoreDefaultInputTexture() {
+        this._forcedOutputTexture = null;
     }
 
     /**

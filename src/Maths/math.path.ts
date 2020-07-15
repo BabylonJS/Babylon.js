@@ -84,9 +84,9 @@ export class Angle {
     }
 
     /**
-     * Gets a new Angle object valued with the angle value in radians between the two given vectors
-     * @param a defines first vector
-     * @param b defines second vector
+     * Gets a new Angle object valued with the gradient angle, in radians, of the line joining two points
+     * @param a defines first point as the origin
+     * @param b defines point
      * @returns a new Angle
      */
     public static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle {

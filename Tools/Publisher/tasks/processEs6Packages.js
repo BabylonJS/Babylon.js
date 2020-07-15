@@ -17,6 +17,11 @@ const modules = config.modules.concat(config.viewerModules);
  */
 function processEs6Packages(version) {
     config.es6modules.forEach(moduleName => {
+        if (moduleName === "sandbox") {
+            // Do not publish apps
+            return;
+        }
+
         let module = config[moduleName];
         let es6Config = module.build.es6;
 

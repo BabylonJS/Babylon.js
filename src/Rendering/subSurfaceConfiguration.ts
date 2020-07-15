@@ -1,14 +1,21 @@
 import { Logger } from "../Misc/logger";
+import { Scene } from "../scene";
 import { Color3 } from "../Maths/math.color";
-
+import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
+import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 /**
  * Contains all parameters needed for the prepass to perform
  * screen space subsurface scattering
  */
-export class SubSurfaceConfiguration {
+export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     private _ssDiffusionS: number[] = [];
     private _ssFilterRadii: number[] = [];
     private _ssDiffusionD: number[] = [];
+
+    /**
+     * Post process to attach for screen space subsurface scattering
+     */
+    public postProcess: SubSurfaceScatteringPostProcess;
 
     /**
      * Diffusion profile color for subsurface scattering
@@ -32,6 +39,11 @@ export class SubSurfaceConfiguration {
     }
 
     /**
+     * Is subsurface enabled
+     */
+    public enabled = false;
+
+    /**
      * Diffusion profile colors for subsurface scattering
      * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
      * See ...
@@ -45,13 +57,16 @@ export class SubSurfaceConfiguration {
      */
     public metersPerUnit: number = 1;
 
+    private _scene: Scene;
+
     /**
      * Builds a subsurface configuration object
      * @param scene The scene
      */
-    constructor() {
+    constructor(scene: Scene) {
         // Adding default diffusion profile
         this.addDiffusionProfile(new Color3(1, 1, 1));
+        this._scene = scene;
     }
 
     /**
@@ -85,6 +100,17 @@ export class SubSurfaceConfiguration {
     }
 
     /**
+     * Creates the sss post process
+     * @return The created post process
+     */
+    public createPostProcess() : SubSurfaceScatteringPostProcess {
+        this.postProcess = new SubSurfaceScatteringPostProcess("subSurfaceScattering", this._scene, 1, null, undefined, this._scene.getEngine());
+        this.postProcess.autoClear = false;
+
+        return this.postProcess;
+    }
+
+    /**
      * Deletes all diffusion profiles.
      * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
      */
@@ -100,6 +126,7 @@ export class SubSurfaceConfiguration {
      */
     public dispose() {
         this.clearAllDiffusionProfiles();
+        this.postProcess.dispose();
     }
 
     /**
