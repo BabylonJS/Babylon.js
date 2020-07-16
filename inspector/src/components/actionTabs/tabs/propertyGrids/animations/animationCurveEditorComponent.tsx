@@ -296,10 +296,19 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
-  getKeyframeValueFromAnimation(id: string) {
-    const animation = this.state.selected as Animation;
+  encodeCurveId(animationName: string, coordinate: number) {
+    return animationName + '_' + coordinate;
+  }
+
+  decodeCurveId(id: string) {
     const index = parseInt(id.split('_')[3]);
     const coordinate = parseInt(id.split('_')[2]);
+    return { index, coordinate };
+  }
+
+  getKeyframeValueFromAnimation(id: string) {
+    const animation = this.state.selected as Animation;
+    const { index, coordinate } = this.decodeCurveId(id);
     const keys = [...animation.getKeys()];
 
     const key = keys.find((_, i) => i === index);
@@ -472,10 +481,8 @@ export class AnimationCurveEditorComponent extends React.Component<
 
   renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string) {
     let animation = this.state.selected as Animation;
-    // Bug: After play/stop we get an extra keyframe at 0
-    let index = parseInt(id.split('_')[3]);
 
-    let coordinate = parseInt(id.split('_')[2]);
+    const { index, coordinate } = this.decodeCurveId(id);
 
     let keys = [...animation.getKeys()];
 
@@ -635,7 +642,6 @@ export class AnimationCurveEditorComponent extends React.Component<
    */
   handleFrameChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
-    let frame: number | undefined | string = undefined;
 
     let oldFrame: number;
 
@@ -652,12 +658,15 @@ export class AnimationCurveEditorComponent extends React.Component<
       }
     }
 
-    if (event.target.value !== undefined) {
-      if (event.target.value !== '') {
-        frame = parseInt(event.target.value);
-      } else {
-        frame = '';
-      }
+    if (event.target.value === '') {
+      this.setState({
+        actionableKeyframe: {
+          frame: '',
+          value: this.state.actionableKeyframe.value,
+        },
+      });
+    } else {
+      let frame = parseInt(event.target.value);
 
       this.setState(
         {
@@ -1193,7 +1202,7 @@ export class AnimationCurveEditorComponent extends React.Component<
   ) {
     keyframes.forEach((key, i) => {
       // Create a unique id for curve
-      const curveId = animationName + '_' + i;
+      const curveId = this.encodeCurveId(animationName, i);
 
       // identify type of value and split...
       const keyframe_valueAsArray = this.getValueAsArray(type, key.value)[
