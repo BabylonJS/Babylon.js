@@ -90,6 +90,7 @@ export class AnimationCurveEditorComponent extends React.Component<
   private _svgKeyframes: IKeyframeSvgPoint[] = [];
   private _isPlaying: boolean = false;
   private _graphCanvas: React.RefObject<HTMLDivElement>;
+
   //private _selectedCurve: React.RefObject<SVGPathElement>;
   private _svgCanvas: React.RefObject<SvgDraggableArea>;
   private _isTargetedAnimation: boolean;
@@ -101,9 +102,8 @@ export class AnimationCurveEditorComponent extends React.Component<
   constructor(props: IAnimationCurveEditorComponentProps) {
     super(props);
     this._entityName = (this.props.entity as any).id;
-    // Review is we really need this refs
+
     this._graphCanvas = React.createRef();
-    //this._selectedCurve = React.createRef();
     this._svgCanvas = React.createRef();
 
     this._pixelFrameUnit = 10;
@@ -301,17 +301,17 @@ export class AnimationCurveEditorComponent extends React.Component<
   }
 
   decodeCurveId(id: string) {
-    const index = parseInt(id.split('_')[3]);
+    const order = parseInt(id.split('_')[3]);
     const coordinate = parseInt(id.split('_')[2]);
-    return { index, coordinate };
+    return { order, coordinate };
   }
 
   getKeyframeValueFromAnimation(id: string) {
     const animation = this.state.selected as Animation;
-    const { index, coordinate } = this.decodeCurveId(id);
+    const { order, coordinate } = this.decodeCurveId(id);
     const keys = [...animation.getKeys()];
 
-    const key = keys.find((_, i) => i === index);
+    const key = keys.find((_, i) => i === order);
 
     if (key) {
       const valueAsArray = this.getValueAsArray(animation.dataType, key.value);
@@ -482,7 +482,7 @@ export class AnimationCurveEditorComponent extends React.Component<
   renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string) {
     let animation = this.state.selected as Animation;
 
-    const { index, coordinate } = this.decodeCurveId(id);
+    const { order: index, coordinate } = this.decodeCurveId(id);
 
     let keys = [...animation.getKeys()];
 
@@ -636,76 +636,28 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
   }
 
-  /**
-   * Actions
-   * This section handles events from GraphActionsBar.
-   */
   handleFrameChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
 
-    let oldFrame: number;
-
-    if (this.state.selected !== null) {
-      let animation = this.state.selected;
-      let keys = animation.getKeys();
-
-      let isKeyframe = keys.find(
-        (k) => k.frame === this.state.actionableKeyframe.frame
-      );
-
-      if (isKeyframe) {
-        oldFrame = keys.indexOf(isKeyframe);
-      }
-    }
-
+    let frame;
     if (event.target.value === '') {
-      this.setState({
-        actionableKeyframe: {
-          frame: '',
-          value: this.state.actionableKeyframe.value,
-        },
-      });
+      frame = '';
     } else {
-      let frame = parseInt(event.target.value);
-
-      this.setState(
-        {
-          actionableKeyframe: {
-            frame: frame,
-            value: this.state.actionableKeyframe.value,
-          },
-        },
-        () => {
-          if (this.state.selected !== null) {
-            let animation = this.state.selected;
-            let keys = animation.getKeys();
-
-            let isKeyframe = keys[oldFrame];
-            if (isKeyframe) {
-              let updatedKeys = keys.map((k, i) => {
-                if (
-                  i === oldFrame &&
-                  this.state.actionableKeyframe.frame !== undefined
-                ) {
-                  k.frame = parseInt(
-                    this.state.actionableKeyframe.frame.toString()
-                  );
-                }
-                return k;
-              });
-              this.state.selected.setKeys(updatedKeys);
-              this.selectAnimation(animation);
-            }
-          }
-        }
-      );
+      frame = parseInt(event.target.value);
     }
+
+    this.setState({
+      actionableKeyframe: {
+        frame: frame,
+        value: this.state.actionableKeyframe.value,
+      },
+    });
   }
 
   handleValueChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.preventDefault();
 
-    let value: number | undefined | string = undefined;
+    let value;
 
     if (event.target.value !== undefined) {
       if (event.target.value !== '') {
@@ -714,34 +666,52 @@ export class AnimationCurveEditorComponent extends React.Component<
         value = '';
       }
 
-      this.setState(
-        {
-          actionableKeyframe: {
-            frame: this.state.actionableKeyframe.frame,
-            value: value,
-          },
+      this.setState({
+        actionableKeyframe: {
+          frame: this.state.actionableKeyframe.frame,
+          value: value,
         },
-        () => {
-          if (this.state.selected !== null) {
-            let animation = this.state.selected;
-            let keys = animation.getKeys();
+      });
+    }
+  }
 
-            let isKeyframe = keys.find(
-              (k) => k.frame === this.state.actionableKeyframe.frame
-            );
-            if (isKeyframe) {
-              let updatedKeys = keys.map((k) => {
-                if (k.frame === this.state.actionableKeyframe.frame) {
-                  k.value = this.state.actionableKeyframe.value;
-                }
-                return k;
-              });
-              this.state.selected.setKeys(updatedKeys);
-              this.selectAnimation(animation);
-            }
+  setKeyframeValue() {
+    if (
+      this.state.actionableKeyframe.frame !== '' &&
+      this.state.actionableKeyframe.frame !== undefined &&
+      this.state.actionableKeyframe.value !== '' &&
+      this.state.actionableKeyframe.value !== undefined
+    ) {
+      if (this.state.selected !== null) {
+        let currentSelected = this.state.svgKeyframes?.find(
+          (kf) => kf.selected
+        );
+        console.log(currentSelected);
+        if (currentSelected) {
+          let { order, coordinate } = this.decodeCurveId(currentSelected.id);
+          let animation = this.state.selected;
+          let keys = animation.getKeys();
+
+          let isKeyframe = keys.find((_, i) => i === order);
+          if (isKeyframe) {
+            let updatedKeys = keys.map((k, i) => {
+              if (i === order) {
+                k.frame = this.state.actionableKeyframe.frame as number;
+
+                const currentValue = this.getValueAsArray(
+                  animation.dataType,
+                  k.value
+                );
+                currentValue[coordinate] = this.state.actionableKeyframe.value;
+                k.value = currentValue;
+              }
+              return k;
+            });
+            this.state.selected.setKeys(updatedKeys);
+            this.selectAnimation(animation);
           }
         }
-      );
+      }
     }
   }
 
@@ -1728,6 +1698,7 @@ export class AnimationCurveEditorComponent extends React.Component<
           close={() => this.clearNotification()}
         />
         <GraphActionsBar
+          setKeyframeValue={() => this.setKeyframeValue()}
           enabled={
             this.state.selected === null || this.state.selected === undefined
               ? false
