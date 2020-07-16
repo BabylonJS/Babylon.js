@@ -17,6 +17,7 @@ interface ISvgDraggableAreaProps {
   positionCanvas?: number;
   repositionCanvas?: boolean;
   canvasPositionEnded: () => void;
+  resetActionableKeyframe: () => void;
 }
 
 export class SvgDraggableArea extends React.Component<
@@ -251,13 +252,15 @@ export class SvgDraggableArea extends React.Component<
     this._draggableArea.current?.focus();
 
     if ((e.target as SVGSVGElement).className.baseVal == 'linear pannable') {
-      if (this.isControlPointActive()) {
+      if (this.isNotControlPointActive()) {
         this.props.deselectKeyframes();
       }
+
+      this.props.resetActionableKeyframe();
     }
   }
 
-  isControlPointActive() {
+  isNotControlPointActive() {
     const activeControlPoints = this.props.keyframeSvgPoints.filter(
       (x) => x.isLeftActive || x.isRightActive
     );

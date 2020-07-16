@@ -1143,13 +1143,13 @@ export class Effect implements IDisposable {
      * @param matrices matrices to be set.
      * @returns this effect.
      */
-    public setMatrices(uniformName: string, matrices: Float32Array): Effect {
+    public setMatrices(uniformName: string, matrices: Float32Array | Array<number>): Effect {
         if (!matrices) {
             return this;
         }
 
         this._valueCache[uniformName] = null;
-        this._engine.setMatrices(this._uniforms[uniformName], matrices);
+        this._engine.setMatrices(this._uniforms[uniformName], matrices as Float32Array); // the cast is ok because it is gl.uniformMatrix4fv() which is called at the end, and this function accepts Float32Array and Array<number>
 
         return this;
     }
@@ -1173,9 +1173,9 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
+    public setMatrix3x3(uniformName: string, matrix: Float32Array | Array<number>): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix3x3(this._uniforms[uniformName], matrix);
+        this._engine.setMatrix3x3(this._uniforms[uniformName], matrix as Float32Array); // the cast is ok because it is gl.uniformMatrix3fv() which is called at the end, and this function accepts Float32Array and Array<number>
 
         return this;
     }
@@ -1186,9 +1186,9 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
+    public setMatrix2x2(uniformName: string, matrix: Float32Array | Array<number>): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix2x2(this._uniforms[uniformName], matrix);
+        this._engine.setMatrix2x2(this._uniforms[uniformName], matrix as Float32Array); // the cast is ok because it is gl.uniformMatrix2fv() which is called at the end, and this function accepts Float32Array and Array<number>
 
         return this;
     }
