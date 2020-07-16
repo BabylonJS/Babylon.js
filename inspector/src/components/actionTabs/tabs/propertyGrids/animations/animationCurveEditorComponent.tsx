@@ -686,7 +686,6 @@ export class AnimationCurveEditorComponent extends React.Component<
         let currentSelected = this.state.svgKeyframes?.find(
           (kf) => kf.selected
         );
-        console.log(currentSelected);
         if (currentSelected) {
           let { order, coordinate } = this.decodeCurveId(currentSelected.id);
           let animation = this.state.selected;
