@@ -39,9 +39,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onInspectorRequiredObservable.notifyObservers();
     }
 
+    onExamples() {
+        this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
+    }
+
     public render() {
         return (
             <div className={"commands " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>
+                <div className="commands-left">
                 <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" shortcut="Alt+Enter" isActive={true} onClick={()=> this.onPlay()}/>
                 <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" shortcut="Ctrl+S" isActive={false} onClick={()=> this.onSave()}/>
                 <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={()=> this.onInspector()}/>
@@ -118,6 +123,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         onClick: () => {this.props.globalState.onDisplayMetadataObservable.notifyObservers(true)}
                     }
                 ]}/>
+                </div>
+                <div className="commands-right">
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={()=> this.onExamples()} isActive={false}/>
+                </div>
             </div>
         );
     }

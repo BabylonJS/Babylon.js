@@ -8,6 +8,11 @@ export class LoadManager {
         // Check the url to prepopulate data        
         this._checkHash();
         window.addEventListener("hashchange", () => this._checkHash());
+
+        globalState.onLoadRequiredObservable.add(id => {
+            globalState.onDisplayWaitRingObservable.notifyObservers(true);
+            this._loadPlayground(id);
+        });
     }
 
     private _cleanHash() {
@@ -51,12 +56,12 @@ export class LoadManager {
                 parent.location.hash = pgHash;
             }
             this._previousHash = pgHash;
-            this.globalState.loadingCodeInProgress = true;
-            this._loadPlayground(pgHash.substr(1))
+            this._loadPlayground(pgHash.substr(1));
         }        
     }
 
-    private _loadPlayground(id: string) {
+    private _loadPlayground(id: string) {        
+        this.globalState.loadingCodeInProgress = true;
         try {
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.onreadystatechange = () => {
