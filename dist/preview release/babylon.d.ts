@@ -1537,7 +1537,7 @@ declare module BABYLON {
      * @hidden
      */
     export interface IMatrixLike {
-        toArray(): DeepImmutable<Float32Array>;
+        toArray(): DeepImmutable<Float32Array | Array<number>>;
         updateFlag: int;
     }
     /**
@@ -2034,6 +2034,21 @@ declare module BABYLON {
          * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
          */
         static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class PerformanceConfigurator {
+        /** @hidden */
+        static MatrixUse64Bits: boolean;
+        /** @hidden */
+        static MatrixTrackPrecisionChange: boolean;
+        /** @hidden */
+        static MatrixCurrentType: any;
+        /** @hidden */
+        static MatrixTrackedMatrices: Array<any> | null;
+        /** @hidden */
+        static SetMatrixPrecision(use64bits: boolean): void;
     }
 }
 declare module BABYLON {
@@ -4009,6 +4024,10 @@ declare module BABYLON {
      * Class used to store matrix data (4x4)
      */
     export class Matrix {
+        /**
+         * Gets the precision of matrix computations
+         */
+        static get Use64Bits(): boolean;
         private static _updateFlagSeed;
         private static _identityReadOnly;
         private _isIdentity;
@@ -4025,7 +4044,7 @@ declare module BABYLON {
         /**
          * Gets the internal data of the matrix
          */
-        get m(): DeepImmutable<Float32Array>;
+        get m(): DeepImmutable<Float32Array | Array<number>>;
         /** @hidden */
         _markAsUpdated(): void;
         /** @hidden */
@@ -4050,15 +4069,15 @@ declare module BABYLON {
          */
         determinant(): number;
         /**
-         * Returns the matrix as a Float32Array
+         * Returns the matrix as a Float32Array or Array<number>
          * @returns the matrix underlying array
          */
-        toArray(): DeepImmutable<Float32Array>;
+        toArray(): DeepImmutable<Float32Array | Array<number>>;
         /**
-         * Returns the matrix as a Float32Array
+         * Returns the matrix as a Float32Array or Array<number>
         * @returns the matrix underlying array.
         */
-        asArray(): DeepImmutable<Float32Array>;
+        asArray(): DeepImmutable<Float32Array | Array<number>>;
         /**
          * Inverts the current matrix in place
          * @returns the current inverted matrix
@@ -4164,7 +4183,7 @@ declare module BABYLON {
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        copyToArray(array: Float32Array, offset?: number): Matrix;
+        copyToArray(array: Float32Array | Array<number>, offset?: number): Matrix;
         /**
          * Sets the given matrix "result" with the multiplication result of the current Matrix and the given one
          * @param other defines the second operand
@@ -4179,7 +4198,7 @@ declare module BABYLON {
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array, offset: number): Matrix;
+        multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array | Array<number>, offset: number): Matrix;
         /**
          * Check equality between this matrix and a second one
          * @param value defines the second matrix to compare
@@ -4308,7 +4327,7 @@ declare module BABYLON {
          * @param scale defines the scaling factor
          * @param result defines the target matrix
          */
-        static FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array>, offset: number, scale: number, result: Matrix): void;
+        static FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array | Array<number>>, offset: number, scale: number, result: Matrix): void;
         /**
          * Gets an identity matrix that must not be updated
          */
@@ -4731,13 +4750,13 @@ declare module BABYLON {
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the given matrix
          */
-        static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array;
+        static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array | Array<number>;
         /**
          * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the given matrix
          */
-        static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array;
+        static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array | Array<number>;
         /**
          * Compute the transpose of a given matrix
          * @param matrix defines the matrix to transpose
@@ -16461,14 +16480,14 @@ declare module BABYLON {
          * @param value Define the value to give to the uniform
          * @return the material itself allowing "fluent" like uniform updates
          */
-        setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
+        setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial;
         /**
          * Set a mat2 in the shader from a Float32Array.
          * @param name Define the name of the uniform as defined in the shader
          * @param value Define the value to give to the uniform
          * @return the material itself allowing "fluent" like uniform updates
          */
-        setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
+        setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial;
         /**
          * Set a vec2 array in the shader from a number array.
          * @param name Define the name of the uniform as defined in the shader
@@ -33722,7 +33741,7 @@ declare module BABYLON {
          * @param matrices matrices to be set.
          * @returns this effect.
          */
-        setMatrices(uniformName: string, matrices: Float32Array): Effect;
+        setMatrices(uniformName: string, matrices: Float32Array | Array<number>): Effect;
         /**
          * Sets matrix on a uniform variable.
          * @param uniformName Name of the variable.
@@ -33736,14 +33755,14 @@ declare module BABYLON {
          * @param matrix matrix to be set.
          * @returns this effect.
          */
-        setMatrix3x3(uniformName: string, matrix: Float32Array): Effect;
+        setMatrix3x3(uniformName: string, matrix: Float32Array | Array<number>): Effect;
         /**
          * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
          * @param uniformName Name of the variable.
          * @param matrix matrix to be set.
          * @returns this effect.
          */
-        setMatrix2x2(uniformName: string, matrix: Float32Array): Effect;
+        setMatrix2x2(uniformName: string, matrix: Float32Array | Array<number>): Effect;
         /**
          * Sets a float on a uniform variable.
          * @param uniformName Name of the variable.
@@ -34332,6 +34351,10 @@ declare module BABYLON {
          * Make the canvas XR Compatible for XR sessions
          */
         xrCompatible?: boolean;
+        /**
+         * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+         */
+        useHighPrecisionMatrix?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -50636,6 +50659,10 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
         lockstepMaxSteps: number;
+        /**
+         * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+         */
+        useHighPrecisionMatrix?: boolean;
     }
     /**
      * The null engine class provides support for headless version of babylon.js.
