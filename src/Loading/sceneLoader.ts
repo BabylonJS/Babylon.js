@@ -352,6 +352,8 @@ export class SceneLoader {
 
     private static _registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 
+    private static _showingLoadingScreen = false;
+
     private static _getDefaultPlugin(): IRegisteredPlugin {
         return SceneLoader._registeredPlugins[".babylon"];
     }
@@ -785,8 +787,13 @@ export class SceneLoader {
             return null;
         }
 
-        if (SceneLoader.ShowLoadingScreen) {
+        if (SceneLoader.ShowLoadingScreen && !this._showingLoadingScreen) {
+            this._showingLoadingScreen = true;
             scene.getEngine().displayLoadingUI();
+            scene.executeWhenReady(() => {
+                scene.getEngine().hideLoadingUI();
+                this._showingLoadingScreen = false;
+            });
         }
 
         var loadingToken = {};
@@ -794,9 +801,6 @@ export class SceneLoader {
 
         var disposeHandler = () => {
             scene._removePendingData(loadingToken);
-            if (SceneLoader.ShowLoadingScreen) {
-                scene.getEngine().hideLoadingUI();
-            }
         };
 
         var errorHandler = (message: Nullable<string>, exception?: any) => {
@@ -849,12 +853,6 @@ export class SceneLoader {
                     successHandler();
                 }).catch((error) => {
                     errorHandler(error.message, error);
-                });
-            }
-
-            if (SceneLoader.ShowLoadingScreen) {
-                scene.executeWhenReady(() => {
-                    scene.getEngine().hideLoadingUI();
                 });
             }
         }, progressHandler, errorHandler, disposeHandler, pluginExtension);
@@ -975,12 +973,6 @@ export class SceneLoader {
                 });
             } else {
                 errorHandler("LoadAssetContainer is not supported by this plugin. Plugin did not provide a loadAssetContainer or loadAssetContainerAsync method.");
-            }
-
-            if (SceneLoader.ShowLoadingScreen) {
-                scene.executeWhenReady(() => {
-                    scene.getEngine().hideLoadingUI();
-                });
             }
         }, progressHandler, errorHandler, disposeHandler, pluginExtension);
     }
