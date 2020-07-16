@@ -47028,6 +47028,7 @@ declare module BABYLON {
          */
         static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         private static _registeredPlugins;
+        private static _showingLoadingScreen;
         private static _getDefaultPlugin;
         private static _getPluginForExtension;
         private static _getPluginForDirectLoad;
