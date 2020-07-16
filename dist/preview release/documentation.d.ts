@@ -20249,6 +20249,12 @@ declare module BABYLON {
          */
         constructor(name: string, target?: NodeMaterialBlockTargets, type?: NodeMaterialBlockConnectionPointTypes);
         /**
+        * Validates if a name is a reserve word.
+        * @param newName the new name to be given to the node.
+        * @returns false if the name is a reserve word, else true.
+        */
+        validateBlockName(newName: string): boolean;
+        /**
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
@@ -21319,6 +21325,7 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
+        private _name;
         protected _isUnique: boolean;
         /** Gets or sets a boolean indicating that only one input can be connected at a time */
         inputsAreExclusive: boolean;
@@ -21331,9 +21338,13 @@ declare module BABYLON {
         /** @hidden */
         _preparationId: number;
         /**
-         * Gets or sets the name of the block
+         * Gets the name of the block
          */
-        name: string;
+        get name(): string;
+        /**
+         * Sets the name of the block. Will check if the name is valid.
+         */
+        set name(newName: string);
         /**
          * Gets or sets the unique id of the node
          */
@@ -21515,6 +21526,12 @@ declare module BABYLON {
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
         protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number): void;
         private _processBuild;
+        /**
+        * Validates the new name for the block node.
+        * @param newName the new name to be given to the node.
+        * @returns false if the name is a reserve word, else true.
+        */
+        validateBlockName(newName: string): boolean;
         /**
          * Compile the current node and generate the shader code
          * @param state defines the current compilation state (uniforms, samplers, current string)
