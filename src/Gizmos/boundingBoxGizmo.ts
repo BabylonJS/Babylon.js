@@ -82,12 +82,12 @@ export class BoundingBoxGizmo extends Gizmo {
      */
     public onRotationSphereDragEndObservable = new Observable<{}>();
     /**
-     * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
+     * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
      */
     public scalePivot: Nullable<Vector3> = null;
 
     /**
-     * Mesh used as a pivot to rotate the attached mesh
+     * Mesh used as a pivot to rotate the attached node
      */
     private _anchorMesh: AbstractMesh;
 
@@ -366,7 +366,7 @@ export class BoundingBoxGizmo extends Gizmo {
         this.updateBoundingBox();
     }
 
-    protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
+    protected _attachedNodeChanged(value: Nullable<AbstractMesh>) {
         if (value) {
             // Reset anchor mesh to match attached mesh's scale
             // This is needed to avoid invalid box/sphere position on first drag
