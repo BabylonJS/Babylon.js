@@ -9,7 +9,7 @@ import { Gizmo } from "./gizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Mesh } from "../Meshes/mesh";
-import { Node } from "..";
+import { Node } from "../node";
 /**
  * Gizmo that enables scaling a mesh along 3 axis
  */

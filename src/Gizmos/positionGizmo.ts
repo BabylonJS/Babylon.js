@@ -4,7 +4,7 @@ import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Node } from "..";
+import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { AxisDragGizmo } from "./axisDragGizmo";
@@ -88,7 +88,7 @@ export class PositionGizmo extends Gizmo {
                 gizmo.attachedNode = null;
             }
         });
-    }    
+    }
     /**
      * Creates a PositionGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to

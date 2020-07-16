@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Vector3, Matrix } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Node } from "..";
+import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";

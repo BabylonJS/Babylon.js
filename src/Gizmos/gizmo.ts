@@ -5,7 +5,7 @@ import { Scene, IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Node } from "..";
+import { Node } from "../node";
 import { Bone } from "../Bones";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { TransformNode } from '../Meshes';
@@ -42,6 +42,10 @@ export class Gizmo implements IDisposable {
         this._rootMesh.setEnabled(value ? true : false);
         this._attachedNodeChanged(value);
     }
+    /**
+     * Node that the gizmo will be attached to. (eg. on a drag gizmo the mesh, bone or NodeTransform that will be dragged)
+     * * When set, interactions will be enabled
+     */
     public get attachedNode() {
         return this._attachedNode;
     }
@@ -115,8 +119,8 @@ export class Gizmo implements IDisposable {
             // Position
             if (this.updateGizmoPositionToMatchAttachedMesh) {
                 const row = effectiveNode.getWorldMatrix().getRow(3);
-                const position = row ? row.toVector3() : new Vector3(0,0,0);
-                 this._rootMesh.position.copyFrom(position);
+                const position = row ? row.toVector3() : new Vector3(0, 0, 0);
+                this._rootMesh.position.copyFrom(position);
             }
 
             // Rotation
@@ -176,7 +180,7 @@ export class Gizmo implements IDisposable {
         } else if (this._attachedNode.getClassName() === "Bone") {
             var bone = this._attachedNode as Bone;
             const parent = bone.getParent();
-            
+
             if (parent) {
                 var invParent = new Matrix();
                 var boneLocalMatrix = new Matrix();

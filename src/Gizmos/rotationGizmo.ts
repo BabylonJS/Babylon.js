@@ -8,7 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { PlaneRotationGizmo } from "./planeRotationGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { Node } from "..";
+import { Node } from "../node";
 /**
  * Gizmo that enables rotating a mesh along 3 axis
  */
