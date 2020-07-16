@@ -20249,6 +20249,12 @@ declare module BABYLON {
          */
         constructor(name: string, target?: NodeMaterialBlockTargets, type?: NodeMaterialBlockConnectionPointTypes);
         /**
+        * Validates if a name is a reserve word.
+        * @param newName the new name to be given to the node.
+        * @returns false if the name is a reserve word, else true.
+        */
+        validateBlockName(newName: string): boolean;
+        /**
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
@@ -21319,6 +21325,7 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
+        private _name;
         protected _isUnique: boolean;
         /** Gets or sets a boolean indicating that only one input can be connected at a time */
         inputsAreExclusive: boolean;
@@ -21331,9 +21338,13 @@ declare module BABYLON {
         /** @hidden */
         _preparationId: number;
         /**
-         * Gets or sets the name of the block
+         * Gets the name of the block
          */
-        name: string;
+        get name(): string;
+        /**
+         * Sets the name of the block. Will check if the name is valid.
+         */
+        set name(newName: string);
         /**
          * Gets or sets the unique id of the node
          */
@@ -21515,6 +21526,12 @@ declare module BABYLON {
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
         protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number): void;
         private _processBuild;
+        /**
+        * Validates the new name for the block node.
+        * @param newName the new name to be given to the node.
+        * @returns false if the name is a reserve word, else true.
+        */
+        validateBlockName(newName: string): boolean;
         /**
          * Compile the current node and generate the shader code
          * @param state defines the current compilation state (uniforms, samplers, current string)
@@ -49532,6 +49549,7 @@ declare module BABYLON {
          */
         _rootMesh: Mesh;
         private _attachedMesh;
+        private _attachedNode;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
@@ -49546,6 +49564,12 @@ declare module BABYLON {
          */
         get attachedMesh(): Nullable<AbstractMesh>;
         set attachedMesh(value: Nullable<AbstractMesh>);
+        /**
+         * Node that the gizmo will be attached to. (eg. on a drag gizmo the mesh, bone or NodeTransform that will be dragged)
+         * * When set, interactions will be enabled
+         */
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(value: Nullable<Node>);
         /**
          * Disposes and replaces the current meshes in the gizmo with the specified mesh
          * @param mesh The mesh to replace the default mesh of the gizmo
@@ -49564,7 +49588,7 @@ declare module BABYLON {
          */
         updateScale: boolean;
         protected _interactionsEnabled: boolean;
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         private _beforeRenderObserver;
         private _tempVector;
         /**
@@ -49578,6 +49602,11 @@ declare module BABYLON {
          * Updates the gizmo to match the attached mesh's position/rotation
          */
         protected _update(): void;
+        /**
+         * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
+         * @param value Node, TransformNode or mesh
+         */
+        protected _matrixChanged(): void;
         /**
          * Disposes of the gizmo
          */
@@ -49621,7 +49650,7 @@ declare module BABYLON {
          * @param color The color of the gizmo
          */
         constructor(dragPlaneNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<PositionGizmo>);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         /**
          * If the gizmo is enabled
          */
@@ -49666,6 +49695,7 @@ declare module BABYLON {
          * private variables
          */
         private _meshAttached;
+        private _nodeAttached;
         private _updateGizmoRotationToMatchAttachedMesh;
         private _snapDistance;
         private _scaleRatio;
@@ -49679,6 +49709,8 @@ declare module BABYLON {
         private _planarGizmoEnabled;
         get attachedMesh(): Nullable<AbstractMesh>;
         set attachedMesh(mesh: Nullable<AbstractMesh>);
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(node: Nullable<Node>);
         /**
          * Creates a PositionGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -49750,7 +49782,7 @@ declare module BABYLON {
          * @param color The color of the gizmo
          */
         constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<PositionGizmo>);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         /**
          * If the gizmo is enabled
          */
@@ -52553,6 +52585,7 @@ declare module BABYLON {
          */
         uniformScaleGizmo: AxisScaleGizmo;
         private _meshAttached;
+        private _nodeAttached;
         private _updateGizmoRotationToMatchAttachedMesh;
         private _snapDistance;
         private _scaleRatio;
@@ -52565,6 +52598,8 @@ declare module BABYLON {
         onDragEndObservable: Observable<unknown>;
         get attachedMesh(): Nullable<AbstractMesh>;
         set attachedMesh(mesh: Nullable<AbstractMesh>);
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(node: Nullable<Node>);
         /**
          * Creates a ScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -52634,7 +52669,7 @@ declare module BABYLON {
          * @param color The color of the gizmo
          */
         constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<ScaleGizmo>);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         /**
      * If the gizmo is enabled
      */
@@ -52712,11 +52747,11 @@ declare module BABYLON {
          */
         onRotationSphereDragEndObservable: Observable<{}>;
         /**
-         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
+         * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
          */
         scalePivot: Nullable<Vector3>;
         /**
-         * Mesh used as a pivot to rotate the attached mesh
+         * Mesh used as a pivot to rotate the attached node
          */
         private _anchorMesh;
         private _existingMeshScale;
@@ -52735,7 +52770,7 @@ declare module BABYLON {
          * @param color The color of the gizmo
          */
         constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<AbstractMesh>): void;
         private _selectNode;
         /**
          * Updates the bounding box information for the Gizmo
@@ -52808,7 +52843,7 @@ declare module BABYLON {
          * @param useEulerRotation Use and update Euler angle instead of quaternion
          */
         constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number, parent?: Nullable<RotationGizmo>, useEulerRotation?: boolean);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         /**
              * If the gizmo is enabled
              */
@@ -52842,8 +52877,11 @@ declare module BABYLON {
         /** Fires an event when any of it's sub gizmos are released from dragging */
         onDragEndObservable: Observable<unknown>;
         private _meshAttached;
+        private _nodeAttached;
         get attachedMesh(): Nullable<AbstractMesh>;
         set attachedMesh(mesh: Nullable<AbstractMesh>);
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(node: Nullable<Node>);
         /**
          * Creates a RotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
