@@ -63,9 +63,15 @@ export class LoadManager {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
 
-                        // if (!this.checkTypescriptSupport(xmlHttp)) {
-                        //     return;
-                        // }
+                        if (xmlHttp.responseText.indexOf("class Playground") !== -1) {
+                            if (this.globalState.language === "JS") {
+                                Utilities.SwitchLanguage("TS", this.globalState);
+                            }
+                        } else { // If we're loading JS content and it's TS page
+                            if (this.globalState.language === "TS") {
+                                Utilities.SwitchLanguage("JS", this.globalState);
+                            }
+                        }
 
                         var snippet = JSON.parse(xmlHttp.responseText);
 

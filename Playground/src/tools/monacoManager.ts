@@ -7,6 +7,7 @@ import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/lang
 
 import { GlobalState } from '../globalState';
 import { Utilities } from './utilities';
+import { CompilationError } from '../components/errorDisplayComponent';
 
 declare type IStandaloneCodeEditor = import('monaco-editor/esm/vs/editor/editor.api').editor.IStandaloneCodeEditor;
 declare type IStandaloneEditorConstructionOptions = import('monaco-editor/esm/vs/editor/editor.api').editor.IStandaloneEditorConstructionOptions;
@@ -17,6 +18,7 @@ export class MonacoManager {
     private _editor: IStandaloneCodeEditor;
     private _definitionWorker: Worker;
     private _deprecatedCandidates: string[];
+    private _hostElement: HTMLDivElement;
     private _templates: {
         label: string, 
         language: string,
@@ -36,18 +38,23 @@ export class MonacoManager {
         });
 
         globalState.onNewRequiredObservable.add(() => {
-            if (this._checkSafeMode("Are you sure you want to create a new playground?")) {
+            if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
                 this._setNewContent();
                 this._isDirty = true;
             }
         });
 
         globalState.onClearRequiredObservable.add(() => {            
-            if (this._checkSafeMode("Are you sure you want to remove all your code?")) {
+            if (Utilities.CheckSafeMode("Are you sure you want to remove all your code?")) {
                 this._editor?.setValue("");
                 location.hash = "";
                 this._isDirty = true;
             }
+        });
+
+        globalState.onNavigateRequiredObservable.add(position => {
+            this._editor?.revealPositionInCenter(position, monaco.editor.ScrollType.Smooth);
+            this._editor?.setPosition(position);
         });
 
         globalState.onSavedObservable.add(() => {
@@ -76,6 +83,20 @@ export class MonacoManager {
             });
         });
 
+        globalState.onFontSizeChangedObservable.add(value => {
+            this._editor?.updateOptions({
+                fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14"))
+            });
+        });
+
+        globalState.onLanguageChangedObservable.add(() => {
+            this.setupMonacoAsync(this._hostElement);
+        });
+
+        globalState.onThemeChangedObservable.add(() => {
+            this._createEditor();
+        });
+
         // Register a global observable for inspector to request code changes
         let pgConnect = {
             onRequestCodeChangeObservable: new BABYLON.Observable()
@@ -92,6 +113,7 @@ export class MonacoManager {
     }
 
     private _setNewContent() {
+        this._createEditor();
         this._editor?.setValue(`// You have to create a function called createScene. This function must return a BABYLON.Scene object
     // You can reference the following variables: scene, canvas
     // You must at least define a camera
@@ -108,21 +130,59 @@ export class MonacoManager {
         this.globalState.onRunRequiredObservable.notifyObservers();
 
         location.hash = "";
-        if(location.pathname.indexOf('pg/') !== -1) {
+        if (location.pathname.indexOf('pg/') !== -1) {
             // reload to create a new pg if in full-path playground mode.
             window.location.pathname = '';
         }        
     }
 
-    private _checkSafeMode(message: string) {
-        if (Utilities.ReadBoolFromStore("safe-mode", false)) {
-            return window.confirm(message);
+    private _createEditor() {
+        if (this._editor) {
+            this._editor.dispose();
         }
 
-        return true;
-    };
+        var editorOptions: IStandaloneEditorConstructionOptions = {
+            value: "",
+            language: this.globalState.language === "JS" ? "javascript" : "typescript",
+            lineNumbers: "on",
+            roundedSelection: true,
+            automaticLayout: true,
+            scrollBeyondLastLine: false,
+            readOnly: false,
+            theme: (Utilities.ReadStringFromStore("theme", "Light") === "Dark") ? "vs-dark" : "vs-light",
+            contextmenu: false,
+            folding: true,
+            showFoldingControls: "always",
+            fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
+            renderIndentGuides: true,
+            minimap: {
+                enabled: Utilities.ReadBoolFromStore("minimap", true)
+            }
+        };      
+
+        this._editor = monaco.editor.create(
+            this._hostElement,
+            editorOptions as any
+        );     
+        
+        this._editor.onDidChangeModelContent(() => {
+            let newCode = this._editor.getValue();
+            if (this.globalState.currentCode !== newCode) {
+                this.globalState.currentCode = newCode;
+                this._isDirty = true;
+            }
+        });
+
+        if (this.globalState.currentCode) {
+            this._editor!.setValue(this.globalState.currentCode);
+        }
+
+        this.globalState.getCompiledCode = () => this._getRunCode();
+    }
 
     public async setupMonacoAsync(hostElement: HTMLDivElement) {
+        this._hostElement = hostElement;
+
         let response = await fetch("https://preview.babylonjs.com/babylon.d.ts");
         if (!response.ok) {
             return;
@@ -137,40 +197,7 @@ export class MonacoManager {
 
         libContent += await response.text();
         
-        var editorOptions: IStandaloneEditorConstructionOptions = {
-            value: "",
-            language: this.globalState.language === "JS" ? "javascript" : "typescript",
-            lineNumbers: "on",
-            roundedSelection: true,
-            automaticLayout: true,
-            scrollBeyondLastLine: false,
-            readOnly: false,
-            theme: "vs-dark",
-            contextmenu: false,
-            folding: true,
-            showFoldingControls: "always",
-            renderIndentGuides: true,
-            minimap: {
-                enabled: Utilities.ReadBoolFromStore("minimap", true)
-            }
-        };      
-
-        this._editor = monaco.editor.create(
-            hostElement,
-            editorOptions as any
-        );     
-        
-        this._editor.onDidChangeModelContent(() => {
-            let newCode = this._editor.getValue();
-            if (this.globalState.currentCode !== newCode) {
-                this.globalState.currentCode = newCode;
-                this._isDirty = true;
-            }
-        });
-        
-        if (!this.globalState.loadingCodeInProgress) {
-            this._setDefaultContent();
-        }
+        this._createEditor();
         
         // Definition worker
         this._setupDefinitionWorker(libContent);
@@ -195,10 +222,16 @@ export class MonacoManager {
         }        
             
         this._hookMonacoCompletionProvider();
+        
+        if (!this.globalState.loadingCodeInProgress) {
+            this._setDefaultContent();
+        }
     }
 
     private _setDefaultContent() {
-        this._editor.setValue(`var createScene = function () {
+
+        if (this.globalState.language === "JS") {
+            this._editor.setValue(`var createScene = function () {
     // This creates a basic Babylon Scene object (non-mesh)
     var scene = new BABYLON.Scene(engine);
 
@@ -229,7 +262,44 @@ export class MonacoManager {
     return scene;
 
 };`
-        );
+                    );
+        } else {
+            this._editor.setValue(`class Playground { 
+    public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
+        // This creates a basic Babylon Scene object (non-mesh)
+        var scene = new BABYLON.Scene(engine);
+
+        // This creates and positions a free camera (non-mesh)
+        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+
+        // This targets the camera to scene origin
+        camera.setTarget(BABYLON.Vector3.Zero());
+
+        // This attaches the camera to the canvas
+        camera.attachControl(canvas, true);
+
+        // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+        var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+
+        // Default intensity is 1. Let's dim the light a small amount
+        light.intensity = 0.7;
+
+        // Our built-in 'sphere' shape. Params: name, subdivs, size, scene
+        var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+
+        // Move the sphere upward 1/2 its height
+        sphere.position.y = 1;
+
+        // Our built-in 'ground' shape. Params: name, width, depth, subdivs, scene
+        var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+
+        return scene;
+    }
+}`            
+                    );            
+        }
+
+
         this._isDirty = false;
             
         this.globalState.onRunRequiredObservable.notifyObservers();
@@ -460,4 +530,38 @@ export class MonacoManager {
         return tag &&
             tag.name == "deprecated";
     }
+
+    private async _getRunCode() {
+        if (this.globalState.language == "JS")
+            return this._editor.getValue();
+        else {
+            const model = this._editor.getModel()!;
+            const uri = model.uri;
+
+            const worker = await monaco.languages.typescript.getTypeScriptWorker();
+            const languageService = await worker(uri);
+
+            const uriStr = uri.toString();
+            const result = await languageService.getEmitOutput(uriStr);
+            const diagnostics = await Promise.all([languageService.getSyntacticDiagnostics(uriStr), languageService.getSemanticDiagnostics(uriStr)]);
+
+            diagnostics.forEach(function (diagset) {
+                if (diagset.length) {
+                    const diagnostic = diagset[0];
+                    const position = model.getPositionAt(diagnostic.start!);
+
+                    const err = new CompilationError();
+                    err.message = diagnostic.messageText as string;
+                    err.lineNumber = position.lineNumber;
+                    err.columnNumber = position.column;
+                    throw err;
+                }
+            });
+
+            const output = result.outputFiles[0].text;
+            const stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
+
+            return output + stub;
+        }
+    };
 }

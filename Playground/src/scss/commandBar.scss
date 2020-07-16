@@ -1,7 +1,36 @@
+
 .commands {
     grid-row: 1;
     grid-column: 3;
     display: flex;
+
+    &.background-ts {
+        .command-button, .command-dropdown  {
+            img {
+                filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);
+            }
+
+            &:hover, &.activated {
+                img {
+                    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important;
+                }
+            } 
+        }
+    }
+
+    &.background-js {
+        .command-button, .command-dropdown  {
+            img {
+                filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
+            }
+
+            &:hover, &.activated {
+                img {
+                    filter: invert(17%) !important;
+                }
+            } 
+        }
+    }
 
     .command-button {
         cursor: pointer;
@@ -9,20 +38,10 @@
 
         .command-label {
             display: none;
-        }
-        
-        img {
-            filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
-            &.active {
-                filter: invert(100%);
-            }
-        }
+        }        
 
         &:hover {
             background-color: white;
-            img {
-                filter: invert(17%) !important;
-            }
         } 
         
         &:active {
@@ -42,18 +61,8 @@
         width: 55px;
         height: 55px;
 
-        img {
-            filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
-            &.active {
-                filter: invert(100%);
-            }
-        }
-
         &:hover, &.activated {
             background-color: white;
-            img {
-                filter: invert(17%) !important;
-            }
         } 
         
         &:active {
@@ -70,6 +79,26 @@
         height: 100%;
         transform: scale(1);
         z-index: 1;
+    }
+
+    &.background-js {
+        .command-dropdown-content {
+            .command-dropdown-label {
+                &:hover {
+                    background-color: #bfabff;
+                }
+            }
+        }
+    }
+
+    &.background-ts {
+        .command-dropdown-content {
+            .command-dropdown-label {
+                &:hover {
+                    background-color: #ff7656;
+                }
+            }
+        }
     }
 
     .command-dropdown-content {
@@ -92,11 +121,10 @@
             user-select: none;
             grid-template-columns: 1fr 20px;
             grid-template-rows: 100%;
+            position: relative;
+
 
             &:hover {
-                background-color: white;
-                color: black;
-
                 .sub-items {
                     display: block;
                 }
@@ -117,27 +145,40 @@
                 left: 200px;
                 top: 0;
                 width: 150px;
-                background: white;
                 display: none;        
     
                 &.background-js {
+                    background: #bfabff;
                     .sub-item {                      
                         &:hover {
-                            background-color: #3f3461;
+                            background-color: #9379e6;
+                            color: white;
+                        }
+                    }
+                }   
+
+                &.background-ts {
+                    background: #ff7656;
+                    .sub-item {                      
+                        &:hover {
+                            background-color: #e0684b;
+                            color: white;
                         }
                     }
                 }   
                                     
                 .sub-item {                      
-                    font-family: "acumin-pro-extra-condensed";
-                    color:black;
+                    font-family: "acumin-pro-extra-condensed";                    
+                    color: white;
                     padding: 5px;
                     padding-left: 10px;
                     height: 35px;
-    
-                    &:hover {
-                        color: white;
-                    } 
+                    display: grid;
+
+                    &.checked {
+                        background: white;
+                        color: black;
+                    }
                 }
             }            
         }

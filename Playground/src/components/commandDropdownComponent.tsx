@@ -43,15 +43,17 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                     this.props.items.map(m => {
                                         return (
                                             <div className="command-dropdown-label" key={m.label} onClick={() => {
-                                                if (! m.onClick) {
+                                                if (!m.onClick) {
                                                     let newValue = !Utilities.ReadBoolFromStore(m.storeKey!, (m.defaultValue as boolean) || false);
-                                                    Utilities.StoreBoolFromStore(m.storeKey!, newValue);
+                                                    Utilities.StoreBoolToStore(m.storeKey!, newValue);
                                                     this.forceUpdate();
                                                     m.onCheck!(newValue);
                                                     return;
                                                 }
-                                                m.onClick();
-                                                this.setState({isExpanded: false});
+                                                if (!m.subItems) {
+                                                    m.onClick();
+                                                    this.setState({isExpanded: false});
+                                                }
                                             }} title={m.label}>
                                                 <div className="command-dropdown-label-text">
                                                     {m.label}
@@ -60,7 +62,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                     m.onCheck && 
                                                     <input type="checkBox" className="command-dropdown-label-check" 
                                                         onChange={(evt) => {
-                                                            Utilities.StoreBoolFromStore(m.storeKey!, evt.target.checked);
+                                                            Utilities.StoreBoolToStore(m.storeKey!, evt.target.checked);
                                                             this.forceUpdate();
                                                             m.onCheck!(evt.target.checked);
                                                         }}
@@ -72,9 +74,16 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                         {
                                                             m.subItems.map(s => {
                                                                 return (
-                                                                    <div key={s} className="sub-item">
-                                                                        {s}
+                                                                    <div key={s} className={"sub-item" + (Utilities.ReadStringFromStore(m.storeKey!, m.defaultValue as string) === s ? " checked" : "")}  
+                                                                    onClick={() => {
+                                                                        Utilities.StoreStringToStore(m.storeKey!, s);                                                                        
+                                                                        m.onClick!();
+                                                                        this.setState({isExpanded: false});
+                                                                    }}>
+                                                                        <div className="sub-item-label">
+                                                                            {s}
                                                                         </div>
+                                                                    </div>
                                                                 )
                                                             })
                                                         }

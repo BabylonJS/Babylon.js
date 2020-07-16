@@ -12,6 +12,7 @@ import { MetadataComponent } from './components/metadataComponent';
 import { HamburgerMenuComponent } from './components/hamburgerMenu';
 import { Utilities } from './tools/utilities';
 import { ShortcutManager } from './tools/shortcutManager';
+import { ErrorDisplayComponent } from './components/errorDisplayComponent';
 
 require("./scss/main.scss");
 const Split = require('split.js').default;
@@ -45,7 +46,7 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
 
        window.addEventListener("resize", () => {
             let defaultDesktop = Utilities.ReadBoolFromStore("editor", true) ? EditionMode.Desktop : EditionMode.RenderingOnly;
-           this.setState({mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop});
+            this.setState({mode: window.innerWidth < this._globalState.MobileSizeTrigger ? this._globalState.mobileDefaultMode : defaultDesktop});
        });
 
        this._globalState.onMobileDefaultModeChangedObservable.add(() => {
@@ -116,7 +117,8 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
                     window.innerWidth < 1024 &&
                     <HamburgerMenuComponent globalState={this._globalState}/>
                 }
-                <FooterComponent globalState={this._globalState}/>                
+                <FooterComponent globalState={this._globalState}/>    
+                <ErrorDisplayComponent globalState={this._globalState}/>            
                 <WaitRingComponent globalState={this._globalState}/>
                 <MetadataComponent globalState={this._globalState}/>
             </div>   
