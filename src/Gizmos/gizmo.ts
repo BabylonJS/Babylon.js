@@ -6,9 +6,9 @@ import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Node } from "../node";
-import { Bone } from "../Bones";
+import { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { TransformNode } from '../Meshes';
+import { TransformNode } from '../Meshes/transformNode';
 /**
  * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
  */
