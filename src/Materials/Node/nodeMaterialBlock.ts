@@ -43,18 +43,18 @@ export class NodeMaterialBlock {
     /**
      * Gets the name of the block
      */
-    public get name (): string {
+    public get name(): string {
          return this._name;
     }
 
     /**
      * Sets the name of the block. Will check if the name is valid.
      */
-    public set name (newName: string) {
-        if(!this.validateBlockName(newName)) {
+    public set name(newName: string) {
+        if (!this.validateBlockName(newName)) {
             return;
         }
-        
+
         this._name = newName;
     }
 
@@ -452,7 +452,7 @@ export class NodeMaterialBlock {
     }
 
     /**
-    * Validates the new name for the block node. 
+    * Validates the new name for the block node.
     * @param newName the new name to be given to the node.
     * @returns false if the name is a reserve word, else true.
     */
@@ -471,14 +471,14 @@ export class NodeMaterialBlock {
         "world0",
         "world1",
         "world2",
-        "world3",   
+        "world3",
         "particle_color",
-        "particle_texturemask"]; 
+        "particle_texturemask"];
         for (var reservedName of reservedNames) {
             if (newName === reservedName) {
                 return false;
             }
-        };
+        }
         return true;
     }
 

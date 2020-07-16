@@ -178,12 +178,12 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-    * Validates if a name is a reserve word. 
+    * Validates if a name is a reserve word.
     * @param newName the new name to be given to the node.
     * @returns false if the name is a reserve word, else true.
     */
     public validateBlockName(newName: string) {
-        if(!this.isAttribute) {
+        if (!this.isAttribute) {
             return super.validateBlockName(newName);
         }
         return true;
@@ -721,7 +721,6 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
-        
         this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);
 
