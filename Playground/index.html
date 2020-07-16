@@ -33,7 +33,32 @@
         <script src="/dist/preview%20release/earcut.min.js"></script>
         
         <!-- Babylon.js -->
-        <script src="/Tools/DevLoader/BabylonLoader.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js"></script>
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+         <!-- Extensions -->
+         <script
+             src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
+             >
+         </script>
+         <script
+             src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"
+             ></script>
+ 
+         <!-- Scene Manager -->
+         <script
+             src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.manager.js">
+         </script>
+         <script
+             src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
+         </script>        
 
         <style>
             html,
@@ -50,14 +75,11 @@
 
     <body>        
         <div id="host-element">
-        </div>
-        <script>
-            // Load the scripts + map file to allow vscode debug.
-            BABYLONDEVTOOLS.Loader       
-                .require("index.js")
-                .load(() => {
-                });
-        </script>
+        </div>   
+        
+        <script src="dist/babylon.playground.js"></script>
+        
+        <script src="index.js"></script>
     </body>
 
 </html>

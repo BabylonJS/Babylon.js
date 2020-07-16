@@ -14,6 +14,7 @@ interface ICommandDropdownComponentProps {
         defaultValue?: boolean | string;
         subItems?: string[];
     }[];
+    toRight?: boolean
 }
 
 export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, {isExpanded: boolean}> {    
@@ -38,7 +39,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                     </div>
                     {
                             this.state.isExpanded &&
-                            <div className="command-dropdown-content sub1">
+                            <div className={"command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "")}>
                                 {
                                     this.props.items.map(m => {
                                         return (
