@@ -2,8 +2,11 @@ import * as React from "react";
 import { GlobalState } from '../globalState';
 import { CommandButtonComponent } from './commandButtonComponent';
 import { CommandDropdownComponent } from './commandDropdownComponent';
+import { Utilities } from '../tools/utilities';
 
 require("../scss/commandBar.scss");
+
+declare var Versions: any;
 
 interface ICommandBarComponentProps {
     globalState: GlobalState;
@@ -44,6 +47,19 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
 
     public render() {
+
+        var versionOptions = Object.keys(Versions).map(key => {
+            return {
+                label: key,
+                storeKey: "version",
+                defaultValue: "Latest",
+                onClick: () => {
+                    Utilities.StoreStringToStore("version", key);
+                    window.location.reload();
+                }
+            }
+        });
+
         return (
             <div className={"commands " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>
                 <div className="commands-left">
@@ -125,6 +141,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 ]}/>
                 </div>
                 <div className="commands-right">
+                    <CommandDropdownComponent globalState={this.props.globalState} icon="options" tooltip="Options" toRight={true} items={versionOptions} />                    
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={()=> this.onExamples()} isActive={false}/>
                 </div>
             </div>
