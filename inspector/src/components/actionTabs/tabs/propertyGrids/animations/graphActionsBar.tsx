@@ -58,6 +58,13 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
     }
   }
 
+  onBlur(event: React.FocusEvent<HTMLInputElement>) {
+    event.preventDefault();
+    if (event.target.value !== '') {
+      this.props.setKeyframeValue();
+    }
+  }
+
   render() {
     return (
       <div className='actions-wrapper'>
@@ -77,6 +84,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
               value={this.props.actionableKeyframe.frame?.toString() || ''}
               step='1'
               disabled={this.props.actionableKeyframe.frame === undefined}
+              onBlur={(e) => this.onBlur(e)}
             />
           </div>
           <div className='action-input'>
@@ -87,6 +95,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
               onChange={this.props.handleValueChange}
               step='0.01'
               disabled={this.props.actionableKeyframe.value === undefined}
+              onBlur={(e) => this.onBlur(e)}
             />
           </div>
           <IconButtonLineComponent
