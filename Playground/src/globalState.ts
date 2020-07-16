@@ -30,7 +30,8 @@ export class GlobalState {
     public onSavedObservable = new Observable<void>();
     public onNewRequiredObservable = new Observable<void>();
     public onClearRequiredObservable = new Observable<void>();
-    public onSaveRequiredObservable = new Observable<void>();
+    public onSaveRequiredObservable = new Observable<void>();    
+    public onLoadRequiredObservable = new Observable<string>();
     public onErrorObservable = new Observable<Nullable<CompilationError>>();    
     public onMobileDefaultModeChangedObservable = new Observable<void>();
     public onDisplayWaitRingObservable = new Observable<boolean>();
@@ -48,6 +49,7 @@ export class GlobalState {
     public onFontSizeChangedObservable = new Observable<void>();
     public onLanguageChangedObservable = new Observable<void>();
     public onNavigateRequiredObservable = new Observable<{lineNumber: number, column: number}>();
+    public onExamplesDisplayChangedObservable = new Observable<void>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();

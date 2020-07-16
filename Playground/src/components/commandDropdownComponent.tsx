@@ -70,6 +70,12 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                 }
                                                 {
                                                     m.subItems &&
+                                                    <div className="command-dropdown-arrow">
+                                                        {">"}
+                                                    </div>
+                                                }
+                                                {
+                                                    m.subItems &&
                                                     <div className={"sub-items " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>
                                                         {
                                                             m.subItems.map(s => {

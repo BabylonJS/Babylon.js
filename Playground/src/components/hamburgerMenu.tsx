@@ -57,6 +57,11 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         this.setState({isExpanded: false});
     }
 
+    onExamples() {
+        this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
+        this.setState({isExpanded: false});
+    }
+
     switch() {
         this.setState({isExpanded: !this.state.isExpanded});
     }
@@ -81,6 +86,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Clear code" icon="clear" isActive={false} onClick={()=> this.onClear()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Format code" icon="options" isActive={false} onClick={()=> this.onFormatCode()}/>
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Metadata" icon="options" isActive={false} onClick={()=> this.onMetadata()}/>
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={()=> this.onExamples()} isActive={false}/>
                 </div>
             </>
         );

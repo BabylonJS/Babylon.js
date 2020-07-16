@@ -2,7 +2,16 @@
 .commands {
     grid-row: 1;
     grid-column: 3;
-    display: flex;
+
+    .commands-left {
+        float: left;
+        display: flex;
+    }
+
+    .commands-right {
+        float: right;
+        display: flex;
+    }
 
     &.background-ts {
         .command-button, .command-dropdown  {
@@ -47,6 +56,12 @@
         &:active {
             transform-origin: center;
             transform: scale(0.95);
+        }
+
+        img {
+            &.active {
+                filter: invert(100%);
+            }
         }
     }
 
@@ -123,7 +138,6 @@
             grid-template-rows: 100%;
             position: relative;
 
-
             &:hover {
                 .sub-items {
                     display: block;
@@ -138,6 +152,15 @@
             .command-dropdown-label-check {
                 grid-column: 2;
                 grid-row: 1;
+            }
+
+            .command-dropdown-arrow {
+                grid-column: 2;
+                grid-row: 1;    
+                font-size: 28px;
+                font-weight: bold;
+                padding-bottom: 10px;
+                padding-left: 4px;
             }
 
             .sub-items {

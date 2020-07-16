@@ -95,6 +95,10 @@
         img {
             grid-column: 1;
             grid-row: 1;
+
+            &.active {
+                filter: invert(100%);
+            }
         }
 
         &:hover {
