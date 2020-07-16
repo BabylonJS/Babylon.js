@@ -99,17 +99,12 @@ export class PlaneRotationGizmo extends Gizmo {
         var amountToRotate = new Quaternion();
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
-                // Remove parent priort to rotating
-                var attachedNodeParent = this.attachedNode.parent;
-                if (attachedNodeParent) {
-                    this.attachedNode.parent = null;
-                }
-
                 // Calc angle over full 360 degree (https://stackoverflow.com/questions/43493711/the-angle-between-two-3d-vectors-with-a-result-range-0-360)
                 var nodeScale = new Vector3(1, 1, 1);
                 var nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 var nodeTranslation = new Vector3(0, 0, 0);
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
+
                 var newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();
                 var originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
                 var cross = Vector3.Cross(newVector, originalVector);
@@ -118,7 +113,6 @@ export class PlaneRotationGizmo extends Gizmo {
                 planeNormalTowardsCamera.copyFrom(planeNormal);
                 localPlaneNormalTowardsCamera.copyFrom(planeNormal);
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
-                    //this.attachedMesh.rotationQuaternion.toRotationMatrix(rotationMatrix);
                     nodeQuaternion.toRotationMatrix(rotationMatrix);
                     localPlaneNormalTowardsCamera = Vector3.TransformCoordinates(planeNormalTowardsCamera, rotationMatrix);
                 }
@@ -150,14 +144,6 @@ export class PlaneRotationGizmo extends Gizmo {
                     }
                 }
 
-                // If the node has a parent, convert needed world rotation to local rotation
-                tmpMatrix.reset();
-                if (this.attachedNode.parent) {
-                    this.attachedNode.parent.computeWorldMatrix().invertToRef(tmpMatrix);
-                    tmpMatrix.getRotationMatrixToRef(tmpMatrix);
-                    Vector3.TransformCoordinatesToRef(planeNormalTowardsCamera, tmpMatrix, planeNormalTowardsCamera);
-                }
-
                 // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
                 var quaternionCoefficient = Math.sin(angle / 2);
                 amountToRotate.set(planeNormalTowardsCamera.x * quaternionCoefficient, planeNormalTowardsCamera.y * quaternionCoefficient, planeNormalTowardsCamera.z * quaternionCoefficient, Math.cos(angle / 2));
@@ -178,7 +164,7 @@ export class PlaneRotationGizmo extends Gizmo {
                 }
 
                 // recompose matrix
-                this.attachedNode._worldMatrix = Matrix.Compose(nodeScale, nodeQuaternion, nodeTranslation);
+                this.attachedNode.getWorldMatrix().copyFrom(Matrix.Compose(nodeScale, nodeQuaternion, nodeTranslation));
 
                 lastDragPosition.copyFrom(event.dragPlanePoint);
                 if (snapped) {
@@ -186,11 +172,7 @@ export class PlaneRotationGizmo extends Gizmo {
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
                 }
 
-                // Restore parent
-                if (attachedNodeParent) {
-                    this.attachedNode.parent = attachedNodeParent;
-                }
-                this._matrixChanged(this.attachedNode);
+                this._matrixChanged();
             }
         });
 

@@ -129,13 +129,13 @@ export class AxisScaleGizmo extends Gizmo {
 
                 const scalingMatrix = new Matrix();
                 Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, scalingMatrix);
-                this.attachedNode._worldMatrix = scalingMatrix.multiply(this.attachedNode.getWorldMatrix());
+                this.attachedNode.getWorldMatrix().copyFrom(scalingMatrix.multiply(this.attachedNode.getWorldMatrix()));
 
                 if (snapped) {
                     tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
                 }
-                this._matrixChanged(this.attachedNode);
+                this._matrixChanged();
             }
         });
 

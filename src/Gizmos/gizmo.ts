@@ -2,10 +2,11 @@ import { Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
 import { Scene, IDisposable } from "../scene";
-import { Quaternion, Vector3 } from "../Maths/math.vector";
+import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Node } from "..";
+import { Bone } from "../Bones";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { TransformNode } from '../Meshes';
 /**
@@ -151,15 +152,39 @@ export class Gizmo implements IDisposable {
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
      * @param value Node, TransformNode or mesh
      */
-    protected _matrixChanged(value: Node)
+    protected _matrixChanged()
     {
-        if (value.getClassName() === "Mesh" || value.getClassName() === "TransformNode") {
-            var transform = value as TransformNode;
+        if (!this._attachedNode) {
+            return;
+        }
+        if (this._attachedNode.getClassName() === "Mesh" || this._attachedNode.getClassName() === "TransformNode") {
+            var transform = this._attachedNode as TransformNode;
             var transformQuaternion = new Quaternion(0, 0, 0, 1);
-            value._worldMatrix.decompose(transform.scaling, transformQuaternion, transform.position);
+            if (transform.parent) {
+                var parentInv = new Matrix();
+                var localMat = new Matrix();
+                transform.parent.getWorldMatrix().invertToRef(parentInv);
+                this._attachedNode._worldMatrix.multiplyToRef(parentInv, localMat);
+                localMat.decompose(transform.scaling, transformQuaternion, transform.position);
+            } else {
+                this._attachedNode._worldMatrix.decompose(transform.scaling, transformQuaternion, transform.position);
+            }
             transform.rotation = transformQuaternion.toEulerAngles();
             if (transform.rotationQuaternion) {
                 transform.rotationQuaternion = transformQuaternion;
+            }
+        } else if (this._attachedNode.getClassName() === "Bone") {
+            var bone = this._attachedNode as Bone;
+            const parent = bone.getParent();
+            
+            if (parent) {
+                var invParent = new Matrix();
+                var boneLocalMatrix = new Matrix();
+                parent.getWorldMatrix().invertToRef(invParent);
+                bone.getWorldMatrix().multiplyToRef(invParent, boneLocalMatrix);
+                var lmat = bone.getLocalMatrix();
+                lmat.copyFrom(boneLocalMatrix);
+                bone.markAsDirty();
             }
         }
     }

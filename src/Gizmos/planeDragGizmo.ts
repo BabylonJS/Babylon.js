@@ -123,7 +123,7 @@ export class PlaneDragGizmo extends Gizmo {
                         this.onSnapObservable.notifyObservers(tmpSnapEvent);
                     }
                 }
-                this._matrixChanged(this.attachedNode);
+                this._matrixChanged();
             }
         });
 
