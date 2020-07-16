@@ -1,0 +1,8 @@
+<script>
+    localStorage.setItem("language", "JS");
+    
+    var parseURL = window.location.href.split("js.html");
+    var hash = parseURL[parseURL.length - 1];
+
+    window.location = "./" + hash;
+</script>

@@ -57,8 +57,31 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             "Light",
                             "Dark"
                         ],
-                        onClick: () => {}
-                    },  {
+                        onClick: () => {
+                            this.props.globalState.onThemeChangedObservable.notifyObservers();
+                        }
+                    },  
+                    {
+                        label: "Font size",
+                        storeKey: "font-size",
+                        defaultValue: "14",
+                        subItems: [
+                            "12",
+                            "14",
+                            "16",
+                            "18",
+                            "20",
+                            "22",
+                            "24",
+                            "26",
+                            "28",
+                            "30",
+                        ],
+                        onClick: () => {
+                            this.props.globalState.onFontSizeChangedObservable.notifyObservers();
+                        }
+                    },
+                    {
                         label: "Safe mode",
                         storeKey: "safe-mode",
                         defaultValue: false,

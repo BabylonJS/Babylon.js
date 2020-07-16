@@ -1,4 +1,7 @@
 import { Observable } from 'babylonjs/Misc/observable';
+import { Utilities } from './tools/utilities';
+import { CompilationError } from './components/errorDisplayComponent';
+import { Nullable } from 'babylonjs/types';
 
 export enum EditionMode {
     Desktop,
@@ -11,7 +14,8 @@ export class GlobalState {
     public readonly SnippetServerUrl = "https://snippet.babylonjs.com";
 
     public currentCode: string;
-    public language: "JS" | "TS" = "JS";
+    public getCompiledCode: () => Promise<string>;
+    public language = Utilities.ReadStringFromStore("language", "JS");;
     public fpsElement: HTMLDivElement;
     public mobileDefaultMode = EditionMode.RenderingOnly;
 
@@ -27,7 +31,7 @@ export class GlobalState {
     public onNewRequiredObservable = new Observable<void>();
     public onClearRequiredObservable = new Observable<void>();
     public onSaveRequiredObservable = new Observable<void>();
-    public onErrorObservable = new Observable<string>();    
+    public onErrorObservable = new Observable<Nullable<CompilationError>>();    
     public onMobileDefaultModeChangedObservable = new Observable<void>();
     public onDisplayWaitRingObservable = new Observable<boolean>();
     public onDisplayMetadataObservable = new Observable<boolean>();    
@@ -40,6 +44,10 @@ export class GlobalState {
     public onEditorFullcreenRequiredObservable = new Observable<void>();
     public onMinimapChangedObservable = new Observable<boolean>();
     public onEditorDisplayChangedObservable = new Observable<boolean>();
+    public onThemeChangedObservable = new Observable<void>();
+    public onFontSizeChangedObservable = new Observable<void>();
+    public onLanguageChangedObservable = new Observable<void>();
+    public onNavigateRequiredObservable = new Observable<{lineNumber: number, column: number}>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();

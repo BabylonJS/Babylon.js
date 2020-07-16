@@ -18,6 +18,10 @@ export class FooterComponent extends React.Component<IFooterComponentProps> {
     public constructor(props: IFooterComponentProps) {
         super(props);
         this._fpsRef = React.createRef();
+
+        this.props.globalState.onLanguageChangedObservable.add(() => {
+            this.forceUpdate();
+        });
     }
     
     componentDidMount() {       
