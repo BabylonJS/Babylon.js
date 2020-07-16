@@ -581,6 +581,7 @@ declare module INSPECTOR {
         positionCanvas?: number;
         repositionCanvas?: boolean;
         canvasPositionEnded: () => void;
+        resetActionableKeyframe: () => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, {
         panX: number;
@@ -610,7 +611,7 @@ declare module INSPECTOR {
         keyDown(e: KeyboardEvent): void;
         keyUp(e: KeyboardEvent): void;
         focus(e: React.MouseEvent<SVGSVGElement>): void;
-        isControlPointActive(): boolean;
+        isNotControlPointActive(): boolean;
         render(): JSX.Element;
     }
 }
@@ -742,9 +743,16 @@ declare module INSPECTOR {
         title: string;
         close: (event: any) => void;
         enabled: boolean;
+        setKeyframeValue: () => void;
     }
     export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
+        private _frameInput;
+        private _valueInput;
         constructor(props: IGraphActionsBarProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        isEnterKeyUp(event: KeyboardEvent): void;
+        onBlur(event: React.FocusEvent<HTMLInputElement>): void;
         render(): JSX.Element;
     }
 }
@@ -965,8 +973,8 @@ declare module INSPECTOR {
         label: number;
     }
     export interface IActionableKeyFrame {
-        frame: number;
-        value: any;
+        frame?: number | string;
+        value?: any;
     }
     interface ICurveData {
         pathData: string;
@@ -1039,23 +1047,30 @@ declare module INSPECTOR {
         setAxesLength(): void;
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
+        encodeCurveId(animationName: string, coordinate: number): string;
+        decodeCurveId(id: string): {
+            order: number;
+            coordinate: number;
+        };
+        getKeyframeValueFromAnimation(id: string): {
+            frame: number;
+            value: number;
+        } | undefined;
         /**
          * Keyframe Manipulation
          * This section handles events from SvgDraggableArea.
          */
         selectKeyframe(id: string, multiselect: boolean): void;
+        resetActionableKeyframe(): void;
         selectedControlPoint(type: string, id: string): void;
         deselectKeyframes(): void;
         updateValuePerCoordinate(dataType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion, newValue: number, coordinate?: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
         updateLeftControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
         updateRightControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
-        /**
-         * Actions
-         * This section handles events from GraphActionsBar.
-         */
         handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setKeyframeValue(): void;
         setFlatTangent(): void;
         setTangentMode(): void;
         setBrokenMode(): void;
@@ -1071,8 +1086,9 @@ declare module INSPECTOR {
         linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
         flatTangents(keyframes: BABYLON.IAnimationKey[], dataType: number): BABYLON.IAnimationKey[];
-        returnZero(dataType: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size | undefined;
+        returnZero(dataType: number): 0 | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         getValueAsArray(valueType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion): number[];
+        setValueAsType(valueType: number, arrayValue: number[]): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         getPathData(animation: BABYLON.Animation | null): ICurveData[] | undefined;
         getAnimationData(animation: BABYLON.Animation): {
             loopMode: number | undefined;
