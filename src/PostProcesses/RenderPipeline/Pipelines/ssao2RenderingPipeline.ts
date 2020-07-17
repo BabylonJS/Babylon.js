@@ -9,7 +9,6 @@ import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
-import { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { Scene } from "../../../scene";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
@@ -19,6 +18,8 @@ import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSc
 
 import "../../../Shaders/ssao2.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
+
+declare type PrePassRenderer = import("../../../Rendering/prePassRenderer").PrePassRenderer;
 
 /**
  * Render pipeline to produce ssao effect
@@ -503,6 +504,16 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
         return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup
+     * @returns true if the pre pass is needed.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        prePassRenderer.materialsShouldRenderGeometry = prePassRenderer.materialsShouldRenderGeometry || true;
+        return true;
     }
 }
 
