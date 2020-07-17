@@ -5,6 +5,9 @@
     color:white;
     cursor: pointer;
     transform: scale(1);
+    display: grid;
+    align-content: center;
+    justify-content: center;
     
     &:hover {
         background-color: white;
@@ -15,7 +18,7 @@
     
     &:active {
         transform-origin: center;
-        transform: scale(0.95);
+        transform: scale(0.90);
     }
 
     svg {
@@ -79,9 +82,18 @@
     .command-button {
         cursor: pointer;
         width: 200px;
+        height: 30px;
         display: grid;
         grid-template-columns: 40px 1fr;
         grid-template-rows: 100%;
+
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
 
         .command-label {
             color: white;
@@ -95,6 +107,7 @@
         img {
             grid-column: 1;
             grid-row: 1;
+            width: 20px;
 
             &.active {
                 filter: invert(100%);

@@ -14,13 +14,6 @@
         grid-row: 1;
         grid-column: 1;
         cursor: pointer;
-
-        .link {
-            svg {
-                height: 35px;
-                width: 35px;
-            }
-        }
     }
    
     #statusBar {
@@ -42,7 +35,8 @@
     .links {
         height: 100%;
         grid-row: 1;
-        grid-column: 3;      
+        grid-column: 3;  
+        display: flex;
     }
 
     .fps {        
@@ -56,14 +50,14 @@
     }
 
     .link {
-        display: inline-block;
+        display: grid;
+        align-content: center;
+        justify-content: center;
         width: 35px;
         height: 100%;
         
         svg {
             fill: white;
-            height: 16px;
-            width: 16px;
         }
 
         &:hover {

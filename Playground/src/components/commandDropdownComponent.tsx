@@ -11,6 +11,7 @@ interface ICommandDropdownComponentProps {
         onClick?: () => void, 
         onCheck?: (value: boolean) => void, 
         storeKey?: string, 
+        isActive?: boolean,
         defaultValue?: boolean | string;
         subItems?: string[];
     }[];
@@ -35,7 +36,9 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                 }
                 <div className="command-dropdown-root">
                     <div className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")} title={this.props.tooltip} onClick={() => this.setState({isExpanded: !this.state.isExpanded})}>
-                        <img src={"imgs/" + this.props.icon + ".svg"}/>
+                        <div className="command-dropdown-icon">
+                            <img src={"imgs/" + this.props.icon + ".svg"}/>
+                        </div>
                     </div>
                     {
                             this.state.isExpanded &&
@@ -43,7 +46,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                 {
                                     this.props.items.map(m => {
                                         return (
-                                            <div className="command-dropdown-label" key={m.label} onClick={() => {
+                                            <div className={"command-dropdown-label" + (m.isActive ? " active" : "")} key={m.label} onClick={() => {
                                                 if (!m.onClick) {
                                                     let newValue = !Utilities.ReadBoolFromStore(m.storeKey!, (m.defaultValue as boolean) || false);
                                                     Utilities.StoreBoolToStore(m.storeKey!, newValue);
@@ -57,7 +60,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                 }
                                             }} title={m.label}>
                                                 <div className="command-dropdown-label-text">
-                                                    {m.label}
+                                                    {(m.isActive ? "> " : "") + m.label}
                                                 </div>
                                                 {
                                                     m.onCheck && 

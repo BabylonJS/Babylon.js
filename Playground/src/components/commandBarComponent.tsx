@@ -47,12 +47,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
 
     public render() {
+        let activeVersion = Utilities.ReadStringFromStore("version", "Latest");
 
         var versionOptions = Object.keys(Versions).map(key => {
             return {
                 label: key,
                 storeKey: "version",
                 defaultValue: "Latest",
+                isActive: activeVersion === key,
                 onClick: () => {
                     Utilities.StoreStringToStore("version", key);
                     window.location.reload();
@@ -141,7 +143,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 ]}/>
                 </div>
                 <div className="commands-right">
-                    <CommandDropdownComponent globalState={this.props.globalState} icon="options" tooltip="Options" toRight={true} items={versionOptions} />                    
+                    <CommandDropdownComponent globalState={this.props.globalState} icon="version" tooltip="Versions" toRight={true} items={versionOptions} />                    
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={()=> this.onExamples()} isActive={false}/>
                 </div>
             </div>
