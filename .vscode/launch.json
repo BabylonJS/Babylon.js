@@ -81,7 +81,7 @@
                 "--enable-unsafe-es3-apis"
             ]
         },
-        {
+        { 
             "name": "Launch playground (Edge)",
             "type": "edge",
             "version": "dev",
@@ -208,6 +208,19 @@
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },   
+        {
+            "name": "Launch Local Dev (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/localDev/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"

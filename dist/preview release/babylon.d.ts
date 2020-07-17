@@ -1049,6 +1049,22 @@ declare module BABYLON {
          * Detailled logging while loading
          */
         static readonly SCENELOADER_DETAILED_LOGGING: number;
+        /**
+         * Prepass texture index for color
+         */
+        static readonly PREPASS_COLOR_INDEX: number;
+        /**
+         * Prepass texture index for irradiance
+         */
+        static readonly PREPASS_IRRADIANCE_INDEX: number;
+        /**
+         * Prepass texture index for depth + normal
+         */
+        static readonly PREPASS_DEPTHNORMAL_INDEX: number;
+        /**
+         * Prepass texture index for albedo
+         */
+        static readonly PREPASS_ALBEDO_INDEX: number;
     }
 }
 declare module BABYLON {
@@ -1521,7 +1537,7 @@ declare module BABYLON {
      * @hidden
      */
     export interface IMatrixLike {
-        toArray(): DeepImmutable<Float32Array>;
+        toArray(): DeepImmutable<Float32Array | Array<number>>;
         updateFlag: int;
     }
     /**
@@ -2018,6 +2034,21 @@ declare module BABYLON {
          * @returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
          */
         static SignedDistanceToPlaneFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, point: DeepImmutable<Vector3>): number;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export class PerformanceConfigurator {
+        /** @hidden */
+        static MatrixUse64Bits: boolean;
+        /** @hidden */
+        static MatrixTrackPrecisionChange: boolean;
+        /** @hidden */
+        static MatrixCurrentType: any;
+        /** @hidden */
+        static MatrixTrackedMatrices: Array<any> | null;
+        /** @hidden */
+        static SetMatrixPrecision(use64bits: boolean): void;
     }
 }
 declare module BABYLON {
@@ -3993,6 +4024,10 @@ declare module BABYLON {
      * Class used to store matrix data (4x4)
      */
     export class Matrix {
+        /**
+         * Gets the precision of matrix computations
+         */
+        static get Use64Bits(): boolean;
         private static _updateFlagSeed;
         private static _identityReadOnly;
         private _isIdentity;
@@ -4009,7 +4044,7 @@ declare module BABYLON {
         /**
          * Gets the internal data of the matrix
          */
-        get m(): DeepImmutable<Float32Array>;
+        get m(): DeepImmutable<Float32Array | Array<number>>;
         /** @hidden */
         _markAsUpdated(): void;
         /** @hidden */
@@ -4034,15 +4069,15 @@ declare module BABYLON {
          */
         determinant(): number;
         /**
-         * Returns the matrix as a Float32Array
+         * Returns the matrix as a Float32Array or Array<number>
          * @returns the matrix underlying array
          */
-        toArray(): DeepImmutable<Float32Array>;
+        toArray(): DeepImmutable<Float32Array | Array<number>>;
         /**
-         * Returns the matrix as a Float32Array
+         * Returns the matrix as a Float32Array or Array<number>
         * @returns the matrix underlying array.
         */
-        asArray(): DeepImmutable<Float32Array>;
+        asArray(): DeepImmutable<Float32Array | Array<number>>;
         /**
          * Inverts the current matrix in place
          * @returns the current inverted matrix
@@ -4148,7 +4183,7 @@ declare module BABYLON {
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        copyToArray(array: Float32Array, offset?: number): Matrix;
+        copyToArray(array: Float32Array | Array<number>, offset?: number): Matrix;
         /**
          * Sets the given matrix "result" with the multiplication result of the current Matrix and the given one
          * @param other defines the second operand
@@ -4163,7 +4198,7 @@ declare module BABYLON {
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
-        multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array, offset: number): Matrix;
+        multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array | Array<number>, offset: number): Matrix;
         /**
          * Check equality between this matrix and a second one
          * @param value defines the second matrix to compare
@@ -4292,7 +4327,7 @@ declare module BABYLON {
          * @param scale defines the scaling factor
          * @param result defines the target matrix
          */
-        static FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array>, offset: number, scale: number, result: Matrix): void;
+        static FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array | Array<number>>, offset: number, scale: number, result: Matrix): void;
         /**
          * Gets an identity matrix that must not be updated
          */
@@ -4715,13 +4750,13 @@ declare module BABYLON {
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the given matrix
          */
-        static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array;
+        static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array | Array<number>;
         /**
          * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
          * @param matrix defines the matrix to use
          * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the given matrix
          */
-        static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array;
+        static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array | Array<number>;
         /**
          * Compute the transpose of a given matrix
          * @param matrix defines the matrix to transpose
@@ -4818,9 +4853,9 @@ declare module BABYLON {
          */
         radians(): number;
         /**
-         * Gets a new Angle object valued with the angle value in radians between the two given vectors
-         * @param a defines first vector
-         * @param b defines second vector
+         * Gets a new Angle object valued with the gradient angle, in radians, of the line joining two points
+         * @param a defines first point as the origin
+         * @param b defines point
          * @returns a new Angle
          */
         static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle;
@@ -16445,14 +16480,14 @@ declare module BABYLON {
          * @param value Define the value to give to the uniform
          * @return the material itself allowing "fluent" like uniform updates
          */
-        setMatrix3x3(name: string, value: Float32Array): ShaderMaterial;
+        setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial;
         /**
          * Set a mat2 in the shader from a Float32Array.
          * @param name Define the name of the uniform as defined in the shader
          * @param value Define the value to give to the uniform
          * @return the material itself allowing "fluent" like uniform updates
          */
-        setMatrix2x2(name: string, value: Float32Array): ShaderMaterial;
+        setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial;
         /**
          * Set a vec2 array in the shader from a number array.
          * @param name Define the name of the uniform as defined in the shader
@@ -16759,6 +16794,41 @@ declare module BABYLON {
         customInstances: SmartArray<Matrix>;
     }
     /**
+     * Defines the additional options of the edges renderer
+     */
+    export interface IEdgesRendererOptions {
+        /**
+         * Gets or sets a boolean indicating that the alternate edge finder algorithm must be used
+         * If not defined, the default value is true
+         */
+        useAlternateEdgeFinder?: boolean;
+        /**
+         * Gets or sets a boolean indicating that the vertex merger fast processing must be used.
+         * If not defined, the default value is true.
+         * You should normally leave it undefined (or set it to true), except if you see some artifacts in the edges rendering (can happen with complex geometries)
+         * This option is used only if useAlternateEdgeFinder = true
+         */
+        useFastVertexMerger?: boolean;
+        /**
+         * During edges processing, the vertices are merged if they are close enough: epsilonVertexMerge is the limit whithin which vertices are considered to be equal.
+         * The default value is 1e-6
+         * This option is used only if useAlternateEdgeFinder = true
+         */
+        epsilonVertexMerge?: number;
+        /**
+         * Gets or sets a boolean indicating that tessellation should be applied before finding the edges. You may need to activate this option if your geometry is a bit
+         * unusual, like having a vertex of a triangle in-between two vertices of an edge of another triangle. It happens often when using CSG to construct meshes.
+         * This option is used only if useAlternateEdgeFinder = true
+         */
+        applyTessellation?: boolean;
+        /**
+         * The limit under which 3 vertices are considered to be aligned. 3 vertices PQR are considered aligned if distance(PQ) + distance(QR) - distance(PR) < epsilonVertexAligned
+         * The default value is 1e-6
+         * This option is used only if useAlternateEdgeFinder = true
+         */
+        epsilonVertexAligned?: number;
+    }
+    /**
      * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
      */
     export class EdgesRenderer implements IEdgesRenderer {
@@ -16785,6 +16855,7 @@ declare module BABYLON {
             [key: string]: Nullable<VertexBuffer>;
         };
         protected _checkVerticesInsteadOfIndices: boolean;
+        protected _options: Nullable<IEdgesRendererOptions>;
         private _meshRebuildObserver;
         private _meshDisposeObserver;
         /** Gets or sets a boolean indicating if the edgesRenderer is active */
@@ -16799,10 +16870,11 @@ declare module BABYLON {
          * Beware when you use this class with complex objects as the adjacencies computation can be really long
          * @param  source Mesh used to create edges
          * @param  epsilon sum of angles in adjacency to check for edge
-         * @param  checkVerticesInsteadOfIndices bases the edges detection on vertices vs indices
+         * @param  checkVerticesInsteadOfIndices bases the edges detection on vertices vs indices. Note that this parameter is not used if options.useAlternateEdgeFinder = true
          * @param  generateEdgesLines - should generate Lines or only prepare resources.
+         * @param  options The options to apply when generating the edges
          */
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean);
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean, generateEdgesLines?: boolean, options?: IEdgesRendererOptions);
         protected _prepareRessources(): void;
         /** @hidden */
         _rebuild(): void;
@@ -16827,6 +16899,11 @@ declare module BABYLON {
          * @protected
          */
         protected createLine(p0: Vector3, p1: Vector3, offset: number): void;
+        /**
+         * See https://playground.babylonjs.com/#R3JR6V#1 for a visual display of the algorithm
+         */
+        private _tessellateTriangle;
+        private _generateEdgesLinesAlternate;
         /**
          * Generates lines edges from adjacencjes
          * @private
@@ -20172,6 +20249,12 @@ declare module BABYLON {
          */
         constructor(name: string, target?: NodeMaterialBlockTargets, type?: NodeMaterialBlockConnectionPointTypes);
         /**
+        * Validates if a name is a reserve word.
+        * @param newName the new name to be given to the node.
+        * @returns false if the name is a reserve word, else true.
+        */
+        validateBlockName(newName: string): boolean;
+        /**
          * Gets the output component
          */
         get output(): NodeMaterialConnectionPoint;
@@ -21242,6 +21325,7 @@ declare module BABYLON {
         private _target;
         private _isFinalMerger;
         private _isInput;
+        private _name;
         protected _isUnique: boolean;
         /** Gets or sets a boolean indicating that only one input can be connected at a time */
         inputsAreExclusive: boolean;
@@ -21254,9 +21338,13 @@ declare module BABYLON {
         /** @hidden */
         _preparationId: number;
         /**
-         * Gets or sets the name of the block
+         * Gets the name of the block
          */
-        name: string;
+        get name(): string;
+        /**
+         * Sets the name of the block. Will check if the name is valid.
+         */
+        set name(newName: string);
         /**
          * Gets or sets the unique id of the node
          */
@@ -21438,6 +21526,12 @@ declare module BABYLON {
         isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances?: boolean): boolean;
         protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number): void;
         private _processBuild;
+        /**
+        * Validates the new name for the block node.
+        * @param newName the new name to be given to the node.
+        * @returns false if the name is a reserve word, else true.
+        */
+        validateBlockName(newName: string): boolean;
         /**
          * Compile the current node and generate the shader code
          * @param state defines the current compilation state (uniforms, samplers, current string)
@@ -22467,6 +22561,11 @@ declare module BABYLON {
         */
         get inputTexture(): InternalTexture;
         set inputTexture(value: InternalTexture);
+        /**
+        * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
+        * the only way to unset it is to use this function to restore its internal state
+        */
+        restoreDefaultInputTexture(): void;
         /**
         * Gets the camera which post process is applied to.
         * @returns The camera the post process is applied to.
@@ -29149,6 +29248,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var prePassDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var lightFragmentDeclaration: {
         name: string;
         shader: string;
@@ -29870,6 +29976,10 @@ declare module BABYLON {
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
         set cameraColorCurves(value: Nullable<ColorCurves>);
+        /**
+         * Should this material render to several textures at once
+         */
+        get shouldRenderToMRT(): boolean;
         /**
          * Defines the detail map parameters for the material.
          */
@@ -33648,7 +33758,7 @@ declare module BABYLON {
          * @param matrices matrices to be set.
          * @returns this effect.
          */
-        setMatrices(uniformName: string, matrices: Float32Array): Effect;
+        setMatrices(uniformName: string, matrices: Float32Array | Array<number>): Effect;
         /**
          * Sets matrix on a uniform variable.
          * @param uniformName Name of the variable.
@@ -33662,14 +33772,14 @@ declare module BABYLON {
          * @param matrix matrix to be set.
          * @returns this effect.
          */
-        setMatrix3x3(uniformName: string, matrix: Float32Array): Effect;
+        setMatrix3x3(uniformName: string, matrix: Float32Array | Array<number>): Effect;
         /**
          * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
          * @param uniformName Name of the variable.
          * @param matrix matrix to be set.
          * @returns this effect.
          */
-        setMatrix2x2(uniformName: string, matrix: Float32Array): Effect;
+        setMatrix2x2(uniformName: string, matrix: Float32Array | Array<number>): Effect;
         /**
          * Sets a float on a uniform variable.
          * @param uniformName Name of the variable.
@@ -34258,6 +34368,10 @@ declare module BABYLON {
          * Make the canvas XR Compatible for XR sessions
          */
         xrCompatible?: boolean;
+        /**
+         * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+         */
+        useHighPrecisionMatrix?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -45804,7 +45918,10 @@ declare module BABYLON {
          * @returns "ImageProcessingPostProcess"
          */
         getClassName(): string;
-        protected _updateParameters(): void;
+        /**
+         * @hidden
+         */
+        _updateParameters(): void;
         dispose(camera?: Camera): void;
     }
 }
@@ -46928,6 +47045,7 @@ declare module BABYLON {
          */
         static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         private static _registeredPlugins;
+        private static _showingLoadingScreen;
         private static _getDefaultPlugin;
         private static _getPluginForExtension;
         private static _getPluginForDirectLoad;
@@ -49431,6 +49549,7 @@ declare module BABYLON {
          */
         _rootMesh: Mesh;
         private _attachedMesh;
+        private _attachedNode;
         /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
@@ -49445,6 +49564,12 @@ declare module BABYLON {
          */
         get attachedMesh(): Nullable<AbstractMesh>;
         set attachedMesh(value: Nullable<AbstractMesh>);
+        /**
+         * Node that the gizmo will be attached to. (eg. on a drag gizmo the mesh, bone or NodeTransform that will be dragged)
+         * * When set, interactions will be enabled
+         */
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(value: Nullable<Node>);
         /**
          * Disposes and replaces the current meshes in the gizmo with the specified mesh
          * @param mesh The mesh to replace the default mesh of the gizmo
@@ -49463,7 +49588,7 @@ declare module BABYLON {
          */
         updateScale: boolean;
         protected _interactionsEnabled: boolean;
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         private _beforeRenderObserver;
         private _tempVector;
         /**
@@ -49477,6 +49602,11 @@ declare module BABYLON {
          * Updates the gizmo to match the attached mesh's position/rotation
          */
         protected _update(): void;
+        /**
+         * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
+         * @param value Node, TransformNode or mesh
+         */
+        protected _matrixChanged(): void;
         /**
          * Disposes of the gizmo
          */
@@ -49520,7 +49650,7 @@ declare module BABYLON {
          * @param color The color of the gizmo
          */
         constructor(dragPlaneNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<PositionGizmo>);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         /**
          * If the gizmo is enabled
          */
@@ -49565,6 +49695,7 @@ declare module BABYLON {
          * private variables
          */
         private _meshAttached;
+        private _nodeAttached;
         private _updateGizmoRotationToMatchAttachedMesh;
         private _snapDistance;
         private _scaleRatio;
@@ -49578,6 +49709,8 @@ declare module BABYLON {
         private _planarGizmoEnabled;
         get attachedMesh(): Nullable<AbstractMesh>;
         set attachedMesh(mesh: Nullable<AbstractMesh>);
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(node: Nullable<Node>);
         /**
          * Creates a PositionGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -49649,7 +49782,7 @@ declare module BABYLON {
          * @param color The color of the gizmo
          */
         constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<PositionGizmo>);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         /**
          * If the gizmo is enabled
          */
@@ -50559,6 +50692,10 @@ declare module BABYLON {
          * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
          */
         lockstepMaxSteps: number;
+        /**
+         * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+         */
+        useHighPrecisionMatrix?: boolean;
     }
     /**
      * The null engine class provides support for headless version of babylon.js.
@@ -52448,6 +52585,7 @@ declare module BABYLON {
          */
         uniformScaleGizmo: AxisScaleGizmo;
         private _meshAttached;
+        private _nodeAttached;
         private _updateGizmoRotationToMatchAttachedMesh;
         private _snapDistance;
         private _scaleRatio;
@@ -52460,6 +52598,8 @@ declare module BABYLON {
         onDragEndObservable: Observable<unknown>;
         get attachedMesh(): Nullable<AbstractMesh>;
         set attachedMesh(mesh: Nullable<AbstractMesh>);
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(node: Nullable<Node>);
         /**
          * Creates a ScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -52529,7 +52669,7 @@ declare module BABYLON {
          * @param color The color of the gizmo
          */
         constructor(dragAxis: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, parent?: Nullable<ScaleGizmo>);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         /**
      * If the gizmo is enabled
      */
@@ -52607,11 +52747,11 @@ declare module BABYLON {
          */
         onRotationSphereDragEndObservable: Observable<{}>;
         /**
-         * Relative bounding box pivot used when scaling the attached mesh. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
+         * Relative bounding box pivot used when scaling the attached node. When null object with scale from the opposite corner. 0.5,0.5,0.5 for center and 0.5,0,0.5 for bottom (Default: null)
          */
         scalePivot: Nullable<Vector3>;
         /**
-         * Mesh used as a pivot to rotate the attached mesh
+         * Mesh used as a pivot to rotate the attached node
          */
         private _anchorMesh;
         private _existingMeshScale;
@@ -52630,7 +52770,7 @@ declare module BABYLON {
          * @param color The color of the gizmo
          */
         constructor(color?: Color3, gizmoLayer?: UtilityLayerRenderer);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<AbstractMesh>): void;
         private _selectNode;
         /**
          * Updates the bounding box information for the Gizmo
@@ -52703,7 +52843,7 @@ declare module BABYLON {
          * @param useEulerRotation Use and update Euler angle instead of quaternion
          */
         constructor(planeNormal: Vector3, color?: Color3, gizmoLayer?: UtilityLayerRenderer, tessellation?: number, parent?: Nullable<RotationGizmo>, useEulerRotation?: boolean);
-        protected _attachedMeshChanged(value: Nullable<AbstractMesh>): void;
+        protected _attachedNodeChanged(value: Nullable<Node>): void;
         /**
              * If the gizmo is enabled
              */
@@ -52737,8 +52877,11 @@ declare module BABYLON {
         /** Fires an event when any of it's sub gizmos are released from dragging */
         onDragEndObservable: Observable<unknown>;
         private _meshAttached;
+        private _nodeAttached;
         get attachedMesh(): Nullable<AbstractMesh>;
         set attachedMesh(mesh: Nullable<AbstractMesh>);
+        get attachedNode(): Nullable<Node>;
+        set attachedNode(node: Nullable<Node>);
         /**
          * Creates a RotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -54852,13 +54995,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
-    export var prePassDeclaration: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
     export var pbrFragmentDeclaration: {
         name: string;
         shader: string;
@@ -56692,9 +56828,13 @@ declare module BABYLON {
          */
         protected _material: BackgroundMaterial;
         /**
-         * The surface used for the skybox
+         * The surface used for the video dome
          */
         protected _mesh: Mesh;
+        /**
+         * Gets the mesh used for the video dome.
+         */
+        get mesh(): Mesh;
         /**
          * A mesh that will be used to mask the back of the video dome in case it is a 180 degree movie.
          */
@@ -69639,6 +69779,251 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var fibonacci: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var diffusionProfile: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var subSurfaceScatteringPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Sub surface scattering post process
+     */
+    export class SubSurfaceScatteringPostProcess extends PostProcess {
+        /** @hidden */
+        texelWidth: number;
+        /** @hidden */
+        texelHeight: number;
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface for defining prepass effects in the prepass post-process pipeline
+     */
+    export interface PrePassEffectConfiguration {
+        /**
+         * Post process to attach for this effect
+         */
+        postProcess: PostProcess;
+        /**
+         * Is the effect enabled
+         */
+        enabled: boolean;
+        /**
+         * Disposes the effect configuration
+         */
+        dispose(): void;
+        /**
+         * Disposes the effect configuration
+         */
+        createPostProcess: () => PostProcess;
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains all parameters needed for the prepass to perform
+     * screen space subsurface scattering
+     */
+    export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
+        private _ssDiffusionS;
+        private _ssFilterRadii;
+        private _ssDiffusionD;
+        /**
+         * Post process to attach for screen space subsurface scattering
+         */
+        postProcess: SubSurfaceScatteringPostProcess;
+        /**
+         * Diffusion profile color for subsurface scattering
+         */
+        get ssDiffusionS(): number[];
+        /**
+         * Diffusion profile max color channel value for subsurface scattering
+         */
+        get ssDiffusionD(): number[];
+        /**
+         * Diffusion profile filter radius for subsurface scattering
+         */
+        get ssFilterRadii(): number[];
+        /**
+         * Is subsurface enabled
+         */
+        enabled: boolean;
+        /**
+         * Diffusion profile colors for subsurface scattering
+         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
+         * See ...
+         * Note that you can only store up to 5 of them
+         */
+        ssDiffusionProfileColors: Color3[];
+        /**
+         * Defines the ratio real world => scene units.
+         * Used for subsurface scattering
+         */
+        metersPerUnit: number;
+        private _scene;
+        /**
+         * Builds a subsurface configuration object
+         * @param scene The scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Adds a new diffusion profile.
+         * Useful for more realistic subsurface scattering on diverse materials.
+         * @param color The color of the diffusion profile. Should be the average color of the material.
+         * @return The index of the diffusion profile for the material subsurface configuration
+         */
+        addDiffusionProfile(color: Color3): number;
+        /**
+         * Creates the sss post process
+         * @return The created post process
+         */
+        createPostProcess(): SubSurfaceScatteringPostProcess;
+        /**
+         * Deletes all diffusion profiles.
+         * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
+         */
+        clearAllDiffusionProfiles(): void;
+        /**
+         * Disposes this object
+         */
+        dispose(): void;
+        /**
+         * @hidden
+         * https://zero-radiance.github.io/post/sampling-diffusion/
+         *
+         * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
+         * ------------------------------------------------------------------------------------
+         * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
+         * PDF[r, phi, s] = r * R[r, phi, s]
+         * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
+         * ------------------------------------------------------------------------------------
+         * We importance sample the color channel with the widest scattering distance.
+         */
+        getDiffusionProfileParameters(color: Color3): number;
+        /**
+         * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
+         * 'u' is the random number (the value of the CDF): [0, 1).
+         * rcp(s) = 1 / ShapeParam = ScatteringDistance.
+         * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
+         */
+        private _sampleBurleyDiffusionProfile;
+    }
+}
+declare module BABYLON {
+    /**
+     * Renders a pre pass of the scene
+     * This means every mesh in the scene will be rendered to a render target texture
+     * And then this texture will be composited to the rendering canvas with post processes
+     * It is necessary for effects like subsurface scattering or deferred shading
+     */
+    export class PrePassRenderer {
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        private _scene;
+        private _engine;
+        private _isDirty;
+        /**
+         * Number of textures in the multi render target texture where the scene is directly rendered
+         */
+        readonly mrtCount: number;
+        /**
+         * The render target where the scene is directly rendered
+         */
+        prePassRT: MultiRenderTarget;
+        private _mrtTypes;
+        private _multiRenderAttachments;
+        private _defaultAttachments;
+        private _clearAttachments;
+        private _postProcesses;
+        private readonly _clearColor;
+        /**
+         * Image processing post process for composition
+         */
+        imageProcessingPostProcess: ImageProcessingPostProcess;
+        /**
+         * Configuration for sub surface scattering post process
+         */
+        subSurfaceConfiguration: SubSurfaceConfiguration;
+        /**
+         * Should materials render their geometry on the MRT
+         */
+        materialsShouldRenderGeometry: boolean;
+        /**
+         * Should materials render the irradiance information on the MRT
+         */
+        materialsShouldRenderIrradiance: boolean;
+        private _enabled;
+        /**
+         * Indicates if the prepass is enabled
+         */
+        get enabled(): boolean;
+        /**
+         * How many samples are used for MSAA of the scene render target
+         */
+        get samples(): number;
+        set samples(n: number);
+        /**
+         * Instanciates a prepass renderer
+         * @param scene The scene
+         */
+        constructor(scene: Scene);
+        private _initializeAttachments;
+        private _createCompositionEffect;
+        /**
+         * Indicates if rendering a prepass is supported
+         */
+        get isSupported(): boolean;
+        /**
+         * Sets the proper output textures to draw in the engine.
+         * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
+         */
+        bindAttachmentsForEffect(effect: Effect): void;
+        /**
+         * @hidden
+         */
+        _beforeCameraDraw(): void;
+        /**
+         * @hidden
+         */
+        _afterCameraDraw(): void;
+        private _checkRTSize;
+        private _bindFrameBuffer;
+        /**
+         * Clears the scene render target (in the sense of settings pixels to the scene clear color value)
+         */
+        clear(): void;
+        private _setState;
+        private _enable;
+        private _disable;
+        private _resetPostProcessChain;
+        private _bindPostProcessChain;
+        /**
+         * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
+         */
+        markAsDirty(): void;
+        private _update;
+        /**
+         * Disposes the prepass renderer.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export var ssao2PixelShader: {
         name: string;
         shader: string;
@@ -69706,6 +70091,10 @@ declare module BABYLON {
         set textureSamples(n: number);
         get textureSamples(): number;
         /**
+         * Force rendering the geometry through geometry buffer
+         */
+        private _forceGeometryBuffer;
+        /**
          * Ratio object used for SSAO ratio and blur ratio
          */
         private _ratio;
@@ -69737,14 +70126,13 @@ declare module BABYLON {
         */
         static get IsSupported(): boolean;
         private _scene;
-        private _depthTexture;
-        private _normalTexture;
         private _randomTexture;
         private _originalColorPostProcess;
         private _ssaoPostProcess;
         private _blurHPostProcess;
         private _blurVPostProcess;
         private _ssaoCombinePostProcess;
+        private _prePassRenderer;
         /**
          * Gets active scene
          */
@@ -69755,8 +70143,9 @@ declare module BABYLON {
          * @param scene The scene linked to this pipeline
          * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
          * @param cameras The array of cameras that the rendering pipeline will be attached to
+         * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
          */
-        constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[]);
+        constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer?: boolean);
         /**
          * Get the class name
          * @returns "SSAO2RenderingPipeline"
@@ -69774,6 +70163,7 @@ declare module BABYLON {
         private _hammersley;
         private _hemisphereSample_uniform;
         private _generateHemisphere;
+        private _getDefinesForSSAO;
         private _createSSAOPostProcess;
         private _createSSAOCombinePostProcess;
         private _createRandomTexture;
@@ -70713,207 +71103,6 @@ declare module BABYLON {
         dispose(): void;
         private _gatherRenderTargets;
         private _gatherActiveCameraRenderTargets;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var fibonacci: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var diffusionProfile: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var subSurfaceScatteringPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Sub surface scattering post process
-     */
-    export class SubSurfaceScatteringPostProcess extends PostProcess {
-        /** @hidden */
-        texelWidth: number;
-        /** @hidden */
-        texelHeight: number;
-        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
-    }
-}
-declare module BABYLON {
-    /**
-     * Contains all parameters needed for the prepass to perform
-     * screen space subsurface scattering
-     */
-    export class SubSurfaceConfiguration {
-        private _ssDiffusionS;
-        private _ssFilterRadii;
-        private _ssDiffusionD;
-        /**
-         * Diffusion profile color for subsurface scattering
-         */
-        get ssDiffusionS(): number[];
-        /**
-         * Diffusion profile max color channel value for subsurface scattering
-         */
-        get ssDiffusionD(): number[];
-        /**
-         * Diffusion profile filter radius for subsurface scattering
-         */
-        get ssFilterRadii(): number[];
-        /**
-         * Diffusion profile colors for subsurface scattering
-         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
-         * See ...
-         * Note that you can only store up to 5 of them
-         */
-        ssDiffusionProfileColors: Color3[];
-        /**
-         * Defines the ratio real world => scene units.
-         * Used for subsurface scattering
-         */
-        metersPerUnit: number;
-        /**
-         * Builds a subsurface configuration object
-         * @param scene The scene
-         */
-        constructor();
-        /**
-         * Adds a new diffusion profile.
-         * Useful for more realistic subsurface scattering on diverse materials.
-         * @param color The color of the diffusion profile. Should be the average color of the material.
-         * @return The index of the diffusion profile for the material subsurface configuration
-         */
-        addDiffusionProfile(color: Color3): number;
-        /**
-         * Deletes all diffusion profiles.
-         * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
-         */
-        clearAllDiffusionProfiles(): void;
-        /**
-         * Disposes this object
-         */
-        dispose(): void;
-        /**
-         * @hidden
-         * https://zero-radiance.github.io/post/sampling-diffusion/
-         *
-         * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
-         * ------------------------------------------------------------------------------------
-         * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
-         * PDF[r, phi, s] = r * R[r, phi, s]
-         * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
-         * ------------------------------------------------------------------------------------
-         * We importance sample the color channel with the widest scattering distance.
-         */
-        getDiffusionProfileParameters(color: Color3): number;
-        /**
-         * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
-         * 'u' is the random number (the value of the CDF): [0, 1).
-         * rcp(s) = 1 / ShapeParam = ScatteringDistance.
-         * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
-         */
-        private _sampleBurleyDiffusionProfile;
-    }
-}
-declare module BABYLON {
-    /**
-     * Renders a pre pass of the scene
-     * This means every mesh in the scene will be rendered to a render target texture
-     * And then this texture will be composited to the rendering canvas with post processes
-     * It is necessary for effects like subsurface scattering or deferred shading
-     */
-    export class PrePassRenderer {
-        /** @hidden */
-        static _SceneComponentInitialization: (scene: Scene) => void;
-        private _scene;
-        private _engine;
-        private _isDirty;
-        /**
-         * Number of textures in the multi render target texture where the scene is directly rendered
-         */
-        readonly mrtCount: number;
-        /**
-         * The render target where the scene is directly rendered
-         */
-        prePassRT: MultiRenderTarget;
-        private _mrtTypes;
-        private _multiRenderAttachments;
-        private _defaultAttachments;
-        private _clearAttachments;
-        private readonly _clearColor;
-        /**
-         * Image processing post process for composition
-         */
-        imageProcessingPostProcess: ImageProcessingPostProcess;
-        /**
-         * Post process for subsurface scattering
-         */
-        subSurfaceScatteringPostProcess: SubSurfaceScatteringPostProcess;
-        /**
-         * Configuration for sub surface scattering post process
-         */
-        subSurfaceConfiguration: SubSurfaceConfiguration;
-        private _enabled;
-        /**
-         * Indicates if the prepass is enabled
-         */
-        get enabled(): boolean;
-        /**
-         * How many samples are used for MSAA of the scene render target
-         */
-        get samples(): number;
-        set samples(n: number);
-        /**
-         * Instanciates a prepass renderer
-         * @param scene The scene
-         */
-        constructor(scene: Scene);
-        private _initializeAttachments;
-        private _createEffects;
-        /**
-         * Indicates if rendering a prepass is supported
-         */
-        get isSupported(): boolean;
-        /**
-         * Sets the proper output textures to draw in the engine.
-         * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
-         */
-        bindAttachmentsForEffect(effect: Effect): void;
-        /**
-         * @hidden
-         */
-        _beforeCameraDraw(): void;
-        /**
-         * @hidden
-         */
-        _afterCameraDraw(): void;
-        private _checkRTSize;
-        private _bindFrameBuffer;
-        /**
-         * Clears the scene render target (in the sense of settings pixels to the scene clear color value)
-         */
-        clear(): void;
-        private _setState;
-        private _enable;
-        private _disable;
-        /**
-         * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
-         */
-        markAsDirty(): void;
-        private _update;
-        /**
-         * Disposes the prepass renderer.
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
