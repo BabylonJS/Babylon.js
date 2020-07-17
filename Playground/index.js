@@ -63,8 +63,7 @@ let readStringFromStore = function(key, defaultValue) {
 }
 
 let checkBabylonVersionAsync= function () {
-    let version = BABYLON.Engine.Version;
-    let activeVersion = readStringFromStore("version", version);
+    let activeVersion = readStringFromStore("version", "Latest");
 
     if (activeVersion === "Latest") {
         return Promise.resolve();
