@@ -5,6 +5,9 @@ import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { PostProcessRenderEffect } from "./postProcessRenderEffect";
 import { IInspectable } from '../../Misc/iInspectable';
+
+declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
+
 /**
  * PostProcessRenderPipeline
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
@@ -225,6 +228,16 @@ export class PostProcessRenderPipeline {
             }
         }
         return true;
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup.
+     * @returns true if the pre pass is needed.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        // Do Nothing by default
+        return false;
     }
 
     /**
