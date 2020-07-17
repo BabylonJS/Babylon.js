@@ -2,6 +2,7 @@
 .commands {
     grid-row: 1;
     grid-column: 3;
+    user-select: none;
 
     .commands-left {
         float: left;
