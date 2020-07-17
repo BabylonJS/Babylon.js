@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GlobalState } from '../globalState';
+import { GlobalState, RuntimeMode } from '../globalState';
 import {Engine} from "babylonjs/Engines/engine"
 import { Nullable } from 'babylonjs/types';
 import { Scene } from 'babylonjs/scene';
@@ -60,6 +60,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._engine?.switchFullscreen(false);
         });
 
+        if (this.props.globalState.runtimeMode !== RuntimeMode.Editor) {
+            this.props.globalState.onCodeLoaded.add(code => {      
+                this.props.globalState.currentCode = code;
+                this.props.globalState.onRunRequiredObservable.notifyObservers();
+            });
+        }
     }
 
     private async _compileAndRunAsync() {
@@ -203,7 +209,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 if(!(this._scene.activeCamera && 
                     this._scene.activeCamera.getClassName && 
                     this._scene.activeCamera.getClassName() === 'WebXRCamera')) {
-                    this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
+                    if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
+                        this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
+                    }
                 }
             });
 
