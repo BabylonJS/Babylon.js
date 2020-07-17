@@ -49,6 +49,14 @@
             display: none;
         }        
 
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
+
         &:hover {
             background-color: white;
         } 
@@ -75,6 +83,14 @@
         cursor: pointer;
         width: 55px;
         height: 55px;
+
+        .command-dropdown-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
 
         &:hover, &.activated {
             background-color: white;
@@ -142,6 +158,11 @@
             grid-template-columns: 1fr 20px;
             grid-template-rows: 100%;
             position: relative;
+
+            &.active {
+                font-weight: bold;
+                font-size: 22px;
+            }
 
             &:hover {
                 .sub-items {

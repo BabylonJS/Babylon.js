@@ -53,7 +53,7 @@ export class SaveManager {
                     
                 this.globalState.onSavedObservable.notifyObservers();
                 } else {
-                    this.globalState.onErrorObservable.notifyObservers("Unable to save your code. It may be too long.");
+                    this.globalState.onErrorObservable.notifyObservers({message: "Unable to save your code. It may be too long."});
                 }
             }
         };
