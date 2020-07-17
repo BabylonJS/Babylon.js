@@ -20,6 +20,7 @@ import { KeyboardEventTypes } from 'babylonjs/Events/keyboardEvents';
 
 import { Tool } from './toolBar';
 import { Channel } from './channelsBar';
+import { PBRMaterial, RawCubeTexture } from 'babylonjs';
 
 export interface PixelData {
     x? : number;
@@ -28,6 +29,15 @@ export interface PixelData {
     g? : number;
     b? : number;
     a? : number;
+}
+
+interface CubeTarget {
+    texture?: RawCubeTexture;
+    data?: ArrayBufferView[];
+}
+
+interface Target {
+    texture: HtmlElementTexture;
 }
 
 
@@ -52,18 +62,21 @@ export class TextureCanvasManager {
 
     private _displayCanvas : HTMLCanvasElement;
     private _channels : Channel[] = [];
+    private _face : number = 0;
     /* This is the actual texture that is being displayed. Sometimes it's just a single channel from _textures */
     private _displayTexture : HtmlElementTexture;
 
     /* The texture from the original engine that we invoked the editor on */
     private _originalTexture: BaseTexture;
     /* This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
-    private _targetTexture : Nullable<HtmlElementTexture> = null;
+    private _target : Target | CubeTarget = {};
     /* The internal texture representation of the original texture */
     private _originalInternalTexture : Nullable<InternalTexture> = null;
+    private _didEdit : boolean = false;
 
     private _plane : Mesh;
     private _planeMaterial : NodeMaterial;
+    private _planeFallbackMaterial : PBRMaterial;
 
     /* Tracks which keys are currently pressed */
     private _keyMap : any = {};
@@ -82,7 +95,7 @@ export class TextureCanvasManager {
 
     private _tool : Nullable<Tool>;
 
-    private _setPixelData : any;
+    private _setPixelData : (pixelData : PixelData) => void;
 
     public metadata : any = {
         color: '#ffffff',
@@ -94,16 +107,16 @@ export class TextureCanvasManager {
         canvasUI: HTMLCanvasElement,
         canvas2D: HTMLCanvasElement,
         canvasDisplay: HTMLCanvasElement,
-        setPixelData: any
+        setPixelData : (pixelData : PixelData) => void
     ) {
         this._UICanvas = canvasUI;
         this._2DCanvas = canvas2D;
         this._displayCanvas = canvasDisplay;
         this._setPixelData = setPixelData;
 
+        this._size = texture.getSize();
         this._originalTexture = texture;
-        this._size = this._originalTexture.getSize();
-
+        this._originalInternalTexture = this._originalTexture._texture;
         this._engine = new Engine(this._UICanvas, true);
         this._scene = new Scene(this._engine);
         this._scene.clearColor = new Color4(0.11, 0.11, 0.11, 1.0);
@@ -111,20 +124,18 @@ export class TextureCanvasManager {
         this._camera = new FreeCamera("Camera", new Vector3(0, 0, -1), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
         this._texture = new HtmlElementTexture("texture", this._2DCanvas, {engine: this._engine, scene: this._scene});
-        if (texture) {
-            /* Grab image data from original texture and paint it onto the context of a DynamicTexture */
-            const pixelData = this._originalTexture.readPixels()!;
-            TextureCanvasManager.paintPixelsOnCanvas(new Uint8Array(pixelData.buffer), this._2DCanvas);
-            this._texture.update();
-        }
-
         this._displayTexture = new HtmlElementTexture("display", this._displayCanvas, {engine: this._engine, scene: this._scene});
-        this.copyTextureToDisplayTexture();
         this._displayTexture.updateSamplingMode(Engine.TEXTURE_NEAREST_LINEAR);
+        this.grabOriginalTexture();
 
         const textureRatio = this._size.width / this._size.height;
         
         this._plane = PlaneBuilder.CreatePlane("plane", {width: textureRatio, height: 1}, this._scene);
+        this._planeFallbackMaterial = new PBRMaterial('fallback_material', this._scene);
+        this._planeFallbackMaterial.albedoTexture = this._displayTexture;
+        this._planeFallbackMaterial.disableLighting = true;
+        this._planeFallbackMaterial.unlit = true;
+        this._plane.material = this._planeFallbackMaterial;
         NodeMaterial.ParseFromSnippetAsync("#TPSEV2#4", this._scene)
             .then((material) => {
                 this._planeMaterial = material;
@@ -190,6 +201,8 @@ export class TextureCanvasManager {
                         const ctx = this._2DCanvas.getContext('2d');
                         const pixel = ctx?.getImageData(pos.x, pos.y, 1, 1).data!;
                         this._setPixelData({x: pos.x, y: pos.y, r:pixel[0], g:pixel[1], b:pixel[2], a:pixel[3]});
+                    } else {
+                        this._setPixelData({});
                     }
                     break;
             }
@@ -217,14 +230,53 @@ export class TextureCanvasManager {
 
     }
 
-    public updateTexture() {
+    public async updateTexture() {
         this._texture.update();
-        if (!this._targetTexture) {
-            this._originalInternalTexture = this._originalTexture._texture;
-            this._targetTexture = new HtmlElementTexture("editor", this._2DCanvas, {engine: this._originalTexture.getScene()?.getEngine()!, scene: null});
+        this._didEdit = true;
+        if (this._originalTexture.isCube) {
+            const target = this._target as CubeTarget;
+            let pixels : ArrayBufferView[] = [];
+            for (let face = 0; face < 6; face++) {
+                let textureToCopy = this._originalTexture;
+                if (face === this._face) {
+                    textureToCopy = this._texture;
+                }
+                pixels[face] = textureToCopy.readPixels(face)!;
+                if (face == this._face) {
+                    let buffer = new ArrayBuffer(pixels[face].byteLength * 4);
+                    let newView = new DataView(buffer);
+                    let oldView = new DataView(pixels[face].buffer);
+                    for(let byte = 0; byte < oldView.byteLength; byte += 8) {
+                        const int = oldView.getUint8(byte);
+                        const float = int / 255.0;
+                        newView.setFloat32(byte * 4, float);
+                    }
+                    pixels[face] = newView;
+                }
+                // pixels[face] = await TextureHelper.GetTextureDataAsync(textureToCopy, this._size.width, this._size.height, face, {R: true, G: true, B: true, A: true});
+            }
+            target.data = pixels;
+            console.log(target.data);
+            if (!target.texture) {
+                this._target.texture = new RawCubeTexture(this._originalTexture.getScene()!, target.data!, this._size.width, this._originalTexture.textureFormat, this._originalTexture.textureType, !this._originalTexture.noMipmap);
+                this._target.texture.getScene()?.removeTexture(this._target.texture);
+            } else {
+                let target = this._target as CubeTarget;
+                target.texture!.update(target.data!, this._originalTexture.textureFormat, this._originalTexture.textureType, false);
+            }
+        } else {
+            const target = this._target as Target;
+            // this._target.data = await TextureHelper.GetTextureDataAsync(this._texture, this._size.width, this._size.height, this._face, {R: true, G: true, B: true, A: true});
+            if (!target.texture) {
+                target.texture = new HtmlElementTexture("editor", this._2DCanvas, {engine: this._originalTexture.getScene()?.getEngine()!, scene: null});
+                // this._target.texture = new RawTexture(target.data!, this._size.width, this._size.height, this._originalTexture.textureFormat, this._originalTexture.getScene()!);
+                // this._target.texture.getScene()?.removeTexture(this._target.texture);
+            } else {
+                target.texture.update();
+            }
         }
-        this._targetTexture.update();
-        this._originalTexture._texture = this._targetTexture._texture;
+        // this._targetTexture = new HtmlElementTexture("editor", this._2DCanvas, {engine: this._originalTexture.getScene()?.getEngine()!, scene: null});
+        this._originalTexture._texture = this._target.texture!._texture;
         this.copyTextureToDisplayTexture();
     }
 
@@ -236,7 +288,7 @@ export class TextureCanvasManager {
             A: true
         }
         this._channels.forEach(channel => channelsToDisplay[channel.id] = channel.visible);
-        TextureHelper.GetTextureDataAsync(this._texture, this._size.width, this._size.height, 0, channelsToDisplay)
+        TextureHelper.GetTextureDataAsync(this._originalTexture, this._size.width, this._size.height, this._face, channelsToDisplay)
             .then(data => {
                 TextureCanvasManager.paintPixelsOnCanvas(data, this._displayCanvas);
                 this._displayTexture.update();
@@ -269,19 +321,21 @@ export class TextureCanvasManager {
         const imgData = ctx.createImageData(canvas.width, canvas.height);
         imgData.data.set(pixelData);
         ctx.putImageData(imgData, 0, 0);
-        TextureCanvasManager.flipCanvas(canvas);
     }
 
-    /* When copying from a WebGL texture to a Canvas, the y axis is inverted. This function flips it back */
-    public static flipCanvas(canvas: HTMLCanvasElement) {
-        const ctx = canvas.getContext('2d')!;
-        const transform = ctx.getTransform();
-        ctx.globalCompositeOperation = 'copy';
-        ctx.globalAlpha = 1.0;
-        ctx.translate(0,canvas.height);
-        ctx.scale(1,-1);
-        ctx.drawImage(canvas, 0, 0);
-        ctx.setTransform(transform);
+    public grabOriginalTexture() {
+        /* Grab image data from original texture and paint it onto the context of a DynamicTexture */
+        TextureHelper.GetTextureDataAsync(
+            this._originalTexture,
+            this._size.width,
+            this._size.height,
+            this._face,
+            {R:true ,G:true ,B:true ,A:true}
+        ).then(data => {
+            TextureCanvasManager.paintPixelsOnCanvas(data, this._2DCanvas);
+            this._texture.update();
+            this.copyTextureToDisplayTexture();
+        })
     }
 
     public getMouseCoordinates(pointerInfo : PointerInfo) : Vector2 {
@@ -320,12 +374,25 @@ export class TextureCanvasManager {
         return this._tool;
     }
 
+    public set face(face: number) {
+        if (this._face !== face) {
+            this._face = face;
+            this.copyTextureToDisplayTexture();
+        }
+    }
+
+    public resetTexture() : void {
+        this._originalTexture._texture = this._originalInternalTexture;
+        this.grabOriginalTexture();
+        this._didEdit = false;
+    }
+
     public dispose() {
         if (this._planeMaterial) {
             this._planeMaterial.dispose();
         }
-        if (this._originalInternalTexture) {
-            this._originalInternalTexture.dispose();
+        if (this._didEdit) {
+            this._originalInternalTexture?.dispose();
         }
         if (this._tool) {
             this._tool.instance.cleanup();

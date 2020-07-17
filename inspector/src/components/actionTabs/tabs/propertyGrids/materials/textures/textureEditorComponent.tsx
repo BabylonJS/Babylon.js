@@ -23,10 +23,17 @@ interface TextureEditorComponentState {
     metadata: any;
     channels: Channel[];
     pixelData : PixelData;
+    face: number;
+}
+
+interface ToolData {
+    name: string;
+    type: any;
+    icon: string;
 }
 
 declare global {
-    var _TOOL_DATA_ : any;
+    var _TOOL_DATA_ : ToolData;
 }
 
 export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
@@ -37,6 +44,16 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
 
     constructor(props : TextureEditorComponentProps) {
         super(props);
+        let channels : Channel[] = [
+            {name: 'Red', visible: true, editable: true, id: 'R', icon: require('./assets/channelR.svg')},
+            {name: 'Green', visible: true, editable: true, id: 'G', icon: require('./assets/channelG.svg')},
+            {name: 'Blue', visible: true, editable: true, id: 'B', icon: require('./assets/channelB.svg')},
+        ];
+        if (this.props.texture.isCube) {
+            channels.push({name: 'Display', visible: true, editable: true, id: 'A', icon: require('./assets/channelD.svg')});
+        } else {
+            channels.push({name: 'Alpha', visible: true, editable: true, id: 'A', icon: require('./assets/channelA.svg')});
+        }
         this.state = {
             tools: [],
             activeToolIndex: -1,
@@ -44,18 +61,16 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
                 color: '#ffffff',
                 opacity: 1
             },
-            channels: [
-                {name: "Red", visible: true, editable: true, id: "R", icon: require('./assets/channelR.svg')},
-                {name: "Green", visible: true, editable: true, id: "G", icon: require('./assets/channelG.svg')},
-                {name: "Blue", visible: true, editable: true, id: "B", icon: require('./assets/channelB.svg')},
-                {name: "Alpha", visible: true, editable: true, id: "A", icon: require('./assets/channelA.svg')}
-            ],
-            pixelData: {}
+            channels,
+            pixelData: {},
+            face: 0
         }
         this.loadTool = this.loadTool.bind(this);
         this.changeTool = this.changeTool.bind(this);
         this.setMetadata = this.setMetadata.bind(this);
         this.saveTexture = this.saveTexture.bind(this);
+        this.setFace = this.setFace.bind(this);
+        this.resetTexture = this.resetTexture.bind(this);
     }
 
     componentDidMount() {
@@ -76,6 +91,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this.state.channels.forEach(channel => channelsClone.push({...channel}));
         this._textureCanvasManager.channels = channelsClone;
         this._textureCanvasManager.metadata = {...this.state.metadata};
+        this._textureCanvasManager.face = this.state.face;
     }
 
     componentWillUnmount() {
@@ -120,10 +136,18 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this.setState({metadata: data});
     }
 
+    setFace(face: number) {
+        this.setState({face});
+    }
+
     saveTexture() {
         Tools.ToBlob(this.canvas2D.current!, (blob) => {
             Tools.Download(blob!, this.props.url);
         });
+    }
+
+    resetTexture() {
+        this._textureCanvasManager.resetTexture();
     }
 
     render() {
@@ -132,6 +156,9 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
                 texture={this.props.texture}
                 saveTexture={this.saveTexture}
                 pixelData={this.state.pixelData}
+                face={this.state.face}
+                setFace={this.setFace}
+                resetTexture={this.resetTexture}
             />
             <ToolBar
                 tools={this.state.tools}

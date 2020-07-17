@@ -19,11 +19,11 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     private canvasRef: React.RefObject<HTMLCanvasElement>;
 
     private static TextureChannelStates = {
-        R: {R:true, G: false, B:false, A:false},
-        G: {R:false, G: true, B:false, A:false},
-        B: {R:false, G: false, B:true, A:false},
-        A: {R:false, G: false, B:false, A:true},
-        ALL: {R:true, G:true, B:true, A:true}
+        R: {R :true, G: false, B: false, A: false},
+        G: {R: false, G: true, B: false, A: false},
+        B: {R: false, G: false, B: true, A: false},
+        A: {R: false, G: false, B: false, A: true},
+        ALL: {R: true, G: true, B: true, A: true}
     }
 
     constructor(props: ITextureLineComponentProps) {

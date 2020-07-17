@@ -34,7 +34,7 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
                     (item, index) => {
                         return <img
                             src={`data:image/svg+xml;base64,${item.icon}`}
-                            className={index === this.props.activeToolIndex ? 'icon tool-button active' : 'icon tool-button'}
+                            className={index === this.props.activeToolIndex ? 'icon button active' : 'icon button'}
                             alt={item.name}
                             onClick={() => this.props.changeTool(index)}
                             key={index}
@@ -42,9 +42,8 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
                     }
                 )}
             </div>
-            <div id='color'>
-                <div id='activeColor' style={{backgroundColor: this.props.metadata.color}}>
-                </div>
+            <div id='color' className='icon button'>
+                <div id='activeColor' style={{backgroundColor: this.props.metadata.color}}></div>
             </div>
 
                 {/*<div id="tools">

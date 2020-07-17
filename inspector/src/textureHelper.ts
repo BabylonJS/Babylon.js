@@ -67,7 +67,7 @@ export class TextureHelper {
             //Reading datas from WebGL
             var data = engine.readPixels(0, 0, width, height);
 
-            if (!texture.isCube) {
+            if (true || !texture.isCube) {
                 if (!channels.R || !channels.G || !channels.B || !channels.A) {
                     for (var i = 0; i < width * height * 4; i += 4) {
                         // If alpha is the only channel, just display alpha across all channels
