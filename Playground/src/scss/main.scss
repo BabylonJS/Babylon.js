@@ -11,6 +11,32 @@
     grid-template-rows: 55px 1fr 35px;
 }
 
+#pg-root-frame {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: "acumin-pro-condensed";
+    font-weight: normal;    
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 1fr 35px;
+}
+
+#pg-root-full {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: "acumin-pro-condensed";
+    font-weight: normal;    
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
+}
+
 #pg-split {
     width: 100%;
     height: 100%;

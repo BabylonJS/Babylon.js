@@ -9,15 +9,25 @@ export enum EditionMode {
     RenderingOnly
 }
 
+export enum RuntimeMode {
+    Editor = 0,
+    Full = 1,
+    Frame = 2
+}
+
 export class GlobalState {
     public readonly MobileSizeTrigger = 1024;
     public readonly SnippetServerUrl = "https://snippet.babylonjs.com";
 
     public currentCode: string;
-    public getCompiledCode: () => Promise<string>;
+    public getCompiledCode: () => Promise<string> = () => {
+        return Promise.resolve(this.currentCode);
+    }
     public language = Utilities.ReadStringFromStore("language", "JS");;
     public fpsElement: HTMLDivElement;
     public mobileDefaultMode = EditionMode.RenderingOnly;
+
+    public runtimeMode = RuntimeMode.Editor;
 
     public currentSnippetTitle = "";
     public currentSnippetDescription = "";

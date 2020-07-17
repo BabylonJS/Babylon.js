@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { MonacoComponent } from './components/monacoComponent';
 import { RenderingComponent } from './components/rendererComponent';
-import { GlobalState, EditionMode } from './globalState';
+import { GlobalState, EditionMode, RuntimeMode } from './globalState';
 import { FooterComponent } from './components/footerComponent';
 import { HeaderComponent } from './components/headerComponent';
 import { SaveManager } from './tools/saveManager';
@@ -19,6 +19,7 @@ require("./scss/main.scss");
 const Split = require('split.js').default;
 
 interface IPlaygroundProps {
+    runtimeMode: RuntimeMode
 }
 
 export class Playground extends React.Component<IPlaygroundProps, {errorMessage: string, mode: EditionMode}> {    
@@ -36,6 +37,8 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
     public constructor(props: IPlaygroundProps) {
        super(props);
        this._globalState = new GlobalState();
+
+       this._globalState.runtimeMode = props.runtimeMode || RuntimeMode.Editor;
 
        this.splitRef = React.createRef();
        this.monacoRef = React.createRef();
@@ -73,6 +76,10 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
     }
 
     checkSize() {
+        if (this._globalState.runtimeMode !== RuntimeMode.Editor) {
+            return;
+        }
+
         switch(this.state.mode) {
             case EditionMode.CodeOnly:                
                 this._splitInstance?.destroy();
@@ -104,6 +111,26 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
     }
 
     public render() {
+        if (this._globalState.runtimeMode === RuntimeMode.Full) {
+            return (
+                <div id="pg-root-full">              
+                    <RenderingComponent globalState={this._globalState}/>
+                    <ErrorDisplayComponent globalState={this._globalState}/>            
+                    <WaitRingComponent globalState={this._globalState}/>
+                </div>   
+            )
+        }
+
+        if (this._globalState.runtimeMode === RuntimeMode.Frame) {
+            return (
+                <div id="pg-root-frame">              
+                    <RenderingComponent globalState={this._globalState}/>
+                    <FooterComponent globalState={this._globalState}/>    
+                    <ErrorDisplayComponent globalState={this._globalState}/>            
+                    <WaitRingComponent globalState={this._globalState}/>
+                </div>   
+            )
+        }
 
         return (
             <div id="pg-root">              
@@ -127,8 +154,8 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
         )
     }
 
-    public static Show(hostElement: HTMLElement) {
-        const playground = React.createElement(Playground, {});
+    public static Show(hostElement: HTMLElement, mode: RuntimeMode) {
+        const playground = React.createElement(Playground, {runtimeMode: mode});
         
         ReactDOM.render(playground, hostElement);
     }

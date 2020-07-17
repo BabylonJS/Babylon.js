@@ -7,3 +7,10 @@
     border:none !important;
     outline:none !important;
 }
+
+#pg-root-frame, #pg-root-full {
+    #renderingCanvas {
+        grid-column: 1;
+        grid-row: 1;
+    }
+}

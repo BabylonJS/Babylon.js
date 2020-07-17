@@ -1,10 +1,12 @@
 import * as React from "react";
-import { GlobalState, EditionMode } from '../globalState';
+import { GlobalState, EditionMode, RuntimeMode } from '../globalState';
 import DocumentationIcon from "../imgs/documentation.svg";
 import ForumIcon from "../imgs/forum.svg";
 import SearchIcon from "../imgs/search.svg";
 import CodeOnlyIcon from "../imgs/codeOnly.svg";
 import RenderingOnlyIcon from "../imgs/renderingOnly.svg";
+import RefreshIcon from "../imgs/refresh.svg";
+import EditIcon from "../imgs/edit.svg";
 
 require("../scss/footer.scss");
 
@@ -39,6 +41,22 @@ export class FooterComponent extends React.Component<IFooterComponentProps> {
     }
 
     public render() {
+        if (this.props.globalState.runtimeMode === RuntimeMode.Frame) {
+            return (
+                <div id="footer" className={(this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>   
+                    <div className="links">
+                    <div className='link'>
+                            <a href="#" onClick={() => location.reload()} title="Reload"><RefreshIcon/></a>
+                        </div>
+                        <div className='link'>
+                            <a target='_new' href={"https://playground.babylonjs.com/" + location.hash} title="Edit"><EditIcon/></a>
+                        </div>
+                    </div>  
+                    <div className="fps" ref={this._fpsRef}></div>          
+                </div>   
+            );
+        }
+
         return (
             <div id="footer" className={(this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>   
                 {
@@ -70,6 +88,6 @@ export class FooterComponent extends React.Component<IFooterComponentProps> {
                 </div>  
                 <div className="fps" ref={this._fpsRef}></div>          
             </div>   
-        )
+        );
     }
 }
