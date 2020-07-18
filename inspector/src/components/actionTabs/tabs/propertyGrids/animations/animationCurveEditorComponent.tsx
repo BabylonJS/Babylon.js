@@ -226,17 +226,19 @@ export class AnimationCurveEditorComponent extends React.Component<
   }
 
   setValueLines() {
-    const initialValues = new Array(10).fill(0).map((s, i) => {
-      return { value: i * 10, label: -i };
+    const initialValues = new Array(10).fill(0).map((_, i) => {
+      return { value: i * 10, label: 2 * ((10 - i) / 10) };
     });
+
+    initialValues.shift();
 
     const valueHeight = Math.abs(Math.round(this.state.panningY / 10));
     const sign = Math.sign(this.state.panningY);
 
     const pannedValues = new Array(valueHeight).fill(0).map((s, i) => {
       return sign === -1
-        ? { value: -i * 10, label: i }
-        : { value: (i + 10) * 10, label: (i + 10) * -1 };
+        ? { value: -i * 10, label: ((i + 10) * -1) / 5 }
+        : { value: (i + 10) * 10, label: i / 5 };
     });
 
     return [...initialValues, ...pannedValues];
@@ -1742,8 +1744,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             <div
               ref={this._graphCanvas}
               className='graph-chart'
-              onWheel={(e) => this.zoom(e)}
-            >
+              onWheel={(e) => this.zoom(e)}>
               {this.state.svgKeyframes && (
                 <SvgDraggableArea
                   ref={this._svgCanvas}
@@ -1778,8 +1779,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                   canvasPositionEnded={() =>
                     this.setState({ repositionCanvas: false })
                   }
-                  resetActionableKeyframe={() => this.resetActionableKeyframe()}
-                >
+                  resetActionableKeyframe={() =>
+                    this.resetActionableKeyframe()
+                  }>
                   {/* Multiple Curves  */}
                   {this.state.selectedPathData?.map((curve, i) => (
                     <path
@@ -1792,8 +1794,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                         stroke: curve.color,
                         fill: 'none',
                         strokeWidth: '0.5',
-                      }}
-                    ></path>
+                      }}></path>
                   ))}
 
                   {this.setValueLines().map((line, i) => {
@@ -1804,8 +1805,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                         y={line.value}
                         dx='0'
                         dy='1'
-                        style={{ fontSize: `${0.2 * this.state.scale}em` }}
-                      >
+                        style={{ fontSize: `${0.2 * this.state.scale}em` }}>
                         {line.label}
                       </text>
                     );
@@ -1818,8 +1818,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                         x1={-((this.state.frameAxisLength.length * 10) / 2)}
                         y1={line.value}
                         x2={this.state.frameAxisLength.length * 10}
-                        y2={line.value}
-                      ></line>
+                        y2={line.value}></line>
                     );
                   })}
 
@@ -1830,22 +1829,19 @@ export class AnimationCurveEditorComponent extends React.Component<
                     width={this.state.frameAxisLength.length * 10}
                     height='10%'
                     fill='#222'
-                    style={{ cursor: 'pointer' }}
-                  ></rect>
+                    style={{ cursor: 'pointer' }}></rect>
 
                   {this.state.frameAxisLength.map((f, i) => (
                     <svg
                       key={i}
                       x='0'
                       y={96 + this.state.panningY + '%'}
-                      className='frame-contain'
-                    >
+                      className='frame-contain'>
                       <text
                         x={f.value}
                         y='0'
                         dx='2px'
-                        style={{ fontSize: `${0.17 * this.state.scale}em` }}
-                      >
+                        style={{ fontSize: `${0.17 * this.state.scale}em` }}>
                         {f.label}
                       </text>
                       <line x1={f.value} y1='0' x2={f.value} y2='5%'></line>
@@ -1855,8 +1851,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                           x1={f.value}
                           y1='-100%'
                           x2={f.value}
-                          y2='5%'
-                        ></line>
+                          y2='5%'></line>
                       ) : null}
 
                       {this.isCurrentFrame(f.label) ? (
@@ -1887,8 +1882,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                 fontSize: `${0.17 * this.state.scale}em`,
                                 pointerEvents: 'none',
                                 fontWeight: 600,
-                              }}
-                            >
+                              }}>
                               {f.label}
                             </text>
                           </svg>
@@ -1920,8 +1914,7 @@ export class AnimationCurveEditorComponent extends React.Component<
               fps={this.state.fps}
               repositionCanvas={(frame: number) =>
                 this.setCanvasPosition(frame)
-              }
-            ></Timeline>
+              }></Timeline>
           </div>
         </div>
       </div>
