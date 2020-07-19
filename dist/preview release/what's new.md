@@ -132,6 +132,7 @@
 - Allow using the single comment syntax `// comment` in a `#if` construct in shader code ([Popov72](https://github.com/Popov72))
 - Added the possibility to update the shader code before being compiled ([Popov72](https://github.com/Popov72))
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
+- Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
