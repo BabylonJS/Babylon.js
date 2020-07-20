@@ -149,7 +149,7 @@ export class TextureCanvasManager {
             this._UICanvas.parentElement!.style.cursor = cursor;
         });
 
-        this._scale = 1.8;
+        this._scale = 1.5;
         this._isPanning = false;
 
         this._scene.onBeforeRenderObservable.add(() => {

@@ -81,9 +81,6 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
             this.canvasDisplay.current!,
             (data : PixelData) => {this.setState({pixelData: data})}
         );
-        // this.loadTool('https://darraghburkems.github.io/BJSTools/Paintbrush.js');
-        // this.loadTool('https://darraghburkems.github.io/BJSTools/Floodfill.js');
-        // this.loadTool('https://darraghburkems.github.io/BJSTools/Eyedropper.js');
     }
 
     componentDidUpdate() {

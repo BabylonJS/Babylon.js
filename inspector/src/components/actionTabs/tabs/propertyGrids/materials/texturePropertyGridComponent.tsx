@@ -162,7 +162,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 {this._isTextureEditorOpen && (
                 <PopupComponent
                   id='texture-editor'
-                  title='Texture Editor'
+                  title='Texture Inspector'
                   size={{ width: 1024, height: 490 }}
                   onOpen={(window: Window) => {}}
                   onClose={(window: Window) =>
