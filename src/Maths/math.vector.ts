@@ -4749,7 +4749,7 @@ export class Matrix {
      * Creates a rotation matrix
      * @param yaw defines the yaw angle in radians (Y axis)
      * @param pitch defines the pitch angle in radians (X axis)
-     * @param roll defines the roll angle in radians (X axis)
+     * @param roll defines the roll angle in radians (Z axis)
      * @returns the new rotation matrix
      */
     public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix {
@@ -4762,7 +4762,7 @@ export class Matrix {
      * Creates a rotation matrix and stores it in a given matrix
      * @param yaw defines the yaw angle in radians (Y axis)
      * @param pitch defines the pitch angle in radians (X axis)
-     * @param roll defines the roll angle in radians (X axis)
+     * @param roll defines the roll angle in radians (Z axis)
      * @param result defines the target matrix
      */
     public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void {
