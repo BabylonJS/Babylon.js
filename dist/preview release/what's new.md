@@ -197,6 +197,7 @@
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72))
 - Fix picking issue in the Solid Particle System when MultiMaterial is enabled ([jerome](https://github.com/jbousquie))
 - Fix picking issue in the Solid Particle System when expandable ([jerome](https://github.com/jbousquie))
+- Fix use of skeleton override matrix in mesh ray intersection ([cedricguillemet](https://github.com/cedricguillemet))
 - `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw))
 - Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([belfortk](https://github.com/belfortk))
 - Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72))
