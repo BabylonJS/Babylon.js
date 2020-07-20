@@ -13,13 +13,13 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Color4 } from '../Maths/math.color';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { PBRMaterial } from '../Materials/PBR/pbrMaterial';
-
-import "../Shaders/geometry.fragment";
-import "../Shaders/geometry.vertex";
 import { _DevTools } from '../Misc/devTools';
 import { Observer } from '../Misc/observable';
 import { Engine } from '../Engines/engine';
 import { Nullable } from '../types';
+
+import "../Shaders/geometry.fragment";
+import "../Shaders/geometry.vertex";
 
 /** @hidden */
 interface ISavedTransformationMatrix {
