@@ -17,8 +17,8 @@ import { PBRMaterial } from '../Materials/PBR/pbrMaterial';
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { _DevTools } from '../Misc/devTools';
-import { Observer } from '../Misc';
-import { Engine } from '../Engines';
+import { Observer } from '../Misc/observable';
+import { Engine } from '../Engines/engine';
 import { Nullable } from '../types';
 
 /** @hidden */
