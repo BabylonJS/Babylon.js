@@ -12,6 +12,8 @@ import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { HtmlElementTexture } from 'babylonjs/Materials/Textures/htmlElementTexture';
 import { InternalTexture } from 'babylonjs/Materials/Textures/internalTexture';
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
+import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
+import { RawCubeTexture } from 'babylonjs/Materials/Textures/rawCubeTexture';
 import { TextureHelper, TextureChannelsToDisplay } from '../../../../../../textureHelper';
 import { ISize } from 'babylonjs/Maths/math.size';
 
@@ -20,7 +22,6 @@ import { KeyboardEventTypes } from 'babylonjs/Events/keyboardEvents';
 
 import { Tool } from './toolBar';
 import { Channel } from './channelsBar';
-import { PBRMaterial, RawCubeTexture } from 'babylonjs';
 
 export interface PixelData {
     x? : number;
