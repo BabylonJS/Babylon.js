@@ -50,6 +50,16 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     public useMaskFromThicknessTexture: boolean = false;
 
     /**
+     * Stores the intensity of the different subsurface effects in the thickness texture. This variation
+     * matches the channel-packing that is used by glTF.
+     * * the red channel is the transmission intensity.
+     * * the green channel is the translucency intensity.
+     * * the blue channel is the thickness.
+     */
+    @editableInPropertyPage("glTF-style masks from thickness texture", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": true }})
+    public useMaskFromThicknessTextureGltf: boolean = false;
+
+    /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
@@ -141,6 +151,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         defines.setValue("SS_TRANSLUCENCY", translucencyEnabled, true);
         defines.setValue("SS_THICKNESSANDMASK_TEXTURE", this.thicknessTexture.isConnected, true);
         defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", this.useMaskFromThicknessTexture, true);
+        defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE_GLTF", this.useMaskFromThicknessTextureGltf, true);
     }
 
     /**
