@@ -32,6 +32,7 @@ export class GizmoManager implements IDisposable {
     private _boundingBoxColor = Color3.FromHexString("#0984e3");
     private _defaultUtilityLayer: UtilityLayerRenderer;
     private _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
+    private _thickness: number = 1;
     /**
      * When bounding box gizmo is enabled, this can be used to track drag/end events
      */
@@ -62,12 +63,13 @@ export class GizmoManager implements IDisposable {
     /**
      * Instatiates a gizmo manager
      * @param scene the scene to overlay the gizmos on top of
+     * @param thickness display gizmo axis thickness
      */
-    constructor(private scene: Scene) {
+    constructor(private scene: Scene, thickness: number = 1) {
         this._defaultKeepDepthUtilityLayer = new UtilityLayerRenderer(scene);
         this._defaultKeepDepthUtilityLayer.utilityLayerScene.autoClearDepthAndStencil = false;
         this._defaultUtilityLayer = new UtilityLayerRenderer(scene);
-
+        this._thickness = thickness;
         this.gizmos = { positionGizmo: null, rotationGizmo: null, scaleGizmo: null, boundingBoxGizmo: null };
 
         // Instatiate/dispose gizmos based on pointer actions
@@ -141,7 +143,7 @@ export class GizmoManager implements IDisposable {
     public set positionGizmoEnabled(value: boolean) {
         if (value) {
             if (!this.gizmos.positionGizmo) {
-                this.gizmos.positionGizmo = new PositionGizmo(this._defaultUtilityLayer);
+                this.gizmos.positionGizmo = new PositionGizmo(this._defaultUtilityLayer, this._thickness);
             }
             this.gizmos.positionGizmo.attachedMesh = this._attachedMesh;
         } else if (this.gizmos.positionGizmo) {
@@ -158,7 +160,7 @@ export class GizmoManager implements IDisposable {
     public set rotationGizmoEnabled(value: boolean) {
         if (value) {
             if (!this.gizmos.rotationGizmo) {
-                this.gizmos.rotationGizmo = new RotationGizmo(this._defaultUtilityLayer);
+                this.gizmos.rotationGizmo = new RotationGizmo(this._defaultUtilityLayer, 32, false, this._thickness);
             }
             this.gizmos.rotationGizmo.attachedMesh = this._attachedMesh;
         } else if (this.gizmos.rotationGizmo) {
@@ -174,7 +176,7 @@ export class GizmoManager implements IDisposable {
      */
     public set scaleGizmoEnabled(value: boolean) {
         if (value) {
-            this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo(this._defaultUtilityLayer);
+            this.gizmos.scaleGizmo = this.gizmos.scaleGizmo || new ScaleGizmo(this._defaultUtilityLayer, this._thickness);
             this.gizmos.scaleGizmo.attachedMesh = this._attachedMesh;
         } else if (this.gizmos.scaleGizmo) {
             this.gizmos.scaleGizmo.attachedMesh = null;

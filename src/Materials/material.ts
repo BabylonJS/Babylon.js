@@ -21,6 +21,7 @@ import { IInspectable } from '../Misc/iInspectable';
 import { Plane } from '../Maths/math.plane';
 import { ShadowDepthWrapper } from './shadowDepthWrapper';
 
+declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 declare type Animation = import("../Animations/animation").Animation;
 declare type InstancedMesh = import('../Meshes/instancedMesh').InstancedMesh;
@@ -230,9 +231,9 @@ export class Material implements IAnimatable {
     public state = "";
 
     /**
-     * If the material should be rendered to several textures with MRT extension
+     * If the material can be rendered to several textures with MRT extension
      */
-    public get shouldRenderToMRT() : boolean {
+    public get canRenderToMRT() : boolean {
         // By default, shaders are not compatible with MRTs
         // Base classes should override that if their shader supports MRT
         return false;
@@ -1316,6 +1317,16 @@ export class Material implements IAnimatable {
      */
     protected _markAllSubMeshesAsTexturesAndMiscDirty() {
         this._markAllSubMeshesAsDirty(Material._TextureAndMiscDirtyCallBack);
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup.
+     * @returns true if the pre pass is needed.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        // Do Nothing by default
+        return false;
     }
 
     /**

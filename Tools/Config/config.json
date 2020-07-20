@@ -11,7 +11,7 @@
         "distES6FolderName": "distES6",
         "packageES6FolderName": "packageES6",
         "packageES6DevFolderName": "packageES6Dev",
-        "playgroundDirectory": "../../playground/",
+        "playgroundDirectory": "../../Playground/",
         "documentationFile": "documentation.d.ts",
         "intellisenseSources": [
             "../../dist/preview release/babylon.d.ts",
@@ -47,8 +47,7 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor",
-        "sandbox"
+        "nodeEditor"
     ],
     "es6modules": [
         "core",
@@ -60,7 +59,10 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor",
+        "nodeEditor"
+    ],
+    "apps": [
+        "playground",
         "sandbox"
     ],
     "lintModules": [
@@ -638,52 +640,22 @@
             }
         }
     },
-    "sandbox": {
-        "libraries": [
-            {
-                "output": "babylon.sandbox.js",
-                "entry": "./legacy/legacy.ts"
-            }
-        ],
-        "build": {            
+    "playground": {
+        "distFile": "/Playground/dist/babylon.playground.js",
+        "build": {
             "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
-            "mainFolder": "./sandbox/",
-            "uncheckedLintImports": [
-                "react",
-                "react-dom"
-            ],
-            "umd": {
-                "packageName": "babylonjs-sandbox",
-                "webpackRoot": "SANDBOX",
-                "processDeclaration": {
-                    "filename": "babylon.sandbox.module.d.ts",
-                    "moduleName": "SANDBOX",
-                    "importsToRemove": [],
-                    "classMap": {
-                        "babylonjs": "BABYLON",
-                        "react": "React",
-                        "@babylonjs/core": "BABYLON",
-                        "@fortawesome": false
-                    }
-                }
-            },
-            "es6": {
-                "webpackBuild": true,
-                "buildDependencies": [
-                    "Tools/**/*"
-                ],
-                "packageName": "@babylonjs/sandbox",
-                "readme": "dist/preview release/sandbox/readme-es6.md",
-                "packagesFiles": [
-                    "babylon.sandbox.max.js",
-                    "babylon.sandbox.max.js.map",
-                    "babylon.sandbox.module.d.ts",
-                    "readme.md"
-                ],
-                "typings": "babylon.sandbox.module.d.ts",
-                "index": "babylon.sandbox.max.js"
-            }
+            "distOutputDirectory": "../../Playground/dist/",
+            "mainFolder": "./Playground/"
+        }
+    },
+    "sandbox": {
+        "distFile": "/sandbox/public/dist/babylon.sandbox.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../sandbox/public/dist/",
+            "mainFolder": "./sandbox/"
         }
     },
     "viewer": {
