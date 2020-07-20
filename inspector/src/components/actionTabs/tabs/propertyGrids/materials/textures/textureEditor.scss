@@ -3,7 +3,7 @@
     width: 100%;
     color: white;
     background-color: #1e1e1e;
-    
+
     .icon {
         width: 40px;
         height: 40px;
@@ -150,10 +150,13 @@
             font-size: 16px;
             display: flex;
             align-items: center;
-            margin-top: 2px;
     
             &.uneditable {
                 background: #333333;
+            }
+
+            &:hover {
+                cursor: pointer;
             }
         }
         user-select: none;

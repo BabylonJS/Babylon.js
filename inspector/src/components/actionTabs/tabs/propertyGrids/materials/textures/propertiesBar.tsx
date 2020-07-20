@@ -55,7 +55,7 @@ export class PropertiesBar extends React.Component<PropertiesBarProps> {
                 <div className='tab' id='dimensions-tab'>
                     <label className='dimensions'>W: <input type='text' readOnly contentEditable={false} value={this.props.texture.getSize().width}/></label>
                     <label className='dimensions'>H: <input type='text' readOnly contentEditable={false} value={this.props.texture.getSize().height} /></label>
-                    <img id='resize' className='icon button' src={resizeButton}/>
+                    <img id='resize' className='icon button' title='Resize' alt='Resize' src={resizeButton}/>
                 </div>
                 <div className='tab' id='pixel-coords-tab'>
                     <PixelData name='X' data={this.props.pixelData.x}/>
@@ -79,15 +79,15 @@ export class PropertiesBar extends React.Component<PropertiesBarProps> {
                         />)}
                     </div>
                     <div className='tab' id='mip-tab'>
-                        <img className='icon button' src={mipUp} />
-                        <img className='icon button' src={mipDown} />
+                        <img title='Mip Preview Up' className='icon button' src={mipUp} />
+                        <img title='Mip Preview Down' className='icon button' src={mipDown} />
                     </div>
                 </>}
                 <div className='tab' id='right-tab'>
                     <div className='content'>
-                        <img className='icon button' src={resetButton} onClick={() => this.props.resetTexture()}/>
-                        <img className='icon button' src={uploadButton}/>
-                        <img className='icon button' src={saveButton} onClick={() => this.props.saveTexture()}/>
+                        <img title='Reset' className='icon button' src={resetButton} onClick={() => this.props.resetTexture()}/>
+                        <img title='Upload' className='icon button' src={uploadButton}/>
+                        <img title='Save' className='icon button' src={saveButton} onClick={() => this.props.saveTexture()}/>
                     </div>
                 </div>
         </div>;

@@ -38,13 +38,14 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
                             src={`data:image/svg+xml;base64,${item.icon}`}
                             className={index === this.props.activeToolIndex ? 'icon button active' : 'icon button'}
                             alt={item.name}
+                            title={item.name}
                             onClick={() => this.props.changeTool(index)}
                             key={index}
                         />
                     }
                 )}
             </div>
-            <div id='color' className='icon button'>
+            <div id='color' title='Color' className='icon button'>
                 <div id='activeColor' style={{backgroundColor: this.props.metadata.color}}></div>
             </div>
         </div>;

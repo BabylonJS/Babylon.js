@@ -20,8 +20,10 @@ export class ChannelsBar extends React.Component<ChannelsBarProps> {
     render() {
         return <div id='channels-bar'>
             {this.props.channels.map(
-                (channel,index) =>
-                    <div key={channel.name} className={channel.editable ? 'channel' : 'channel uneditable'}>
+                (channel,index) => {
+                    const visTip = channel.visible ? 'Hide' : 'Show';
+                    const editTip = channel.editable ? 'Lock' : 'Unlock'
+                    return <div key={channel.name} className={channel.editable ? 'channel' : 'channel uneditable'}>
                         <img
                             className={channel.visible ? 'icon channel-visibility visible' : 'icon channel-visibility'}
                             onClick={() => {
@@ -30,16 +32,20 @@ export class ChannelsBar extends React.Component<ChannelsBarProps> {
                                 this.props.setChannels(newChannels);
                             }}
                             src={channel.visible ? eyeOpen : eyeClosed}
+                            title={`${visTip} ${channel.name}`}
                         />
-                        <span
+                        <img
                             className='icon channel-name'
                             onClick={() => {
                                 let newChannels = this.props.channels;
                                 newChannels[index].editable = !newChannels[index].editable;
                                 this.props.setChannels(newChannels);
                             }}
-                        ><img src={channel.icon}/></span>
+                            src={channel.icon}
+                            title={`${editTip} ${channel.name}`}
+                        />
                     </div>
+                }
             )}
         </div>;
     }
