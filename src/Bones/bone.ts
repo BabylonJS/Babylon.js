@@ -863,6 +863,8 @@ export class Bone extends Node {
             }
         }
 
+        this._absoluteTransform.invertToRef(this._invertedAbsoluteTransform);
+
         var children = this.children;
         var len = children.length;
 
