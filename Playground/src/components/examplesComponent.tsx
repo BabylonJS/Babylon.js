@@ -91,7 +91,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
             <div id="examples" className={this._state} ref={this._rootRef}>
                 <div id="examples-header">Examples</div>
                 <div id="examples-filter">
-                    <input type="text" placeholder="Filter examples" value={this.state.filter} onChange={evt => {
+                    <input id="examples-filter-text" type="text" placeholder="Filter examples" value={this.state.filter} onChange={evt => {
                         this.setState({filter: evt.target.value});
                     }}/>
                 </div>

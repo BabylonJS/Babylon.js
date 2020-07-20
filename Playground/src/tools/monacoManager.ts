@@ -67,8 +67,12 @@ export class MonacoManager {
                 return;
             }
 
-            this._editor?.setValue(code);            
-            this.globalState.onRunRequiredObservable.notifyObservers();
+            if (this._editor) {
+                this._editor?.setValue(code);            
+                this.globalState.onRunRequiredObservable.notifyObservers();
+            } else {
+                this.globalState.currentCode = code;
+            }
         });
 
         globalState.onFormatCodeRequiredObservable.add(() => {
@@ -178,6 +182,10 @@ export class MonacoManager {
         }
 
         this.globalState.getCompiledCode = () => this._getRunCode();
+
+        if (this.globalState.currentCode) {
+            this.globalState.onRunRequiredObservable.notifyObservers();
+        }
     }
 
     public async setupMonacoAsync(hostElement: HTMLDivElement) {

@@ -60,6 +60,7 @@ export class GlobalState {
     public onLanguageChangedObservable = new Observable<void>();
     public onNavigateRequiredObservable = new Observable<{lineNumber: number, column: number}>();
     public onExamplesDisplayChangedObservable = new Observable<void>();
+    public onQRCodeRequiredObservable = new Observable<boolean>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();

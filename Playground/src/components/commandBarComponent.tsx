@@ -139,6 +139,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     {
                         label: "metadata",
                         onClick: () => {this.props.globalState.onDisplayMetadataObservable.notifyObservers(true)}
+                    },
+                    {
+                        label: "QR code",
+                        onClick: () => {this.props.globalState.onQRCodeRequiredObservable.notifyObservers(true)}
                     }
                 ]}/>
                 </div>
