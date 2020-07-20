@@ -25,6 +25,7 @@
 - Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
 - The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
+- Gizmo axis thickness ([cedricguillemet](https://github.com/cedricguillemet))
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added initial code for user facing DeviceSourceManager ([PolygonalSun](https://github.com/PolygonalSun))
@@ -132,6 +133,7 @@
 - Allow using the single comment syntax `// comment` in a `#if` construct in shader code ([Popov72](https://github.com/Popov72))
 - Added the possibility to update the shader code before being compiled ([Popov72](https://github.com/Popov72))
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
+- Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
 
 ### WebXR
 
@@ -201,6 +203,7 @@
 - Fix infinite loop in `GlowLayer.unReferenceMeshFromUsingItsOwnMaterial` ([Popov72](https://github.com/Popov72))
 - Fix picking issue in the Solid Particle System when MultiMaterial is enabled ([jerome](https://github.com/jbousquie))
 - Fix picking issue in the Solid Particle System when expandable ([jerome](https://github.com/jbousquie))
+- Fix use of skeleton override matrix in mesh ray intersection ([cedricguillemet](https://github.com/cedricguillemet))
 - `QuadraticErrorSimplification` was not exported ([RaananW](https://github.com/Raananw))
 - Fix NME Frames bug where collapsing and moving a frame removed the nodes inside ([belfortk](https://github.com/belfortk))
 - Fix moving / disappearing controls when freezing/unfreezing the ScrollViewer ([Popov72](https://github.com/Popov72))
@@ -258,6 +261,7 @@
 - Fix skeleton viewer still visible when `isEnabled = false` ([Popov72](https://github.com/Popov72))
 - Fix crash with CSG when no uvs defined ([Popov72](https://github.com/Popov72))
 - Fix an issue causing views to render blank when scene rendering is skipped for a given iteration of the render loop ([elInfidel](https://github.com/elInfidel))
+- Fix docs Matrix.RotationYawPitchRoll and Matrix.RotationYawPitchRollToRef ([VSerain](https://github.com/VSerain))
 
 ## Breaking changes
 
