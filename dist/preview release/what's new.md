@@ -28,6 +28,7 @@
 - Gizmo axis thickness ([cedricguillemet](https://github.com/cedricguillemet))
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
+- Better plane handling for PointerDragBehavior when camera direction colinear to axis ([cedricguillemet](https://github.com/cedricguillemet))
 - Added initial code for user facing DeviceSourceManager ([PolygonalSun](https://github.com/PolygonalSun))
 - Added a Simple and advanced timer, based on observables ([RaananW](https://github.com/RaananW))
 - Don't log a message in `CustomProceduralTexture` if the `texturePath` is not a JSON path ([Popov72](https://github.com/Popov72))
