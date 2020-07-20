@@ -44,8 +44,9 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param color The color of the gizmo
      * @param tessellation Amount of tessellation to be used when creating rotation circles
      * @param useEulerRotation Use and update Euler angle instead of quaternion
+     * @param thickness display gizmo axis thickness
      */
-    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false) {
+    constructor(planeNormal: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, tessellation = 32, parent: Nullable<RotationGizmo> = null, useEulerRotation = false, thickness: number = 1) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -59,9 +60,9 @@ export class PlaneRotationGizmo extends Gizmo {
         // Build mesh on root node
         var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
 
-        let drag = Mesh.CreateTorus("", 0.6, 0.03, tessellation, gizmoLayer.utilityLayerScene);
+        let drag = Mesh.CreateTorus("", 0.6, 0.03 * thickness, tessellation, gizmoLayer.utilityLayerScene);
         drag.visibility = 0;
-        let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005, tessellation, gizmoLayer.utilityLayerScene);
+        let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005 * thickness, tessellation, gizmoLayer.utilityLayerScene);
         rotationMesh.material = coloredMaterial;
 
         // Position arrow pointing in its drag axis

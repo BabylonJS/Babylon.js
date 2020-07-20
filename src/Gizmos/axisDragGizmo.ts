@@ -41,10 +41,10 @@ export class AxisDragGizmo extends Gizmo {
     private _hoverMaterial: StandardMaterial;
 
     /** @hidden */
-    public static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode {
+    public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1): TransformNode {
         var arrow = new TransformNode("arrow", scene);
-        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375, tessellation: 96 }, scene);
-        var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, scene);
+        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375 * ( 1 + (thickness - 1) / 4), tessellation: 96 }, scene);
+        var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, scene);
         line.material = material;
         cylinder.parent = arrow;
         line.parent = arrow;
@@ -73,8 +73,9 @@ export class AxisDragGizmo extends Gizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragAxis The axis which the gizmo will be able to drag on
      * @param color The color of the gizmo
+     * @param thickness display gizmo axis thickness
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null, thickness: number = 1) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -86,7 +87,7 @@ export class AxisDragGizmo extends Gizmo {
         this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
-        this._arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial);
+        this._arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness);
 
         this._arrow.lookAt(this._rootMesh.position.add(dragAxis));
         this._arrow.scaling.scaleInPlace(1 / 3);
