@@ -1538,7 +1538,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         if (intersectInfo) {
             // Get picked point
-            const world = this.getWorldMatrix();
+            const world = this.skeleton && this.skeleton.overrideMesh ? this.skeleton.overrideMesh.getWorldMatrix() : this.getWorldMatrix();
             const worldOrigin = TmpVectors.Vector3[0];
             const direction = TmpVectors.Vector3[1];
             Vector3.TransformCoordinatesToRef(ray.origin, world, worldOrigin);
