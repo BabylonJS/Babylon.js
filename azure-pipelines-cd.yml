@@ -13,14 +13,8 @@ jobs:
   - script: 'npm install typescript'
     displayName: 'npm install typescript'
 # Sandbox
-  - task: Npm@1
-    displayName: 'npm install'
-    inputs:
-      workingDir: Tools/Gulp
-      verbose: false
-  - script: 'gulp sandbox'
-    workingDirectory: Tools/Gulp
-    displayName: 'Build Sandbox'
+  - script: 'npm install --prefix Tools/Gulp && npx gulp sandbox --gulpfile ./Tools/Gulp/gulpfile.js'
+    displayName: 'gulp build sandbox'
   - script: 'npx netlify unlink'
     displayName: 'netlify unlink'
   - script: 'npx netlify link --id=4deda23f-f382-458b-897e-2f2111b5f263'
