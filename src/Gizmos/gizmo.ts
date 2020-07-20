@@ -161,7 +161,7 @@ export class Gizmo implements IDisposable {
         if (!this._attachedNode) {
             return;
         }
-        if (this._attachedNode.getClassName() === "Mesh" || this._attachedNode.getClassName() === "AbstractMesh" ||this._attachedNode.getClassName() === "TransformNode") {
+        if (this._attachedNode.getClassName() === "Mesh" || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
             var transform = this._attachedNode as TransformNode;
             var transformQuaternion = new Quaternion(0, 0, 0, 1);
             if (transform.parent) {
