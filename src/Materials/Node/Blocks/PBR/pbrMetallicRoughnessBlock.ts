@@ -921,6 +921,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state.compilationString += AmbientOcclusionBlock.GetCode(aoBlock);
 
+        state.compilationString += state._emitCodeFromInclude("pbrBlockLightmapInit", comments);
+
         // _____________________________ UNLIT  _______________________________
 
         state.compilationString += `#ifdef UNLIT
