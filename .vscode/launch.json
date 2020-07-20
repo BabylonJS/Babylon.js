@@ -86,10 +86,23 @@
             "type": "edge",
             "version": "dev",
             "request": "launch",
-            "url": "http://localhost:1338/Playground/public/index-local.html",
+            "url": "http://localhost:1338/Playground/index-local.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },        
+        {
+            "name": "Launch playground (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/Playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
