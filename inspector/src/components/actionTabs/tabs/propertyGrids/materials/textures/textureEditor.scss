@@ -23,6 +23,27 @@
     }
 }
 
+.has-tooltip {
+    display: inline-block;
+    .tooltip {
+        visibility: hidden;
+        background-color: rgb(255, 255, 255);
+        z-index: 1;
+        position: absolute;
+        opacity: 0;
+        transition: opacity 0.5s;
+        line-height: normal;
+        font-size: 14px;
+        padding: 0px 5px;
+        color: black;
+    }
+
+    &:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+}
+
 #properties {
     position: absolute;
     width: 100%;
@@ -55,7 +76,8 @@
                 background-color: #000000;
                 color: #ffffff;
                 border: 0;
-                padding-left: 6px;
+                padding-left: 4px;
+                font-size: 12px;
             }
 
             &:last-of-type {
@@ -106,12 +128,11 @@
 
     #color {
         margin-top: 8px;
-        background-color: #333333;
         #activeColor {
             margin: 10px;
             width: 20px;
             height: 20px;
-            border-radius: 40px;
+            border-radius: 50%;
         }
     }
 }

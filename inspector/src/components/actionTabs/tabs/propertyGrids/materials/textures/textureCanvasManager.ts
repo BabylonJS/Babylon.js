@@ -31,16 +31,6 @@ export interface PixelData {
     a? : number;
 }
 
-interface CubeTarget {
-    texture?: RawCubeTexture;
-    data?: ArrayBufferView[];
-}
-
-interface Target {
-    texture: HtmlElementTexture;
-}
-
-
 export class TextureCanvasManager {
     private _engine: Engine;
     private _scene: Scene;
@@ -55,7 +45,7 @@ export class TextureCanvasManager {
 
     private _size : ISize;
 
-    /* This is the canvas we paint onto using the canvas API */
+    /* The canvas we paint onto using the canvas API */
     private _2DCanvas : HTMLCanvasElement;
     /* The texture we are currently editing, which is based on _2DCanvas */
     private _texture: HtmlElementTexture;
@@ -63,15 +53,16 @@ export class TextureCanvasManager {
     private _displayCanvas : HTMLCanvasElement;
     private _channels : Channel[] = [];
     private _face : number = 0;
-    /* This is the actual texture that is being displayed. Sometimes it's just a single channel from _textures */
+    /* The texture that we are actually displaying. It is created by sampling a combination of channels from _texture */
     private _displayTexture : HtmlElementTexture;
 
     /* The texture from the original engine that we invoked the editor on */
     private _originalTexture: BaseTexture;
     /* This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
-    private _target : Target | CubeTarget = {};
+    private _target : HtmlElementTexture | RawCubeTexture;
     /* The internal texture representation of the original texture */
     private _originalInternalTexture : Nullable<InternalTexture> = null;
+    /* Keeps track of whether we have modified the texture */
     private _didEdit : boolean = false;
 
     private _plane : Mesh;
@@ -87,7 +78,7 @@ export class TextureCanvasManager {
     private static ZOOM_OUT_KEY : string = '-';
 
     private static PAN_SPEED : number = 0.002;
-    private static PAN_MOUSE_BUTTON : number = 0; // RMB
+    private static PAN_MOUSE_BUTTON : number = 0; // LMB
     private static PAN_KEY : string = ' ';
 
     private static MIN_SCALE : number = 0.01;
@@ -234,49 +225,29 @@ export class TextureCanvasManager {
         this._texture.update();
         this._didEdit = true;
         if (this._originalTexture.isCube) {
-            const target = this._target as CubeTarget;
+            // TODO: fix cube map editing
             let pixels : ArrayBufferView[] = [];
             for (let face = 0; face < 6; face++) {
                 let textureToCopy = this._originalTexture;
                 if (face === this._face) {
                     textureToCopy = this._texture;
                 }
-                pixels[face] = textureToCopy.readPixels(face)!;
-                if (face == this._face) {
-                    let buffer = new ArrayBuffer(pixels[face].byteLength * 4);
-                    let newView = new DataView(buffer);
-                    let oldView = new DataView(pixels[face].buffer);
-                    for(let byte = 0; byte < oldView.byteLength; byte += 8) {
-                        const int = oldView.getUint8(byte);
-                        const float = int / 255.0;
-                        newView.setFloat32(byte * 4, float);
-                    }
-                    pixels[face] = newView;
-                }
-                // pixels[face] = await TextureHelper.GetTextureDataAsync(textureToCopy, this._size.width, this._size.height, face, {R: true, G: true, B: true, A: true});
+                pixels[face] = await TextureHelper.GetTextureDataAsync(textureToCopy, this._size.width, this._size.height, face, {R: true, G: true, B: true, A: true});
             }
-            target.data = pixels;
-            console.log(target.data);
-            if (!target.texture) {
-                this._target.texture = new RawCubeTexture(this._originalTexture.getScene()!, target.data!, this._size.width, this._originalTexture.textureFormat, this._originalTexture.textureType, !this._originalTexture.noMipmap);
-                this._target.texture.getScene()?.removeTexture(this._target.texture);
+            if (!this._target) {
+                this._target = new RawCubeTexture(this._originalTexture.getScene()!, pixels, this._size.width, this._originalTexture.textureFormat, Engine.TEXTURETYPE_UNSIGNED_INT, false);
+                this._target.getScene()?.removeTexture(this._target);
             } else {
-                let target = this._target as CubeTarget;
-                target.texture!.update(target.data!, this._originalTexture.textureFormat, this._originalTexture.textureType, false);
+                (this._target as RawCubeTexture).update(pixels, this._originalTexture.textureFormat, this._originalTexture.textureType, false);
             }
         } else {
-            const target = this._target as Target;
-            // this._target.data = await TextureHelper.GetTextureDataAsync(this._texture, this._size.width, this._size.height, this._face, {R: true, G: true, B: true, A: true});
-            if (!target.texture) {
-                target.texture = new HtmlElementTexture("editor", this._2DCanvas, {engine: this._originalTexture.getScene()?.getEngine()!, scene: null});
-                // this._target.texture = new RawTexture(target.data!, this._size.width, this._size.height, this._originalTexture.textureFormat, this._originalTexture.getScene()!);
-                // this._target.texture.getScene()?.removeTexture(this._target.texture);
+            if (!this._target) {
+                this._target = new HtmlElementTexture("editor", this._2DCanvas, {engine: this._originalTexture.getScene()?.getEngine()!, scene: null});
             } else {
-                target.texture.update();
+                (this._target as HtmlElementTexture).update();
             }
         }
-        // this._targetTexture = new HtmlElementTexture("editor", this._2DCanvas, {engine: this._originalTexture.getScene()?.getEngine()!, scene: null});
-        this._originalTexture._texture = this._target.texture!._texture;
+        this._originalTexture._texture = this._target._texture;
         this.copyTextureToDisplayTexture();
     }
 
@@ -324,7 +295,7 @@ export class TextureCanvasManager {
     }
 
     public grabOriginalTexture() {
-        /* Grab image data from original texture and paint it onto the context of a DynamicTexture */
+        // Grab image data from original texture and paint it onto the context of a DynamicTexture
         TextureHelper.GetTextureDataAsync(
             this._originalTexture,
             this._size.width,

@@ -67,55 +67,53 @@ export class TextureHelper {
             //Reading datas from WebGL
             var data = engine.readPixels(0, 0, width, height);
 
-            if (true || !texture.isCube) {
-                if (!channels.R || !channels.G || !channels.B || !channels.A) {
-                    for (var i = 0; i < width * height * 4; i += 4) {
-                        // If alpha is the only channel, just display alpha across all channels
-                        if (channels.A && !channels.R && !channels.G && !channels.B) {
-                            data[i] = data[i+3];
-                            data[i+1] = data[i+3];
-                            data[i+2] = data[i+3];
-                            data[i+3] = 255;
-                            continue;
-                        }
-                        let r = data[i], g = data[i+1], b = data[i + 2], a = data[i+3];
-                        // If alpha is not visible, make everything 100% alpha
-                        if (!channels.A) {
-                            a = 255;
-                        }
-                        // If only one color channel is selected, map both colors to it. If two are selected, the unused one gets set to 0
-                        if (!channels.R) {
-                            if (channels.G && !channels.B) {
-                                r = g;
-                            } else if (channels.B && !channels.G) {
-                                r = b;
-                            } else {
-                                r = 0;
-                            }
-                        }
-                        if (!channels.G) {
-                            if (channels.R && !channels.B) {
-                                g = r;
-                            } else if (channels.B && !channels.R) {
-                                g = b;
-                            } else {
-                                g = 0;
-                            }
-                        }
-                        if (!channels.B) {
-                            if (channels.R && !channels.G) {
-                                b = r;
-                            } else if (channels.G && !channels.R) {
-                                b = g;
-                            } else {
-                                b = 0;
-                            }
-                        }
-                        data[i] = r;
-                        data[i + 1] = g;
-                        data[i + 2] = b;
-                        data[i + 3] = a;
+            if (!channels.R || !channels.G || !channels.B || !channels.A) {
+                for (var i = 0; i < width * height * 4; i += 4) {
+                    // If alpha is the only channel, just display alpha across all channels
+                    if (channels.A && !channels.R && !channels.G && !channels.B) {
+                        data[i] = data[i+3];
+                        data[i+1] = data[i+3];
+                        data[i+2] = data[i+3];
+                        data[i+3] = 255;
+                        continue;
                     }
+                    let r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+                    // If alpha is not visible, make everything 100% alpha
+                    if (!channels.A) {
+                        a = 255;
+                    }
+                    // If only one color channel is selected, map both colors to it. If two are selected, the unused one gets set to 0
+                    if (!channels.R) {
+                        if (channels.G && !channels.B) {
+                            r = g;
+                        } else if (channels.B && !channels.G) {
+                            r = b;
+                        } else {
+                            r = 0;
+                        }
+                    }
+                    if (!channels.G) {
+                        if (channels.R && !channels.B) {
+                            g = r;
+                        } else if (channels.B && !channels.R) {
+                            g = b;
+                        } else {
+                            g = 0;
+                        }
+                    }
+                    if (!channels.B) {
+                        if (channels.R && !channels.G) {
+                            b = r;
+                        } else if (channels.G && !channels.R) {
+                            b = g;
+                        } else {
+                            b = 0;
+                        }
+                    }
+                    data[i] = r;
+                    data[i + 1] = g;
+                    data[i + 2] = b;
+                    data[i + 3] = a;
                 }
             }
 

@@ -81,9 +81,9 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
             this.canvasDisplay.current!,
             (data : PixelData) => {this.setState({pixelData: data})}
         );
-        this.loadTool('https://darraghburkems.github.io/BJSTools/Paintbrush.js');
-        this.loadTool('https://darraghburkems.github.io/BJSTools/Floodfill.js');
-        this.loadTool('https://darraghburkems.github.io/BJSTools/Eyedropper.js');
+        // this.loadTool('https://darraghburkems.github.io/BJSTools/Paintbrush.js');
+        // this.loadTool('https://darraghburkems.github.io/BJSTools/Floodfill.js');
+        // this.loadTool('https://darraghburkems.github.io/BJSTools/Eyedropper.js');
     }
 
     componentDidUpdate() {
@@ -98,26 +98,25 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this._textureCanvasManager.dispose();
     }
 
+    // There is currently no UI for adding a tool, so this function does not get called
     loadTool(url : string) {
-        Tools.LoadScript(url,
-            () => {
-                const tool : Tool = {
-                    ..._TOOL_DATA_,
-                    instance: new _TOOL_DATA_.type({
-                        scene: this._textureCanvasManager.scene,
-                        canvas2D: this._textureCanvasManager.canvas2D,
-                        size: this._textureCanvasManager.size,
-                        updateTexture: () => this._textureCanvasManager.updateTexture(),
-                        getMetadata: () => this.state.metadata,
-                        setMetadata: (data : any) => this.setMetadata(data)
-                    })
-                };
-                const newTools = this.state.tools.concat(tool);
-                this.setState({tools: newTools});
+        Tools.LoadScript(url, () => {
+            const tool : Tool = {
+                ..._TOOL_DATA_,
+                instance: new _TOOL_DATA_.type({
+                    scene: this._textureCanvasManager.scene,
+                    canvas2D: this._textureCanvasManager.canvas2D,
+                    size: this._textureCanvasManager.size,
+                    updateTexture: () => this._textureCanvasManager.updateTexture(),
+                    getMetadata: () => this.state.metadata,
+                    setMetadata: (data : any) => this.setMetadata(data)
+                })
+            };
+            const newTools = this.state.tools.concat(tool);
+            this.setState({tools: newTools});
                 console.log(tool);
-            });
+        });
     }
-
 
     changeTool(index : number) {
         if (index != -1) {
