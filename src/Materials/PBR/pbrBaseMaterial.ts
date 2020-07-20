@@ -254,6 +254,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_ALBEDOFORREFRACTIONTINT = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
+    public SS_MASK_FROM_THICKNESS_TEXTURE_GLTF = false;
 
     public UNLIT = false;
 
