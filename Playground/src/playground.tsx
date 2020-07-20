@@ -14,6 +14,7 @@ import { Utilities } from './tools/utilities';
 import { ShortcutManager } from './tools/shortcutManager';
 import { ErrorDisplayComponent } from './components/errorDisplayComponent';
 import { ExamplesComponent } from './components/examplesComponent';
+import { QRCodeComponent } from './components/qrCodeComponent';
 
 require("./scss/main.scss");
 const Split = require('split.js').default;
@@ -146,7 +147,8 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
                     <HamburgerMenuComponent globalState={this._globalState}/>
                 }
                 <ExamplesComponent globalState={this._globalState}/>
-                <FooterComponent globalState={this._globalState}/>    
+                <FooterComponent globalState={this._globalState}/>   
+                <QRCodeComponent globalState={this._globalState}/>   
                 <ErrorDisplayComponent globalState={this._globalState}/>            
                 <WaitRingComponent globalState={this._globalState}/>
                 <MetadataComponent globalState={this._globalState}/>

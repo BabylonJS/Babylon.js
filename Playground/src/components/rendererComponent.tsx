@@ -96,7 +96,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             let zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
             let defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
-            let code = await this.props.globalState.getCompiledCode();        
+            let code = await this.props.globalState.getCompiledCode();     
+            
+            if (!code) {
+                return;
+            }
+            
             let createEngineFunction = "createDefaultEngine";
             let createSceneFunction = "";
             let checkCamera = true;
