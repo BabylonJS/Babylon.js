@@ -16,11 +16,53 @@ interface IGraphActionsBarProps {
   title: string;
   close: (event: any) => void;
   enabled: boolean;
+  setKeyframeValue: () => void;
 }
 
 export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
+  private _frameInput: React.RefObject<HTMLInputElement>;
+  private _valueInput: React.RefObject<HTMLInputElement>;
   constructor(props: IGraphActionsBarProps) {
     super(props);
+    this._frameInput = React.createRef();
+    this._valueInput = React.createRef();
+  }
+
+  componentDidMount() {
+    this._frameInput.current?.addEventListener(
+      'keyup',
+      this.isEnterKeyUp.bind(this)
+    );
+    this._valueInput.current?.addEventListener(
+      'keyup',
+      this.isEnterKeyUp.bind(this)
+    );
+  }
+
+  componentWillUnmount() {
+    this._frameInput.current?.removeEventListener(
+      'keyup',
+      this.isEnterKeyUp.bind(this)
+    );
+    this._valueInput.current?.removeEventListener(
+      'keyup',
+      this.isEnterKeyUp.bind(this)
+    );
+  }
+
+  isEnterKeyUp(event: KeyboardEvent) {
+    event.preventDefault();
+
+    if (event.key === 'Enter') {
+      this.props.setKeyframeValue();
+    }
+  }
+
+  onBlur(event: React.FocusEvent<HTMLInputElement>) {
+    event.preventDefault();
+    if (event.target.value !== '') {
+      this.props.setKeyframeValue();
+    }
   }
 
   render() {
@@ -36,18 +78,24 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
         >
           <div className='action-input frame-input'>
             <input
+              ref={this._frameInput}
               type='number'
               onChange={this.props.handleFrameChange}
-              value={this.props.actionableKeyframe.frame}
+              value={this.props.actionableKeyframe.frame?.toString() || ''}
               step='1'
+              disabled={this.props.actionableKeyframe.frame === undefined}
+              onBlur={(e) => this.onBlur(e)}
             />
           </div>
           <div className='action-input'>
             <input
+              ref={this._valueInput}
               type='number'
-              value={this.props.actionableKeyframe.value}
+              value={this.props.actionableKeyframe.value || ''}
               onChange={this.props.handleValueChange}
               step='0.01'
+              disabled={this.props.actionableKeyframe.value === undefined}
+              onBlur={(e) => this.onBlur(e)}
             />
           </div>
           <IconButtonLineComponent

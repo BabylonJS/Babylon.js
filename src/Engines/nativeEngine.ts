@@ -235,7 +235,7 @@ export class NativeEngine extends Engine {
             etc1: null,
             etc2: null,
             maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
-            uintIndices: false,
+            uintIndices: true,
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,

@@ -10,6 +10,7 @@ interface ITextInputLineComponentProps {
     propertyName?: string;
     value?: string;
     onChange?: (value: string) => void;
+    validator?: (value: string) => boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
@@ -58,6 +59,13 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
         this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
+
+        if(this.props.validator && raisePropertyChanged) {
+            if(this.props.validator(value) == false) {
+                value = store;
+            }
+        }
+
         this.setState({ value: value });
 
         if (raisePropertyChanged) {

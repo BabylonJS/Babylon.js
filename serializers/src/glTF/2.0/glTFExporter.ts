@@ -1695,7 +1695,7 @@ export class _Exporter {
             skinMap[skeleton.uniqueId] = this._skins.length - 1;
 
             inverseBindMatrices.forEach((mat) => {
-                mat.m.forEach((cell) => {
+                mat.m.forEach((cell: number) => {
                     binaryWriter.setFloat32(cell);
                 });
             });

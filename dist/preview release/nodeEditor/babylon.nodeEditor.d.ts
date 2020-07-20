@@ -788,6 +788,7 @@ declare module NODEEDITOR {
         propertyName?: string;
         value?: string;
         onChange?: (value: string) => void;
+        validator?: (value: string) => boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, {

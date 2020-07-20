@@ -1,4 +1,3 @@
-import { PBRBaseMaterial } from "../Materials/PBR/pbrBaseMaterial";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -9,7 +8,6 @@ import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
-import { SSAO2RenderingPipeline } from "../PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 
 /**
  * Renders a pre pass of the scene
@@ -287,24 +285,15 @@ export class PrePassRenderer {
 
         // Subsurface scattering
         for (let i = 0; i < this._scene.materials.length; i++) {
-            const material = this._scene.materials[i] as PBRBaseMaterial;
-
-            if (material.subSurface && material.subSurface.isScatteringEnabled) {
-                this.subSurfaceConfiguration.enabled = true;
-                this.materialsShouldRenderIrradiance = true;
+            if (this._scene.materials[i].setPrePassRenderer(this)) {
                 enablePrePass = true;
-
-                // 1 subsurface material is enough to activate post process
-                break;
             }
         }
 
         const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
         for (let i = 0; i < pipelines.length; i++) {
-            if (pipelines[i] instanceof SSAO2RenderingPipeline) {
-                this.materialsShouldRenderGeometry = true;
+            if (pipelines[i].setPrePassRenderer(this)) {
                 enablePrePass = true;
-                break;
             }
         }
 

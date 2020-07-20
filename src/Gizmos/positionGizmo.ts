@@ -4,6 +4,7 @@ import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { AxisDragGizmo } from "./axisDragGizmo";
@@ -42,6 +43,7 @@ export class PositionGizmo extends Gizmo {
      * private variables
      */
     private _meshAttached: Nullable<AbstractMesh> = null;
+    private _nodeAttached: Nullable<Node> = null;
     private _updateGizmoRotationToMatchAttachedMesh: boolean;
     private _snapDistance: number;
     private _scaleRatio: number;
@@ -61,6 +63,7 @@ export class PositionGizmo extends Gizmo {
     }
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
+        this._nodeAttached = mesh;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
@@ -69,7 +72,22 @@ export class PositionGizmo extends Gizmo {
                 gizmo.attachedMesh = null;
             }
         });
+    }
 
+    public get attachedNode() {
+        return this._nodeAttached;
+    }
+    public set attachedNode(node: Nullable<Node>) {
+        this._meshAttached = null;
+        this._nodeAttached = null;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo.isEnabled) {
+                gizmo.attachedNode = node;
+            }
+            else {
+                gizmo.attachedNode = null;
+            }
+        });
     }
     /**
      * Creates a PositionGizmo
@@ -107,7 +125,12 @@ export class PositionGizmo extends Gizmo {
             if (gizmo) {
                 gizmo.isEnabled = value;
                 if (value) {
-                    gizmo.attachedMesh = this.attachedMesh;
+                    if (gizmo.attachedMesh) {
+                        gizmo.attachedMesh = this.attachedMesh;
+                    } else {
+                        gizmo.attachedNode = this.attachedNode;
+                    }
+
                 }
             }
         }, this);
