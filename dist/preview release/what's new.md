@@ -19,12 +19,12 @@
 
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
-- Gizmo axis thickness ([cedricguillemet](https://github.com/cedricguillemet))
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
 - Added initial code for DeviceInputSystem ([PolygonalSun](https://github.com/PolygonalSun))
 - Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
 - The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
+- Gizmo axis thickness ([cedricguillemet](https://github.com/cedricguillemet))
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
 - Added initial code for user facing DeviceSourceManager ([PolygonalSun](https://github.com/PolygonalSun))
