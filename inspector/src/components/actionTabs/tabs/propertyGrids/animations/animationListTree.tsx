@@ -122,7 +122,7 @@ export class AnimationListTree extends React.Component<
     index: number
   ) {
     this.setState({ selectedCoordinate: coordinate, selectedAnimation: index });
-    this.props.selectAnimation(animation, SelectedCoordinate.x);
+    this.props.selectAnimation(animation, coordinate);
   }
 
   coordinateItem(

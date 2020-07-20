@@ -8,6 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { PlaneRotationGizmo } from "./planeRotationGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { Node } from "../node";
 /**
  * Gizmo that enables rotating a mesh along 3 axis
  */
@@ -31,19 +32,36 @@ export class RotationGizmo extends Gizmo {
     public onDragEndObservable = new Observable();
 
     private _meshAttached: Nullable<AbstractMesh>;
+    private _nodeAttached: Nullable<Node>;
 
     public get attachedMesh() {
         return this._meshAttached;
     }
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
-
+        this._nodeAttached = mesh;
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
             }
             else {
                 gizmo.attachedMesh = null;
+            }
+        });
+    }
+
+    public get attachedNode() {
+        return this._nodeAttached;
+    }
+    public set attachedNode(node: Nullable<Node>) {
+        this._meshAttached = null;
+        this._nodeAttached = node;
+        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+            if (gizmo.isEnabled) {
+                gizmo.attachedNode = node;
+            }
+            else {
+                gizmo.attachedNode = null;
             }
         });
     }
@@ -70,6 +88,7 @@ export class RotationGizmo extends Gizmo {
         });
 
         this.attachedMesh = null;
+        this.attachedNode = null;
     }
 
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {

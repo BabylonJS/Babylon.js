@@ -677,11 +677,10 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Should this material render to several textures at once
+     * Can this material render to several textures at once
      */
-    public get shouldRenderToMRT() {
-        const ppr = this.getScene().prePassRenderer;
-        return (!!ppr && ppr.materialsShouldRenderGeometry);
+    public get canRenderToMRT() {
+        return true;
     }
 
     /**
@@ -834,7 +833,7 @@ export class StandardMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
-        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.shouldRenderToMRT);
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT);
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -1218,7 +1217,7 @@ export class StandardMaterial extends PushMaterial {
                 onError: this.onError,
                 indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
                 processFinalCode: csnrOptions.processFinalCode,
-                multiTarget: this.shouldRenderToMRT
+                multiTarget: defines.PREPASS
             }, engine);
 
             if (effect) {
