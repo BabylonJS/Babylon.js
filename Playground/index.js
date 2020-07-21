@@ -79,6 +79,12 @@ let checkBabylonVersionAsync= function () {
 }
 
 checkBabylonVersionAsync().then(() => {
+    if (typeof BABYLONDEVTOOLS !== 'undefined') {
+        var hostElement = document.getElementById("host-element");
+        BABYLON.Playground.Show(hostElement);
+        return;
+    }
+
     loadScriptAsync("/dist/babylon.playground.js").then(() => {
         var hostElement = document.getElementById("host-element");
         BABYLON.Playground.Show(hostElement);

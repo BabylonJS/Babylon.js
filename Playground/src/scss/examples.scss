@@ -1,4 +1,4 @@
-#examples {    
+#examples {
     grid-row: 2;
     grid-column: 3;
     position: absolute;
@@ -9,6 +9,7 @@
     transform: translateX(380px);
     opacity: 0;
     transition: all 0.2s ease;
+    height: calc(100% - 90px);
 
     &.visible {
         transform: translateX(0);
@@ -18,7 +19,7 @@
     width: 380px;
     display: grid;
     grid-template-columns: 100%;
-    grid-template-rows: 60px 60px calc(100% - 120px);
+    grid-template-rows: 60px 60px 1fr;
     overflow: hidden;
 
     #examples-header {
@@ -62,7 +63,6 @@
         grid-row: 3;
         grid-column: 1;
         user-select: none;
-        height: calc(100vh - 210px);
 
         .example-category { 
             .example-category-title { 
@@ -129,9 +129,6 @@
 @media screen and (max-width: 1024px) {
     #examples {
         top: 40px;
-
-        #examples-list {
-            height: calc(100vh - 195px);
-        }
+        height: calc(100% - 75px);
     }
 }
