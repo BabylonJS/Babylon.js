@@ -62,7 +62,7 @@
         grid-row: 3;
         grid-column: 1;
         user-select: none;
-        height: 100vh;
+        height: calc(100vh - 210px);
 
         .example-category { 
             .example-category-title { 
@@ -129,5 +129,9 @@
 @media screen and (max-width: 1024px) {
     #examples {
         top: 40px;
+
+        #examples-list {
+            height: calc(100vh - 195px);
+        }
     }
 }
