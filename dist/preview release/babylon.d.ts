@@ -69096,6 +69096,7 @@ declare module BABYLON {
         /** Gets or sets a boolean indicating if transparent meshes should be rendered */
         renderTransparentMeshes: boolean;
         private _scene;
+        private _resizeObserver;
         private _multiRenderTarget;
         private _ratio;
         private _enablePosition;
@@ -70980,6 +70981,46 @@ declare module BABYLON {
         * @return the default mesh
         */
         static CreateDefaultMesh(name: string, scene: Scene): Mesh;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var screenSpaceCurvaturePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * The Screen Space curvature effect can help highlighting ridge and valley of a model.
+     */
+    export class ScreenSpaceCurvaturePostProcess extends PostProcess {
+        /**
+         * Defines how much ridge the curvature effect displays.
+         */
+        ridge: number;
+        /**
+         * Defines how much valley the curvature effect displays.
+         */
+        valley: number;
+        private _geometryBufferRenderer;
+        /**
+         * Creates a new instance ScreenSpaceCurvaturePostProcess
+         * @param name The name of the effect.
+         * @param scene The scene containing the objects to blur according to their velocity.
+         * @param options The required width/height ratio to downsize to before computing the render pass.
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         */
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /**
+         * Support test.
+         */
+        static get IsSupported(): boolean;
     }
 }
 declare module BABYLON {
