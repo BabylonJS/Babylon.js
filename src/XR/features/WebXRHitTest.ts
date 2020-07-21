@@ -1,11 +1,11 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../Misc/observable';
-import { Vector3, Matrix, Quaternion } from '../../Maths/math.vector';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult, IWebXRHitTestFeature } from './WebXRHitTestLegacy';
-import { Tools } from '../../Misc/tools';
-import { Nullable } from '../../types';
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { Observable } from "../../Misc/observable";
+import { Vector3, Matrix, Quaternion } from "../../Maths/math.vector";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { IWebXRLegacyHitTestOptions, IWebXRLegacyHitResult, IWebXRHitTestFeature } from "./WebXRHitTestLegacy";
+import { Tools } from "../../Misc/tools";
+import { Nullable } from "../../types";
 
 /**
  * Options used for hit testing (version 2)
@@ -85,7 +85,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             offsetRay: offsetRay,
         };
         if (!options.space) {
-            Tools.Warn('waiting for viewer reference space to initialize');
+            Tools.Warn("waiting for viewer reference space to initialize");
             return;
         }
         this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
@@ -135,7 +135,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         public readonly options: IWebXRHitTestOptions = {}
     ) {
         super(_xrSessionManager);
-        Tools.Warn('Hit test is an experimental and unstable feature. make sure you enable optionalFeatures when creating the XR session');
+        Tools.Warn("Hit test is an experimental and unstable feature. make sure you enable optionalFeatures when creating the XR session");
     }
 
     /**
@@ -159,7 +159,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             const offsetRay = new XRRay(this.options.transientOffsetRay || {});
             this._xrSessionManager.session
                 .requestHitTestSourceForTransientInput({
-                    profile: 'generic-touchscreen',
+                    profile: "generic-touchscreen",
                     offsetRay,
                 })
                 .then((hitSource) => {

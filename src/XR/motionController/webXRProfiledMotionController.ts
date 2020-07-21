@@ -1,14 +1,14 @@
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from './webXRAbstractMotionController';
-import { Scene } from '../../scene';
-import { SceneLoader } from '../../Loading/sceneLoader';
-import { Mesh } from '../../Meshes/mesh';
-import { Axis, Space } from '../../Maths/math.axis';
-import { Color3 } from '../../Maths/math.color';
-import { WebXRControllerComponent } from './webXRControllerComponent';
-import { SphereBuilder } from '../../Meshes/Builders/sphereBuilder';
-import { StandardMaterial } from '../../Materials/standardMaterial';
-import { Logger } from '../../Misc/logger';
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from "./webXRAbstractMotionController";
+import { Scene } from "../../scene";
+import { SceneLoader } from "../../Loading/sceneLoader";
+import { Mesh } from "../../Meshes/mesh";
+import { Axis, Space } from "../../Maths/math.axis";
+import { Color3 } from "../../Maths/math.color";
+import { WebXRControllerComponent } from "./webXRControllerComponent";
+import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
+import { StandardMaterial } from "../../Materials/standardMaterial";
+import { Logger } from "../../Misc/logger";
 
 /**
  * A profiled motion controller has its profile loaded from an online repository.
@@ -31,7 +31,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     public profileId: string;
 
     constructor(scene: Scene, xrInput: XRInputSource, _profile: IMotionControllerProfile, private _repositoryUrl: string) {
-        super(scene, _profile.layouts[xrInput.handedness || 'none'], xrInput.gamepad as any, xrInput.handedness);
+        super(scene, _profile.layouts[xrInput.handedness || "none"], xrInput.gamepad as any, xrInput.handedness);
         this.profileId = _profile.profileId;
     }
 
@@ -50,9 +50,9 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     }
 
     protected _getModelLoadingConstraints(): boolean {
-        const glbLoaded = SceneLoader.IsPluginForExtensionAvailable('.glb');
+        const glbLoaded = SceneLoader.IsPluginForExtensionAvailable(".glb");
         if (!glbLoaded) {
-            Logger.Warn('glTF / glb loaded was not registered, using generic controller instead');
+            Logger.Warn("glTF / glb loaded was not registered, using generic controller instead");
         }
         return glbLoaded;
     }
@@ -66,7 +66,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             };
             Object.keys(componentInLayout.visualResponses).forEach((visualResponseKey) => {
                 const visResponse = componentInLayout.visualResponses[visualResponseKey];
-                if (visResponse.valueNodeProperty === 'transform') {
+                if (visResponse.valueNodeProperty === "transform") {
                     this._buttonMeshMapping[type].states[visualResponseKey] = {
                         valueMesh: this._getChildByName(this.rootMesh!, visResponse.valueNodeName!),
                         minMesh: this._getChildByName(this.rootMesh!, visResponse.minNodeName!),
@@ -80,14 +80,14 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                     };
                     if (componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && !this._touchDots[visualResponseKey]) {
                         const dot = SphereBuilder.CreateSphere(
-                            visualResponseKey + 'dot',
+                            visualResponseKey + "dot",
                             {
                                 diameter: 0.0015,
                                 segments: 8,
                             },
                             this.scene
                         );
-                        dot.material = new StandardMaterial(visualResponseKey + 'mat', this.scene);
+                        dot.material = new StandardMaterial(visualResponseKey + "mat", this.scene);
                         (<StandardMaterial>dot.material).diffuseColor = Color3.Red();
                         dot.parent = this._buttonMeshMapping[type].states[visualResponseKey].valueMesh;
                         dot.isVisible = false;
@@ -99,7 +99,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + '-' + this.handedness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + "-" + this.handedness, this.scene);
         this.rootMesh.isPickable = false;
         let rootMesh;
         // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
@@ -136,13 +136,13 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             Object.keys(componentInLayout.visualResponses).forEach((visualResponseKey) => {
                 const visResponse = componentInLayout.visualResponses[visualResponseKey];
                 let value = component.value;
-                if (visResponse.componentProperty === 'xAxis') {
+                if (visResponse.componentProperty === "xAxis") {
                     value = component.axes.x;
-                } else if (visResponse.componentProperty === 'yAxis') {
+                } else if (visResponse.componentProperty === "yAxis") {
                     value = component.axes.y;
                 }
-                if (visResponse.valueNodeProperty === 'transform') {
-                    this._lerpTransform(meshes.states[visualResponseKey], value, visResponse.componentProperty !== 'button');
+                if (visResponse.valueNodeProperty === "transform") {
+                    this._lerpTransform(meshes.states[visualResponseKey], value, visResponse.componentProperty !== "button");
                 } else {
                     // visibility
                     meshes.states[visualResponseKey].valueMesh.isVisible = component.touched || component.pressed;

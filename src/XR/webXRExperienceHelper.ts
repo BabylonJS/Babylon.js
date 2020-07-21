@@ -1,12 +1,12 @@
-import { Nullable } from '../types';
-import { Observable } from '../Misc/observable';
-import { IDisposable, Scene } from '../scene';
-import { Camera } from '../Cameras/camera';
-import { WebXRSessionManager } from './webXRSessionManager';
-import { WebXRCamera } from './webXRCamera';
-import { WebXRState, WebXRRenderTarget } from './webXRTypes';
-import { WebXRFeaturesManager } from './webXRFeaturesManager';
-import { Logger } from '../Misc/logger';
+import { Nullable } from "../types";
+import { Observable } from "../Misc/observable";
+import { IDisposable, Scene } from "../scene";
+import { Camera } from "../Cameras/camera";
+import { WebXRSessionManager } from "./webXRSessionManager";
+import { WebXRCamera } from "./webXRCamera";
+import { WebXRState, WebXRRenderTarget } from "./webXRTypes";
+import { WebXRFeaturesManager } from "./webXRFeaturesManager";
+import { Logger } from "../Misc/logger";
 
 /**
  * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
@@ -48,7 +48,7 @@ export class WebXRExperienceHelper implements IDisposable {
      */
     private constructor(private scene: Scene) {
         this.sessionManager = new WebXRSessionManager(scene);
-        this.camera = new WebXRCamera('', scene, this.sessionManager);
+        this.camera = new WebXRCamera("", scene, this.sessionManager);
         this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
 
         scene.onDisposeObservable.add(() => {
@@ -99,15 +99,15 @@ export class WebXRExperienceHelper implements IDisposable {
      */
     public enterXRAsync(sessionMode: XRSessionMode, referenceSpaceType: XRReferenceSpaceType, renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget(), sessionCreationOptions: XRSessionInit = {}): Promise<WebXRSessionManager> {
         if (!this._supported) {
-            throw 'WebXR not supported in this browser or environment';
+            throw "WebXR not supported in this browser or environment";
         }
         this._setState(WebXRState.ENTERING_XR);
-        if (referenceSpaceType !== 'viewer' && referenceSpaceType !== 'local') {
+        if (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") {
             sessionCreationOptions.optionalFeatures = sessionCreationOptions.optionalFeatures || [];
             sessionCreationOptions.optionalFeatures.push(referenceSpaceType);
         }
         // we currently recommend "unbounded" space in AR (#7959)
-        if (sessionMode === 'immersive-ar' && referenceSpaceType !== 'unbounded') {
+        if (sessionMode === "immersive-ar" && referenceSpaceType !== "unbounded") {
             Logger.Warn("We recommend using 'unbounded' reference space type when using 'immersive-ar' session mode");
         }
         // make sure that the session mode is supported
@@ -135,7 +135,7 @@ export class WebXRExperienceHelper implements IDisposable {
 
                 this.scene.activeCamera = this.camera;
                 // do not compensate when AR session is used
-                if (sessionMode !== 'immersive-ar') {
+                if (sessionMode !== "immersive-ar") {
                     this._nonXRToXRCamera();
                 } else {
                     // Kept here, TODO - check if needed
@@ -152,7 +152,7 @@ export class WebXRExperienceHelper implements IDisposable {
                     // Restore scene settings
                     this.scene.autoClear = this._originalSceneAutoClear;
                     this.scene.activeCamera = this._nonVRCamera;
-                    if (sessionMode !== 'immersive-ar' && this.camera.compensateOnFirstFrame) {
+                    if (sessionMode !== "immersive-ar" && this.camera.compensateOnFirstFrame) {
                         if ((<any>this._nonVRCamera).setPosition) {
                             (<any>this._nonVRCamera).setPosition(this.camera.position);
                         } else {

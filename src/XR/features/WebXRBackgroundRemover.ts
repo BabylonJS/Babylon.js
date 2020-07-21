@@ -1,8 +1,8 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Observable } from '../../Misc/observable';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Observable } from "../../Misc/observable";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
 /**
  * Options interface for the background remover plugin
@@ -106,19 +106,19 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature {
         if (!this.options.ignoreEnvironmentHelper) {
             if (this.options.environmentHelperRemovalFlags) {
                 if (this.options.environmentHelperRemovalFlags.skyBox) {
-                    const backgroundSkybox = scene.getMeshByName('BackgroundSkybox');
+                    const backgroundSkybox = scene.getMeshByName("BackgroundSkybox");
                     if (backgroundSkybox) {
                         backgroundSkybox.setEnabled(newState);
                     }
                 }
                 if (this.options.environmentHelperRemovalFlags.ground) {
-                    const backgroundPlane = scene.getMeshByName('BackgroundPlane');
+                    const backgroundPlane = scene.getMeshByName("BackgroundPlane");
                     if (backgroundPlane) {
                         backgroundPlane.setEnabled(newState);
                     }
                 }
             } else {
-                const backgroundHelper = scene.getMeshByName('BackgroundHelper');
+                const backgroundHelper = scene.getMeshByName("BackgroundHelper");
                 if (backgroundHelper) {
                     backgroundHelper.setEnabled(newState);
                 }

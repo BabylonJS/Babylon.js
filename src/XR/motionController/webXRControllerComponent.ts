@@ -1,6 +1,6 @@
-import { IMinimalMotionControllerObject, MotionControllerComponentType } from './webXRAbstractMotionController';
-import { Observable } from '../../Misc/observable';
-import { IDisposable } from '../../scene';
+import { IMinimalMotionControllerObject, MotionControllerComponentType } from "./webXRAbstractMotionController";
+import { Observable } from "../../Misc/observable";
+import { IDisposable } from "../../scene";
 
 /**
  * X-Y values for axes in WebXR
@@ -68,23 +68,23 @@ export class WebXRControllerComponent implements IDisposable {
     /**
      * button component type
      */
-    public static BUTTON_TYPE: MotionControllerComponentType = 'button';
+    public static BUTTON_TYPE: MotionControllerComponentType = "button";
     /**
      * squeeze component type
      */
-    public static SQUEEZE_TYPE: MotionControllerComponentType = 'squeeze';
+    public static SQUEEZE_TYPE: MotionControllerComponentType = "squeeze";
     /**
      * Thumbstick component type
      */
-    public static THUMBSTICK_TYPE: MotionControllerComponentType = 'thumbstick';
+    public static THUMBSTICK_TYPE: MotionControllerComponentType = "thumbstick";
     /**
      * Touchpad component type
      */
-    public static TOUCHPAD_TYPE: MotionControllerComponentType = 'touchpad';
+    public static TOUCHPAD_TYPE: MotionControllerComponentType = "touchpad";
     /**
      * trigger component type
      */
-    public static TRIGGER_TYPE: MotionControllerComponentType = 'trigger';
+    public static TRIGGER_TYPE: MotionControllerComponentType = "trigger";
 
     /**
      * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when

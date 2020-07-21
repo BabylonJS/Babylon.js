@@ -1,10 +1,10 @@
-import { Vector3, Matrix, Quaternion } from '../Maths/math.vector';
-import { Scene } from '../scene';
-import { Camera } from '../Cameras/camera';
-import { FreeCamera } from '../Cameras/freeCamera';
-import { TargetCamera } from '../Cameras/targetCamera';
-import { WebXRSessionManager } from './webXRSessionManager';
-import { Viewport } from '../Maths/math.viewport';
+import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
+import { Scene } from "../scene";
+import { Camera } from "../Cameras/camera";
+import { FreeCamera } from "../Cameras/freeCamera";
+import { TargetCamera } from "../Cameras/targetCamera";
+import { WebXRSessionManager } from "./webXRSessionManager";
+import { Viewport } from "../Maths/math.viewport";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -111,7 +111,7 @@ export class WebXRCamera extends FreeCamera {
      * @returns the class name
      */
     public getClassName(): string {
-        return 'WebXRCamera';
+        return "WebXRCamera";
     }
 
     private _rotate180 = new Quaternion(0, 1, 0, 0);
@@ -160,9 +160,9 @@ export class WebXRCamera extends FreeCamera {
             const currentRig = <TargetCamera>this.rigCameras[i];
             // update right and left, where applicable
             if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
-                if (view.eye === 'right') {
+                if (view.eye === "right") {
                     currentRig._isRightCamera = true;
-                } else if (view.eye === 'left') {
+                } else if (view.eye === "left") {
                     currentRig._isLeftCamera = true;
                 }
             }
@@ -203,7 +203,7 @@ export class WebXRCamera extends FreeCamera {
 
     private _updateNumberOfRigCameras(viewCount = 1) {
         while (this.rigCameras.length < viewCount) {
-            var newCamera = new TargetCamera('XR-RigCamera: ' + this.rigCameras.length, Vector3.Zero(), this.getScene());
+            var newCamera = new TargetCamera("XR-RigCamera: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
             newCamera.minZ = 0.1;
             newCamera.rotationQuaternion = new Quaternion();
             newCamera.updateUpVectorFromRotation = true;

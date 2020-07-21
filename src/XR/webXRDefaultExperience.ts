@@ -1,13 +1,13 @@
-import { WebXRExperienceHelper } from './webXRExperienceHelper';
-import { Scene } from '../scene';
-import { WebXRInput, IWebXRInputOptions } from './webXRInput';
-import { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from './features/WebXRControllerPointerSelection';
-import { WebXRRenderTarget } from './webXRTypes';
-import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
-import { AbstractMesh } from '../Meshes/abstractMesh';
-import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
-import { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from './features/WebXRControllerTeleportation';
-import { Logger } from '../Misc/logger';
+import { WebXRExperienceHelper } from "./webXRExperienceHelper";
+import { Scene } from "../scene";
+import { WebXRInput, IWebXRInputOptions } from "./webXRInput";
+import { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from "./features/WebXRControllerPointerSelection";
+import { WebXRRenderTarget } from "./webXRTypes";
+import { WebXREnterExitUI, WebXREnterExitUIOptions } from "./webXREnterExitUI";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
+import { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from "./features/WebXRControllerTeleportation";
+import { Logger } from "../Misc/logger";
 
 /**
  * Options for the default xr helper
@@ -116,14 +116,14 @@ export class WebXRDefaultExperience {
                     },
                     ...(options.inputOptions || {}),
                 });
-                result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? 'stable' : 'latest', <IWebXRControllerPointerSelectionOptions>{
+                result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRControllerPointerSelectionOptions>{
                     xrInput: result.input,
                     renderingGroupId: options.renderingGroupId,
                 });
 
                 // Add default teleportation, including rotation
                 if (!options.disableTeleportation) {
-                    result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? 'stable' : 'latest', <IWebXRTeleportationOptions>{
+                    result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRTeleportationOptions>{
                         floorMeshes: options.floorMeshes,
                         xrInput: result.input,
                         renderingGroupId: options.renderingGroupId,
@@ -140,8 +140,8 @@ export class WebXRDefaultExperience {
                         ...(options.uiOptions || {}),
                     };
                     if (options.optionalFeatures) {
-                        if (typeof options.optionalFeatures === 'boolean') {
-                            uiOptions.optionalFeatures = ['hit-test', 'anchors', 'planes', 'hand-tracking'];
+                        if (typeof options.optionalFeatures === "boolean") {
+                            uiOptions.optionalFeatures = ["hit-test", "anchors", "planes", "hand-tracking"];
                         } else {
                             uiOptions.optionalFeatures = options.optionalFeatures;
                         }
@@ -158,7 +158,7 @@ export class WebXRDefaultExperience {
                 return result;
             })
             .catch((error) => {
-                Logger.Error('Error initializing XR');
+                Logger.Error("Error initializing XR");
                 Logger.Error(error);
                 return result;
             });

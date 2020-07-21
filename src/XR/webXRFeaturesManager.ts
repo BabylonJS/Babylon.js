@@ -1,5 +1,5 @@
-import { WebXRSessionManager } from './webXRSessionManager';
-import { IDisposable } from '../scene';
+import { WebXRSessionManager } from "./webXRSessionManager";
+import { IDisposable } from "../scene";
 
 /**
  * Defining the interface required for a (webxr) feature
@@ -38,31 +38,31 @@ export class WebXRFeatureName {
     /**
      * The name of the anchor system feature
      */
-    public static ANCHOR_SYSTEM = 'xr-anchor-system';
+    public static ANCHOR_SYSTEM = "xr-anchor-system";
     /**
      * The name of the background remover feature
      */
-    public static BACKGROUND_REMOVER = 'xr-background-remover';
+    public static BACKGROUND_REMOVER = "xr-background-remover";
     /**
      * The name of the hit test feature
      */
-    public static HIT_TEST = 'xr-hit-test';
+    public static HIT_TEST = "xr-hit-test";
     /**
      * physics impostors for xr controllers feature
      */
-    public static PHYSICS_CONTROLLERS = 'xr-physics-controller';
+    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
     /**
      * The name of the plane detection feature
      */
-    public static PLANE_DETECTION = 'xr-plane-detection';
+    public static PLANE_DETECTION = "xr-plane-detection";
     /**
      * The name of the pointer selection feature
      */
-    public static POINTER_SELECTION = 'xr-controller-pointer-selection';
+    public static POINTER_SELECTION = "xr-controller-pointer-selection";
     /**
      * The name of the teleportation feature
      */
-    public static TELEPORTATION = 'xr-controller-teleportation';
+    public static TELEPORTATION = "xr-controller-teleportation";
 }
 
 /**
@@ -154,7 +154,7 @@ export class WebXRFeaturesManager implements IDisposable {
         const constructorFunction = this._AvailableFeatures[featureName][version];
         if (!constructorFunction) {
             // throw an error? return nothing?
-            throw new Error('feature not found');
+            throw new Error("feature not found");
         }
 
         return constructorFunction(xrSessionManager, options);
@@ -226,7 +226,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @returns true if disable was successful
      */
     public disableFeature(featureName: string | { Name: string }): boolean {
-        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+        const name = typeof featureName === "string" ? featureName : featureName.Name;
         const feature = this._features[name];
         if (feature && feature.enabled) {
             feature.enabled = false;
@@ -257,16 +257,16 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param attachIfPossible if set to true (default) the feature will be automatically attached, if it is currently possible
      * @returns a new constructed feature or throws an error if feature not found.
      */
-    public enableFeature(featureName: string | { Name: string }, version: number | string = 'latest', moduleOptions: any = {}, attachIfPossible: boolean = true): IWebXRFeature {
-        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+    public enableFeature(featureName: string | { Name: string }, version: number | string = "latest", moduleOptions: any = {}, attachIfPossible: boolean = true): IWebXRFeature {
+        const name = typeof featureName === "string" ? featureName : featureName.Name;
         let versionToLoad = 0;
-        if (typeof version === 'string') {
+        if (typeof version === "string") {
             if (!version) {
                 throw new Error(`Error in provided version - ${name} (${version})`);
             }
-            if (version === 'stable') {
+            if (version === "stable") {
                 versionToLoad = WebXRFeaturesManager.GetStableVersionOfFeature(name);
-            } else if (version === 'latest') {
+            } else if (version === "latest") {
                 versionToLoad = WebXRFeaturesManager.GetLatestVersionOfFeature(name);
             } else {
                 // try loading the number the string represents

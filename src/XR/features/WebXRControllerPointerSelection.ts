@@ -1,23 +1,23 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Observer } from '../../Misc/observable';
-import { WebXRInput } from '../webXRInput';
-import { WebXRInputSource } from '../webXRInputSource';
-import { Scene } from '../../scene';
-import { WebXRControllerComponent } from '../motionController/webXRControllerComponent';
-import { Nullable } from '../../types';
-import { Vector3 } from '../../Maths/math.vector';
-import { Color3 } from '../../Maths/math.color';
-import { Axis } from '../../Maths/math.axis';
-import { StandardMaterial } from '../../Materials/standardMaterial';
-import { CylinderBuilder } from '../../Meshes/Builders/cylinderBuilder';
-import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
-import { Ray } from '../../Culling/ray';
-import { PickingInfo } from '../../Collisions/pickingInfo';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
-import { WebXRAbstractMotionController } from '../motionController/webXRAbstractMotionController';
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Observer } from "../../Misc/observable";
+import { WebXRInput } from "../webXRInput";
+import { WebXRInputSource } from "../webXRInputSource";
+import { Scene } from "../../scene";
+import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
+import { Nullable } from "../../types";
+import { Vector3 } from "../../Maths/math.vector";
+import { Color3 } from "../../Maths/math.color";
+import { Axis } from "../../Maths/math.axis";
+import { StandardMaterial } from "../../Materials/standardMaterial";
+import { CylinderBuilder } from "../../Meshes/Builders/cylinderBuilder";
+import { TorusBuilder } from "../../Meshes/Builders/torusBuilder";
+import { Ray } from "../../Culling/ray";
+import { PickingInfo } from "../../Collisions/pickingInfo";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
+import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
 
 /**
  * Options interface for the pointer selection module
@@ -93,11 +93,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             id: WebXRControllerPointerSelection._idCounter++,
         };
         switch (xrController.inputSource.targetRayMode) {
-            case 'tracked-pointer':
+            case "tracked-pointer":
                 return this._attachTrackedPointerRayMode(xrController);
-            case 'gaze':
+            case "gaze":
                 return this._attachGazeMode(xrController);
-            case 'screen':
+            case "screen":
                 return this._attachScreenRayMode(xrController);
         }
     };
@@ -299,7 +299,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
         let oldPick = new PickingInfo();
         let discMesh = TorusBuilder.CreateTorus(
-            'selection',
+            "selection",
             {
                 diameter: 0.0035 * 15,
                 thickness: 0.0025 * 6,
@@ -459,8 +459,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 selectstart: selectStartListener,
             };
 
-            this._xrSessionManager.session.addEventListener('selectstart', selectStartListener);
-            this._xrSessionManager.session.addEventListener('selectend', selectEndListener);
+            this._xrSessionManager.session.addEventListener("selectstart", selectStartListener);
+            this._xrSessionManager.session.addEventListener("selectend", selectEndListener);
         }
     }
 
@@ -504,7 +504,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _generateNewMeshPair(xrController: WebXRInputSource) {
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
         const laserPointer = CylinderBuilder.CreateCylinder(
-            'laserPointer',
+            "laserPointer",
             {
                 height: 1,
                 diameterTop: 0.0002,
@@ -515,7 +515,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             sceneToRenderTo
         );
         laserPointer.parent = xrController.pointer;
-        let laserPointerMaterial = new StandardMaterial('laserPointerMat', sceneToRenderTo);
+        let laserPointerMaterial = new StandardMaterial("laserPointerMat", sceneToRenderTo);
         laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
@@ -525,7 +525,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         // Create a gaze tracker for the  XR controller
         const selectionMesh = TorusBuilder.CreateTorus(
-            'gazeTracker',
+            "gazeTracker",
             {
                 diameter: 0.0035 * 3,
                 thickness: 0.0025 * 3,
@@ -536,7 +536,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         selectionMesh.bakeCurrentTransformIntoVertices();
         selectionMesh.isPickable = false;
         selectionMesh.isVisible = false;
-        let targetMat = new StandardMaterial('targetMat', sceneToRenderTo);
+        let targetMat = new StandardMaterial("targetMat", sceneToRenderTo);
         targetMat.specularColor = Color3.Black();
         targetMat.emissiveColor = this.selectionMeshDefaultColor;
         targetMat.backFaceCulling = false;

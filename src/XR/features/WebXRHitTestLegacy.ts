@@ -1,9 +1,9 @@
-import { WebXRFeaturesManager, WebXRFeatureName, IWebXRFeature } from '../webXRFeaturesManager';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../Misc/observable';
-import { Vector3, Matrix } from '../../Maths/math.vector';
-import { TransformNode } from '../../Meshes/transformNode';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
+import { WebXRFeaturesManager, WebXRFeatureName, IWebXRFeature } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { Observable } from "../../Misc/observable";
+import { Vector3, Matrix } from "../../Maths/math.vector";
+import { TransformNode } from "../../Meshes/transformNode";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
 // the plugin is registered at the end of the file
 
@@ -135,7 +135,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
             return false;
         }
         if (this.options.testOnPointerDownOnly) {
-            this._xrSessionManager.session.addEventListener('select', this._onSelect, false);
+            this._xrSessionManager.session.addEventListener("select", this._onSelect, false);
         }
 
         return true;
@@ -153,7 +153,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
         }
         // disable select
         this._onSelectEnabled = false;
-        this._xrSessionManager.session.removeEventListener('select', this._onSelect);
+        this._xrSessionManager.session.removeEventListener("select", this._onSelect);
         return true;
     }
 

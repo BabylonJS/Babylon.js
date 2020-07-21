@@ -1,10 +1,10 @@
-import { Nullable } from '../types';
-import { Observer, Observable } from '../Misc/observable';
-import { IDisposable } from '../scene';
-import { WebXRInputSource, IWebXRControllerOptions } from './webXRInputSource';
-import { WebXRSessionManager } from './webXRSessionManager';
-import { WebXRCamera } from './webXRCamera';
-import { WebXRMotionControllerManager } from './motionController/webXRMotionControllerManager';
+import { Nullable } from "../types";
+import { Observer, Observable } from "../Misc/observable";
+import { IDisposable } from "../scene";
+import { WebXRInputSource, IWebXRControllerOptions } from "./webXRInputSource";
+import { WebXRSessionManager } from "./webXRSessionManager";
+import { WebXRCamera } from "./webXRCamera";
+import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager";
 
 /**
  * The schema for initialization options of the XR Input class
@@ -92,7 +92,7 @@ export class WebXRInput implements IDisposable {
         });
 
         this._sessionInitObserver = this.xrSessionManager.onXRSessionInit.add((session) => {
-            session.addEventListener('inputsourceschange', this._onInputSourcesChange);
+            session.addEventListener("inputsourceschange", this._onInputSourcesChange);
         });
 
         this._frameObserver = this.xrSessionManager.onXRFrameObservable.add((frame) => {

@@ -1,31 +1,31 @@
-import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { Observer } from '../../Misc/observable';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { Nullable } from '../../types';
-import { WebXRInput } from '../webXRInput';
-import { WebXRInputSource } from '../webXRInputSource';
-import { WebXRControllerComponent, IWebXRMotionControllerAxesValue } from '../motionController/webXRControllerComponent';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Vector3, Quaternion } from '../../Maths/math.vector';
-import { Ray } from '../../Culling/ray';
-import { Material } from '../../Materials/material';
-import { DynamicTexture } from '../../Materials/Textures/dynamicTexture';
-import { CylinderBuilder } from '../../Meshes/Builders/cylinderBuilder';
-import { SineEase, EasingFunction } from '../../Animations/easing';
-import { Animation } from '../../Animations/animation';
-import { Axis } from '../../Maths/math.axis';
-import { StandardMaterial } from '../../Materials/standardMaterial';
-import { GroundBuilder } from '../../Meshes/Builders/groundBuilder';
-import { TorusBuilder } from '../../Meshes/Builders/torusBuilder';
-import { PickingInfo } from '../../Collisions/pickingInfo';
-import { Curve3 } from '../../Maths/math.path';
-import { LinesBuilder } from '../../Meshes/Builders/linesBuilder';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { Color3 } from '../../Maths/math.color';
-import { Scene } from '../../scene';
-import { UtilityLayerRenderer } from '../../Rendering/utilityLayerRenderer';
-import { PointerEventTypes } from '../../Events/pointerEvents';
-import { setAndStartTimer } from '../../Misc/timer';
+import { IWebXRFeature, WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { Observer } from "../../Misc/observable";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { Nullable } from "../../types";
+import { WebXRInput } from "../webXRInput";
+import { WebXRInputSource } from "../webXRInputSource";
+import { WebXRControllerComponent, IWebXRMotionControllerAxesValue } from "../motionController/webXRControllerComponent";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { Ray } from "../../Culling/ray";
+import { Material } from "../../Materials/material";
+import { DynamicTexture } from "../../Materials/Textures/dynamicTexture";
+import { CylinderBuilder } from "../../Meshes/Builders/cylinderBuilder";
+import { SineEase, EasingFunction } from "../../Animations/easing";
+import { Animation } from "../../Animations/animation";
+import { Axis } from "../../Maths/math.axis";
+import { StandardMaterial } from "../../Materials/standardMaterial";
+import { GroundBuilder } from "../../Meshes/Builders/groundBuilder";
+import { TorusBuilder } from "../../Meshes/Builders/torusBuilder";
+import { PickingInfo } from "../../Collisions/pickingInfo";
+import { Curve3 } from "../../Maths/math.path";
+import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { Color3 } from "../../Maths/math.color";
+import { Scene } from "../../scene";
+import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
+import { PointerEventTypes } from "../../Events/pointerEvents";
+import { setAndStartTimer } from "../../Misc/timer";
 
 /**
  * The options container for the teleportation module
@@ -238,7 +238,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
 
         // Safety reset
-        this._currentTeleportationControllerId = '';
+        this._currentTeleportationControllerId = "";
 
         this._options.xrInput.controllers.forEach(this._attachController);
         this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
@@ -260,7 +260,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         });
 
         this._setTargetMeshVisibility(false);
-        this._currentTeleportationControllerId = '';
+        this._currentTeleportationControllerId = "";
 
         return true;
     }
@@ -416,7 +416,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         };
         const controllerData = this._controllers[xrController.uniqueId];
         // motion controller only available to gamepad-enabled input sources.
-        if (controllerData.xrController.inputSource.targetRayMode === 'tracked-pointer' && controllerData.xrController.inputSource.gamepad) {
+        if (controllerData.xrController.inputSource.targetRayMode === "tracked-pointer" && controllerData.xrController.inputSource.gamepad) {
             // motion controller support
             xrController.onMotionControllerInitObservable.addOnce(() => {
                 if (xrController.motionController) {
@@ -449,7 +449,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     });
                                 } else {
                                     controllerData.teleportationState.forward = false;
-                                    this._currentTeleportationControllerId = '';
+                                    this._currentTeleportationControllerId = "";
                                 }
                             }
                         });
@@ -538,7 +538,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     });
                 } else if (pointerInfo.type === PointerEventTypes.POINTERUP) {
                     controllerData.teleportationState.forward = false;
-                    this._currentTeleportationControllerId = '';
+                    this._currentTeleportationControllerId = "";
                 }
             });
         }
@@ -548,10 +548,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // set defaults
         this._options.defaultTargetMeshOptions = this._options.defaultTargetMeshOptions || {};
         const sceneToRenderTo = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._xrSessionManager.scene;
-        let teleportationTarget = GroundBuilder.CreateGround('teleportationTarget', { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
+        let teleportationTarget = GroundBuilder.CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
         teleportationTarget.isPickable = false;
         let length = 512;
-        let dynamicTexture = new DynamicTexture('teleportationPlaneDynamicTexture', length, sceneToRenderTo, true);
+        let dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
         dynamicTexture.hasAlpha = true;
         let context = dynamicTexture.getContext();
         let centerX = length / 2;
@@ -559,18 +559,18 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         let radius = 200;
         context.beginPath();
         context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-        context.fillStyle = this._options.defaultTargetMeshOptions.teleportationFillColor || '#444444';
+        context.fillStyle = this._options.defaultTargetMeshOptions.teleportationFillColor || "#444444";
         context.fill();
         context.lineWidth = 10;
-        context.strokeStyle = this._options.defaultTargetMeshOptions.teleportationBorderColor || '#FFFFFF';
+        context.strokeStyle = this._options.defaultTargetMeshOptions.teleportationBorderColor || "#FFFFFF";
         context.stroke();
         context.closePath();
         dynamicTexture.update();
-        const teleportationCircleMaterial = new StandardMaterial('teleportationPlaneMaterial', sceneToRenderTo);
+        const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
         teleportationCircleMaterial.diffuseTexture = dynamicTexture;
         teleportationTarget.material = teleportationCircleMaterial;
         let torus = TorusBuilder.CreateTorus(
-            'torusTeleportation',
+            "torusTeleportation",
             {
                 diameter: 0.75,
                 thickness: 0.1,
@@ -581,7 +581,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         torus.isPickable = false;
         torus.parent = teleportationTarget;
         if (!this._options.defaultTargetMeshOptions.disableAnimation) {
-            let animationInnerCircle = new Animation('animationInnerCircle', 'position.y', 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
+            let animationInnerCircle = new Animation("animationInnerCircle", "position.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
             let keys = [];
             keys.push({
                 frame: 0,
@@ -604,7 +604,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             sceneToRenderTo.beginAnimation(torus, 0, 60, true);
         }
 
-        var cone = CylinderBuilder.CreateCylinder('cone', { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);
+        var cone = CylinderBuilder.CreateCylinder("cone", { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);
         cone.isPickable = false;
         cone.scaling.set(0.5, 0.12, 0.2);
 
@@ -617,7 +617,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             torus.material = this._options.defaultTargetMeshOptions.torusArrowMaterial;
             cone.material = this._options.defaultTargetMeshOptions.torusArrowMaterial;
         } else {
-            const torusConeMaterial = new StandardMaterial('torusConsMat', sceneToRenderTo);
+            const torusConeMaterial = new StandardMaterial("torusConsMat", sceneToRenderTo);
             torusConeMaterial.disableLighting = !!this._options.defaultTargetMeshOptions.disableLighting;
             if (torusConeMaterial.disableLighting) {
                 torusConeMaterial.emissiveColor = new Color3(0.3, 0.3, 1.0);
@@ -726,7 +726,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             this._quadraticBezierCurve.dispose();
         }
 
-        this._quadraticBezierCurve = LinesBuilder.CreateLines('path line', { points: quadraticBezierVectors.getPoints() });
+        this._quadraticBezierCurve = LinesBuilder.CreateLines("path line", { points: quadraticBezierVectors.getPoints() });
         this._quadraticBezierCurve.isPickable = false;
     }
 
@@ -736,7 +736,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             return;
         }
         controllerData.teleportationState.forward = false;
-        this._currentTeleportationControllerId = '';
+        this._currentTeleportationControllerId = "";
         if (this.snapPointsOnly && !this._snappedToPoint) {
             return;
         }

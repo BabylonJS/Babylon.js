@@ -1,8 +1,8 @@
-import { WebXRAbstractMotionController, IMotionControllerProfile } from './webXRAbstractMotionController';
-import { WebXRGenericTriggerMotionController } from './webXRGenericMotionController';
-import { Scene } from '../../scene';
-import { Tools } from '../../Misc/tools';
-import { WebXRProfiledMotionController } from './webXRProfiledMotionController';
+import { WebXRAbstractMotionController, IMotionControllerProfile } from "./webXRAbstractMotionController";
+import { WebXRGenericTriggerMotionController } from "./webXRGenericMotionController";
+import { Scene } from "../../scene";
+import { Tools } from "../../Misc/tools";
+import { WebXRProfiledMotionController } from "./webXRProfiledMotionController";
 
 /**
  * A construction function type to create a new controller based on an xrInput object
@@ -27,7 +27,7 @@ export class WebXRMotionControllerManager {
     /**
      * The base URL of the online controller repository. Can be changed at any time.
      */
-    public static BaseRepositoryUrl = 'https://immersive-web.github.io/webxr-input-profiles/packages/viewer/dist';
+    public static BaseRepositoryUrl = "https://immersive-web.github.io/webxr-input-profiles/packages/viewer/dist";
     /**
      * Which repository gets priority - local or online
      */
@@ -50,18 +50,18 @@ export class WebXRMotionControllerManager {
      * This function is called automatically when this file is imported.
      */
     public static DefaultFallbacks() {
-        this.RegisterFallbacksForProfileId('google-daydream', ['generic-touchpad']);
-        this.RegisterFallbacksForProfileId('htc-vive-focus', ['generic-trigger-touchpad']);
-        this.RegisterFallbacksForProfileId('htc-vive', ['generic-trigger-squeeze-touchpad']);
-        this.RegisterFallbacksForProfileId('magicleap-one', ['generic-trigger-squeeze-touchpad']);
-        this.RegisterFallbacksForProfileId('windows-mixed-reality', ['generic-trigger-squeeze-touchpad-thumbstick']);
-        this.RegisterFallbacksForProfileId('microsoft-mixed-reality', ['windows-mixed-reality', 'generic-trigger-squeeze-touchpad-thumbstick']);
-        this.RegisterFallbacksForProfileId('oculus-go', ['generic-trigger-touchpad']);
-        this.RegisterFallbacksForProfileId('oculus-touch-v2', ['oculus-touch', 'generic-trigger-squeeze-thumbstick']);
-        this.RegisterFallbacksForProfileId('oculus-touch', ['generic-trigger-squeeze-thumbstick']);
-        this.RegisterFallbacksForProfileId('samsung-gearvr', ['windows-mixed-reality', 'generic-trigger-squeeze-touchpad-thumbstick']);
-        this.RegisterFallbacksForProfileId('samsung-odyssey', ['generic-touchpad']);
-        this.RegisterFallbacksForProfileId('valve-index', ['generic-trigger-squeeze-touchpad-thumbstick']);
+        this.RegisterFallbacksForProfileId("google-daydream", ["generic-touchpad"]);
+        this.RegisterFallbacksForProfileId("htc-vive-focus", ["generic-trigger-touchpad"]);
+        this.RegisterFallbacksForProfileId("htc-vive", ["generic-trigger-squeeze-touchpad"]);
+        this.RegisterFallbacksForProfileId("magicleap-one", ["generic-trigger-squeeze-touchpad"]);
+        this.RegisterFallbacksForProfileId("windows-mixed-reality", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("microsoft-mixed-reality", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("oculus-go", ["generic-trigger-touchpad"]);
+        this.RegisterFallbacksForProfileId("oculus-touch-v2", ["oculus-touch", "generic-trigger-squeeze-thumbstick"]);
+        this.RegisterFallbacksForProfileId("oculus-touch", ["generic-trigger-squeeze-thumbstick"]);
+        this.RegisterFallbacksForProfileId("samsung-gearvr", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId("samsung-odyssey", ["generic-touchpad"]);
+        this.RegisterFallbacksForProfileId("valve-index", ["generic-trigger-squeeze-touchpad-thumbstick"]);
     }
 
     /**
@@ -108,19 +108,19 @@ export class WebXRMotionControllerManager {
             switch (xrInput.gamepad.id) {
                 case xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined:
                     // oculus in gamepad id
-                    profileArray.push('oculus-touch-v2');
+                    profileArray.push("oculus-touch-v2");
                     break;
             }
         }
 
         // make sure microsoft/windows mixed reality works correctly
-        const windowsMRIdx = profileArray.indexOf('windows-mixed-reality');
+        const windowsMRIdx = profileArray.indexOf("windows-mixed-reality");
         if (windowsMRIdx !== -1) {
-            profileArray.splice(windowsMRIdx, 0, 'microsoft-mixed-reality');
+            profileArray.splice(windowsMRIdx, 0, "microsoft-mixed-reality");
         }
 
         if (!profileArray.length) {
-            profileArray.push('generic-trigger');
+            profileArray.push("generic-trigger");
         }
 
         if (this.UseOnlineRepository) {
@@ -166,7 +166,7 @@ export class WebXRMotionControllerManager {
      * @return a promise that resolves to a map of profiles available online
      */
     public static UpdateProfilesList() {
-        this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + '/profiles/profilesList.json', false).then((data) => {
+        this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + "/profiles/profilesList.json", false).then((data) => {
             return JSON.parse(data.toString());
         });
         return this._ProfilesList;

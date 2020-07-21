@@ -1,9 +1,9 @@
-import { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness, WebXRAbstractMotionController } from './webXRAbstractMotionController';
-import { Scene } from '../../scene';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Mesh } from '../../Meshes/mesh';
-import { Quaternion } from '../../Maths/math.vector';
-import { WebXRMotionControllerManager } from './webXRMotionControllerManager';
+import { IMotionControllerLayoutMap, IMinimalMotionControllerObject, MotionControllerHandedness, WebXRAbstractMotionController } from "./webXRAbstractMotionController";
+import { Scene } from "../../scene";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Mesh } from "../../Meshes/mesh";
+import { Quaternion } from "../../Maths/math.vector";
+import { WebXRMotionControllerManager } from "./webXRMotionControllerManager";
 
 /**
  * The motion controller class for the standard HTC-Vive controllers
@@ -14,13 +14,13 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
     /**
      * The base url used to load the left and right controller models
      */
-    public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/vive/';
+    public static MODEL_BASE_URL: string = "https://controllers.babylonjs.com/vive/";
     /**
      * File name for the controller model.
      */
-    public static MODEL_FILENAME: string = 'wand.babylon';
+    public static MODEL_FILENAME: string = "wand.babylon";
 
-    public profileId = 'htc-vive';
+    public profileId = "htc-vive";
 
     /**
      * Create a new Vive motion controller object
@@ -57,12 +57,12 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
                         }
 
                         switch (id) {
-                            case 'xr-standard-trigger':
+                            case "xr-standard-trigger":
                                 (<AbstractMesh>this._modelRootNode.getChildren()[6]).rotation.x = -component.value * 0.15;
                                 return;
-                            case 'xr-standard-touchpad':
+                            case "xr-standard-touchpad":
                                 return;
-                            case 'xr-standard-squeeze':
+                            case "xr-standard-squeeze":
                                 return;
                         }
                     },
@@ -74,7 +74,7 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + ' ' + this.handedness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
 
         meshes.forEach((mesh) => {
             mesh.isPickable = false;
@@ -92,7 +92,7 @@ export class WebXRHTCViveMotionController extends WebXRAbstractMotionController 
 }
 
 // register the profile
-WebXRMotionControllerManager.RegisterController('htc-vive', (xrInput: XRInputSource, scene: Scene) => {
+WebXRMotionControllerManager.RegisterController("htc-vive", (xrInput: XRInputSource, scene: Scene) => {
     return new WebXRHTCViveMotionController(scene, <any>xrInput.gamepad, xrInput.handedness);
 });
 
@@ -102,129 +102,129 @@ WebXRMotionControllerManager.RegisterController('htc-vive', (xrInput: XRInputSou
 
 const HTCViveLayout: IMotionControllerLayoutMap = {
     left: {
-        selectComponentId: 'xr-standard-trigger',
+        selectComponentId: "xr-standard-trigger",
         components: {
-            'xr-standard-trigger': {
-                type: 'trigger',
+            "xr-standard-trigger": {
+                type: "trigger",
                 gamepadIndices: {
                     button: 0,
                 },
-                rootNodeName: 'xr_standard_trigger',
+                rootNodeName: "xr_standard_trigger",
                 visualResponses: {},
             },
-            'xr-standard-squeeze': {
-                type: 'squeeze',
+            "xr-standard-squeeze": {
+                type: "squeeze",
                 gamepadIndices: {
                     button: 1,
                 },
-                rootNodeName: 'xr_standard_squeeze',
+                rootNodeName: "xr_standard_squeeze",
                 visualResponses: {},
             },
-            'xr-standard-touchpad': {
-                type: 'touchpad',
+            "xr-standard-touchpad": {
+                type: "touchpad",
                 gamepadIndices: {
                     button: 2,
                     xAxis: 0,
                     yAxis: 1,
                 },
-                rootNodeName: 'xr_standard_touchpad',
+                rootNodeName: "xr_standard_touchpad",
                 visualResponses: {},
             },
             menu: {
-                type: 'button',
+                type: "button",
                 gamepadIndices: {
                     button: 4,
                 },
-                rootNodeName: 'menu',
+                rootNodeName: "menu",
                 visualResponses: {},
             },
         },
-        gamepadMapping: 'xr-standard',
-        rootNodeName: 'htc_vive_none',
-        assetPath: 'none.glb',
+        gamepadMapping: "xr-standard",
+        rootNodeName: "htc_vive_none",
+        assetPath: "none.glb",
     },
     right: {
-        selectComponentId: 'xr-standard-trigger',
+        selectComponentId: "xr-standard-trigger",
         components: {
-            'xr-standard-trigger': {
-                type: 'trigger',
+            "xr-standard-trigger": {
+                type: "trigger",
                 gamepadIndices: {
                     button: 0,
                 },
-                rootNodeName: 'xr_standard_trigger',
+                rootNodeName: "xr_standard_trigger",
                 visualResponses: {},
             },
-            'xr-standard-squeeze': {
-                type: 'squeeze',
+            "xr-standard-squeeze": {
+                type: "squeeze",
                 gamepadIndices: {
                     button: 1,
                 },
-                rootNodeName: 'xr_standard_squeeze',
+                rootNodeName: "xr_standard_squeeze",
                 visualResponses: {},
             },
-            'xr-standard-touchpad': {
-                type: 'touchpad',
+            "xr-standard-touchpad": {
+                type: "touchpad",
                 gamepadIndices: {
                     button: 2,
                     xAxis: 0,
                     yAxis: 1,
                 },
-                rootNodeName: 'xr_standard_touchpad',
+                rootNodeName: "xr_standard_touchpad",
                 visualResponses: {},
             },
             menu: {
-                type: 'button',
+                type: "button",
                 gamepadIndices: {
                     button: 4,
                 },
-                rootNodeName: 'menu',
+                rootNodeName: "menu",
                 visualResponses: {},
             },
         },
-        gamepadMapping: 'xr-standard',
-        rootNodeName: 'htc_vive_none',
-        assetPath: 'none.glb',
+        gamepadMapping: "xr-standard",
+        rootNodeName: "htc_vive_none",
+        assetPath: "none.glb",
     },
     none: {
-        selectComponentId: 'xr-standard-trigger',
+        selectComponentId: "xr-standard-trigger",
         components: {
-            'xr-standard-trigger': {
-                type: 'trigger',
+            "xr-standard-trigger": {
+                type: "trigger",
                 gamepadIndices: {
                     button: 0,
                 },
-                rootNodeName: 'xr_standard_trigger',
+                rootNodeName: "xr_standard_trigger",
                 visualResponses: {},
             },
-            'xr-standard-squeeze': {
-                type: 'squeeze',
+            "xr-standard-squeeze": {
+                type: "squeeze",
                 gamepadIndices: {
                     button: 1,
                 },
-                rootNodeName: 'xr_standard_squeeze',
+                rootNodeName: "xr_standard_squeeze",
                 visualResponses: {},
             },
-            'xr-standard-touchpad': {
-                type: 'touchpad',
+            "xr-standard-touchpad": {
+                type: "touchpad",
                 gamepadIndices: {
                     button: 2,
                     xAxis: 0,
                     yAxis: 1,
                 },
-                rootNodeName: 'xr_standard_touchpad',
+                rootNodeName: "xr_standard_touchpad",
                 visualResponses: {},
             },
             menu: {
-                type: 'button',
+                type: "button",
                 gamepadIndices: {
                     button: 4,
                 },
-                rootNodeName: 'menu',
+                rootNodeName: "menu",
                 visualResponses: {},
             },
         },
-        gamepadMapping: 'xr-standard',
-        rootNodeName: 'htc-vive-none',
-        assetPath: 'none.glb',
+        gamepadMapping: "xr-standard",
+        rootNodeName: "htc-vive-none",
+        assetPath: "none.glb",
     },
 };

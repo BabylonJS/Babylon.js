@@ -1,11 +1,11 @@
-import { Logger } from '../Misc/logger';
-import { Observable } from '../Misc/observable';
-import { Nullable } from '../types';
-import { IDisposable, Scene } from '../scene';
-import { InternalTexture, InternalTextureSource } from '../Materials/Textures/internalTexture';
-import { RenderTargetTexture } from '../Materials/Textures/renderTargetTexture';
-import { WebXRRenderTarget } from './webXRTypes';
-import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
+import { Logger } from "../Misc/logger";
+import { Observable } from "../Misc/observable";
+import { Nullable } from "../types";
+import { IDisposable, Scene } from "../scene";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { WebXRRenderTarget } from "./webXRTypes";
+import { WebXRManagedOutputCanvas, WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 
 interface IRenderTargetProvider {
     getRenderTargetForEye(eye: XREye): RenderTargetTexture;
@@ -110,7 +110,7 @@ export class WebXRSessionManager implements IDisposable {
     public exitXRAsync() {
         if (this.session && !this._sessionEnded) {
             return this.session.end().catch((e) => {
-                Logger.Warn('could not end XR session. It has ended already.');
+                Logger.Warn("could not end XR session. It has ended already.");
             });
         }
         return Promise.resolve();
@@ -151,7 +151,7 @@ export class WebXRSessionManager implements IDisposable {
         // Check if the browser supports webXR
         this._xrNavigator = navigator;
         if (!this._xrNavigator.xr) {
-            return Promise.reject('WebXR not available');
+            return Promise.reject("WebXR not available");
         }
         return Promise.resolve();
     }
@@ -162,7 +162,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param xrSessionInit defines optional and required values to pass to the session builder
      * @returns a promise which will resolve once the session has been initialized
      */
-    public initializeSessionAsync(xrSessionMode: XRSessionMode = 'immersive-vr', xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
+    public initializeSessionAsync(xrSessionMode: XRSessionMode = "immersive-vr", xrSessionInit: XRSessionInit = {}): Promise<XRSession> {
         return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
             this.onXRSessionInit.notifyObservers(session);
@@ -170,7 +170,7 @@ export class WebXRSessionManager implements IDisposable {
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener(
-                'end',
+                "end",
                 () => {
                     const engine = this.scene.getEngine();
                     this._sessionEnded = true;
@@ -254,7 +254,7 @@ export class WebXRSessionManager implements IDisposable {
      * @param referenceSpaceType space to set
      * @returns a promise that will resolve once the reference space has been set
      */
-    public setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = 'local-floor'): Promise<XRReferenceSpace> {
+    public setReferenceSpaceTypeAsync(referenceSpaceType: XRReferenceSpaceType = "local-floor"): Promise<XRReferenceSpace> {
         return this.session
             .requestReferenceSpace(referenceSpaceType)
             .then(
@@ -262,11 +262,11 @@ export class WebXRSessionManager implements IDisposable {
                     return referenceSpace;
                 },
                 (rejectionReason) => {
-                    Logger.Error('XR.requestReferenceSpace failed for the following reason: ');
+                    Logger.Error("XR.requestReferenceSpace failed for the following reason: ");
                     Logger.Error(rejectionReason);
                     Logger.Log('Defaulting to universally-supported "viewer" reference space type.');
 
-                    return this.session.requestReferenceSpace('viewer').then(
+                    return this.session.requestReferenceSpace("viewer").then(
                         (referenceSpace: XRReferenceSpace) => {
                             const heightCompensation = new XRRigidTransform({ x: 0, y: -this.defaultHeightCompensation, z: 0 });
                             return referenceSpace.getOffsetReferenceSpace(heightCompensation);
@@ -280,7 +280,7 @@ export class WebXRSessionManager implements IDisposable {
             )
             .then((referenceSpace) => {
                 // create viewer reference space before setting the first reference space
-                return this.session.requestReferenceSpace('viewer').then((viewerReferenceSpace: XRReferenceSpace) => {
+                return this.session.requestReferenceSpace("viewer").then((viewerReferenceSpace: XRReferenceSpace) => {
                     this.viewerReferenceSpace = viewerReferenceSpace;
                     return referenceSpace;
                 });
@@ -321,7 +321,7 @@ export class WebXRSessionManager implements IDisposable {
             return functionToUse
                 .call((navigator as any).xr, sessionMode)
                 .then((result: boolean) => {
-                    const returnValue = typeof result === 'undefined' ? true : result;
+                    const returnValue = typeof result === "undefined" ? true : result;
                     return Promise.resolve(returnValue);
                 })
                 .catch((e: any) => {
@@ -339,7 +339,7 @@ export class WebXRSessionManager implements IDisposable {
         internalTexture._framebuffer = framebuffer;
 
         // Create render target texture from the internal texture
-        var renderTargetTexture = new RenderTargetTexture('XR renderTargetTexture', { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
+        var renderTargetTexture = new RenderTargetTexture("XR renderTargetTexture", { width: width, height: height }, this.scene, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, true);
         renderTargetTexture._texture = internalTexture;
 
         return renderTargetTexture;

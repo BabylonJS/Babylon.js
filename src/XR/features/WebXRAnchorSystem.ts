@@ -1,11 +1,11 @@
-import { WebXRFeatureName, WebXRFeaturesManager } from '../webXRFeaturesManager';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../Misc/observable';
-import { Matrix, Vector3, Quaternion } from '../../Maths/math.vector';
-import { TransformNode } from '../../Meshes/transformNode';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { IWebXRHitResult } from './WebXRHitTest';
-import { Tools } from '../../Misc/tools';
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { Observable } from "../../Misc/observable";
+import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
+import { TransformNode } from "../../Meshes/transformNode";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { IWebXRHitResult } from "./WebXRHitTest";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Configuration options of the anchor system
@@ -283,7 +283,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 return;
             }
             if (!frame.createAnchor) {
-                futureAnchor.reject('Anchors not enabled in this browser');
+                futureAnchor.reject("Anchors not enabled in this browser");
             }
             this._createAnchorAtTransformation(futureAnchor.xrTransformation, frame).then(futureAnchor.resolve, futureAnchor.reject);
         }
@@ -330,7 +330,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 throw new Error(error);
             }
         } else {
-            throw new Error('Anchors are not enabled in your browser');
+            throw new Error("Anchors are not enabled in your browser");
         }
     }
 }

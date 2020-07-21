@@ -1,14 +1,14 @@
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { Vector3, Quaternion } from '../../Maths/math.vector';
-import { WebXRInputSource } from '../webXRInputSource';
-import { PhysicsImpostor } from '../../Physics/physicsImpostor';
-import { WebXRInput } from '../webXRInput';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { SphereBuilder } from '../../Meshes/Builders/sphereBuilder';
-import { WebXRFeatureName, WebXRFeaturesManager } from '../webXRFeaturesManager';
-import { Logger } from '../../Misc/logger';
-import { Nullable } from '../../types';
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { WebXRInputSource } from "../webXRInputSource";
+import { PhysicsImpostor } from "../../Physics/physicsImpostor";
+import { WebXRInput } from "../webXRInput";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
+import { Logger } from "../../Misc/logger";
+import { Nullable } from "../../types";
 
 /**
  * Options for the controller physics feature
@@ -82,7 +82,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             return;
         }
         if (!this._xrSessionManager.scene.isPhysicsEnabled()) {
-            Logger.Warn('physics engine not enabled, skipped. Please add this controller manually.');
+            Logger.Warn("physics engine not enabled, skipped. Please add this controller manually.");
         }
         // if no motion controller available, create impostors!
         if (this._options.physicsProperties!.useControllerMesh && xrController.inputSource.gamepad) {
@@ -104,10 +104,10 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
         } else {
             const impostorType: number = this._options.physicsProperties!.impostorType || PhysicsImpostor.SphereImpostor;
             const impostorSize: number | { width: number; height: number; depth: number } = this._options.physicsProperties!.impostorSize || 0.1;
-            const impostorMesh = SphereBuilder.CreateSphere('impostor-mesh-' + xrController.uniqueId, {
-                diameterX: typeof impostorSize === 'number' ? impostorSize : impostorSize.width,
-                diameterY: typeof impostorSize === 'number' ? impostorSize : impostorSize.height,
-                diameterZ: typeof impostorSize === 'number' ? impostorSize : impostorSize.depth,
+            const impostorMesh = SphereBuilder.CreateSphere("impostor-mesh-" + xrController.uniqueId, {
+                diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
+                diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
+                diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
             });
             impostorMesh.isVisible = this._debugMode;
             impostorMesh.isPickable = false;
@@ -219,10 +219,10 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                 impostorSize: 0.3,
             };
             const impostorSize = params.impostorSize || 0.3;
-            this._headsetMesh = SphereBuilder.CreateSphere('headset-mesh', {
-                diameterX: typeof impostorSize === 'number' ? impostorSize : impostorSize.width,
-                diameterY: typeof impostorSize === 'number' ? impostorSize : impostorSize.height,
-                diameterZ: typeof impostorSize === 'number' ? impostorSize : impostorSize.depth,
+            this._headsetMesh = SphereBuilder.CreateSphere("headset-mesh", {
+                diameterX: typeof impostorSize === "number" ? impostorSize : impostorSize.width,
+                diameterY: typeof impostorSize === "number" ? impostorSize : impostorSize.height,
+                diameterZ: typeof impostorSize === "number" ? impostorSize : impostorSize.depth,
             });
             this._headsetMesh.rotationQuaternion = new Quaternion();
             this._headsetMesh.isVisible = false;
@@ -269,7 +269,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
      * @returns the impostor or null
      */
     public getImpostorForController(controller: WebXRInputSource | string): Nullable<PhysicsImpostor> {
-        let id = typeof controller === 'string' ? controller : controller.uniqueId;
+        let id = typeof controller === "string" ? controller : controller.uniqueId;
         if (this._controllers[id]) {
             return this._controllers[id].impostor;
         } else {
@@ -306,7 +306,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             this._tmpVector.scaleInPlace(1000 / this._delta);
             controllerData.impostor.setLinearVelocity(this._tmpVector);
             if (this._debugMode) {
-                console.log(this._tmpVector, 'linear');
+                console.log(this._tmpVector, "linear");
             }
 
             if (!comparedQuaternion.equalsWithEpsilon(controllerMesh.rotationQuaternion!)) {
@@ -323,7 +323,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
                 }
                 controllerData.impostor.setAngularVelocity(this._tmpVector);
                 if (this._debugMode) {
-                    console.log(this._tmpVector, this._tmpQuaternion, 'angular');
+                    console.log(this._tmpVector, this._tmpQuaternion, "angular");
                 }
             }
             comparedPosition.copyFrom(controllerMesh.position);

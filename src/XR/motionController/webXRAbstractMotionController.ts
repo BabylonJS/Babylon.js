@@ -1,27 +1,27 @@
-import { IDisposable, Scene } from '../../scene';
-import { WebXRControllerComponent } from './webXRControllerComponent';
-import { Observable } from '../../Misc/observable';
-import { Logger } from '../../Misc/logger';
-import { SceneLoader } from '../../Loading/sceneLoader';
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { Nullable } from '../../types';
-import { Quaternion, Vector3 } from '../../Maths/math.vector';
-import { Mesh } from '../../Meshes/mesh';
+import { IDisposable, Scene } from "../../scene";
+import { WebXRControllerComponent } from "./webXRControllerComponent";
+import { Observable } from "../../Misc/observable";
+import { Logger } from "../../Misc/logger";
+import { SceneLoader } from "../../Loading/sceneLoader";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Nullable } from "../../types";
+import { Quaternion, Vector3 } from "../../Maths/math.vector";
+import { Mesh } from "../../Meshes/mesh";
 
 /**
  * Handedness type in xrInput profiles. These can be used to define layouts in the Layout Map.
  */
-export type MotionControllerHandedness = 'none' | 'left' | 'right';
+export type MotionControllerHandedness = "none" | "left" | "right";
 /**
  * The type of components available in motion controllers.
  * This is not the name of the component.
  */
-export type MotionControllerComponentType = 'trigger' | 'squeeze' | 'touchpad' | 'thumbstick' | 'button';
+export type MotionControllerComponentType = "trigger" | "squeeze" | "touchpad" | "thumbstick" | "button";
 
 /**
  * The state of a controller component
  */
-export type MotionControllerComponentStateType = 'default' | 'touched' | 'pressed';
+export type MotionControllerComponentStateType = "default" | "touched" | "pressed";
 
 /**
  * The schema of motion controller layout.
@@ -74,7 +74,7 @@ export interface IMotionControllerLayout {
                     /**
                      * What property will be animated
                      */
-                    componentProperty: 'xAxis' | 'yAxis' | 'button' | 'state';
+                    componentProperty: "xAxis" | "yAxis" | "button" | "state";
                     /**
                      * What states influence this visual response
                      */
@@ -82,7 +82,7 @@ export interface IMotionControllerLayout {
                     /**
                      * Type of animation - movement or visibility
                      */
-                    valueNodeProperty: 'transform' | 'visibility';
+                    valueNodeProperty: "transform" | "visibility";
                     /**
                      * Base node name to move. Its position will be calculated according to the min and max nodes
                      */
@@ -106,7 +106,7 @@ export interface IMotionControllerLayout {
     /**
      * Is it xr standard mapping or not
      */
-    gamepadMapping: '' | 'xr-standard';
+    gamepadMapping: "" | "xr-standard";
     /**
      * Base root node of this entire model
      */
@@ -365,13 +365,13 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         let loadingParams = this._getGenericFilenameAndPath();
         // Checking if GLB loader is present
         if (useGeneric) {
-            Logger.Warn('Falling back to generic models');
+            Logger.Warn("Falling back to generic models");
         } else {
             loadingParams = this._getFilenameAndPath();
         }
         return new Promise((resolve, reject) => {
             SceneLoader.ImportMesh(
-                '',
+                "",
                 loadingParams.path,
                 loadingParams.filename,
                 this.scene,
@@ -503,13 +503,13 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
 
     private _getGenericFilenameAndPath(): { filename: string; path: string } {
         return {
-            filename: 'generic.babylon',
-            path: 'https://controllers.babylonjs.com/generic/',
+            filename: "generic.babylon",
+            path: "https://controllers.babylonjs.com/generic/",
         };
     }
 
     private _getGenericParentMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + ' ' + this.handedness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
 
         meshes.forEach((mesh) => {
             if (!mesh.parent) {

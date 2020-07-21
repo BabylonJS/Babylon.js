@@ -1,9 +1,9 @@
-import { WebXRFeaturesManager, WebXRFeatureName } from '../webXRFeaturesManager';
-import { TransformNode } from '../../Meshes/transformNode';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../Misc/observable';
-import { Vector3, Matrix } from '../../Maths/math.vector';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
+import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager";
+import { TransformNode } from "../../Meshes/transformNode";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { Observable } from "../../Misc/observable";
+import { Vector3, Matrix } from "../../Maths/math.vector";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
 /**
  * Options used in the plane detector module
