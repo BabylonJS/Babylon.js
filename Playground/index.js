@@ -79,7 +79,7 @@ let checkBabylonVersionAsync= function () {
 }
 
 checkBabylonVersionAsync().then(() => {
-    loadScriptAsync("dist/babylon.playground.js").then(() => {
+    loadScriptAsync("/dist/babylon.playground.js").then(() => {
         var hostElement = document.getElementById("host-element");
         BABYLON.Playground.Show(hostElement);
     });
