@@ -79,11 +79,11 @@ export class MetadataComponent extends React.Component<IMetadataComponentProps, 
 
                     <label htmlFor="description">DESCRIPTION</label>
                     <div className="separator"></div>
-                    <textarea id="description" rows={4} cols={10} ref={this._descriptionRef} defaultValue={this.props.globalState.currentSnippetDescription}></textarea>
+                    <textarea id="description" cols={10} ref={this._descriptionRef} defaultValue={this.props.globalState.currentSnippetDescription}></textarea>
 
                     <label htmlFor="tags">TAGS (separated by comma)</label>
                     <div className="separator"></div>
-                    <textarea id="tags" rows={4} cols={10} ref={this._tagsRef} defaultValue={this.props.globalState.currentSnippetTags}></textarea>
+                    <textarea id="tags" cols={10} ref={this._tagsRef} defaultValue={this.props.globalState.currentSnippetTags}></textarea>
 
                     <div className="editor-buttons" id="buttons">
                         <div id="ok" onClick={() => this.onOk()}>OK</div>
