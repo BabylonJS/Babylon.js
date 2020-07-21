@@ -3,9 +3,10 @@
     height: 100%;
     padding: 0;
     margin: 0;
-    overflow: unset;    
+    overflow: unset;
     border:none !important;
     outline:none !important;
+    display: block;
 }
 
 #pg-root-frame, #pg-root-full {
