@@ -13,10 +13,13 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Color4 } from '../Maths/math.color';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { PBRMaterial } from '../Materials/PBR/pbrMaterial';
+import { _DevTools } from '../Misc/devTools';
+import { Observer } from '../Misc/observable';
+import { Engine } from '../Engines/engine';
+import { Nullable } from '../types';
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
-import { _DevTools } from '../Misc/devTools';
 
 /** @hidden */
 interface ISavedTransformationMatrix {
@@ -66,6 +69,7 @@ export class GeometryBufferRenderer {
     public renderTransparentMeshes = true;
 
     private _scene: Scene;
+    private _resizeObserver: Nullable<Observer<Engine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
     private _ratio: number;
     private _enablePosition: boolean = false;
@@ -353,6 +357,11 @@ export class GeometryBufferRenderer {
      * Disposes the renderer and frees up associated resources.
      */
     public dispose(): void {
+        if (this._resizeObserver) {
+            const engine = this._scene.getEngine();
+            engine.onResizeObservable.remove(this._resizeObserver);
+            this._resizeObserver = null;
+        }
         this.getGBuffer().dispose();
     }
 
@@ -390,6 +399,12 @@ export class GeometryBufferRenderer {
         // set default depth value to 1.0 (far away)
         this._multiRenderTarget.onClearObservable.add((engine) => {
             engine.clear(new Color4(0.0, 0.0, 0.0, 1.0), true, true, true);
+        });
+
+        this._resizeObserver = engine.onResizeObservable.add(() => {
+            if (this._multiRenderTarget) {
+                this._multiRenderTarget.resize({ width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio });
+            }
         });
 
         // Custom render function

@@ -54,8 +54,9 @@ export class AxisScaleGizmo extends Gizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragAxis The axis which the gizmo will be able to scale on
      * @param color The color of the gizmo
+     * @param thickness display gizmo axis thickness
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<ScaleGizmo> = null) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<ScaleGizmo> = null, thickness: number = 1) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -68,8 +69,8 @@ export class AxisScaleGizmo extends Gizmo {
 
         // Build mesh on root node
         this._arrow = new AbstractMesh("", gizmoLayer.utilityLayerScene);
-        var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 }, gizmoLayer.utilityLayerScene);
-        var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, gizmoLayer.utilityLayerScene);
+        var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, gizmoLayer.utilityLayerScene);
+        var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, gizmoLayer.utilityLayerScene);
         arrowTail.material = this._coloredMaterial;
         this._arrow.addChild(arrowMesh);
         this._arrow.addChild(arrowTail);

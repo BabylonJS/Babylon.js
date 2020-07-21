@@ -1,24 +1,32 @@
 ﻿<!DOCTYPE html>
 <html>
+
     <head>
         <title>Babylon.js Playground</title>
         <meta charset='utf-8' />
-        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+        <meta name="viewport" content="width=device-width, user-scalable=no">
+        <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico">
         <meta name="description" content="Babylon.js playground is a live editor for Babylon.js WebGL 3D scenes">
         <meta name="keywords" content="Babylon.js,WebGL,3D">
-
-        <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico">
-
-        <meta name="msapplication-TileColor" content="#ffffff">
-        <meta name="msapplication-TileImage" content="https://www.babylonjs.com/img/favicon/ms-icon-144x144.png">
-        <meta name="msapplication-config" content="https://www.babylonjs.com/img/favicon/browserconfig.xml">
-        <meta name="theme-color" content="#ffffff">
+        
+        <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css">
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
 
         <!-- Pep -->
         <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
+        <!--For canvas/code separator-->
+        <script src="libs/split.js"></script>
 
-        <!-- DatGUI CDN -->
+        <!-- DatGUI -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <!-- jszip -->
+        <script src="libs/jszip.min.js"></script>
+        <script src="libs/fileSaver.js"></script>
+
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery.js"></script>
+        <script src="https://rawcdn.githack.com/jeromeetienne/jquery-qrcode/master/jquery.qrcode.min.js"></script>        
 
         <!-- Dependencies -->
         <script src="https://preview.babylonjs.com/ammo.js"></script>
@@ -27,93 +35,55 @@
         <script src="https://preview.babylonjs.com/Oimo.js"></script>
         <script src="https://preview.babylonjs.com/libktx.js"></script>
         <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        
+        <!-- Babylon.js -->
         <script src="https://preview.babylonjs.com/babylon.js"></script>
         <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
         <script src="https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js"></script>
-        <!-- Babylon.js -->
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.fireMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.waterMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.lavaMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.normalMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.skyMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.triPlanarMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.terrainMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.gradientMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.furMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.gridMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.shadowOnlyMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.customMaterial.min.js"></script>
-        <script src="https://preview.babylonjs.com/materialsLibrary/babylon.cellMaterial.min.js"></script>
-
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylon.brickProceduralTexture.min.js">
-        </script>
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylon.cloudProceduralTexture.min.js">
-        </script>
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylon.fireProceduralTexture.min.js">
-        </script>
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylon.grassProceduralTexture.min.js">
-        </script>
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylon.marbleProceduralTexture.min.js">
-        </script>
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylon.roadProceduralTexture.min.js">
-        </script>
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylon.starfieldProceduralTexture.min.js">
-        </script>
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylon.woodProceduralTexture.min.js">
-        </script>
-
-        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylon.asciiArtPostProcess.min.js"></script>
-        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylon.digitalRainPostProcess.min.js"></script>
-
-        <script src="https://preview.babylonjs.com/loaders/babylon.glTFFileLoader.js"></script>
-        <script src="https://preview.babylonjs.com/loaders/babylon.objFileLoader.js"></script>
-        <script src="https://preview.babylonjs.com/loaders/babylon.stlFileLoader.js"></script>
-
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
-
         <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
 
-        <!-- Extensions -->
-        <script
-            src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
-            async>
-        </script>
-        <script
-            src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"
-            async></script>
+         <!-- Extensions -->
+         <script
+             src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
+             >
+         </script>
+         <script
+             src="https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js"
+             ></script>
+ 
+         <!-- Scene Manager -->
+         <script
+             src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.manager.js">
+         </script>
+         <script
+             src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
+         </script>        
 
-        <!-- Scene Manager -->
-        <script
-            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.manager.js">
-        </script>
-        <script
-            src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
-        </script>
-
-        <link rel="stylesheet" href="/css/frame.css" />
+        <style>
+            html,
+            body,
+            #host-element {
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>        
     </head>
 
-    <body>
-        <canvas touch-action="none" id="renderCanvas" tabindex="1"></canvas>
-
-        <div class="footer">
-            <span id="fpsLabel">FPS</span>
-            <div class="footerRight">
-                <a href="javascript:void(null);">
-                    <img id="refresh" src="/textures/icons/refresh.png" width="36" height="36" alt="Reload page"
-                        title="Reload page" />
-                </a>
-                <a id="edit" href="#" target="_blank">
-                    <img src="/textures/icons/edit.png" width="36" height="36" alt="Edit in playground"
-                        title="Edit in playground" />
-                </a>
-            </div>
-        </div>
-
-        <!-- jQuery -->
-        <script src="https://code.jquery.com/jquery.min.js"></script>
-
-        <script src="/js/frame.js"></script>
+    <body>        
+        <div id="host-element">
+        </div>   
+        
+        <script src="dist/babylon.playground.js"></script>
+        
+        <script src="index-frame.js"></script>
     </body>
 
 </html>
