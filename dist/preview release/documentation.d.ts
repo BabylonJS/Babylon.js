@@ -46860,7 +46860,7 @@ declare module BABYLON {
     /**
      * Defining the constructor of a feature. Used to register the modules.
      */
-    export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => IWebXRFeature);
+    export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => () => IWebXRFeature;
     /**
      * The WebXR features manager is responsible of enabling or disabling features required for the current XR session.
      * It is mainly used in AR sessions.
@@ -46896,7 +46896,7 @@ declare module BABYLON {
          * @param options optional options provided to the module.
          * @returns a function that, when called, will return a new instance of this feature
          */
-        static ConstructFeature(featureName: string, version: number | undefined, xrSessionManager: WebXRSessionManager, options?: any): (() => IWebXRFeature);
+        static ConstructFeature(featureName: string, version: number | undefined, xrSessionManager: WebXRSessionManager, options?: any): () => IWebXRFeature;
         /**
          * Can be used to return the list of features currently registered
          *
@@ -47790,8 +47790,8 @@ declare module BABYLON {
          */
         buttons: Array<{
             /**
-            * Value of the button/trigger
-            */
+             * Value of the button/trigger
+             */
             value: number;
             /**
              * If the button/trigger is currently touched
@@ -59396,6 +59396,7 @@ declare module BABYLON {
          */
         static RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array;
         private static RGBE_ReadPixels_RLE;
+        private static RGBE_ReadPixels_NOT_RLE;
     }
 }
 declare module BABYLON {
