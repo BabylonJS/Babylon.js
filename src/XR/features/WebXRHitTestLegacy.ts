@@ -1,9 +1,9 @@
-import { WebXRFeaturesManager, WebXRFeatureName, IWebXRFeature } from '../webXRFeaturesManager';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../Misc/observable';
-import { Vector3, Matrix } from '../../Maths/math.vector';
-import { TransformNode } from '../../Meshes/transformNode';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
+import { WebXRFeaturesManager, WebXRFeatureName, IWebXRFeature } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { Observable } from "../../Misc/observable";
+import { Vector3, Matrix } from "../../Maths/math.vector";
+import { TransformNode } from "../../Meshes/transformNode";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
 // the plugin is registered at the end of the file
 
@@ -50,7 +50,7 @@ export interface IWebXRLegacyHitResult {
  * Hit test (or Ray-casting) is used to interact with the real world.
  * For further information read here - https://github.com/immersive-web/hit-test
  */
-export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRHitTestFeature<IWebXRLegacyHitResult> {
+export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHitTestFeature<IWebXRLegacyHitResult> {
     // in XR space z-forward is negative
     private _direction = new Vector3(0, 0, -1);
     private _mat = new Matrix();
@@ -82,11 +82,13 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRH
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param options options to use when constructing this feature
      */
-    constructor(_xrSessionManager: WebXRSessionManager,
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
         /**
          * options to use when constructing this feature
          */
-        public readonly options: IWebXRLegacyHitTestOptions = {}) {
+        public readonly options: IWebXRLegacyHitTestOptions = {}
+    ) {
         super(_xrSessionManager);
     }
 
@@ -133,7 +135,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRH
             return false;
         }
         if (this.options.testOnPointerDownOnly) {
-            this._xrSessionManager.session.addEventListener('select', this._onSelect, false);
+            this._xrSessionManager.session.addEventListener("select", this._onSelect, false);
         }
 
         return true;
@@ -151,7 +153,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRH
         }
         // disable select
         this._onSelectEnabled = false;
-        this._xrSessionManager.session.removeEventListener('select', this._onSelect);
+        this._xrSessionManager.session.removeEventListener("select", this._onSelect);
         return true;
     }
 
@@ -177,8 +179,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRH
         Vector3.TransformCoordinatesFromFloatsToRef(0, 0, -1, this._mat, this._direction);
         this._direction.subtractInPlace(this._origin);
         this._direction.normalize();
-        let ray = new XRRay((<DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 }),
-            (<DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 }));
+        let ray = new XRRay(<DOMPointReadOnly>{ x: this._origin.x, y: this._origin.y, z: this._origin.z, w: 0 }, <DOMPointReadOnly>{ x: this._direction.x, y: this._direction.y, z: this._direction.z, w: 0 });
         WebXRHitTestLegacy.XRHitTestWithRay(this._xrSessionManager.session, ray, this._xrSessionManager.referenceSpace).then(this._onHitTestResults);
     }
 
@@ -194,13 +195,13 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRH
             }
             return {
                 xrHitResult: result,
-                transformationMatrix: mat
+                transformationMatrix: mat,
             };
         });
 
         this.lastNativeXRHitResults = xrResults;
         this.onHitTestResultObservable.notifyObservers(mats);
-    }
+    };
 
     // can be done using pointerdown event, and xrSessionManager.currentFrame
     private _onSelect = (event: XRInputSourceEvent) => {
@@ -208,10 +209,15 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature  implements IWebXRH
             return;
         }
         WebXRHitTestLegacy.XRHitTestWithSelectEvent(event, this._xrSessionManager.referenceSpace);
-    }
+    };
 }
 
 //register the plugin versions
-WebXRFeaturesManager.AddWebXRFeature(WebXRHitTestLegacy.Name, (xrSessionManager, options) => {
-    return () => new WebXRHitTestLegacy(xrSessionManager, options);
-}, WebXRHitTestLegacy.Version, false);
+WebXRFeaturesManager.AddWebXRFeature(
+    WebXRHitTestLegacy.Name,
+    (xrSessionManager, options) => {
+        return () => new WebXRHitTestLegacy(xrSessionManager, options);
+    },
+    WebXRHitTestLegacy.Version,
+    false
+);
