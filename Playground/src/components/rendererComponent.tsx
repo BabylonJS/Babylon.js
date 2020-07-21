@@ -66,6 +66,14 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this.props.globalState.onRunRequiredObservable.notifyObservers();
             });
         }
+
+        window.addEventListener("resize", () => {
+            if (!this._engine) {
+                return;
+            }
+
+            this._engine.resize();
+        });
     }
 
     private async _compileAndRunAsync() {
@@ -202,8 +210,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     return;
                 }
 
-                if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                    this._engine.resize();
+                if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
+                    if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+                        this._engine.resize();
+                    }
                 }
 
                 if (this._scene.activeCamera || this._scene.activeCameras.length > 0) {

@@ -45,6 +45,7 @@
     transform: translateX(-200px);
     opacity: 0;
     transition: all 0.2s ease;
+    z-index: 10;
 
     &.background-ts {
         .command-button, .command-dropdown  {
