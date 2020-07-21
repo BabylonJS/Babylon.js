@@ -1,8 +1,8 @@
 import { Nullable } from "../types";
-import { ThinEngine } from '../Engines/thinEngine';
+import { ThinEngine } from "../Engines/thinEngine";
 import { WebXRRenderTarget } from "./webXRTypes";
-import { WebXRSessionManager } from './webXRSessionManager';
-import { Observable } from '../Misc/observable';
+import { WebXRSessionManager } from "./webXRSessionManager";
+import { Observable } from "../Misc/observable";
 
 /**
  * COnfiguration object for WebXR output canvas
@@ -34,7 +34,7 @@ export class WebXRManagedOutputCanvasOptions {
             stencil: false,
             alpha: true,
             multiview: false,
-            framebufferScaleFactor: 1
+            framebufferScaleFactor: 1,
         };
 
         defaults.newCanvasCssStyle = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";
@@ -49,8 +49,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     private _canvas: Nullable<HTMLCanvasElement> = null;
     private _engine: ThinEngine;
     private _originalCanvasSize: {
-        width: number,
-        height: number
+        width: number;
+        height: number;
     };
 
     /**
@@ -75,7 +75,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     constructor(_xrSessionManager: WebXRSessionManager, private _options: WebXRManagedOutputCanvasOptions = WebXRManagedOutputCanvasOptions.GetDefaults()) {
         this._engine = _xrSessionManager.scene.getEngine();
         if (!_options.canvasElement) {
-            const canvas = document.createElement('canvas');
+            const canvas = document.createElement("canvas");
             canvas.style.cssText = this._options.newCanvasCssStyle || "position:absolute; bottom:0px;right:0px;";
             this._setManagedOutputCanvas(canvas);
         } else {
@@ -134,7 +134,6 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
                 this._setCanvasSize(true, layer);
             });
         }
-
     }
 
     private _removeCanvas() {
@@ -151,8 +150,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         if (init) {
             if (xrLayer) {
                 if (this._canvas !== this._engine.getRenderingCanvas()) {
-                    this._canvas.style.width = xrLayer.framebufferWidth + 'px';
-                    this._canvas.style.height = xrLayer.framebufferHeight + 'px';
+                    this._canvas.style.width = xrLayer.framebufferWidth + "px";
+                    this._canvas.style.height = xrLayer.framebufferHeight + "px";
                 } else {
                     this._engine.setSize(xrLayer.framebufferWidth, xrLayer.framebufferHeight);
                 }
@@ -160,8 +159,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         } else {
             if (this._originalCanvasSize) {
                 if (this._canvas !== this._engine.getRenderingCanvas()) {
-                    this._canvas.style.width = this._originalCanvasSize.width + 'px';
-                    this._canvas.style.height = this._originalCanvasSize.height + 'px';
+                    this._canvas.style.width = this._originalCanvasSize.width + "px";
+                    this._canvas.style.height = this._originalCanvasSize.height + "px";
                 } else {
                     this._engine.setSize(this._originalCanvasSize.width, this._originalCanvasSize.height);
                 }
@@ -177,12 +176,12 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         } else {
             this._originalCanvasSize = {
                 width: canvas.offsetWidth,
-                height: canvas.offsetHeight
+                height: canvas.offsetHeight,
             };
             this._canvas = canvas;
-            this.canvasContext = <any>this._canvas.getContext('webgl2');
+            this.canvasContext = <any>this._canvas.getContext("webgl2");
             if (!this.canvasContext) {
-                this.canvasContext = <any>this._canvas.getContext('webgl');
+                this.canvasContext = <any>this._canvas.getContext("webgl");
             }
         }
     }

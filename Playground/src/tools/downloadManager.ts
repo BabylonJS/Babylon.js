@@ -7,9 +7,9 @@ declare var saveAs: any;
 
 export class DownloadManager {
 
-    public constructor(public globalState: GlobalState) {  
+    public constructor(public globalState: GlobalState) {
     }
-     
+
     private _addContentToZipAsync(zip: typeof JSZip, name: string, url: string, replace: Nullable<string>, buffer = false): Promise<void> {
         return new Promise((resolve, reject) => {
             if (url.substring(0, 5) == "data:" || url.substring(0, 5) == "http:" || url.substring(0, 5) == "blob:" || url.substring(0, 6) == "https:") {
@@ -25,7 +25,7 @@ export class DownloadManager {
                 xhr.responseType = "arraybuffer";
             }
 
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         var text;
@@ -52,10 +52,10 @@ export class DownloadManager {
 
             xhr.send(null);
         });
-    };
-    
+    }
+
     private _addTexturesToZipAsync(zip: typeof JSZip, index: number, textures: any[], folder: Nullable<string>): Promise<void> {
-               
+
         if (index === textures.length || !textures[index].name) {
             return Promise.resolve();
         }
@@ -79,7 +79,7 @@ export class DownloadManager {
             else {
                 textures.push({ name: textures[index].name });
             }
-            return this._addTexturesToZipAsync(zip, index + 1, textures, folder);            
+            return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
         }
 
         if (folder == null) {
@@ -109,8 +109,8 @@ export class DownloadManager {
         else {
             return this._addTexturesToZipAsync(zip, index + 1, textures, folder);
         }
-    };
-    
+    }
+
     private _addImportedFilesToZipAsync(zip: typeof JSZip, index: number, importedFiles: string[], folder: Nullable<string>): Promise<void> {
         if (index === importedFiles.length) {
             return Promise.resolve();
@@ -130,8 +130,7 @@ export class DownloadManager {
             true).then(() => {
                 return this._addImportedFilesToZipAsync(zip, index + 1, importedFiles, folder);
             });
-    };
-
+    }
 
     public download(engine: Engine) {
         var zip = new JSZip();
@@ -147,19 +146,18 @@ export class DownloadManager {
         var regex = /CreateGroundFromHeightMap\(".+", "(.+)"/g;
 
         do {
-            let match = regex.exec(zipCode);            
+            let match = regex.exec(zipCode);
 
             if (!match) {
                 break;
             }
 
             textures.push({ name: match[1] });
-        } while(true);
-
+        } while (true);
 
         this._addContentToZipAsync(zip,
             "index.html",
-            "zipContent/index.html",
+            "/zipContent/index.html",
             zipCode).then(() => {
                 return this._addTexturesToZipAsync(zip,
                     0,

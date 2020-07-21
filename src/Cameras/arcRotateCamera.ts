@@ -1012,6 +1012,10 @@ export class ArcRotateCamera extends TargetCamera {
             sinb = 0.0001;
         }
 
+        if (this.radius === 0) {
+            this.radius = 0.0001; // Just to avoid division by zero
+        }
+
         var target = this._getTargetPosition();
         this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
 

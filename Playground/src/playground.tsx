@@ -23,18 +23,18 @@ interface IPlaygroundProps {
     runtimeMode: RuntimeMode
 }
 
-export class Playground extends React.Component<IPlaygroundProps, {errorMessage: string, mode: EditionMode}> {    
+export class Playground extends React.Component<IPlaygroundProps, {errorMessage: string, mode: EditionMode}> {
     private splitRef: React.RefObject<HTMLDivElement>;
     private monacoRef: React.RefObject<HTMLDivElement>;
     private renderingRef: React.RefObject<HTMLDivElement>;
 
     private _globalState: GlobalState;
     private _splitInstance: any;
-    
+
     public saveManager: SaveManager;
     public loadManager: LoadManager;
     public shortcutManager: ShortcutManager;
-    
+
     public constructor(props: IPlaygroundProps) {
        super(props);
        this._globalState = new GlobalState();
@@ -82,7 +82,7 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
         }
 
         switch(this.state.mode) {
-            case EditionMode.CodeOnly:                
+            case EditionMode.CodeOnly:
                 this._splitInstance?.destroy();
                 this._splitInstance = null;
                 this.renderingRef.current!.classList.add("hidden");
@@ -114,30 +114,30 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
     public render() {
         if (this._globalState.runtimeMode === RuntimeMode.Full) {
             return (
-                <div id="pg-root-full">              
+                <div id="pg-root-full">
                     <RenderingComponent globalState={this._globalState}/>
-                    <ErrorDisplayComponent globalState={this._globalState}/>            
+                    <ErrorDisplayComponent globalState={this._globalState}/>
                     <WaitRingComponent globalState={this._globalState}/>
-                </div>   
+                </div>
             )
         }
 
         if (this._globalState.runtimeMode === RuntimeMode.Frame) {
             return (
-                <div id="pg-root-frame">              
+                <div id="pg-root-frame">
                     <RenderingComponent globalState={this._globalState}/>
-                    <FooterComponent globalState={this._globalState}/>    
-                    <ErrorDisplayComponent globalState={this._globalState}/>            
+                    <FooterComponent globalState={this._globalState}/>
+                    <ErrorDisplayComponent globalState={this._globalState}/>
                     <WaitRingComponent globalState={this._globalState}/>
-                </div>   
-            )
+                </div>
+            );
         }
 
         return (
-            <div id="pg-root">              
+            <div id="pg-root">
                 <HeaderComponent globalState={this._globalState}/>
                 <div ref={this.splitRef} id="pg-split">
-                    <MonacoComponent globalState={this._globalState} className="pg-split-part" refObject={this.monacoRef}/>    
+                    <MonacoComponent globalState={this._globalState} className="pg-split-part" refObject={this.monacoRef}/>
                     <div ref={this.renderingRef} className="pg-split-part">
                         <RenderingComponent globalState={this._globalState}/>
                     </div>
@@ -147,18 +147,18 @@ export class Playground extends React.Component<IPlaygroundProps, {errorMessage:
                     <HamburgerMenuComponent globalState={this._globalState}/>
                 }
                 <ExamplesComponent globalState={this._globalState}/>
-                <FooterComponent globalState={this._globalState}/>   
-                <QRCodeComponent globalState={this._globalState}/>   
-                <ErrorDisplayComponent globalState={this._globalState}/>            
+                <FooterComponent globalState={this._globalState}/>
+                <QRCodeComponent globalState={this._globalState}/>
+                <ErrorDisplayComponent globalState={this._globalState}/>
                 <WaitRingComponent globalState={this._globalState}/>
                 <MetadataComponent globalState={this._globalState}/>
-            </div>   
-        )
+            </div>
+        );
     }
 
     public static Show(hostElement: HTMLElement, mode: RuntimeMode) {
         const playground = React.createElement(Playground, {runtimeMode: mode});
-        
+
         ReactDOM.render(playground, hostElement);
     }
 }

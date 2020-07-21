@@ -1,5 +1,5 @@
-import { WebXRSessionManager } from './webXRSessionManager';
-import { IDisposable } from '../scene';
+import { WebXRSessionManager } from "./webXRSessionManager";
+import { IDisposable } from "../scene";
 
 /**
  * Defining the interface required for a (webxr) feature
@@ -68,7 +68,7 @@ export class WebXRFeatureName {
 /**
  * Defining the constructor of a feature. Used to register the modules.
  */
-export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => IWebXRFeature);
+export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => () => IWebXRFeature;
 
 /**
  * The WebXR features manager is responsible of enabling or disabling features required for the current XR session.
@@ -82,15 +82,15 @@ export class WebXRFeaturesManager implements IDisposable {
             stable: number;
             latest: number;
             [version: number]: WebXRFeatureConstructor;
-        }
+        };
     } = {};
 
     private _features: {
         [name: string]: {
-            featureImplementation: IWebXRFeature,
-            version: number,
-            enabled: boolean
-        }
+            featureImplementation: IWebXRFeature;
+            version: number;
+            enabled: boolean;
+        };
     } = {};
 
     /**
@@ -150,11 +150,11 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param options optional options provided to the module.
      * @returns a function that, when called, will return a new instance of this feature
      */
-    public static ConstructFeature(featureName: string, version: number = 1, xrSessionManager: WebXRSessionManager, options?: any): (() => IWebXRFeature) {
+    public static ConstructFeature(featureName: string, version: number = 1, xrSessionManager: WebXRSessionManager, options?: any): () => IWebXRFeature {
         const constructorFunction = this._AvailableFeatures[featureName][version];
         if (!constructorFunction) {
             // throw an error? return nothing?
-            throw new Error('feature not found');
+            throw new Error("feature not found");
         }
 
         return constructorFunction(xrSessionManager, options);
@@ -226,7 +226,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @returns true if disable was successful
      */
     public disableFeature(featureName: string | { Name: string }): boolean {
-        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+        const name = typeof featureName === "string" ? featureName : featureName.Name;
         const feature = this._features[name];
         if (feature && feature.enabled) {
             feature.enabled = false;
@@ -257,16 +257,16 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param attachIfPossible if set to true (default) the feature will be automatically attached, if it is currently possible
      * @returns a new constructed feature or throws an error if feature not found.
      */
-    public enableFeature(featureName: string | { Name: string }, version: number | string = 'latest', moduleOptions: any = {}, attachIfPossible: boolean = true): IWebXRFeature {
-        const name = typeof featureName === 'string' ? featureName : featureName.Name;
+    public enableFeature(featureName: string | { Name: string }, version: number | string = "latest", moduleOptions: any = {}, attachIfPossible: boolean = true): IWebXRFeature {
+        const name = typeof featureName === "string" ? featureName : featureName.Name;
         let versionToLoad = 0;
-        if (typeof version === 'string') {
+        if (typeof version === "string") {
             if (!version) {
                 throw new Error(`Error in provided version - ${name} (${version})`);
             }
-            if (version === 'stable') {
+            if (version === "stable") {
                 versionToLoad = WebXRFeaturesManager.GetStableVersionOfFeature(name);
-            } else if (version === 'latest') {
+            } else if (version === "latest") {
                 versionToLoad = WebXRFeaturesManager.GetLatestVersionOfFeature(name);
             } else {
                 // try loading the number the string represents
@@ -294,7 +294,7 @@ export class WebXRFeaturesManager implements IDisposable {
         this._features[name] = {
             featureImplementation: constructFunction(),
             enabled: true,
-            version: versionToLoad
+            version: versionToLoad,
         };
 
         if (attachIfPossible) {
