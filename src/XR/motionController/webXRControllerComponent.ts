@@ -1,4 +1,4 @@
-import { IMinimalMotionControllerObject, MotionControllerComponentType } from "./webXRAbstractMotionController";
+import { IMinimalMotionControllerObject, MotionControllerComponentType } from './webXRAbstractMotionController';
 import { Observable } from '../../Misc/observable';
 import { IDisposable } from '../../scene';
 
@@ -57,7 +57,7 @@ export interface IWebXRMotionControllerComponentChanges {
 export class WebXRControllerComponent implements IDisposable {
     private _axes: IWebXRMotionControllerAxesValue = {
         x: 0,
-        y: 0
+        y: 0,
     };
     private _changes: IWebXRMotionControllerComponentChanges = {};
     private _currentValue: number = 0;
@@ -68,29 +68,29 @@ export class WebXRControllerComponent implements IDisposable {
     /**
      * button component type
      */
-    public static BUTTON_TYPE: MotionControllerComponentType = "button";
+    public static BUTTON_TYPE: MotionControllerComponentType = 'button';
     /**
      * squeeze component type
      */
-    public static SQUEEZE_TYPE: MotionControllerComponentType = "squeeze";
+    public static SQUEEZE_TYPE: MotionControllerComponentType = 'squeeze';
     /**
      * Thumbstick component type
      */
-    public static THUMBSTICK_TYPE: MotionControllerComponentType = "thumbstick";
+    public static THUMBSTICK_TYPE: MotionControllerComponentType = 'thumbstick';
     /**
      * Touchpad component type
      */
-    public static TOUCHPAD_TYPE: MotionControllerComponentType = "touchpad";
+    public static TOUCHPAD_TYPE: MotionControllerComponentType = 'touchpad';
     /**
      * trigger component type
      */
-    public static TRIGGER_TYPE: MotionControllerComponentType = "trigger";
+    public static TRIGGER_TYPE: MotionControllerComponentType = 'trigger';
 
     /**
      * If axes are available for this component (like a touchpad or thumbstick) the observers will be notified when
      * the axes data changes
      */
-    public onAxisValueChangedObservable: Observable<{ x: number, y: number }> = new Observable();
+    public onAxisValueChangedObservable: Observable<{ x: number; y: number }> = new Observable();
     /**
      * Observers registered here will be triggered when the state of a button changes
      * State change is either pressed / touched / value
@@ -116,8 +116,8 @@ export class WebXRControllerComponent implements IDisposable {
          */
         public type: MotionControllerComponentType,
         private _buttonIndex: number = -1,
-        private _axesIndices: number[] = []) {
-    }
+        private _axesIndices: number[] = []
+    ) {}
 
     /**
      * The current axes data. If this component has no axes it will still return an object { x: 0, y: 0 }
@@ -204,7 +204,7 @@ export class WebXRControllerComponent implements IDisposable {
             if (this._currentValue !== button.value) {
                 this.changes.value = {
                     current: button.value,
-                    previous: this._currentValue
+                    previous: this._currentValue,
                 };
                 buttonUpdated = true;
                 this._currentValue = button.value;
@@ -212,7 +212,7 @@ export class WebXRControllerComponent implements IDisposable {
             if (this._touched !== button.touched) {
                 this.changes.touched = {
                     current: button.touched,
-                    previous: this._touched
+                    previous: this._touched,
                 };
                 buttonUpdated = true;
                 this._touched = button.touched;
@@ -220,7 +220,7 @@ export class WebXRControllerComponent implements IDisposable {
             if (this._pressed !== button.pressed) {
                 this.changes.pressed = {
                     current: button.pressed,
-                    previous: this._pressed
+                    previous: this._pressed,
                 };
                 buttonUpdated = true;
                 this._pressed = button.pressed;
@@ -232,12 +232,12 @@ export class WebXRControllerComponent implements IDisposable {
                 this.changes.axes = {
                     current: {
                         x: nativeController.axes[this._axesIndices[0]],
-                        y: this._axes.y
+                        y: this._axes.y,
                     },
                     previous: {
                         x: this._axes.x,
-                        y: this._axes.y
-                    }
+                        y: this._axes.y,
+                    },
                 };
                 this._axes.x = nativeController.axes[this._axesIndices[0]];
                 axesUpdate = true;
@@ -250,12 +250,12 @@ export class WebXRControllerComponent implements IDisposable {
                     this.changes.axes = {
                         current: {
                             x: this._axes.x,
-                            y: nativeController.axes[this._axesIndices[1]]
+                            y: nativeController.axes[this._axesIndices[1]],
                         },
                         previous: {
                             x: this._axes.x,
-                            y: this._axes.y
-                        }
+                            y: this._axes.y,
+                        },
                     };
                 }
                 this._axes.y = nativeController.axes[this._axesIndices[1]];

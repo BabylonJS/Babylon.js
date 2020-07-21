@@ -1,9 +1,9 @@
-import { Vector3, Matrix, Quaternion } from "../Maths/math.vector";
-import { Scene } from "../scene";
-import { Camera } from "../Cameras/camera";
-import { FreeCamera } from "../Cameras/freeCamera";
-import { TargetCamera } from "../Cameras/targetCamera";
-import { WebXRSessionManager } from "./webXRSessionManager";
+import { Vector3, Matrix, Quaternion } from '../Maths/math.vector';
+import { Scene } from '../scene';
+import { Camera } from '../Cameras/camera';
+import { FreeCamera } from '../Cameras/freeCamera';
+import { TargetCamera } from '../Cameras/targetCamera';
+import { WebXRSessionManager } from './webXRSessionManager';
 import { Viewport } from '../Maths/math.viewport';
 
 /**
@@ -44,18 +44,21 @@ export class WebXRCamera extends FreeCamera {
             this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
             // first frame - camera's y position should be 0 for the correct offset
             this._firstFrame = this.compensateOnFirstFrame;
-
         });
 
         // Check transformation changes on each frame. Callback is added to be first so that the transformation will be
         // applied to the rest of the elements using the referenceSpace object
-        this._xrSessionManager.onXRFrameObservable.add((frame) => {
-            if (this._firstFrame) {
+        this._xrSessionManager.onXRFrameObservable.add(
+            (frame) => {
+                if (this._firstFrame) {
+                    this._updateFromXRSession();
+                }
+                this._updateReferenceSpace();
                 this._updateFromXRSession();
-            }
-            this._updateReferenceSpace();
-            this._updateFromXRSession();
-        }, undefined, true);
+            },
+            undefined,
+            true
+        );
     }
 
     /**
@@ -108,7 +111,7 @@ export class WebXRCamera extends FreeCamera {
      * @returns the class name
      */
     public getClassName(): string {
-        return "WebXRCamera";
+        return 'WebXRCamera';
     }
 
     private _rotate180 = new Quaternion(0, 1, 0, 0);
@@ -141,8 +144,7 @@ export class WebXRCamera extends FreeCamera {
                 this.position.y += this._referencedPosition.y;
                 // avoid using the head rotation on the first frame.
                 this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
-            }
-            else {
+            } else {
                 // update position and rotation as reference
                 this.rotationQuaternion.copyFrom(this._referenceQuaternion);
                 this.position.copyFrom(this._referencedPosition);
@@ -201,7 +203,7 @@ export class WebXRCamera extends FreeCamera {
 
     private _updateNumberOfRigCameras(viewCount = 1) {
         while (this.rigCameras.length < viewCount) {
-            var newCamera = new TargetCamera("XR-RigCamera: " + this.rigCameras.length, Vector3.Zero(), this.getScene());
+            var newCamera = new TargetCamera('XR-RigCamera: ' + this.rigCameras.length, Vector3.Zero(), this.getScene());
             newCamera.minZ = 0.1;
             newCamera.rotationQuaternion = new Quaternion();
             newCamera.updateUpVectorFromRotation = true;
@@ -255,9 +257,7 @@ export class WebXRCamera extends FreeCamera {
         if (ignoreHeight) {
             this._xrInvPositionCache.y = 0;
         }
-        const transform = new XRRigidTransform(
-            { x: this._xrInvPositionCache.x, y: this._xrInvPositionCache.y, z: this._xrInvPositionCache.z },
-            { x: this._xrInvQuaternionCache.x, y: this._xrInvQuaternionCache.y, z: this._xrInvQuaternionCache.z, w: this._xrInvQuaternionCache.w });
+        const transform = new XRRigidTransform({ x: this._xrInvPositionCache.x, y: this._xrInvPositionCache.y, z: this._xrInvPositionCache.z }, { x: this._xrInvQuaternionCache.x, y: this._xrInvQuaternionCache.y, z: this._xrInvQuaternionCache.z, w: this._xrInvQuaternionCache.w });
         // Update offset reference to use a new originOffset with the teleported
         // player position and orientation.
         // This new offset needs to be applied to the base ref space.
@@ -276,8 +276,7 @@ export class WebXRCamera extends FreeCamera {
             }
             pos.negateInPlace();
 
-            const transform2 = new XRRigidTransform(
-                {  x: pos.x, y: pos.y, z: pos.z  });
+            const transform2 = new XRRigidTransform({ x: pos.x, y: pos.y, z: pos.z });
             // Update offset reference to use a new originOffset with the teleported
             // player position and orientation.
             // This new offset needs to be applied to the base ref space.

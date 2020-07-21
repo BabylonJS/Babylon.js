@@ -1,9 +1,4 @@
-import {
-    WebXRAbstractMotionController,
-    IMinimalMotionControllerObject,
-    MotionControllerHandedness,
-    IMotionControllerLayoutMap
-} from "./webXRAbstractMotionController";
+import { WebXRAbstractMotionController, IMinimalMotionControllerObject, MotionControllerHandedness, IMotionControllerLayoutMap } from './webXRAbstractMotionController';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Scene } from '../../scene';
 import { Mesh } from '../../Meshes/mesh';
@@ -16,7 +11,7 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
     /**
      * Static version of the profile id of this controller
      */
-    public static ProfileId = "generic-trigger";
+    public static ProfileId = 'generic-trigger';
 
     public profileId = WebXRGenericTriggerMotionController.ProfileId;
 
@@ -24,10 +19,10 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
         super(scene, GenericTriggerLayout[handedness], gamepadObject, handedness);
     }
 
-    protected _getFilenameAndPath(): { filename: string; path: string; } {
+    protected _getFilenameAndPath(): { filename: string; path: string } {
         return {
-            filename: "generic.babylon",
-            path: "https://controllers.babylonjs.com/generic/"
+            filename: 'generic.babylon',
+            path: 'https://controllers.babylonjs.com/generic/',
         };
     }
 
@@ -40,7 +35,7 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
     }
 
     protected _setRootMesh(meshes: AbstractMesh[]): void {
-        this.rootMesh = new Mesh(this.profileId + " " + this.handedness, this.scene);
+        this.rootMesh = new Mesh(this.profileId + ' ' + this.handedness, this.scene);
 
         meshes.forEach((mesh) => {
             mesh.isPickable = false;
@@ -59,52 +54,52 @@ export class WebXRGenericTriggerMotionController extends WebXRAbstractMotionCont
 
 // https://github.com/immersive-web/webxr-input-profiles/blob/master/packages/registry/profiles/generic/generic-trigger-touchpad-thumbstick.json
 const GenericTriggerLayout: IMotionControllerLayoutMap = {
-    "left": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": {
-                "type": "trigger",
-                "gamepadIndices": {
-                    "button": 0
+    left: {
+        selectComponentId: 'xr-standard-trigger',
+        components: {
+            'xr-standard-trigger': {
+                type: 'trigger',
+                gamepadIndices: {
+                    button: 0,
                 },
-                "rootNodeName": "xr_standard_trigger",
-                "visualResponses": {}
-            }
+                rootNodeName: 'xr_standard_trigger',
+                visualResponses: {},
+            },
         },
-        "gamepadMapping": "xr-standard",
-        "rootNodeName": "generic-trigger-left",
-        "assetPath": "left.glb"
+        gamepadMapping: 'xr-standard',
+        rootNodeName: 'generic-trigger-left',
+        assetPath: 'left.glb',
     },
-    "right": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": {
-                "type": "trigger",
-                "gamepadIndices": {
-                    "button": 0
+    right: {
+        selectComponentId: 'xr-standard-trigger',
+        components: {
+            'xr-standard-trigger': {
+                type: 'trigger',
+                gamepadIndices: {
+                    button: 0,
                 },
-                "rootNodeName": "xr_standard_trigger",
-                "visualResponses": {}
-            }
+                rootNodeName: 'xr_standard_trigger',
+                visualResponses: {},
+            },
         },
-        "gamepadMapping": "xr-standard",
-        "rootNodeName": "generic-trigger-right",
-        "assetPath": "right.glb"
+        gamepadMapping: 'xr-standard',
+        rootNodeName: 'generic-trigger-right',
+        assetPath: 'right.glb',
     },
-    "none": {
-        "selectComponentId": "xr-standard-trigger",
-        "components": {
-            "xr-standard-trigger": {
-                "type": "trigger",
-                "gamepadIndices": {
-                    "button": 0
+    none: {
+        selectComponentId: 'xr-standard-trigger',
+        components: {
+            'xr-standard-trigger': {
+                type: 'trigger',
+                gamepadIndices: {
+                    button: 0,
                 },
-                "rootNodeName": "xr_standard_trigger",
-                "visualResponses": {}
-            }
+                rootNodeName: 'xr_standard_trigger',
+                visualResponses: {},
+            },
         },
-        "gamepadMapping": "xr-standard",
-        "rootNodeName": "generic-trigger-none",
-        "assetPath": "none.glb"
-    }
+        gamepadMapping: 'xr-standard',
+        rootNodeName: 'generic-trigger-none',
+        assetPath: 'none.glb',
+    },
 };

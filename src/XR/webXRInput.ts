@@ -1,6 +1,6 @@
-import { Nullable } from "../types";
-import { Observer, Observable } from "../Misc/observable";
-import { IDisposable } from "../scene";
+import { Nullable } from '../types';
+import { Observer, Observable } from '../Misc/observable';
+import { IDisposable } from '../scene';
 import { WebXRInputSource, IWebXRControllerOptions } from './webXRInputSource';
 import { WebXRSessionManager } from './webXRSessionManager';
 import { WebXRCamera } from './webXRCamera';
@@ -83,11 +83,16 @@ export class WebXRInput implements IDisposable {
     ) {
         // Remove controllers when exiting XR
         this._sessionEndedObserver = this.xrSessionManager.onXRSessionEnded.add(() => {
-            this._addAndRemoveControllers([], this.controllers.map((c) => { return c.inputSource; }));
+            this._addAndRemoveControllers(
+                [],
+                this.controllers.map((c) => {
+                    return c.inputSource;
+                })
+            );
         });
 
         this._sessionInitObserver = this.xrSessionManager.onXRSessionInit.add((session) => {
-            session.addEventListener("inputsourceschange", this._onInputSourcesChange);
+            session.addEventListener('inputsourceschange', this._onInputSourcesChange);
         });
 
         this._frameObserver = this.xrSessionManager.onXRFrameObservable.add((frame) => {
@@ -112,18 +117,20 @@ export class WebXRInput implements IDisposable {
 
     private _onInputSourcesChange = (event: XRInputSourceChangeEvent) => {
         this._addAndRemoveControllers(event.added, event.removed);
-    }
+    };
 
     private _addAndRemoveControllers(addInputs: Array<XRInputSource>, removeInputs: Array<XRInputSource>) {
         // Add controllers if they don't already exist
-        let sources = this.controllers.map((c) => { return c.inputSource; });
+        let sources = this.controllers.map((c) => {
+            return c.inputSource;
+        });
         for (let input of addInputs) {
             if (sources.indexOf(input) === -1) {
                 let controller = new WebXRInputSource(this.xrSessionManager.scene, input, {
                     ...(this.options.controllerOptions || {}),
                     forceControllerProfile: this.options.forceInputProfile,
                     doNotLoadControllerMesh: this.options.doNotLoadControllerMeshes,
-                    disableMotionControllerAnimation: this.options.disableControllerAnimation
+                    disableMotionControllerAnimation: this.options.disableControllerAnimation,
                 });
                 this.controllers.push(controller);
                 this.onControllerAddedObservable.notifyObservers(controller);
@@ -145,7 +152,6 @@ export class WebXRInput implements IDisposable {
             this.onControllerRemovedObservable.notifyObservers(c);
             c.dispose();
         });
-
     }
 
     /**

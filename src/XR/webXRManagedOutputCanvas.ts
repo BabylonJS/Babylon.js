@@ -1,6 +1,6 @@
-import { Nullable } from "../types";
+import { Nullable } from '../types';
 import { ThinEngine } from '../Engines/thinEngine';
-import { WebXRRenderTarget } from "./webXRTypes";
+import { WebXRRenderTarget } from './webXRTypes';
 import { WebXRSessionManager } from './webXRSessionManager';
 import { Observable } from '../Misc/observable';
 
@@ -34,10 +34,10 @@ export class WebXRManagedOutputCanvasOptions {
             stencil: false,
             alpha: true,
             multiview: false,
-            framebufferScaleFactor: 1
+            framebufferScaleFactor: 1,
         };
 
-        defaults.newCanvasCssStyle = "position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;";
+        defaults.newCanvasCssStyle = 'position:absolute; bottom:0px;right:0px;z-index:10;width:90%;height:100%;background-color: #000000;';
 
         return defaults;
     }
@@ -49,8 +49,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     private _canvas: Nullable<HTMLCanvasElement> = null;
     private _engine: ThinEngine;
     private _originalCanvasSize: {
-        width: number,
-        height: number
+        width: number;
+        height: number;
     };
 
     /**
@@ -76,7 +76,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         this._engine = _xrSessionManager.scene.getEngine();
         if (!_options.canvasElement) {
             const canvas = document.createElement('canvas');
-            canvas.style.cssText = this._options.newCanvasCssStyle || "position:absolute; bottom:0px;right:0px;";
+            canvas.style.cssText = this._options.newCanvasCssStyle || 'position:absolute; bottom:0px;right:0px;';
             this._setManagedOutputCanvas(canvas);
         } else {
             this._setManagedOutputCanvas(_options.canvasElement);
@@ -134,7 +134,6 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
                 this._setCanvasSize(true, layer);
             });
         }
-
     }
 
     private _removeCanvas() {
@@ -177,7 +176,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         } else {
             this._originalCanvasSize = {
                 width: canvas.offsetWidth,
-                height: canvas.offsetHeight
+                height: canvas.offsetHeight,
             };
             this._canvas = canvas;
             this.canvasContext = <any>this._canvas.getContext('webgl2');

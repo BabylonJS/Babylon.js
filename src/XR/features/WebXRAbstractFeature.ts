@@ -24,8 +24,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * Construct a new (abstract) WebXR feature
      * @param _xrSessionManager the xr session manager for this feature
      */
-    constructor(protected _xrSessionManager: WebXRSessionManager) {
-    }
+    constructor(protected _xrSessionManager: WebXRSessionManager) {}
 
     /**
      * Is this feature attached
@@ -89,7 +88,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     protected _addNewAttachObserver<T>(observable: Observable<T>, callback: (eventData: T, eventState: EventState) => void) {
         this._removeOnDetach.push({
             observable,
-            observer: observable.add(callback)
+            observer: observable.add(callback),
         });
     }
 

@@ -1,5 +1,5 @@
-import { Nullable } from "../types";
-import { IDisposable } from "../scene";
+import { Nullable } from '../types';
+import { IDisposable } from '../scene';
 
 /**
  * States of the webXR experience
@@ -20,7 +20,7 @@ export enum WebXRState {
     /**
      * Not entered XR mode
      */
-    NOT_IN_XR
+    NOT_IN_XR,
 }
 
 /**
@@ -42,5 +42,5 @@ export interface WebXRRenderTarget extends IDisposable {
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    initializeXRLayerAsync(xrSession: XRSession) : Promise<XRWebGLLayer>;
+    initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
 }

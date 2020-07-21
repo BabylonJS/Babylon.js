@@ -38,37 +38,37 @@ export class WebXRFeatureName {
     /**
      * The name of the anchor system feature
      */
-    public static ANCHOR_SYSTEM = "xr-anchor-system";
+    public static ANCHOR_SYSTEM = 'xr-anchor-system';
     /**
      * The name of the background remover feature
      */
-    public static BACKGROUND_REMOVER = "xr-background-remover";
+    public static BACKGROUND_REMOVER = 'xr-background-remover';
     /**
      * The name of the hit test feature
      */
-    public static HIT_TEST = "xr-hit-test";
+    public static HIT_TEST = 'xr-hit-test';
     /**
      * physics impostors for xr controllers feature
      */
-    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
+    public static PHYSICS_CONTROLLERS = 'xr-physics-controller';
     /**
      * The name of the plane detection feature
      */
-    public static PLANE_DETECTION = "xr-plane-detection";
+    public static PLANE_DETECTION = 'xr-plane-detection';
     /**
      * The name of the pointer selection feature
      */
-    public static POINTER_SELECTION = "xr-controller-pointer-selection";
+    public static POINTER_SELECTION = 'xr-controller-pointer-selection';
     /**
      * The name of the teleportation feature
      */
-    public static TELEPORTATION = "xr-controller-teleportation";
+    public static TELEPORTATION = 'xr-controller-teleportation';
 }
 
 /**
  * Defining the constructor of a feature. Used to register the modules.
  */
-export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => (() => IWebXRFeature);
+export type WebXRFeatureConstructor = (xrSessionManager: WebXRSessionManager, options?: any) => () => IWebXRFeature;
 
 /**
  * The WebXR features manager is responsible of enabling or disabling features required for the current XR session.
@@ -82,15 +82,15 @@ export class WebXRFeaturesManager implements IDisposable {
             stable: number;
             latest: number;
             [version: number]: WebXRFeatureConstructor;
-        }
+        };
     } = {};
 
     private _features: {
         [name: string]: {
-            featureImplementation: IWebXRFeature,
-            version: number,
-            enabled: boolean
-        }
+            featureImplementation: IWebXRFeature;
+            version: number;
+            enabled: boolean;
+        };
     } = {};
 
     /**
@@ -150,7 +150,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param options optional options provided to the module.
      * @returns a function that, when called, will return a new instance of this feature
      */
-    public static ConstructFeature(featureName: string, version: number = 1, xrSessionManager: WebXRSessionManager, options?: any): (() => IWebXRFeature) {
+    public static ConstructFeature(featureName: string, version: number = 1, xrSessionManager: WebXRSessionManager, options?: any): () => IWebXRFeature {
         const constructorFunction = this._AvailableFeatures[featureName][version];
         if (!constructorFunction) {
             // throw an error? return nothing?
@@ -294,7 +294,7 @@ export class WebXRFeaturesManager implements IDisposable {
         this._features[name] = {
             featureImplementation: constructFunction(),
             enabled: true,
-            version: versionToLoad
+            version: versionToLoad,
         };
 
         if (attachIfPossible) {

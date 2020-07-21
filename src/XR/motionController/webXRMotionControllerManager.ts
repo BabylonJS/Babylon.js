@@ -1,6 +1,4 @@
-import {
-    WebXRAbstractMotionController, IMotionControllerProfile,
-} from './webXRAbstractMotionController';
+import { WebXRAbstractMotionController, IMotionControllerProfile } from './webXRAbstractMotionController';
 import { WebXRGenericTriggerMotionController } from './webXRGenericMotionController';
 import { Scene } from '../../scene';
 import { Tools } from '../../Misc/tools';
@@ -29,7 +27,7 @@ export class WebXRMotionControllerManager {
     /**
      * The base URL of the online controller repository. Can be changed at any time.
      */
-    public static BaseRepositoryUrl = "https://immersive-web.github.io/webxr-input-profiles/packages/viewer/dist";
+    public static BaseRepositoryUrl = 'https://immersive-web.github.io/webxr-input-profiles/packages/viewer/dist';
     /**
      * Which repository gets priority - local or online
      */
@@ -52,18 +50,18 @@ export class WebXRMotionControllerManager {
      * This function is called automatically when this file is imported.
      */
     public static DefaultFallbacks() {
-        this.RegisterFallbacksForProfileId("google-daydream", ["generic-touchpad"]);
-        this.RegisterFallbacksForProfileId("htc-vive-focus", ["generic-trigger-touchpad"]);
-        this.RegisterFallbacksForProfileId("htc-vive", ["generic-trigger-squeeze-touchpad"]);
-        this.RegisterFallbacksForProfileId("magicleap-one", ["generic-trigger-squeeze-touchpad"]);
-        this.RegisterFallbacksForProfileId("windows-mixed-reality", ["generic-trigger-squeeze-touchpad-thumbstick"]);
-        this.RegisterFallbacksForProfileId("microsoft-mixed-reality", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
-        this.RegisterFallbacksForProfileId("oculus-go", ["generic-trigger-touchpad"]);
-        this.RegisterFallbacksForProfileId("oculus-touch-v2", ["oculus-touch", "generic-trigger-squeeze-thumbstick"]);
-        this.RegisterFallbacksForProfileId("oculus-touch", ["generic-trigger-squeeze-thumbstick"]);
-        this.RegisterFallbacksForProfileId("samsung-gearvr", ["windows-mixed-reality", "generic-trigger-squeeze-touchpad-thumbstick"]);
-        this.RegisterFallbacksForProfileId("samsung-odyssey", ["generic-touchpad"]);
-        this.RegisterFallbacksForProfileId("valve-index", ["generic-trigger-squeeze-touchpad-thumbstick"]);
+        this.RegisterFallbacksForProfileId('google-daydream', ['generic-touchpad']);
+        this.RegisterFallbacksForProfileId('htc-vive-focus', ['generic-trigger-touchpad']);
+        this.RegisterFallbacksForProfileId('htc-vive', ['generic-trigger-squeeze-touchpad']);
+        this.RegisterFallbacksForProfileId('magicleap-one', ['generic-trigger-squeeze-touchpad']);
+        this.RegisterFallbacksForProfileId('windows-mixed-reality', ['generic-trigger-squeeze-touchpad-thumbstick']);
+        this.RegisterFallbacksForProfileId('microsoft-mixed-reality', ['windows-mixed-reality', 'generic-trigger-squeeze-touchpad-thumbstick']);
+        this.RegisterFallbacksForProfileId('oculus-go', ['generic-trigger-touchpad']);
+        this.RegisterFallbacksForProfileId('oculus-touch-v2', ['oculus-touch', 'generic-trigger-squeeze-thumbstick']);
+        this.RegisterFallbacksForProfileId('oculus-touch', ['generic-trigger-squeeze-thumbstick']);
+        this.RegisterFallbacksForProfileId('samsung-gearvr', ['windows-mixed-reality', 'generic-trigger-squeeze-touchpad-thumbstick']);
+        this.RegisterFallbacksForProfileId('samsung-odyssey', ['generic-touchpad']);
+        this.RegisterFallbacksForProfileId('valve-index', ['generic-trigger-squeeze-touchpad-thumbstick']);
     }
 
     /**
@@ -108,21 +106,21 @@ export class WebXRMotionControllerManager {
         // legacy support - try using the gamepad id
         if (xrInput.gamepad && xrInput.gamepad.id) {
             switch (xrInput.gamepad.id) {
-                case (xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined):
+                case xrInput.gamepad.id.match(/oculus touch/gi) ? xrInput.gamepad.id : undefined:
                     // oculus in gamepad id
-                    profileArray.push("oculus-touch-v2");
+                    profileArray.push('oculus-touch-v2');
                     break;
             }
         }
 
         // make sure microsoft/windows mixed reality works correctly
-        const windowsMRIdx = profileArray.indexOf("windows-mixed-reality");
+        const windowsMRIdx = profileArray.indexOf('windows-mixed-reality');
         if (windowsMRIdx !== -1) {
-            profileArray.splice(windowsMRIdx, 0, "microsoft-mixed-reality");
+            profileArray.splice(windowsMRIdx, 0, 'microsoft-mixed-reality');
         }
 
         if (!profileArray.length) {
-            profileArray.push("generic-trigger");
+            profileArray.push('generic-trigger');
         }
 
         if (this.UseOnlineRepository) {
@@ -132,7 +130,6 @@ export class WebXRMotionControllerManager {
             return firstFunction.call(this, profileArray, xrInput, scene).catch(() => {
                 return secondFunction.call(this, profileArray, xrInput, scene);
             });
-
         } else {
             // use only available functions
             return this._LoadProfilesFromAvailableControllers(profileArray, xrInput, scene);
@@ -176,34 +173,38 @@ export class WebXRMotionControllerManager {
     }
 
     private static _LoadProfileFromRepository(profileArray: string[], xrInput: XRInputSource, scene: Scene): Promise<WebXRAbstractMotionController> {
-        return Promise.resolve().then(() => {
-            if (!this._ProfilesList) {
-                return this.UpdateProfilesList();
-            } else {
-                return this._ProfilesList;
-            }
-        }).then((profilesList: { [profile: string]: string }) => {
-            // load the right profile
-            for (let i = 0; i < profileArray.length; ++i) {
-                // defensive
-                if (!profileArray[i]) {
-                    continue;
+        return Promise.resolve()
+            .then(() => {
+                if (!this._ProfilesList) {
+                    return this.UpdateProfilesList();
+                } else {
+                    return this._ProfilesList;
                 }
-                if (profilesList[profileArray[i]]) {
-                    return profileArray[i];
+            })
+            .then((profilesList: { [profile: string]: string }) => {
+                // load the right profile
+                for (let i = 0; i < profileArray.length; ++i) {
+                    // defensive
+                    if (!profileArray[i]) {
+                        continue;
+                    }
+                    if (profilesList[profileArray[i]]) {
+                        return profileArray[i];
+                    }
                 }
-            }
 
-            throw new Error(`neither controller ${profileArray[0]} nor all fallbacks were found in the repository,`);
-        }).then((profileToLoad: string) => {
-            // load the profile
-            if (!this._ProfileLoadingPromises[profileToLoad]) {
-                this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then((data) => <IMotionControllerProfile>JSON.parse(data as string));
-            }
-            return this._ProfileLoadingPromises[profileToLoad];
-        }).then((profile: IMotionControllerProfile) => {
-            return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl);
-        });
+                throw new Error(`neither controller ${profileArray[0]} nor all fallbacks were found in the repository,`);
+            })
+            .then((profileToLoad: string) => {
+                // load the profile
+                if (!this._ProfileLoadingPromises[profileToLoad]) {
+                    this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then((data) => <IMotionControllerProfile>JSON.parse(data as string));
+                }
+                return this._ProfileLoadingPromises[profileToLoad];
+            })
+            .then((profile: IMotionControllerProfile) => {
+                return new WebXRProfiledMotionController(scene, xrInput, profile, this.BaseRepositoryUrl);
+            });
     }
 
     private static _LoadProfilesFromAvailableControllers(profileArray: string[], xrInput: XRInputSource, scene: Scene) {
@@ -228,7 +229,7 @@ export class WebXRMotionControllerManager {
 
 // register the generic profile(s) here so we will at least have them
 WebXRMotionControllerManager.RegisterController(WebXRGenericTriggerMotionController.ProfileId, (xrInput: XRInputSource, scene: Scene) => {
-    return new WebXRGenericTriggerMotionController(scene, <any>(xrInput.gamepad), xrInput.handedness);
+    return new WebXRGenericTriggerMotionController(scene, <any>xrInput.gamepad, xrInput.handedness);
 });
 
 // register fallbacks
