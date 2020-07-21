@@ -23,7 +23,7 @@ export class GlobalState {
     public getCompiledCode: () => Promise<string> = () => {
         return Promise.resolve(this.currentCode);
     }
-    public language = Utilities.ReadStringFromStore("language", "JS");;
+    public language = Utilities.ReadStringFromStore("language", "JS");
     public fpsElement: HTMLDivElement;
     public mobileDefaultMode = EditionMode.RenderingOnly;
 
@@ -40,17 +40,17 @@ export class GlobalState {
     public onSavedObservable = new Observable<void>();
     public onNewRequiredObservable = new Observable<void>();
     public onClearRequiredObservable = new Observable<void>();
-    public onSaveRequiredObservable = new Observable<void>();    
+    public onSaveRequiredObservable = new Observable<void>();
     public onLoadRequiredObservable = new Observable<string>();
-    public onErrorObservable = new Observable<Nullable<CompilationError>>();    
+    public onErrorObservable = new Observable<Nullable<CompilationError>>();
     public onMobileDefaultModeChangedObservable = new Observable<void>();
     public onDisplayWaitRingObservable = new Observable<boolean>();
-    public onDisplayMetadataObservable = new Observable<boolean>();    
-    public onMetadataUpdatedObservable = new Observable<void>();  
+    public onDisplayMetadataObservable = new Observable<boolean>();
+    public onMetadataUpdatedObservable = new Observable<void>();
     public onMetadataWindowHiddenObservable = new Observable<boolean>();
     public onDownloadRequiredObservable = new Observable<void>();
-    public onInspectorRequiredObservable = new Observable<void>();    
-    public onFormatCodeRequiredObservable = new Observable<void>();  
+    public onInspectorRequiredObservable = new Observable<void>();
+    public onFormatCodeRequiredObservable = new Observable<void>();
     public onFullcreenRequiredObservable = new Observable<void>();
     public onEditorFullcreenRequiredObservable = new Observable<void>();
     public onMinimapChangedObservable = new Observable<boolean>();
