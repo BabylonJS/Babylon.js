@@ -199,7 +199,7 @@
 ### Post Processes
 
 - SSAO 2 is now using the brand new `PrePassRenderer` to avoid rendering the scene twice ([CraigFeldpsar](https://github.com/craigfeldspar)
-- Added Screen Space Curvature post process ([Popov72](https://github.com/Popov72) and [Sebavan](https://github.com/sebavan/))
+- Added Screen Space Curvature post process: [Doc](https://doc.babylonjs.com/how_to/how_to_use_postprocesses#screen-space-curvature) ([Popov72](https://github.com/Popov72) and [Sebavan](https://github.com/sebavan/))
 
 ## Bugs
 
