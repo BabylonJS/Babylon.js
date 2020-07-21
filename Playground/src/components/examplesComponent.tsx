@@ -80,6 +80,10 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
 
     private _onLoadPG(id: string) {
         this.props.globalState.onLoadRequiredObservable.notifyObservers(id);
+
+        if (window.innerWidth < this.props.globalState.MobileSizeTrigger) {
+            this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
+        }
     }
 
     public render() {
