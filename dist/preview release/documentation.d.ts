@@ -27970,6 +27970,8 @@ declare module BABYLON {
          */
         static _GetDefaultSideOrientation(orientation?: number): number;
         private _internalMeshDataInfo;
+        get computeBonesUsingShaders(): boolean;
+        set computeBonesUsingShaders(value: boolean);
         /**
          * An event triggered before rendering the mesh
          */
