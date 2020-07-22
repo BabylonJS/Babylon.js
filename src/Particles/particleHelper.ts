@@ -166,6 +166,10 @@ export class ParticleHelper {
      * @returns a promise that will resolve to the new particle system
      */
     public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve(this.CreateDefault(null));
+        }
+        
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
             request.addEventListener("readystatechange", () => {
