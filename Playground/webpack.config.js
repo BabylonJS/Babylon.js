@@ -11,7 +11,7 @@ var config = babylonWebpackConfig({
         globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)',
         filename: "babylon.playground.js",
         path: path.resolve(__dirname, "dist"),
-        publicPath: "./dist/",
+        publicPath: "/dist/",
         libraryTarget: 'umd',
         library: {
            root: ["PLAYGROUND"],

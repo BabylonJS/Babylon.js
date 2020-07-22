@@ -1,16 +1,16 @@
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 // import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
 // import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 
 import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/languageFeatures";
 
-import { GlobalState } from '../globalState';
-import { Utilities } from './utilities';
-import { CompilationError } from '../components/errorDisplayComponent';
+import { GlobalState } from "../globalState";
+import { Utilities } from "./utilities";
+import { CompilationError } from "../components/errorDisplayComponent";
 
-declare type IStandaloneCodeEditor = import('monaco-editor/esm/vs/editor/editor.api').editor.IStandaloneCodeEditor;
-declare type IStandaloneEditorConstructionOptions = import('monaco-editor/esm/vs/editor/editor.api').editor.IStandaloneEditorConstructionOptions;
+declare type IStandaloneCodeEditor = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneCodeEditor;
+declare type IStandaloneEditorConstructionOptions = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneEditorConstructionOptions;
 
 //declare var monaco: any;
 
@@ -20,18 +20,19 @@ export class MonacoManager {
     private _deprecatedCandidates: string[];
     private _hostElement: HTMLDivElement;
     private _templates: {
-        label: string, 
-        language: string,
-        kind: number, 
-        sortText: string, 
-        insertTextRules: number}[];
+        label: string;
+        language: string;
+        kind: number;
+        sortText: string;
+        insertTextRules: number;
+    }[];
 
     private _isDirty = false;
 
     public constructor(public globalState: GlobalState) {
-        window.addEventListener('beforeunload', (evt) => {
+        window.addEventListener("beforeunload", (evt) => {
             if (this._isDirty && Utilities.ReadBoolFromStore("safe-mode", false)) {
-                var message = 'Are you sure you want to leave. You have unsaved work.';
+                var message = "Are you sure you want to leave. You have unsaved work.";
                 evt.preventDefault();
                 evt.returnValue = message;
             }
@@ -44,7 +45,7 @@ export class MonacoManager {
             }
         });
 
-        globalState.onClearRequiredObservable.add(() => {            
+        globalState.onClearRequiredObservable.add(() => {
             if (Utilities.CheckSafeMode("Are you sure you want to remove all your code?")) {
                 this._editor?.setValue("");
                 location.hash = "";
@@ -52,23 +53,23 @@ export class MonacoManager {
             }
         });
 
-        globalState.onNavigateRequiredObservable.add(position => {
+        globalState.onNavigateRequiredObservable.add((position) => {
             this._editor?.revealPositionInCenter(position, monaco.editor.ScrollType.Smooth);
             this._editor?.setPosition(position);
         });
 
         globalState.onSavedObservable.add(() => {
             this._isDirty = false;
-        })
+        });
 
-        globalState.onCodeLoaded.add(code => {
+        globalState.onCodeLoaded.add((code) => {
             if (!code) {
                 this._setDefaultContent();
                 return;
             }
 
             if (this._editor) {
-                this._editor?.setValue(code);            
+                this._editor?.setValue(code);
                 this.globalState.onRunRequiredObservable.notifyObservers();
             } else {
                 this.globalState.currentCode = code;
@@ -76,20 +77,20 @@ export class MonacoManager {
         });
 
         globalState.onFormatCodeRequiredObservable.add(() => {
-            this._editor?.getAction('editor.action.formatDocument').run();
+            this._editor?.getAction("editor.action.formatDocument").run();
         });
 
-        globalState.onMinimapChangedObservable.add(value => {
+        globalState.onMinimapChangedObservable.add((value) => {
             this._editor?.updateOptions({
                 minimap: {
-                    enabled: value
-                }
+                    enabled: value,
+                },
             });
         });
 
-        globalState.onFontSizeChangedObservable.add(value => {
+        globalState.onFontSizeChangedObservable.add((value) => {
             this._editor?.updateOptions({
-                fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14"))
+                fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
             });
         });
 
@@ -103,16 +104,16 @@ export class MonacoManager {
 
         // Register a global observable for inspector to request code changes
         let pgConnect = {
-            onRequestCodeChangeObservable: new BABYLON.Observable()
-        }
+            onRequestCodeChangeObservable: new BABYLON.Observable(),
+        };
 
         pgConnect.onRequestCodeChangeObservable.add((options: any) => {
             let code = this._editor?.getValue() || "";
             code = code.replace(options.regex, options.replace);
 
             this._editor?.setValue(code);
-        });  
-        
+        });
+
         (window as any).Playground = pgConnect;
     }
 
@@ -121,7 +122,7 @@ export class MonacoManager {
         this._editor?.setValue(`// You have to create a function called createScene. This function must return a BABYLON.Scene object
     // You can reference the following variables: scene, canvas
     // You must at least define a camera
-                
+
     var createScene = function() {
         var scene = new BABYLON.Scene(engine);
         var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
@@ -130,14 +131,14 @@ export class MonacoManager {
         return scene;
     };
         `);
-        
+
         this.globalState.onRunRequiredObservable.notifyObservers();
 
         location.hash = "";
-        if (location.pathname.indexOf('pg/') !== -1) {
+        if (location.pathname.indexOf("pg/") !== -1) {
             // reload to create a new pg if in full-path playground mode.
-            window.location.pathname = '';
-        }        
+            window.location.pathname = "";
+        }
     }
 
     private _createEditor() {
@@ -153,22 +154,19 @@ export class MonacoManager {
             automaticLayout: true,
             scrollBeyondLastLine: false,
             readOnly: false,
-            theme: (Utilities.ReadStringFromStore("theme", "Light") === "Dark") ? "vs-dark" : "vs-light",
+            theme: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "vs-dark" : "vs-light",
             contextmenu: false,
             folding: true,
             showFoldingControls: "always",
             fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
             renderIndentGuides: true,
             minimap: {
-                enabled: Utilities.ReadBoolFromStore("minimap", true)
-            }
-        };      
+                enabled: Utilities.ReadBoolFromStore("minimap", true),
+            },
+        };
 
-        this._editor = monaco.editor.create(
-            this._hostElement,
-            editorOptions as any
-        );     
-        
+        this._editor = monaco.editor.create(this._hostElement, editorOptions as any);
+
         this._editor.onDidChangeModelContent(() => {
             let newCode = this._editor.getValue();
             if (this.globalState.currentCode !== newCode) {
@@ -204,9 +202,9 @@ export class MonacoManager {
         }
 
         libContent += await response.text();
-        
+
         this._createEditor();
-        
+
         // Definition worker
         this._setupDefinitionWorker(libContent);
 
@@ -224,20 +222,18 @@ export class MonacoManager {
 
         // enhance templates with extra properties
         for (const template of this._templates) {
-            template.kind = monaco.languages.CompletionItemKind.Snippet,
-            template.sortText = "!" + template.label; // make sure templates are on top of the completion window
+            (template.kind = monaco.languages.CompletionItemKind.Snippet), (template.sortText = "!" + template.label); // make sure templates are on top of the completion window
             template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
-        }        
-            
+        }
+
         this._hookMonacoCompletionProvider();
-        
+
         if (!this.globalState.loadingCodeInProgress) {
             this._setDefaultContent();
         }
     }
 
     private _setDefaultContent() {
-
         if (this.globalState.language === "JS") {
             this._editor.setValue(`var createScene = function () {
     // This creates a basic Babylon Scene object (non-mesh)
@@ -269,10 +265,9 @@ export class MonacoManager {
 
     return scene;
 
-};`
-                    );
+};`);
         } else {
-            this._editor.setValue(`class Playground { 
+            this._editor.setValue(`class Playground {
     public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
         // This creates a basic Babylon Scene object (non-mesh)
         var scene = new BABYLON.Scene(engine);
@@ -303,17 +298,15 @@ export class MonacoManager {
 
         return scene;
     }
-}`            
-                    );            
+}`);
         }
 
-
         this._isDirty = false;
-            
+
         this.globalState.onRunRequiredObservable.notifyObservers();
     }
-    
-    // Provide an adornment for BABYLON.ColorX types: color preview 
+
+    // Provide an adornment for BABYLON.ColorX types: color preview
     protected _setupMonacoColorProvider() {
         monaco.languages.registerColorProvider(this.globalState.language == "JS" ? "javascript" : "typescript", {
             provideColorPresentations: (model: any, colorInfo: any) => {
@@ -329,9 +322,11 @@ export class MonacoManager {
                     label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`;
                 }
 
-                return [{
-                    label: label
-                }];
+                return [
+                    {
+                        label: label,
+                    },
+                ];
             },
 
             provideDocumentColors: (model: any) => {
@@ -340,37 +335,37 @@ export class MonacoManager {
                 const regex = `BABYLON\\.Color(?:3|4)\\s*\\(${digitGroup},${digitGroup},${digitGroup}(?:,${digitGroup})?\\)\\n{0}`;
                 const matches = model.findMatches(regex, false, true, true, null, true);
 
-                const converter = (g: string) => g === undefined ? undefined : Number(g);
+                const converter = (g: string) => (g === undefined ? undefined : Number(g));
 
                 return matches.map((match: any) => ({
                     color: {
                         red: converter(match.matches![1])!,
                         green: converter(match.matches![2])!,
                         blue: converter(match.matches![3])!,
-                        alpha: converter(match.matches![4])!
+                        alpha: converter(match.matches![4])!,
                     },
                     range: {
                         startLineNumber: match.range.startLineNumber,
                         startColumn: match.range.startColumn + match.matches![0].indexOf("("),
                         endLineNumber: match.range.startLineNumber,
-                        endColumn: match.range.endColumn
-                    }
+                        endColumn: match.range.endColumn,
+                    },
                 }));
-            }
+            },
         });
     }
 
-    // Setup both JS and TS compilation pipelines to work with our scripts. 
+    // Setup both JS and TS compilation pipelines to work with our scripts.
     protected _setupMonacoCompilationPipeline(libContent: string) {
         var typescript = monaco.languages.typescript;
 
         if (this.globalState.language === "JS") {
             typescript.javascriptDefaults.setCompilerOptions({
                 noLib: false,
-                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                allowNonTsExtensions: true, // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
             });
 
-            typescript.javascriptDefaults.addExtraLib(libContent, 'babylon.d.ts');
+            typescript.javascriptDefaults.addExtraLib(libContent, "babylon.d.ts");
         } else {
             typescript.typescriptDefaults.setCompilerOptions({
                 module: typescript.ModuleKind.AMD,
@@ -384,22 +379,20 @@ export class MonacoManager {
                 noResolve: true,
                 suppressOutputPathCheck: true,
 
-                allowNonTsExtensions: true // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                allowNonTsExtensions: true, // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
             });
-            typescript.typescriptDefaults.addExtraLib(libContent, 'babylon.d.ts');
+            typescript.typescriptDefaults.addExtraLib(libContent, "babylon.d.ts");
         }
     }
 
     protected _setupDefinitionWorker(libContent: string) {
-        this._definitionWorker = new Worker('workers/definitionWorker.js');
-        this._definitionWorker.addEventListener('message', ({
-            data
-        }) => {
+        this._definitionWorker = new Worker("workers/definitionWorker.js");
+        this._definitionWorker.addEventListener("message", ({ data }) => {
             this._deprecatedCandidates = data.result;
             this._analyzeCodeAsync();
         });
         this._definitionWorker.postMessage({
-            code: libContent
+            code: libContent,
         });
     }
 
@@ -408,33 +401,36 @@ export class MonacoManager {
     // @see setupDefinitionWorker
     private async _analyzeCodeAsync() {
         // if the definition worker is very fast, this can be called out of context. @see setupDefinitionWorker
-        if (!this._editor)
+        if (!this._editor) {
             return;
+        }
 
         const model = this._editor.getModel();
-        if (!model)
+        if (!model) {
             return;
+        }
 
         const uri = model.uri;
 
         let worker = null;
-        if (this.globalState.language === "JS")
+        if (this.globalState.language === "JS") {
             worker = await monaco.languages.typescript.getJavaScriptWorker();
-        else
+        } else {
             worker = await monaco.languages.typescript.getTypeScriptWorker();
+        }
 
         const languageService = await worker(uri);
-        const source = '[deprecated members]';
+        const source = "[deprecated members]";
 
         monaco.editor.setModelMarkers(model, source, []);
         const markers: {
-            startLineNumber: number,
-            endLineNumber: number,
-            startColumn: number,
-            endColumn: number,
-            message: string,
-            severity: number,
-            source: string,
+            startLineNumber: number;
+            endLineNumber: number;
+            startColumn: number;
+            endColumn: number;
+            message: string;
+            severity: number;
+            source: string;
         }[] = [];
 
         for (const candidate of this._deprecatedCandidates) {
@@ -442,7 +438,7 @@ export class MonacoManager {
             for (const match of matches) {
                 const position = {
                     lineNumber: match.range.startLineNumber,
-                    column: match.range.startColumn
+                    column: match.range.startColumn,
                 };
                 const wordInfo = model.getWordAtPosition(position);
                 const offset = model.getOffsetAt(position);
@@ -452,8 +448,9 @@ export class MonacoManager {
                 }
 
                 // continue if we already found an issue here
-                if (markers.find(m => m.startLineNumber == position.lineNumber && m.startColumn == position.column))
+                if (markers.find((m) => m.startLineNumber == position.lineNumber && m.startColumn == position.column)) {
                     continue;
+                }
 
                 // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
                 // @see setupDefinitionWorker
@@ -480,26 +477,27 @@ export class MonacoManager {
     // So we need to be super fast.
     private async _hookMonacoCompletionProvider() {
         const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;
+        // tslint:disable-next-line:no-this-assignment
         const owner = this;
 
-        languageFeatures.SuggestAdapter.prototype.provideCompletionItems = async function(model: any, position: any, context: any, token: any) {
+        languageFeatures.SuggestAdapter.prototype.provideCompletionItems = async function (model: any, position: any, context: any, token: any) {
             // reuse 'this' to preserve context through call (using apply)
             const result = await oldProvideCompletionItems.apply(this, [model, position, context, token]);
 
-            if (!result || !result.suggestions)
+            if (!result || !result.suggestions) {
                 return result;
+            }
 
             const suggestions = result.suggestions.filter((item: any) => !item.label.startsWith("_"));
 
             for (const suggestion of suggestions) {
                 if (owner._deprecatedCandidates.includes(suggestion.label)) {
-
                     // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
                     // @see setupDefinitionWorker
                     const uri = suggestion.uri;
                     const worker = await this._worker(uri);
                     const model = monaco.editor.getModel(uri);
-                    const details = await worker.getCompletionEntryDetails(uri.toString(), model!.getOffsetAt(position), suggestion.label)
+                    const details = await worker.getCompletionEntryDetails(uri.toString(), model!.getOffsetAt(position), suggestion.label);
 
                     if (owner._isDeprecatedEntry(details)) {
                         suggestion.tags = [monaco.languages.CompletionItemTag.Deprecated];
@@ -509,10 +507,11 @@ export class MonacoManager {
 
             // add our own templates when invoked without context
             if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
-                let language = (owner.globalState.language === "JS" ? "javascript" : "typescript")
+                let language = owner.globalState.language === "JS" ? "javascript" : "typescript";
                 for (const template of owner._templates) {
-                    if (template.language && language !== template.language)
+                    if (template.language && language !== template.language) {
                         continue;
+                    }
 
                     suggestions.push(template);
                 }
@@ -523,26 +522,23 @@ export class MonacoManager {
 
             return {
                 suggestions: suggestions,
-                incomplete: incomplete
+                incomplete: incomplete,
             };
-        }
+        };
     }
 
     private _isDeprecatedEntry(details: any) {
-        return details &&
-            details.tags &&
-            details.tags.find(this._isDeprecatedTag);
+        return details && details.tags && details.tags.find(this._isDeprecatedTag);
     }
 
     private _isDeprecatedTag(tag: any) {
-        return tag &&
-            tag.name == "deprecated";
+        return tag && tag.name == "deprecated";
     }
 
     private async _getRunCode() {
-        if (this.globalState.language == "JS")
+        if (this.globalState.language == "JS") {
             return this._editor.getValue();
-        else {
+        } else {
             const model = this._editor.getModel()!;
             const uri = model.uri;
 
@@ -571,5 +567,5 @@ export class MonacoManager {
 
             return output + stub;
         }
-    };
+    }
 }
