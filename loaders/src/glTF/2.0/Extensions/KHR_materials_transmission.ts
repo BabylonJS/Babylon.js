@@ -48,11 +48,10 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {
-            console.log(extensionContext);
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            promises.push(this._loadTransparentPropertiesAsync(context, material, babylonMaterial, extension));
+            promises.push(this._loadTransparentPropertiesAsync(extensionContext, material, babylonMaterial, extension));
             return Promise.all(promises).then(() => { });
         });
     }
@@ -81,7 +80,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         }
 
         if (extension.transmissionTexture) {
-            return this._loader.loadTextureInfoAsync(context, extension.transmissionTexture)
+            return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
                     pbrMaterial.subSurface.useMaskFromThicknessTexture = true;

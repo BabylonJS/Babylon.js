@@ -437,6 +437,8 @@ export class Bone extends Node {
                 } else {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
                 }
+            } else {
+                Matrix.IdentityToRef(tmat);
             }
 
             tmat.setTranslationFromFloats(0, 0, 0);
@@ -482,9 +484,11 @@ export class Bone extends Node {
                 } else {
                     tmat.copyFrom(this._parent.getAbsoluteTransform());
                 }
+                tmat.invert();
+            } else {
+                Matrix.IdentityToRef(tmat);
             }
 
-            tmat.invert();
             Vector3.TransformCoordinatesToRef(position, tmat, vec);
             lm.setTranslationFromFloats(vec.x, vec.y, vec.z);
         }
