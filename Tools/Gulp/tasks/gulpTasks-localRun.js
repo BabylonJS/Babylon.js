@@ -29,7 +29,6 @@ gulp.task("webserver", function () {
             return [function (req, res, next) {
                 let referer = req.headers['referer'];
                 const baseUrl =  ((req.url.indexOf('dist/preview') !== -1) || req.url.indexOf('Tools') !== -1  || req.url.indexOf('temp/') !== -1);
-                console.log(baseUrl, referer, req.url)
                 if (!baseUrl && referer) {
                     referer = referer.toLowerCase();
                     if (referer.indexOf('/playground/') !== -1 && req.url.indexOf('/Playground/') === -1) {
