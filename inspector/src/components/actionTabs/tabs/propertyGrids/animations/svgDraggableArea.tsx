@@ -276,14 +276,13 @@ export class SvgDraggableArea extends React.Component<
       <>
         <svg
           style={{
-            width: 30,
+            width: 38,
             height: 364,
             position: 'absolute',
             zIndex: 1,
             pointerEvents: 'none',
-          }}
-        >
-          <rect x='0' y='0' width='30px' height='100%' fill='#ffffff1c'></rect>
+          }}>
+          <rect x='0' y='0' width='38px' height='100%' fill='#ffffff1c'></rect>
         </svg>
         <svg
           className='linear pannable'
@@ -299,8 +298,7 @@ export class SvgDraggableArea extends React.Component<
           onClick={(e) => this.focus(e)}
           viewBox={`${this.state.panX} ${this.state.panY} ${Math.round(
             this.props.scale * 200
-          )} ${Math.round(this.props.scale * 100)}`}
-        >
+          )} ${Math.round(this.props.scale * 100)}`}>
           {this.props.children}
 
           {this.props.keyframeSvgPoints.map((keyframe, i) => (
