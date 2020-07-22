@@ -10,7 +10,8 @@ import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from '../Materials/standardMaterial';
 
-import { ISkeletonViewerOptions, ISkeletonViewerDisplayOptions } from './ISkeletonViewer';
+import { ISkeletonViewerOptions } from './ISkeletonViewer';
+
 
 /**
  * Class used to render a debug view of a given skeleton
@@ -259,8 +260,8 @@ export class SkeletonViewer {
      *  2 : BABYLON.SkeletonViewer.DISPLAY_SPHERES
      *  3 : BABYLON.SkeletonViewer.DISPLAY_SPURS
      */
-    public DISPLAY_LINES = 1
-    public DISPLAY_SPHERE_AND_SPURS = 2
+    public static readonly DISPLAY_LINES = 0
+    public static readonly DISPLAY_SPHERE_AND_SPURS = 1
     //public DISPLAY_SPHERES = 3
     //public DISPLAY_SPURS = 4
 }

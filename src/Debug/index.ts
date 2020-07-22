@@ -5,3 +5,4 @@ export * from "./physicsViewer";
 export * from "./rayHelper";
 export * from "./skeletonViewer";
 export * from "./ISkeletonViewer";
+export * from "./boneWeightShader";
