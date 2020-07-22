@@ -113,7 +113,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = spriteManager.snippetId ;
+                    const oldId = spriteManager.snippetId || "_BLANK";
                     spriteManager.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
                         spriteManager.snippetId += "#" + snippet.version;
@@ -127,8 +127,8 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: spriteManager.snippetId
+                            regex: new RegExp(`SpriteManager.CreateFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `SpriteManager.CreateFromSnippetAsync("${spriteManager.snippetId}`
                         });
                     }
 
