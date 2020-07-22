@@ -1120,6 +1120,21 @@
       height: 364px;
       width: 782px;
 
+      .switch-button {
+        background-color: black;
+        width: 38px;
+        height: 38px;
+        position: absolute;
+        z-index: 100;
+        bottom: 103px;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+      }
+
       .linear {
         overflow: visible;
         border: 0px solid white;

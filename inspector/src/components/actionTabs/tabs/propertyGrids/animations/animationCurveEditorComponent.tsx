@@ -20,6 +20,7 @@ import { LockObject } from '../lockObject';
 import { GlobalState } from '../../../../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
+import { ScaleLabel } from './scale-label';
 
 require('./curveEditor.scss');
 
@@ -35,6 +36,14 @@ interface IAnimationCurveEditorComponentProps {
 interface ICanvasAxis {
   value: number;
   label: number;
+}
+
+export enum CurveScale {
+  float,
+  radians,
+  degrees,
+  integers,
+  default,
 }
 
 export interface IActionableKeyFrame {
@@ -79,6 +88,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     panningX: number;
     repositionCanvas: boolean;
     actionableKeyframe: IActionableKeyFrame;
+    valueScale: CurveScale;
   }
 > {
   private _snippetUrl = 'https://snippet.babylonjs.com';
@@ -184,6 +194,7 @@ export class AnimationCurveEditorComponent extends React.Component<
       panningX: 0,
       repositionCanvas: false,
       actionableKeyframe: { frame: undefined, value: undefined },
+      valueScale: CurveScale.degrees,
     };
   }
 
@@ -225,7 +236,71 @@ export class AnimationCurveEditorComponent extends React.Component<
     return [...halfNegative, ...halfPositive];
   }
 
-  setValueLines() {
+  setValueLines(type: CurveScale) {
+    let scaleValues = { coeficient: 0, dividend: 0, factor: 0 };
+
+    switch (type) {
+      case CurveScale.default:
+        scaleValues.coeficient = 10;
+        scaleValues.dividend = 5;
+        scaleValues.factor = 2;
+        this._heightScale = 100;
+        break;
+      case CurveScale.float:
+        scaleValues.coeficient = 10;
+        scaleValues.dividend = 5;
+        scaleValues.factor = 2.5;
+        this._heightScale = 120;
+        break;
+      case CurveScale.degrees:
+        scaleValues.coeficient = 10;
+        scaleValues.dividend = 5;
+        scaleValues.factor = 50;
+        this._heightScale = 200;
+        break;
+      case CurveScale.integers:
+        scaleValues.coeficient = 10;
+        scaleValues.dividend = 5;
+        scaleValues.factor = 320;
+        break;
+      case CurveScale.radians:
+        scaleValues.coeficient = 10;
+        scaleValues.dividend = 5;
+        scaleValues.factor = 0.8;
+        break;
+    }
+
+    const initialValues = new Array(10).fill(0).map((_, i) => {
+      return {
+        value: i * 10,
+        label: (
+          scaleValues.factor *
+          ((scaleValues.coeficient - i) / scaleValues.coeficient)
+        ).toFixed(2),
+      };
+    });
+
+    initialValues.shift();
+
+    const valueHeight = Math.abs(Math.round(this.state.panningY / 10));
+    const sign = Math.sign(this.state.panningY);
+
+    const pannedValues = new Array(valueHeight).fill(0).map((s, i) => {
+      return sign === -1
+        ? {
+            value: -i * 10,
+            label: (i + 10) / (scaleValues.coeficient / scaleValues.factor),
+          }
+        : {
+            value: (i + 10) * 10,
+            label: (i * -1) / (scaleValues.coeficient / scaleValues.factor),
+          };
+    });
+
+    return [...initialValues, ...pannedValues];
+  }
+
+  setValueLinesOld() {
     const initialValues = new Array(10).fill(0).map((_, i) => {
       return { value: i * 10, label: 2 * ((10 - i) / 10) };
     });
@@ -704,7 +779,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                   k.value
                 );
                 currentValue[coordinate] = this.state.actionableKeyframe.value;
-                k.value = currentValue;
+                k.value =
+                  currentValue.length === 1 ? currentValue[0] : currentValue;
               }
               return k;
             });
@@ -964,31 +1040,24 @@ export class AnimationCurveEditorComponent extends React.Component<
     valueType: number,
     value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion
   ) {
-    let valueAsArray: number[] = [];
     switch (valueType) {
       case Animation.ANIMATIONTYPE_FLOAT:
-        valueAsArray = [value as number];
-        break;
+        return [value as number];
       case Animation.ANIMATIONTYPE_VECTOR3:
-        valueAsArray = (value as Vector3).asArray();
-        break;
+        return (value as Vector3).asArray();
       case Animation.ANIMATIONTYPE_VECTOR2:
-        valueAsArray = (value as Vector2).asArray();
-        break;
+        return (value as Vector2).asArray();
       case Animation.ANIMATIONTYPE_QUATERNION:
-        valueAsArray = (value as Quaternion).asArray();
-        break;
+        return (value as Quaternion).asArray();
       case Animation.ANIMATIONTYPE_COLOR3:
-        valueAsArray = (value as Color3).asArray();
-        break;
+        return (value as Color3).asArray();
       case Animation.ANIMATIONTYPE_COLOR4:
-        valueAsArray = (value as Color4).asArray();
-        break;
+        return (value as Color4).asArray();
       case Animation.ANIMATIONTYPE_SIZE:
-        valueAsArray = [(value as Size).width, (value as Size).height];
-        break;
+        return [(value as Size).width, (value as Size).height];
+      default:
+        return [];
     }
-    return valueAsArray;
   }
 
   setValueAsType(valueType: number, arrayValue: number[]) {
@@ -1623,7 +1692,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         }
         let keys = this.state.selected.getKeys();
         let firstFrame = keys[0].frame;
-        let LastFrame = keys[keys.length - 1].frame;
+        let LastFrame = this.state.selected.getHighestFrame();
         if (direction === 1) {
           this._mainAnimatable = this.props.scene.beginAnimation(
             target,
@@ -1631,6 +1700,10 @@ export class AnimationCurveEditorComponent extends React.Component<
             LastFrame,
             this.state.isLooping,
             this.state.fps
+          );
+          console.log(this._mainAnimatable);
+          console.log(
+            `${target}, ${firstFrame}, ${LastFrame}, ${this.state.isLooping}, ${this.state.fps}`
           );
         }
         if (direction === -1) {
@@ -1745,6 +1818,7 @@ export class AnimationCurveEditorComponent extends React.Component<
               ref={this._graphCanvas}
               className='graph-chart'
               onWheel={(e) => this.zoom(e)}>
+              <ScaleLabel current={this.state.valueScale} />
               {this.state.svgKeyframes && (
                 <SvgDraggableArea
                   ref={this._svgCanvas}
@@ -1797,21 +1871,26 @@ export class AnimationCurveEditorComponent extends React.Component<
                       }}></path>
                   ))}
 
-                  {this.setValueLines().map((line, i) => {
+                  {this.setValueLines(this.state.valueScale).map((line, i) => {
                     return (
                       <text
                         key={`value_inline_${i}`}
                         x={this.state.panningX - 5}
                         y={line.value}
-                        dx='0'
-                        dy='1'
-                        style={{ fontSize: `${0.2 * this.state.scale}em` }}>
+                        dx='2'
+                        textAnchor='middle'
+                        dy='-1'
+                        style={{
+                          fontSize: `${0.18 * this.state.scale}em`,
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                        }}>
                         {line.label}
                       </text>
                     );
                   })}
 
-                  {this.setValueLines().map((line, i) => {
+                  {this.setValueLines(this.state.valueScale).map((line, i) => {
                     return (
                       <line
                         key={i}
