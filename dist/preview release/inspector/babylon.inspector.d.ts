@@ -1255,16 +1255,15 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export enum TextureChannelToDisplay {
-        R = 0,
-        G = 1,
-        B = 2,
-        A = 3,
-        All = 4
+    export interface TextureChannelsToDisplay {
+        R: boolean;
+        G: boolean;
+        B: boolean;
+        A: boolean;
     }
     export class TextureHelper {
         private static _ProcessAsync;
-        static GetTextureDataAsync(texture: BABYLON.BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+        static GetTextureDataAsync(texture: BABYLON.BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
     }
 }
 declare module INSPECTOR {
@@ -1276,22 +1275,70 @@ declare module INSPECTOR {
         hideChannelSelect?: boolean;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        channel: TextureChannelToDisplay;
+        channels: TextureChannelsToDisplay;
         face: number;
     }> {
         private canvasRef;
+        private static TextureChannelStates;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            channel: TextureChannelToDisplay;
+            channels: TextureChannelsToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
         componentDidUpdate(): void;
-        updatePreview(): void;
+        updatePreview(): Promise<void>;
         render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
+    export interface Tool {
+        type: any;
+        name: string;
+        instance: any;
+        icon: string;
+    }
+    interface ToolBarProps {
+        tools: Tool[];
+        addTool(url: string): void;
+        changeTool(toolIndex: number): void;
+        activeToolIndex: number;
+        metadata: any;
+        setMetadata(data: any): void;
+    }
+    interface ToolBarState {
+        toolURL: string;
+    }
+    export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
+        constructor(props: ToolBarProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface Channel {
+        visible: boolean;
+        editable: boolean;
+        name: string;
+        id: 'R' | 'G' | 'B' | 'A';
+        icon: any;
+    }
+    interface ChannelsBarProps {
+        channels: Channel[];
+        setChannels(channelState: Channel[]): void;
+    }
+    export class ChannelsBar extends React.Component<ChannelsBarProps> {
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface PixelData {
+        x?: number;
+        y?: number;
+        r?: number;
+        g?: number;
+        b?: number;
+        a?: number;
+    }
     export class TextureCanvasManager {
         private _engine;
         private _scene;
@@ -1305,14 +1352,17 @@ declare module INSPECTOR {
         private _2DCanvas;
         private _texture;
         private _displayCanvas;
-        private _displayChannel;
+        private _channels;
+        private _face;
         private _displayTexture;
         private _originalTexture;
-        private _targetTexture;
+        private _target;
         private _originalInternalTexture;
+        private _didEdit;
         private _plane;
         private _planeMaterial;
-        private keyMap;
+        private _planeFallbackMaterial;
+        private _keyMap;
         private static ZOOM_MOUSE_SPEED;
         private static ZOOM_KEYBOARD_SPEED;
         private static ZOOM_IN_KEY;
@@ -1322,38 +1372,101 @@ declare module INSPECTOR {
         private static PAN_KEY;
         private static MIN_SCALE;
         private static MAX_SCALE;
+        private _tool;
+        private _setPixelData;
         metadata: any;
-        constructor(texture: BABYLON.BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement);
-        updateTexture(): void;
+        constructor(texture: BABYLON.BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement, setPixelData: (pixelData: PixelData) => void);
+        updateTexture(): Promise<void>;
         private copyTextureToDisplayTexture;
-        set displayChannel(channel: TextureChannelToDisplay);
-        get displayChannel(): TextureChannelToDisplay;
+        set channels(channels: Channel[]);
         static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
-        static flipCanvas(canvas: HTMLCanvasElement): void;
+        grabOriginalTexture(): void;
+        getMouseCoordinates(pointerInfo: BABYLON.PointerInfo): BABYLON.Vector2;
         get scene(): BABYLON.Scene;
         get canvas2D(): HTMLCanvasElement;
         get size(): BABYLON.ISize;
+        set tool(tool: BABYLON.Nullable<Tool>);
+        get tool(): BABYLON.Nullable<Tool>;
+        set face(face: number);
+        resetTexture(): void;
         dispose(): void;
+    }
+}
+declare module INSPECTOR {
+    interface PropertiesBarProps {
+        texture: BABYLON.BaseTexture;
+        saveTexture(): void;
+        pixelData: PixelData;
+        face: number;
+        setFace(face: number): void;
+        resetTexture(): void;
+    }
+    interface PixelDataProps {
+        name: string;
+        data?: number;
+    }
+    function PixelData(props: PixelDataProps): JSX.Element;
+    export class PropertiesBar extends React.Component<PropertiesBarProps> {
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface BottomBarProps {
+        name: string;
+    }
+    export class BottomBar extends React.Component<BottomBarProps> {
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface TextureCanvasComponentProps {
+        canvasUI: React.RefObject<HTMLCanvasElement>;
+        canvas2D: React.RefObject<HTMLCanvasElement>;
+        canvasDisplay: React.RefObject<HTMLCanvasElement>;
+        texture: BABYLON.BaseTexture;
+    }
+    export class TextureCanvasComponent extends React.Component<TextureCanvasComponentProps> {
+        shouldComponentUpdate(nextProps: TextureCanvasComponentProps): boolean;
+        render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
     interface TextureEditorComponentProps {
         globalState: GlobalState;
         texture: BABYLON.BaseTexture;
+        url: string;
     }
     interface TextureEditorComponentState {
-        channel: TextureChannelToDisplay;
+        tools: Tool[];
+        activeToolIndex: number;
+        metadata: any;
+        channels: Channel[];
+        pixelData: PixelData;
+        face: number;
+    }
+    interface ToolData {
+        name: string;
+        type: any;
+        icon: string;
+    }
+    global {
+        var _TOOL_DATA_: ToolData;
     }
     export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
         private _textureCanvasManager;
         private canvasUI;
         private canvas2D;
         private canvasDisplay;
-        private channels;
         constructor(props: TextureEditorComponentProps);
         componentDidMount(): void;
         componentDidUpdate(): void;
         componentWillUnmount(): void;
+        loadTool(url: string): void;
+        changeTool(index: number): void;
+        setMetadata(newMetadata: any): void;
+        setFace(face: number): void;
+        saveTexture(): void;
+        resetTexture(): void;
         render(): JSX.Element;
     }
 }
@@ -1364,15 +1477,20 @@ declare module INSPECTOR {
         globalState: GlobalState;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
-    export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
+    interface ITexturePropertyGridComponentState {
+        isTextureEditorOpen: boolean;
+        textureEditing: BABYLON.Nullable<BABYLON.BaseTexture>;
+    }
+    export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps, ITexturePropertyGridComponentState> {
         private _adtInstrumentation;
         private textureLineRef;
-        private _isTextureEditorOpen;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
         onOpenTextureEditor(): void;
-        onCloseTextureEditor(window: Window | null): void;
+        onCloseTextureEditor(window: Window | null, callback?: {
+            (): void;
+        }): void;
         forceRefresh(): void;
         render(): JSX.Element;
     }
