@@ -836,7 +836,7 @@ export class NodeMaterial extends PushMaterial {
         return postProcess;
     }
 
-    private _createEffectForParticles(particleSystem: IParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>) {
+    private _createEffectForParticles(particleSystem: IParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>, particleSystemDefinesJoined_ = "") {
         let tempName = this.name + this._buildId + "_" + blendMode;
 
         if (!defines) {
@@ -853,7 +853,7 @@ export class NodeMaterial extends PushMaterial {
         let buildId = this._buildId;
 
         let particleSystemDefines: Array<string> = [];
-        let particleSystemDefinesJoined = "";
+        let particleSystemDefinesJoined = particleSystemDefinesJoined_;
 
         if (!effect) {
             const result = this._processDefines(dummyMesh, defines);
@@ -898,7 +898,7 @@ export class NodeMaterial extends PushMaterial {
 
                 effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines!.toString() + "\n" + particleSystemDefinesJoined, result?.fallbacks, onCompiled, onError, particleSystem);
                 particleSystem.setCustomEffect(effect, blendMode);
-                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, dummyMesh); // add the effect.onBindObservable observer
+                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, dummyMesh, particleSystemDefinesJoined); // add the effect.onBindObservable observer
                 return;
             }
 
