@@ -274,7 +274,7 @@ export class Inspector {
             ReactDOM.render(embedHostElement, this._EmbedHost);
         }
     }
-    public static _CreatePopup(title: string, windowVariableName: string, width = 300, height = 800) {
+    public static _CreatePopup(title: string, windowVariableName: string, width = 300, height = 800, lateBinding?: boolean) {
         const windowCreationOptionsList = {
             width: width,
             height: height,
@@ -316,10 +316,12 @@ export class Inspector {
 
         this._CopyStyles(window.document, parentDocument);
 
-        setTimeout(() => {
-            // need this for late bindings
-            this._CopyStyles(window.document, parentDocument);
-        }, 0);
+        if (lateBinding) {
+            setTimeout(() => {
+                // need this for late bindings
+                this._CopyStyles(window.document, parentDocument);
+            }, 0);
+        }
 
         (this as any)[windowVariableName] = popupWindow;
 
