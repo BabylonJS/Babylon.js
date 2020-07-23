@@ -106,6 +106,7 @@ export class WebXRExperienceHelper implements IDisposable {
             sessionCreationOptions.optionalFeatures = sessionCreationOptions.optionalFeatures || [];
             sessionCreationOptions.optionalFeatures.push(referenceSpaceType);
         }
+        this.featuresManager.extendXRSessionInitObject(sessionCreationOptions);
         // we currently recommend "unbounded" space in AR (#7959)
         if (sessionMode === "immersive-ar" && referenceSpaceType !== "unbounded") {
             Logger.Warn("We recommend using 'unbounded' reference space type when using 'immersive-ar' session mode");
