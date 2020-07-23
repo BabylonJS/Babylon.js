@@ -1,3 +1,37 @@
+@font-face {
+    font-family: "acumin-pro-condensed";
+    src: url("https://use.typekit.net/af/4b28f4/00000000000000003b9acb08/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"),
+        url("https://use.typekit.net/af/4b28f4/00000000000000003b9acb08/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff"),
+        url("https://use.typekit.net/af/4b28f4/00000000000000003b9acb08/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("opentype");
+    font-display: auto;
+    font-style: normal;
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "acumin-pro-condensed";
+    src: url("https://use.typekit.net/af/7bebb5/00000000000000003b9acb0c/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n6&v=3") format("woff2"),
+        url("https://use.typekit.net/af/7bebb5/00000000000000003b9acb0c/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n6&v=3") format("woff"),
+        url("https://use.typekit.net/af/7bebb5/00000000000000003b9acb0c/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n6&v=3") format("opentype");
+    font-display: auto;
+    font-style: normal;
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: "acumin-pro-condensed";
+    src: url("https://use.typekit.net/af/c52e09/00000000000000003b9acb0d/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i6&v=3") format("woff2"),
+        url("https://use.typekit.net/af/c52e09/00000000000000003b9acb0d/27/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i6&v=3") format("woff"),
+        url("https://use.typekit.net/af/c52e09/00000000000000003b9acb0d/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i6&v=3") format("opentype");
+    font-display: auto;
+    font-style: italic;
+    font-weight: 600;
+}
+
+body {
+    background-color: #333;
+}
+
 #animation-curve-editor {
     background-color: rgb(51, 51, 51);
     font-family: "acumin-pro-condensed";
@@ -557,9 +591,9 @@
                     width: 60px;
                     margin-left: 10px;
                     margin-right: 10px;
-                    position: absolute;
-                    right: 9px;
-                    bottom: 11px;
+                    position: relative;
+                    float: right;
+                    bottom: 35px;
 
                     input {
                         text-align: center;
