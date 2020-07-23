@@ -142,6 +142,30 @@
             
         }
 
+        #add-tool {
+            position: relative;
+            #add-tool-popup {
+                background-color: #333333;
+                width: 340px;
+                margin-left: 40px;
+                position: absolute;
+                top: 0px;
+                height: 40px;
+                padding-left: 4px;
+                line-height: 40px;
+                user-select: none;
+                button {
+                    background: #222222;
+                    border: 1px solid rgb(51, 122, 183);
+                    margin: 5px 10px 5px 10px;
+                    color:white;
+                    padding: 4px 5px;
+                    opacity: 0.9;
+                    cursor: pointer;
+                }
+            }
+        }
+
         #color-picker {
             position: absolute;
             margin-left: 40px;

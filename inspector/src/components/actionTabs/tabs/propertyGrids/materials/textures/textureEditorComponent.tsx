@@ -73,9 +73,8 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this.resetTexture = this.resetTexture.bind(this);
         this.resizeTexture = this.resizeTexture.bind(this);
         this.uploadTexture = this.uploadTexture.bind(this);
-        this.loadTool("https://darraghburkems.github.io/BJSTools/Paintbrush.js");
-        this.loadTool("https://darraghburkems.github.io/BJSTools/Floodfill.js");
-        this.loadTool("https://darraghburkems.github.io/BJSTools/Eyedropper.js")
+        const defaultTools = ['https://darraghburkems.github.io/BJSTools/Paintbrush.js', 'https://darraghburkems.github.io/BJSTools/Floodfill.js', 'https://darraghburkems.github.io/BJSTools/Eyedropper.js']
+        defaultTools.forEach(tool => this.loadTool(tool));
     }
 
     componentDidMount() {

@@ -19,7 +19,8 @@ interface ToolBarProps {
 
 interface ToolBarState {
     toolURL : string;
-    pickerEnabled : boolean;
+    pickerOpen : boolean;
+    addOpen : boolean;
 }
 
 const addTool = require('./assets/addTool.svg');
@@ -30,7 +31,8 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
         super(props);
         this.state = {
             toolURL: "",
-            pickerEnabled: false
+            pickerOpen: false,
+            addOpen: false
         };
         this.pickerRef = React.createRef();
     }
@@ -51,31 +53,53 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
                             className={index === this.props.activeToolIndex ? 'icon button active' : 'icon button'}
                             alt={item.name}
                             title={item.name}
-                            onClick={() => this.props.changeTool(index)}
+                            onClick={evt => {
+                                if (evt.button === 0) {
+                                    this.props.changeTool(index)
+                                } else if (evt.button === 2) {
+                                    // context menu - possibly delete tool?
+                                    evt.preventDefault();
+                                }
+                            }}
                             key={index}
                         />
                     }
                 )}
-                <img src={addTool} className='icon button' title='Add Tool' alt='Add Tool'/>
-            </div>
-                <div id='color' onClick={() => this.setState({pickerEnabled: !this.state.pickerEnabled})} title='Color' className='icon button'>
-                    <div id='activeColor' style={{backgroundColor: this.props.metadata.color}}></div>
-                </div>
-                {
-                    this.state.pickerEnabled &&
-                    <>
-                        <div className='color-picker-cover' onClick={evt => {
-                            if (evt.target !== this.pickerRef.current?.ownerDocument.querySelector('.color-picker-cover')) {
-                                return;
-                            }
-                            this.setState({pickerEnabled: false});
+                <div id='add-tool'>
+                    <img src={addTool} className='icon button' title='Add Tool' alt='Add Tool' onClick={() => this.setState({addOpen: !this.state.addOpen})}/>
+                    { this.state.addOpen && 
+                    <div id='add-tool-popup'>
+                        <form onSubmit={event => {
+                            event.preventDefault();
+                            this.props.addTool(this.state.toolURL);
+                            this.setState({toolURL: '', addOpen: false})
                         }}>
-                        </div>
-                        <div className='color-picker' ref={this.pickerRef}>
-                                <SketchPicker disableAlpha={false} color={this.computeRGBAColor()}  onChangeComplete={color => this.props.setMetadata({color: color.hex, opacity: color.rgb.a})}/>
-                        </div>
-                    </>
-                }
+                            <label>
+                                Enter tool URL: <input value={this.state.toolURL} onChange={evt => this.setState({toolURL: evt.target.value})} type='text'/>
+                            </label>
+                            <button>Add</button>
+                        </form>
+                    </div> }
+                </div>
+            </div>
+            <div id='color' onClick={() => this.setState({pickerOpen: !this.state.pickerOpen})} title='Color' className='icon button'>
+                <div id='activeColor' style={{backgroundColor: this.props.metadata.color}}></div>
+            </div>
+            {
+                this.state.pickerOpen &&
+                <>
+                    <div className='color-picker-cover' onClick={evt => {
+                        if (evt.target !== this.pickerRef.current?.ownerDocument.querySelector('.color-picker-cover')) {
+                            return;
+                        }
+                        this.setState({pickerOpen: false});
+                    }}>
+                    </div>
+                    <div className='color-picker' ref={this.pickerRef}>
+                            <SketchPicker color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, opacity: color.rgb.a})}/>
+                    </div>
+                </>
+            }
         </div>;
     }
 }
