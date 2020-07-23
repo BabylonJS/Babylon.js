@@ -1,7 +1,7 @@
-import { IWebXRFeature } from '../webXRFeaturesManager';
-import { Observer, Observable, EventState } from '../../Misc/observable';
-import { Nullable } from '../../types';
-import { WebXRSessionManager } from '../webXRSessionManager';
+import { IWebXRFeature } from "../webXRFeaturesManager";
+import { Observer, Observable, EventState } from "../../Misc/observable";
+import { Nullable } from "../../types";
+import { WebXRSessionManager } from "../webXRSessionManager";
 
 /**
  * This is the base class for all WebXR features.
@@ -21,11 +21,15 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     public disableAutoAttach: boolean = false;
 
     /**
+     * The name of the native xr feature name (like anchor, hit-test, or hand-tracking)
+     */
+    public xrNativeFeatureName: string = '';
+
+    /**
      * Construct a new (abstract) WebXR feature
      * @param _xrSessionManager the xr session manager for this feature
      */
-    constructor(protected _xrSessionManager: WebXRSessionManager) {
-    }
+    constructor(protected _xrSessionManager: WebXRSessionManager) {}
 
     /**
      * Is this feature attached
@@ -82,6 +86,16 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     }
 
     /**
+     * This function will be executed during before enabling the feature and can be used to not-allow enabling it.
+     * Note that at this point the session has NOT started, so this is purely checking if the browser supports it
+     *
+     * @returns whether or not the feature is compatible in this environment
+     */
+    public isCompatible(): boolean {
+        return true;
+    }
+
+    /**
      * This is used to register callbacks that will automatically be removed when detach is called.
      * @param observable the observable to which the observer will be attached
      * @param callback the callback to register
@@ -89,7 +103,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     protected _addNewAttachObserver<T>(observable: Observable<T>, callback: (eventData: T, eventState: EventState) => void) {
         this._removeOnDetach.push({
             observable,
-            observer: observable.add(callback)
+            observer: observable.add(callback),
         });
     }
 

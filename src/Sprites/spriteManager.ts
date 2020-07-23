@@ -233,6 +233,11 @@ export class SpriteManager implements ISpriteManager {
         /** defines the manager's name */
         public name: string,
         imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: any | null = null) {
+
+        if (!scene) {
+            scene = Engine.LastCreatedScene!;
+        }
+
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));
         }
@@ -859,12 +864,16 @@ export class SpriteManager implements ISpriteManager {
 
     /**
      * Creates a sprite manager from a snippet saved by the sprite editor
-     * @param snippetId defines the snippet to load
+     * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new sprite manager
      */
     public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve(new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene));
+        }
+
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
             request.addEventListener("readystatechange", () => {

@@ -226,6 +226,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Internal data
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
 
+    public get computeBonesUsingShaders(): boolean {
+        return this._internalAbstractMeshDataInfo._computeBonesUsingShaders;
+    }
+    public set computeBonesUsingShaders(value: boolean) {
+        if (this._internalAbstractMeshDataInfo._computeBonesUsingShaders === value) {
+            return;
+        }
+
+        if (value && this._internalMeshDataInfo._sourcePositions && this._internalMeshDataInfo._sourceNormals) {
+            // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
+            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions);
+            this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals);
+        }
+
+        this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
+        this._markSubMeshesAsAttributesDirty();
+    }
+
     /**
      * An event triggered before rendering the mesh
      */

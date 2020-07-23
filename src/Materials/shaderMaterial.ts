@@ -82,9 +82,9 @@ export class ShaderMaterial extends Material {
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
     private _matrices: { [name: string]: Matrix } = {};
-    private _matrixArrays: { [name: string]: Float32Array } = {};
-    private _matrices3x3: { [name: string]: Float32Array } = {};
-    private _matrices2x2: { [name: string]: Float32Array } = {};
+    private _matrixArrays: { [name: string]: Float32Array | Array<number> } = {};
+    private _matrices3x3: { [name: string]: Float32Array | Array<number> } = {};
+    private _matrices2x2: { [name: string]: Float32Array | Array<number> } = {};
     private _vectors2Arrays: { [name: string]: number[] } = {};
     private _vectors3Arrays: { [name: string]: number[] } = {};
     private _vectors4Arrays: { [name: string]: number[] } = {};
@@ -393,7 +393,7 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrix3x3(name: string, value: Float32Array): ShaderMaterial {
+    public setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
         this._matrices3x3[name] = value;
 
@@ -406,7 +406,7 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrix2x2(name: string, value: Float32Array): ShaderMaterial {
+    public setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
         this._matrices2x2[name] = value;
 

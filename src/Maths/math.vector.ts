@@ -6,6 +6,7 @@ import { ArrayTools } from '../Misc/arrayTools';
 import { IPlaneLike } from './math.like';
 import { _TypeStore } from '../Misc/typeStore';
 import { Plane } from './math.plane';
+import { PerformanceConfigurator } from '../Engines/performanceConfigurator';
 
 /**
  * Class representing a vector containing 2 coordinates
@@ -3552,6 +3553,14 @@ export class Quaternion {
  * Class used to store matrix data (4x4)
  */
 export class Matrix {
+
+    /**
+     * Gets the precision of matrix computations
+     */
+    public static get Use64Bits(): boolean {
+        return PerformanceConfigurator.MatrixUse64Bits;
+    }
+
     private static _updateFlagSeed = 0;
     private static _identityReadOnly = Matrix.Identity() as DeepImmutable<Matrix>;
 
@@ -3566,12 +3575,12 @@ export class Matrix {
      */
     public updateFlag: number = -1;
 
-    private readonly _m: Float32Array = new Float32Array(16);
+    private readonly _m: Float32Array | Array<number>;
 
     /**
      * Gets the internal data of the matrix
      */
-    public get m(): DeepImmutable<Float32Array> { return this._m; }
+    public get m(): DeepImmutable<Float32Array | Array<number>> { return this._m; }
 
     /** @hidden */
     public _markAsUpdated() {
@@ -3595,6 +3604,11 @@ export class Matrix {
      * Creates an empty matrix (filled with zeros)
      */
     public constructor() {
+        if (PerformanceConfigurator.MatrixTrackPrecisionChange) {
+            PerformanceConfigurator.MatrixTrackedMatrices!.push(this);
+        }
+
+        this._m = new PerformanceConfigurator.MatrixCurrentType(16);
         this._updateIdentityStatus(false);
     }
 
@@ -3681,17 +3695,17 @@ export class Matrix {
     // Methods
 
     /**
-     * Returns the matrix as a Float32Array
+     * Returns the matrix as a Float32Array or Array<number>
      * @returns the matrix underlying array
      */
-    public toArray(): DeepImmutable<Float32Array> {
+    public toArray(): DeepImmutable<Float32Array | Array<number>> {
         return this._m;
     }
     /**
-     * Returns the matrix as a Float32Array
+     * Returns the matrix as a Float32Array or Array<number>
     * @returns the matrix underlying array.
     */
-    public asArray(): DeepImmutable<Float32Array> {
+    public asArray(): DeepImmutable<Float32Array | Array<number>> {
         return this._m;
     }
 
@@ -3969,7 +3983,7 @@ export class Matrix {
      * @param offset defines the offset in the target array where to start storing values
      * @returns the current matrix
      */
-    public copyToArray(array: Float32Array, offset: number = 0): Matrix {
+    public copyToArray(array: Float32Array | Array<number>, offset: number = 0): Matrix {
         let source = this._m;
         array[offset] = source[0];
         array[offset + 1] = source[1];
@@ -4019,7 +4033,7 @@ export class Matrix {
      * @param offset defines the offset in the target array where to start storing values
      * @returns the current matrix
      */
-    public multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array, offset: number): Matrix {
+    public multiplyToArray(other: DeepImmutable<Matrix>, result: Float32Array | Array<number>, offset: number): Matrix {
         const m = this._m;
         const otherM = other.m;
         var tm0 = m[0], tm1 = m[1], tm2 = m[2], tm3 = m[3];
@@ -4382,7 +4396,7 @@ export class Matrix {
      * @param scale defines the scaling factor
      * @param result defines the target matrix
      */
-    public static FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array>, offset: number, scale: number, result: Matrix) {
+    public static FromFloat32ArrayToRefScaled(array: DeepImmutable<Float32Array | Array<number>>, offset: number, scale: number, result: Matrix) {
         for (var index = 0; index < 16; index++) {
             result._m[index] = array[index + offset] * scale;
         }
@@ -4735,7 +4749,7 @@ export class Matrix {
      * Creates a rotation matrix
      * @param yaw defines the yaw angle in radians (Y axis)
      * @param pitch defines the pitch angle in radians (X axis)
-     * @param roll defines the roll angle in radians (X axis)
+     * @param roll defines the roll angle in radians (Z axis)
      * @returns the new rotation matrix
      */
     public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix {
@@ -4748,7 +4762,7 @@ export class Matrix {
      * Creates a rotation matrix and stores it in a given matrix
      * @param yaw defines the yaw angle in radians (Y axis)
      * @param pitch defines the pitch angle in radians (X axis)
-     * @param roll defines the roll angle in radians (X axis)
+     * @param roll defines the roll angle in radians (Z axis)
      * @param result defines the target matrix
      */
     public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void {
@@ -5378,22 +5392,24 @@ export class Matrix {
      * @param matrix defines the matrix to use
      * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the given matrix
      */
-    public static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array {
+    public static GetAsMatrix2x2(matrix: DeepImmutable<Matrix>): Float32Array | Array<number> {
         const m = matrix.m;
-        return new Float32Array([m[0], m[1], m[4], m[5]]);
+        const arr = [m[0], m[1], m[4], m[5]];
+        return PerformanceConfigurator.MatrixUse64Bits ? arr : new Float32Array(arr);
     }
     /**
      * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
      * @param matrix defines the matrix to use
      * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the given matrix
      */
-    public static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array {
+    public static GetAsMatrix3x3(matrix: DeepImmutable<Matrix>): Float32Array | Array<number> {
         const m = matrix.m;
-        return new Float32Array([
+        const arr = [
             m[0], m[1], m[2],
             m[4], m[5], m[6],
             m[8], m[9], m[10]
-        ]);
+        ];
+        return PerformanceConfigurator.MatrixUse64Bits ? arr : new Float32Array(arr);
     }
 
     /**

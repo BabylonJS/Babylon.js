@@ -639,8 +639,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea" {
-    import * as React from 'react';
-    import { Vector2 } from 'babylonjs/Maths/math.vector';
+    import * as React from "react";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { IKeyframeSvgPoint } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint";
     interface ISvgDraggableAreaProps {
         keyframeSvgPoints: IKeyframeSvgPoint[];
@@ -657,6 +657,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         positionCanvas?: number;
         repositionCanvas?: boolean;
         canvasPositionEnded: () => void;
+        resetActionableKeyframe: () => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, {
         panX: number;
@@ -686,7 +687,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         keyDown(e: KeyboardEvent): void;
         keyUp(e: KeyboardEvent): void;
         focus(e: React.MouseEvent<SVGSVGElement>): void;
-        isControlPointActive(): boolean;
+        isNotControlPointActive(): boolean;
         render(): JSX.Element;
     }
 }
@@ -798,7 +799,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/notification" {
-    import * as React from "react";
+    import * as React from 'react';
     interface IPlayheadProps {
         message: string;
         open: boolean;
@@ -826,9 +827,16 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         title: string;
         close: (event: any) => void;
         enabled: boolean;
+        setKeyframeValue: () => void;
     }
     export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
+        private _frameInput;
+        private _valueInput;
         constructor(props: IGraphActionsBarProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        isEnterKeyUp(event: KeyboardEvent): void;
+        onBlur(event: React.FocusEvent<HTMLInputElement>): void;
         render(): JSX.Element;
     }
 }
@@ -1071,18 +1079,33 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/scale-label" {
     import * as React from 'react';
-    import { Animation } from 'babylonjs/Animations/animation';
-    import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
-    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
-    import { Size } from 'babylonjs/Maths/math.size';
-    import { EasingFunction } from 'babylonjs/Animations/easing';
-    import { IAnimationKey } from 'babylonjs/Animations/animationKey';
+    import { CurveScale } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent";
+    interface ISwitchButtonProps {
+        current: CurveScale;
+        action?: (event: CurveScale) => void;
+    }
+    export class ScaleLabel extends React.Component<ISwitchButtonProps, {
+        current: CurveScale;
+    }> {
+        constructor(props: ISwitchButtonProps);
+        renderLabel(scale: CurveScale): "" | "DEG" | "FLT" | "INT" | "RAD";
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
+    import * as React from "react";
+    import { Animation } from "babylonjs/Animations/animation";
+    import { Vector2, Vector3, Quaternion } from "babylonjs/Maths/math.vector";
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
+    import { Size } from "babylonjs/Maths/math.size";
+    import { EasingFunction } from "babylonjs/Animations/easing";
+    import { IAnimationKey } from "babylonjs/Animations/animationKey";
     import { IKeyframeSvgPoint } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint";
-    import { Scene } from 'babylonjs/scene';
-    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-    import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
+    import { Scene } from "babylonjs/scene";
+    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
     import { SelectedCoordinate } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationListTree";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
@@ -1098,9 +1121,16 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         value: number;
         label: number;
     }
+    export enum CurveScale {
+        float = 0,
+        radians = 1,
+        degrees = 2,
+        integers = 3,
+        default = 4
+    }
     export interface IActionableKeyFrame {
-        frame: number;
-        value: any;
+        frame?: number | string;
+        value?: any;
     }
     interface ICurveData {
         pathData: string;
@@ -1136,9 +1166,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         panningX: number;
         repositionCanvas: boolean;
         actionableKeyframe: IActionableKeyFrame;
+        valueScale: CurveScale;
     }> {
         private _snippetUrl;
         private _heightScale;
+        private _scaleFactor;
+        private _currentScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
         private _svgKeyframes;
@@ -1166,30 +1199,39 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
             value: number;
             label: number;
         }[];
-        setValueLines(): {
+        setValueLines(type: CurveScale): ({
+            value: number;
+            label: string;
+        } | {
             value: number;
             label: number;
-        }[];
-        setAxesLength(): void;
+        })[];
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
+        encodeCurveId(animationName: string, coordinate: number): string;
+        decodeCurveId(id: string): {
+            order: number;
+            coordinate: number;
+        };
+        getKeyframeValueFromAnimation(id: string): {
+            frame: number;
+            value: number;
+        } | undefined;
         /**
          * Keyframe Manipulation
          * This section handles events from SvgDraggableArea.
          */
         selectKeyframe(id: string, multiselect: boolean): void;
+        resetActionableKeyframe(): void;
         selectedControlPoint(type: string, id: string): void;
         deselectKeyframes(): void;
         updateValuePerCoordinate(dataType: number, value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion, newValue: number, coordinate?: number): number | Vector3 | Quaternion | Color3 | Color4 | Vector2 | Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
         updateLeftControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: IAnimationKey, dataType: number, coordinate: number): void;
         updateRightControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: IAnimationKey, dataType: number, coordinate: number): void;
-        /**
-         * Actions
-         * This section handles events from GraphActionsBar.
-         */
         handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setKeyframeValue(): void;
         setFlatTangent(): void;
         setTangentMode(): void;
         setBrokenMode(): void;
@@ -1202,11 +1244,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
          * Curve Rendering Functions
          * This section handles how to render curves.
          */
-        linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: Vector2, index: number): void;
         flatTangents(keyframes: IAnimationKey[], dataType: number): IAnimationKey[];
-        returnZero(dataType: number): number | Vector3 | Quaternion | Color3 | Color4 | Vector2 | Size | undefined;
+        returnZero(dataType: number): 0 | Vector3 | Quaternion | Color3 | Color4 | Vector2 | Size;
         getValueAsArray(valueType: number, value: number | Vector2 | Vector3 | Color3 | Color4 | Size | Quaternion): number[];
+        setValueAsType(valueType: number, arrayValue: number[]): number | Vector3 | Quaternion | Color3 | Color4 | Vector2 | Size;
         getPathData(animation: Animation | null): ICurveData[] | undefined;
         getAnimationData(animation: Animation): {
             loopMode: number | undefined;
@@ -1271,6 +1313,7 @@ declare module "babylonjs-inspector/components/popupComponent" {
     }> {
         private _container;
         private _window;
+        private _curveEditorHost;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
         openPopup(): void;
@@ -1406,23 +1449,22 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
 declare module "babylonjs-inspector/textureHelper" {
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-    export enum TextureChannelToDisplay {
-        R = 0,
-        G = 1,
-        B = 2,
-        A = 3,
-        All = 4
+    export interface TextureChannelsToDisplay {
+        R: boolean;
+        G: boolean;
+        B: boolean;
+        A: boolean;
     }
     export class TextureHelper {
         private static _ProcessAsync;
-        static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+        static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/lines/textureLineComponent" {
     import * as React from "react";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { TextureChannelToDisplay } from "babylonjs-inspector/textureHelper";
+    import { TextureChannelsToDisplay } from "babylonjs-inspector/textureHelper";
     interface ITextureLineComponentProps {
         texture: BaseTexture;
         width: number;
@@ -1431,26 +1473,80 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
         hideChannelSelect?: boolean;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        channel: TextureChannelToDisplay;
+        channels: TextureChannelsToDisplay;
         face: number;
     }> {
         private canvasRef;
+        private static TextureChannelStates;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            channel: TextureChannelToDisplay;
+            channels: TextureChannelsToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
         componentDidUpdate(): void;
-        updatePreview(): void;
+        updatePreview(): Promise<void>;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar" {
+    import * as React from 'react';
+    export interface Tool {
+        type: any;
+        name: string;
+        instance: any;
+        icon: string;
+    }
+    interface ToolBarProps {
+        tools: Tool[];
+        addTool(url: string): void;
+        changeTool(toolIndex: number): void;
+        activeToolIndex: number;
+        metadata: any;
+        setMetadata(data: any): void;
+    }
+    interface ToolBarState {
+        toolURL: string;
+    }
+    export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
+        constructor(props: ToolBarProps);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar" {
+    import * as React from 'react';
+    export interface Channel {
+        visible: boolean;
+        editable: boolean;
+        name: string;
+        id: 'R' | 'G' | 'B' | 'A';
+        icon: any;
+    }
+    interface ChannelsBarProps {
+        channels: Channel[];
+        setChannels(channelState: Channel[]): void;
+    }
+    export class ChannelsBar extends React.Component<ChannelsBarProps> {
         render(): JSX.Element;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager" {
     import { Scene } from 'babylonjs/scene';
+    import { Vector2 } from 'babylonjs/Maths/math.vector';
+    import { Nullable } from 'babylonjs/types';
     import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-    import { TextureChannelToDisplay } from "babylonjs-inspector/textureHelper";
     import { ISize } from 'babylonjs/Maths/math.size';
+    import { PointerInfo } from 'babylonjs/Events/pointerEvents';
+    import { Tool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
+    import { Channel } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar";
+    export interface PixelData {
+        x?: number;
+        y?: number;
+        r?: number;
+        g?: number;
+        b?: number;
+        a?: number;
+    }
     export class TextureCanvasManager {
         private _engine;
         private _scene;
@@ -1464,14 +1560,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _2DCanvas;
         private _texture;
         private _displayCanvas;
-        private _displayChannel;
+        private _channels;
+        private _face;
         private _displayTexture;
         private _originalTexture;
-        private _targetTexture;
+        private _target;
         private _originalInternalTexture;
+        private _didEdit;
         private _plane;
         private _planeMaterial;
-        private keyMap;
+        private _planeFallbackMaterial;
+        private _keyMap;
         private static ZOOM_MOUSE_SPEED;
         private static ZOOM_KEYBOARD_SPEED;
         private static ZOOM_IN_KEY;
@@ -1481,47 +1580,119 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private static PAN_KEY;
         private static MIN_SCALE;
         private static MAX_SCALE;
+        private _tool;
+        private _setPixelData;
         metadata: any;
-        constructor(texture: BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement);
-        updateTexture(): void;
+        constructor(texture: BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement, setPixelData: (pixelData: PixelData) => void);
+        updateTexture(): Promise<void>;
         private copyTextureToDisplayTexture;
-        set displayChannel(channel: TextureChannelToDisplay);
-        get displayChannel(): TextureChannelToDisplay;
+        set channels(channels: Channel[]);
         static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
-        static flipCanvas(canvas: HTMLCanvasElement): void;
+        grabOriginalTexture(): void;
+        getMouseCoordinates(pointerInfo: PointerInfo): Vector2;
         get scene(): Scene;
         get canvas2D(): HTMLCanvasElement;
         get size(): ISize;
+        set tool(tool: Nullable<Tool>);
+        get tool(): Nullable<Tool>;
+        set face(face: number);
+        resetTexture(): void;
         dispose(): void;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/propertiesBar" {
+    import * as React from 'react';
+    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import { PixelData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
+    interface PropertiesBarProps {
+        texture: BaseTexture;
+        saveTexture(): void;
+        pixelData: PixelData;
+        face: number;
+        setFace(face: number): void;
+        resetTexture(): void;
+    }
+    interface PixelDataProps {
+        name: string;
+        data?: number;
+    }
+    function PixelData(props: PixelDataProps): JSX.Element;
+    export class PropertiesBar extends React.Component<PropertiesBarProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/bottomBar" {
+    import * as React from 'react';
+    interface BottomBarProps {
+        name: string;
+    }
+    export class BottomBar extends React.Component<BottomBarProps> {
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasComponent" {
+    import * as React from 'react';
+    import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    interface TextureCanvasComponentProps {
+        canvasUI: React.RefObject<HTMLCanvasElement>;
+        canvas2D: React.RefObject<HTMLCanvasElement>;
+        canvasDisplay: React.RefObject<HTMLCanvasElement>;
+        texture: BaseTexture;
+    }
+    export class TextureCanvasComponent extends React.Component<TextureCanvasComponentProps> {
+        shouldComponentUpdate(nextProps: TextureCanvasComponentProps): boolean;
+        render(): JSX.Element;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent" {
     import * as React from 'react';
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
-    import { TextureChannelToDisplay } from "babylonjs-inspector/textureHelper";
+    import { PixelData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
+    import { Tool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
+    import { Channel } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar";
     interface TextureEditorComponentProps {
         globalState: GlobalState;
         texture: BaseTexture;
+        url: string;
     }
     interface TextureEditorComponentState {
-        channel: TextureChannelToDisplay;
+        tools: Tool[];
+        activeToolIndex: number;
+        metadata: any;
+        channels: Channel[];
+        pixelData: PixelData;
+        face: number;
+    }
+    interface ToolData {
+        name: string;
+        type: any;
+        icon: string;
+    }
+    global {
+        var _TOOL_DATA_: ToolData;
     }
     export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
         private _textureCanvasManager;
         private canvasUI;
         private canvas2D;
         private canvasDisplay;
-        private channels;
         constructor(props: TextureEditorComponentProps);
         componentDidMount(): void;
         componentDidUpdate(): void;
         componentWillUnmount(): void;
+        loadTool(url: string): void;
+        changeTool(index: number): void;
+        setMetadata(newMetadata: any): void;
+        setFace(face: number): void;
+        saveTexture(): void;
+        resetTexture(): void;
         render(): JSX.Element;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent" {
     import * as React from "react";
+    import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
@@ -1533,15 +1704,20 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         globalState: GlobalState;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     }
-    export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
+    interface ITexturePropertyGridComponentState {
+        isTextureEditorOpen: boolean;
+        textureEditing: Nullable<BaseTexture>;
+    }
+    export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps, ITexturePropertyGridComponentState> {
         private _adtInstrumentation;
         private textureLineRef;
-        private _isTextureEditorOpen;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
         onOpenTextureEditor(): void;
-        onCloseTextureEditor(window: Window | null): void;
+        onCloseTextureEditor(window: Window | null, callback?: {
+            (): void;
+        }): void;
         forceRefresh(): void;
         render(): JSX.Element;
     }
@@ -3711,7 +3887,7 @@ declare module "babylonjs-inspector/inspector" {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number, lateBinding?: boolean): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: Scene, userOptions: Partial<IInspectorOptions>): void;
@@ -4336,6 +4512,7 @@ declare module INSPECTOR {
         positionCanvas?: number;
         repositionCanvas?: boolean;
         canvasPositionEnded: () => void;
+        resetActionableKeyframe: () => void;
     }
     export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, {
         panX: number;
@@ -4365,7 +4542,7 @@ declare module INSPECTOR {
         keyDown(e: KeyboardEvent): void;
         keyUp(e: KeyboardEvent): void;
         focus(e: React.MouseEvent<SVGSVGElement>): void;
-        isControlPointActive(): boolean;
+        isNotControlPointActive(): boolean;
         render(): JSX.Element;
     }
 }
@@ -4497,9 +4674,16 @@ declare module INSPECTOR {
         title: string;
         close: (event: any) => void;
         enabled: boolean;
+        setKeyframeValue: () => void;
     }
     export class GraphActionsBar extends React.Component<IGraphActionsBarProps> {
+        private _frameInput;
+        private _valueInput;
         constructor(props: IGraphActionsBarProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
+        isEnterKeyUp(event: KeyboardEvent): void;
+        onBlur(event: React.FocusEvent<HTMLInputElement>): void;
         render(): JSX.Element;
     }
 }
@@ -4707,6 +4891,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ISwitchButtonProps {
+        current: CurveScale;
+        action?: (event: CurveScale) => void;
+    }
+    export class ScaleLabel extends React.Component<ISwitchButtonProps, {
+        current: CurveScale;
+    }> {
+        constructor(props: ISwitchButtonProps);
+        renderLabel(scale: CurveScale): "" | "DEG" | "FLT" | "INT" | "RAD";
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
@@ -4719,9 +4916,16 @@ declare module INSPECTOR {
         value: number;
         label: number;
     }
+    export enum CurveScale {
+        float = 0,
+        radians = 1,
+        degrees = 2,
+        integers = 3,
+        default = 4
+    }
     export interface IActionableKeyFrame {
-        frame: number;
-        value: any;
+        frame?: number | string;
+        value?: any;
     }
     interface ICurveData {
         pathData: string;
@@ -4757,9 +4961,12 @@ declare module INSPECTOR {
         panningX: number;
         repositionCanvas: boolean;
         actionableKeyframe: IActionableKeyFrame;
+        valueScale: CurveScale;
     }> {
         private _snippetUrl;
         private _heightScale;
+        private _scaleFactor;
+        private _currentScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
         private _svgKeyframes;
@@ -4787,30 +4994,39 @@ declare module INSPECTOR {
             value: number;
             label: number;
         }[];
-        setValueLines(): {
+        setValueLines(type: CurveScale): ({
+            value: number;
+            label: string;
+        } | {
             value: number;
             label: number;
-        }[];
-        setAxesLength(): void;
+        })[];
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
+        encodeCurveId(animationName: string, coordinate: number): string;
+        decodeCurveId(id: string): {
+            order: number;
+            coordinate: number;
+        };
+        getKeyframeValueFromAnimation(id: string): {
+            frame: number;
+            value: number;
+        } | undefined;
         /**
          * Keyframe Manipulation
          * This section handles events from SvgDraggableArea.
          */
         selectKeyframe(id: string, multiselect: boolean): void;
+        resetActionableKeyframe(): void;
         selectedControlPoint(type: string, id: string): void;
         deselectKeyframes(): void;
         updateValuePerCoordinate(dataType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion, newValue: number, coordinate?: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         renderPoints(updatedSvgKeyFrame: IKeyframeSvgPoint, id: string): void;
         updateLeftControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
         updateRightControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: BABYLON.IAnimationKey, dataType: number, coordinate: number): void;
-        /**
-         * Actions
-         * This section handles events from GraphActionsBar.
-         */
         handleFrameChange(event: React.ChangeEvent<HTMLInputElement>): void;
         handleValueChange(event: React.ChangeEvent<HTMLInputElement>): void;
+        setKeyframeValue(): void;
         setFlatTangent(): void;
         setTangentMode(): void;
         setBrokenMode(): void;
@@ -4823,11 +5039,11 @@ declare module INSPECTOR {
          * Curve Rendering Functions
          * This section handles how to render curves.
          */
-        linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
         flatTangents(keyframes: BABYLON.IAnimationKey[], dataType: number): BABYLON.IAnimationKey[];
-        returnZero(dataType: number): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size | undefined;
+        returnZero(dataType: number): 0 | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         getValueAsArray(valueType: number, value: number | BABYLON.Vector2 | BABYLON.Vector3 | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Size | BABYLON.Quaternion): number[];
+        setValueAsType(valueType: number, arrayValue: number[]): number | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
         getPathData(animation: BABYLON.Animation | null): ICurveData[] | undefined;
         getAnimationData(animation: BABYLON.Animation): {
             loopMode: number | undefined;
@@ -4891,6 +5107,7 @@ declare module INSPECTOR {
     }> {
         private _container;
         private _window;
+        private _curveEditorHost;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
         openPopup(): void;
@@ -4994,16 +5211,15 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export enum TextureChannelToDisplay {
-        R = 0,
-        G = 1,
-        B = 2,
-        A = 3,
-        All = 4
+    export interface TextureChannelsToDisplay {
+        R: boolean;
+        G: boolean;
+        B: boolean;
+        A: boolean;
     }
     export class TextureHelper {
         private static _ProcessAsync;
-        static GetTextureDataAsync(texture: BABYLON.BaseTexture, width: number, height: number, face: number, channel: TextureChannelToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+        static GetTextureDataAsync(texture: BABYLON.BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
     }
 }
 declare module INSPECTOR {
@@ -5015,22 +5231,70 @@ declare module INSPECTOR {
         hideChannelSelect?: boolean;
     }
     export class TextureLineComponent extends React.Component<ITextureLineComponentProps, {
-        channel: TextureChannelToDisplay;
+        channels: TextureChannelsToDisplay;
         face: number;
     }> {
         private canvasRef;
+        private static TextureChannelStates;
         constructor(props: ITextureLineComponentProps);
         shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: {
-            channel: TextureChannelToDisplay;
+            channels: TextureChannelsToDisplay;
             face: number;
         }): boolean;
         componentDidMount(): void;
         componentDidUpdate(): void;
-        updatePreview(): void;
+        updatePreview(): Promise<void>;
         render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
+    export interface Tool {
+        type: any;
+        name: string;
+        instance: any;
+        icon: string;
+    }
+    interface ToolBarProps {
+        tools: Tool[];
+        addTool(url: string): void;
+        changeTool(toolIndex: number): void;
+        activeToolIndex: number;
+        metadata: any;
+        setMetadata(data: any): void;
+    }
+    interface ToolBarState {
+        toolURL: string;
+    }
+    export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
+        constructor(props: ToolBarProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface Channel {
+        visible: boolean;
+        editable: boolean;
+        name: string;
+        id: 'R' | 'G' | 'B' | 'A';
+        icon: any;
+    }
+    interface ChannelsBarProps {
+        channels: Channel[];
+        setChannels(channelState: Channel[]): void;
+    }
+    export class ChannelsBar extends React.Component<ChannelsBarProps> {
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface PixelData {
+        x?: number;
+        y?: number;
+        r?: number;
+        g?: number;
+        b?: number;
+        a?: number;
+    }
     export class TextureCanvasManager {
         private _engine;
         private _scene;
@@ -5044,14 +5308,17 @@ declare module INSPECTOR {
         private _2DCanvas;
         private _texture;
         private _displayCanvas;
-        private _displayChannel;
+        private _channels;
+        private _face;
         private _displayTexture;
         private _originalTexture;
-        private _targetTexture;
+        private _target;
         private _originalInternalTexture;
+        private _didEdit;
         private _plane;
         private _planeMaterial;
-        private keyMap;
+        private _planeFallbackMaterial;
+        private _keyMap;
         private static ZOOM_MOUSE_SPEED;
         private static ZOOM_KEYBOARD_SPEED;
         private static ZOOM_IN_KEY;
@@ -5061,38 +5328,101 @@ declare module INSPECTOR {
         private static PAN_KEY;
         private static MIN_SCALE;
         private static MAX_SCALE;
+        private _tool;
+        private _setPixelData;
         metadata: any;
-        constructor(texture: BABYLON.BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement);
-        updateTexture(): void;
+        constructor(texture: BABYLON.BaseTexture, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvasDisplay: HTMLCanvasElement, setPixelData: (pixelData: PixelData) => void);
+        updateTexture(): Promise<void>;
         private copyTextureToDisplayTexture;
-        set displayChannel(channel: TextureChannelToDisplay);
-        get displayChannel(): TextureChannelToDisplay;
+        set channels(channels: Channel[]);
         static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
-        static flipCanvas(canvas: HTMLCanvasElement): void;
+        grabOriginalTexture(): void;
+        getMouseCoordinates(pointerInfo: BABYLON.PointerInfo): BABYLON.Vector2;
         get scene(): BABYLON.Scene;
         get canvas2D(): HTMLCanvasElement;
         get size(): BABYLON.ISize;
+        set tool(tool: BABYLON.Nullable<Tool>);
+        get tool(): BABYLON.Nullable<Tool>;
+        set face(face: number);
+        resetTexture(): void;
         dispose(): void;
+    }
+}
+declare module INSPECTOR {
+    interface PropertiesBarProps {
+        texture: BABYLON.BaseTexture;
+        saveTexture(): void;
+        pixelData: PixelData;
+        face: number;
+        setFace(face: number): void;
+        resetTexture(): void;
+    }
+    interface PixelDataProps {
+        name: string;
+        data?: number;
+    }
+    function PixelData(props: PixelDataProps): JSX.Element;
+    export class PropertiesBar extends React.Component<PropertiesBarProps> {
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface BottomBarProps {
+        name: string;
+    }
+    export class BottomBar extends React.Component<BottomBarProps> {
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface TextureCanvasComponentProps {
+        canvasUI: React.RefObject<HTMLCanvasElement>;
+        canvas2D: React.RefObject<HTMLCanvasElement>;
+        canvasDisplay: React.RefObject<HTMLCanvasElement>;
+        texture: BABYLON.BaseTexture;
+    }
+    export class TextureCanvasComponent extends React.Component<TextureCanvasComponentProps> {
+        shouldComponentUpdate(nextProps: TextureCanvasComponentProps): boolean;
+        render(): JSX.Element;
     }
 }
 declare module INSPECTOR {
     interface TextureEditorComponentProps {
         globalState: GlobalState;
         texture: BABYLON.BaseTexture;
+        url: string;
     }
     interface TextureEditorComponentState {
-        channel: TextureChannelToDisplay;
+        tools: Tool[];
+        activeToolIndex: number;
+        metadata: any;
+        channels: Channel[];
+        pixelData: PixelData;
+        face: number;
+    }
+    interface ToolData {
+        name: string;
+        type: any;
+        icon: string;
+    }
+    global {
+        var _TOOL_DATA_: ToolData;
     }
     export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
         private _textureCanvasManager;
         private canvasUI;
         private canvas2D;
         private canvasDisplay;
-        private channels;
         constructor(props: TextureEditorComponentProps);
         componentDidMount(): void;
         componentDidUpdate(): void;
         componentWillUnmount(): void;
+        loadTool(url: string): void;
+        changeTool(index: number): void;
+        setMetadata(newMetadata: any): void;
+        setFace(face: number): void;
+        saveTexture(): void;
+        resetTexture(): void;
         render(): JSX.Element;
     }
 }
@@ -5103,15 +5433,20 @@ declare module INSPECTOR {
         globalState: GlobalState;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
-    export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
+    interface ITexturePropertyGridComponentState {
+        isTextureEditorOpen: boolean;
+        textureEditing: BABYLON.Nullable<BABYLON.BaseTexture>;
+    }
+    export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps, ITexturePropertyGridComponentState> {
         private _adtInstrumentation;
         private textureLineRef;
-        private _isTextureEditorOpen;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
         onOpenTextureEditor(): void;
-        onCloseTextureEditor(window: Window | null): void;
+        onCloseTextureEditor(window: Window | null, callback?: {
+            (): void;
+        }): void;
         forceRefresh(): void;
         render(): JSX.Element;
     }
@@ -6786,7 +7121,7 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number, lateBinding?: boolean): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;

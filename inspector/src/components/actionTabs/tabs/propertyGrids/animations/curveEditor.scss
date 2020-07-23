@@ -1,7 +1,10 @@
+body {
+  background-color: #333;
+}
+
 #animation-curve-editor {
   background-color: rgb(51, 51, 51);
-
-  font-family: acumin-pro-condensed;
+  font-family: "acumin-pro-condensed";
   background-color: #333333;
 
   .last {
@@ -20,14 +23,14 @@
       height: 20px;
     }
     &.babylon-logo {
-      background-image: url('./assets/babylonLogo.svg');
+      background-image: url("./assets/babylonLogo.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
     }
 
     &.close {
-      background-image: url('./assets/closeWindowIcon.svg');
+      background-image: url("./assets/closeWindowIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -36,7 +39,7 @@
     }
 
     &.auto-tangent {
-      background-image: url('./assets/autoTangentIcon.svg');
+      background-image: url("./assets/autoTangentIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -52,7 +55,7 @@
     }
 
     &.break-tangent {
-      background-image: url('./assets/breakTangentIcon.svg');
+      background-image: url("./assets/breakTangentIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -68,7 +71,7 @@
     }
 
     &.flat-tangent {
-      background-image: url('./assets/flatTangentIcon.svg');
+      background-image: url("./assets/flatTangentIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -84,7 +87,7 @@
     }
 
     &.frame {
-      background-image: url('./assets/frameIcon.svg');
+      background-image: url("./assets/frameIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -100,7 +103,7 @@
     }
 
     &.linear-tangent {
-      background-image: url('./assets/linearTangentIcon.svg');
+      background-image: url("./assets/linearTangentIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -116,7 +119,7 @@
     }
 
     &.unify-tangent {
-      background-image: url('./assets/unifyTangentIcon.svg');
+      background-image: url("./assets/unifyTangentIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -132,7 +135,7 @@
     }
 
     &.add-animation {
-      background-image: url('./assets/addAnimationIcon.svg');
+      background-image: url("./assets/addAnimationIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -141,7 +144,7 @@
     }
 
     &.animation-bullet {
-      background-image: url('./assets/animationBulletIcon.svg');
+      background-image: url("./assets/animationBulletIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -149,7 +152,7 @@
     }
 
     &.animation-delete {
-      background-image: url('./assets/animationDeleteIcon.svg');
+      background-image: url("./assets/animationDeleteIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -158,7 +161,7 @@
     }
 
     &.animation-edit {
-      background-image: url('./assets/editIcon.svg');
+      background-image: url("./assets/editIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -166,7 +169,7 @@
     }
 
     &.animation-end {
-      background-image: url('./assets/animationEndIcon.svg');
+      background-image: url("./assets/animationEndIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -177,7 +180,7 @@
     }
 
     &.animation-lastkey {
-      background-image: url('./assets/animationLastKeyIcon.svg');
+      background-image: url("./assets/animationLastKeyIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -185,12 +188,12 @@
       cursor: pointer;
       background-position: center;
       &:hover {
-        background-image: url('./assets/animationLastKeyHoverIcon.svg');
+        background-image: url("./assets/animationLastKeyHoverIcon.svg");
       }
     }
 
     &.animation-nextkey {
-      background-image: url('./assets/animationNextKeyIcon.svg');
+      background-image: url("./assets/animationNextKeyIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -198,12 +201,12 @@
       cursor: pointer;
       background-position: center;
       &:hover {
-        background-image: url('./assets/animationNextKeyHoverIcon.svg');
+        background-image: url("./assets/animationNextKeyHoverIcon.svg");
       }
     }
 
     &.animation-options {
-      background-image: url('./assets/animationOptionsIcon.svg');
+      background-image: url("./assets/animationOptionsIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -216,7 +219,7 @@
     }
 
     &.animation-playfwd {
-      background-image: url('./assets/animationPlayFwdIcon.svg');
+      background-image: url("./assets/animationPlayFwdIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -226,12 +229,12 @@
       cursor: pointer;
       background-position: center;
       &:hover {
-        background-image: url('./assets/animationPlayFwdHoverIcon.svg');
+        background-image: url("./assets/animationPlayFwdHoverIcon.svg");
       }
     }
 
     &.animation-playrev {
-      background-image: url('./assets/animationPlayRevIcon.svg');
+      background-image: url("./assets/animationPlayRevIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -241,12 +244,12 @@
       cursor: pointer;
       background-position: center;
       &:hover {
-        background-image: url('./assets/animationPlayRevHoverIcon.svg');
+        background-image: url("./assets/animationPlayRevHoverIcon.svg");
       }
     }
 
     &.animation-start {
-      background-image: url('./assets/animationStartIcon.svg');
+      background-image: url("./assets/animationStartIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -258,7 +261,7 @@
     }
 
     &.animation-stop {
-      background-image: url('./assets/animationStopIcon.svg');
+      background-image: url("./assets/animationStopIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -270,7 +273,7 @@
     }
 
     &.animation-triangle {
-      background-image: url('./assets/animationTriangleIcon.svg');
+      background-image: url("./assets/animationTriangleIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -278,7 +281,7 @@
     }
 
     &.key-active {
-      background-image: url('./assets/keyActiveIcon.svg');
+      background-image: url("./assets/keyActiveIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -286,7 +289,7 @@
     }
 
     &.key-inactive {
-      background-image: url('./assets/keyInactiveIcon.svg');
+      background-image: url("./assets/keyInactiveIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -294,7 +297,7 @@
     }
 
     &.key-selected {
-      background-image: url('./assets/keySelectedIcon.svg');
+      background-image: url("./assets/keySelectedIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -302,7 +305,7 @@
     }
 
     &.loop-active {
-      background-image: url('./assets/loopActiveIcon.svg');
+      background-image: url("./assets/loopActiveIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -311,7 +314,7 @@
     }
 
     &.loop-inactive {
-      background-image: url('./assets/loopInactiveIcon.svg');
+      background-image: url("./assets/loopInactiveIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -320,7 +323,7 @@
     }
 
     &.move {
-      background-image: url('./assets/moveIcon.svg');
+      background-image: url("./assets/moveIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -328,7 +331,7 @@
     }
 
     &.save {
-      background-image: url('./assets/saveIcon.svg');
+      background-image: url("./assets/saveIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -337,7 +340,7 @@
     }
 
     &.load {
-      background-image: url('./assets/loadIcon.svg');
+      background-image: url("./assets/loadIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -346,7 +349,7 @@
     }
 
     &.checked {
-      background-image: url('./assets/checkboxCheckedIcon.svg');
+      background-image: url("./assets/checkboxCheckedIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -354,7 +357,7 @@
     }
 
     &.unchecked {
-      background-image: url('./assets/checkboxDefaultIcon.svg');
+      background-image: url("./assets/checkboxDefaultIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -362,7 +365,7 @@
     }
 
     &.new-key {
-      background-image: url('./assets/newKeyIcon.svg');
+      background-image: url("./assets/newKeyIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -377,7 +380,7 @@
     }
 
     &.scale {
-      background-image: url('./assets/scaleIcon.svg');
+      background-image: url("./assets/scaleIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -385,7 +388,7 @@
     }
 
     &.scrollbar-handle {
-      background-image: url('./assets/scrollbarHandleIcon.svg');
+      background-image: url("./assets/scrollbarHandleIcon.svg");
       background-repeat: no-repeat;
       background-color: transparent;
       background-size: contain;
@@ -485,7 +488,7 @@
       align-items: center;
       margin-right: 8px;
       input {
-        width: 75px;
+        width: 78px;
         height: 24px;
         color: white;
         font-size: 12px;
@@ -558,9 +561,9 @@
           width: 60px;
           margin-left: 10px;
           margin-right: 10px;
-          position: absolute;
-          right: 9px;
-          bottom: 11px;
+          position: relative;
+          float: right;
+          bottom: 35px;
 
           input {
             text-align: center;
@@ -570,7 +573,7 @@
             color: white;
             height: 25px;
             font-size: 15px;
-            font-family: acumin-pro-condensed;
+            font-family: "acumin-pro-condensed";
             &::-webkit-inner-spin-button,
             &::-webkit-outer-spin-button {
               appearance: none;
@@ -649,7 +652,7 @@
                 margin-left: 10px;
                 margin-right: 10px;
                 font-size: 12px;
-                font-family: acumin-pro-condensed;
+                font-family: "acumin-pro-condensed";
                 color: #222222;
               }
             }
@@ -716,7 +719,7 @@
                 -webkit-appearance: none;
                 margin: 0;
               }
-              font-family: acumin-pro-condensed;
+              font-family: "acumin-pro-condensed";
             }
           }
           p {
@@ -765,7 +768,7 @@
             margin-top: 0px;
             button {
               margin-top: 0px;
-              font-family: acumin-pro-condensed;
+              font-family: "acumin-pro-condensed";
               padding-top: 1px;
             }
           }
@@ -786,7 +789,7 @@
             width: 127px;
             background-color: #444;
             height: 20px;
-            font-family: acumin-pro-condensed;
+            font-family: "acumin-pro-condensed";
             padding-top: 0px;
           }
         }
@@ -797,7 +800,7 @@
             font-size: 12px;
             width: 75px;
             text-align: center;
-            font-family: acumin-pro-condensed;
+            font-family: "acumin-pro-condensed";
           }
           .value {
             input {
@@ -805,7 +808,7 @@
               background-color: #444444;
               border: none;
               height: 20px;
-              font-family: acumin-pro-condensed;
+              font-family: "acumin-pro-condensed";
               padding-bottom: 6px;
               padding-left: 6px;
               color: white;
@@ -827,7 +830,7 @@
             margin: 0px;
             label {
               font-size: 12px;
-              font-family: acumin-pro-condensed;
+              font-family: "acumin-pro-condensed";
               display: flex;
               align-content: center;
               align-items: center;
@@ -868,7 +871,7 @@
             margin-top: 0px;
             button {
               margin-top: 0px;
-              font-family: acumin-pro-condensed;
+              font-family: "acumin-pro-condensed";
               padding-top: 1px;
             }
           }
@@ -888,7 +891,7 @@
             background-color: #444444;
             height: 20px;
             width: 105px;
-            font-family: acumin-pro-condensed;
+            font-family: "acumin-pro-condensed";
             padding-top: 1px;
           }
 
@@ -909,7 +912,7 @@
             font-size: 12px;
             width: 75px;
             text-align: center;
-            font-family: acumin-pro-condensed;
+            font-family: "acumin-pro-condensed";
           }
           .value {
             input {
@@ -917,7 +920,7 @@
               background-color: #444444;
               border: none;
               height: 20px;
-              font-family: acumin-pro-condensed;
+              font-family: "acumin-pro-condensed";
             }
           }
         }
@@ -963,7 +966,7 @@
                 line-height: 11px;
                 margin: 4px;
                 font-size: 10px;
-                font-family: acumin-pro-condensed;
+                font-family: "acumin-pro-condensed";
                 border: none;
               }
             }
@@ -983,7 +986,7 @@
               height: auto;
             }
             &:before {
-              content: '';
+              content: "";
               background: none;
             }
             height: 20px;
@@ -1004,7 +1007,7 @@
             }
 
             .animation-bullet {
-              background-image: url('./assets/animationBulletIcon.svg');
+              background-image: url("./assets/animationBulletIcon.svg");
               background-repeat: no-repeat;
               background-color: transparent;
               background-size: contain;
@@ -1018,7 +1021,7 @@
 
             .animation-arrow {
               width: 30px;
-              background-image: url('./assets/animationTriangleIcon.svg');
+              background-image: url("./assets/animationTriangleIcon.svg");
               background-repeat: no-repeat;
               background-color: transparent;
               background-size: 10px;
@@ -1040,7 +1043,7 @@
 
               &.show {
                 display: block;
-                background-image: url('./assets/keySelectedIcon.svg');
+                background-image: url("./assets/keySelectedIcon.svg");
                 background-repeat: no-repeat;
                 background-color: transparent;
                 background-size: 10px;
@@ -1086,7 +1089,7 @@
             border-radius: 0px;
             outline: 1px solid #ccc;
           }
-          font-family: acumin-pro-condensed;
+          font-family: "acumin-pro-condensed";
         }
 
         select {
@@ -1100,7 +1103,7 @@
             border-radius: 0px;
             outline: 1px solid #ccc;
           }
-          font-family: acumin-pro-condensed;
+          font-family: "acumin-pro-condensed";
         }
       }
     }
@@ -1119,6 +1122,21 @@
       background-color: rgb(17, 17, 17);
       height: 364px;
       width: 782px;
+
+      .switch-button {
+        background-color: black;
+        width: 30px;
+        height: 33px;
+        position: relative;
+        z-index: 100;
+        bottom: 33px;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+      }
 
       .linear {
         overflow: visible;
@@ -1145,7 +1163,7 @@
         }
         text {
           fill: #555555;
-          font-family: 'acumin-pro-condensed';
+          font-family: "acumin-pro-condensed";
         }
 
         .control-point {
@@ -1218,7 +1236,7 @@
     align-items: center;
     justify-items: stretch;
 
-    input[type='file'] {
+    input[type="file"] {
       display: none;
     }
 
