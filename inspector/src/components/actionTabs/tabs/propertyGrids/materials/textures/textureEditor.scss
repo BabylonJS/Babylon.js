@@ -155,13 +155,17 @@
                 height: 20px;
                 border-radius: 50%;
             }
-            input[type="color"] {
-                position: absolute;
-                width: 0;
-                height: 0;
-                right: 0;
-                visibility: hidden;
-            }
+        }
+        .color-picker-cover {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        .color-picker {
+            position: absolute;
+            margin-left: 40px;
         }
     }
     
