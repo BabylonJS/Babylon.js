@@ -1,28 +1,28 @@
-import * as React from 'react';
-import { Animation } from 'babylonjs/Animations/animation';
-import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
-import { Color3, Color4 } from 'babylonjs/Maths/math.color';
-import { Size } from 'babylonjs/Maths/math.size';
-import { EasingFunction } from 'babylonjs/Animations/easing';
-import { IAnimationKey } from 'babylonjs/Animations/animationKey';
-import { IKeyframeSvgPoint } from './keyframeSvgPoint';
-import { SvgDraggableArea } from './svgDraggableArea';
-import { Timeline } from './timeline';
-import { Notification } from './notification';
-import { GraphActionsBar } from './graphActionsBar';
-import { Scene } from 'babylonjs/scene';
-import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-import { Animatable } from 'babylonjs/Animations/animatable';
-import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
-import { EditorControls } from './editorControls';
-import { SelectedCoordinate } from './animationListTree';
-import { LockObject } from '../lockObject';
-import { GlobalState } from '../../../../globalState';
-import { Nullable } from 'babylonjs/types';
-import { Observer } from 'babylonjs/Misc/observable';
-import { ScaleLabel } from './scale-label';
+import * as React from "react";
+import { Animation } from "babylonjs/Animations/animation";
+import { Vector2, Vector3, Quaternion } from "babylonjs/Maths/math.vector";
+import { Color3, Color4 } from "babylonjs/Maths/math.color";
+import { Size } from "babylonjs/Maths/math.size";
+import { EasingFunction } from "babylonjs/Animations/easing";
+import { IAnimationKey } from "babylonjs/Animations/animationKey";
+import { IKeyframeSvgPoint } from "./keyframeSvgPoint";
+import { SvgDraggableArea } from "./svgDraggableArea";
+import { Timeline } from "./timeline";
+import { Notification } from "./notification";
+import { GraphActionsBar } from "./graphActionsBar";
+import { Scene } from "babylonjs/scene";
+import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+import { Animatable } from "babylonjs/Animations/animatable";
+import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
+import { EditorControls } from "./editorControls";
+import { SelectedCoordinate } from "./animationListTree";
+import { LockObject } from "../lockObject";
+import { GlobalState } from "../../../../globalState";
+import { Nullable } from "babylonjs/types";
+import { Observer } from "babylonjs/Misc/observable";
+import { ScaleLabel } from "./scale-label";
 
-require('./curveEditor.scss');
+require("./curveEditor.scss");
 
 interface IAnimationCurveEditorComponentProps {
     close: (event: any) => void;
@@ -91,9 +91,11 @@ export class AnimationCurveEditorComponent extends React.Component<
         valueScale: CurveScale;
     }
 > {
-    private _snippetUrl = 'https://snippet.babylonjs.com';
+    private _snippetUrl = "https://snippet.babylonjs.com";
     // Height scale *Review this functionaliy
     private _heightScale: number = 100;
+    private _scaleFactor: number = 2;
+    private _currentScale: number = 10;
     // Canvas Length *Review this functionality
     readonly _entityName: string;
     readonly _canvasLength: number = 20;
@@ -158,7 +160,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             valueAxisLength: new Array(10).fill(0).map((s, i) => {
                 return { value: i * 10, label: valueInd[i] };
             }),
-            notification: '',
+            notification: "",
             currentPoint: undefined,
             scale: 1,
             playheadPos: 0,
@@ -172,7 +174,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             panningX: 0,
             repositionCanvas: false,
             actionableKeyframe: { frame: undefined, value: undefined },
-            valueScale: CurveScale.degrees,
+            valueScale: CurveScale.default,
         };
     }
 
@@ -185,7 +187,7 @@ export class AnimationCurveEditorComponent extends React.Component<
      * To add notification we set the state and clear to make the notification bar hide.
      */
     clearNotification() {
-        this.setState({ notification: '' });
+        this.setState({ notification: "" });
     }
 
     /**
@@ -215,84 +217,54 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     setValueLines(type: CurveScale) {
-        let scaleValues = { scale: 10, factor: 0 };
-
         switch (type) {
             case CurveScale.default:
-                scaleValues.factor = 2;
                 this._heightScale = 100;
+                this._scaleFactor = 2;
                 break;
             case CurveScale.float:
-                scaleValues.factor = 2.5;
+                this._scaleFactor = 2.5;
                 this._heightScale = 120;
                 break;
             case CurveScale.degrees:
-                scaleValues.factor = 50;
+                this._scaleFactor = 50;
                 this._heightScale = 200;
                 break;
             case CurveScale.integers:
-                scaleValues.factor = 320;
+                this._scaleFactor = 320;
                 break;
             case CurveScale.radians:
-                scaleValues.factor = 0.8;
+                this._scaleFactor = 0.8;
                 break;
         }
 
-        const initialValues = new Array(scaleValues.scale).fill(0).map((_, i) => {
+        const lineV = this._heightScale / 10;
+
+        const initialValues = new Array(this._currentScale).fill(0).map((_, i) => {
             return {
-                value: i * scaleValues.scale,
-                label: (scaleValues.factor * ((scaleValues.scale - i) / scaleValues.scale)).toFixed(2),
+                value: i * lineV,
+                label: (this._scaleFactor * ((this._currentScale - i) / this._currentScale)).toFixed(2),
             };
         });
 
         initialValues.shift();
 
-        const valueHeight = Math.abs(Math.round(this.state.panningY / scaleValues.scale));
+        const valueHeight = Math.abs(Math.round(this.state.panningY / this._currentScale));
         const sign = Math.sign(this.state.panningY);
 
         const pannedValues = new Array(valueHeight).fill(0).map((s, i) => {
             return sign === -1
                 ? {
-                      value: -i * scaleValues.scale,
-                      label: (i + scaleValues.scale) / (scaleValues.scale / scaleValues.factor),
+                      value: -i * lineV,
+                      label: (i + this._currentScale) / (this._currentScale / this._scaleFactor),
                   }
                 : {
-                      value: (i + scaleValues.scale) * scaleValues.scale,
-                      label: (i * -1) / (scaleValues.scale / scaleValues.factor),
+                      value: (i + lineV) * this._currentScale,
+                      label: (i * -1) / (this._currentScale / this._scaleFactor),
                   };
         });
 
         return [...initialValues, ...pannedValues];
-    }
-
-    setAxesLength() {
-        let length = this.state.animationLimit * 2;
-        let newlength = Math.round(this._canvasLength * this.state.scale);
-        if (!isNaN(newlength) || newlength !== undefined) {
-            length = newlength;
-        }
-        let highestFrame = 100;
-        if (this.state.selected !== null && this.state.selected !== undefined) {
-            highestFrame = this.state.selected.getHighestFrame();
-        }
-
-        if (length < (highestFrame * 2) / 10) {
-            length = Math.round((highestFrame * 2) / 10);
-        }
-
-        let valueLines = Math.round((this.state.scale * this._heightScale) / 10);
-
-        let newFrameLength = new Array(length).fill(0).map((s, i) => {
-            return { value: i * 10, label: i };
-        });
-        let newValueLength = new Array(valueLines).fill(0).map((s, i) => {
-            return { value: i * 10, label: this.getValueLabel(i * 10) };
-        });
-        this.setState({
-            frameAxisLength: newFrameLength,
-            valueAxisLength: newValueLength,
-        });
-        this.resetPlayheadOffset();
     }
 
     getValueLabel(i: number) {
@@ -318,12 +290,12 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     encodeCurveId(animationName: string, coordinate: number) {
-        return animationName + '_' + coordinate;
+        return animationName + "_" + coordinate;
     }
 
     decodeCurveId(id: string) {
-        const order = parseInt(id.split('_')[3]);
-        const coordinate = parseInt(id.split('_')[2]);
+        const order = parseInt(id.split("_")[3]);
+        const coordinate = parseInt(id.split("_")[2]);
         return { order, coordinate };
     }
 
@@ -375,11 +347,11 @@ export class AnimationCurveEditorComponent extends React.Component<
         let updatedKeyframes = this.state.svgKeyframes?.map((kf) => {
             if (kf.id === id) {
                 this.setState({ isFlatTangentMode: false });
-                if (type === 'left') {
+                if (type === "left") {
                     kf.isLeftActive = !kf.isLeftActive;
                     kf.isRightActive = false;
                 }
-                if (type === 'right') {
+                if (type === "right") {
                     kf.isRightActive = !kf.isRightActive;
                     kf.isLeftActive = false;
                 }
@@ -533,7 +505,10 @@ export class AnimationCurveEditorComponent extends React.Component<
             }
         }
 
-        let updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
+        //let updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * this._scaleFactor; // this value comes inverted svg from 0 = 100 to 100 = 0
+        //let updatedValue = ((100 - updatedSvgKeyFrame.keyframePoint.y) / 100) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
+        //let updatedValue = ((100 - updatedSvgKeyFrame.keyframePoint.y) / 100) * this._scaleFactor;
+        let updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * this._scaleFactor; //?
 
         const updatedValueInCoordinate = this.updateValuePerCoordinate(animation.dataType, keys[index].value, updatedValue, coordinate);
 
@@ -600,8 +575,8 @@ export class AnimationCurveEditorComponent extends React.Component<
         event.preventDefault();
 
         let frame;
-        if (event.target.value === '') {
-            frame = '';
+        if (event.target.value === "") {
+            frame = "";
         } else {
             frame = parseInt(event.target.value);
         }
@@ -620,10 +595,10 @@ export class AnimationCurveEditorComponent extends React.Component<
         let value;
 
         if (event.target.value !== undefined) {
-            if (event.target.value !== '') {
+            if (event.target.value !== "") {
                 value = parseFloat(event.target.value);
             } else {
-                value = '';
+                value = "";
             }
 
             this.setState({
@@ -636,7 +611,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     setKeyframeValue() {
-        if (this.state.actionableKeyframe.frame !== '' && this.state.actionableKeyframe.frame !== undefined && this.state.actionableKeyframe.value !== '' && this.state.actionableKeyframe.value !== undefined) {
+        if (this.state.actionableKeyframe.frame !== "" && this.state.actionableKeyframe.frame !== undefined && this.state.actionableKeyframe.value !== "" && this.state.actionableKeyframe.value !== undefined) {
             if (this.state.selected !== null) {
                 let currentSelected = this.state.svgKeyframes?.find((kf) => kf.selected);
                 if (currentSelected) {
@@ -753,8 +728,8 @@ export class AnimationCurveEditorComponent extends React.Component<
 
             const indexesToRemove = points.map((p) => {
                 return {
-                    index: parseInt(p.id.split('_')[3]),
-                    coordinate: parseInt(p.id.split('_')[2]),
+                    index: parseInt(p.id.split("_")[3]),
+                    coordinate: parseInt(p.id.split("_")[2]),
                 };
             });
 
@@ -816,21 +791,6 @@ export class AnimationCurveEditorComponent extends React.Component<
      * Curve Rendering Functions
      * This section handles how to render curves.
      */
-    linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string {
-        keyframes.forEach((key, i) => {
-            // identify type of value and split...
-            var point = new Vector2(0, 0);
-            point.x = key.frame * this._pixelFrameUnit;
-            point.y = this._heightScale - key.value * middle;
-            this.setKeyframePointLinear(point, i);
-
-            if (i !== 0) {
-                data += ` L${point.x} ${point.y}`;
-            }
-        });
-        return data;
-    }
-
     setKeyframePointLinear(point: Vector2, index: number) {
         // here set the ID to a unique id
         let svgKeyframe = {
@@ -943,9 +903,9 @@ export class AnimationCurveEditorComponent extends React.Component<
 
             keyframes = this.flatTangents(keyframes, valueType);
             const startKey = keyframes[0];
-            let middle = this._heightScale / 2;
+            let middle = this._heightScale / this._scaleFactor; //?
             let collection: ICurveData[] = [];
-            const colors = ['red', 'green', 'blue', 'white', '#7a4ece'];
+            const colors = ["red", "green", "blue", "white", "#7a4ece"];
             const startValue = this.getValueAsArray(valueType, startKey.value);
 
             for (var d = 0; d < startValue.length; d++) {
@@ -1004,7 +964,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         let framesPerSecond = animation.framePerSecond;
         let highestFrame = animation.getHighestFrame();
         //let serialized = animation.serialize();
-        let usesTangents = animation.getKeys().find((kf) => kf.hasOwnProperty('inTangent') || kf.hasOwnProperty('outTangent')) !== undefined ? true : false;
+        let usesTangents = animation.getKeys().find((kf) => kf.hasOwnProperty("inTangent") || kf.hasOwnProperty("outTangent")) !== undefined ? true : false;
         let valueType = animation.dataType;
         // easing properties
         let easingType, easingMode;
@@ -1271,7 +1231,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             updatedPath = [];
 
             filteredSvgKeys = this._svgKeyframes?.filter((curve) => {
-                let id = parseInt(curve.id.split('_')[2]);
+                let id = parseInt(curve.id.split("_")[2]);
                 if (id === coordinate) {
                     return true;
                 } else {
@@ -1280,7 +1240,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             });
 
             curves?.map((curve) => {
-                let id = parseInt(curve.id.split('_')[2]);
+                let id = parseInt(curve.id.split("_")[2]);
                 if (id === coordinate) {
                     updatedPath.push(curve);
                 }
@@ -1471,7 +1431,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     render() {
         return (
             <div id="animation-curve-editor">
-                <Notification message={this.state.notification} open={this.state.notification !== '' ? true : false} close={() => this.clearNotification()} />
+                <Notification message={this.state.notification} open={this.state.notification !== "" ? true : false} close={() => this.clearNotification()} />
                 <GraphActionsBar
                     setKeyframeValue={() => this.setKeyframeValue()}
                     enabled={this.state.selected === null || this.state.selected === undefined ? false : true}
@@ -1509,7 +1469,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                         />
 
                         <div ref={this._graphCanvas} className="graph-chart" onWheel={(e) => this.zoom(e)}>
-                            <ScaleLabel current={this.state.valueScale} />
                             {this.state.svgKeyframes && (
                                 <SvgDraggableArea
                                     ref={this._svgCanvas}
@@ -1543,8 +1502,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                                             d={curve.pathData}
                                             style={{
                                                 stroke: curve.color,
-                                                fill: 'none',
-                                                strokeWidth: '0.5',
+                                                fill: "none",
+                                                strokeWidth: "0.5",
                                             }}
                                         ></path>
                                     ))}
@@ -1560,8 +1519,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                                                 dy="-1"
                                                 style={{
                                                     fontSize: `${0.18 * this.state.scale}em`,
-                                                    fontWeight: 'bold',
-                                                    textAlign: 'center',
+                                                    fontWeight: "bold",
+                                                    textAlign: "center",
                                                 }}
                                             >
                                                 {line.label}
@@ -1573,10 +1532,10 @@ export class AnimationCurveEditorComponent extends React.Component<
                                         return <line key={i} x1={-((this.state.frameAxisLength.length * 10) / 2)} y1={line.value} x2={this.state.frameAxisLength.length * 10} y2={line.value}></line>;
                                     })}
 
-                                    <rect onClick={(e) => this.moveFrameTo(e)} x={-((this.state.frameAxisLength.length * 10) / 2)} y={90 + this.state.panningY + '%'} width={this.state.frameAxisLength.length * 10} height="10%" fill="#222" style={{ cursor: 'pointer' }}></rect>
+                                    <rect onClick={(e) => this.moveFrameTo(e)} x={-((this.state.frameAxisLength.length * 10) / 2)} y={91 + this.state.panningY + "%"} width={this.state.frameAxisLength.length * 10} height="9%" fill="#222" style={{ cursor: "pointer" }}></rect>
 
                                     {this.state.frameAxisLength.map((f, i) => (
-                                        <svg key={i} x="0" y={96 + this.state.panningY + '%'} className="frame-contain">
+                                        <svg key={i} x="0" y={96 + this.state.panningY + "%"} className="frame-contain">
                                             <text x={f.value} y="0" dx="2px" style={{ fontSize: `${0.17 * this.state.scale}em` }}>
                                                 {f.label}
                                             </text>
@@ -1592,7 +1551,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                                         x2={f.value}
                                                         y2="-100%"
                                                         style={{
-                                                            stroke: 'white',
+                                                            stroke: "white",
                                                             strokeWidth: 0.4,
                                                         }}
                                                     />
@@ -1604,7 +1563,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                                             textAnchor="middle"
                                                             style={{
                                                                 fontSize: `${0.17 * this.state.scale}em`,
-                                                                pointerEvents: 'none',
+                                                                pointerEvents: "none",
                                                                 fontWeight: 600,
                                                             }}
                                                         >
@@ -1617,6 +1576,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     ))}
                                 </SvgDraggableArea>
                             )}
+                            <ScaleLabel current={this.state.valueScale} />
                         </div>
                     </div>
                     <div className="row-bottom">
