@@ -1313,6 +1313,7 @@ declare module "babylonjs-inspector/components/popupComponent" {
     }> {
         private _container;
         private _window;
+        private _curveEditorHost;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
         openPopup(): void;
@@ -3886,7 +3887,7 @@ declare module "babylonjs-inspector/inspector" {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number, lateBinding?: boolean): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: Scene, userOptions: Partial<IInspectorOptions>): void;
@@ -5106,6 +5107,7 @@ declare module INSPECTOR {
     }> {
         private _container;
         private _window;
+        private _curveEditorHost;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
         openPopup(): void;
@@ -7119,7 +7121,7 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number, lateBinding?: boolean): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;
