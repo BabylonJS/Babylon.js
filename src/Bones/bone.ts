@@ -223,7 +223,7 @@ export class Bone extends Node {
      * Sets the local matrix to rest pose matrix
      */
     public returnToRest(): void {
-        this.updateMatrix(this._restPose.clone());
+        this.updateMatrix(this._restPose.clone(), false, false);
     }
 
     /**
