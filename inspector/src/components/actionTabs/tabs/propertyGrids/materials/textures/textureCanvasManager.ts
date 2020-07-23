@@ -381,7 +381,6 @@ export class TextureCanvasManager {
 
     public reset() : void {
         this._originalTexture._texture = this._originalInternalTexture;
-        // (this._originalTexture as Texture)._invertY = this._didInvertY;
         this.grabOriginalTexture();
         this.makePlane();
         this._didEdit = false;
@@ -430,8 +429,6 @@ export class TextureCanvasManager {
                             texture.dispose();
                         }
                     );
-
-                    // (texture as CubeTexture).updateURL(base64data, extension, () => this.grabOriginalTexture());
                 } else {
                     const texture = new Texture(
                         base64data,
