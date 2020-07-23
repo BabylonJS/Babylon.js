@@ -21,6 +21,11 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     public disableAutoAttach: boolean = false;
 
     /**
+     * The name of the native xr feature name (like anchor, hit-test, or hand-tracking)
+     */
+    public xrNativeFeatureName: string = '';
+
+    /**
      * Construct a new (abstract) WebXR feature
      * @param _xrSessionManager the xr session manager for this feature
      */
@@ -78,6 +83,14 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      */
     public dispose(): void {
         this.detach();
+    }
+
+    /**
+     * This function will be executed during before enabling the feature and can be used to not-allow enabling it.
+     * Note that at this point the session has NOT started, so this is purely checking if the browser supports it
+     */
+    public isCompatible(): boolean {
+        return true;
     }
 
     /**
