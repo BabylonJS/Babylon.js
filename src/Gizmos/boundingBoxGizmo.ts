@@ -264,6 +264,7 @@ export class BoundingBoxGizmo extends Gizmo {
                     // Dragging logic
                     let dragAxis = new Vector3(i - 1, j - 1, k - 1);
                     var _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
+                    _dragBehavior.updateDragPlane = false;
                     _dragBehavior.moveAttached = false;
                     box.addBehavior(_dragBehavior);
                     _dragBehavior.onDragObservable.add((event) => {
