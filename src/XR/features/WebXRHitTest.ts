@@ -135,7 +135,8 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         public readonly options: IWebXRHitTestOptions = {}
     ) {
         super(_xrSessionManager);
-        Tools.Warn("Hit test is an experimental and unstable feature. make sure you enable optionalFeatures when creating the XR session");
+        this.xrNativeFeatureName = "hit-test";
+        Tools.Warn("Hit test is an experimental and unstable feature.");
     }
 
     /**
@@ -146,6 +147,11 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
      */
     public attach(): boolean {
         if (!super.attach()) {
+            return false;
+        }
+
+        // Feature enabled, but not available
+        if (!this._xrSessionManager.session.requestHitTestSource) {
             return false;
         }
 

@@ -119,6 +119,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      */
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRAnchorSystemOptions = {}) {
         super(_xrSessionManager);
+        this.xrNativeFeatureName = "anchors";
     }
 
     private _tmpVector = new Vector3();
@@ -154,7 +155,8 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         // the matrix that we'll use
         const m = new XRRigidTransform({ x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z }, { x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w });
         if (!hitTestResult.xrHitResult.createAnchor) {
-            throw new Error('Anchors not enabled in this browsed. Add "anchors" to optional features');
+            this.detach();
+            throw new Error('Anchors not enabled in this environment/browser');
         } else {
             try {
                 return hitTestResult.xrHitResult.createAnchor(m);
@@ -322,7 +324,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         return <IWebXRAnchor>anchor;
     }
 
-    private async _createAnchorAtTransformation(xrTransformation: XRRigidTransform, xrFrame: XRFrame) {
+    private async _createAnchorAtTransformation(xrTransformation: XRRigidTransform, xrFrame: XRFrame): Promise<XRAnchor> {
         if (xrFrame.createAnchor) {
             try {
                 return xrFrame.createAnchor(xrTransformation, this._referenceSpaceForFrameAnchors ?? this._xrSessionManager.referenceSpace);
@@ -330,6 +332,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 throw new Error(error);
             }
         } else {
+            this.detach();
             throw new Error("Anchors are not enabled in your browser");
         }
     }
