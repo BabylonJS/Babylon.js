@@ -83,6 +83,19 @@
                     margin-right: 8px;
                 }
             }
+            @media only screen and (max-width: 334px) {
+                display: none;
+            }
+        }
+        #pixel-coords-tab {
+            @media only screen and (max-width: 440px) {
+                display: none;
+            }
+        }
+        #pixel-color-tab {
+            @media only screen and (max-width: 640px) {
+                display: none;
+            }
         }
         #right-tab {
             flex-grow: 1;
@@ -91,6 +104,10 @@
             .content {
                 position: absolute;
                 right: 0px;
+            }
+            
+            input[type="file"] {
+                display: none;
             }
         }
     
@@ -124,7 +141,12 @@
             flex-direction: column;
             
         }
-    
+
+        #color-picker {
+            position: absolute;
+            margin-left: 40px;
+        }
+
         #color {
             margin-top: 8px;
             #activeColor {
@@ -132,6 +154,13 @@
                 width: 20px;
                 height: 20px;
                 border-radius: 50%;
+            }
+            input[type="color"] {
+                position: absolute;
+                width: 0;
+                height: 0;
+                right: 0;
+                visibility: hidden;
             }
         }
     }

@@ -71,6 +71,11 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this.saveTexture = this.saveTexture.bind(this);
         this.setFace = this.setFace.bind(this);
         this.resetTexture = this.resetTexture.bind(this);
+        this.resizeTexture = this.resizeTexture.bind(this);
+        this.uploadTexture = this.uploadTexture.bind(this);
+        this.loadTool("https://darraghburkems.github.io/BJSTools/Paintbrush.js");
+        this.loadTool("https://darraghburkems.github.io/BJSTools/Floodfill.js");
+        this.loadTool("https://darraghburkems.github.io/BJSTools/Eyedropper.js")
     }
 
     componentDidMount() {
@@ -143,7 +148,15 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
     }
 
     resetTexture() {
-        this._textureCanvasManager.resetTexture();
+        this._textureCanvasManager.reset();
+    }
+
+    resizeTexture(width: number, height: number) {
+        this._textureCanvasManager.resize({width, height});
+    }
+
+    uploadTexture(file : File) {
+        this._textureCanvasManager.upload(file);
     }
 
     render() {
@@ -155,6 +168,8 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
                 face={this.state.face}
                 setFace={this.setFace}
                 resetTexture={this.resetTexture}
+                resizeTexture={this.resizeTexture}
+                uploadTexture={this.uploadTexture}
             />
             <ToolBar
                 tools={this.state.tools}
