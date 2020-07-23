@@ -291,22 +291,11 @@ export class TextureCanvasManager {
         }
     }
 
-    public static paintPixelsOnCanvas(pixelData : Uint8Array, canvas: HTMLCanvasElement, flip : boolean = false) {
+    public static paintPixelsOnCanvas(pixelData : Uint8Array, canvas: HTMLCanvasElement) {
         const ctx = canvas.getContext('2d')!;
         const imgData = ctx.createImageData(canvas.width, canvas.height);
         imgData.data.set(pixelData);
         ctx.putImageData(imgData, 0, 0);
-        if (flip) {
-            ctx.globalCompositeOperation = 'copy';
-            ctx.globalAlpha = 1;
-            const transform = ctx.getTransform();
-            ctx.resetTransform();
-            ctx.translate(0,canvas.height);
-            ctx.scale(1,-1);
-            ctx.drawImage(canvas, 0, 0);
-            ctx.setTransform(transform)
-            ctx.globalCompositeOperation = 'source-over';
-        }
     }
 
     public grabOriginalTexture() {
