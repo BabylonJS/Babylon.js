@@ -357,7 +357,7 @@ export class Skeleton implements IAnimatable {
         const _localScaling = TmpVectors.Vector3[0];
         const _localRotation = TmpVectors.Quaternion[0];
         const _localPosition = TmpVectors.Vector3[1];
-    
+
         for (var index = 0; index < this.bones.length; index++) {
             const bone = this.bones[index];
 
