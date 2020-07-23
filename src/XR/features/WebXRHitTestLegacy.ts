@@ -4,6 +4,7 @@ import { Observable } from "../../Misc/observable";
 import { Vector3, Matrix } from "../../Maths/math.vector";
 import { TransformNode } from "../../Meshes/transformNode";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { Tools } from "../../Misc/tools";
 
 // the plugin is registered at the end of the file
 
@@ -90,6 +91,8 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
         public readonly options: IWebXRLegacyHitTestOptions = {}
     ) {
         super(_xrSessionManager);
+        this.xrNativeFeatureName = "hit-test";
+        Tools.Warn("A newer version of this plugin is available");
     }
 
     /**
