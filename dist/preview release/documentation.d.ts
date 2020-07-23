@@ -11097,7 +11097,7 @@ declare module BABYLON {
         static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl?: string): Promise<SpriteManager>;
         /**
          * Creates a sprite manager from a snippet saved by the sprite editor
-         * @param snippetId defines the snippet to load
+         * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
          * @param scene defines the hosting scene
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a promise that will resolve to the new sprite manager
@@ -27970,6 +27970,8 @@ declare module BABYLON {
          */
         static _GetDefaultSideOrientation(orientation?: number): number;
         private _internalMeshDataInfo;
+        get computeBonesUsingShaders(): boolean;
+        set computeBonesUsingShaders(value: boolean);
         /**
          * An event triggered before rendering the mesh
          */
@@ -67323,7 +67325,7 @@ declare module BABYLON {
         static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
         /**
          * Creates a particle system from a snippet saved by the particle system editor
-         * @param snippetId defines the snippet to load
+         * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies

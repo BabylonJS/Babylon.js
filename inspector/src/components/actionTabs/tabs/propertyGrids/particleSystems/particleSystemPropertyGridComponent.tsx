@@ -209,7 +209,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = system.snippetId ;
+                    const oldId = system.snippetId || "_BLANK";
                     system.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
                         system.snippetId += "#" + snippet.version;
@@ -223,8 +223,8 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: system.snippetId
+                            regex: new RegExp(`ParticleHelper.CreateFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `ParticleHelper.CreateFromSnippetAsync("${system.snippetId}`
                         });
                     }
 
