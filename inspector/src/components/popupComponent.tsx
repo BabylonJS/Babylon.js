@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Inspector } from "../inspector";
-import { Popup } from "../components/popup";
 
 interface IPopupComponentProps {
     id: string;
@@ -39,7 +38,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
 
         let windowVariableName = `window_${title}`;
 
-        this._container = Popup.CreatePopup(title, windowVariableName, size.width, size.height);
+        this._container = Inspector._CreatePopup(title, windowVariableName, size.width, size.height);
 
         if (this._container) {
             this._curveEditorHost = this._container.ownerDocument!.createElement("div");
