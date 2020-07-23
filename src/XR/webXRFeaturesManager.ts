@@ -1,6 +1,6 @@
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { IDisposable } from "../scene";
-import { Tools } from "../Misc";
+import { Tools } from "../Misc/tools";
 
 /**
  * Defining the interface required for a (webxr) feature
@@ -271,7 +271,7 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param required is this feature required to the app. If set to true the session init will fail if the feature is not available.
      * @returns a new constructed feature or throws an error if feature not found.
      */
-    public enableFeature(featureName: string | { Name: string }, version: number | string = "latest", moduleOptions: any = {}, attachIfPossible: boolean = true, required: boolean = false): IWebXRFeature {
+    public enableFeature(featureName: string | { Name: string }, version: number | string = "latest", moduleOptions: any = {}, attachIfPossible: boolean = true, required: boolean = true): IWebXRFeature {
         const name = typeof featureName === "string" ? featureName : featureName.Name;
         let versionToLoad = 0;
         if (typeof version === "string") {
@@ -330,7 +330,7 @@ export class WebXRFeaturesManager implements IDisposable {
             if (required) {
                 throw new Error("required feature not compatible");
             } else {
-                Tools.Warn(`Feature ${name} not compatible with the current environment/browser`);
+                Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
                 return constructed;
             }
         }
