@@ -34,6 +34,8 @@ export interface IWebXRFeature extends IDisposable {
     /**
      * This function will be executed during before enabling the feature and can be used to not-allow enabling it.
      * Note that at this point the session has NOT started, so this is purely checking if the browser supports it
+     *
+     * @returns whether or not the feature is compatible in this environment
      */
     isCompatible(): boolean;
 
@@ -358,6 +360,8 @@ export class WebXRFeaturesManager implements IDisposable {
      * If, for example, the anchors feature is enabled, it will be automatically added to the optional or required features list,
      * according to the defined "required" variable, provided during enableFeature call
      * @param xrSessionInit the xr Session init object to extend
+     *
+     * @returns an extended XRSessionInit object
      */
     public extendXRSessionInitObject(xrSessionInit: XRSessionInit): XRSessionInit {
         const enabledFeatures = this.getEnabledFeatures();

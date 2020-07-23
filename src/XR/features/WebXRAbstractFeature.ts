@@ -88,6 +88,8 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     /**
      * This function will be executed during before enabling the feature and can be used to not-allow enabling it.
      * Note that at this point the session has NOT started, so this is purely checking if the browser supports it
+     *
+     * @returns whether or not the feature is compatible in this environment
      */
     public isCompatible(): boolean {
         return true;
