@@ -56,9 +56,6 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
                             onClick={evt => {
                                 if (evt.button === 0) {
                                     this.props.changeTool(index)
-                                } else if (evt.button === 2) {
-                                    // context menu - possibly delete tool?
-                                    evt.preventDefault();
                                 }
                             }}
                             key={index}
@@ -82,7 +79,7 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
                     </div> }
                 </div>
             </div>
-            <div id='color' onClick={() => this.setState({pickerOpen: !this.state.pickerOpen})} title='Color' className='icon button'>
+            <div id='color' onClick={() => this.setState({pickerOpen: !this.state.pickerOpen})} title='Color' className={`icon button${this.state.pickerOpen ? ` active` : ``}`}>
                 <div id='activeColor' style={{backgroundColor: this.props.metadata.color}}></div>
             </div>
             {

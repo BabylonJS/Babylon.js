@@ -9,6 +9,9 @@ import { BottomBar } from './bottomBar';
 import { Tools } from "babylonjs/Misc/tools";
 import { TextureCanvasComponent } from './textureCanvasComponent';
 
+import defaultTools from './defaultTools';
+import { Scene, ISize } from 'babylonjs';
+
 require('./textureEditor.scss');
 
 interface TextureEditorComponentProps {
@@ -26,7 +29,16 @@ interface TextureEditorComponentState {
     face: number;
 }
 
-interface ToolData {
+export interface ToolParameters {
+    scene: Scene;
+    canvas2D: HTMLCanvasElement;
+    size: ISize;
+    updateTexture: () => void;
+    getMetadata: () => any;
+    setMetadata: (data : any) => void;
+}
+
+export interface ToolData {
     name: string;
     type: any;
     icon: string;
@@ -65,7 +77,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
             pixelData: {},
             face: 0
         }
-        this.loadTool = this.loadTool.bind(this);
+        this.loadToolFromURL = this.loadToolFromURL.bind(this);
         this.changeTool = this.changeTool.bind(this);
         this.setMetadata = this.setMetadata.bind(this);
         this.saveTexture = this.saveTexture.bind(this);
@@ -73,8 +85,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this.resetTexture = this.resetTexture.bind(this);
         this.resizeTexture = this.resizeTexture.bind(this);
         this.uploadTexture = this.uploadTexture.bind(this);
-        const defaultTools = ['https://darraghburkems.github.io/BJSTools/Paintbrush.js', 'https://darraghburkems.github.io/BJSTools/Floodfill.js', 'https://darraghburkems.github.io/BJSTools/Eyedropper.js']
-        defaultTools.forEach(tool => this.loadTool(tool));
+
     }
 
     componentDidMount() {
@@ -85,6 +96,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
             this.canvasDisplay.current!,
             (data : PixelData) => {this.setState({pixelData: data})}
         );
+        this.addTools(defaultTools);
     }
 
     componentDidUpdate() {
@@ -99,24 +111,30 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         this._textureCanvasManager.dispose();
     }
 
-    // There is currently no UI for adding a tool, so this function does not get called
-    loadTool(url : string) {
+    loadToolFromURL(url : string) {
         Tools.LoadScript(url, () => {
+            this.addTools([_TOOL_DATA_]);
+        });
+    }
+    
+    addTools(tools : ToolData[]) {
+        let newTools : Tool[] = [];
+        tools.forEach(toolData => {
             const tool : Tool = {
-                ..._TOOL_DATA_,
-                instance: new _TOOL_DATA_.type({
+                ...toolData,
+                instance: new toolData.type({
                     scene: this._textureCanvasManager.scene,
                     canvas2D: this._textureCanvasManager.canvas2D,
                     size: this._textureCanvasManager.size,
                     updateTexture: () => this._textureCanvasManager.updateTexture(),
                     getMetadata: () => this.state.metadata,
                     setMetadata: (data : any) => this.setMetadata(data)
-                })
-            };
-            const newTools = this.state.tools.concat(tool);
-            this.setState({tools: newTools});
-                console.log(tool);
+            })};
+            newTools = newTools.concat(tool);
         });
+        newTools = this.state.tools.concat(newTools);
+        this.setState({tools: newTools});
+        console.log(newTools);
     }
 
     changeTool(index : number) {
@@ -173,7 +191,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
             <ToolBar
                 tools={this.state.tools}
                 activeToolIndex={this.state.activeToolIndex}
-                addTool={this.loadTool}
+                addTool={this.loadToolFromURL}
                 changeTool={this.changeTool}
                 metadata={this.state.metadata}
                 setMetadata={this.setMetadata}
