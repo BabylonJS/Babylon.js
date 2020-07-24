@@ -69,6 +69,10 @@ export class GlobalState {
 
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
         this.onPropertyChangedObservable = propertyChangedObservable;
+
+        this.onNewSceneObservable.add(scene => {
+            this.recorder.cancel();
+        });
     }
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {

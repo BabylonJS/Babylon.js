@@ -328,7 +328,7 @@ export class ToolsTabComponent extends PaneComponent {
                     }
                     {
                         this.props.globalState.recorder.isRecording &&
-                        <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
+                        <ButtonLineComponent label="Generate delta file" onClick={() => this.exportReplay()} />
                     }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE IMPORT">

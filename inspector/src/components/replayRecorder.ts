@@ -10,6 +10,10 @@ export class ReplayRecorder {
         return this._isRecording;
     }
 
+    public cancel() {
+        this._isRecording = false;
+    }
+
     public trackScene(scene: Scene) {
         this._sceneRecorder.track(scene);
         this._isRecording = true;
