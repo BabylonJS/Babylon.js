@@ -9,6 +9,18 @@ interface PropertiesBarProps {
     face: number;
     setFace(face : number): void;
     resetTexture() : void;
+    resizeTexture(width: number, height: number) : void;
+    uploadTexture(file : File) : void;
+}
+
+interface PropertiesBarState {
+    width: number;
+    height: number;
+}
+
+interface PixelDataProps {
+    name : string;
+    data?: number;
 }
 
 const resetButton = require('./assets/reset.svg');
@@ -37,25 +49,42 @@ const faces = [
     negZ
 ]
 
-interface PixelDataProps {
-    name : string;
-    data?: number;
-}
-
 function PixelData(props : PixelDataProps) {
     return <span className='pixel-data'>{props.name}: <span className='value'>{props.data || '-'}</span></span>
 }
 
-export class PropertiesBar extends React.Component<PropertiesBarProps> {
+function getNewDimension(oldDim : number, newDim : any) {
+    if (!isNaN(newDim)) {
+        if (parseInt(newDim) > 0) {
+            if (Number.isInteger(parseInt(newDim)))
+                return parseInt(newDim);
+        }
+    }
+    return oldDim;
+}
+
+export class PropertiesBar extends React.Component<PropertiesBarProps,PropertiesBarState> {
+    constructor(props : PropertiesBarProps) {
+        super(props);
+
+        this.state = {
+            width: props.texture.getSize().width,
+            height: props.texture.getSize().height
+        }
+    }
     render() {
         return <div id='properties'>
                 <div className='tab' id='logo-tab'>
                     <img className='icon' src={babylonLogo}/>
                 </div>
                 <div className='tab' id='dimensions-tab'>
-                    <label className='dimensions'>W: <input type='text' readOnly contentEditable={false} value={this.props.texture.getSize().width}/></label>
-                    <label className='dimensions'>H: <input type='text' readOnly contentEditable={false} value={this.props.texture.getSize().height} /></label>
-                    <img id='resize' className='icon button' title='Resize' alt='Resize' src={resizeButton}/>
+                    <label className='dimensions'>
+                        W: <input type='text' value={this.state.width} onChange={(evt) => this.setState({width: getNewDimension(this.state.width, evt.target.value)})}/>
+                        </label>
+                    <label className='dimensions'>
+                        H: <input type='text' value={this.state.height} onChange={(evt) => this.setState({height: getNewDimension(this.state.height, evt.target.value)})}/>
+                        </label>
+                    <img id='resize' className='icon button' title='Resize' alt='Resize' src={resizeButton} onClick={() => this.props.resizeTexture(this.state.width, this.state.height)}/>
                 </div>
                 <div className='tab' id='pixel-coords-tab'>
                     <PixelData name='X' data={this.props.pixelData.x}/>
@@ -86,7 +115,27 @@ export class PropertiesBar extends React.Component<PropertiesBarProps> {
                 <div className='tab' id='right-tab'>
                     <div className='content'>
                         <img title='Reset' className='icon button' src={resetButton} onClick={() => this.props.resetTexture()}/>
-                        <img title='Upload' className='icon button' src={uploadButton}/>
+                        <label>
+                            <input
+                                accept='.jpg, .png, .tga, .dds, .env'
+                                type='file'
+                                onChange={
+                                    (evt : React.ChangeEvent<HTMLInputElement>) => {
+                                        const files = evt.target.files;
+                                        if (files && files.length) {
+                                            this.props.uploadTexture(files[0]);
+                                        }
+                                
+                                        evt.target.value = "";
+                                    }
+                                }
+                            />
+                            <img
+                                title='Upload'
+                                className='icon button'
+                                src={uploadButton}
+                            />
+                        </label>
                         <img title='Save' className='icon button' src={saveButton} onClick={() => this.props.saveTexture()}/>
                     </div>
                 </div>
