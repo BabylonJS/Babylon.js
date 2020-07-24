@@ -4,29 +4,30 @@ import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 export const Paintbrush : ToolData = {
     name: "Paintbrush",
     type: class {
-        parameters: ToolParameters;
+        getParameters: () => ToolParameters;
         pointerObservable: any;
         isPainting: boolean;
 
-        constructor(parameters: ToolParameters) {
-            this.parameters = parameters;
+        constructor(getParameters: () => ToolParameters) {
+            this.getParameters = getParameters;
         }
 
         paint(pointerInfo : PointerInfo) {
-            const ctx = this.parameters.canvas2D.getContext('2d')!;
-            const x = pointerInfo.pickInfo!.getTextureCoordinates()!.x * this.parameters.size.width;
-            const y = (1 - pointerInfo.pickInfo!.getTextureCoordinates()!.y) * this.parameters.size.height;
+            const p = this.getParameters();
+            const ctx = p.canvas2D.getContext('2d')!;
+            const x = pointerInfo.pickInfo!.getTextureCoordinates()!.x * p.size.width;
+            const y = (1 - pointerInfo.pickInfo!.getTextureCoordinates()!.y) * p.size.height;
             ctx.globalCompositeOperation = 'source-over';
-            ctx.fillStyle = this.parameters.getMetadata().color;
-            ctx.globalAlpha = this.parameters.getMetadata().opacity;
+            ctx.fillStyle = p.getMetadata().color;
+            ctx.globalAlpha = p.getMetadata().opacity;
             ctx.beginPath();
             ctx.ellipse(x, y, 15, 15, 0, 0, Math.PI * 2);
             ctx.fill();
-            this.parameters.updateTexture();
+            p.updateTexture();
         }
         
         setup () {
-            this.pointerObservable = this.parameters.scene.onPointerObservable.add((pointerInfo) => {
+            this.pointerObservable = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         if (pointerInfo.event.button == 0) {
@@ -48,7 +49,7 @@ export const Paintbrush : ToolData = {
         cleanup () {
             this.isPainting = false;
             if (this.pointerObservable) {
-                this.parameters.scene.onPointerObservable.remove(this.pointerObservable);
+                this.getParameters().scene.onPointerObservable.remove(this.pointerObservable);
             }
         }
     },

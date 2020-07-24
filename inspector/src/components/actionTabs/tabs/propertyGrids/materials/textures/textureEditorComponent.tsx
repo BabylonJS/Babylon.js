@@ -123,19 +123,23 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         tools.forEach(toolData => {
             const tool : Tool = {
                 ...toolData,
-                instance: new toolData.type({
-                    scene: this._textureCanvasManager.scene,
-                    canvas2D: this._textureCanvasManager.canvas2D,
-                    size: this._textureCanvasManager.size,
-                    updateTexture: () => this._textureCanvasManager.updateTexture(),
-                    getMetadata: () => this.state.metadata,
-                    setMetadata: (data : any) => this.setMetadata(data)
-            })};
+                instance: new toolData.type(() => this.getToolParameters())};
             newTools = newTools.concat(tool);
         });
         newTools = this.state.tools.concat(newTools);
         this.setState({tools: newTools});
         console.log(newTools);
+    }
+
+    getToolParameters() : ToolParameters {
+        return {
+            scene: this._textureCanvasManager.scene,
+            canvas2D: this._textureCanvasManager.canvas2D,
+            size: this._textureCanvasManager.size,
+            updateTexture: () => this._textureCanvasManager.updateTexture(),
+            getMetadata: () => this.state.metadata,
+            setMetadata: (data : any) => this.setMetadata(data)
+        };
     }
 
     changeTool(index : number) {

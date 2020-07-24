@@ -4,27 +4,28 @@ import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 export const Eyedropper : ToolData = {
     name: "Eyedropper",
     type: class {
-        parameters: ToolParameters;
+        getParameters: () => ToolParameters;
         pointerObservable: any;
         isPicking: boolean;
 
-        constructor(parameters: ToolParameters) {
-            this.parameters = parameters;
+        constructor(getParameters: () => ToolParameters) {
+            this.getParameters = getParameters;
         }
 
         pick(pointerInfo : PointerInfo) {
-            const ctx = this.parameters.canvas2D.getContext('2d');
-            const x = pointerInfo.pickInfo!.getTextureCoordinates()!.x * this.parameters.size.width;
-            const y = (1 - pointerInfo.pickInfo!.getTextureCoordinates()!.y) * this.parameters.size.height;
+            const p = this.getParameters();
+            const ctx = p.canvas2D.getContext('2d');
+            const x = pointerInfo.pickInfo!.getTextureCoordinates()!.x * p.size.width;
+            const y = (1 - pointerInfo.pickInfo!.getTextureCoordinates()!.y) * p.size.height;
             const pixel = ctx!.getImageData(x, y, 1, 1).data;
-            this.parameters.setMetadata({
+            p.setMetadata({
                 color: "#" + ("000000" + this.rgbToHex(pixel[0], pixel[1], pixel[2])).slice(-6),
                 opacity: pixel[3] / 255
             });
         }
         
         setup () {
-            this.pointerObservable = this.parameters.scene.onPointerObservable.add((pointerInfo) => {
+            this.pointerObservable = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         this.isPicking = true;
@@ -42,7 +43,7 @@ export const Eyedropper : ToolData = {
         }
         cleanup () {
             if (this.pointerObservable) {
-                this.parameters.scene.onPointerObservable.remove(this.pointerObservable);
+                this.getParameters().scene.onPointerObservable.remove(this.pointerObservable);
             }
         }
         rgbToHex(r: number, g:number, b: number) {

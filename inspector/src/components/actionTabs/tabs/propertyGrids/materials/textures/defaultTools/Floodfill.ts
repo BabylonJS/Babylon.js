@@ -4,24 +4,25 @@ import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 export const Floodfill : ToolData = {
     name: "Floodfill",
     type: class {
-        parameters: ToolParameters;
+        getParameters: () => ToolParameters;
         pointerObservable: any;
 
-        constructor(parameters: ToolParameters) {
-            this.parameters = parameters;
+        constructor(getParameters: () => ToolParameters) {
+            this.getParameters = getParameters;
         }
 
         fill() {
-            const ctx = this.parameters.canvas2D.getContext('2d')!;
-            ctx.fillStyle = this.parameters.getMetadata().color;
-            ctx.globalAlpha = this.parameters.getMetadata().opacity;
+            const p = this.getParameters();
+            const ctx = p.canvas2D.getContext('2d')!;
+            ctx.fillStyle = p.getMetadata().color;
+            ctx.globalAlpha = p.getMetadata().opacity;
             ctx.globalCompositeOperation = 'source-over';
-            ctx.fillRect(0,0, this.parameters.size.width, this.parameters.size.height);
-            this.parameters.updateTexture();
+            ctx.fillRect(0,0, p.size.width, p.size.height);
+            p.updateTexture();
         }
         
         setup () {
-            this.pointerObservable = this.parameters.scene.onPointerObservable.add((pointerInfo) => {
+            this.pointerObservable = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         this.fill();
@@ -31,7 +32,7 @@ export const Floodfill : ToolData = {
         }
         cleanup () {
             if (this.pointerObservable) {
-                this.parameters.scene.onPointerObservable.remove(this.pointerObservable);
+                this.getParameters().scene.onPointerObservable.remove(this.pointerObservable);
             }
         }
     },
