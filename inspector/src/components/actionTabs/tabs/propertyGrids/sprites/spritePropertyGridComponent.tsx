@@ -63,11 +63,6 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         const sprite = this.props.sprite;
         sprite.dispose();
 
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: sprite,
-            code: `TARGET.dispose();`
-        });
-
         this.props.onSelectionChangedObservable?.notifyObservers(null);
     }
 

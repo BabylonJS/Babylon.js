@@ -853,6 +853,18 @@ export class Camera extends Node {
     }
 
     /**
+     * Gets a ray in the forward direction from the camera.
+     * @param refRay the ray to (re)use when setting the values
+     * @param length Defines the length of the ray to create
+     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param origin Defines the start point of the ray which defaults to the camera position
+     * @returns the forward ray
+     */
+    public getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {
+        throw _DevTools.WarnImport("Ray");
+    }
+
+    /**
      * Releases resources associated with this node.
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)

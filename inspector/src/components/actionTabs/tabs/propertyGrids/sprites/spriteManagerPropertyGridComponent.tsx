@@ -42,21 +42,11 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         var newSprite = new Sprite("new sprite", spriteManager);
 
         this.props.onSelectionChangedObservable?.notifyObservers(newSprite);
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: spriteManager,
-            code: `new BABYLON.Sprite("new sprite", TARGET);`
-        });
     }
 
     disposeManager() {
         const spriteManager = this.props.spriteManager;
         spriteManager.dispose();
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: spriteManager,
-            code: `TARGET.dispose();`
-        });
 
         this.props.onSelectionChangedObservable?.notifyObservers(null);
     }
