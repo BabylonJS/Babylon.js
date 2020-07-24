@@ -73394,6 +73394,13 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    export class SceneRecorder {
+        private _trackedScene;
+        track(scene: Scene): void;
+        getDiff(): null;
+    }
+}
+declare module BABYLON {
     /**
      * An interface for all Hit test features
      */
