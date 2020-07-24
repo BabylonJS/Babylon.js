@@ -11097,7 +11097,7 @@ declare module BABYLON {
         static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl?: string): Promise<SpriteManager>;
         /**
          * Creates a sprite manager from a snippet saved by the sprite editor
-         * @param snippetId defines the snippet to load
+         * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
          * @param scene defines the hosting scene
          * @param rootUrl defines the root URL to use to load textures and relative dependencies
          * @returns a promise that will resolve to the new sprite manager
@@ -15045,6 +15045,11 @@ declare module BABYLON {
          * @returns a matrix
          */
         getRestPose(): Matrix;
+        /**
+         * Sets the rest pose matrix
+         * @param matrix the local-space rest pose to set for this bone
+         */
+        setRestPose(matrix: Matrix): void;
         /**
          * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
          */
@@ -46825,6 +46830,17 @@ declare module BABYLON {
          * @returns true if successful.
          */
         detach(): boolean;
+        /**
+         * This function will be executed during before enabling the feature and can be used to not-allow enabling it.
+         * Note that at this point the session has NOT started, so this is purely checking if the browser supports it
+         *
+         * @returns whether or not the feature is compatible in this environment
+         */
+        isCompatible(): boolean;
+        /**
+         * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
+         */
+        xrNativeFeatureName?: string;
     }
     /**
      * A list of the currently available features without referencing them
@@ -46955,11 +46971,12 @@ declare module BABYLON {
          * @param version optional version to load. if not provided the latest version will be enabled
          * @param moduleOptions options provided to the module. Ses the module documentation / constructor
          * @param attachIfPossible if set to true (default) the feature will be automatically attached, if it is currently possible
+         * @param required is this feature required to the app. If set to true the session init will fail if the feature is not available.
          * @returns a new constructed feature or throws an error if feature not found.
          */
         enableFeature(featureName: string | {
             Name: string;
-        }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean): IWebXRFeature;
+        }, version?: number | string, moduleOptions?: any, attachIfPossible?: boolean, required?: boolean): IWebXRFeature;
         /**
          * get the implementation of an enabled feature.
          * @param featureName the name of the feature to load
@@ -46971,6 +46988,15 @@ declare module BABYLON {
          * @returns an array of enabled features
          */
         getEnabledFeatures(): string[];
+        /**
+         * This function will exten the session creation configuration object with enabled features.
+         * If, for example, the anchors feature is enabled, it will be automatically added to the optional or required features list,
+         * according to the defined "required" variable, provided during enableFeature call
+         * @param xrSessionInit the xr Session init object to extend
+         *
+         * @returns an extended XRSessionInit object
+         */
+        extendXRSessionInitObject(xrSessionInit: XRSessionInit): XRSessionInit;
     }
 }
 declare module BABYLON {
@@ -48341,6 +48367,10 @@ declare module BABYLON {
          */
         disableAutoAttach: boolean;
         /**
+         * The name of the native xr feature name (like anchor, hit-test, or hand-tracking)
+         */
+        xrNativeFeatureName: string;
+        /**
          * Construct a new (abstract) WebXR feature
          * @param _xrSessionManager the xr session manager for this feature
          */
@@ -48366,6 +48396,13 @@ declare module BABYLON {
          * Dispose this feature and all of the resources attached
          */
         dispose(): void;
+        /**
+         * This function will be executed during before enabling the feature and can be used to not-allow enabling it.
+         * Note that at this point the session has NOT started, so this is purely checking if the browser supports it
+         *
+         * @returns whether or not the feature is compatible in this environment
+         */
+        isCompatible(): boolean;
         /**
          * This is used to register callbacks that will automatically be removed when detach is called.
          * @param observable the observable to which the observer will be attached
@@ -67325,7 +67362,7 @@ declare module BABYLON {
         static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu?: boolean, rootUrl?: string): Promise<IParticleSystem>;
         /**
          * Creates a particle system from a snippet saved by the particle system editor
-         * @param snippetId defines the snippet to load
+         * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
          * @param scene defines the hosting scene
          * @param gpu If the system will use gpu
          * @param rootUrl defines the root URL to use to load textures and relative dependencies

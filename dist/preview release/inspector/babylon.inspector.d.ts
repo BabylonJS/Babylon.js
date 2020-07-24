@@ -960,6 +960,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ISwitchButtonProps {
+        current: CurveScale;
+        action?: (event: CurveScale) => void;
+    }
+    export class ScaleLabel extends React.Component<ISwitchButtonProps, {
+        current: CurveScale;
+    }> {
+        constructor(props: ISwitchButtonProps);
+        renderLabel(scale: CurveScale): "" | "DEG" | "FLT" | "INT" | "RAD";
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
@@ -971,6 +984,13 @@ declare module INSPECTOR {
     interface ICanvasAxis {
         value: number;
         label: number;
+    }
+    export enum CurveScale {
+        float = 0,
+        radians = 1,
+        degrees = 2,
+        integers = 3,
+        default = 4
     }
     export interface IActionableKeyFrame {
         frame?: number | string;
@@ -1010,9 +1030,12 @@ declare module INSPECTOR {
         panningX: number;
         repositionCanvas: boolean;
         actionableKeyframe: IActionableKeyFrame;
+        valueScale: CurveScale;
     }> {
         private _snippetUrl;
         private _heightScale;
+        private _scaleFactor;
+        private _currentScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
         private _svgKeyframes;
@@ -1040,11 +1063,13 @@ declare module INSPECTOR {
             value: number;
             label: number;
         }[];
-        setValueLines(): {
+        setValueLines(type: CurveScale): ({
+            value: number;
+            label: string;
+        } | {
             value: number;
             label: number;
-        }[];
-        setAxesLength(): void;
+        })[];
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
         encodeCurveId(animationName: string, coordinate: number): string;
@@ -1083,7 +1108,6 @@ declare module INSPECTOR {
          * Curve Rendering Functions
          * This section handles how to render curves.
          */
-        linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
         flatTangents(keyframes: BABYLON.IAnimationKey[], dataType: number): BABYLON.IAnimationKey[];
         returnZero(dataType: number): 0 | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
@@ -1152,6 +1176,7 @@ declare module INSPECTOR {
     }> {
         private _container;
         private _window;
+        private _curveEditorHost;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
         openPopup(): void;
@@ -3165,7 +3190,7 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number, lateBinding?: boolean): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;

@@ -639,8 +639,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/svgDraggableArea" {
-    import * as React from 'react';
-    import { Vector2 } from 'babylonjs/Maths/math.vector';
+    import * as React from "react";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { IKeyframeSvgPoint } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint";
     interface ISvgDraggableAreaProps {
         keyframeSvgPoints: IKeyframeSvgPoint[];
@@ -799,7 +799,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/notification" {
-    import * as React from "react";
+    import * as React from 'react';
     interface IPlayheadProps {
         message: string;
         open: boolean;
@@ -1079,18 +1079,33 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/scale-label" {
     import * as React from 'react';
-    import { Animation } from 'babylonjs/Animations/animation';
-    import { Vector2, Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
-    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
-    import { Size } from 'babylonjs/Maths/math.size';
-    import { EasingFunction } from 'babylonjs/Animations/easing';
-    import { IAnimationKey } from 'babylonjs/Animations/animationKey';
+    import { CurveScale } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent";
+    interface ISwitchButtonProps {
+        current: CurveScale;
+        action?: (event: CurveScale) => void;
+    }
+    export class ScaleLabel extends React.Component<ISwitchButtonProps, {
+        current: CurveScale;
+    }> {
+        constructor(props: ISwitchButtonProps);
+        renderLabel(scale: CurveScale): "" | "DEG" | "FLT" | "INT" | "RAD";
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationCurveEditorComponent" {
+    import * as React from "react";
+    import { Animation } from "babylonjs/Animations/animation";
+    import { Vector2, Vector3, Quaternion } from "babylonjs/Maths/math.vector";
+    import { Color3, Color4 } from "babylonjs/Maths/math.color";
+    import { Size } from "babylonjs/Maths/math.size";
+    import { EasingFunction } from "babylonjs/Animations/easing";
+    import { IAnimationKey } from "babylonjs/Animations/animationKey";
     import { IKeyframeSvgPoint } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/keyframeSvgPoint";
-    import { Scene } from 'babylonjs/scene';
-    import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
-    import { TargetedAnimation } from 'babylonjs/Animations/animationGroup';
+    import { Scene } from "babylonjs/scene";
+    import { IAnimatable } from "babylonjs/Animations/animatable.interface";
+    import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
     import { SelectedCoordinate } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/animations/animationListTree";
     import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
     import { GlobalState } from "babylonjs-inspector/components/globalState";
@@ -1105,6 +1120,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
     interface ICanvasAxis {
         value: number;
         label: number;
+    }
+    export enum CurveScale {
+        float = 0,
+        radians = 1,
+        degrees = 2,
+        integers = 3,
+        default = 4
     }
     export interface IActionableKeyFrame {
         frame?: number | string;
@@ -1144,9 +1166,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         panningX: number;
         repositionCanvas: boolean;
         actionableKeyframe: IActionableKeyFrame;
+        valueScale: CurveScale;
     }> {
         private _snippetUrl;
         private _heightScale;
+        private _scaleFactor;
+        private _currentScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
         private _svgKeyframes;
@@ -1174,11 +1199,13 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
             value: number;
             label: number;
         }[];
-        setValueLines(): {
+        setValueLines(type: CurveScale): ({
+            value: number;
+            label: string;
+        } | {
             value: number;
             label: number;
-        }[];
-        setAxesLength(): void;
+        })[];
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
         encodeCurveId(animationName: string, coordinate: number): string;
@@ -1217,7 +1244,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
          * Curve Rendering Functions
          * This section handles how to render curves.
          */
-        linearInterpolation(keyframes: IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: Vector2, index: number): void;
         flatTangents(keyframes: IAnimationKey[], dataType: number): IAnimationKey[];
         returnZero(dataType: number): 0 | Vector3 | Quaternion | Color3 | Color4 | Vector2 | Size;
@@ -1287,6 +1313,7 @@ declare module "babylonjs-inspector/components/popupComponent" {
     }> {
         private _container;
         private _window;
+        private _curveEditorHost;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
         openPopup(): void;
@@ -3860,7 +3887,7 @@ declare module "babylonjs-inspector/inspector" {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number, lateBinding?: boolean): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: Scene, userOptions: Partial<IInspectorOptions>): void;
@@ -4864,6 +4891,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface ISwitchButtonProps {
+        current: CurveScale;
+        action?: (event: CurveScale) => void;
+    }
+    export class ScaleLabel extends React.Component<ISwitchButtonProps, {
+        current: CurveScale;
+    }> {
+        constructor(props: ISwitchButtonProps);
+        renderLabel(scale: CurveScale): "" | "DEG" | "FLT" | "INT" | "RAD";
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface IAnimationCurveEditorComponentProps {
         close: (event: any) => void;
         playOrPause?: () => void;
@@ -4875,6 +4915,13 @@ declare module INSPECTOR {
     interface ICanvasAxis {
         value: number;
         label: number;
+    }
+    export enum CurveScale {
+        float = 0,
+        radians = 1,
+        degrees = 2,
+        integers = 3,
+        default = 4
     }
     export interface IActionableKeyFrame {
         frame?: number | string;
@@ -4914,9 +4961,12 @@ declare module INSPECTOR {
         panningX: number;
         repositionCanvas: boolean;
         actionableKeyframe: IActionableKeyFrame;
+        valueScale: CurveScale;
     }> {
         private _snippetUrl;
         private _heightScale;
+        private _scaleFactor;
+        private _currentScale;
         readonly _entityName: string;
         readonly _canvasLength: number;
         private _svgKeyframes;
@@ -4944,11 +4994,13 @@ declare module INSPECTOR {
             value: number;
             label: number;
         }[];
-        setValueLines(): {
+        setValueLines(type: CurveScale): ({
+            value: number;
+            label: string;
+        } | {
             value: number;
             label: number;
-        }[];
-        setAxesLength(): void;
+        })[];
         getValueLabel(i: number): number;
         resetPlayheadOffset(): void;
         encodeCurveId(animationName: string, coordinate: number): string;
@@ -4987,7 +5039,6 @@ declare module INSPECTOR {
          * Curve Rendering Functions
          * This section handles how to render curves.
          */
-        linearInterpolation(keyframes: BABYLON.IAnimationKey[], data: string, middle: number): string;
         setKeyframePointLinear(point: BABYLON.Vector2, index: number): void;
         flatTangents(keyframes: BABYLON.IAnimationKey[], dataType: number): BABYLON.IAnimationKey[];
         returnZero(dataType: number): 0 | BABYLON.Vector3 | BABYLON.Quaternion | BABYLON.Color3 | BABYLON.Color4 | BABYLON.Vector2 | BABYLON.Size;
@@ -5056,6 +5107,7 @@ declare module INSPECTOR {
     }> {
         private _container;
         private _window;
+        private _curveEditorHost;
         constructor(props: IPopupComponentProps);
         componentDidMount(): void;
         openPopup(): void;
@@ -7069,7 +7121,7 @@ declare module INSPECTOR {
         private static _CreateSceneExplorer;
         private static _CreateActionTabs;
         private static _CreateEmbedHost;
-        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number): HTMLDivElement | null;
+        static _CreatePopup(title: string, windowVariableName: string, width?: number, height?: number, lateBinding?: boolean): HTMLDivElement | null;
         static get IsVisible(): boolean;
         static EarlyAttachToLoader(): void;
         static Show(scene: BABYLON.Scene, userOptions: Partial<BABYLON.IInspectorOptions>): void;

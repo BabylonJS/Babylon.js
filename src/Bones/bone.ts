@@ -205,6 +205,14 @@ export class Bone extends Node {
     }
 
     /**
+     * Sets the rest pose matrix
+     * @param matrix the local-space rest pose to set for this bone
+     */
+    public setRestPose(matrix: Matrix): void {
+        this._restPose.copyFrom(matrix);
+    }
+
+    /**
      * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
      */
     public getWorldMatrix(): Matrix {
@@ -215,7 +223,7 @@ export class Bone extends Node {
      * Sets the local matrix to rest pose matrix
      */
     public returnToRest(): void {
-        this.updateMatrix(this._restPose.clone());
+        this.updateMatrix(this._restPose.clone(), false, false);
     }
 
     /**
