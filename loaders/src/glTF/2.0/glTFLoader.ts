@@ -1608,8 +1608,11 @@ export class GLTFLoader implements IGLTFLoader {
             return bufferView._babylonBuffer;
         }
 
+        const engine2 = this._babylonScene.getEngine();
+
         bufferView._babylonBuffer = this.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-            return new Buffer(this._babylonScene.getEngine(), data, false);
+            console.log(this._babylonScene);
+            return new Buffer(engine2, data, false);
         });
 
         return bufferView._babylonBuffer;
