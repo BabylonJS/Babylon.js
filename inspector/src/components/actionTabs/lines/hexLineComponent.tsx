@@ -1,10 +1,7 @@
 import * as React from "react";
-
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { LockObject } from "../tabs/propertyGrids/lockObject";
-//import { ElasticEase } from 'babylonjs';
-//import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 
 interface IHexLineComponentProps {
     label: string;
@@ -96,7 +93,6 @@ export class HexLineComponent extends React.Component<IHexLineComponentProps, { 
             return;
         }
     
-        //0x0FFFFFFF
         if(valueString.length > 10) {
             return;
         }
