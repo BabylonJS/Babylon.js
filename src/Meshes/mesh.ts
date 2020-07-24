@@ -2995,6 +2995,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public serialize(serializationObject: any): void {
         serializationObject.name = this.name;
         serializationObject.id = this.id;
+        serializationObject.uniqueId = this.uniqueId;
         serializationObject.type = this.getClassName();
 
         if (Tags && Tags.HasTags(this)) {
