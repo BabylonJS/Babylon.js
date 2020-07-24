@@ -1,16 +1,17 @@
 import * as React from 'react';
 import { GlobalState } from '../../../../../globalState';
-import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { TextureCanvasManager, PixelData } from './textureCanvasManager';
 import { Tool, ToolBar } from './toolBar';
 import { PropertiesBar } from './propertiesBar';
 import { Channel, ChannelsBar } from './channelsBar';
 import { BottomBar } from './bottomBar';
-import { Tools } from "babylonjs/Misc/tools";
 import { TextureCanvasComponent } from './textureCanvasComponent';
-
 import defaultTools from './defaultTools';
-import { Scene, ISize } from 'babylonjs';
+
+import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+import { Tools } from 'babylonjs/Misc/tools';
+import { Scene } from 'babylonjs/scene';
+import { ISize } from 'babylonjs/Maths/math.size';
 
 require('./textureEditor.scss');
 

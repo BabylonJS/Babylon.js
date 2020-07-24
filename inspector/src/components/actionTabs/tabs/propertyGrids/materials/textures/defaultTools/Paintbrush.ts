@@ -33,15 +33,14 @@ export const Paintbrush : ToolData = {
                             this.isPainting = true;
                           }
                     }
-                    if (pointerInfo.type === PointerEventTypes.POINTERUP) {
-                        if (pointerInfo.event.button == 0) {
-                            this.isPainting = false;
-                          }
-                    }
                     if (pointerInfo.type === PointerEventTypes.POINTERMOVE && this.isPainting) {
                         this.paint(pointerInfo);
                     }
-                    
+                }
+                if (pointerInfo.type === PointerEventTypes.POINTERUP) {
+                    if (pointerInfo.event.button == 0) {
+                        this.isPainting = false;
+                      }
                 }
             });
             this.isPainting = false;
