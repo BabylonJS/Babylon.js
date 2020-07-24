@@ -660,7 +660,7 @@ export class Color4 {
     public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color4 {
         Color4.FromArrayToRef(array, offset, this);
         return this;
-    }    
+    }
 
     /**
      * Determines equality between Color4 objects

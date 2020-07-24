@@ -257,10 +257,12 @@ export class ToolsTabComponent extends PaneComponent {
 
     exportReplay() {
         this.props.globalState.recorder.export();
+        this.forceUpdate();
     }
 
     startRecording() {
         this.props.globalState.recorder.trackScene(this.props.scene);
+        this.forceUpdate();
     }
 
     render() {
@@ -320,8 +322,14 @@ export class ToolsTabComponent extends PaneComponent {
                     }
                 </LineContainerComponent>                
                 <LineContainerComponent globalState={this.props.globalState} title="REPLAY">
-                    <ButtonLineComponent label="Start recording" onClick={() => this.startRecording()} />
-                    <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
+                    {
+                        !this.props.globalState.recorder.isRecording &&
+                        <ButtonLineComponent label="Start recording" onClick={() => this.startRecording()} />
+                    }
+                    {
+                        this.props.globalState.recorder.isRecording &&
+                        <ButtonLineComponent label="Generate replay code" onClick={() => this.exportReplay()} />
+                    }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE IMPORT">
                     <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />

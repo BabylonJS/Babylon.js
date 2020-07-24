@@ -9,8 +9,12 @@ declare module "babylonjs-inspector/components/propertyChangedEvent" {
     }
 }
 declare module "babylonjs-inspector/components/replayRecorder" {
+    import { Scene } from 'babylonjs/scene';
     export class ReplayRecorder {
-        start(): void;
+        private _sceneRecorder;
+        private _isRecording;
+        get isRecording(): boolean;
+        trackScene(scene: Scene): void;
         export(): void;
     }
 }
@@ -3925,7 +3929,10 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class ReplayRecorder {
-        start(): void;
+        private _sceneRecorder;
+        private _isRecording;
+        get isRecording(): boolean;
+        trackScene(scene: BABYLON.Scene): void;
         export(): void;
     }
 }

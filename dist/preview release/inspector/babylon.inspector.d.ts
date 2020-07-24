@@ -10,7 +10,10 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export class ReplayRecorder {
-        start(): void;
+        private _sceneRecorder;
+        private _isRecording;
+        get isRecording(): boolean;
+        trackScene(scene: BABYLON.Scene): void;
         export(): void;
     }
 }

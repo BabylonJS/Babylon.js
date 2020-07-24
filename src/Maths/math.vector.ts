@@ -73,7 +73,7 @@ export class Vector2 {
     public fromArray(array: FloatArray, index: number = 0): Vector2 {
         Vector2.FromArrayToRef(array, index, this);
         return this;
-    }    
+    }
 
     /**
      * Copy the current vector to an array
@@ -2122,7 +2122,7 @@ export class Vector4 {
     public fromArray(array: FloatArray, index: number = 0): Vector4 {
         Vector4.FromArrayToRef(array, index, this);
         return this;
-    }      
+    }
 
     /**
      * Adds the given vector to the current Vector4.
