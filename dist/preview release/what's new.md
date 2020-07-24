@@ -67,6 +67,7 @@
 
 ### Inspector
 
+- New delta tool used to apply delta changes to a scene ([Deltakosh](https://github.com/deltakosh))
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))

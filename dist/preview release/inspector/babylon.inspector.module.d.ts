@@ -8,23 +8,13 @@ declare module "babylonjs-inspector/components/propertyChangedEvent" {
         allowNullValue?: boolean;
     }
 }
-declare module "babylonjs-inspector/components/codeChangedEvent" {
-    export class CodeChangedEvent {
-        object: any;
-        code: string;
-    }
-}
 declare module "babylonjs-inspector/components/replayRecorder" {
-    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
-    import { CodeChangedEvent } from "babylonjs-inspector/components/codeChangedEvent";
+    import { Scene } from 'babylonjs/scene';
     export class ReplayRecorder {
-        private _recordedCodeLines;
-        private _previousObject;
-        private _previousProperty;
-        reset(): void;
-        private _getIndirectData;
-        recordCode(event: CodeChangedEvent): void;
-        record(event: PropertyChangedEvent): void;
+        private _sceneRecorder;
+        private _isRecording;
+        get isRecording(): boolean;
+        trackScene(scene: Scene): void;
         export(): void;
     }
 }
@@ -39,11 +29,9 @@ declare module "babylonjs-inspector/components/globalState" {
     import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { ReplayRecorder } from "babylonjs-inspector/components/replayRecorder";
-    import { CodeChangedEvent } from "babylonjs-inspector/components/codeChangedEvent";
     export class GlobalState {
         onSelectionChangedObservable: Observable<any>;
         onPropertyChangedObservable: Observable<PropertyChangedEvent>;
-        onCodeChangedObservable: Observable<CodeChangedEvent>;
         onInspectorClosedObservable: Observable<Scene>;
         onTabChangedObservable: Observable<number>;
         onSelectionRenamedObservable: Observable<void>;
@@ -3302,8 +3290,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/toolsTabComponent
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
-        resetReplay(): void;
         exportReplay(): void;
+        startRecording(): void;
         render(): JSX.Element | null;
     }
 }
@@ -3940,20 +3928,11 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class CodeChangedEvent {
-        object: any;
-        code: string;
-    }
-}
-declare module INSPECTOR {
     export class ReplayRecorder {
-        private _recordedCodeLines;
-        private _previousObject;
-        private _previousProperty;
-        reset(): void;
-        private _getIndirectData;
-        recordCode(event: CodeChangedEvent): void;
-        record(event: PropertyChangedEvent): void;
+        private _sceneRecorder;
+        private _isRecording;
+        get isRecording(): boolean;
+        trackScene(scene: BABYLON.Scene): void;
         export(): void;
     }
 }
@@ -3961,7 +3940,6 @@ declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
-        onCodeChangedObservable: BABYLON.Observable<CodeChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onSelectionRenamedObservable: BABYLON.Observable<void>;
@@ -6627,8 +6605,8 @@ declare module INSPECTOR {
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
-        resetReplay(): void;
         exportReplay(): void;
+        startRecording(): void;
         render(): JSX.Element | null;
     }
 }

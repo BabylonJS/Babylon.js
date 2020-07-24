@@ -9,20 +9,11 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class CodeChangedEvent {
-        object: any;
-        code: string;
-    }
-}
-declare module INSPECTOR {
     export class ReplayRecorder {
-        private _recordedCodeLines;
-        private _previousObject;
-        private _previousProperty;
-        reset(): void;
-        private _getIndirectData;
-        recordCode(event: CodeChangedEvent): void;
-        record(event: PropertyChangedEvent): void;
+        private _sceneRecorder;
+        private _isRecording;
+        get isRecording(): boolean;
+        trackScene(scene: BABYLON.Scene): void;
         export(): void;
     }
 }
@@ -30,7 +21,6 @@ declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
-        onCodeChangedObservable: BABYLON.Observable<CodeChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onSelectionRenamedObservable: BABYLON.Observable<void>;
@@ -2696,8 +2686,8 @@ declare module INSPECTOR {
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
-        resetReplay(): void;
         exportReplay(): void;
+        startRecording(): void;
         render(): JSX.Element | null;
     }
 }
