@@ -6,7 +6,7 @@ import { PropertiesBar } from './propertiesBar';
 import { Channel, ChannelsBar } from './channelsBar';
 import { BottomBar } from './bottomBar';
 import { TextureCanvasComponent } from './textureCanvasComponent';
-import defaultTools from './defaultTools/index';
+import defaultTools from './defaultTools/defaultTools';
 
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Tools } from 'babylonjs/Misc/tools';
