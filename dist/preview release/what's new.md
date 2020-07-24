@@ -67,6 +67,7 @@
 
 ### Inspector
 
+- New delta tool used to apply delta changes to a scene ([Deltakosh](https://github.com/deltakosh))
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
@@ -74,7 +75,7 @@
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
-- View textures in pop out inspector with zoom & pan and individual channels, and save to local machine. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- View & edit textures in pop out inspector with zoom & pan and individual channels, and save to local machine. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Cameras
 
@@ -157,6 +158,7 @@
 - Canvas is being resized when entering XR ([RaananW](https://github.com/RaananW))
 - All camera view matrices are now calculated by Babylon to support left and right handed systems ([RaananW](https://github.com/RaananW))
 - WebXR Features Manager now has the ability to check if a feature can be enabled, and set native features optional or required ([RaananW](https://github.com/RaananW))
+- Optional camera gaze mode added to the pointer selection feature ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 

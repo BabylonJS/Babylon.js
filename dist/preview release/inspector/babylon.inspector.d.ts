@@ -9,20 +9,12 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class CodeChangedEvent {
-        object: any;
-        code: string;
-    }
-}
-declare module INSPECTOR {
     export class ReplayRecorder {
-        private _recordedCodeLines;
-        private _previousObject;
-        private _previousProperty;
-        reset(): void;
-        private _getIndirectData;
-        recordCode(event: CodeChangedEvent): void;
-        record(event: PropertyChangedEvent): void;
+        private _sceneRecorder;
+        private _isRecording;
+        get isRecording(): boolean;
+        cancel(): void;
+        trackScene(scene: BABYLON.Scene): void;
         export(): void;
     }
 }
@@ -30,7 +22,6 @@ declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
-        onCodeChangedObservable: BABYLON.Observable<CodeChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onSelectionRenamedObservable: BABYLON.Observable<void>;
@@ -1333,9 +1324,13 @@ declare module INSPECTOR {
     }
     interface ToolBarState {
         toolURL: string;
+        pickerOpen: boolean;
+        addOpen: boolean;
     }
     export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
+        private pickerRef;
         constructor(props: ToolBarProps);
+        computeRGBAColor(): string;
         render(): JSX.Element;
     }
 }
@@ -1375,7 +1370,6 @@ declare module INSPECTOR {
         private _UICanvas;
         private _size;
         private _2DCanvas;
-        private _texture;
         private _displayCanvas;
         private _channels;
         private _face;
@@ -1413,7 +1407,11 @@ declare module INSPECTOR {
         set tool(tool: BABYLON.Nullable<Tool>);
         get tool(): BABYLON.Nullable<Tool>;
         set face(face: number);
-        resetTexture(): void;
+        private makePlane;
+        reset(): void;
+        resize(newSize: BABYLON.ISize): Promise<void>;
+        private updateSize;
+        upload(file: File): void;
         dispose(): void;
     }
 }
@@ -1425,13 +1423,20 @@ declare module INSPECTOR {
         face: number;
         setFace(face: number): void;
         resetTexture(): void;
+        resizeTexture(width: number, height: number): void;
+        uploadTexture(file: File): void;
+    }
+    interface PropertiesBarState {
+        width: number;
+        height: number;
     }
     interface PixelDataProps {
         name: string;
         data?: number;
     }
     function PixelData(props: PixelDataProps): JSX.Element;
-    export class PropertiesBar extends React.Component<PropertiesBarProps> {
+    export class PropertiesBar extends React.Component<PropertiesBarProps, PropertiesBarState> {
+        constructor(props: PropertiesBarProps);
         render(): JSX.Element;
     }
 }
@@ -1456,6 +1461,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export const Paintbrush: ToolData;
+}
+declare module INSPECTOR {
+    export const Eyedropper: ToolData;
+}
+declare module INSPECTOR {
+    export const Floodfill: ToolData;
+}
+declare module INSPECTOR {
+    const _default: import("babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent").ToolData[];
+    export default _default;
+}
+declare module INSPECTOR {
     interface TextureEditorComponentProps {
         globalState: GlobalState;
         texture: BABYLON.BaseTexture;
@@ -1469,7 +1487,15 @@ declare module INSPECTOR {
         pixelData: PixelData;
         face: number;
     }
-    interface ToolData {
+    export interface ToolParameters {
+        scene: BABYLON.Scene;
+        canvas2D: HTMLCanvasElement;
+        size: BABYLON.ISize;
+        updateTexture: () => void;
+        getMetadata: () => any;
+        setMetadata: (data: any) => void;
+    }
+    export interface ToolData {
         name: string;
         type: any;
         icon: string;
@@ -1486,12 +1512,16 @@ declare module INSPECTOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         componentWillUnmount(): void;
-        loadTool(url: string): void;
+        loadToolFromURL(url: string): void;
+        addTools(tools: ToolData[]): void;
+        getToolParameters(): ToolParameters;
         changeTool(index: number): void;
         setMetadata(newMetadata: any): void;
         setFace(face: number): void;
         saveTexture(): void;
         resetTexture(): void;
+        resizeTexture(width: number, height: number): void;
+        uploadTexture(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -2696,8 +2726,8 @@ declare module INSPECTOR {
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
-        resetReplay(): void;
         exportReplay(): void;
+        startRecording(): void;
         render(): JSX.Element | null;
     }
 }
