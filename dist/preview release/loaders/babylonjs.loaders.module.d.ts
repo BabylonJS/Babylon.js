@@ -2093,25 +2093,25 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
         /** @hidden */
         dispose(): void;
         /**
-         * Gets the list of available variant tag names for this asset.
+         * Gets the list of available variant names for this asset.
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Gets the list of available variant tag names for this asset.
+         * Gets the list of available variant names for this asset.
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
          */
         getAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Select a variant given a variant tag name or a list of variant tag names.
+         * Select a variant given a variant name or a list of variant names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
         /**
-         * Select a variant given a variant tag name or a list of variant tag names.
+         * Select a variant given a variant name or a list of variant names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
@@ -2127,15 +2127,15 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
          */
         reset(rootMesh: Mesh): void;
         /**
-         * Gets the last selected variant tag name(s) or null if original.
+         * Gets the last selected variant name(s) or null if original.
          * @param rootMesh The glTF root mesh
-         * @returns The selected variant tag name(s).
+         * @returns The selected variant name(s).
          */
         static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         /**
-         * Gets the last selected variant tag name(s) or null if original.
+         * Gets the last selected variant name(s) or null if original.
          * @param rootMesh The glTF root mesh
-         * @returns The selected variant tag name(s).
+         * @returns The selected variant name(s).
          */
         getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         private static _GetExtensionMetadata;
@@ -4808,25 +4808,25 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /**
-         * Gets the list of available variant tag names for this asset.
+         * Gets the list of available variant names for this asset.
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Gets the list of available variant tag names for this asset.
+         * Gets the list of available variant names for this asset.
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
          */
         getAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Select a variant given a variant tag name or a list of variant tag names.
+         * Select a variant given a variant name or a list of variant names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
         /**
-         * Select a variant given a variant tag name or a list of variant tag names.
+         * Select a variant given a variant name or a list of variant names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
@@ -4842,15 +4842,15 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         reset(rootMesh: Mesh): void;
         /**
-         * Gets the last selected variant tag name(s) or null if original.
+         * Gets the last selected variant name(s) or null if original.
          * @param rootMesh The glTF root mesh
-         * @returns The selected variant tag name(s).
+         * @returns The selected variant name(s).
          */
         static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         /**
-         * Gets the last selected variant tag name(s) or null if original.
+         * Gets the last selected variant name(s) or null if original.
          * @param rootMesh The glTF root mesh
-         * @returns The selected variant tag name(s).
+         * @returns The selected variant name(s).
          */
         getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         private static _GetExtensionMetadata;
