@@ -1062,7 +1062,7 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IKHRMaterialVariants_Mapping {
-        tags: string[];
+        variants: string[];
         material: number;
     }
 

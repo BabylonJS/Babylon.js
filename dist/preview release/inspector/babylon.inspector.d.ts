@@ -166,7 +166,6 @@ declare module INSPECTOR {
         isSelected?: () => boolean;
         onSelect?: (value: boolean) => void;
         onValueChanged?: () => void;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
@@ -218,7 +217,6 @@ declare module INSPECTOR {
         useEuler?: boolean;
         onChange?: (value: number) => void;
         onInput?: (value: number) => void;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         decimalCount?: number;
     }
@@ -365,7 +363,6 @@ declare module INSPECTOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         useEuler?: boolean;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
@@ -482,7 +479,6 @@ declare module INSPECTOR {
         lockObject?: LockObject;
         onChange?: (newValue: number) => void;
         isInteger?: boolean;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         additionalClass?: string;
         step?: string;
@@ -1778,7 +1774,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
-        private _selectedTags;
+        private _selectedVariants;
         constructor(props: IVariantsPropertyGridComponentProps);
         private _getVariantsExtension;
         render(): JSX.Element | null;
@@ -2341,7 +2337,6 @@ declare module INSPECTOR {
     interface IBoxEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: BABYLON.BoxParticleEmitter;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class BoxEmitterGridComponent extends React.Component<IBoxEmitterGridComponentProps> {
@@ -2354,7 +2349,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.ConeParticleEmitter;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridComponentProps> {
@@ -2367,7 +2361,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.CylinderParticleEmitter;
         lockObject: LockObject;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CylinderEmitterGridComponent extends React.Component<ICylinderEmitterGridComponentProps> {
@@ -2380,7 +2373,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.HemisphericParticleEmitter;
         lockObject: LockObject;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class HemisphericEmitterGridComponent extends React.Component<IHemisphericEmitterGridComponentProps> {
@@ -2393,7 +2385,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.PointParticleEmitter;
         lockObject: LockObject;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class PointEmitterGridComponent extends React.Component<IPointEmitterGridComponentProps> {
@@ -2406,7 +2397,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.SphereParticleEmitter;
         lockObject: LockObject;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGridComponentProps> {
@@ -2421,7 +2411,6 @@ declare module INSPECTOR {
         property: string;
         scene: BABYLON.Scene;
         label: string;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class MeshPickerComponent extends React.Component<IMeshPickerComponentProps> {
@@ -2436,7 +2425,6 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         lockObject: LockObject;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class MeshEmitterGridComponent extends React.Component<IMeshEmitterGridComponentProps> {
