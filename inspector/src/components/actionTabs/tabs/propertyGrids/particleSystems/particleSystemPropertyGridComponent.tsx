@@ -59,41 +59,40 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     renderEmitter() {
         const system = this.props.system;
-        const replaySource = "particlesystem.particleEmitterType";
         switch(system.particleEmitterType?.getClassName()) {
             case "BoxParticleEmitter":
                 return (
-                    <BoxEmitterGridComponent replaySourceReplacement={replaySource}
+                    <BoxEmitterGridComponent 
                         globalState={this.props.globalState} emitter={system.particleEmitterType as BoxParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );
             case "ConeParticleEmitter":
                 return (
-                    <ConeEmitterGridComponent replaySourceReplacement={replaySource}
+                    <ConeEmitterGridComponent 
                         globalState={this.props.globalState} emitter={system.particleEmitterType as ConeParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );
             case "CylinderParticleEmitter":
                 return (
-                    <CylinderEmitterGridComponent replaySourceReplacement={replaySource}
+                    <CylinderEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as CylinderParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );        
             case "HemisphericParticleEmitter":
                 return (
-                    <HemisphericEmitterGridComponent replaySourceReplacement={replaySource}
+                    <HemisphericEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as HemisphericParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );  
             case "MeshParticleEmitter":
                 return (
-                    <MeshEmitterGridComponent replaySourceReplacement={replaySource} 
+                    <MeshEmitterGridComponent  
                     lockObject={this.props.lockObject} scene={system.getScene()} globalState={this.props.globalState} emitter={system.particleEmitterType as MeshParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );                 
             case "PointParticleEmitter":
                 return (
-                    <PointEmitterGridComponent replaySourceReplacement={replaySource}
+                    <PointEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as PointParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );  
             case "SphereParticleEmitter":
                 return (
-                    <SphereEmitterGridComponent replaySourceReplacement={replaySource}
+                    <SphereEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as SphereParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );                                                                                                       
         }

@@ -13,7 +13,6 @@ interface IMeshPickerComponentProps {
     property: string,
     scene: Scene,
     label: string,
-    replaySourceReplacement?: string,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -56,7 +55,7 @@ export class MeshPickerComponent extends React.Component<IMeshPickerComponentPro
 
                             if (this.props.onPropertyChangedObservable) {                   
                                 this.props.onPropertyChangedObservable.notifyObservers({
-                                    object: this.props.replaySourceReplacement ?? this.props.target,
+                                    object: this.props.target,
                                     property: this.props.property,
                                     value: this.props.target[this.props.property],
                                     initialValue: currentState
