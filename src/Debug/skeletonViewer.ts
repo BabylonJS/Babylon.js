@@ -15,7 +15,8 @@ import { VertexBuffer } from '../Meshes/buffer';
 import { ISkeletonViewerOptions } from './ISkeletonViewer';
 import { Observer } from '../Misc/observable';
 
-import '../Meshes/Builders/sphereBuilder';
+import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
+import { ShapeBuilder } from '../Meshes/Builders/shapeBuilder';
 
 /**
  * Class used to render a debug view of a given skeleton
@@ -316,7 +317,7 @@ export class SkeletonViewer {
 
                                     let up0 = up.scale(midStep);
 
-                                    let spur = MeshBuilder.ExtrudeShapeCustom(bc.name + ':spur',
+                                    let spur = ShapeBuilder.ExtrudeShapeCustom(bc.name + ':spur',
                                     {
                                         shape:  [
                                                     new Vector3(1, -1,  0),
@@ -358,7 +359,7 @@ export class SkeletonViewer {
 
                                 let sphereBaseSize = displayOptions.sphereBaseSize || 0.2;
 
-                                let sphere = MeshBuilder.CreateSphere(bone.name + ':sphere', {
+                                let sphere = SphereBuilder.CreateSphere(bone.name + ':sphere', {
                                     segments: 6,
                                     diameter: sphereBaseSize,
                                     updatable: true
