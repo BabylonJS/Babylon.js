@@ -8,12 +8,7 @@ export interface ISkeletonViewerOptions{
    /** Should the system return the skeleton to rest before building? */
    returnToRest: boolean;
 
-   /** public Display constants.
-     *  0 : BABYLON.SkeletonViewer.DISPLAY_LINES
-     *  1 : BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS
-     *  2 : BABYLON.SkeletonViewer.DISPLAY_SPHERES
-     *  3 : BABYLON.SkeletonViewer.DISPLAY_BLOCKS
-     */
+   /** public Display Mode of the Viewer */
    displayMode: number;
 
    /** Flag to toggle if the Viewer should use the CPU for animations or not? */
@@ -24,7 +19,7 @@ export interface ISkeletonViewerOptions{
 }
 
 export interface ISkeletonViewerDisplayOptions{
-   /** How fardown to start tapering the bone spurs */
+   /** How far down to start tapering the bone spurs */
    midStep? : number;
 
    /** How big is the midStep? */

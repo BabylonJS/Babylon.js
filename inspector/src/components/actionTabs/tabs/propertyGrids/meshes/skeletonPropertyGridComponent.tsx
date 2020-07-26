@@ -47,7 +47,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     if (found) {
                         continue;
                     }
-                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, true, 0);
+                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, true, 3, { displayMode:SkeletonViewer.DISPLAY_SPHERE_AND_SPURS });
                     viewer.isEnabled = true;
                     this._skeletonViewers.push(viewer);
                     if (!mesh.reservedDataStore) {

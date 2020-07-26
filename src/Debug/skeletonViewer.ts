@@ -5,10 +5,13 @@ import { Nullable } from "../types";
 import { Bone } from "../Bones/bone";
 import { Skeleton } from "../Bones/skeleton";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Mesh } from "../Meshes/mesh";
+import { MeshBuilder } from "../Meshes/meshBuilder";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from '../Materials/standardMaterial';
+import { VertexBuffer } from '../Meshes/buffer'
 
 import { ISkeletonViewerOptions } from './ISkeletonViewer';
 import { Observer } from '../Misc/observable';
@@ -59,60 +62,47 @@ export class SkeletonViewer {
         /** defines the rendering group id to use with the viewer */
         public renderingGroupId: number = 3,
         /** is the options for the viewer */
-        public options: Partial<ISkeletonViewerOptions> = {
-            pauseAnimations : true,
-            returnToRest: true,
-            displayMode: 0,
-            displayOptions: {
-                midStep: 0.235,
-                midStepFactor: 0.155,
-                sphereBaseSize : 0.15,
-                sphereScaleUnit : 2,
-                sphereFactor: 0.68
-            },
-            computeBonesUsingShaders: true
-        }
-    ) {
+        public options: Partial<ISkeletonViewerOptions> = {}
+        ) {
+
         this._ready = false;
+        //Defualts
+        options.pauseAnimations = options.pauseAnimations || true
+        options.returnToRest = options.returnToRest || true
+        options.displayMode = options.displayMode || SkeletonViewer.DISPLAY_LINES
+        options.displayOptions = options.displayOptions || {}
+        options.displayOptions.midStep = options.displayOptions.midStep || 0.235
+        options.displayOptions.midStepFactor = options.displayOptions.midStepFactor || 0.155
+        options.displayOptions.sphereBaseSize = options.displayOptions.sphereBaseSize || 0.15
+        options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit || 2
+        options.displayOptions.sphereFactor = options.displayOptions.sphereFactor || 0.865
+        options.computeBonesUsingShaders = options.computeBonesUsingShaders || true
 
         /* Create Utility Layer */
         this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
 
+        let displayMode = this.options.displayMode || 0;
+        if (displayMode > SkeletonViewer.DISPLAY_SPHERE_AND_SPURS) {
+            displayMode = SkeletonViewer.DISPLAY_LINES;
+        }
+        this.options.displayMode = displayMode
         //Prep the Systems
         this.update();
         this._bindObs();
     }
 
     /** The Dynamic bindings for the update functions */
-    private _bindObs() {
-        console.log('ADD OBS', this.obs)
+    private _bindObs() {   
         let displayMode = this.options.displayMode || 0;
-
-        if (displayMode > SkeletonViewer.DISPLAY_SPHERE_AND_SPURS) {
-            displayMode = SkeletonViewer.DISPLAY_LINES;
-        }
-
         switch (displayMode){
             case SkeletonViewer.DISPLAY_LINES: {
                     this.obs = this.scene.onBeforeRenderObservable.add(() => {
                         this._displayLinesUpdate();
                     });
                 break;
-            }
-            case SkeletonViewer.DISPLAY_SPHERE_AND_SPURS: {
-
-                break;
-            }
-            case SkeletonViewer.DISPLAY_SPHERES: {
-
-                break;
-            }
-            case SkeletonViewer.DISPLAY_BLOCKS: {
-
-                break;
-            }
+            }            
         }
         
     }
@@ -124,18 +114,14 @@ export class SkeletonViewer {
                 this._displayLinesUpdate();
                 break;
             }
-            case SkeletonViewer.DISPLAY_SPHERE_AND_SPURS: {
-
-                break;
-            }
             case SkeletonViewer.DISPLAY_SPHERES: {
-
+                this._buildSpheres();
                 break;
             }
-            case SkeletonViewer.DISPLAY_BLOCKS: {
-
+            case SkeletonViewer.DISPLAY_SPHERE_AND_SPURS: {
+                this._buildSpheresAndSpurs();
                 break;
-            }
+            }        
         }
     }
 
@@ -154,7 +140,6 @@ export class SkeletonViewer {
         if (value && !this.obs) {
             this._bindObs();
         } else if (!value && this.obs) {
-            console.log('REMOVE OBS', this.obs)
             this.scene.onBeforeRenderObservable.remove(this.obs);
             this.obs = null
         }
@@ -231,6 +216,217 @@ export class SkeletonViewer {
         }
     }
 
+    /** function to build and bind sphere joint points. */
+    private _buildSpheres(){
+        if(this.debugMesh){
+            this.debugMesh.dispose()
+        }
+    }
+
+    /** function to build and bind sphere joint points and spur bone representations. */
+    private _buildSpheresAndSpurs():Promise<void>{
+        if(this.debugMesh){
+            this.debugMesh.dispose()
+        }
+        {
+            this._ready = false
+            let scene = this.scene           
+            let bones: Bone[] = this.skeleton.bones
+            let spheres: Mesh[] = []
+            let spurs: Mesh[] = []
+    
+            let revert = () =>{
+                   if(this.options.pauseAnimations){
+                    scene.animationsEnabled = true
+                }
+            }        
+    
+            return new Promise((resolve, reject)=>{
+                try{
+                    this.dispose()
+                    if(this.options.pauseAnimations){
+                        scene.animationsEnabled = false
+                    }                
+                    if(this.options.returnToRest){                    
+                        this.skeleton.returnToRest()
+                    }
+    
+                    if (this.autoUpdateBonesMatrices) {
+                        this.skeleton.computeAbsoluteTransforms()
+                    }
+    
+                    switch(this.options.displayMode){
+                        case 0:
+                            //Old Line Stuff...
+                        break;
+                        case 1:
+                            //Spheres only
+                        break;
+                        case 2:
+                            //BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS 
+                            let longestBoneLength = Number.NEGATIVE_INFINITY
+    
+                            let getAbsoluteRestPose = function(bone: Nullable<Bone>, matrix: Matrix) {
+                                if ( bone == null ) {
+                                    matrix.copyFrom(Matrix.Identity());
+                                    return;
+                                }
+                                getAbsoluteRestPose(bone.getParent(), matrix)
+                                bone.getRestPose().multiplyToRef(matrix, matrix);
+                                return;
+                            };
+
+                            let displayOptions = this.options.displayOptions || {}
+    
+                            for(let i = 0; i<bones.length; i++){
+                                let bone: Bone = bones[i]
+                    
+                                if(bone._index === null){
+                                    bone._index = i
+                                }
+                                if(bone._index === -1){                
+                                    continue
+                                }
+    
+                                let boneAbsoluteRestTransform = new Matrix();
+                                getAbsoluteRestPose(bone, boneAbsoluteRestTransform);   
+                                
+                                let anchorPoint = new Vector3(); //bone.getPosition(BABYLON.Space.WORLD, this.mesh)
+                                boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);    
+                                
+                                bone.children.forEach((bc, i)=>{
+                                    let childAbsoluteRestTransform : Matrix = new Matrix(); 
+                                    bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
+                                    let childPoint = new Vector3(); //bc.getPosition(BABYLON.Space.WORLD, this.mesh)
+                                    childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);   
+         
+                                    let distanceFromParent = Vector3.Distance(anchorPoint, childPoint)                                
+                                    
+                                    if(distanceFromParent>longestBoneLength){
+                                        longestBoneLength = distanceFromParent
+                                    }     
+    
+                                    let dir = childPoint.clone().subtract(anchorPoint.clone())                              
+                                    let h = dir.length()
+                                    let up = dir.normalize().scale(h) 
+                                    
+
+                                    let midStep = displayOptions.midStep || 0.165
+                                    let midStepFactor = displayOptions.midStepFactor || 0.215
+    
+                                    let up0 = up.scale(midStep)
+    
+                                    let spur = MeshBuilder.ExtrudeShapeCustom(bc.name+':spur', 
+                                    {
+                                        shape:  [
+                                                    new Vector3( 1, -1,  0),
+                                                    new Vector3( 1,  1,  0),
+                                                    new Vector3(-1,  1,  0),
+                                                    new Vector3(-1, -1,  0),
+                                                    new Vector3( 1, -1,  0)
+                                                ],
+                                        path:   [ Vector3.Zero(), up0, up ],
+                                        scaleFunction: 
+                                                (i: number)=>{
+                                                    switch(i){
+                                                        case 0:
+                                                        case 2:
+                                                        return 0
+                                                        case 1:
+                                                        return h*midStepFactor
+                                                    }
+                                                    return 0
+                                                }, 
+                                        sideOrientation: Mesh.DEFAULTSIDE,
+                                        updatable: true
+                                    },  scene)
+    
+                                    let ind = spur.getIndices() || []
+                                    let mwk: number[] = [], mik: number[] = []
+    
+                                    for(let i = 0; i<ind.length; i++){
+                                        mwk.push(1,0,0,0)
+                                        mik.push(bone.getIndex(),0,0,0)
+                                    }
+                                    spur.convertToFlatShadedMesh()
+                                    spur.position = anchorPoint.clone()                         
+                               
+                                    spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false)
+                                    spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false)
+                                    spurs.push(spur)
+                                }) 
+
+                                let sphereBaseSize = displayOptions.sphereBaseSize || 0.2
+    
+                                let sphere = MeshBuilder.CreateSphere(bone.name+':sphere', {
+                                    segments:6,
+                                    diameter:sphereBaseSize,
+                                    updatable:true
+                                }, scene)
+    
+                                let ind = sphere.getIndices() || []
+                                let mwk: number[] = [], mik: number[] = []
+    
+                                for(let i = 0; i<ind.length; i++){
+                                    mwk.push(1,0,0,0)
+                                    mik.push(bone.getIndex(),0,0,0)
+                                }
+    
+                                sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false)
+                                sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false)                 
+                                sphere.position = anchorPoint.clone()                            
+                                spheres.push(sphere)
+                            } 
+    
+                            let skip = 0;
+                            let sphereScaleUnit = displayOptions.sphereScaleUnit || 2
+                            let sphereFactor = displayOptions.sphereFactor || 0.85
+
+                            for(let i = 0; i < bones.length; i++){
+                                let bone: Nullable<Bone> = bones[i]
+                                if(bone.getIndex() === -1){
+                                    skip++
+                                    continue
+                                }
+                                let sphere = spheres[i-skip]
+                                let scale = 1/(sphereScaleUnit/longestBoneLength)
+                                
+                                let _stepsOut = 0;
+                                let _b: Bone = (bone as Bone) || {}
+                               
+                                while((_b.getParent()) && (_b.getParent() as Bone).getIndex() !== -1){
+                                    _stepsOut++;
+                                    _b = (_b.getParent() as Bone);
+                                }                                                         
+              
+                                sphere.scaling.scaleInPlace(scale*Math.pow(sphereFactor, _stepsOut))
+                            }  
+                            
+                            this.debugMesh = Mesh.MergeMeshes(spheres.concat(spurs), true, true)
+                            if(this.debugMesh){                    
+                                this.debugMesh.renderingGroupId = this.renderingGroupId
+                                this.debugMesh.skeleton = this.skeleton
+                                this.debugMesh.parent = this.mesh                                
+                                this.debugMesh.computeBonesUsingShaders = this.options.computeBonesUsingShaders || true
+                            }
+                        break;     
+                    }
+                    resolve()           
+                }catch(err){
+                    console.log(err)
+                    revert()
+                    this.dispose()            
+                }    
+            }).then(()=>{
+               revert()
+               this.ready = true           
+            }).catch((err)=>{
+                console.log(err)
+                this.dispose()
+            })       
+        }
+    }
+
     /** Update the viewer to sync with current skeleton state, only used for the line display. */
     private  _displayLinesUpdate() {
         if (!this._utilityLayer) {
@@ -299,7 +495,7 @@ export class SkeletonViewer {
     }
     /** Sets the debugMesh */
     set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>) {
-         this.debugMesh = value;
+         this._debugMesh = (value as any);
     }
     /** Gets the material */
     get material(): StandardMaterial {
@@ -310,14 +506,12 @@ export class SkeletonViewer {
          this.material = value;
     }
 
-    /** public Display constants.
-     *  0 : BABYLON.SkeletonViewer.DISPLAY_LINES
-     *  1 : BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS
-     *  2 : BABYLON.SkeletonViewer.DISPLAY_SPHERES
-     *  3 : BABYLON.SkeletonViewer.DISPLAY_BLOCKS
-     */
+    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_LINES */
     public static readonly DISPLAY_LINES = 0;
-    public static readonly DISPLAY_SPHERE_AND_SPURS = 1;
-    public static readonly DISPLAY_SPHERES = 3;
-    public static readonly DISPLAY_BLOCKS = 4;
+     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERES */
+    public static readonly DISPLAY_SPHERES = 1;
+     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
+    public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
+     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_BLOCKS */
+    public static readonly DISPLAY_BLOCKS = 3;
 }
