@@ -8,28 +8,36 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { StandardMaterial } from '../Materials/standardMaterial';
+
+import { ISkeletonViewerOptions } from './ISkeletonViewer';
+import { Observer } from '../Misc/observable';
 
 /**
-     * Class used to render a debug view of a given skeleton
-     * @see http://www.babylonjs-playground.com/#1BZJVJ#8
-     */
+ * Class used to render a debug view of a given skeleton
+ * @see http://www.babylonjs-playground.com/#1BZJVJ#8
+ */
 export class SkeletonViewer {
     /** Gets or sets the color used to render the skeleton */
     public color: Color3 = Color3.White();
 
-    private _scene: Scene;
+    /** Array of the points of the skeleton fo the line view. */
     private _debugLines = new Array<Array<Vector3>>();
-    private _debugMesh: Nullable<LinesMesh>;
-    private _isEnabled = false;
-    private _renderFunction: () => void;
-    private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
-    /**
-     * Returns the mesh used to render the bones
-     */
-    public get debugMesh(): Nullable<LinesMesh> {
-        return this._debugMesh;
-    }
+    /** The SkeletonViewers Mesh. */
+    private _debugMesh: Nullable<LinesMesh>;
+
+    /** If SkeletonViewer is enabled. */
+    private _isEnabled = false;
+
+    /** If SkeletonViewer is ready. */
+    private _ready : boolean;
+
+    /** SkeletonViewer render observable. */
+    private obs: Nullable<Observer<Scene>> = null;
+
+     /** The Utility Layer to render the gizmos in. */
+    private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
     /**
      * Creates a new SkeletonViewer
@@ -44,40 +52,111 @@ export class SkeletonViewer {
         public skeleton: Skeleton,
         /** defines the mesh attached to the skeleton */
         public mesh: AbstractMesh,
-        scene: Scene,
+        /** The Scene scope*/
+        private _scene: Scene,
         /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
-        public autoUpdateBonesMatrices = true,
+        public autoUpdateBonesMatrices: boolean = true,
         /** defines the rendering group id to use with the viewer */
-        public renderingGroupId = 1,
-        /** defines an optional utility layer to render the helper on */
+        public renderingGroupId: number = 3,
+        /** is the options for the viewer */
+        public options: Partial<ISkeletonViewerOptions> = {
+            pauseAnimations : true,
+            returnToRest: true,
+            displayMode: 0,
+            displayOptions: {
+                midStep: 0.235,
+                midStepFactor: 0.155,
+                sphereBaseSize : 0.15,
+                sphereScaleUnit : 2,
+                sphereFactor: 0.68
+            },
+            computeBonesUsingShaders: true
+        }
     ) {
-        this._scene = scene;
+        this._ready = false;
 
+        /* Create Utility Layer */
         this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
         this._utilityLayer.pickUtilitySceneFirst = false;
         this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
 
+        //Prep the Systems
         this.update();
+        this._bindObs();
+    }
 
-        this._renderFunction = this.update.bind(this);
+    /** The Dynamic bindings for the update functions */
+    private _bindObs() {
+        console.log('ADD OBS', this.obs)
+        let displayMode = this.options.displayMode || 0;
+
+        if (displayMode > SkeletonViewer.DISPLAY_SPHERE_AND_SPURS) {
+            displayMode = SkeletonViewer.DISPLAY_LINES;
+        }
+
+        switch (displayMode){
+            case SkeletonViewer.DISPLAY_LINES: {
+                    this.obs = this.scene.onBeforeRenderObservable.add(() => {
+                        this._displayLinesUpdate();
+                    });
+                break;
+            }
+            case SkeletonViewer.DISPLAY_SPHERE_AND_SPURS: {
+
+                break;
+            }
+            case SkeletonViewer.DISPLAY_SPHERES: {
+
+                break;
+            }
+            case SkeletonViewer.DISPLAY_BLOCKS: {
+
+                break;
+            }
+        }
+        
+    }
+
+    /** Update the viewer to sync with current skeleton state, only used to manually update. */
+    public update() {
+        switch (this.options.displayMode){
+            case SkeletonViewer.DISPLAY_LINES: {
+                this._displayLinesUpdate();
+                break;
+            }
+            case SkeletonViewer.DISPLAY_SPHERE_AND_SPURS: {
+
+                break;
+            }
+            case SkeletonViewer.DISPLAY_SPHERES: {
+
+                break;
+            }
+            case SkeletonViewer.DISPLAY_BLOCKS: {
+
+                break;
+            }
+        }
     }
 
     /** Gets or sets a boolean indicating if the viewer is enabled */
     public set isEnabled(value: boolean) {
-        if (this._isEnabled === value) {
+        if (this.isEnabled === value) {
             return;
         }
 
         this._isEnabled = value;
 
-        if (this._debugMesh) {
-            this._debugMesh.setEnabled(value);
+        if (this.debugMesh) {
+            this.debugMesh.setEnabled(value);
         }
 
-        if (value) {
-            this._scene.registerBeforeRender(this._renderFunction);
-        } else {
-            this._scene.unregisterBeforeRender(this._renderFunction);
+        if (value && !this.obs) {
+            this._bindObs();
+        } else if (!value && this.obs) {
+            console.log('REMOVE OBS', this.obs)
+            this.scene.onBeforeRenderObservable.remove(this.obs);
+            this.obs = null
         }
     }
 
@@ -152,8 +231,8 @@ export class SkeletonViewer {
         }
     }
 
-    /** Update the viewer to sync with current skeleton state */
-    public update() {
+    /** Update the viewer to sync with current skeleton state, only used for the line display. */
+    private  _displayLinesUpdate() {
         if (!this._utilityLayer) {
             return;
         }
@@ -169,25 +248,25 @@ export class SkeletonViewer {
         } else {
             this._getLinesForBonesWithLength(this.skeleton.bones, mesh.getWorldMatrix());
         }
+
         const targetScene = this._utilityLayer.utilityLayerScene;
 
-        if (!this._debugMesh) {
-            this._debugMesh = LinesBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
-            this._debugMesh.renderingGroupId = this.renderingGroupId;
-        } else {
-            LinesBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
+        if (targetScene) {
+            if (!this._debugMesh) {
+                this._debugMesh = LinesBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, targetScene);
+                this._debugMesh.renderingGroupId = this.renderingGroupId;
+            } else {
+                LinesBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
+            }
+            this._debugMesh.position.copyFrom(this.mesh.position);
+            this._debugMesh.color = this.color;
         }
-        this._debugMesh.position.copyFrom(this.mesh.position);
-        this._debugMesh.color = this.color;
     }
 
     /** Release associated resources */
     public dispose() {
-
         this.isEnabled = false;
-
-        if (this._debugMesh) {
-            this.isEnabled = false;
+        if (this._debugMesh) {            
             this._debugMesh.dispose();
             this._debugMesh = null;
         }
@@ -197,4 +276,48 @@ export class SkeletonViewer {
             this._utilityLayer = null;
         }
     }
+
+    /** Gets the Scene. */
+    get scene(): Scene {
+        return this._scene;
+    }
+    /** Gets the utilityLayer. */
+    get utilityLayer(): UtilityLayerRenderer {
+        return this.utilityLayer;
+    }
+    /** Checks Ready Status. */
+    get isReady(): Boolean {
+        return this._ready;
+    }
+    /** Sets Ready Status. */
+    set ready(value: boolean) {
+        this._ready = value;
+    }
+    /** Gets the debugMesh */
+    get debugMesh(): Nullable<AbstractMesh> | Nullable<LinesMesh> {
+        return this._debugMesh;
+    }
+    /** Sets the debugMesh */
+    set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>) {
+         this.debugMesh = value;
+    }
+    /** Gets the material */
+    get material(): StandardMaterial {
+        return this.material;
+    }
+    /** Sets the material */
+    set material(value: StandardMaterial) {
+         this.material = value;
+    }
+
+    /** public Display constants.
+     *  0 : BABYLON.SkeletonViewer.DISPLAY_LINES
+     *  1 : BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS
+     *  2 : BABYLON.SkeletonViewer.DISPLAY_SPHERES
+     *  3 : BABYLON.SkeletonViewer.DISPLAY_BLOCKS
+     */
+    public static readonly DISPLAY_LINES = 0;
+    public static readonly DISPLAY_SPHERE_AND_SPURS = 1;
+    public static readonly DISPLAY_SPHERES = 3;
+    public static readonly DISPLAY_BLOCKS = 4;
 }
