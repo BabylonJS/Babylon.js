@@ -1181,6 +1181,10 @@ export class NativeEngine extends Engine {
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_NEAREST:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+                return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
             default:
                 throw new Error("Unexpected sampling mode: " + samplingMode + ".");
         }
