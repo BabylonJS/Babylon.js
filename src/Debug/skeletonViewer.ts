@@ -96,7 +96,7 @@ export class SkeletonViewer {
     }
 
     /** The Dynamic bindings for the update functions */
-    private _bindObs() {
+    private _bindObs(): void {
         let displayMode = this.options.displayMode || 0;
         switch (displayMode){
             case SkeletonViewer.DISPLAY_LINES: {
@@ -110,18 +110,18 @@ export class SkeletonViewer {
     }
 
     /** Update the viewer to sync with current skeleton state, only used to manually update. */
-    public update() {
+    public update(): void {
         switch (this.options.displayMode){
             case SkeletonViewer.DISPLAY_LINES: {
                 this._displayLinesUpdate();
                 break;
             }
             case SkeletonViewer.DISPLAY_SPHERES: {
-                this._buildSpheresAndSpurs( true );
+                this._buildSpheresAndSpurs(true);
                 break;
             }
             case SkeletonViewer.DISPLAY_SPHERE_AND_SPURS: {
-                this._buildSpheresAndSpurs( false );
+                this._buildSpheresAndSpurs(false);
                 break;
             }
         }
@@ -219,11 +219,11 @@ export class SkeletonViewer {
     }
 
     /** function to revert the mesh and scene back to the initial state. */
-    private _revert(){
+    private _revert(): void {
         if (this.options.pauseAnimations) {
             this.scene.animationsEnabled = true;
         }
-    };
+    }
 
     /** function to build and bind sphere joint points and spur bone representations. */
     private _buildSpheresAndSpurs(spheresOnly = true): Promise<void> {
@@ -280,7 +280,6 @@ export class SkeletonViewer {
                         let anchorPoint = new Vector3(); //bone.getPosition(BABYLON.Space.WORLD, this.mesh)
                         boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
 
-                        
                             bone.children.forEach((bc, i) => {
                                 let childAbsoluteRestTransform : Matrix = new Matrix();
                                 bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
@@ -292,8 +291,8 @@ export class SkeletonViewer {
                                 if (distanceFromParent > longestBoneLength) {
                                     longestBoneLength = distanceFromParent;
                                 }
-                                if(spheresOnly){
-                                    return
+                                if (spheresOnly) {
+                                    return;
                                 }
 
                                 let dir = childPoint.clone().subtract(anchorPoint.clone());
@@ -328,8 +327,8 @@ export class SkeletonViewer {
                                             },
                                     sideOrientation: Mesh.DEFAULTSIDE,
                                     updatable: true
-                                },  scene);                                
-                                
+                                },  scene);
+
                                 let ind = spur.getIndices() || [];
                                 let mwk: number[] = [], mik: number[] = [];
 
@@ -343,9 +342,8 @@ export class SkeletonViewer {
                                 spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
                                 spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
                                 spurs.push(spur);
-                                
+
                             });
-                        
 
                         let sphereBaseSize = displayOptions.sphereBaseSize || 0.2;
 
@@ -354,7 +352,7 @@ export class SkeletonViewer {
                             diameter: sphereBaseSize,
                             updatable: true
                         }, scene);
-                 
+
                         let ind = sphere.getIndices() || [];
                         let mwk: number[] = [], mik: number[] = [];
 
@@ -367,7 +365,7 @@ export class SkeletonViewer {
                         sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
                         sphere.position = anchorPoint.clone();
                         spheres.push(sphere);
-                        
+
                     }
 
                     let skip = 0;
@@ -390,16 +388,16 @@ export class SkeletonViewer {
                             _stepsOut++;
                             _b = (_b.getParent() as Bone);
                         }
-                        sphere.scaling.scaleInPlace(scale * Math.pow(sphereFactor, _stepsOut));              
+                        sphere.scaling.scaleInPlace(scale * Math.pow(sphereFactor, _stepsOut));
                     }
-                   
+
                     this.debugMesh = Mesh.MergeMeshes(spheres.concat(spurs), true, true);
                     if (this.debugMesh) {
                         this.debugMesh.renderingGroupId = this.renderingGroupId;
                         this.debugMesh.skeleton = this.skeleton;
                         this.debugMesh.parent = this.mesh;
                         this.debugMesh.computeBonesUsingShaders = this.options.computeBonesUsingShaders || true;
-                    }                  
+                    }
 
                     resolve();
                 }catch (err) {
