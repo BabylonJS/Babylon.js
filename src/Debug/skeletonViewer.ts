@@ -44,6 +44,13 @@ export class SkeletonViewer {
      /** The Utility Layer to render the gizmos in. */
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
+    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_LINES */
+    public static readonly DISPLAY_LINES = 0;
+    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERES */
+    public static readonly DISPLAY_SPHERES = 1;
+    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
+    public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
+
     /**
      * Creates a new SkeletonViewer
      * @param skeleton defines the skeleton to render
@@ -277,13 +284,13 @@ export class SkeletonViewer {
                         let boneAbsoluteRestTransform = new Matrix();
                         getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
 
-                        let anchorPoint = new Vector3(); //bone.getPosition(BABYLON.Space.WORLD, this.mesh)
+                        let anchorPoint = new Vector3();
                         boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
 
                             bone.children.forEach((bc, i) => {
                                 let childAbsoluteRestTransform : Matrix = new Matrix();
                                 bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
-                                let childPoint = new Vector3(); //bc.getPosition(BABYLON.Space.WORLD, this.mesh)
+                                let childPoint = new Vector3();
                                 childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);
 
                                 let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
@@ -466,8 +473,8 @@ export class SkeletonViewer {
         return this._scene;
     }
     /** Gets the utilityLayer. */
-    get utilityLayer(): UtilityLayerRenderer {
-        return this.utilityLayer;
+    get utilityLayer(): Nullable<UtilityLayerRenderer> {
+        return this._utilityLayer;
     }
     /** Checks Ready Status. */
     get isReady(): Boolean {
@@ -493,11 +500,4 @@ export class SkeletonViewer {
     set material(value: StandardMaterial) {
          this.material = value;
     }
-
-    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_LINES */
-    public static readonly DISPLAY_LINES = 0;
-     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERES */
-    public static readonly DISPLAY_SPHERES = 1;
-     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
-    public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
 }

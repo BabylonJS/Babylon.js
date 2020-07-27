@@ -18,6 +18,9 @@ export interface ISkeletonViewerOptions{
    computeBonesUsingShaders : boolean;
 }
 
+/**
+ * Defines how to display the various bone meshes for the viewer.
+ */
 export interface ISkeletonViewerDisplayOptions{
    /** How far down to start tapering the bone spurs */
    midStep? : number;
