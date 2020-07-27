@@ -23,6 +23,13 @@ import { ShapeBuilder } from '../Meshes/Builders/shapeBuilder';
  * @see http://www.babylonjs-playground.com/#1BZJVJ#8
  */
 export class SkeletonViewer {
+    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_LINES */
+    public static readonly DISPLAY_LINES = 0;
+    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERES */
+    public static readonly DISPLAY_SPHERES = 1;
+    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
+    public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
+
     /** Gets or sets the color used to render the skeleton */
     public color: Color3 = Color3.White();
 
@@ -44,12 +51,38 @@ export class SkeletonViewer {
      /** The Utility Layer to render the gizmos in. */
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
-    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_LINES */
-    public static readonly DISPLAY_LINES = 0;
-    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERES */
-    public static readonly DISPLAY_SPHERES = 1;
-    /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
-    public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
+    /** Gets the Scene. */
+    get scene(): Scene {
+        return this._scene;
+    }
+    /** Gets the utilityLayer. */
+    get utilityLayer(): Nullable<UtilityLayerRenderer> {
+        return this._utilityLayer;
+    }
+    /** Checks Ready Status. */
+    get isReady(): Boolean {
+        return this._ready;
+    }
+    /** Sets Ready Status. */
+    set ready(value: boolean) {
+        this._ready = value;
+    }
+    /** Gets the debugMesh */
+    get debugMesh(): Nullable<AbstractMesh> | Nullable<LinesMesh> {
+        return this._debugMesh;
+    }
+    /** Sets the debugMesh */
+    set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>) {
+         this._debugMesh = (value as any);
+    }
+    /** Gets the material */
+    get material(): StandardMaterial {
+        return this.material;
+    }
+    /** Sets the material */
+    set material(value: StandardMaterial) {
+         this.material = value;
+    }
 
     /**
      * Creates a new SkeletonViewer
@@ -466,38 +499,5 @@ export class SkeletonViewer {
             this._utilityLayer.dispose();
             this._utilityLayer = null;
         }
-    }
-
-    /** Gets the Scene. */
-    get scene(): Scene {
-        return this._scene;
-    }
-    /** Gets the utilityLayer. */
-    get utilityLayer(): Nullable<UtilityLayerRenderer> {
-        return this._utilityLayer;
-    }
-    /** Checks Ready Status. */
-    get isReady(): Boolean {
-        return this._ready;
-    }
-    /** Sets Ready Status. */
-    set ready(value: boolean) {
-        this._ready = value;
-    }
-    /** Gets the debugMesh */
-    get debugMesh(): Nullable<AbstractMesh> | Nullable<LinesMesh> {
-        return this._debugMesh;
-    }
-    /** Sets the debugMesh */
-    set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>) {
-         this._debugMesh = (value as any);
-    }
-    /** Gets the material */
-    get material(): StandardMaterial {
-        return this.material;
-    }
-    /** Sets the material */
-    set material(value: StandardMaterial) {
-         this.material = value;
     }
 }
