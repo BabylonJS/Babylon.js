@@ -68,7 +68,7 @@ export class SkeletonViewer {
         ) {
 
         this._ready = false;
-        //Defualts
+        //Defaults
         options.pauseAnimations = options.pauseAnimations || true;
         options.returnToRest = options.returnToRest || true;
         options.displayMode = options.displayMode || SkeletonViewer.DISPLAY_LINES;
@@ -117,11 +117,11 @@ export class SkeletonViewer {
                 break;
             }
             case SkeletonViewer.DISPLAY_SPHERES: {
-                this._buildSpheres();
+                this._buildSpheresAndSpurs( true );
                 break;
             }
             case SkeletonViewer.DISPLAY_SPHERE_AND_SPURS: {
-                this._buildSpheresAndSpurs();
+                this._buildSpheresAndSpurs( false );
                 break;
             }
         }
@@ -218,15 +218,15 @@ export class SkeletonViewer {
         }
     }
 
-    /** function to build and bind sphere joint points. */
-    private _buildSpheres() {
-        if (this.debugMesh) {
-            this.debugMesh.dispose();
+    /** function to revert the mesh and scene back to the initial state. */
+    private _revert(){
+        if (this.options.pauseAnimations) {
+            this.scene.animationsEnabled = true;
         }
-    }
+    };
 
     /** function to build and bind sphere joint points and spur bone representations. */
-    private _buildSpheresAndSpurs(): Promise<void> {
+    private _buildSpheresAndSpurs(spheresOnly = true): Promise<void> {
         if (this.debugMesh) {
             this.debugMesh.dispose();
         }
@@ -236,12 +236,6 @@ export class SkeletonViewer {
             let bones: Bone[] = this.skeleton.bones;
             let spheres: Mesh[] = [];
             let spurs: Mesh[] = [];
-
-            let revert = () => {
-                   if (this.options.pauseAnimations) {
-                    scene.animationsEnabled = true;
-                }
-            };
 
             return new Promise((resolve, reject) => {
                 try {
@@ -257,170 +251,165 @@ export class SkeletonViewer {
                         this.skeleton.computeAbsoluteTransforms();
                     }
 
-                    switch (this.options.displayMode){
-                        case 0:
-                            //Old Line Stuff...
-                        break;
-                        case 1:
-                            //Spheres only
-                        break;
-                        case 2:
-                            //BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS
-                            let longestBoneLength = Number.NEGATIVE_INFINITY;
+                    let longestBoneLength = Number.NEGATIVE_INFINITY;
+                    let getAbsoluteRestPose = function(bone: Nullable<Bone>, matrix: Matrix) {
+                    if (bone == null) {
+                        matrix.copyFrom(Matrix.Identity());
+                        return;
+                    }
+                        getAbsoluteRestPose(bone.getParent(), matrix);
+                        bone.getRestPose().multiplyToRef(matrix, matrix);
+                        return;
+                    };
 
-                            let getAbsoluteRestPose = function(bone: Nullable<Bone>, matrix: Matrix) {
-                                if (bone == null) {
-                                    matrix.copyFrom(Matrix.Identity());
-                                    return;
+                    let displayOptions = this.options.displayOptions || {};
+
+                    for (let i = 0; i < bones.length; i++) {
+                        let bone: Bone = bones[i];
+
+                        if (bone._index === null) {
+                            bone._index = i;
+                        }
+                        if (bone._index === -1) {
+                            continue;
+                        }
+
+                        let boneAbsoluteRestTransform = new Matrix();
+                        getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
+
+                        let anchorPoint = new Vector3(); //bone.getPosition(BABYLON.Space.WORLD, this.mesh)
+                        boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
+
+                        
+                            bone.children.forEach((bc, i) => {
+                                let childAbsoluteRestTransform : Matrix = new Matrix();
+                                bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
+                                let childPoint = new Vector3(); //bc.getPosition(BABYLON.Space.WORLD, this.mesh)
+                                childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);
+
+                                let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
+
+                                if (distanceFromParent > longestBoneLength) {
+                                    longestBoneLength = distanceFromParent;
                                 }
-                                getAbsoluteRestPose(bone.getParent(), matrix);
-                                bone.getRestPose().multiplyToRef(matrix, matrix);
-                                return;
-                            };
-
-                            let displayOptions = this.options.displayOptions || {};
-
-                            for (let i = 0; i < bones.length; i++) {
-                                let bone: Bone = bones[i];
-
-                                if (bone._index === null) {
-                                    bone._index = i;
-                                }
-                                if (bone._index === -1) {
-                                    continue;
+                                if(spheresOnly){
+                                    return
                                 }
 
-                                let boneAbsoluteRestTransform = new Matrix();
-                                getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
+                                let dir = childPoint.clone().subtract(anchorPoint.clone());
+                                let h = dir.length();
+                                let up = dir.normalize().scale(h);
 
-                                let anchorPoint = new Vector3(); //bone.getPosition(BABYLON.Space.WORLD, this.mesh)
-                                boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
+                                let midStep = displayOptions.midStep || 0.165;
+                                let midStepFactor = displayOptions.midStepFactor || 0.215;
 
-                                bone.children.forEach((bc, i) => {
-                                    let childAbsoluteRestTransform : Matrix = new Matrix();
-                                    bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
-                                    let childPoint = new Vector3(); //bc.getPosition(BABYLON.Space.WORLD, this.mesh)
-                                    childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);
+                                let up0 = up.scale(midStep);
 
-                                    let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
-
-                                    if (distanceFromParent > longestBoneLength) {
-                                        longestBoneLength = distanceFromParent;
-                                    }
-
-                                    let dir = childPoint.clone().subtract(anchorPoint.clone());
-                                    let h = dir.length();
-                                    let up = dir.normalize().scale(h);
-
-                                    let midStep = displayOptions.midStep || 0.165;
-                                    let midStepFactor = displayOptions.midStepFactor || 0.215;
-
-                                    let up0 = up.scale(midStep);
-
-                                    let spur = ShapeBuilder.ExtrudeShapeCustom(bc.name + ':spur',
-                                    {
-                                        shape:  [
-                                                    new Vector3(1, -1,  0),
-                                                    new Vector3(1,  1,  0),
-                                                    new Vector3(-1,  1,  0),
-                                                    new Vector3(-1, -1,  0),
-                                                    new Vector3(1, -1,  0)
-                                                ],
-                                        path:   [ Vector3.Zero(), up0, up ],
-                                        scaleFunction:
-                                                (i: number) => {
-                                                    switch (i){
-                                                        case 0:
-                                                        case 2:
-                                                        return 0;
-                                                        case 1:
-                                                        return h * midStepFactor;
-                                                    }
+                                let spur = ShapeBuilder.ExtrudeShapeCustom(bc.name + ':spur',
+                                {
+                                    shape:  [
+                                                new Vector3(1, -1,  0),
+                                                new Vector3(1,  1,  0),
+                                                new Vector3(-1,  1,  0),
+                                                new Vector3(-1, -1,  0),
+                                                new Vector3(1, -1,  0)
+                                            ],
+                                    path:   [ Vector3.Zero(), up0, up ],
+                                    scaleFunction:
+                                            (i: number) => {
+                                                switch (i){
+                                                    case 0:
+                                                    case 2:
                                                     return 0;
-                                                },
-                                        sideOrientation: Mesh.DEFAULTSIDE,
-                                        updatable: true
-                                    },  scene);
-
-                                    let ind = spur.getIndices() || [];
-                                    let mwk: number[] = [], mik: number[] = [];
-
-                                    for (let i = 0; i < ind.length; i++) {
-                                        mwk.push(1, 0, 0, 0);
-                                        mik.push(bone.getIndex(), 0, 0, 0);
-                                    }
-                                    spur.convertToFlatShadedMesh();
-                                    spur.position = anchorPoint.clone();
-
-                                    spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
-                                    spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
-                                    spurs.push(spur);
-                                });
-
-                                let sphereBaseSize = displayOptions.sphereBaseSize || 0.2;
-
-                                let sphere = SphereBuilder.CreateSphere(bone.name + ':sphere', {
-                                    segments: 6,
-                                    diameter: sphereBaseSize,
+                                                    case 1:
+                                                    return h * midStepFactor;
+                                                }
+                                                return 0;
+                                            },
+                                    sideOrientation: Mesh.DEFAULTSIDE,
                                     updatable: true
-                                }, scene);
-
-                                let ind = sphere.getIndices() || [];
+                                },  scene);                                
+                                
+                                let ind = spur.getIndices() || [];
                                 let mwk: number[] = [], mik: number[] = [];
 
                                 for (let i = 0; i < ind.length; i++) {
                                     mwk.push(1, 0, 0, 0);
                                     mik.push(bone.getIndex(), 0, 0, 0);
                                 }
+                                spur.convertToFlatShadedMesh();
+                                spur.position = anchorPoint.clone();
 
-                                sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
-                                sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
-                                sphere.position = anchorPoint.clone();
-                                spheres.push(sphere);
-                            }
+                                spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
+                                spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
+                                spurs.push(spur);
+                                
+                            });
+                        
 
-                            let skip = 0;
-                            let sphereScaleUnit = displayOptions.sphereScaleUnit || 2;
-                            let sphereFactor = displayOptions.sphereFactor || 0.85;
+                        let sphereBaseSize = displayOptions.sphereBaseSize || 0.2;
 
-                            for (let i = 0; i < bones.length; i++) {
-                                let bone: Nullable<Bone> = bones[i];
-                                if (bone.getIndex() === -1) {
-                                    skip++;
-                                    continue;
-                                }
-                                let sphere = spheres[i - skip];
-                                let scale = 1 / (sphereScaleUnit / longestBoneLength);
+                        let sphere = SphereBuilder.CreateSphere(bone.name + ':sphere', {
+                            segments: 6,
+                            diameter: sphereBaseSize,
+                            updatable: true
+                        }, scene);
+                 
+                        let ind = sphere.getIndices() || [];
+                        let mwk: number[] = [], mik: number[] = [];
 
-                                let _stepsOut = 0;
-                                let _b: Bone = (bone as Bone) || {};
+                        for (let i = 0; i < ind.length; i++) {
+                            mwk.push(1, 0, 0, 0);
+                            mik.push(bone.getIndex(), 0, 0, 0);
+                        }
 
-                                while ((_b.getParent()) && (_b.getParent() as Bone).getIndex() !== -1) {
-                                    _stepsOut++;
-                                    _b = (_b.getParent() as Bone);
-                                }
-
-                                sphere.scaling.scaleInPlace(scale * Math.pow(sphereFactor, _stepsOut));
-                            }
-
-                            this.debugMesh = Mesh.MergeMeshes(spheres.concat(spurs), true, true);
-                            if (this.debugMesh) {
-                                this.debugMesh.renderingGroupId = this.renderingGroupId;
-                                this.debugMesh.skeleton = this.skeleton;
-                                this.debugMesh.parent = this.mesh;
-                                this.debugMesh.computeBonesUsingShaders = this.options.computeBonesUsingShaders || true;
-                            }
-                        break;
+                        sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
+                        sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
+                        sphere.position = anchorPoint.clone();
+                        spheres.push(sphere);
+                        
                     }
+
+                    let skip = 0;
+                    let sphereScaleUnit = displayOptions.sphereScaleUnit || 2;
+                    let sphereFactor = displayOptions.sphereFactor || 0.85;
+
+                    for (let i = 0; i < bones.length; i++) {
+                        let bone: Nullable<Bone> = bones[i];
+                        if (bone.getIndex() === -1) {
+                            skip++;
+                            continue;
+                        }
+                        let sphere = spheres[i - skip];
+                        let scale = 1 / (sphereScaleUnit / longestBoneLength);
+
+                        let _stepsOut = 0;
+                        let _b: Bone = (bone as Bone) || {};
+
+                        while ((_b.getParent()) && (_b.getParent() as Bone).getIndex() !== -1) {
+                            _stepsOut++;
+                            _b = (_b.getParent() as Bone);
+                        }
+                        sphere.scaling.scaleInPlace(scale * Math.pow(sphereFactor, _stepsOut));              
+                    }
+                   
+                    this.debugMesh = Mesh.MergeMeshes(spheres.concat(spurs), true, true);
+                    if (this.debugMesh) {
+                        this.debugMesh.renderingGroupId = this.renderingGroupId;
+                        this.debugMesh.skeleton = this.skeleton;
+                        this.debugMesh.parent = this.mesh;
+                        this.debugMesh.computeBonesUsingShaders = this.options.computeBonesUsingShaders || true;
+                    }                  
+
                     resolve();
                 }catch (err) {
                     console.log(err);
-                    revert();
+                    this._revert();
                     this.dispose();
                 }
             }).then(() => {
-               revert();
-               this.ready = true;
+                this._revert();
+                this.ready = true;
             }).catch((err) => {
                 console.log(err);
                 this.dispose();
@@ -513,6 +502,4 @@ export class SkeletonViewer {
     public static readonly DISPLAY_SPHERES = 1;
      /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
     public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
-     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_BLOCKS */
-    public static readonly DISPLAY_BLOCKS = 3;
 }
