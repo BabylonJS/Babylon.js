@@ -17,7 +17,7 @@ interface ICameraTreeItemComponentProps {
 }
 
 export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, { isActive: boolean }> {
-    private _onActiveCameraObserver: Nullable<Observer<Scene>>;
+    private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
 
     constructor(props: ICameraTreeItemComponentProps) {
         super(props);
@@ -35,28 +35,33 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         scene.activeCamera = camera;
         camera.attachControl(scene.getEngine().getRenderingCanvas()!, true);
 
-
         this.setState({ isActive: true });
     }
 
-    componentDidMount() {
-        const camera = this.props.camera;
-        const scene = camera.getScene();
-        this._onActiveCameraObserver = scene.onActiveCameraChanged.add(() => {
+    componentDidMount() {        
+        const scene = this.props.camera.getScene();
+
+        this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+            const camera = this.props.camera;
             // This will deactivate the previous camera when the camera is changed. Multiple camera's cycle frequently so only do this for single cameras
-            if (this.state.isActive && scene.activeCameras.length <= 1) {
+            if (this.state.isActive && scene.activeCameras.length <= 1 && scene.activeCamera !== camera) {
                 camera.detachControl(scene.getEngine().getRenderingCanvas()!);
             }
-            this.setState({ isActive: scene.activeCamera === camera });
-        });
+            let newState =  scene.activeCamera === camera;
+
+            if (newState !== this.state.isActive) {
+                this.setState({ isActive: newState});
+            }
+            
+        })
     }
 
     componentWillUnmount() {
-        if (this._onActiveCameraObserver) {
+        if (this._onBeforeRenderObserver) {
             const camera = this.props.camera;
             const scene = camera.getScene();
 
-            scene.onActiveCameraChanged.remove(this._onActiveCameraObserver);
+            scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
         }
     }
 

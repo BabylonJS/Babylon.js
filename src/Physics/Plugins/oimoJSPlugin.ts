@@ -17,8 +17,9 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     public name: string = "OimoJSPlugin";
     public BJSOIMO: any;
     private _raycastResult: PhysicsRaycastResult;
+    private _fixedTimeStep: number = 1 / 60;
 
-    constructor(iterations?: number, oimoInjection = OIMO) {
+    constructor(private _useDeltaForWorldStep: boolean = true, iterations?: number, oimoInjection = OIMO) {
         this.BJSOIMO = oimoInjection;
         this.world = new this.BJSOIMO.World({
             iterations: iterations
@@ -28,7 +29,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setGravity(gravity: Vector3) {
-        this.world.gravity.copy(gravity);
+        this.world.gravity.set(gravity.x, gravity.y, gravity.z);
     }
 
     public setTimeStep(timeStep: number) {
@@ -47,6 +48,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             impostor.beforeStep();
         });
 
+        this.world.timeStep = this._useDeltaForWorldStep ? delta : this._fixedTimeStep;
         this.world.step();
 
         impostors.forEach((impostor) => {
@@ -102,7 +104,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             var bodyConfig: any = {
                 name: impostor.uniqueId,
                 //Oimo must have mass, also for static objects.
-                config: [impostor.getParam("mass") || 1, impostor.getParam("friction"), impostor.getParam("restitution")],
+                config: [impostor.getParam("mass") || 0.001, impostor.getParam("friction"), impostor.getParam("restitution")],
                 size: [],
                 type: [],
                 pos: [],
@@ -143,6 +145,9 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 var oldQuaternion = i.object.rotationQuaternion;
                 globalQuaternion = oldQuaternion.clone();
 
+                i.object.rotationQuaternion.set(0, 0, 0, 1);
+                i.object.computeWorldMatrix(true);
+
                 var rot = oldQuaternion.toEulerAngles();
                 var extendSize = i.getObjectExtendSize();
 
@@ -162,16 +167,19 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
                     bodyConfig.rotShape.push(0, 0, 0);
                 } else {
-                    let localPosition = i.object.getAbsolutePosition().subtract(impostor.object.getAbsolutePosition());
+                    let localPosition = i.object.position.clone();
                     bodyConfig.posShape.push(localPosition.x);
                     bodyConfig.posShape.push(localPosition.y);
                     bodyConfig.posShape.push(localPosition.z);
-                    bodyConfig.pos.push(0, 0, 0);
+
+                    // bodyConfig.pos.push(0, 0, 0);
 
                     bodyConfig.rotShape.push(rot.x * radToDeg);
                     bodyConfig.rotShape.push(rot.y * radToDeg);
                     bodyConfig.rotShape.push(rot.z * radToDeg);
                 }
+
+                i.object.rotationQuaternion.copyFrom(globalQuaternion);
 
                 // register mesh
                 switch (i.type) {
@@ -225,7 +233,6 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 //actually not needed, but hey...
                 i.object.rotationQuaternion = oldQuaternion;
             });
-
             impostor.physicsBody = this.world.add(bodyConfig);
             // set the quaternion, ignoring the previously defined (euler) rotation
             impostor.physicsBody.resetQuaternion(globalQuaternion);
@@ -328,25 +335,33 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
     public setTransformationFromPhysicsBody(impostor: PhysicsImpostor) {
         if (!impostor.physicsBody.sleeping) {
-            //TODO check that
-            /*if (impostor.physicsBody.shapes.next) {
-                var parentShape = this._getLastShape(impostor.physicsBody);
-                impostor.object.position.copyFrom(parentShape.position);
-                console.log(parentShape.position);
-            } else {*/
-            impostor.object.position.copyFrom(impostor.physicsBody.getPosition());
+            if (impostor.physicsBody.shapes.next) {
+                let parent = impostor.physicsBody.shapes;
+                while (parent.next) {
+                    parent = parent.next;
+                }
+                impostor.object.position.set(parent.position.x, parent.position.y, parent.position.z);
+            } else {
+                const pos = impostor.physicsBody.getPosition();
+                impostor.object.position.set(pos.x, pos.y, pos.z);
+            }
             //}
 
             if (impostor.object.rotationQuaternion) {
-                impostor.object.rotationQuaternion.copyFrom(impostor.physicsBody.getQuaternion());
+                const quat = impostor.physicsBody.getQuaternion();
+                impostor.object.rotationQuaternion.set(quat.x, quat.y, quat.z, quat.w);
             }
         }
     }
 
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
         var body = impostor.physicsBody;
-        body.position.copy(newPosition);
-        body.orientation.copy(newRotation);
+        // disable bidirectional for compound meshes
+        if (impostor.physicsBody.shapes.next) {
+            return;
+        }
+        body.position.set(newPosition.x, newPosition.y, newPosition.z);
+        body.orientation.set(newRotation.x, newRotation.y, newRotation.z, newRotation.w);
         body.syncShapes();
         body.awake();
     }
@@ -360,11 +375,11 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }*/
 
     public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        impostor.physicsBody.linearVelocity.copy(velocity);
+        impostor.physicsBody.linearVelocity.set(velocity.x, velocity.y, velocity.z);
     }
 
     public setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
-        impostor.physicsBody.angularVelocity.copy(velocity);
+        impostor.physicsBody.angularVelocity.set(velocity.x, velocity.y, velocity.z);
     }
 
     public getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3> {

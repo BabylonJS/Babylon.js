@@ -18,12 +18,15 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import "./shadowOnly.fragment";
 import "./shadowOnly.vertex";
 import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
+import { CascadedShadowGenerator } from 'babylonjs/Lights/Shadows/cascadedShadowGenerator';
 
 class ShadowOnlyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public POINTSIZE = false;
     public FOG = false;
     public NORMAL = false;
@@ -38,8 +41,8 @@ class ShadowOnlyMaterialDefines extends MaterialDefines {
 }
 
 export class ShadowOnlyMaterial extends PushMaterial {
-    private _renderId: number;
     private _activeLight: IShadowLight;
+    private _needAlphaBlending = true;
 
     constructor(name: string, scene: Scene) {
         super(name, scene);
@@ -48,7 +51,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
     public shadowColor = Color3.Black();
 
     public needAlphaBlending(): boolean {
-        return true;
+        return this._needAlphaBlending;
     }
 
     public needAlphaTesting(): boolean {
@@ -67,10 +70,19 @@ export class ShadowOnlyMaterial extends PushMaterial {
         this._activeLight = light;
     }
 
+    private _getFirstShadowLightForMesh(mesh: AbstractMesh): Nullable<IShadowLight> {
+        for (var light of mesh.lightSources) {
+            if (light.shadowEnabled) {
+                return light as IShadowLight;
+            }
+        }
+        return null;
+    }
+
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -82,10 +94,8 @@ export class ShadowOnlyMaterial extends PushMaterial {
         var defines = <ShadowOnlyMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -114,6 +124,16 @@ export class ShadowOnlyMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
+
+        const shadowGenerator = this._getFirstShadowLightForMesh(mesh)?.getShadowGenerator();
+
+        this._needAlphaBlending = true;
+
+        if (shadowGenerator && (shadowGenerator as any).getClassName && (shadowGenerator as any).getClassName() === 'CascadedShadowGenerator') {
+            const csg = shadowGenerator as CascadedShadowGenerator;
+
+            this._needAlphaBlending = !csg.autoCalcDepthBounds;
+        }
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
@@ -151,7 +171,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                 "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6"
             ];
             var samplers = new Array<string>();
 
@@ -182,8 +202,8 @@ export class ShadowOnlyMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -227,10 +247,21 @@ export class ShadowOnlyMaterial extends PushMaterial {
         // Lights
         if (scene.lightsEnabled) {
             MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, 1);
+
+            const light = this._getFirstShadowLightForMesh(mesh);
+
+            if (light) {
+                // Make sure the uniforms for this light will be rebound for other materials using this light when rendering the current frame.
+                // Indeed, there is an optimization in Light that binds the light uniforms only once per frame for a given light (if using ubo).
+                // Doing this way assumes that all uses of this light are the same, meaning all parameters passed to Light._bindLlight
+                // are the same, notably useSpecular. However, isReadyForSubMesh (see above) is passing false for this parameter, which may not be
+                // the value the other materials may pass.
+                light._renderId = -1;
+            }
         }
 
         // View
-        if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
+        if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || defines["SHADOWCSM0"]) {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
 

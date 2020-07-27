@@ -2,14 +2,13 @@ import { Logger } from "../../../Misc/logger";
 import { Scene } from "../../../scene";
 import { Vector3, Vector2 } from "../../../Maths/math.vector";
 import { Color4, Color3 } from '../../../Maths/math.color';
-import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
 import { WebRequest } from '../../../Misc/webRequest';
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
  * Custom Procedural textures are the easiest way to create your own procedural in your application.
- * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
+ * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
  */
 export class CustomProceduralTexture extends ProceduralTexture {
     private _animate: boolean = true;
@@ -21,7 +20,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * Instantiates a new Custom Procedural Texture.
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * Custom Procedural textures are the easiest way to create your own procedural in your application.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
+     * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
      * @param name Define the name of the texture
      * @param texturePath Define the folder path containing all the cutom texture related files (config, shaders...)
      * @param size Define the size of the texture to create
@@ -40,7 +39,6 @@ export class CustomProceduralTexture extends ProceduralTexture {
 
     private _loadJson(jsonUrl: string): void {
         let noConfigFile = () => {
-            Logger.Log("No config file found in " + jsonUrl + " trying to use ShadersStore or DOM element");
             try {
                 this.setFragment(this._texturePath);
             }

@@ -61,6 +61,10 @@
         "viewer",
         "nodeEditor"
     ],
+    "apps": [
+        "playground",
+        "sandbox"
+    ],
     "lintModules": [
         "core",
         "materialsLibrary",
@@ -142,7 +146,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/core",
-                "readme": "readme-es6.md"
+                "readme": "readme-es6.md",
+                "license": "license.md"
             }
         }
     },
@@ -262,11 +267,6 @@
             {
                 "output": "babylon.digitalRainPostProcess.min.js",
                 "entry": "./legacy/legacy-digitalRain.ts",
-                "preventLoadLibrary": true
-            },
-            {
-                "output": "babylon.oceanPostProcess.min.js",
-                "entry": "./legacy/legacy-ocean.ts",
                 "preventLoadLibrary": true
             }
         ],
@@ -638,6 +638,24 @@
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
             }
+        }
+    },
+    "playground": {
+        "distFile": "/Playground/dist/babylon.playground.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../Playground/dist/",
+            "mainFolder": "./Playground/"
+        }
+    },
+    "sandbox": {
+        "distFile": "/sandbox/public/dist/babylon.sandbox.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../sandbox/public/dist/",
+            "mainFolder": "./sandbox/"
         }
     },
     "viewer": {

@@ -6,7 +6,6 @@ import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Effect } from "../Materials/effect";
 Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
     return () => new DirectionalLight(name, Vector3.Zero(), scene);
@@ -62,6 +61,13 @@ export class DirectionalLight extends ShadowLight {
      */
     @serialize()
     public autoUpdateExtends = true;
+
+    /**
+     * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
+     * on each frame. autoUpdateExtends must be set to true for this to work
+     */
+    @serialize()
+    public autoCalcShadowZBounds = false;
 
     // Cache
     private _orthoLeft = Number.MAX_VALUE;
@@ -148,6 +154,9 @@ export class DirectionalLight extends ShadowLight {
             this._orthoTop = Number.MIN_VALUE;
             this._orthoBottom = Number.MAX_VALUE;
 
+            var shadowMinZ = Number.MAX_VALUE;
+            var shadowMaxZ = Number.MIN_VALUE;
+
             for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
                 var mesh = renderList[meshIndex];
 
@@ -174,28 +183,35 @@ export class DirectionalLight extends ShadowLight {
                     if (tempVector3.y > this._orthoTop) {
                         this._orthoTop = tempVector3.y;
                     }
+                    if (this.autoCalcShadowZBounds) {
+                        if (tempVector3.z < shadowMinZ) {
+                            shadowMinZ = tempVector3.z;
+                        }
+                        if (tempVector3.z > shadowMaxZ) {
+                            shadowMaxZ = tempVector3.z;
+                        }
+                    }
                 }
+            }
+
+            if (this.autoCalcShadowZBounds) {
+                this._shadowMinZ = shadowMinZ;
+                this._shadowMaxZ = shadowMaxZ;
             }
         }
 
         var xOffset = this._orthoRight - this._orthoLeft;
         var yOffset = this._orthoTop - this._orthoBottom;
 
-        if (this.getScene().useRightHandedSystem) {
-            Matrix.OrthoOffCenterRHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
-                this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
-        } else {
-            Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
-                this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
-                this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
-        }
+        Matrix.OrthoOffCenterLHToRef(this._orthoLeft - xOffset * this.shadowOrthoScale, this._orthoRight + xOffset * this.shadowOrthoScale,
+            this._orthoBottom - yOffset * this.shadowOrthoScale, this._orthoTop + yOffset * this.shadowOrthoScale,
+            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ, this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ, matrix);
     }
 
     protected _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 3);
+        this._uniformBuffer.addUniform("vLightSpecular", 4);
         this._uniformBuffer.addUniform("shadowsInfo", 3);
         this._uniformBuffer.addUniform("depthValues", 2);
         this._uniformBuffer.create();
@@ -209,37 +225,20 @@ export class DirectionalLight extends ShadowLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
         if (this.computeTransformedInformation()) {
-            if (this.getScene().useRightHandedSystem) {
-                this._uniformBuffer.updateFloat4("vLightData", -this.transformedDirection.x, -this.transformedDirection.y, -this.transformedDirection.z, 1, lightIndex);
-            } else {
-                this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
-            }
+            this._uniformBuffer.updateFloat4("vLightData", this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z, 1, lightIndex);
             return this;
         }
-        if (this.getScene().useRightHandedSystem) {
-            this._uniformBuffer.updateFloat4("vLightData", -this.direction.x, -this.direction.y, -this.direction.z, 1, lightIndex);
-        } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
-        }
-
+        this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
         return this;
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light {
         if (this.computeTransformedInformation()) {
-            if (this.getScene().useRightHandedSystem) {
-                effect.setFloat3(lightDataUniformName, -this.transformedDirection.x, -this.transformedDirection.y, -this.transformedDirection.z);
-            } else {
-                effect.setFloat3(lightDataUniformName, this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z);
-            }
+            effect.setFloat3(lightDataUniformName, this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z);
             return this;
         }
-        if (this.getScene().useRightHandedSystem) {
-            effect.setFloat3(lightDataUniformName, -this.direction.x, -this.direction.y, -this.direction.z);
-        } else {
-            effect.setFloat3(lightDataUniformName, this.direction.x, this.direction.y, this.direction.z);
-        }
 
+        effect.setFloat3(lightDataUniformName, this.direction.x, this.direction.y, this.direction.z);
         return this;
     }
 

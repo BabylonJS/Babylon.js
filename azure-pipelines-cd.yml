@@ -1,0 +1,57 @@
+trigger:
+- preview
+
+jobs:
+- job: NetlifyStaticDeploy
+  displayName: 'Deploy'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - script: 'npm install netlify-cli'
+    displayName: 'npm install netlify'
+  - script: 'npm install typescript'
+    displayName: 'npm install typescript'
+# Sandbox
+  - script: 'npx netlify unlink'
+    displayName: 'netlify unlink'
+  - script: 'npx netlify link --id=4deda23f-f382-458b-897e-2f2111b5f263'
+    displayName: 'netlify link babylonjs-sandbox'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=sandbox/public/'
+    displayName: 'netlify deploy babylonjs-sandbox'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# nodeeditor
+  - script: 'npm install --prefix Tools/Gulp && npx gulp nodeEditor --gulpfile ./Tools/Gulp/gulpfile.js'
+    displayName: 'gulp build nodeeditor'
+  - script: 'npx netlify unlink'
+    displayName: 'netlify unlink'
+  - script: 'npx netlify link --id=d232f0dc-cdb2-473e-b0f5-91fb1dd1d398'
+    displayName: 'netlify link nodeeditor'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=nodeEditor/public'
+    displayName: 'netlify deploy nodeeditor'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# viewer-babylonjs
+  - script: 'npm install --prefix Tools/Gulp && npx gulp viewer --gulpfile ./Tools/Gulp/gulpfile.js'
+    displayName: 'gulp build viewer-babylonjs'
+  - script: 'npx netlify unlink'
+    displayName: 'netlify unlink'
+  - script: 'npx netlify link --id=a32b113f-8187-43ab-9133-8844521f26f4'
+    displayName: 'netlify link viewer-babylonjs'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=Viewer/dist/'
+    displayName: 'netlify deploy viewer-babylonjs'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)

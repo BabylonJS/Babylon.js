@@ -10,3 +10,5 @@ export * from "./IPipelineContext";
 export * from "./WebGL/webGLPipelineContext";
 export * from "./WebGL/webGL2ShaderProcessors";
 export * from "./nativeEngine";
+export * from "./Processors/shaderCodeInliner";
+export * from "./performanceConfigurator";

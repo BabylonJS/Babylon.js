@@ -10,7 +10,9 @@ import { InputBlock } from '../Input/inputBlock';
 import { Effect } from '../../../effect';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Scene } from '../../../../scene';
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
+import "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragment";
 
@@ -21,8 +23,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";
 
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
+    @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false }})
     public invertX = false;
     /** Gets or sets a boolean indicating that normal should be inverted on Y axis */
+    @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { "notifiers": { "update": false }})
     public invertY = false;
 
     /**
@@ -30,11 +34,12 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Neutral);
+        super(name, NodeMaterialBlockTargets.Fragment);
 
         // Vertex
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false);
+        this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false);
         this.registerInput("normalMapColor", NodeMaterialBlockConnectionPointTypes.Color3, false);
         this.registerInput("strength", NodeMaterialBlockConnectionPointTypes.Float, false);
@@ -66,24 +71,31 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the world tangent input component
+     */
+    public get worldTangent(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
      * Gets the uv input component
      */
     public get uv(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[3];
     }
 
     /**
     * Gets the normal map color input component
     */
     public get normalMapColor(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[4];
     }
 
     /**
     * Gets the strength input component
     */
     public get strength(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
+        return this._inputs[5];
     }
 
     /**
@@ -130,6 +142,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         let uv = this.uv;
         let worldPosition = this.worldPosition;
         let worldNormal = this.worldNormal;
+        let worldTangent = this.worldTangent;
 
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
@@ -140,15 +153,31 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         let replaceForBumpInfos = this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant ? `${state._emitFloat(1.0 / this.strength.connectInputBlock!.value)}` : `1.0 / ${this.strength.associatedVariableName}`;
 
-        state._emitExtension("bump", "#extension GL_OES_standard_derivatives : enable");
+        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
+
+        let tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
+
+        if (worldTangent.isConnected) {
+            state.compilationString += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
+            state.compilationString += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
+            state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;
+            state.compilationString += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
+        }
+
+        state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
+            replaceStrings: [
+                tangentReplaceString,
+            ]
+        });
+
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
             replaceStrings: [
                 { search: /vBumpInfos.y/g, replace: replaceForBumpInfos},
                 { search: /vTangentSpaceParams/g, replace: this._tangentSpaceParameterName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
-                { search: /defined\(TANGENT\)/g, replace: "defined(IGNORE)" }
             ]
         });
+
         state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
@@ -157,8 +186,9 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 { search: /vBumpUV/g, replace: uv.associatedVariableName},
                 { search: /vPositionW/g, replace: worldPosition.associatedVariableName + ".xyz"},
                 { search: /normalW=/g, replace: this.output.associatedVariableName + ".xyz = " },
+                { search: /mat3\(normalMatrix\)\*normalW/g, replace: "mat3(normalMatrix) * " + this.output.associatedVariableName + ".xyz" },
                 { search: /normalW/g, replace: worldNormal.associatedVariableName + ".xyz" },
-                { search: /defined\(TANGENT\)/g, replace: "defined(IGNORE)" }
+                tangentReplaceString
             ]
         });
 

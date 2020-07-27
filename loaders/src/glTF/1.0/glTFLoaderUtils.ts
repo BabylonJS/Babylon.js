@@ -1,7 +1,8 @@
 ﻿import { IGLTFTechniqueParameter, EParameterType, ETextureWrapMode, IGLTFAccessor, ETextureFilterType, IGLTFRuntime, IGLTFBufferView, EComponentType } from "./glTFLoaderInterfaces";
 
 import { Nullable } from "babylonjs/types";
-import { Vector2, Vector3, Vector4, Color4, Matrix } from "babylonjs/Maths/math";
+import { Vector2, Vector3, Vector4, Matrix } from "babylonjs/Maths/math.vector";
+import { Color4 } from 'babylonjs/Maths/math.color';
 import { Effect } from "babylonjs/Materials/effect";
 import { ShaderMaterial } from "babylonjs/Materials/shaderMaterial";
 import { Texture } from "babylonjs/Materials/Textures/texture";

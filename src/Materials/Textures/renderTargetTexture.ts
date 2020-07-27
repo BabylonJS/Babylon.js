@@ -1,7 +1,7 @@
 import { Observer, Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { SmartArray } from "../../Misc/smartArray";
-import { Nullable } from "../../types";
+import { Nullable, Immutable } from "../../types";
 import { Camera } from "../../Cameras/camera";
 import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
@@ -63,6 +63,17 @@ export class RenderTargetTexture extends Texture {
         }
     }
 
+    /**
+     * Use this function to overload the renderList array at rendering time.
+     * Return null to render with the curent renderList, else return the list of meshes to use for rendering.
+     * For 2DArray RTT, layerOrFace is the index of the layer that is going to be rendered, else it is the faceIndex of
+     * the cube (if the RTT is a cube, else layerOrFace=0).
+     * The renderList passed to the function is the current render list (the one that will be used if the function returns null).
+     * The length of this list is passed through renderListLength: don't use renderList.length directly because the array can
+     * hold dummy elements!
+    */
+    public getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
+
     private _hookArray(array: AbstractMesh[]): void {
         var oldPush = array.push;
         array.push = (...items: AbstractMesh[]) => {
@@ -70,7 +81,7 @@ export class RenderTargetTexture extends Texture {
 
             var result = oldPush.apply(array, items);
 
-            if (wasEmpty) {
+            if (wasEmpty && this.getScene()) {
                 this.getScene()!.meshes.forEach((mesh) => {
                     mesh._markSubMeshesAsLightDirty();
                 });
@@ -109,6 +120,10 @@ export class RenderTargetTexture extends Texture {
      * Define the camera used to render the texture.
      */
     public activeCamera: Nullable<Camera>;
+    /**
+     * Override the mesh isReady function with your own one.
+     */
+    public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number) => boolean;
     /**
      * Override the render function of the texture with your own one.
      */
@@ -208,7 +223,7 @@ export class RenderTargetTexture extends Texture {
      * Define the clear color of the Render Target if it should be different from the scene.
      */
     public clearColor: Color4;
-    protected _size: number | { width: number, height: number };
+    protected _size: number | { width: number, height: number, layers?: number };
     protected _initialSizeParameter: number | { width: number, height: number } | { ratio: number };
     protected _sizeRatio: Nullable<number>;
     /** @hidden */
@@ -228,8 +243,6 @@ export class RenderTargetTexture extends Texture {
     public get renderTargetOptions(): RenderTargetCreationOptions {
         return this._renderTargetOptions;
     }
-
-    protected _engine: Engine;
 
     protected _onRatioRescale(): void {
         if (this._sizeRatio) {
@@ -270,7 +283,9 @@ export class RenderTargetTexture extends Texture {
      * depth texture.
      * Otherwise, return null.
      */
-    public depthStencilTexture: Nullable<InternalTexture>;
+    public get depthStencilTexture(): Nullable<InternalTexture> {
+        return this.getInternalTexture()?._depthStencilTexture || null;
+    }
 
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post processse
@@ -289,16 +304,14 @@ export class RenderTargetTexture extends Texture {
      * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      */
-    constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
+    constructor(name: string, size: number | { width: number, height: number, layers?: number } | { ratio: number }, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Constants.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false, format = Constants.TEXTUREFORMAT_RGBA, delayAllocation = false) {
         super(null, scene, !generateMipMaps);
         scene = this.getScene();
-
         if (!scene) {
             return;
         }
 
         this.renderList = new Array<AbstractMesh>();
-        this._engine = scene.getEngine();
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;
@@ -352,29 +365,30 @@ export class RenderTargetTexture extends Texture {
      * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
      */
     public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false): void {
-        if (!this.getScene()) {
+        const internalTexture = this.getInternalTexture();
+        if (!this.getScene() || !internalTexture) {
             return;
         }
 
         var engine = this.getScene()!.getEngine();
-        this.depthStencilTexture = engine.createDepthStencilTexture(this._size, {
+        internalTexture._depthStencilTexture = engine.createDepthStencilTexture(this._size, {
             bilinearFiltering,
             comparisonFunction,
             generateStencil,
             isCube: this.isCube
         });
-        engine.setFrameBufferDepthStencilTexture(this);
     }
 
     private _processSizeParameter(size: number | { width: number, height: number } | { ratio: number }): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
+            const engine = this._getEngine()!;
             this._size = {
-                width: this._bestReflectionRenderTargetDimension(this._engine.getRenderWidth(), this._sizeRatio),
-                height: this._bestReflectionRenderTargetDimension(this._engine.getRenderHeight(), this._sizeRatio)
+                width: this._bestReflectionRenderTargetDimension(engine.getRenderWidth(), this._sizeRatio),
+                height: this._bestReflectionRenderTargetDimension(engine.getRenderHeight(), this._sizeRatio)
             };
         } else {
-            this._size = <number | { width: number, height: number }>size;
+            this._size = <number | { width: number, height: number, layers?: number }>size;
         }
     }
 
@@ -528,6 +542,19 @@ export class RenderTargetTexture extends Texture {
     }
 
     /**
+     * Gets the actual number of layers of the texture.
+     * @returns the number of layers
+     */
+    public getRenderLayers(): number {
+        const layers = (<{ width: number, height: number, layers?: number }>this._size).layers;
+        if (layers) {
+            return layers;
+        }
+
+        return 0;
+    }
+
+    /**
      * Get if the texture can be rescaled or not.
      */
     public get canRescale(): boolean {
@@ -586,6 +613,8 @@ export class RenderTargetTexture extends Texture {
             this.onResizeObservable.notifyObservers(this);
         }
     }
+
+    private _defaultRenderListPrepared: boolean;
 
     /**
      * Renders all the objects from the render list into the texture.
@@ -662,69 +691,23 @@ export class RenderTargetTexture extends Texture {
             }
         }
 
-        // Prepare renderingManager
-        this._renderingManager.reset();
+        this._defaultRenderListPrepared = false;
 
-        var currentRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-        var currentRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
-        var sceneRenderId = scene.getRenderId();
-        for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
-            var mesh = currentRenderList[meshIndex];
-
-            if (mesh) {
-                if (!mesh.isReady(this.refreshRate === 0)) {
-                    this.resetRefreshCounter();
-                    continue;
-                }
-
-                mesh._preActivateForIntermediateRendering(sceneRenderId);
-
-                let isMasked;
-                if (!this.renderList && camera) {
-                    isMasked = ((mesh.layerMask & camera.layerMask) === 0);
-                } else {
-                    isMasked = false;
-                }
-
-                if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
-                    if (mesh._activate(sceneRenderId, true) && mesh.subMeshes.length) {
-                        if (!mesh.isAnInstance) {
-                            mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
-                        } else {
-                            mesh = (mesh as InstancedMesh).sourceMesh;
-                        }
-                        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = true;
-
-                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
-                            var subMesh = mesh.subMeshes[subIndex];
-                            this._renderingManager.dispatch(subMesh, mesh);
-                        }
-                    }
-                }
+        if (this.is2DArray) {
+            for (let layer = 0; layer < this.getRenderLayers(); layer++) {
+                this.renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
+                scene.incrementRenderId();
+                scene.resetCachedMaterial();
             }
         }
-
-        for (var particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
-            var particleSystem = scene.particleSystems[particleIndex];
-
-            let emitter: any = particleSystem.emitter;
-            if (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {
-                continue;
-            }
-
-            if (currentRenderList.indexOf(emitter) >= 0) {
-                this._renderingManager.dispatchParticles(particleSystem);
-            }
-        }
-
-        if (this.isCube) {
+        else if (this.isCube) {
             for (var face = 0; face < 6; face++) {
-                this.renderToTarget(face, currentRenderList, useCameraPostProcess, dumpForDebug);
+                this.renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
                 scene.incrementRenderId();
                 scene.resetCachedMaterial();
             }
         } else {
-            this.renderToTarget(0, currentRenderList, useCameraPostProcess, dumpForDebug);
+            this.renderToTarget(0, useCameraPostProcess, dumpForDebug, undefined, camera);
         }
 
         this.onAfterUnbindObservable.notifyObservers(this);
@@ -749,11 +732,80 @@ export class RenderTargetTexture extends Texture {
         return Math.min(Engine.FloorPOT(renderDimension), curved);
     }
 
+    private _prepareRenderingManager(currentRenderList: Array<AbstractMesh>, currentRenderListLength: number, camera: Nullable<Camera>, checkLayerMask: boolean): void {
+        var scene = this.getScene();
+
+        if (!scene) {
+            return;
+        }
+
+        this._renderingManager.reset();
+
+        var sceneRenderId = scene.getRenderId();
+        for (var meshIndex = 0; meshIndex < currentRenderListLength; meshIndex++) {
+            var mesh = currentRenderList[meshIndex];
+
+            if (mesh) {
+                if (this.customIsReadyFunction) {
+                    if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                        this.resetRefreshCounter();
+                        continue;
+                    }
+                }
+                else if (!mesh.isReady(this.refreshRate === 0)) {
+                    this.resetRefreshCounter();
+                    continue;
+                }
+
+                mesh._preActivateForIntermediateRendering(sceneRenderId);
+
+                let isMasked;
+                if (checkLayerMask && camera) {
+                    isMasked = ((mesh.layerMask & camera.layerMask) === 0);
+                } else {
+                    isMasked = false;
+                }
+
+                if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
+                    if (mesh._activate(sceneRenderId, true) && mesh.subMeshes.length) {
+                        if (!mesh.isAnInstance) {
+                            mesh._internalAbstractMeshDataInfo._onlyForInstancesIntermediate = false;
+                        } else {
+                            if (!mesh._internalAbstractMeshDataInfo._actAsRegularMesh) {
+                                mesh = (mesh as InstancedMesh).sourceMesh;
+                            }
+                        }
+                        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = true;
+
+                        for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
+                            var subMesh = mesh.subMeshes[subIndex];
+                            this._renderingManager.dispatch(subMesh, mesh);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (var particleIndex = 0; particleIndex < scene.particleSystems.length; particleIndex++) {
+            var particleSystem = scene.particleSystems[particleIndex];
+
+            let emitter: any = particleSystem.emitter;
+            if (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {
+                continue;
+            }
+
+            if (currentRenderList.indexOf(emitter) >= 0) {
+                this._renderingManager.dispatchParticles(particleSystem);
+            }
+        }
+    }
+
     /**
      * @hidden
      * @param faceIndex face index to bind to if this is a cubetexture
+     * @param layer defines the index of the texture to bind in the array
      */
-    public _bindFrameBuffer(faceIndex: number = 0) {
+    public _bindFrameBuffer(faceIndex: number = 0, layer = 0) {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -761,7 +813,7 @@ export class RenderTargetTexture extends Texture {
 
         var engine = scene.getEngine();
         if (this._texture) {
-            engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, this.depthStencilTexture ? this.depthStencilTexture : undefined);
+            engine.bindFramebuffer(this._texture, this.isCube ? faceIndex : undefined, undefined, undefined, this.ignoreCameraViewport, 0, layer);
         }
     }
 
@@ -774,7 +826,7 @@ export class RenderTargetTexture extends Texture {
         });
     }
 
-    private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], useCameraPostProcess: boolean, dumpForDebug: boolean): void {
+    private renderToTarget(faceIndex: number, useCameraPostProcess: boolean, dumpForDebug: boolean, layer = 0, camera: Nullable<Camera> = null): void {
         var scene = this.getScene();
 
         if (!scene) {
@@ -792,10 +844,37 @@ export class RenderTargetTexture extends Texture {
             this._postProcessManager._prepareFrame(this._texture, this._postProcesses);
         }
         else if (!useCameraPostProcess || !scene.postProcessManager._prepareFrame(this._texture)) {
-            this._bindFrameBuffer(faceIndex);
+            this._bindFrameBuffer(faceIndex, layer);
         }
 
-        this.onBeforeRenderObservable.notifyObservers(faceIndex);
+        if (this.is2DArray) {
+            this.onBeforeRenderObservable.notifyObservers(layer);
+        }
+        else {
+            this.onBeforeRenderObservable.notifyObservers(faceIndex);
+        }
+
+        // Get the list of meshes to render
+        let currentRenderList: Nullable<Array<AbstractMesh>> = null;
+        let defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
+        let defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
+
+        if (this.getCustomRenderList) {
+            currentRenderList = this.getCustomRenderList(this.is2DArray ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
+        }
+
+        if (!currentRenderList) {
+            // No custom render list provided, we prepare the rendering for the default list, but check
+            // first if we did not already performed the preparation before so as to avoid re-doing it several times
+            if (!this._defaultRenderListPrepared) {
+                this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList);
+                this._defaultRenderListPrepared = true;
+            }
+            currentRenderList = defaultRenderList;
+        } else {
+            // Prepare the rendering for the custom render list provided
+            this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, false);
+        }
 
         // Clear
         if (this.onClearObservable.hasObservers()) {

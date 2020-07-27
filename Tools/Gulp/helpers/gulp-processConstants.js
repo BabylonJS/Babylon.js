@@ -2,13 +2,22 @@
 var through = require('through2');
 var PluginError = require('plugin-error');
 const fs = require('fs');
-const babylonConstants = require(__dirname + '/../../../dist/preview release/babylon.max').Constants;
+const constantModule = __dirname + '/../../../dist/preview release/babylon.max';
 
+let _babylonConstants = undefined;
+function getBabylonConstants() {
+    if (!_babylonConstants) {
+        _babylonConstants = require(constantModule).Constants;
+    }
+    return _babylonConstants;
+}
 
 /**
  * Replace all constants by their inlined values.
  */
 function processConstants(sourceCode) {
+    const babylonConstants = getBabylonConstants();
+
     var regexImport = /import { Constants } from .*;/g;
     sourceCode = sourceCode.replace(regexImport, "");
 

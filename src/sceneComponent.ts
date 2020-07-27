@@ -24,6 +24,7 @@ export class SceneComponentConstants {
     public static readonly NAME_GAMEPAD = "Gamepad";
     public static readonly NAME_SIMPLIFICATIONQUEUE = "SimplificationQueue";
     public static readonly NAME_GEOMETRYBUFFERRENDERER = "GeometryBufferRenderer";
+    public static readonly NAME_PREPASSRENDERER = "PrePassRenderer";
     public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
     public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
     public static readonly NAME_SPRITE = "Sprite";
@@ -46,6 +47,7 @@ export class SceneComponentConstants {
 
     public static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER = 0;
     public static readonly STEP_BEFORECAMERADRAW_LAYER = 1;
+    public static readonly STEP_BEFORECAMERADRAW_PREPASS = 2;
 
     public static readonly STEP_BEFORERENDERTARGETDRAW_LAYER = 0;
 
@@ -67,15 +69,18 @@ export class SceneComponentConstants {
     public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 1;
     public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 2;
     public static readonly STEP_AFTERCAMERADRAW_LAYER = 3;
+    public static readonly STEP_AFTERCAMERADRAW_PREPASS = 4;
 
     public static readonly STEP_AFTERRENDER_AUDIO = 0;
 
-    public static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR = 0;
+    public static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER = 0;
     public static readonly STEP_GATHERRENDERTARGETS_GEOMETRYBUFFERRENDERER = 1;
-    public static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER = 2;
+    public static readonly STEP_GATHERRENDERTARGETS_SHADOWGENERATOR = 2;
     public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 3;
 
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
+
+    public static readonly STEP_BEFORECLEARSTAGE_PREPASS = 0;
 
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
     public static readonly STEP_POINTERDOWN_SPRITE = 0;

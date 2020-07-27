@@ -20,7 +20,7 @@ declare type Scene = import("../../scene").Scene;
 
 /**
  * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
- * @see http://doc.babylonjs.com/babylon101/materials#texture
+ * @see https://doc.babylonjs.com/babylon101/materials#texture
  */
 export class Texture extends BaseTexture {
     /**
@@ -116,49 +116,49 @@ export class Texture extends BaseTexture {
 
     /**
      * Define an offset on the texture to offset the u coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
+     * @see https://doc.babylonjs.com/how_to/more_materials#offsetting
      */
     @serialize()
     public uOffset = 0;
 
     /**
      * Define an offset on the texture to offset the v coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
+     * @see https://doc.babylonjs.com/how_to/more_materials#offsetting
      */
     @serialize()
     public vOffset = 0;
 
     /**
      * Define an offset on the texture to scale the u coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials#tiling
+     * @see https://doc.babylonjs.com/how_to/more_materials#tiling
      */
     @serialize()
     public uScale = 1.0;
 
     /**
      * Define an offset on the texture to scale the v coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials#tiling
+     * @see https://doc.babylonjs.com/how_to/more_materials#tiling
      */
     @serialize()
     public vScale = 1.0;
 
     /**
      * Define an offset on the texture to rotate around the u coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
     public uAng = 0;
 
     /**
      * Define an offset on the texture to rotate around the v coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
     public vAng = 0;
 
     /**
      * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
-     * @see http://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
     public wAng = 0;
@@ -264,9 +264,9 @@ export class Texture extends BaseTexture {
     /**
      * Instantiates a new texture.
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
-     * @see http://doc.babylonjs.com/babylon101/materials#texture
+     * @see https://doc.babylonjs.com/babylon101/materials#texture
      * @param url defines the url of the picture to load as a texture
-     * @param scene defines the scene or engine the texture will belong to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param noMipmap defines if the texture will require mip maps or not
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
      * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -278,7 +278,7 @@ export class Texture extends BaseTexture {
      * @param mimeType defines an optional mime type information
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, deleteBuffer: boolean = false, format?: number, mimeType?: string) {
-        super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
+        super(sceneOrEngine);
 
         this.name = url || "";
         this.url = url;
@@ -293,8 +293,7 @@ export class Texture extends BaseTexture {
         }
 
         var scene = this.getScene();
-        var engine = (sceneOrEngine && (sceneOrEngine as ThinEngine).getCaps) ? (sceneOrEngine as ThinEngine) : (scene ? scene.getEngine() : null);
-
+        var engine = this._getEngine();
         if (!engine) {
             return;
         }
@@ -345,7 +344,7 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, undefined, mimeType);
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType);
                 if (deleteBuffer) {
                     delete this._buffer;
                 }
@@ -399,7 +398,6 @@ export class Texture extends BaseTexture {
         }
 
         let scene = this.getScene();
-
         if (!scene) {
             return;
         }
@@ -408,7 +406,7 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, undefined, this._mimeType);
+            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType);
             if (this._deleteBuffer) {
                 delete this._buffer;
             }
@@ -592,10 +590,15 @@ export class Texture extends BaseTexture {
      */
     public serialize(): any {
         let savedName = this.name;
+
         if (!Texture.SerializeBuffers) {
             if (StringTools.StartsWith(this.name, "data:")) {
                 this.name = "";
             }
+        }
+
+        if (StringTools.StartsWith(this.name, "data:") && this.url === this.name) {
+            this.url = "";
         }
 
         var serializationObject = super.serialize();
@@ -703,9 +706,15 @@ export class Texture extends BaseTexture {
                 if (parsedTexture.base64String) {
                     texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY);
                 } else {
-                    let url = rootUrl + parsedTexture.name;
+                    let url: string;
+                    if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
+                        url = parsedTexture.name;
+                    }
+                    else {
+                        url = rootUrl + parsedTexture.name;
+                    }
 
-                    if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
+                    if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
                     texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);

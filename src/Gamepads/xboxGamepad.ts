@@ -1,42 +1,41 @@
 import { Observable } from "../Misc/observable";
 import { Gamepad } from "../Gamepads/gamepad";
-import { _TimeToken } from "../Instrumentation/timeToken";
 /**
  * Defines supported buttons for XBox360 compatible gamepads
  */
 export enum Xbox360Button {
     /** A */
-    A,
+    A = 0,
     /** B */
-    B,
+    B = 1,
     /** X */
-    X,
+    X = 2,
     /** Y */
-    Y,
-    /** Start */
-    Start,
-    /** Back */
-    Back,
+    Y = 3,
     /** Left button */
-    LB,
+    LB = 4,
     /** Right button */
-    RB,
+    RB = 5,
+    /** Back */
+    Back = 8,
+    /** Start */
+    Start = 9,
     /** Left stick */
-    LeftStick,
+    LeftStick = 10,
     /** Right stick */
-    RightStick
+    RightStick = 11
 }
 
 /** Defines values for XBox360 DPad  */
 export enum Xbox360Dpad {
     /** Up */
-    Up,
+    Up = 12,
     /** Down */
-    Down,
+    Down = 13,
     /** Left */
-    Left,
+    Left = 14,
     /** Right */
-    Right
+    Right = 15
 }
 
 /**

@@ -1,4 +1,4 @@
-import { ImageMimeType } from "babylonjs-gltf2interface";
+import { ImageMimeType, ITextureInfo } from "babylonjs-gltf2interface";
 import { Tools } from "babylonjs/Misc/tools";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
@@ -6,21 +6,11 @@ import { Scene } from "babylonjs/scene";
 
 import { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
+import { IKHRTextureTransform } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_texture_transform";
 
 import "../shaders/textureTransform.fragment";
-
-/**
- * Interface for handling KHR texture transform
- * @hidden
- */
-interface IKHRTextureTransform {
-    offset?: number[];
-    rotation?: number;
-    scale?: number[];
-    texCoord?: number;
-}
 
 /**
  * @hidden
@@ -38,18 +28,57 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
     public required = false;
 
     /** Reference to the glTF exporter */
-    private _exporter: _Exporter;
+    private _wasUsed = false;
 
     constructor(exporter: _Exporter) {
-        this._exporter = exporter;
     }
 
     public dispose() {
         for (var texture of this._recordedTextures) {
             texture.dispose();
         }
+    }
 
-        delete this._exporter;
+    /** @hidden */
+    public get wasUsed() {
+        return this._wasUsed;
+    }
+
+    public postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void {
+        if (babylonTexture && babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+            let textureTransform: IKHRTextureTransform = {};
+            let transformIsRequired = false;
+
+            if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
+                textureTransform.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+                transformIsRequired = true;
+            }
+
+            if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
+                textureTransform.scale = [babylonTexture.uScale, babylonTexture.vScale];
+                transformIsRequired = true;
+            }
+
+            if (babylonTexture.wAng !== 0) {
+                textureTransform.rotation = babylonTexture.wAng;
+                transformIsRequired = true;
+            }
+
+            if (babylonTexture.coordinatesIndex !== 0) {
+                textureTransform.texCoord = babylonTexture.coordinatesIndex;
+                transformIsRequired = true;
+            }
+
+            if (!transformIsRequired) {
+                return;
+            }
+
+            this._wasUsed = true;
+            if (!textureInfo.extensions) {
+                textureInfo.extensions = {};
+            }
+            textureInfo.extensions[NAME] = textureTransform;
+        }
     }
 
     public preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture> {
@@ -60,27 +89,18 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 return;
             }
 
-            // TODO: this doesn't take into account rotation center values
+            let bakeTextureTransform = false;
 
-            const texture_transform_extension: IKHRTextureTransform = {};
-
-            if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
-                texture_transform_extension.offset = [babylonTexture.uOffset, babylonTexture.vOffset];
+            /*
+            * The KHR_texture_transform schema only supports rotation around the origin.
+            * the texture must be baked to preserve appearance.
+            * see: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
+            */
+            if ((babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
+                bakeTextureTransform = true;
             }
 
-            if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
-                texture_transform_extension.scale = [babylonTexture.uScale, babylonTexture.vScale];
-            }
-
-            if (babylonTexture.wAng !== 0) {
-                texture_transform_extension.rotation = babylonTexture.wAng;
-            }
-
-            if (babylonTexture.coordinatesIndex !== 0) {
-                texture_transform_extension.texCoord = babylonTexture.coordinatesIndex;
-            }
-
-            if (!Object.keys(texture_transform_extension).length) {
+            if (!bakeTextureTransform) {
                 resolve(babylonTexture);
                 return;
             }

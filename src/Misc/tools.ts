@@ -71,7 +71,13 @@ export class Tools {
      * It can be a string if the expected behavior is identical in the entire app.
      * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
      */
-    public static CorsBehavior: string | ((url: string | string[]) => string) = "anonymous";
+    public static get CorsBehavior(): string | ((url: string | string[]) => string) {
+        return FileTools.CorsBehavior;
+    }
+
+    public static set CorsBehavior(value: string | ((url: string | string[]) => string)) {
+        FileTools.CorsBehavior = value;
+    }
 
     /**
      * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
@@ -275,13 +281,21 @@ export class Tools {
 
     /**
      * Gets the pointer prefix to use
+     * @param engine defines the engine we are finding the prefix for
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
-    public static GetPointerPrefix(): string {
+    public static GetPointerPrefix(engine: Engine): string {
         var eventPrefix = "pointer";
 
         // Check if pointer events are supported
         if (DomManagement.IsWindowObjectExist() && !window.PointerEvent && DomManagement.IsNavigatorAvailable() && !navigator.pointerEnabled) {
+            eventPrefix = "mouse";
+        }
+
+        // Special Fallback MacOS Safari...
+        if (engine._badDesktopOS && !engine._badOS &&
+            // And not ipad pros who claim to be macs...
+            !(document && 'ontouchend' in document)) {
             eventPrefix = "mouse";
         }
 
@@ -350,13 +364,14 @@ export class Tools {
     /**
      * Loads a file from a url
      * @param url the file url to load
-     * @returns a promise containing an ArrayBuffer corrisponding to the loaded file
+     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @returns a promise containing an ArrayBuffer corresponding to the loaded file
      */
-    public static LoadFileAsync(url: string): Promise<ArrayBuffer> {
+    public static LoadFileAsync(url: string, useArrayBuffer: boolean = true): Promise<ArrayBuffer | string> {
         return new Promise((resolve, reject) => {
             FileTools.LoadFile(url, (data) => {
-                resolve(data as ArrayBuffer);
-            }, undefined, undefined, true, (request, exception) => {
+                resolve(data);
+            }, undefined, undefined, useArrayBuffer, (request, exception) => {
                 reject(exception);
             });
         });
@@ -404,29 +419,13 @@ export class Tools {
      * @param scriptId defines the id of the script element
      * @returns a promise request object
      */
-    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            if (!DomManagement.IsWindowObjectExist()) {
-                resolve(false);
-                return;
-            }
-            var head = document.getElementsByTagName('head')[0];
-            var script = document.createElement('script');
-            script.setAttribute('type', 'text/javascript');
-            script.setAttribute('src', scriptUrl);
-            if (scriptId) {
-                script.id = scriptId;
-            }
-
-            script.onload = () => {
-                resolve(true);
-            };
-
-            script.onerror = (e) => {
-                resolve(false);
-            };
-
-            head.appendChild(script);
+    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.LoadScript(scriptUrl, () => {
+                resolve();
+            }, (message, exception) => {
+                reject(exception);
+            });
         });
     }
 
@@ -711,7 +710,7 @@ export class Tools {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -731,7 +730,7 @@ export class Tools {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -750,7 +749,7 @@ export class Tools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -773,7 +772,7 @@ export class Tools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -1010,9 +1009,7 @@ export class Tools {
 
         Tools._EndUserMark(counterName, condition);
 
-        if (console.time) {
-            console.timeEnd(counterName);
-        }
+        console.timeEnd(counterName);
     }
 
     /**
@@ -1115,6 +1112,14 @@ export class Tools {
                 resolve();
             }, delay);
         });
+    }
+
+    /**
+     * Utility function to detect if the current user agent is Safari
+     * @returns whether or not the current user agent is safari
+     */
+    public static IsSafari(): boolean {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
 }
 

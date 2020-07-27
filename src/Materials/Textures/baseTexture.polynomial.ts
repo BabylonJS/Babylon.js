@@ -1,7 +1,6 @@
 import { Nullable } from "../../types";
 import { CubeMapToSphericalPolynomialTools } from "../../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { BaseTexture } from "./baseTexture";
 
 declare module "./baseTexture" {
@@ -25,6 +24,7 @@ Object.defineProperty(BaseTexture.prototype, "sphericalPolynomial", {
             if (this._texture.isReady) {
                 this._texture._sphericalPolynomial =
                     CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
+                return this._texture._sphericalPolynomial;
             }
         }
 

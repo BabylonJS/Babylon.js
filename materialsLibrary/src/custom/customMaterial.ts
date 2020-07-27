@@ -1,6 +1,6 @@
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Effect } from "babylonjs/Materials/effect";
-import { StandardMaterialDefines } from "babylonjs/Materials/standardMaterial";
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
@@ -43,6 +43,9 @@ export class ShaderSpecialParts {
     // normalUpdated
     public Vertex_Before_NormalUpdated: string;
 
+    // worldPosComputed
+    public Vertex_After_WorldPosComputed: string;
+
     // mainEnd
     public Vertex_MainEnd: string;
 }
@@ -54,49 +57,54 @@ export class CustomMaterial extends StandardMaterial {
     _createdShaderName: string;
     _customUniform: string[];
     _newUniforms: string[];
-    _newUniformInstances: any[];
-    _newSamplerInstances: Texture[];
+    _newUniformInstances: { [name: string]: any };
+    _newSamplerInstances: { [name: string]: Texture };
+    _customAttributes: string[];
 
     public FragmentShader: string;
     public VertexShader: string;
 
     public AttachAfterBind(mesh: Mesh, effect: Effect) {
-        for (var el in this._newUniformInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'vec2') {
-                effect.setVector2(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec3') {
-                effect.setVector3(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'vec4') {
-                effect.setVector4(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'mat4') {
-                effect.setMatrix(ea[1], this._newUniformInstances[el]);
-            }
-            else if (ea[0] == 'float') {
-                effect.setFloat(ea[1], this._newUniformInstances[el]);
+        if (this._newUniformInstances) {
+            for (let el in this._newUniformInstances) {
+                const ea = el.toString().split('-');
+                if (ea[0] == 'vec2') {
+                    effect.setVector2(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec3') {
+                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec4') {
+                    effect.setVector4(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'mat4') {
+                    effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'float') {
+                    effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
         }
-        for (var el in this._newSamplerInstances) {
-            var ea = el.toString().split('-');
-            if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
-                effect.setTexture(ea[1], this._newSamplerInstances[el]);
+        if (this._newSamplerInstances) {
+            for (let el in this._newSamplerInstances) {
+                const ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         }
     }
 
     public ReviewUniform(name: string, arr: string[]): string[] {
-        if (name == "uniform") {
-            for (var ind in this._newUniforms) {
+        if (name == "uniform" && this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') == -1) {
                     arr.push(this._newUniforms[ind]);
                 }
             }
         }
-        if (name == "sampler") {
-            for (var ind in this._newUniforms) {
+        if (name == "sampler" && this._newUniforms) {
+            for (var ind = 0; ind < this._newUniforms.length ; ind ++) {
                 if (this._customUniform[ind].indexOf('sampler') != -1) {
                     arr.push(this._newUniforms[ind]);
                 }
@@ -105,7 +113,14 @@ export class CustomMaterial extends StandardMaterial {
         return arr;
     }
 
-    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines): string {
+    public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
+
+        if (attributes && this._customAttributes && this._customAttributes.length > 0) {
+            attributes.push(...this._customAttributes);
+        }
+
+        this.ReviewUniform("uniform", uniforms);
+        this.ReviewUniform("sampler", samplers);
 
         if (this._isCreatedShader) {
             return this._createdShaderName;
@@ -114,9 +129,6 @@ export class CustomMaterial extends StandardMaterial {
 
         CustomMaterial.ShaderIndexer++;
         var name: string = "custom_" + CustomMaterial.ShaderIndexer;
-
-        this.ReviewUniform("uniform", uniforms);
-        this.ReviewUniform("sampler", samplers);
 
         var fn_afterBind = this._afterBind.bind(this);
         this._afterBind = (m, e) => {
@@ -136,6 +148,10 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""))
             .replace('#define CUSTOM_VERTEX_MAIN_END', (this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : ""));
 
+        if (this.CustomParts.Vertex_After_WorldPosComputed) {
+            Effect.ShadersStore[name + "VertexShader"] = Effect.ShadersStore[name + "VertexShader"].replace('#define CUSTOM_VERTEX_UPDATE_WORLDPOS', this.CustomParts.Vertex_After_WorldPosComputed);
+        }
+
         Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
             .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
             .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
@@ -143,8 +159,11 @@ export class CustomMaterial extends StandardMaterial {
             .replace('#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
             .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_LIGHTS', (this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : ""))
-            .replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', (this.CustomParts.Fragment_Before_Fog ? this.CustomParts.Fragment_Before_Fog : ""))
             .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+
+        if (this.CustomParts.Fragment_Before_Fog) {
+            Effect.ShadersStore[name + "PixelShader"] = Effect.ShadersStore[name + "PixelShader"].replace('#define CUSTOM_FRAGMENT_BEFORE_FOG', this.CustomParts.Fragment_Before_Fog);
+        }
 
         this._isCreatedShader = true;
         this._createdShaderName = name;
@@ -165,12 +184,12 @@ export class CustomMaterial extends StandardMaterial {
         if (!this._customUniform) {
             this._customUniform = new Array();
             this._newUniforms = new Array();
-            this._newSamplerInstances = new Array();
-            this._newUniformInstances = new Array();
+            this._newSamplerInstances = {};
+            this._newUniformInstances = {};
         }
         if (param) {
-            if (kind.indexOf("sampler") == -1) {
-                (<any>this._newUniformInstances)[kind + "-" + name] = param;
+            if (kind.indexOf("sampler") != -1) {
+                (<any>this._newSamplerInstances)[kind + "-" + name] = param;
             }
             else {
                 (<any>this._newUniformInstances)[kind + "-" + name] = param;
@@ -178,6 +197,16 @@ export class CustomMaterial extends StandardMaterial {
         }
         this._customUniform.push("uniform " + kind + " " + name + ";");
         this._newUniforms.push(name);
+
+        return this;
+    }
+
+    public AddAttribute(name: string): CustomMaterial {
+        if (!this._customAttributes) {
+            this._customAttributes = [];
+        }
+
+        this._customAttributes.push(name);
 
         return this;
     }
@@ -244,6 +273,11 @@ export class CustomMaterial extends StandardMaterial {
 
     public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
+        return this;
+    }
+
+    public Vertex_After_WorldPosComputed(shaderPart: string): CustomMaterial {
+        this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
         return this;
     }
 

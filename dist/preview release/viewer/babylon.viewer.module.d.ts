@@ -18,10 +18,11 @@
 //   ../../../../../Tools/Gulp/babylonjs/types
 //   ../../../../../Tools/Gulp/babylonjs/Materials/material
 //   ../../../../../Tools/Gulp/babylonjs-gltf2interface
-//   ../../../../../Tools/Gulp/babylonjs/Maths/math
+//   ../../../../../Tools/Gulp/babylonjs/Maths/math.vector
 //   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/glTFFileLoader
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/baseTexture
 //   ../../../../../Tools/Gulp/babylonjs/Engines/thinEngine
+//   ../../../../../Tools/Gulp/babylonjs/Maths/math
 //   ../../../../../Tools/Gulp/babylonjs/Misc/sceneOptimizer
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/arcRotateCamera
 //   ../../../../../Tools/Gulp/babylonjs/Lights/light
@@ -114,7 +115,7 @@ declare module 'babylonjs-viewer/configuration/globals' {
     export class ViewerGlobals {
         disableInit: boolean;
         disableWebGL2Support: boolean;
-        readonly version: string;
+        get version(): string;
     }
     export let viewerGlobals: ViewerGlobals;
 }
@@ -264,7 +265,7 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
 
 declare module 'babylonjs-viewer/viewer/viewer' {
     import { Engine } from 'babylonjs/Engines/engine';
-    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderProgressEvent } from 'babylonjs/Loading/sceneLoader';
+    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from 'babylonjs/Loading/sceneLoader';
     import { Observable } from 'babylonjs/Misc/observable';
     import { Scene } from 'babylonjs/scene';
     import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from 'babylonjs-viewer/configuration';
@@ -308,56 +309,56 @@ declare module 'babylonjs-viewer/viewer/viewer' {
             /**
                 * Will notify when the scene was initialized
                 */
-            readonly onSceneInitObservable: Observable<Scene>;
+            get onSceneInitObservable(): Observable<Scene>;
             /**
                 * will notify when the engine was initialized
                 */
-            readonly onEngineInitObservable: Observable<Engine>;
+            get onEngineInitObservable(): Observable<Engine>;
             /**
                 * Will notify when a new model was added to the scene.
                 * Note that added does not neccessarily mean loaded!
                 */
-            readonly onModelAddedObservable: Observable<ViewerModel>;
+            get onModelAddedObservable(): Observable<ViewerModel>;
             /**
                 * will notify after every model load
                 */
-            readonly onModelLoadedObservable: Observable<ViewerModel>;
+            get onModelLoadedObservable(): Observable<ViewerModel>;
             /**
                 * will notify when any model notify of progress
                 */
-            readonly onModelLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+            get onModelLoadProgressObservable(): Observable<ISceneLoaderProgressEvent>;
             /**
                 * will notify when any model load failed.
                 */
-            readonly onModelLoadErrorObservable: Observable<{
+            get onModelLoadErrorObservable(): Observable<{
                     message: string;
                     exception: any;
             }>;
             /**
                 * Will notify when a model was removed from the scene;
                 */
-            readonly onModelRemovedObservable: Observable<ViewerModel>;
+            get onModelRemovedObservable(): Observable<ViewerModel>;
             /**
                 * will notify when a new loader was initialized.
                 * Used mainly to know when a model starts loading.
                 */
-            readonly onLoaderInitObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+            get onLoaderInitObservable(): Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
             /**
                 * Observers registered here will be executed when the entire load process has finished.
                 */
-            readonly onInitDoneObservable: Observable<AbstractViewer>;
+            get onInitDoneObservable(): Observable<AbstractViewer>;
             /**
                 * Functions added to this observable will be executed on each frame rendered.
                 */
-            readonly onFrameRenderedObservable: Observable<AbstractViewer>;
+            get onFrameRenderedObservable(): Observable<AbstractViewer>;
             /**
                 * Observers registered here will be executed when VR more is entered.
                 */
-            readonly onEnteringVRObservable: Observable<AbstractViewer>;
+            get onEnteringVRObservable(): Observable<AbstractViewer>;
             /**
                 * Observers registered here will be executed when VR mode is exited.
                 */
-            readonly onExitingVRObservable: Observable<AbstractViewer>;
+            get onExitingVRObservable(): Observable<AbstractViewer>;
             observablesManager: ObservablesManager;
             /**
                 * The canvas associated with this viewer
@@ -366,7 +367,7 @@ declare module 'babylonjs-viewer/viewer/viewer' {
             /**
                 * The (single) canvas of this viewer
                 */
-            readonly canvas: HTMLCanvasElement;
+            get canvas(): HTMLCanvasElement;
             /**
                 * is this viewer disposed?
                 */
@@ -385,7 +386,7 @@ declare module 'babylonjs-viewer/viewer/viewer' {
                 */
             protected _isInit: boolean;
             protected _configurationContainer: ConfigurationContainer;
-            readonly configurationContainer: ConfigurationContainer;
+            get configurationContainer(): ConfigurationContainer;
             protected getConfigurationLoader(): RenderOnlyConfigurationLoader;
             constructor(containerElement: Element, initialConfiguration?: ViewerConfiguration);
             /**
@@ -397,15 +398,19 @@ declare module 'babylonjs-viewer/viewer/viewer' {
                 */
             isCanvasInDOM(): boolean;
             /**
-             * Set the viewer's background rendering flag.
-             */
-            renderInBackground: boolean;
+                * Is the engine currently set to rende even when the page is in background
+                */
+            get renderInBackground(): boolean;
+            /**
+                * Set the viewer's background rendering flag.
+                */
+            set renderInBackground(value: boolean);
             /**
                 * Get the configuration object. This is a reference only.
                 * The configuration can ONLY be updated using the updateConfiguration function.
                 * changing this object will have no direct effect on the scene.
                 */
-            readonly configuration: ViewerConfiguration;
+            get configuration(): ViewerConfiguration;
             /**
                 * force resizing the engine.
                 */
@@ -533,7 +538,7 @@ declare module 'babylonjs-viewer/managers/telemetryManager' {
                 * @param event The name of the Telemetry event
                 * @param details An additional value, or an object containing a list of property/value pairs
                 */
-            readonly broadcast: (event: string, viewerId?: string | undefined, details?: any) => void;
+            get broadcast(): (event: string, viewerId?: string | undefined, details?: any) => void;
             /**
                 * Log a Telemetry event for errors raised on the WebGL context.
                 * @param engine The Babylon engine with the WebGL context.
@@ -543,12 +548,12 @@ declare module 'babylonjs-viewer/managers/telemetryManager' {
                 * Enable or disable telemetry events
                 * @param enabled Boolan, true if events are enabled
                 */
-            enable: boolean;
+            set enable(enabled: boolean);
             /**
                 * Returns the current session ID or creates one if it doesn't exixt
                 * @return The current session ID
                 */
-            readonly session: string;
+            get session(): string;
             /**
                 * Disposes the telemetry manager
                 */
@@ -570,7 +575,7 @@ declare module 'babylonjs-viewer/loader/modelLoader' {
         * A Model loader is unique per (Abstract)Viewer. It is being generated by the viewer
         */
     export class ModelLoader {
-            readonly baseUrl: string;
+            get baseUrl(): string;
             /**
                 * Create a new Model loader
                 * @param _viewer the viewer using this model loader
@@ -603,7 +608,7 @@ declare module 'babylonjs-viewer/model/viewerModel' {
     import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     import { Skeleton } from "babylonjs/Bones/skeleton";
     import { Observable } from "babylonjs/Misc/observable";
-    import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+    import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
     import { Animation } from "babylonjs/Animations/index";
     import { Nullable } from "babylonjs/types";
@@ -659,7 +664,7 @@ declare module 'babylonjs-viewer/model/viewerModel' {
             /**
                 * Observers registered here will be executed when the loader notified of a progress event
                 */
-            onLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+            onLoadProgressObservable: Observable<ISceneLoaderProgressEvent>;
             /**
                 * Observers registered here will be executed when the loader notified of an error.
                 */
@@ -686,13 +691,18 @@ declare module 'babylonjs-viewer/model/viewerModel' {
             loadId: number;
             loadInfo: IAsset;
             constructor(_observablesManager: ObservablesManager, modelConfiguration: IModelConfiguration, _configurationContainer?: ConfigurationContainer | undefined);
-            shadowsRenderedAfterLoad: boolean;
+            get shadowsRenderedAfterLoad(): boolean;
+            set shadowsRenderedAfterLoad(rendered: boolean);
             getViewerId(): string | undefined;
             /**
-             * Set whether this model is enabled or not.
-             */
-            enabled: boolean;
-            loaderDone: boolean;
+                * Is this model enabled?
+                */
+            get enabled(): boolean;
+            /**
+                * Set whether this model is enabled or not.
+                */
+            set enabled(enable: boolean);
+            set loaderDone(done: boolean);
             /**
                 * Add a mesh to this model.
                 * Any mesh that has no parent will be provided with the root mesh as its new parent.
@@ -704,12 +714,16 @@ declare module 'babylonjs-viewer/model/viewerModel' {
             /**
                 * get the list of meshes (excluding the root mesh)
                 */
-            readonly meshes: AbstractMesh[];
+            get meshes(): AbstractMesh[];
             /**
-             * (Re-)set the model's entire configuration
-             * @param newConfiguration the new configuration to replace the new one
-             */
-            configuration: IModelConfiguration;
+                * Get the model's configuration
+                */
+            get configuration(): IModelConfiguration;
+            /**
+                * (Re-)set the model's entire configuration
+                * @param newConfiguration the new configuration to replace the new one
+                */
+            set configuration(newConfiguration: IModelConfiguration);
             /**
                 * Update the current configuration with new values.
                 * Configuration will not be overwritten, but merged with the new configuration.
@@ -774,7 +788,7 @@ declare module 'babylonjs-viewer/model/viewerModel' {
 }
 
 declare module 'babylonjs-viewer/model/modelAnimation' {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { AnimationGroup } from "babylonjs/Animations/index";
     /**
         * Animation play mode enum - is the animation looping or playing once
@@ -915,38 +929,46 @@ declare module 'babylonjs-viewer/model/modelAnimation' {
             /**
                 * Get the animation's name
                 */
-            readonly name: string;
+            get name(): string;
             /**
                 * Get the current animation's state
                 */
-            readonly state: AnimationState;
+            get state(): AnimationState;
             /**
-             * Sets the speed ratio to use for all animations
-             */
-            speedRatio: number;
+                * Gets the speed ratio to use for all animations
+                */
+            get speedRatio(): number;
+            /**
+                * Sets the speed ratio to use for all animations
+                */
+            set speedRatio(value: number);
             /**
                 * Get the max numbers of frame available in the animation group
                 *
                 * In correlation to an arry, this would be ".length"
                 */
-            readonly frames: number;
+            get frames(): number;
             /**
                 * Get the current frame playing right now.
                 * This can be used to poll the frame currently playing (and, for exmaple, display a progress bar with the data)
                 *
                 * In correlation to an array, this would be the current index
                 */
-            readonly currentFrame: number;
+            get currentFrame(): number;
             /**
                 * Get the FPS value of this animation
                 */
-            readonly fps: number;
+            get fps(): number;
             /**
-             * Set the play mode.
-             * If the animation is played, it will continue playing at least once more, depending on the new play mode set.
-             * If the animation is not set, the will be initialized and will wait for the user to start playing it.
-             */
-            playMode: AnimationPlayMode;
+                * What is the animation'S play mode (looping or played once)
+                */
+            get playMode(): AnimationPlayMode;
+            /**
+                * Set the play mode.
+                * If the animation is played, it will continue playing at least once more, depending on the new play mode set.
+                * If the animation is not set, the will be initialized and will wait for the user to start playing it.
+                */
+            set playMode(value: AnimationPlayMode);
             /**
                 * Reset the animation group
                 */
@@ -984,7 +1006,7 @@ declare module 'babylonjs-viewer/loader/plugins/loaderPlugin' {
     import { ViewerModel } from "babylonjs-viewer/model/viewerModel";
     import { IGLTFLoaderExtension, IGLTFLoaderData } from "babylonjs-loaders/glTF/glTFFileLoader";
     import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
-    import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+    import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Material } from "babylonjs/Materials/material";
@@ -997,7 +1019,7 @@ declare module 'babylonjs-viewer/loader/plugins/loaderPlugin' {
         onInit?: (loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync, model: ViewerModel) => void;
         onLoaded?: (model: ViewerModel) => void;
         onError?: (message: string, exception?: any) => void;
-        onProgress?: (progressEvent: SceneLoaderProgressEvent) => void;
+        onProgress?: (progressEvent: ISceneLoaderProgressEvent) => void;
         onExtensionLoaded?: (extension: IGLTFLoaderExtension) => void;
         onParsed?: (parsedData: IGLTFLoaderData) => void;
         onMeshLoaded?: (mesh: AbstractMesh) => void;
@@ -1293,7 +1315,7 @@ declare module 'babylonjs-viewer/templating/templateManager' {
             /**
                 * Get the template'S configuration
                 */
-            readonly configuration: ITemplateConfiguration;
+            get configuration(): ITemplateConfiguration;
             /**
                 * A template can be a parent element for other templates or HTML elements.
                 * This function will deliver all child HTML elements of this template.
@@ -1384,7 +1406,7 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
     import { Observable } from 'babylonjs/Misc/observable';
     import { Scene } from 'babylonjs/scene';
     import { Engine } from 'babylonjs/Engines/engine';
-    import { SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs/Loading/sceneLoader';
+    import { ISceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs/Loading/sceneLoader';
     import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
     export class ObservablesManager {
             /**
@@ -1407,7 +1429,7 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
             /**
                 * will notify when any model notify of progress
                 */
-            onModelLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+            onModelLoadProgressObservable: Observable<ISceneLoaderProgressEvent>;
             /**
                 * will notify when any model load failed.
                 */
@@ -1549,35 +1571,46 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
                 * Please be careful when using labs in production.
                 */
             labs: ViewerLabs;
-            readonly defaultRenderingPipeline: Nullable<DefaultRenderingPipeline>;
+            get defaultRenderingPipeline(): Nullable<DefaultRenderingPipeline>;
             protected _vrHelper?: VRExperienceHelper;
-            readonly vrHelper: VRExperienceHelper | undefined;
+            get vrHelper(): VRExperienceHelper | undefined;
             constructor(_engine: Engine, _configurationContainer: ConfigurationContainer, _observablesManager?: ObservablesManager | undefined);
             /**
                 * Returns a boolean representing HDR support
                 */
-            readonly isHdrSupported: boolean;
+            get isHdrSupported(): boolean;
             /**
                 * Return the main color defined in the configuration.
                 */
-            readonly mainColor: Color3;
-            readonly reflectionColor: Color3;
-            animationBlendingEnabled: boolean;
-            readonly observablesManager: ObservablesManager | undefined;
+            get mainColor(): Color3;
+            get reflectionColor(): Color3;
+            get animationBlendingEnabled(): boolean;
+            set animationBlendingEnabled(value: boolean);
+            get observablesManager(): ObservablesManager | undefined;
             /**
-             * Should shadows be rendered every frame, or only once and stop.
-             * This can be used to optimize a scene.
-             *
-             * Not that the shadows will NOT disapear but will remain in place.
-             * @param process if true shadows will be updated once every frame. if false they will stop being updated.
-             */
-            processShadows: boolean;
-            groundEnabled: boolean;
+                * The flag defining whether shadows are rendered constantly or once.
+                */
+            get processShadows(): boolean;
             /**
-             * sets wether the reflection is disabled.
-             */
-            groundMirrorEnabled: boolean;
-            defaultRenderingPipelineEnabled: boolean;
+                * Should shadows be rendered every frame, or only once and stop.
+                * This can be used to optimize a scene.
+                *
+                * Not that the shadows will NOT disapear but will remain in place.
+                * @param process if true shadows will be updated once every frame. if false they will stop being updated.
+                */
+            set processShadows(process: boolean);
+            get groundEnabled(): boolean;
+            set groundEnabled(newValue: boolean);
+            /**
+                * gets wether the reflection is disabled.
+                */
+            get groundMirrorEnabled(): boolean;
+            /**
+                * sets wether the reflection is disabled.
+                */
+            set groundMirrorEnabled(value: boolean);
+            get defaultRenderingPipelineEnabled(): boolean;
+            set defaultRenderingPipelineEnabled(value: boolean);
             /**
                 * Sets the engine flags to unlock all babylon features.
                 * Can also be configured using the scene.flags configuration object
@@ -1594,8 +1627,10 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
                 * @param globalConfiguration The global configuration object, after the new configuration was merged into it
                 */
             updateConfiguration(newConfiguration: Partial<ViewerConfiguration>): void;
-            bloomEnabled: boolean;
-            fxaaEnabled: boolean;
+            get bloomEnabled(): boolean;
+            set bloomEnabled(value: boolean);
+            get fxaaEnabled(): boolean;
+            set fxaaEnabled(value: boolean);
             setDefaultMaterial(sceneConfig: ISceneConfiguration): void;
             /**
                 * internally configure the scene using the provided configuration.
@@ -1826,7 +1861,7 @@ declare module 'babylonjs-viewer/configuration/loader' {
 declare module 'babylonjs-viewer/labs/viewerLabs' {
     import { PBREnvironment } from "babylonjs-viewer/labs/environmentSerializer";
     import { Scene } from "babylonjs/scene";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { ShadowLight } from "babylonjs/Lights/shadowLight";
     /**
         * The ViewerLabs class will hold functions that are not (!) backwards compatible.
@@ -2321,12 +2356,12 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
     export interface ITemplateConfiguration {
             /**
                 * can be either the id of the template's html element or a URL.
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                * See - https://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
                 */
             location?: string;
             /**
                 * If no location is provided you can provide here the raw html of this template.
-                * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                * See https://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
                 */
             html?: string;
             id?: string;
@@ -2341,7 +2376,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
                 * event name is the key. the value can either be a boolean (attach to the parent element)
                 * or a map of html id elements.
                 *
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
+                * See - https://doc.babylonjs.com/extensions/the_templating_system#event-binding
                 */
             events?: {
                     pointerdown?: boolean | {
@@ -2642,11 +2677,11 @@ declare module 'babylonjs-viewer/labs/texture' {
             /**
                 * Returns the width of a face of the texture or 0 if not available
                 */
-            readonly Width: number;
+            get Width(): number;
             /**
                 * Returns the height of a face of the texture or 0 if not available
                 */
-            readonly Height: number;
+            get Height(): number;
             /**
                 * constructor
                 * @param internalFormat WebGL pixel format for the texture on the GPU

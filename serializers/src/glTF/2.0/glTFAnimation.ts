@@ -1,11 +1,10 @@
 import { AnimationSamplerInterpolation, AnimationChannelTargetPath, AccessorType, IAnimation, INode, IBufferView, IAccessor, IAnimationSampler, IAnimationChannel, AccessorComponentType } from "babylonjs-gltf2interface";
 import { Node } from "babylonjs/node";
 import { Nullable } from "babylonjs/types";
-import { Vector3, Quaternion } from "babylonjs/Maths/math";
+import { Vector3, Quaternion } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { Animation } from "babylonjs/Animations/animation";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 
 import { _BinaryWriter } from "./glTFExporter";
@@ -179,6 +178,7 @@ export class _GLTFAnimation {
      * @param bufferViews
      * @param accessors
      * @param convertToRightHandedSystem
+     * @param animationSampleRate
      */
     public static _CreateNodeAnimationFromNodeAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
         let glTFAnimation: IAnimation;
@@ -225,9 +225,10 @@ export class _GLTFAnimation {
      * @param binaryWriter
      * @param bufferViews
      * @param accessors
-     * @param convertToRightHandedSystem
+     * @param convertToRightHandedSystemMap
+     * @param animationSampleRate
      */
-    public static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
+    public static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystemMap: { [nodeId: number]: boolean }, animationSampleRate: number) {
         let glTFAnimation: IAnimation;
         if (babylonScene.animationGroups) {
             let animationGroups = babylonScene.animationGroups;
@@ -241,13 +242,14 @@ export class _GLTFAnimation {
                 for (let targetAnimation of animationGroup.targetedAnimations) {
                     let target = targetAnimation.target;
                     let animation = targetAnimation.animation;
-                    if (target instanceof Mesh || target.length === 1 && target[0] instanceof Mesh) { // TODO: Update to support bones
+                    if (target instanceof TransformNode || target.length === 1 && target[0] instanceof TransformNode) {
                         let animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
-                            let babylonMesh = target instanceof Mesh ? target : target[0] as Mesh;
+                            let babylonTransformNode = target instanceof TransformNode ? target as TransformNode : target[0] as TransformNode;
+                            let convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
                             _GLTFAnimation.AddAnimation(`${animation.name}`,
                                 glTFAnimation,
-                                babylonMesh,
+                                babylonTransformNode,
                                 animation,
                                 animationInfo.dataAccessorType,
                                 animationInfo.animationChannelTargetPath,
@@ -739,10 +741,10 @@ export class _GLTFAnimation {
             if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
                 if (tangentValue) {
                     if (useQuaternion) {
-                        tangent = (tangentValue as Quaternion).scale(frameDelta).asArray();
+                        tangent = (tangentValue as Quaternion).asArray();
                     }
                     else {
-                        const array = (tangentValue as Vector3).scale(frameDelta);
+                        const array = (tangentValue as Vector3);
                         tangent = Quaternion.RotationYawPitchRoll(array.y, array.x, array.z).asArray();
                     }
 
@@ -759,7 +761,7 @@ export class _GLTFAnimation {
             }
             else {
                 if (tangentValue) {
-                    tangent = (tangentValue as Vector3).scale(frameDelta).asArray();
+                    tangent = (tangentValue as Vector3).asArray();
                     if (convertToRightHandedSystem) {
                         if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
                             _GLTFUtilities._GetRightHandedPositionArray3FromRef(tangent);

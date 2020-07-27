@@ -208,6 +208,32 @@
         }
     }
 
+    .color-picker {
+        height: calc(100% - 8px);
+        margin: 4px;
+        width: calc(100% - 8px);
+
+        .color-rect {
+            height: calc(100% - 4px);
+            border: 2px white solid;
+            cursor: pointer;
+            min-height: 18px;
+        }
+
+        .color-picker-cover {
+            position: fixed;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
+        }
+
+        .color-picker-float {
+            z-index: 2;
+            position: absolute;  
+        }                
+    }
+
     .gradient-step {
         display: grid;
         grid-template-rows: 100%;
@@ -460,6 +486,22 @@
                 background: rgb(22, 73, 117);
             }
 
+            .cbx:checked ~ label.disabled { 
+                background: rgb(22, 73, 117);
+                cursor: pointer;
+            }
+
+            .cbx:checked ~ label.disabled:after {
+                left: 20px;
+                background: rgb(85, 85, 85);
+                cursor: pointer;
+            }
+
+            .cbx ~ label.disabled {
+                background: rgb(85, 85, 85);
+                cursor: pointer;
+            }
+
             .hidden { 
                 display: none; 
             }               
@@ -508,7 +550,8 @@
             }
 
             .color3 {
-                grid-column: 2;
+                grid-column: 2;                
+                width: 50px;
                 
                 display: flex;
                 align-items: center;            
@@ -524,6 +567,10 @@
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;
+                
+                img {
+                    height: 100%;
+                }
             }
 
             .expand {

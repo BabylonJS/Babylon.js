@@ -3,7 +3,6 @@ import { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneComponent";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";
 import { LensFlareSystem } from "./lensFlareSystem";
@@ -27,7 +26,7 @@ declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of lens flare system added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+         * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
          */
         lensFlareSystems: Array<LensFlareSystem>;
 

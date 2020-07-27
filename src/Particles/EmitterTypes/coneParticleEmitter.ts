@@ -1,5 +1,5 @@
 import { DeepCopier } from "../../Misc/deepCopier";
-import { Vector3, Matrix } from "../../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { Effect } from "../../Materials/effect";
 import { Particle } from "../../Particles/particle";
@@ -80,24 +80,23 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
-        if (Math.abs(Math.cos(this._angle)) === 1.0) {
-            Vector3.TransformNormalFromFloatsToRef(0, 1.0, 0, worldMatrix, directionToUpdate);
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
+        if (isLocal) {
+            TmpVectors.Vector3[0].copyFrom(particle._localPosition!).normalize();
         }
         else {
-            // measure the direction Vector from the emitter to the particle.
-            var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
-            var randX = Scalar.RandomRange(0, this.directionRandomizer);
-            var randY = Scalar.RandomRange(0, this.directionRandomizer);
-            var randZ = Scalar.RandomRange(0, this.directionRandomizer);
-            direction.x += randX;
-            direction.y += randY;
-            direction.z += randZ;
-            direction.normalize();
-
-            Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
+            particle.position.subtractToRef(worldMatrix.getTranslation(), TmpVectors.Vector3[0]).normalize();
         }
+
+        var randX = Scalar.RandomRange(0, this.directionRandomizer);
+        var randY = Scalar.RandomRange(0, this.directionRandomizer);
+        var randZ = Scalar.RandomRange(0, this.directionRandomizer);
+        directionToUpdate.x = TmpVectors.Vector3[0].x + randX;
+        directionToUpdate.y = TmpVectors.Vector3[0].y + randY;
+        directionToUpdate.z = TmpVectors.Vector3[0].z + randZ;
+        directionToUpdate.normalize();
     }
 
     /**
@@ -105,8 +104,9 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+    startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var s = Scalar.RandomRange(0, Math.PI * 2);
         var h: number;
 
@@ -123,6 +123,13 @@ export class ConeParticleEmitter implements IParticleEmitterType {
         var randX = radius * Math.sin(s);
         var randZ = radius * Math.cos(s);
         var randY = h * this._height;
+
+        if (isLocal) {
+            positionToUpdate.x = randX;
+            positionToUpdate.y = randY;
+            positionToUpdate.z = randZ;
+            return;
+        }
 
         Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
     }
@@ -198,8 +205,9 @@ export class ConeParticleEmitter implements IParticleEmitterType {
         this.radius = serializationObject.radius;
         this.angle = serializationObject.angle;
         this.directionRandomizer = serializationObject.directionRandomizer;
-        this.radiusRange = serializationObject.radiusRange;
-        this.heightRange = serializationObject.heightRange;
-        this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly;
+
+        this.radiusRange = serializationObject.radiusRange !== undefined ? serializationObject.radiusRange : 1;
+        this.heightRange = serializationObject.radiusRange !== undefined ? serializationObject.heightRange : 1;
+        this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly !== undefined ? serializationObject.emitFromSpawnPointOnly : false;
     }
 }

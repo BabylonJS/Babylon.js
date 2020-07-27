@@ -1,16 +1,15 @@
 import { Scene } from "../scene";
 import { TransformNode } from "../Meshes/transformNode";
 import { Mesh } from "../Meshes/mesh";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Texture } from "../Materials/Textures/texture";
 import { VideoTexture, VideoTextureSettings } from "../Materials/Textures/videoTexture";
 import { BackgroundMaterial } from "../Materials/Background/backgroundMaterial";
 import "../Meshes/Builders/sphereBuilder";
 import { Nullable } from "../types";
 import { Observer } from "../Misc/observable";
-import { Vector3 } from '../Maths/math.vector';
-import { Axis } from '../Maths/math';
-import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
+import { Vector3 } from "../Maths/math.vector";
+import { Axis } from "../Maths/math";
+import { SphereBuilder } from "../Meshes/Builders/sphereBuilder";
 
 declare type Camera = import("../Cameras/camera").Camera;
 
@@ -56,9 +55,15 @@ export class VideoDome extends TransformNode {
     protected _material: BackgroundMaterial;
 
     /**
-     * The surface used for the skybox
+     * The surface used for the video dome
      */
     protected _mesh: Mesh;
+    /**
+     * Gets the mesh used for the video dome.
+     */
+    public get mesh(): Mesh {
+        return this._mesh;
+    }
 
     /**
      * A mesh that will be used to mask the back of the video dome in case it is a 180 degree movie.
@@ -121,24 +126,29 @@ export class VideoDome extends TransformNode {
      * @param urlsOrVideo defines the url(s) or the video element to use
      * @param options An object containing optional or exposed sub element properties
      */
-    constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
-        resolution?: number,
-        clickToPlay?: boolean,
-        autoPlay?: boolean,
-        loop?: boolean,
-        size?: number,
-        poster?: string,
-        faceForward?: boolean,
-        useDirectMapping?: boolean,
-        halfDomeMode?: boolean
-    }, scene: Scene) {
+    constructor(
+        name: string,
+        urlsOrVideo: string | string[] | HTMLVideoElement,
+        options: {
+            resolution?: number;
+            clickToPlay?: boolean;
+            autoPlay?: boolean;
+            loop?: boolean;
+            size?: number;
+            poster?: string;
+            faceForward?: boolean;
+            useDirectMapping?: boolean;
+            halfDomeMode?: boolean;
+        },
+        scene: Scene
+    ) {
         super(name, scene);
 
         scene = this.getScene();
 
         // set defaults and manage values
         name = name || "videoDome";
-        options.resolution = (Math.abs(options.resolution as any) | 0) || 32;
+        options.resolution = Math.abs(options.resolution as any) | 0 || 32;
         options.clickToPlay = Boolean(options.clickToPlay);
         options.autoPlay = options.autoPlay === undefined ? true : Boolean(options.autoPlay);
         options.loop = options.loop === undefined ? true : Boolean(options.loop);
@@ -158,8 +168,8 @@ export class VideoDome extends TransformNode {
 
         // create
         let tempOptions: VideoTextureSettings = { loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true, poster: options.poster };
-        let material = this._material = new BackgroundMaterial(name + "_material", scene);
-        let texture = this._videoTexture = new VideoTexture(name + "_texture", urlsOrVideo, scene, false, this._useDirectMapping, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
+        let material = (this._material = new BackgroundMaterial(name + "_material", scene));
+        let texture = (this._videoTexture = new VideoTexture(name + "_texture", urlsOrVideo, scene, false, this._useDirectMapping, Texture.TRILINEAR_SAMPLINGMODE, tempOptions));
         this._mesh = Mesh.CreateSphere(name + "_mesh", options.resolution, options.size, scene, false, Mesh.BACKSIDE);
         texture.anisotropicFilteringLevel = 1;
         texture.onLoadObservable.addOnce(() => {
@@ -211,6 +221,8 @@ export class VideoDome extends TransformNode {
 
             this.rotation.y = Math.acos(Vector3.Dot(forward, direction));
         }
+
+        this._changeVideoMode(this._videoMode);
     }
 
     private _changeVideoMode(value: number): void {
@@ -224,6 +236,11 @@ export class VideoDome extends TransformNode {
         this._videoTexture.vOffset = 0;
 
         switch (value) {
+            case VideoDome.MODE_MONOSCOPIC:
+                if (this._halfDome) {
+                    this._videoTexture.uScale = 2;
+                }
+                break;
             case VideoDome.MODE_SIDEBYSIDE:
                 // in half-dome mode the uScale should be double of 360 videos
                 // Use 0.99999 to boost perf by not switching program

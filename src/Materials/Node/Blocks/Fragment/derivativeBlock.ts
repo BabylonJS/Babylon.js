@@ -59,6 +59,8 @@ export class DerivativeBlock extends NodeMaterialBlock {
         let dx = this._outputs[0];
         let dy = this._outputs[1];
 
+        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
+
         if (dx.hasEndpoints) {
             state.compilationString += this._declareOutput(dx, state) + ` = dFdx(${this.input.associatedVariableName});\r\n`;
         }

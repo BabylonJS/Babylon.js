@@ -6,24 +6,14 @@ var currentScene;
 var config;
 var justOnce;
 
-var threshold = 25;
-var errorRatio = 2.5;
-
-// Overload the random to make it deterministic
-var seed = 100000,
-    constant = Math.pow(2, 13) + 1,
-    prime = 37,
-    maximum = Math.pow(2, 50);
-
+// Random replacement
+var seed = 1;
 Math.random = function() {
-    seed *= constant;
-    seed += prime;
-    seed %= maximum;
-
-    return seed / maximum;
+    var x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
 }
 
-function compare(renderData, referenceCanvas) {
+function compare(renderData, referenceCanvas, threshold, errorRatio) {
     var width = referenceCanvas.width;
     var height = referenceCanvas.height;
     var size = width * height * 4;
@@ -40,13 +30,10 @@ function compare(renderData, referenceCanvas) {
             continue;
         }
 
-        if (differencesCount === 0) {
-            console.log(`First pixel off at ${index}: Value: (${renderData[index]}, ${renderData[index + 1]}, ${renderData[index] + 2}) - Expected: (${referenceData.data[index]}, ${referenceData.data[index + 1]}, ${referenceData.data[index + 2]}) `);
-        }
-
         referenceData.data[index] = 255;
         referenceData.data[index + 1] *= 0.5;
         referenceData.data[index + 2] *= 0.5;
+        referenceData.data[index + 3] = 255;
         differencesCount++;
     }
 
@@ -98,7 +85,7 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
+function evaluate(test, resultCanvas, result, renderImage, waitRing, done) {
     var renderData = getRenderData(canvas, engine);
     var testRes = true;
 
@@ -113,7 +100,10 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
 
         // Visual check
         if (!test.onlyVisual) {
-            if (compare(renderData, resultCanvas)) {
+            var info = engine.getGlInfo();
+            var defaultErrorRatio = 2.5
+
+            if (compare(renderData, resultCanvas, test.threshold || 25, test.errorRatio || defaultErrorRatio)) {
                 result.classList.add("failed");
                 result.innerHTML = "×";
                 testRes = false;
@@ -153,7 +143,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
 
                 if (renderCount === 0) {
                     engine.stopRenderLoop();
-                    evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                    evaluate(test, resultCanvas, result, renderImage, waitRing, done);
                 }
             }
             catch (e) {
@@ -215,10 +205,9 @@ function runTest(index, done) {
         renderImage.className = "renderImage";
         container.appendChild(renderImage);
 
+        seed = 1;
         location.href = "#" + container.id;
        
-        seed = 100000;
-
         if (test.sceneFolder) {
             BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function(newScene) {
                 currentScene = newScene;
@@ -374,11 +363,14 @@ function init() {
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
 
-    // Draco configuration
     BABYLON.DracoCompression.Configuration.decoder = {
         wasmUrl: "../../dist/preview%20release/draco_wasm_wrapper_gltf.js",
         wasmBinaryUrl: "../../dist/preview%20release/draco_decoder_gltf.wasm",
         fallbackUrl: "../../dist/preview%20release/draco_decoder_gltf.js"
+    };
+
+    BABYLON.GLTFValidation.Configuration = {
+        url: "../../dist/preview%20release/gltf_validator.js"
     };
 
     canvas = document.createElement("canvas");

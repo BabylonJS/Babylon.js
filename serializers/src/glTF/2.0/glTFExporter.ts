@@ -1,7 +1,8 @@
-import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType, ITextureInfo } from "babylonjs-gltf2interface";
+import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, ITexture, IImage, ISampler, IAnimation, ImageMimeType, IMeshPrimitive, IBuffer, IGLTF, MeshPrimitiveMode, AccessorComponentType, ITextureInfo, ISkin } from "babylonjs-gltf2interface";
 
 import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
-import { Viewport, Color3, Vector2, Vector3, Vector4, Quaternion } from "babylonjs/Maths/math";
+import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "babylonjs/Maths/math.vector";
+import { Color3 } from "babylonjs/Maths/math.color";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Node } from "babylonjs/node";
@@ -24,6 +25,8 @@ import { IExportOptions } from "./glTFSerializer";
 import { _GLTFUtilities } from "./glTFUtilities";
 import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
+import { Viewport } from 'babylonjs/Maths/math.viewport';
+import { Epsilon } from 'babylonjs/Maths/math.constants';
 
 /**
  * Utility interface for storing vertex attribute data
@@ -39,6 +42,11 @@ interface _IVertexAttributeData {
      * Specifies the glTF Accessor Type (VEC2, VEC3, etc.)
     */
     accessorType: AccessorType;
+
+    /**
+     * Specifies the glTF Accessor Component Type (BYTE, UNSIGNED_BYTE, FLOAT, SHORT, INT, etc..)
+     */
+    accessorComponentType: AccessorComponentType;
 
     /**
      * Specifies the BufferView index for the vertex attribute data
@@ -67,7 +75,7 @@ export class _Exporter {
     /**
      * Stores all the generated nodes, which contains transform and/or mesh information per node
      */
-    private _nodes: INode[];
+    public _nodes: INode[];
     /**
      * Stores all the generated glTF scenes, which stores multiple node hierarchies
      */
@@ -96,6 +104,10 @@ export class _Exporter {
      */
     public _samplers: ISampler[];
     /**
+     * Stores all the generated glTF skins
+     */
+    public _skins: ISkin[];
+    /**
      * Stores all the generated animation samplers, which is referenced by glTF animations
      */
     /**
@@ -119,12 +131,22 @@ export class _Exporter {
     /**
      * Stores a map of the unique id of a node to its index in the node array
      */
-    private _nodeMap: { [key: number]: number };
+    public _nodeMap: { [key: number]: number };
 
     /**
-     * Specifies if the Babylon scene should be converted to right-handed on export
+     * Specifies if the source Babylon scene was left handed, and needed conversion.
      */
     public _convertToRightHandedSystem: boolean;
+
+    /**
+     * Specifies if a Babylon node should be converted to right-handed on export
+     */
+    public _convertToRightHandedSystemMap: { [nodeId: number]: boolean };
+
+    /*
+    * Specifies if root Babylon empty nodes that act as a coordinate space transform should be included in export
+    */
+    public _includeCoordinateSystemConversionNodes: boolean = false;
 
     /**
      * Baked animation sample rate
@@ -142,7 +164,7 @@ export class _Exporter {
     private static _ExtensionNames = new Array<string>();
     private static _ExtensionFactories: { [name: string]: (exporter: _Exporter) => IGLTFExporterExtensionV2 } = {};
 
-    private _applyExtension<T>(node: T, extensions: IGLTFExporterExtensionV2[], index: number, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
+    private _applyExtension<T>(node: Nullable<T>, extensions: IGLTFExporterExtensionV2[], index: number, actionAsync: (extension: IGLTFExporterExtensionV2, node: Nullable<T>) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
         if (index >= extensions.length) {
             return Promise.resolve(node);
         }
@@ -153,10 +175,10 @@ export class _Exporter {
             return this._applyExtension(node, extensions, index + 1, actionAsync);
         }
 
-        return currentPromise.then((newNode) => this._applyExtension(newNode || node, extensions, index + 1, actionAsync));
+        return currentPromise.then((newNode) => this._applyExtension(newNode, extensions, index + 1, actionAsync));
     }
 
-    private _applyExtensions<T>(node: T, actionAsync: (extension: IGLTFExporterExtensionV2, node: T) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
+    private _applyExtensions<T>(node: Nullable<T>, actionAsync: (extension: IGLTFExporterExtensionV2, node: Nullable<T>) => Promise<Nullable<T>> | undefined): Promise<Nullable<T>> {
         var extensions: IGLTFExporterExtensionV2[] = [];
         for (const name of _Exporter._ExtensionNames) {
             extensions.push(this._extensions[name]);
@@ -165,7 +187,7 @@ export class _Exporter {
         return this._applyExtension(node, extensions, 0, actionAsync);
     }
 
-    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
+    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
         return this._applyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
@@ -173,11 +195,11 @@ export class _Exporter {
         return this._applyExtensions(meshPrimitive, (extension, node) => extension.postExportMeshPrimitiveAsync && extension.postExportMeshPrimitiveAsync(context, node, babylonSubMesh, binaryWriter));
     }
 
-    public _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<Nullable<INode>> {
-        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode));
+    public _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {[key: number]: number}): Promise<Nullable<INode>> {
+        return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap));
     }
 
-    public _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
+    public _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>> {
         return this._applyExtensions(material, (extension, node) => extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial));
     }
 
@@ -215,7 +237,34 @@ export class _Exporter {
     }
 
     private _extensionsOnExporting(): void {
-        this._forEachExtensions((extension) => extension.onExporting && extension.onExporting());
+        this._forEachExtensions((extension) => {
+            if (extension.wasUsed) {
+                if (this._glTF.extensionsUsed == null) {
+                    this._glTF.extensionsUsed = [];
+                }
+
+                if (this._glTF.extensionsUsed.indexOf(extension.name) === -1) {
+                    this._glTF.extensionsUsed.push(extension.name);
+                }
+
+                if (extension.required) {
+                    if (this._glTF.extensionsRequired == null) {
+                        this._glTF.extensionsRequired = [];
+                    }
+                    if (this._glTF.extensionsRequired.indexOf(extension.name) === -1) {
+                        this._glTF.extensionsRequired.push(extension.name);
+                    }
+                }
+
+                if (this._glTF.extensions == null) {
+                    this._glTF.extensions = {};
+                }
+
+                if (extension.onExporting) {
+                    extension.onExporting();
+                }
+            }
+        });
     }
 
     /**
@@ -248,11 +297,12 @@ export class _Exporter {
         this._materialMap = [];
         this._textures = [];
         this._samplers = [];
+        this._skins = [];
         this._animations = [];
         this._imageData = {};
-        this._convertToRightHandedSystem = !this._babylonScene.useRightHandedSystem;
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
+        this._includeCoordinateSystemConversionNodes = options && options.includeCoordinateSystemConversionNodes ? true : false;
 
         this._glTFMaterialExporter = new _GLTFMaterialExporter(this);
         this._loadExtensions();
@@ -300,7 +350,7 @@ export class _Exporter {
     }
 
     /**
-     * Lazy load a local engine with premultiplied alpha set to false
+     * Lazy load a local engine
      */
     public _getLocalEngine(): Engine {
         if (!this._localEngine) {
@@ -308,7 +358,7 @@ export class _Exporter {
             localCanvas.id = "WriteCanvas";
             localCanvas.width = 2048;
             localCanvas.height = 2048;
-            this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: false, preserveDrawingBuffer: true });
+            this._localEngine = new Engine(localCanvas, true, { premultipliedAlpha: Tools.IsSafari(), preserveDrawingBuffer: true });
             this._localEngine.setViewport(new Viewport(0, 0, 1, 1));
         }
 
@@ -356,20 +406,21 @@ export class _Exporter {
      * @param meshAttributeArray The vertex attribute data
      * @param byteOffset The offset to the binary data
      * @param binaryWriter The binary data for the glTF file
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private reorderVertexAttributeDataBasedOnPrimitiveMode(submesh: SubMesh, primitiveMode: number, sideOrientation: number, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter): void {
-        if (this._convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
+    private reorderVertexAttributeDataBasedOnPrimitiveMode(submesh: SubMesh, primitiveMode: number, sideOrientation: number, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean): void {
+        if (convertToRightHandedSystem && sideOrientation === Material.ClockWiseSideOrientation) {
             switch (primitiveMode) {
                 case Material.TriangleFillMode: {
-                    this.reorderTriangleFillMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                    this.reorderTriangleFillMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem);
                     break;
                 }
                 case Material.TriangleStripDrawMode: {
-                    this.reorderTriangleStripDrawMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                    this.reorderTriangleStripDrawMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem);
                     break;
                 }
                 case Material.TriangleFanDrawMode: {
-                    this.reorderTriangleFanMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                    this.reorderTriangleFanMode(submesh, primitiveMode, sideOrientation, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter, convertToRightHandedSystem);
                     break;
                 }
             }
@@ -386,8 +437,9 @@ export class _Exporter {
      * @param meshAttributeArray The vertex attribute data
      * @param byteOffset The offset to the binary data
      * @param binaryWriter The binary data for the glTF file
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private reorderTriangleFillMode(submesh: SubMesh, primitiveMode: number, sideOrientation: number, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter) {
+    private reorderTriangleFillMode(submesh: SubMesh, primitiveMode: number, sideOrientation: number, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean) {
         const vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh() as Mesh);
         if (vertexBuffer) {
             let stride = vertexBuffer.byteStride / VertexBuffer.GetTypeByteLength(vertexBuffer.type);
@@ -448,7 +500,7 @@ export class _Exporter {
                         Tools.Error(`Unsupported Vertex Buffer type: ${vertexBufferKind}`);
                     }
                 }
-                this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter);
+                this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
             }
         }
         else {
@@ -466,8 +518,9 @@ export class _Exporter {
      * @param meshAttributeArray The vertex attribute data
      * @param byteOffset The offset to the binary data
      * @param binaryWriter The binary data for the glTF file
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private reorderTriangleStripDrawMode(submesh: SubMesh, primitiveMode: number, sideOrientation: number, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter) {
+    private reorderTriangleStripDrawMode(submesh: SubMesh, primitiveMode: number, sideOrientation: number, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean) {
         const vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh() as Mesh);
         if (vertexBuffer) {
             const stride = vertexBuffer.byteStride / VertexBuffer.GetTypeByteLength(vertexBuffer.type);
@@ -508,7 +561,7 @@ export class _Exporter {
                     Tools.Error(`Unsupported Vertex Buffer type: ${vertexBufferKind}`);
                 }
             }
-            this.writeVertexAttributeData(vertexData, byteOffset + 12, vertexBufferKind, meshAttributeArray, binaryWriter);
+            this.writeVertexAttributeData(vertexData, byteOffset + 12, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
         }
         else {
             Tools.Warn(`reorderTriangleStripDrawMode: Vertex buffer kind ${vertexBufferKind} not present!`);
@@ -525,8 +578,9 @@ export class _Exporter {
      * @param meshAttributeArray The vertex attribute data
      * @param byteOffset The offset to the binary data
      * @param binaryWriter The binary data for the glTF file
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private reorderTriangleFanMode(submesh: SubMesh, primitiveMode: number, sideOrientation: number, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter) {
+    private reorderTriangleFanMode(submesh: SubMesh, primitiveMode: number, sideOrientation: number, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean) {
         const vertexBuffer = this.getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh() as Mesh);
         if (vertexBuffer) {
             let stride = vertexBuffer.byteStride / VertexBuffer.GetTypeByteLength(vertexBuffer.type);
@@ -570,7 +624,7 @@ export class _Exporter {
                     Tools.Error(`Unsupported Vertex Buffer type: ${vertexBufferKind}`);
                 }
             }
-            this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter);
+            this.writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, meshAttributeArray, binaryWriter, convertToRightHandedSystem);
         }
         else {
             Tools.Warn(`reorderTriangleFanMode: Vertex buffer kind ${vertexBufferKind} not present!`);
@@ -584,10 +638,11 @@ export class _Exporter {
      * @param vertexAttributeKind The vertex attribute type
      * @param meshAttributeArray The vertex attribute data
      * @param binaryWriter The writer containing the binary data
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private writeVertexAttributeData(vertices: Vector2[] | Vector3[] | Vector4[], byteOffset: number, vertexAttributeKind: string, meshAttributeArray: FloatArray, binaryWriter: _BinaryWriter) {
+    private writeVertexAttributeData(vertices: Vector2[] | Vector3[] | Vector4[], byteOffset: number, vertexAttributeKind: string, meshAttributeArray: FloatArray, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean) {
         for (let vertex of vertices) {
-            if (this._convertToRightHandedSystem && !(vertexAttributeKind === VertexBuffer.ColorKind) && !(vertex instanceof Vector2)) {
+            if (convertToRightHandedSystem && !(vertexAttributeKind === VertexBuffer.ColorKind) && !(vertex instanceof Vector2)) {
                 if (vertex instanceof Vector3) {
                     if (vertexAttributeKind === VertexBuffer.NormalKind) {
                         _GLTFUtilities._GetRightHandedNormalVector3FromRef(vertex);
@@ -622,11 +677,11 @@ export class _Exporter {
      * Returns the bytelength of the data
      * @param vertexBufferKind Indicates what kind of vertex data is being passed in
      * @param meshAttributeArray Array containing the attribute data
+     * @param byteStride Specifies the space between data
      * @param binaryWriter The buffer to write the binary data to
-     * @param indices Used to specify the order of the vertex data
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    public writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, byteStride: number, binaryWriter: _BinaryWriter) {
-        const stride = byteStride / 4;
+    public writeAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, babylonTransformNode: TransformNode) {
         let vertexAttributes: number[][] = [];
         let index: number;
 
@@ -635,7 +690,7 @@ export class _Exporter {
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
                     const vertexData = Vector3.FromArray(meshAttributeArray, index);
-                    if (this._convertToRightHandedSystem) {
+                    if (convertToRightHandedSystem) {
                         _GLTFUtilities._GetRightHandedPositionVector3FromRef(vertexData);
                     }
                     vertexAttributes.push(vertexData.asArray());
@@ -646,7 +701,7 @@ export class _Exporter {
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
                     const vertexData = Vector3.FromArray(meshAttributeArray, index);
-                    if (this._convertToRightHandedSystem) {
+                    if (convertToRightHandedSystem) {
                         _GLTFUtilities._GetRightHandedNormalVector3FromRef(vertexData);
                     }
                     vertexData.normalize();
@@ -658,7 +713,7 @@ export class _Exporter {
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
                     const vertexData = Vector4.FromArray(meshAttributeArray, index);
-                    if (this._convertToRightHandedSystem) {
+                    if (convertToRightHandedSystem) {
                         _GLTFUtilities._GetRightHandedVector4FromRef(vertexData);
                     }
                     _GLTFUtilities._NormalizeTangentFromRef(vertexData);
@@ -679,7 +734,25 @@ export class _Exporter {
             case VertexBuffer.UV2Kind: {
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
-                    vertexAttributes.push(this._convertToRightHandedSystem ? [meshAttributeArray[index], meshAttributeArray[index + 1]] : [meshAttributeArray[index], meshAttributeArray[index + 1]]);
+                    vertexAttributes.push(convertToRightHandedSystem ? [meshAttributeArray[index], meshAttributeArray[index + 1]] : [meshAttributeArray[index], meshAttributeArray[index + 1]]);
+                }
+                break;
+            }
+            case VertexBuffer.MatricesIndicesKind:
+            case VertexBuffer.MatricesIndicesExtraKind: {
+                for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
+                    index = k * stride;
+                    const vertexData = Vector4.FromArray(meshAttributeArray, index);
+                    vertexAttributes.push(vertexData.asArray());
+                }
+                break;
+            }
+            case VertexBuffer.MatricesWeightsKind:
+            case VertexBuffer.MatricesWeightsExtraKind: {
+                for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
+                    index = k * stride;
+                    const vertexData = Vector4.FromArray(meshAttributeArray, index);
+                    vertexAttributes.push(vertexData.asArray());
                 }
                 break;
             }
@@ -688,9 +761,33 @@ export class _Exporter {
                 vertexAttributes = [];
             }
         }
+
+        let writeBinaryFunc;
+        switch (attributeComponentKind){
+            case AccessorComponentType.UNSIGNED_BYTE: {
+                writeBinaryFunc = binaryWriter.setUInt8.bind(binaryWriter);
+                break;
+            }
+            case AccessorComponentType.UNSIGNED_SHORT: {
+                writeBinaryFunc = binaryWriter.setUInt16.bind(binaryWriter);
+                break;
+            }
+            case AccessorComponentType.UNSIGNED_INT: {
+                writeBinaryFunc = binaryWriter.setUInt32.bind(binaryWriter);
+            }
+            case AccessorComponentType.FLOAT: {
+                writeBinaryFunc = binaryWriter.setFloat32.bind(binaryWriter);
+                break;
+            }
+            default: {
+                Tools.Warn("Unsupported Attribute Component kind: " + attributeComponentKind);
+                return;
+            }
+        }
+
         for (let vertexAttribute of vertexAttributes) {
             for (let component of vertexAttribute) {
-                binaryWriter.setFloat32(component);
+                writeBinaryFunc(component);
             }
         }
     }
@@ -739,6 +836,9 @@ export class _Exporter {
         }
         if (this._samplers && this._samplers.length) {
             this._glTF.samplers = this._samplers;
+        }
+        if (this._skins && this._skins.length) {
+            this._glTF.skins = this._skins;
         }
         if (this._images && this._images.length) {
             if (!shouldUseGlb) {
@@ -936,13 +1036,14 @@ export class _Exporter {
      * Sets the TRS for each node
      * @param node glTF Node for storing the transformation data
      * @param babylonTransformNode Babylon mesh used as the source for the transformation data
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private setNodeTransformation(node: INode, babylonTransformNode: TransformNode): void {
+    private setNodeTransformation(node: INode, babylonTransformNode: TransformNode, convertToRightHandedSystem: boolean): void {
         if (!babylonTransformNode.getPivotPoint().equalsToFloats(0, 0, 0)) {
             Tools.Warn("Pivot points are not supported in the glTF serializer");
         }
         if (!babylonTransformNode.position.equalsToFloats(0, 0, 0)) {
-            node.translation = this._convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
+            node.translation = convertToRightHandedSystem ? _GLTFUtilities._GetRightHandedPositionVector3(babylonTransformNode.position).asArray() : babylonTransformNode.position.asArray();
         }
 
         if (!babylonTransformNode.scaling.equalsToFloats(1, 1, 1)) {
@@ -954,7 +1055,7 @@ export class _Exporter {
             rotationQuaternion.multiplyInPlace(babylonTransformNode.rotationQuaternion);
         }
         if (!(rotationQuaternion.x === 0 && rotationQuaternion.y === 0 && rotationQuaternion.z === 0 && rotationQuaternion.w === 1)) {
-            if (this._convertToRightHandedSystem) {
+            if (convertToRightHandedSystem) {
                 _GLTFUtilities._GetRightHandedQuaternionFromRef(rotationQuaternion);
 
             }
@@ -975,27 +1076,34 @@ export class _Exporter {
     /**
      * Creates a bufferview based on the vertices type for the Babylon mesh
      * @param kind Indicates the type of vertices data
+     * @param componentType Indicates the numerical type used to store the data
      * @param babylonTransformNode The Babylon mesh to get the vertices data from
      * @param binaryWriter The buffer to write the bufferview data to
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private createBufferViewKind(kind: string, babylonTransformNode: TransformNode, binaryWriter: _BinaryWriter, byteStride: number) {
+    private createBufferViewKind(kind: string, attributeComponentKind: AccessorComponentType, babylonTransformNode: TransformNode, binaryWriter: _BinaryWriter, byteStride: number, convertToRightHandedSystem: boolean) {
         const bufferMesh = babylonTransformNode instanceof Mesh ?
             babylonTransformNode as Mesh : babylonTransformNode instanceof InstancedMesh ?
                 (babylonTransformNode as InstancedMesh).sourceMesh : null;
 
         if (bufferMesh) {
+            const vertexBuffer = bufferMesh.getVertexBuffer(kind);
             const vertexData = bufferMesh.getVerticesData(kind);
 
-            if (vertexData) {
-                const byteLength = vertexData.length * 4;
+            if (vertexBuffer && vertexData) {
+                const typeByteLength = VertexBuffer.GetTypeByteLength(attributeComponentKind);
+                const byteLength = vertexData.length * typeByteLength;
                 const bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, kind + " - " + bufferMesh.name);
                 this._bufferViews.push(bufferView);
 
                 this.writeAttributeData(
                     kind,
+                    attributeComponentKind,
                     vertexData,
-                    byteStride,
-                    binaryWriter
+                    byteStride / typeByteLength,
+                    binaryWriter,
+                    convertToRightHandedSystem,
+                    babylonTransformNode
                 );
             }
         }
@@ -1085,6 +1193,22 @@ export class _Exporter {
                 meshPrimitive.attributes.TEXCOORD_1 = this._accessors.length - 1;
                 break;
             }
+            case VertexBuffer.MatricesIndicesKind: {
+                meshPrimitive.attributes.JOINTS_0 = this._accessors.length - 1;
+                break;
+            }
+            case VertexBuffer.MatricesIndicesExtraKind: {
+                meshPrimitive.attributes.JOINTS_1 = this._accessors.length - 1;
+                break;
+            }
+            case VertexBuffer.MatricesWeightsKind: {
+                meshPrimitive.attributes.WEIGHTS_0 = this._accessors.length - 1;
+                break;
+            }
+            case VertexBuffer.MatricesWeightsExtraKind: {
+                meshPrimitive.attributes.WEIGHTS_1 = this._accessors.length - 1;
+                break;
+            }
             default: {
                 Tools.Warn("Unsupported Vertex Buffer Type: " + attributeKind);
             }
@@ -1096,8 +1220,9 @@ export class _Exporter {
      * @param mesh glTF Mesh object to store the primitive attribute information
      * @param babylonTransformNode Babylon mesh to get the primitive attribute data from
      * @param binaryWriter Buffer to write the attribute data to
+     * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    private setPrimitiveAttributesAsync(mesh: IMesh, babylonTransformNode: TransformNode, binaryWriter: _BinaryWriter): Promise<void> {
+    private setPrimitiveAttributesAsync(mesh: IMesh, babylonTransformNode: TransformNode, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean): Promise<void> {
         let promises: Promise<IMeshPrimitive>[] = [];
         let bufferMesh: Nullable<Mesh> = null;
         let bufferView: IBufferView;
@@ -1110,12 +1235,16 @@ export class _Exporter {
             bufferMesh = (babylonTransformNode as InstancedMesh).sourceMesh;
         }
         const attributeData: _IVertexAttributeData[] = [
-            { kind: VertexBuffer.PositionKind, accessorType: AccessorType.VEC3, byteStride: 12 },
-            { kind: VertexBuffer.NormalKind, accessorType: AccessorType.VEC3, byteStride: 12 },
-            { kind: VertexBuffer.ColorKind, accessorType: AccessorType.VEC4, byteStride: 16 },
-            { kind: VertexBuffer.TangentKind, accessorType: AccessorType.VEC4, byteStride: 16 },
-            { kind: VertexBuffer.UVKind, accessorType: AccessorType.VEC2, byteStride: 8 },
-            { kind: VertexBuffer.UV2Kind, accessorType: AccessorType.VEC2, byteStride: 8 },
+            { kind: VertexBuffer.PositionKind, accessorType: AccessorType.VEC3, accessorComponentType: AccessorComponentType.FLOAT, byteStride: 12 },
+            { kind: VertexBuffer.NormalKind, accessorType: AccessorType.VEC3, accessorComponentType: AccessorComponentType.FLOAT, byteStride: 12 },
+            { kind: VertexBuffer.ColorKind, accessorType: AccessorType.VEC4, accessorComponentType: AccessorComponentType.FLOAT, byteStride: 16 },
+            { kind: VertexBuffer.TangentKind, accessorType: AccessorType.VEC4, accessorComponentType: AccessorComponentType.FLOAT, byteStride: 16 },
+            { kind: VertexBuffer.UVKind, accessorType: AccessorType.VEC2, accessorComponentType: AccessorComponentType.FLOAT, byteStride: 8  },
+            { kind: VertexBuffer.UV2Kind, accessorType: AccessorType.VEC2, accessorComponentType: AccessorComponentType.FLOAT, byteStride: 8  },
+            { kind: VertexBuffer.MatricesIndicesKind, accessorType: AccessorType.VEC4, accessorComponentType: AccessorComponentType.UNSIGNED_SHORT, byteStride: 8 },
+            { kind: VertexBuffer.MatricesIndicesExtraKind, accessorType: AccessorType.VEC4, accessorComponentType: AccessorComponentType.UNSIGNED_SHORT, byteStride: 8 },
+            { kind: VertexBuffer.MatricesWeightsKind, accessorType: AccessorType.VEC4, accessorComponentType: AccessorComponentType.FLOAT, byteStride: 16 },
+            { kind: VertexBuffer.MatricesWeightsExtraKind, accessorType: AccessorType.VEC4, accessorComponentType: AccessorComponentType.FLOAT, byteStride: 16 },
         ];
 
         if (bufferMesh) {
@@ -1126,14 +1255,15 @@ export class _Exporter {
             // For each BabylonMesh, create bufferviews for each 'kind'
             for (const attribute of attributeData) {
                 const attributeKind = attribute.kind;
+                const attributeComponentKind = attribute.accessorComponentType;
                 if (bufferMesh.isVerticesDataPresent(attributeKind)) {
                     const vertexBuffer = this.getVertexBufferFromMesh(attributeKind, bufferMesh);
-                    attribute.byteStride = vertexBuffer ? vertexBuffer.getSize() * 4 : VertexBuffer.DeduceStride(attributeKind) * 4;
+                    attribute.byteStride = vertexBuffer ? vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(attribute.accessorComponentType) : VertexBuffer.DeduceStride(attributeKind) * 4;
                     if (attribute.byteStride === 12) {
                         attribute.accessorType = AccessorType.VEC3;
                     }
 
-                    this.createBufferViewKind(attributeKind, babylonTransformNode, binaryWriter, attribute.byteStride);
+                    this.createBufferViewKind(attributeKind, attributeComponentKind, babylonTransformNode, binaryWriter, attribute.byteStride, convertToRightHandedSystem);
                     attribute.bufferViewIndex = this._bufferViews.length - 1;
                     vertexAttributeBufferViews[attributeKind] = attribute.bufferViewIndex;
                 }
@@ -1206,9 +1336,9 @@ export class _Exporter {
                                 if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
                                     minMax = { min: null, max: null };
                                     if (attributeKind == VertexBuffer.PositionKind) {
-                                        minMax = _GLTFUtilities._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, this._convertToRightHandedSystem);
+                                        minMax = _GLTFUtilities._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, convertToRightHandedSystem);
                                     }
-                                    const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, AccessorComponentType.FLOAT, vertexData.length / stride, 0, minMax.min, minMax.max);
+                                    const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, attributeKind + " - " + babylonTransformNode.name, attribute.accessorType, attribute.accessorComponentType, vertexData.length / stride, 0, minMax.min, minMax.max);
                                     this._accessors.push(accessor);
                                     this.setAttributeKind(meshPrimitive, attributeKind);
                                 }
@@ -1224,8 +1354,8 @@ export class _Exporter {
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
                         let sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
 
-                        // Only reverse the winding if we have a clockwise winding
-                        if (sideOrientation === Material.ClockWiseSideOrientation) {
+                        if ((sideOrientation == Material.ClockWiseSideOrientation && this._babylonScene.useRightHandedSystem)
+                            || (sideOrientation == Material.ClockWiseSideOrientation && convertToRightHandedSystem && bufferMesh.overrideMaterialSideOrientation !== bufferMesh.material?.sideOrientation)) {
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
                             if (byteOffset == null) { byteOffset = 0; }
                             let babylonIndices: Nullable<IndicesArray> = null;
@@ -1243,7 +1373,7 @@ export class _Exporter {
                                         if (!byteOffset) {
                                             byteOffset = 0;
                                         }
-                                        this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset, binaryWriter);
+                                        this.reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, sideOrientation, attribute.kind, vertexData, byteOffset, binaryWriter, convertToRightHandedSystem);
                                     }
                                 }
                             }
@@ -1267,6 +1397,43 @@ export class _Exporter {
     }
 
     /**
+     * Check if the node is used to convert its descendants from a right handed coordinate system to the Babylon scene's coordinate system.
+     * @param node The node to check
+     * @returns True if the node is used to convert its descendants from right-handed to left-handed. False otherwise
+     */
+    private isBabylonCoordinateSystemConvertingNode(node: Node): boolean {
+        if (node instanceof TransformNode)
+        {
+            if (node.name !== "__root__") {
+                return false;
+            }
+            // Transform
+            let matrix = node.getWorldMatrix();
+            let matrixToLeftHanded = Matrix.Compose(this._convertToRightHandedSystem ? new Vector3(-1, 1, 1) : Vector3.One(), Quaternion.Identity(), Vector3.Zero());
+            let matrixProduct = matrix.multiply(matrixToLeftHanded);
+            let matrixIdentity = Matrix.IdentityReadOnly;
+
+            for (let i = 0; i < 16; i++) {
+                if (Math.abs(matrixProduct.m[i] - matrixIdentity.m[i]) > Epsilon) {
+                    return false;
+                }
+            }
+
+            // Geometry
+            if ((node instanceof Mesh && node.geometry !== null) ||
+                (node instanceof InstancedMesh && node.sourceMesh.geometry !== null)) {
+                return false;
+            }
+
+            if (this._includeCoordinateSystemConversionNodes) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Creates a glTF scene based on the array of meshes
      * Returns the the total byte offset
      * @param babylonScene Babylon scene to get the mesh data from
@@ -1278,64 +1445,104 @@ export class _Exporter {
         let glTFNode: INode;
         let directDescendents: Node[];
         const nodes: Node[] = [...babylonScene.transformNodes, ...babylonScene.meshes, ...babylonScene.lights];
+        let rootNodesToLeftHanded: Node[] = [];
+
+        this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
+        this._convertToRightHandedSystemMap = {};
+
+        // Set default values for all nodes
+        babylonScene.rootNodes.forEach((rootNode) => {
+            this._convertToRightHandedSystemMap[rootNode.uniqueId] = this._convertToRightHandedSystem;
+            rootNode.getDescendants(false).forEach((descendant) => {
+                this._convertToRightHandedSystemMap[descendant.uniqueId] = this._convertToRightHandedSystem;
+            });
+        });
+
+        // Check if root nodes converting to left-handed are present
+        babylonScene.rootNodes.forEach((rootNode) => {
+            if (this.isBabylonCoordinateSystemConvertingNode(rootNode)) {
+                rootNodesToLeftHanded.push(rootNode);
+
+                // Exclude the node from list of nodes to export
+                const indexRootNode = nodes.indexOf(rootNode);
+                if (indexRootNode !== -1) { // should always be true
+                    nodes.splice(indexRootNode, 1);
+                }
+
+                // Cancel conversion to right handed system
+                rootNode.getDescendants(false).forEach((descendant) => {
+                    this._convertToRightHandedSystemMap[descendant.uniqueId] = false;
+                });
+            }
+        });
 
         return this._glTFMaterialExporter._convertMaterialsToGLTFAsync(babylonScene.materials, ImageMimeType.PNG, true).then(() => {
             return this.createNodeMapAndAnimationsAsync(babylonScene, nodes, binaryWriter).then((nodeMap) => {
-                this._nodeMap = nodeMap;
+                return this.createSkinsAsync(babylonScene, nodeMap, binaryWriter).then((skinMap) => {
+                    this._nodeMap = nodeMap;
 
-                this._totalByteLength = binaryWriter.getByteOffset();
-                if (this._totalByteLength == undefined) {
-                    throw new Error("undefined byte length!");
-                }
+                    this._totalByteLength = binaryWriter.getByteOffset();
+                    if (this._totalByteLength == undefined) {
+                        throw new Error("undefined byte length!");
+                    }
 
-                // Build Hierarchy with the node map.
-                for (let babylonNode of nodes) {
-                    glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
-                    if (glTFNodeIndex !== undefined) {
-                        glTFNode = this._nodes[glTFNodeIndex];
+                    // Build Hierarchy with the node map.
+                    for (let babylonNode of nodes) {
+                        glTFNodeIndex = this._nodeMap[babylonNode.uniqueId];
+                        if (glTFNodeIndex !== undefined) {
+                            glTFNode = this._nodes[glTFNodeIndex];
 
-                        if (babylonNode.metadata) {
-                            if (this._options.metadataSelector) {
-                                glTFNode.extras = this._options.metadataSelector(babylonNode.metadata);
-                            } else if (babylonNode.metadata.gltf) {
-                                glTFNode.extras = babylonNode.metadata.gltf.extras;
+                            if (babylonNode.metadata) {
+                                if (this._options.metadataSelector) {
+                                    glTFNode.extras = this._options.metadataSelector(babylonNode.metadata);
+                                } else if (babylonNode.metadata.gltf) {
+                                    glTFNode.extras = babylonNode.metadata.gltf.extras;
+                                }
                             }
-                        }
 
-                        if (!babylonNode.parent) {
-                            if (this._options.shouldExportNode && !this._options.shouldExportNode(babylonNode)) {
-                                Tools.Log("Omitting " + babylonNode.name + " from scene.");
-                            }
-                            else {
-                                if (this._convertToRightHandedSystem) {
-                                    if (glTFNode.translation) {
-                                        glTFNode.translation[2] *= -1;
-                                        glTFNode.translation[0] *= -1;
+                            if (!babylonNode.parent || rootNodesToLeftHanded.indexOf(babylonNode.parent) !== -1) {
+                                if (this._options.shouldExportNode && !this._options.shouldExportNode(babylonNode)) {
+                                    Tools.Log("Omitting " + babylonNode.name + " from scene.");
+                                }
+                                else {
+                                    let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                                    if (convertToRightHandedSystem) {
+                                        if (glTFNode.translation) {
+                                            glTFNode.translation[2] *= -1;
+                                            glTFNode.translation[0] *= -1;
+                                        }
+                                        glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
                                     }
-                                    glTFNode.rotation = glTFNode.rotation ? Quaternion.FromArray([0, 1, 0, 0]).multiply(Quaternion.FromArray(glTFNode.rotation)).asArray() : (Quaternion.FromArray([0, 1, 0, 0])).asArray();
-                                }
 
-                                scene.nodes.push(glTFNodeIndex);
-                            }
-                        }
-
-                        directDescendents = babylonNode.getDescendants(true);
-                        if (!glTFNode.children && directDescendents && directDescendents.length) {
-                            const children: number[] = [];
-                            for (let descendent of directDescendents) {
-                                if (this._nodeMap[descendent.uniqueId] != null) {
-                                    children.push(this._nodeMap[descendent.uniqueId]);
+                                    scene.nodes.push(glTFNodeIndex);
                                 }
                             }
-                            if (children.length) {
-                                glTFNode.children = children;
+
+                            if (babylonNode instanceof Mesh) {
+                                let babylonMesh : Mesh = babylonNode;
+                                if (babylonMesh.skeleton) {
+                                    glTFNode.skin = skinMap[babylonMesh.skeleton.uniqueId];
+                                }
+                            }
+
+                            directDescendents = babylonNode.getDescendants(true);
+                            if (!glTFNode.children && directDescendents && directDescendents.length) {
+                                const children: number[] = [];
+                                for (let descendent of directDescendents) {
+                                    if (this._nodeMap[descendent.uniqueId] != null) {
+                                        children.push(this._nodeMap[descendent.uniqueId]);
+                                    }
+                                }
+                                if (children.length) {
+                                    glTFNode.children = children;
+                                }
                             }
                         }
                     }
-                }
-                if (scene.nodes.length) {
-                    this._scenes.push(scene);
-                }
+                    if (scene.nodes.length) {
+                        this._scenes.push(scene);
+                    }
+                });
             });
         });
     }
@@ -1361,8 +1568,9 @@ export class _Exporter {
         for (let babylonNode of nodes) {
             if (!this._options.shouldExportNode || this._options.shouldExportNode(babylonNode)) {
                 promiseChain = promiseChain.then(() => {
-                    return this.createNodeAsync(babylonNode, binaryWriter).then((node) => {
-                        const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode);
+                    let convertToRightHandedSystem = this._convertToRightHandedSystemMap[babylonNode.uniqueId];
+                    return this.createNodeAsync(babylonNode, binaryWriter, convertToRightHandedSystem, nodeMap).then((node) => {
+                        const promise = this._extensionsPostExportNodeAsync("createNodeAsync", node, babylonNode, nodeMap);
                         if (promise == null) {
                             Tools.Warn(`Not exporting node ${babylonNode.name}`);
                             return Promise.resolve();
@@ -1377,7 +1585,7 @@ export class _Exporter {
                                 nodeMap[babylonNode.uniqueId] = nodeIndex;
 
                                 if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
-                                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
+                                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
                                 }
                             });
                         }
@@ -1400,7 +1608,7 @@ export class _Exporter {
             });
 
             if (babylonScene.animationGroups.length) {
-                _GLTFAnimation._CreateNodeAnimationFromAnimationGroups(babylonScene, this._animations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystem, this._animationSampleRate);
+                _GLTFAnimation._CreateNodeAnimationFromAnimationGroups(babylonScene, this._animations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystemMap, this._animationSampleRate);
             }
 
             return nodeMap;
@@ -1411,9 +1619,11 @@ export class _Exporter {
      * Creates a glTF node from a Babylon mesh
      * @param babylonMesh Source Babylon mesh
      * @param binaryWriter Buffer for storing geometry data
+     * @param convertToRightHandedSystem Converts the values to right-handed
+     * @param nodeMap Node mapping of unique id to glTF node index
      * @returns glTF node
      */
-    private createNodeAsync(babylonNode: Node, binaryWriter: _BinaryWriter): Promise<INode> {
+    private createNodeAsync(babylonNode: Node, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, nodeMap?: {[key: number]: number}): Promise<INode> {
         return Promise.resolve().then(() => {
             // create node to hold translation/rotation/scale and the mesh
             const node: INode = {};
@@ -1426,9 +1636,9 @@ export class _Exporter {
 
             if (babylonNode instanceof TransformNode) {
                 // Set transformation
-                this.setNodeTransformation(node, babylonNode);
+                this.setNodeTransformation(node, babylonNode, convertToRightHandedSystem);
 
-                return this.setPrimitiveAttributesAsync(mesh, babylonNode, binaryWriter).then(() => {
+                return this.setPrimitiveAttributesAsync(mesh, babylonNode, binaryWriter, convertToRightHandedSystem).then(() => {
                     if (mesh.primitives.length) {
                         this._meshes.push(mesh);
                         node.mesh = this._meshes.length - 1;
@@ -1439,6 +1649,59 @@ export class _Exporter {
             else {
                 return node;
             }
+        });
+    }
+
+    /**
+     * Creates a glTF skin from a Babylon skeleton
+     * @param babylonScene Babylon Scene
+     * @param nodes Babylon transform nodes
+     * @param binaryWriter Buffer to write binary data to
+     * @returns Node mapping of unique id to index
+     */
+    private createSkinsAsync(babylonScene: Scene, nodeMap: { [key: number]: number }, binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
+        let promiseChain = Promise.resolve();
+        const skinMap: { [key: number]: number } = {};
+        for (let skeleton of babylonScene.skeletons) {
+            // create skin
+            const skin: ISkin = { joints: []};
+            let inverseBindMatrices : Matrix[] = [];
+            let skeletonMesh = babylonScene.meshes.find((mesh) => {mesh.skeleton === skeleton; });
+            skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
+            for (let bone of skeleton.bones) {
+                if (bone._index != -1) {
+                    let transformNode = bone.getTransformNode();
+                    if (transformNode) {
+                        let boneMatrix = bone.getInvertedAbsoluteTransform();
+                        if (this._convertToRightHandedSystem) {
+                            _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
+                        }
+                        inverseBindMatrices.push(boneMatrix);
+                        skin.joints.push(nodeMap[transformNode.uniqueId]);
+                    }
+                }
+            }
+            // create buffer view for inverse bind matrices
+            let byteStride = 64; // 4 x 4 matrix of 32 bit float
+            let byteLength = inverseBindMatrices.length * byteStride;
+            let bufferViewOffset = binaryWriter.getByteOffset();
+            let bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, byteStride, "InverseBindMatrices" + " - " + skeleton.name);
+            this._bufferViews.push(bufferView);
+            let bufferViewIndex =  this._bufferViews.length - 1;
+            let bindMatrixAccessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, "InverseBindMatrices" + " - " + skeleton.name, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length, null, null, null);
+            let inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
+            skin.inverseBindMatrices = inverseBindAccessorIndex;
+            this._skins.push(skin);
+            skinMap[skeleton.uniqueId] = this._skins.length - 1;
+
+            inverseBindMatrices.forEach((mat) => {
+                mat.m.forEach((cell: number) => {
+                    binaryWriter.setFloat32(cell);
+                });
+            });
+        }
+        return promiseChain.then(() => {
+            return skinMap;
         });
     }
 }
@@ -1521,7 +1784,31 @@ export class _BinaryWriter {
             if (this._byteOffset + 1 > this._arrayBuffer.byteLength) {
                 this.resizeBuffer(this._arrayBuffer.byteLength * 2);
             }
-            this._dataView.setUint8(this._byteOffset++, entry);
+            this._dataView.setUint8(this._byteOffset, entry);
+            this._byteOffset += 1;
+        }
+    }
+
+    /**
+     * Stores an UInt16 in the array buffer
+     * @param entry
+     * @param byteOffset If defined, specifies where to set the value as an offset.
+     */
+    public setUInt16(entry: number, byteOffset?: number) {
+        if (byteOffset != null) {
+            if (byteOffset < this._byteOffset) {
+                this._dataView.setUint16(byteOffset, entry, true);
+            }
+            else {
+                Tools.Error('BinaryWriter: byteoffset is greater than the current binary buffer length!');
+            }
+        }
+        else {
+            if (this._byteOffset + 2 > this._arrayBuffer.byteLength) {
+                this.resizeBuffer(this._arrayBuffer.byteLength * 2);
+            }
+            this._dataView.setUint16(this._byteOffset, entry, true);
+            this._byteOffset += 2;
         }
     }
 

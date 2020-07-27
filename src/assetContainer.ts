@@ -4,9 +4,14 @@ import { Mesh } from "./Meshes/mesh";
 import { TransformNode } from './Meshes/transformNode';
 import { Skeleton } from './Bones/skeleton';
 import { AnimationGroup } from './Animations/animationGroup';
+import { Animatable } from './Animations/animatable';
 import { AbstractMesh } from './Meshes/abstractMesh';
 import { MultiMaterial } from './Materials/multiMaterial';
 import { Material } from './Materials/material';
+import { Logger } from './Misc/logger';
+import { EngineStore } from './Engines/engineStore';
+import { Nullable } from './types';
+import { Node } from './node';
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -37,6 +42,8 @@ export class InstantiatedEntries {
  * Container with a set of assets that can be added or removed from a scene.
  */
 export class AssetContainer extends AbstractScene {
+    private _wasAddedToScene = false;
+
     /**
      * The scene the AssetContainer belongs to.
      */
@@ -55,6 +62,12 @@ export class AssetContainer extends AbstractScene {
         this["lensFlareSystems"] = [];
         this["proceduralTextures"] = [];
         this["reflectionProbes"] = [];
+
+        scene.onDisposeObservable.add(() => {
+            if (!this._wasAddedToScene) {
+                this.dispose();
+            }
+        });
     }
 
     /**
@@ -143,6 +156,8 @@ export class AssetContainer extends AbstractScene {
                                             convertionMap[material.uniqueId] = swap.uniqueId;
                                             storeMap[swap.uniqueId] = swap;
                                         }
+
+                                        multi.subMaterials = multi.subMaterials.map((m) => m && storeMap[convertionMap[m.uniqueId]]);
                                     }
                                 }
 
@@ -216,6 +231,8 @@ export class AssetContainer extends AbstractScene {
      * Adds all the assets from the container to the scene.
      */
     public addAllToScene() {
+        this._wasAddedToScene = true;
+
         this.cameras.forEach((o) => {
             this.scene.addCamera(o);
         });
@@ -272,6 +289,8 @@ export class AssetContainer extends AbstractScene {
      * Removes all the assets in the container from the scene
      */
     public removeAllFromScene() {
+        this._wasAddedToScene = false;
+
         this.cameras.forEach((o) => {
             this.scene.removeCamera(o);
         });
@@ -425,6 +444,7 @@ export class AssetContainer extends AbstractScene {
      * @param keepAssets Set of assets to keep in the scene. (default: empty)
      */
     public moveAllFromScene(keepAssets?: KeepAssets): void {
+        this._wasAddedToScene = false;
 
         if (keepAssets === undefined) {
             keepAssets = new KeepAssets();
@@ -453,5 +473,100 @@ export class AssetContainer extends AbstractScene {
         });
         this.meshes.unshift(rootMesh);
         return rootMesh;
+    }
+
+    /**
+     * Merge animations (direct and animation groups) from this asset container into a scene
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param animatables set of animatables to retarget to a node from the scene
+     * @param targetConverter defines a function used to convert animation targets from the asset container to the scene (default: search node by name)
+     * @returns an array of the new AnimationGroup added to the scene (empty array if none)
+     */
+    public mergeAnimationsTo(scene: Nullable<Scene> = EngineStore.LastCreatedScene, animatables: Animatable[], targetConverter: Nullable<(target: any) => Nullable<Node>> = null): AnimationGroup[] {
+        if (!scene) {
+            Logger.Error("No scene available to merge animations to");
+            return [];
+        }
+
+        let _targetConverter = targetConverter ? targetConverter : (target: any) => {
+            let node = null;
+
+            const targetProperty = target.animations.length ? target.animations[0].targetProperty : "";
+            /*
+                BabylonJS adds special naming to targets that are children of nodes.
+                This name attempts to remove that special naming to get the parent nodes name in case the target
+                can't be found in the node tree
+
+                Ex: Torso_primitive0 likely points to a Mesh primitive. We take away primitive0 and are left with "Torso" which is the name
+                of the primitive's parent.
+            */
+            const name = target.name.split(".").join("").split("_primitive")[0];
+
+            switch (targetProperty) {
+                case "position":
+                case "rotationQuaternion":
+                    node = scene.getTransformNodeByName(target.name) || scene.getTransformNodeByName(name);
+                    break;
+                case "influence":
+                    node = scene.getMorphTargetByName(target.name) || scene.getMorphTargetByName(name);
+                    break;
+                default:
+                    node = scene.getNodeByName(target.name) || scene.getNodeByName(name);
+            }
+
+            return node;
+        };
+
+        // Copy new node animations
+        let nodesInAC = this.getNodes();
+        nodesInAC.forEach((nodeInAC) => {
+            let nodeInScene = _targetConverter(nodeInAC);
+            if (nodeInScene !== null) {
+                // Remove old animations with same target property as a new one
+                for (let animationInAC of nodeInAC.animations) {
+                    // Doing treatment on an array for safety measure
+                    let animationsWithSameProperty = nodeInScene.animations.filter((animationInScene) => {
+                        return animationInScene.targetProperty === animationInAC.targetProperty;
+                    });
+                    for (let animationWithSameProperty of animationsWithSameProperty) {
+                        const index = nodeInScene.animations.indexOf(animationWithSameProperty, 0);
+                        if (index > -1) {
+                            nodeInScene.animations.splice(index, 1);
+                        }
+                    }
+                }
+
+                // Append new animations
+                nodeInScene.animations = nodeInScene.animations.concat(nodeInAC.animations);
+            }
+        });
+
+        let newAnimationGroups = new Array<AnimationGroup>();
+
+        // Copy new animation groups
+        this.animationGroups.slice().forEach((animationGroupInAC) => {
+            // Clone the animation group and all its animatables
+            newAnimationGroups.push(animationGroupInAC.clone(animationGroupInAC.name, _targetConverter));
+
+            // Remove animatables related to the asset container
+            animationGroupInAC.animatables.forEach((animatable) => {
+                animatable.stop();
+            });
+        });
+
+        // Retarget animatables
+        animatables.forEach((animatable) => {
+            let target = _targetConverter(animatable.target);
+
+            if (target) {
+                // Clone the animatable and retarget it
+                scene.beginAnimation(target, animatable.fromFrame, animatable.toFrame, animatable.loopAnimation, animatable.speedRatio, animatable.onAnimationEnd ? animatable.onAnimationEnd : undefined, undefined, true, undefined, animatable.onAnimationLoop ? animatable.onAnimationLoop : undefined);
+
+                // Stop animation for the target in the asset container
+                scene.stopAnimation(animatable.target);
+            }
+        });
+
+        return newAnimationGroups;
     }
 }

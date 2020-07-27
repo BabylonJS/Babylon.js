@@ -4,7 +4,7 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { LightBlock } from 'babylonjs/Materials/Node/Blocks/Dual/lightBlock';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class LightPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -20,7 +20,7 @@ export class LightPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <div>                
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent label="Light" defaultIfNull={0} noDirectUpdate={true} valuesAreStrings={true} options={lightOptions} target={lightBlock} propertyName="name" onSelect={(name: any) => {
                         if (name === "") {

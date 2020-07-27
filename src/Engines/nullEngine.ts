@@ -1,16 +1,16 @@
 import { Logger } from "../Misc/logger";
 import { Nullable, FloatArray, IndicesArray } from "../types";
-import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { VertexBuffer } from "../Meshes/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
+import { ISceneLike } from './thinEngine';
+import { PerformanceConfigurator } from './performanceConfigurator';
 
 declare const global: any;
 
@@ -43,6 +43,11 @@ export class NullEngineOptions {
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public lockstepMaxSteps = 4;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -54,7 +59,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -63,7 +68,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
@@ -83,6 +88,8 @@ export class NullEngine extends Engine {
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
         super(null);
 
+        Engine.Instances.push(this);
+
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;
         }
@@ -92,6 +99,8 @@ export class NullEngine extends Engine {
         }
 
         this._options = options;
+
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
         // Init caps
         // We consider we are on a webgl1 capable device
@@ -446,7 +455,7 @@ export class NullEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
@@ -550,15 +559,16 @@ export class NullEngine extends Engine {
      * @param onLoad optional callback to be called upon successful completion
      * @param onError optional callback to be called upon failure
      * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
-     * @param fallBack an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+     * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
      * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
      * @param forcedExtension defines the extension to use to pick the right loader
-     * @param excludeLoaders array of texture loaders that should be excluded when picking a loader for the texture (default: empty array)
+     * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
-    public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+    public createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
-        buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
         var texture = new InternalTexture(this, InternalTextureSource.Url);
         var url = String(urlArg);
 
@@ -647,7 +657,6 @@ export class NullEngine extends Engine {
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
      * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-     * @param depthStencilTexture The depth stencil texture to use to render
      * @param lodLevel defines le lod level to bind to the frame buffer
      */
     public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {

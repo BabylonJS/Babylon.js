@@ -80,6 +80,10 @@ export interface IInspectorOptions {
      * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
      */
     inspectorURL?: string;
+    /**
+     * Optional initial tab (default to DebugLayerTab.Properties)
+     */
+    initialTab?: DebugLayerTab;
 }
 
 declare module "../scene" {
@@ -92,7 +96,7 @@ declare module "../scene" {
 
         /**
          * Gets the debug layer (aka Inspector) associated with the scene
-         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         * @see https://doc.babylonjs.com/features/playground_debuglayer
          */
         debugLayer: DebugLayer;
     }
@@ -109,9 +113,35 @@ Object.defineProperty(Scene.prototype, "debugLayer", {
 });
 
 /**
+ * Enum of inspector action tab
+ */
+export enum DebugLayerTab {
+    /**
+     * Properties tag (default)
+     */
+    Properties = 0,
+    /**
+     * Debug tab
+     */
+    Debug = 1,
+    /**
+     * Statistics tab
+     */
+    Statistics = 2,
+    /**
+     * Tools tab
+     */
+    Tools = 3,
+    /**
+     * Settings tab
+     */
+    Settings = 4
+}
+
+/**
  * The debug layer (aka Inspector) is the go to tool in order to better understand
  * what is happening in your scene
- * @see http://doc.babylonjs.com/features/playground_debuglayer
+ * @see https://doc.babylonjs.com/features/playground_debuglayer
  */
 export class DebugLayer {
     /**
@@ -145,7 +175,7 @@ export class DebugLayer {
      * Instantiates a new debug layer.
      * The debug layer (aka Inspector) is the go to tool in order to better understand
      * what is happening in your scene
-     * @see http://doc.babylonjs.com/features/playground_debuglayer
+     * @see https://doc.babylonjs.com/features/playground_debuglayer
      * @param scene Defines the scene to inspect
      */
     constructor(scene: Scene) {
@@ -190,14 +220,20 @@ export class DebugLayer {
     /**
      * Select a specific entity in the scene explorer and highlight a specific block in that entity property grid
      * @param entity defines the entity to select
-     * @param lineContainerTitle defines the specific block to highlight
+     * @param lineContainerTitles defines the specific blocks to highlight (could be a string or an array of strings)
      */
-    public select(entity: any, lineContainerTitle?: string) {
+    public select(entity: any, lineContainerTitles?: string | string[]) {
         if (this.BJSINSPECTOR) {
-            this.BJSINSPECTOR.Inspector.MarkLineContainerTitleForHighlighting(lineContainerTitle);
+
+            if (lineContainerTitles) {
+                if (Object.prototype.toString.call(lineContainerTitles) == '[object String]') {
+                    this.BJSINSPECTOR.Inspector.MarkLineContainerTitleForHighlighting(lineContainerTitles);
+                } else {
+                    this.BJSINSPECTOR.Inspector.MarkMultipleLineContainerTitlesForHighlighting(lineContainerTitles);
+                }
+            }
             this.BJSINSPECTOR.Inspector.OnSelectionChangeObservable.notifyObservers(entity);
         }
-
     }
 
     /** Get the inspector from bundle or global */
@@ -229,6 +265,15 @@ export class DebugLayer {
     public hide() {
         if (this.BJSINSPECTOR) {
             this.BJSINSPECTOR.Inspector.Hide();
+        }
+    }
+
+    /**
+     * Update the scene in the inspector
+     */
+    public setAsActiveScene() {
+        if (this.BJSINSPECTOR) {
+            this.BJSINSPECTOR.Inspector._SetNewScene(this._scene);
         }
     }
 

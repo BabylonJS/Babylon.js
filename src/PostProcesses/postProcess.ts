@@ -11,6 +11,7 @@ import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
 
 import "../Engines/Extensions/engine.renderTarget";
+import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -36,10 +37,16 @@ export class PostProcess {
     * Width of the texture to apply the post process on
     */
     public width = -1;
+
     /**
     * Height of the texture to apply the post process on
     */
     public height = -1;
+
+    /**
+     * Gets the node material used to create this postprocess (null if the postprocess was manually created)
+     */
+    public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
     /**
     * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
@@ -95,9 +102,9 @@ export class PostProcess {
      *
      * | Value | Type                                | Description |
      * | ----- | ----------------------------------- | ----------- |
-     * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
-     * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
-     * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
+     * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
+     * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
+     * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
      *
      */
     public scaleMode = Constants.SCALEMODE_FLOOR;
@@ -130,12 +137,13 @@ export class PostProcess {
     public adaptScaleToCurrentViewport = false;
 
     private _camera: Camera;
-    private _scene: Scene;
+    protected _scene: Scene;
     private _engine: Engine;
 
     private _options: number | PostProcessOptions;
     private _reusable = false;
     private _textureType: number;
+    private _textureFormat: number;
     /**
     * Smart array of input and output textures for the post process.
     * @hidden
@@ -155,7 +163,7 @@ export class PostProcess {
     protected _indexParameters: any;
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
-    private _forcedOutputTexture: InternalTexture;
+    private _forcedOutputTexture: Nullable<InternalTexture>;
 
     /**
      * Returns the fragment url or shader name used in the post process.
@@ -262,6 +270,14 @@ export class PostProcess {
     }
 
     /**
+    * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
+    * the only way to unset it is to use this function to restore its internal state
+    */
+    public restoreDefaultInputTexture() {
+        this._forcedOutputTexture = null;
+    }
+
+    /**
     * Gets the camera which post process is applied to.
     * @returns The camera the post process is applied to.
     */
@@ -301,12 +317,14 @@ export class PostProcess {
      * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
      * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
         /** Name of the PostProcess. */
         public name: string,
         fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
-        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
+        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
+        indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
         if (camera != null) {
             this._camera = camera;
             this._scene = camera.getScene();
@@ -324,6 +342,7 @@ export class PostProcess {
         this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         this._reusable = reusable || false;
         this._textureType = textureType;
+        this._textureFormat = textureFormat;
 
         this._samplers = samplers || [];
         this._samplers.push("textureSampler");
@@ -398,10 +417,12 @@ export class PostProcess {
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
      * @param onCompiled Called when the shader has been compiled.
      * @param onError Called if there is an error when compiling a shader.
+     * @param vertexUrl The url of the vertex shader to be used (default: the one given at construction time)
+     * @param fragmentUrl The url of the fragment shader to be used (default: the one given at construction time)
      */
     public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
-        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
-        this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl },
+        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, vertexUrl?: string, fragmentUrl?: string) {
+        this._effect = this._engine.createEffect({ vertex: vertexUrl ?? this._vertexUrl, fragment: fragmentUrl ?? this._fragmentUrl },
             ["position"],
             uniforms || this._parameters,
             samplers || this._samplers,
@@ -453,6 +474,11 @@ export class PostProcess {
         var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
         var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
+        const needMipMaps =
+            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
+            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
+            this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
+
         if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
 
             if (this.adaptScaleToCurrentViewport) {
@@ -464,7 +490,7 @@ export class PostProcess {
                 }
             }
 
-            if (this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || this.alwaysForcePOT) {
+            if (needMipMaps || this.alwaysForcePOT) {
                 if (!(<PostProcessOptions>this._options).width) {
                     desiredWidth = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
                 }
@@ -484,19 +510,14 @@ export class PostProcess {
                 this.width = desiredWidth;
                 this.height = desiredHeight;
 
-                const needMipMaps = this.renderTargetSamplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
-                                    this.renderTargetSamplingMode === Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
-
                 let textureSize = { width: this.width, height: this.height };
                 let textureOptions = {
                     generateMipMaps: needMipMaps,
                     generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
                     generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
                     samplingMode: this.renderTargetSamplingMode,
-                    type: this._textureType
+                    type: this._textureType,
+                    format: this._textureFormat
                 };
 
                 this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));
@@ -644,16 +665,17 @@ export class PostProcess {
 
         this._disposeTextures();
 
+        let index;
         if (this._scene) {
-            let index = this._scene.postProcesses.indexOf(this);
+            index = this._scene.postProcesses.indexOf(this);
             if (index !== -1) {
                 this._scene.postProcesses.splice(index, 1);
             }
-        } else {
-            let index = this._engine.postProcesses.indexOf(this);
-            if (index !== -1) {
-                this._engine.postProcesses.splice(index, 1);
-            }
+        }
+
+        index = this._engine.postProcesses.indexOf(this);
+        if (index !== -1) {
+            this._engine.postProcesses.splice(index, 1);
         }
 
         if (!camera) {
@@ -661,7 +683,7 @@ export class PostProcess {
         }
         camera.detachPostProcess(this);
 
-        var index = camera._postProcesses.indexOf(this);
+        index = camera._postProcesses.indexOf(this);
         if (index === 0 && camera._postProcesses.length > 0) {
             var firstPostProcess = this._camera._getFirstPostProcess();
             if (firstPostProcess) {

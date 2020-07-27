@@ -34,6 +34,8 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public ALPHATEST = false;
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
@@ -177,7 +179,7 @@ export class WaterMaterial extends PushMaterial {
     @serialize()
     public waveSpeed: number = 1.0;
     /**
-     * Sets or gets wether or not automatic clipping should be enabled or not. Setting to true will save performances and
+     * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
      * will avoid calculating useless pixels in the pixel shader of the water material.
      */
     @serialize()
@@ -196,8 +198,6 @@ export class WaterMaterial extends PushMaterial {
     private _reflectionTransform: Matrix = Matrix.Zero();
     private _lastTime: number = 0;
     private _lastDeltaTime: number = 0;
-
-    private _renderId: number;
 
     private _useLogarithmicDepth: boolean;
 
@@ -302,7 +302,7 @@ export class WaterMaterial extends PushMaterial {
 
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -314,10 +314,8 @@ export class WaterMaterial extends PushMaterial {
         var defines = <WaterMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -438,7 +436,7 @@ export class WaterMaterial extends PushMaterial {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vNormalInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "normalMatrix",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "normalMatrix",
                 "logarithmicDepthConstant",
 
                 // Water
@@ -481,8 +479,8 @@ export class WaterMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }

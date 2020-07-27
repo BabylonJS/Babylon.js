@@ -84,9 +84,9 @@ export class Angle {
     }
 
     /**
-     * Gets a new Angle object valued with the angle value in radians between the two given vectors
-     * @param a defines first vector
-     * @param b defines second vector
+     * Gets a new Angle object valued with the gradient angle, in radians, of the line joining two points
+     * @param a defines first point as the origin
+     * @param b defines point
      * @returns a new Angle
      */
     public static BetweenTwoPoints(a: DeepImmutable<Vector2>, b: DeepImmutable<Vector2>): Angle {
@@ -627,7 +627,7 @@ export class Path3D {
                 this._tangents[i] = alignTangentsWithPath ? cur : prev.add(cur);
                 this._tangents[i].normalize();
             }
-            this._distances[i] = this._distances[i - 1] + prev.length();
+            this._distances[i] = this._distances[i - 1] + this._curve[i].subtract(this._curve[i - 1]).length();
 
             // normals and binormals
             // http://www.cs.cmu.edu/afs/andrew/scs/cs/15-462/web/old/asst2camera.html

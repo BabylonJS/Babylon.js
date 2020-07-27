@@ -1,6 +1,7 @@
 import * as React from "react";
 import { GlobalState } from '../globalState';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { GraphNode } from './graphNode';
 import * as dagre from 'dagre';
 import { Nullable } from 'babylonjs/types';
@@ -10,14 +11,27 @@ import { NodeMaterialConnectionPoint, NodeMaterialConnectionPointDirection, Node
 import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fragmentOutputBlock';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { DataStorage } from '../dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
-import { IEditorData } from '../nodeLocationInfo';
+import { IEditorData, IFrameData } from '../nodeLocationInfo';
+import { FrameNodePort } from './frameNodePort';
 
 require("./graphCanvas.scss");
 
 export interface IGraphCanvasComponentProps {
     globalState: GlobalState
+}
+
+export type FramePortData = {
+    frame: GraphFrame,
+    port: FrameNodePort
+}
+
+export const isFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
+    if (variableToCheck) {
+        return (variableToCheck as FramePortData).port !== undefined;
+    }
+    else return false;
 }
 
 export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentProps> {
@@ -27,7 +41,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _hostCanvas: HTMLDivElement;
     private _graphCanvas: HTMLDivElement;
     private _selectionContainer: HTMLDivElement;
-    private _groupContainer: HTMLDivElement;
+    private _frameContainer: HTMLDivElement;
     private _svgCanvas: HTMLElement;
     private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
@@ -38,23 +52,27 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private _dropPointY = 0;
     private _selectionStartX = 0;
     private _selectionStartY = 0;
+    private _candidateLinkedHasMoved = false;
     private _x = 0;
     private _y = 0;
     private _zoom = 1;
     private _selectedNodes: GraphNode[] = [];
     private _selectedLink: Nullable<NodeLink> = null;
+    private _selectedPort: Nullable<NodePort> = null;
     private _candidateLink: Nullable<NodeLink> = null;
-    private _candidatePort: Nullable<NodePort> = null;
+    private _candidatePort: Nullable<NodePort | FrameNodePort> = null;
     private _gridSize = 20;
     private _selectionBox: Nullable<HTMLDivElement> = null;   
     private _selectedFrame: Nullable<GraphFrame> = null;   
-    private _frameCandidate: Nullable<HTMLDivElement> = null;  
-
+    private _frameCandidate: Nullable<HTMLDivElement> = null;
     private _frames: GraphFrame[] = [];
 
     private _altKeyIsPressed = false;
     private _ctrlKeyIsPressed = false;
     private _oldY = -1;
+
+    public _frameIsMoving = false;
+    public _isLoading = false;
 
     public get gridSize() {
         return this._gridSize;
@@ -127,8 +145,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._selectedFrame;
     }
 
+    public get selectedPort() {
+        return this._selectedPort;
+    }
+
     public get canvasContainer() {
         return this._graphCanvas;
+    }
+
+    public get hostCanvas() {
+        return this._hostCanvas;
     }
 
     public get svgCanvas() {
@@ -139,8 +165,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         return this._selectionContainer;
     }
 
-    public get groupContainer() {
-        return this._groupContainer;
+    public get frameContainer() {
+        return this._frameContainer;
     }
     
 
@@ -152,16 +178,19 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 this._selectedNodes = [];
                 this._selectedLink = null;
                 this._selectedFrame = null;
+                this._selectedPort = null;
             } else {
                 if (selection instanceof NodeLink) {
                     this._selectedNodes = [];
                     this._selectedFrame = null;
                     this._selectedLink = selection;
+                    this._selectedPort = null;
                 } else if (selection instanceof GraphFrame) {
                     this._selectedNodes = [];
                     this._selectedFrame = selection;
                     this._selectedLink = null;
-                } else{
+                    this._selectedPort = null;
+                } else if (selection instanceof GraphNode){
                     if (this._ctrlKeyIsPressed) {
                         if (this._selectedNodes.indexOf(selection) === -1) {
                             this._selectedNodes.push(selection);
@@ -169,11 +198,23 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     } else {                    
                         this._selectedNodes = [selection];
                     }
+                } else if(selection instanceof NodePort && !selection.hasLabel()){ // if node port is uneditable, select graphNode instead
+                    props.globalState.onSelectionChangedObservable.notifyObservers(selection.node)
+                } else if(selection instanceof NodePort){
+                    this._selectedNodes = [];
+                    this._selectedFrame = null;
+                    this._selectedLink = null;
+                    this._selectedPort = selection;
+                } else {
+                    this._selectedNodes = [];
+                    this._selectedFrame = null;
+                    this._selectedLink = null;
+                    this._selectedPort = selection.port;
                 }
             }
         });
 
-        props.globalState.onCandidatePortSelected.add(port => {
+        props.globalState.onCandidatePortSelectedObservable.add(port => {
             this._candidatePort = port;
         });
 
@@ -192,23 +233,29 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }, false);     
 
         // Store additional data to serialization object
-        this.props.globalState.storeEditorData = (editorData) => {
-            editorData.zoom = this.zoom;
-            editorData.x = this.x;
-            editorData.y = this.y;
-
+        this.props.globalState.storeEditorData = (editorData, graphFrame) => {
             editorData.frames = [];
-            for (var frame of this._frames) {
-                editorData.frames.push(frame.serialize());
+            if (graphFrame) {
+                editorData.frames.push(graphFrame!.serialize());
+            } else {
+                editorData.x = this.x;
+                editorData.y = this.y;
+                editorData.zoom = this.zoom;
+                for (var frame of this._frames) {
+                    editorData.frames.push(frame.serialize());
+                }
             }
         }
     }
 
-    public getGridPosition(position: number) {
+    public getGridPosition(position: number, useCeil = false) {
         let gridSize = this.gridSize;
 		if (gridSize === 0) {
 			return position;
-		}
+        }
+        if (useCeil) {
+            return gridSize * Math.ceil(position / gridSize);    
+        }
 		return gridSize * Math.floor(position / gridSize);
     }
     
@@ -322,12 +369,27 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Build dagre graph
         this._nodes.forEach(node => {
+
+            if (this._frames.some(f => f.nodes.indexOf(node) !== -1)) {
+                return;
+            }
+
             graph.setNode(node.id.toString(), {
                 id: node.id,
+                type: "node",
                 width: node.width,
                 height: node.height
             });
         });
+
+        this._frames.forEach(frame => {
+            graph.setNode(frame.id.toString(), {
+                id: frame.id,
+                type: "frame",
+                width: frame.element.clientWidth,
+                height: frame.element.clientHeight
+            });
+        })
 
         this._nodes.forEach(node => {
             node.block.outputs.forEach(output => {
@@ -336,7 +398,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 }
 
                 output.endpoints.forEach(endpoint => {
-                    graph.setEdge(node.id.toString(), endpoint.ownerBlock.uniqueId.toString());
+                    let sourceFrames = this._frames.filter(f => f.nodes.indexOf(node) !== -1);
+                    let targetFrames = this._frames.filter(f => f.nodes.some(n => n.block === endpoint.ownerBlock));
+
+
+                    let sourceId = sourceFrames.length > 0 ? sourceFrames[0].id : node.id;
+                    let targetId = targetFrames.length > 0 ? targetFrames[0].id : endpoint.ownerBlock.uniqueId;
+
+                    graph.setEdge(sourceId.toString(), targetId.toString());
                 });
             });
         });
@@ -346,12 +415,25 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Update graph
         let dagreNodes = graph.nodes().map(node => graph.node(node));
-        dagreNodes.forEach(dagreNode => {
-            for (var node of this._nodes) {
-                if (node.id === dagreNode.id) {
-                    node.x = dagreNode.x - dagreNode.width / 2;
-                    node.y = dagreNode.y - dagreNode.height / 2;
-                    node.cleanAccumulation();
+        dagreNodes.forEach((dagreNode: any) => {
+            if (dagreNode.type === "node") {
+                for (var node of this._nodes) {
+                    if (node.id === dagreNode.id) {
+                        node.x = dagreNode.x - dagreNode.width / 2;
+                        node.y = dagreNode.y - dagreNode.height / 2;
+                        node.cleanAccumulation();
+                        return;
+                    }
+                }
+                return;
+            }
+
+            for (var frame of this._frames) {
+                if (frame.id === dagreNode.id) {                    
+                    this._frameIsMoving = true;
+                    frame.move(dagreNode.x - dagreNode.width / 2, dagreNode.y - dagreNode.height / 2, false);
+                    frame.cleanAccumulation();
+                    this._frameIsMoving = false;
                     return;
                 }
             }
@@ -364,7 +446,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._graphCanvas = this.props.globalState.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
         this._svgCanvas = this.props.globalState.hostDocument.getElementById("graph-svg-container") as HTMLElement;        
         this._selectionContainer = this.props.globalState.hostDocument.getElementById("selection-container") as HTMLDivElement;   
-        this._groupContainer = this.props.globalState.hostDocument.getElementById("group-container") as HTMLDivElement;        
+        this._frameContainer = this.props.globalState.hostDocument.getElementById("frame-container") as HTMLDivElement;        
         
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
@@ -399,7 +481,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        // Candidate group box
+        // Candidate frame box
         if (this._frameCandidate) {
             const rootRect = this.canvasContainer.getBoundingClientRect();      
 
@@ -434,6 +516,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             this._dropPointY = (evt.pageY - rootRect.top) / this.zoom;
 
             this._candidateLink.update(this._dropPointX, this._dropPointY, true);
+            this._candidateLinkedHasMoved = true;
             
             return;
         }          
@@ -495,11 +578,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        // Group?
+        // Frame?
         if (evt.currentTarget === this._hostCanvas && evt.shiftKey) {
             this._frameCandidate = this.props.globalState.hostDocument.createElement("div");
-            this._frameCandidate.classList.add("group-box");
-            this._groupContainer.appendChild(this._frameCandidate);
+            this._frameCandidate.classList.add("frame-box");
+            this._frameContainer.appendChild(this._frameCandidate);
 
             const rootRect = this.canvasContainer.getBoundingClientRect();      
             this._selectionStartX = (evt.pageX - rootRect.left);
@@ -516,6 +599,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             if (!this._candidateLink) {
                 let portElement = ((evt.nativeEvent.srcElement as HTMLElement).parentElement as any).port as NodePort;
                 this._candidateLink = new NodeLink(this, portElement, portElement.node);
+                this._candidateLinkedHasMoved = false;
             }  
             return;
         }
@@ -531,9 +615,25 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this._rootContainer.releasePointerCapture(evt.pointerId);   
         this._oldY = -1; 
 
-        if (this._candidateLink) {        
-            this.processCandidatePort();          
-            this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+        if (this._candidateLink) {       
+            if (this._candidateLinkedHasMoved) {
+                this.processCandidatePort();          
+                this.props.globalState.onCandidateLinkMoved.notifyObservers(null);
+            } else { // is a click event on NodePort
+                if(this._candidateLink.portA instanceof FrameNodePort) { //only on Frame Node Ports
+                    const port = this._candidateLink.portA;
+                    const frame = this.frames.find((frame: GraphFrame) => frame.id === port.parentFrameId);
+                    if (frame) {
+                        const data: FramePortData = {
+                            frame,
+                            port
+                        }
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(data);
+                    }
+                } else if(this._candidateLink.portA instanceof NodePort){
+                    this.props.globalState.onSelectionChangedObservable.notifyObservers(this._candidateLink.portA );
+                }
+            }
             this._candidateLink.dispose();
             this._candidateLink = null;
             this._candidatePort = null;
@@ -545,11 +645,13 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         if (this._frameCandidate) {            
-            let newGroup = new GraphFrame(this._frameCandidate, this);
-            this._frames.push(newGroup);
+            let newFrame = new GraphFrame(this._frameCandidate, this);
+            this._frames.push(newFrame);
 
             this._frameCandidate.parentElement!.removeChild(this._frameCandidate);
             this._frameCandidate = null;
+
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
          }
     }
 
@@ -577,6 +679,45 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     zoomToFit() {
+        // Get negative offset
+        let minX = 0;
+        let minY = 0;
+        this._nodes.forEach(node => {
+            if (this._frames.some(f => f.nodes.indexOf(node) !== -1)) {
+                return;
+            }
+
+            if (node.x < minX) {
+                minX = node.x;
+            }
+            if (node.y < minY) {
+                minY = node.y;
+            }
+        });
+
+        this._frames.forEach(frame => {
+            if (frame.x < minX) {
+                minX = frame.x;
+            }
+            if (frame.y < minY) {
+                minY = frame.y;
+            }
+        });
+
+        // Restore to 0
+        this._frames.forEach(frame => {            
+            frame.x += -minX;
+            frame.y += -minY;
+            frame.cleanAccumulation();
+        });
+
+        this._nodes.forEach(node => {
+            node.x += -minX;
+            node.y += -minY;            
+            node.cleanAccumulation();
+        });
+
+        // Get correct zoom
         const xFactor = this._rootContainer.clientWidth / this._rootContainer.scrollWidth;
         const yFactor = this._rootContainer.clientHeight / this._rootContainer.scrollHeight;
         const zoomFactor = xFactor < yFactor ? xFactor : yFactor;
@@ -601,8 +742,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             // No destination so let's spin a new input block
-            let inputBlock = new InputBlock("", undefined, this._candidateLink!.portA.connectionPoint.type);
-            pointA = inputBlock.output;
+            let pointName = "output", inputBlock;
+            let customInputBlock = this._candidateLink!.portA.connectionPoint.createCustomInputBlock();
+            if (!customInputBlock) {
+                inputBlock = new InputBlock(NodeMaterialBlockConnectionPointTypes[this._candidateLink!.portA.connectionPoint.type], undefined, this._candidateLink!.portA.connectionPoint.type);
+            } else {
+                [inputBlock, pointName] = customInputBlock;
+            }
+            this.props.globalState.nodeMaterial.attachedBlocks.push(inputBlock);
+            pointA = (inputBlock as any)[pointName];
             nodeA = this.appendBlock(inputBlock);
             
             nodeA.x = this._dropPointX - 200;
@@ -638,6 +786,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Check compatibility
         let isFragmentOutput = pointB.ownerBlock.getClassName() === "FragmentOutputBlock";
         let compatibilityState = pointA.checkCompatibilityState(pointB);
+        if ((pointA.needDualDirectionValidation || pointB.needDualDirectionValidation) && compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible && !(pointA instanceof InputBlock)) {
+            compatibilityState = pointB.checkCompatibilityState(pointA);
+        }
         if (compatibilityState === NodeMaterialConnectionPointCompatibilityStates.Compatible) {
             if (isFragmentOutput) {
                 let fragmentBlock = pointB.ownerBlock as FragmentOutputBlock;
@@ -672,6 +823,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             });
         }
 
+        if (pointB.ownerBlock.inputsAreExclusive) { // Disconnect all inputs if block has exclusive inputs
+            pointB.ownerBlock.inputs.forEach(i => {
+                let links = nodeB.getLinksForConnectionPoint(i);
+
+                links.forEach(link => {
+                    link.dispose();
+                });
+            })
+        }
+
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
 
@@ -687,7 +848,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         this._frames = [];
-
         this.x = editorData.x || 0;
         this.y = editorData.y || 0;
         this.zoom = editorData.zoom || 1;
@@ -695,10 +855,16 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Frames
         if (editorData.frames) {
             for (var frameData of editorData.frames) {
-                var frame = GraphFrame.Parse(frameData, this);
+                var frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
-            }
+            }  
         }
+    }
+
+    addFrame(frameData: IFrameData) {
+            const frame = GraphFrame.Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
+            this._frames.push(frame);
+            this.globalState.onSelectionChangedObservable.notifyObservers(frame);
     }
  
     render() {
@@ -712,7 +878,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 <div id="graph-container">
                     <div id="graph-canvas-container">
                     </div>     
-                    <div id="group-container">                        
+                    <div id="frame-container">                        
                     </div>
                     <svg id="graph-svg-container">
                     </svg>                    

@@ -19,7 +19,6 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { IShadowLight } from "../../Lights/shadowLight";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
@@ -96,6 +95,11 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public USEHIGHLIGHTANDSHADOWCOLORS = false;
 
     /**
+     * True if only shadows must be rendered
+     */
+    public BACKMAT_SHADOWONLY = false;
+
+    /**
      * True to add noise in order to reduce the banding effect.
      */
     public NOISE = false;
@@ -130,7 +134,6 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public REFLECTIONMAP_CUBIC = false;
     public REFLECTIONMAP_PROJECTION = false;
     public REFLECTIONMAP_SKYBOX = false;
-    public REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
     public REFLECTIONMAP_EXPLICIT = false;
     public REFLECTIONMAP_EQUIRECTANGULAR = false;
     public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -151,6 +154,8 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public POINTSIZE = false;
     public FOG = false;
     public NORMAL = false;
@@ -412,6 +417,14 @@ export class BackgroundMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public maxSimultaneousLights: int = 4;
 
+    @serialize()
+    private _shadowOnly: boolean = false;
+    /**
+     * Make the material only render shadows
+     */
+    @expandToProperty("_markAllSubMeshesAsLightsDirty")
+    public shadowOnly: boolean = false;
+
     /**
      * Default configuration related to image processing available in the Background Material.
      */
@@ -642,7 +655,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns true if blending is enable
      */
     public needAlphaBlending(): boolean {
-        return ((this.alpha < 0) || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha));
+        return (this.alpha < 1) || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._shadowOnly;
     }
 
     /**
@@ -654,7 +667,7 @@ export class BackgroundMaterial extends PushMaterial {
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
         if (subMesh.effect && this.isFrozen) {
-            if (this._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -665,10 +678,9 @@ export class BackgroundMaterial extends PushMaterial {
 
         var scene = this.getScene();
         var defines = <BackgroundMaterialDefines>subMesh._materialDefines;
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (defines._renderId === scene.getRenderId()) {
-                return true;
-            }
+
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -737,7 +749,6 @@ export class BackgroundMaterial extends PushMaterial {
                             break;
                         case Texture.SKYBOX_MODE:
                             defines.REFLECTIONMAP_SKYBOX = true;
-                            defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = !reflectionTexture.getReflectionTextureMatrix().isIdentity();
                             break;
                         case Texture.SPHERICAL_MODE:
                             defines.REFLECTIONMAP_SPHERICAL = true;
@@ -782,7 +793,6 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.REFLECTIONMAP_CUBIC = false;
                     defines.REFLECTIONMAP_PROJECTION = false;
                     defines.REFLECTIONMAP_SKYBOX = false;
-                    defines.REFLECTIONMAP_SKYBOX_TRANSFORMED = false;
                     defines.REFLECTIONMAP_EXPLICIT = false;
                     defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
                     defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
@@ -802,6 +812,7 @@ export class BackgroundMaterial extends PushMaterial {
 
         if (defines._areLightsDirty) {
             defines.USEHIGHLIGHTANDSHADOWCOLORS = !this._useRGBColor && (this._primaryColorShadowLevel !== 0 || this._primaryColorHighlightLevel !== 0);
+            defines.BACKMAT_SHADOWONLY = this._shadowOnly;
         }
 
         if (defines._areImageProcessingDirty && this._imageProcessingConfiguration) {
@@ -816,7 +827,7 @@ export class BackgroundMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // Attribs
         if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
@@ -869,7 +880,7 @@ export class BackgroundMaterial extends PushMaterial {
 
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
                 "vFogInfos", "vFogColor", "pointSize",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "mBones",
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "mBones",
 
                 "vPrimaryColor", "vPrimaryColorShadow",
                 "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos", "fFovMultiplier",
@@ -926,7 +937,7 @@ export class BackgroundMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }

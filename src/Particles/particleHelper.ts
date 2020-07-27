@@ -10,6 +10,7 @@ import { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { ParticleSystemSet } from "./particleSystemSet";
 import { ParticleSystem } from "./particleSystem";
+import { WebRequest } from '../Misc/webRequest';
 /**
  * This class is made for on one-liner static method to help creating particle system set.
  */
@@ -18,6 +19,9 @@ export class ParticleHelper {
      * Gets or sets base Assets URL
      */
     public static BaseAssetsUrl = ParticleSystemSet.BaseAssetsUrl;
+
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
 
     /**
      * Create a default particle system that you can tweak
@@ -110,5 +114,87 @@ export class ParticleHelper {
         }
 
         return set;
+    }
+
+    /**
+     * Creates a particle system from a snippet saved in a remote file
+     * @param name defines the name of the particle system to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param gpu If the system will use gpu
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new particle system
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output: IParticleSystem;
+
+                        if (gpu) {
+                            output = GPUParticleSystem.Parse(serializationObject, scene, rootUrl);
+                        } else {
+                            output = ParticleSystem.Parse(serializationObject, scene, rootUrl);
+                        }
+
+                        if (name) {
+                            output.name = name;
+                        }
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the particle system");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates a particle system from a snippet saved by the particle system editor
+     * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
+     * @param scene defines the hosting scene
+     * @param gpu If the system will use gpu
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new particle system
+     */
+    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve(this.CreateDefault(null));
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.particleSystem);
+                        let output: IParticleSystem;
+
+                        if (gpu) {
+                            output = GPUParticleSystem.Parse(serializationObject, scene, rootUrl);
+                        } else {
+                            output = ParticleSystem.Parse(serializationObject, scene, rootUrl);
+                        }
+                        output.snippetId = snippetId;
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 }

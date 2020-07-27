@@ -5,13 +5,13 @@ import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
 
 import "../Engines/Extensions/engine.renderTargetCube";
+import "../Engines/Extensions/engine.readTexture";
 import "../Materials/Textures/baseTexture.polynomial";
 
 import "../Shaders/rgbdEncode.fragment";
@@ -111,8 +111,8 @@ export class EnvironmentTextureTools {
      * @param data The array buffer containing the .env bytes.
      * @returns the environment file info (the json header) if successfully parsed.
      */
-    public static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo> {
-        let dataView = new DataView(data);
+    public static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfo> {
+        let dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
         let pos = 0;
 
         for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
@@ -145,14 +145,10 @@ export class EnvironmentTextureTools {
      * @param texture defines the cube texture to convert in env file
      * @return a promise containing the environment data if succesfull.
      */
-    public static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer> {
+    public static CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return Promise.reject("The cube texture is invalid.");
-        }
-
-        if (!texture._prefiltered) {
-            return Promise.reject("The cube texture is invalid (not prefiltered).");
         }
 
         let engine = internalTexture.getEngine() as Engine;
@@ -303,7 +299,7 @@ export class EnvironmentTextureTools {
      * @param texture defines the texture containing the polynomials
      * @return the JSON representation of the spherical info
      */
-    private static _CreateEnvTextureIrradiance(texture: CubeTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
+    private static _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
         let polynmials = texture.sphericalPolynomial;
         if (polynmials == null) {
             return null;
@@ -326,11 +322,11 @@ export class EnvironmentTextureTools {
 
     /**
      * Creates the ArrayBufferViews used for initializing environment texture image data.
-     * @param arrayBuffer the underlying ArrayBuffer to which the views refer
+     * @param data the image data
      * @param info parameters that determine what views will be created for accessing the underlying buffer
      * @return the views described by info providing access to the underlying buffer
      */
-    public static CreateImageDataArrayBufferViews(arrayBuffer: any, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
+    public static CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
         if (info.version !== 1) {
             throw new Error(`Unsupported babylon environment map version "${info.version}"`);
         }
@@ -349,7 +345,7 @@ export class EnvironmentTextureTools {
             imageData[i] = new Array<ArrayBufferView>(6);
             for (let face = 0; face < 6; face++) {
                 const imageInfo = specularInfo.mipmaps[i * 6 + face];
-                imageData[i][face] = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
+                imageData[i][face] = new Uint8Array(data.buffer, data.byteOffset + specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
             }
         }
 
@@ -359,11 +355,11 @@ export class EnvironmentTextureTools {
     /**
      * Uploads the texture info contained in the env file to the GPU.
      * @param texture defines the internal texture to upload to
-     * @param arrayBuffer defines the buffer cotaining the data to load
+     * @param data defines the data to load
      * @param info defines the texture info retrieved through the GetEnvInfo method
      * @returns a promise
      */
-    public static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
+    public static UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void> {
         if (info.version !== 1) {
             throw new Error(`Unsupported babylon environment map version "${info.version}"`);
         }
@@ -376,7 +372,7 @@ export class EnvironmentTextureTools {
 
         texture._lodGenerationScale = specularInfo.lodGenerationScale;
 
-        const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(arrayBuffer, info);
+        const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
 
         return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
     }
@@ -450,6 +446,7 @@ export class EnvironmentTextureTools {
         texture.format = Constants.TEXTUREFORMAT_RGBA;
         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         texture.generateMipMaps = true;
+        texture._cachedAnisotropicFilteringLevel = null;
         engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
 
         // Add extra process if texture lod is not supported

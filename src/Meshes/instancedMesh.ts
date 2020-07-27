@@ -53,6 +53,13 @@ export class InstancedMesh extends AbstractMesh {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
 
+        this.animations = Array.from(source.animations);
+        for (var range of source.getAnimationRanges()) {
+            if (range != null) {
+                this.createAnimationRange(range.name, range.from, range.to);
+            }
+        }
+
         this.infiniteDistance = source.infiniteDistance;
 
         this.setPivotMatrix(source.getPivotMatrix());
@@ -150,6 +157,16 @@ export class InstancedMesh extends AbstractMesh {
      */
     public get sourceMesh(): Mesh {
         return this._sourceMesh;
+    }
+
+    /**
+     * Creates a new InstancedMesh object from the mesh model.
+     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @param name defines the name of the new instance
+     * @returns a new InstancedMesh
+     */
+    public createInstance(name: string): InstancedMesh {
+        return this._sourceMesh.createInstance(name);
     }
 
     /**
@@ -323,7 +340,12 @@ export class InstancedMesh extends AbstractMesh {
 
     /** @hidden */
     public _postActivate(): void {
-        if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+        if (this._sourceMesh.edgesShareWithInstances && this._sourceMesh._edgesRenderer && this._sourceMesh._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+            // we are using the edge renderer of the source mesh
+            this._sourceMesh._renderingGroup._edgesRenderers.pushNoDuplicate(this._sourceMesh._edgesRenderer);
+            this._sourceMesh._edgesRenderer.customInstances.push(this.getWorldMatrix());
+        } else if (this._edgesRenderer && this._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
+            // we are using the edge renderer defined for this instance
             this._sourceMesh._renderingGroup._edgesRenderers.push(this._edgesRenderer);
         }
     }
@@ -332,7 +354,10 @@ export class InstancedMesh extends AbstractMesh {
         if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
             let tempMaster = this._currentLOD._masterMesh;
             this._currentLOD._masterMesh = this;
+            TmpVectors.Vector3[7].copyFrom(this._currentLOD.position);
+            this._currentLOD.position.set(0, 0, 0);
             TmpVectors.Matrix[0].copyFrom(this._currentLOD.computeWorldMatrix(true));
+            this._currentLOD.position.copyFrom(TmpVectors.Vector3[7]);
             this._currentLOD._masterMesh = tempMaster;
             return TmpVectors.Matrix[0];
         }
@@ -364,6 +389,11 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /** @hidden */
+    public _preActivateForIntermediateRendering(renderId: number): Mesh {
+        return <Mesh>this.sourceMesh._preActivateForIntermediateRendering(renderId);
+    }
+
+    /** @hidden */
     public _syncSubMeshes(): InstancedMesh {
         this.releaseSubMeshes();
         if (this._sourceMesh.subMeshes) {
@@ -387,11 +417,18 @@ export class InstancedMesh extends AbstractMesh {
      *
      * Returns the clone.
      */
-    public clone(name: string, newParent: Nullable<Node>= null, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
+    public clone(name: string, newParent: Nullable<Node>= null, doNotCloneChildren?: boolean): InstancedMesh {
         var result = this._sourceMesh.createInstance(name);
 
         // Deep copy
-        DeepCopier.DeepCopy(this, result, ["name", "subMeshes", "uniqueId"], []);
+        DeepCopier.DeepCopy(this, result, [
+            "name", "subMeshes", "uniqueId", "parent", "lightSources",
+            "receiveShadows", "material", "visibility", "skeleton",
+            "sourceMesh", "isAnInstance", "facetNb", "isFacetDataEnabled",
+            "isBlocked", "useBones", "hasInstances", "collider", "edgesRenderer",
+            "forward", "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion",
+            "isWorldMatrixFrozen", "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances"
+        ], []);
 
         // Bounding info
         this.refreshBoundingInfo();
@@ -438,6 +475,11 @@ declare module "./mesh" {
          */
         registerInstancedBuffer(kind: string, stride: number): void;
 
+        /**
+         * true to use the edge renderer for all instances of this mesh
+         */
+        edgesShareWithInstances: boolean;
+
         /** @hidden */
         _userInstancedBuffersStorage: {
             data: {[key: string]: Float32Array},
@@ -457,6 +499,8 @@ declare module "./abstractMesh" {
         instancedBuffers: {[key: string]: any};
     }
 }
+
+Mesh.prototype.edgesShareWithInstances = false;
 
 Mesh.prototype.registerInstancedBuffer = function(kind: string, stride: number): void {
     // Remove existing one
@@ -520,7 +564,6 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
         // Update data buffer
         let offset = 0;
         if (renderSelf) {
-            offset += stride;
             let value = this.instancedBuffers[kind];
 
             if (value.toArray) {
@@ -528,6 +571,8 @@ Mesh.prototype._processInstancedBuffers = function(visibleInstances: InstancedMe
             } else {
                 value.copyToArray(data, offset);
             }
+
+            offset += stride;
         }
 
         for (var instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {

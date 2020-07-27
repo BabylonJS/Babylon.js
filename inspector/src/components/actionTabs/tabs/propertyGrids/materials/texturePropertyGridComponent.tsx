@@ -25,6 +25,10 @@ import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture"
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
+
+import { PopupComponent } from '../../../../popupComponent';
+import { TextureEditorComponent } from './textures/textureEditorComponent';
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
@@ -33,14 +37,27 @@ interface ITexturePropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
-export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
+interface ITexturePropertyGridComponentState {
+    isTextureEditorOpen : boolean,
+    textureEditing : Nullable<BaseTexture>
+}
+
+export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps,ITexturePropertyGridComponentState> {
 
     private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
+    private textureLineRef: React.RefObject<TextureLineComponent>;
+
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
 
+        this.state = {
+            isTextureEditorOpen: false,
+            textureEditing: null
+        }
         const texture = this.props.texture;
+
+        this.textureLineRef = React.createRef();
 
         if (!texture || !(texture as any).rootContainer) {
             return;
@@ -64,27 +81,53 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
         Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
-            var url = URL.createObjectURL(blob);
 
-            if (texture.isCube) {
-                let extension: string | undefined = undefined;
-                if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                    extension = ".dds";
-                } else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                    extension = ".env";
+            var reader = new FileReader();
+            reader.readAsDataURL(blob); 
+            reader.onloadend = () => {
+                let base64data = reader.result as string;     
+
+                if (texture.isCube) {
+                    let extension: string | undefined = undefined;
+                    if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                        extension = ".dds";
+                    } else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                        extension = ".env";
+                    }
+
+                    (texture as CubeTexture).updateURL(base64data, extension, () => this.forceRefresh());
+                } else {
+                    (texture as Texture).updateURL(base64data, null, () => this.forceRefresh());
                 }
-
-                (texture as CubeTexture).updateURL(url, extension, () => this.foreceRefresh());
-            } else {
-                (texture as Texture).updateURL(url, null, () => this.foreceRefresh());
-            }
+            };
 
         }, undefined, true);
-    }    
+    }
 
-    foreceRefresh() {
+    onOpenTextureEditor() {
+        if (this.state.isTextureEditorOpen && this.state.textureEditing !== this.props.texture) {
+            this.onCloseTextureEditor(null, () => this.onOpenTextureEditor());
+            return;
+        }
+        this.setState({
+            isTextureEditorOpen: true,
+            textureEditing: this.props.texture
+        });
+    }
+    
+    onCloseTextureEditor(window: Window | null, callback?: {() : void}) {
+        this.setState({
+            isTextureEditorOpen: false,
+            textureEditing: null
+        }, callback);
+        if (window !== null) {
+            window.close();
+        }
+    }
+
+    forceRefresh() {
         this.forceUpdate();
-        (this.refs["textureLine"] as TextureLineComponent).updatePreview();
+        (this.textureLineRef.current as TextureLineComponent).updatePreview();
     }
 
     render() {
@@ -111,30 +154,44 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         let extension = "";
         let url = (texture as Texture).url;
+        let textureUrl = (!url || url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
 
-        if (url) {
-            for (var index = url.length - 1; index >= 0; index--) {
-                if (url[index] === ".") {
+        if (textureUrl) {
+            for (var index = textureUrl.length - 1; index >= 0; index--) {
+                if (textureUrl[index] === ".") {
                     break;
                 }
-                extension = url[index] + extension;
+                extension = textureUrl[index] + extension;
             }
-        } else {
-            url = "";
         }
-
-        let textureUrl = (url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
 
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
-                    <TextureLineComponent ref="textureLine" texture={texture} width={256} height={256} globalState={this.props.globalState} />
+                    <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                    <ButtonLineComponent label="Edit" onClick={() => this.onOpenTextureEditor()} />
                     <TextInputLineComponent label="URL" value={textureUrl} lockObject={this.props.lockObject} onChange={url => {
                         (texture as Texture).updateURL(url);
-                        this.foreceRefresh();
+                        this.forceRefresh();
                     }} />
                 </LineContainerComponent>
+                {this.state.isTextureEditorOpen && (
+                <PopupComponent
+                  id='texture-editor'
+                  title='Texture Inspector'
+                  size={{ width: 1024, height: 490 }}
+                  onOpen={(window: Window) => {}}
+                  onClose={(window: Window) =>
+                    this.onCloseTextureEditor(window)
+                  }
+                >
+                    <TextureEditorComponent
+                        globalState={this.props.globalState}
+                        texture={this.props.texture}
+                        url={textureUrl}
+                    />
+                </PopupComponent>)}
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
                     lockObject={this.props.lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -172,6 +229,10 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is 2D array" value={texture.is2DArray ? "Yes" : "No"} />
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
+                    {
+                        (texture instanceof Texture) && 
+                        <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />
+                    }
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
                     <OptionsLineComponent label="Mode" options={coordinatesMode} target={texture} propertyName="coordinatesMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
@@ -182,7 +243,11 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     }
                 </LineContainerComponent>
                 {
-                    (texture as any).rootContainer &&
+                    texture.getScene() &&
+                    <AnimationGridComponent globalState={this.props.globalState} animatable={texture} scene={texture.getScene()!} lockObject={this.props.lockObject} />
+                }
+                {
+                    (texture as any).rootContainer && this._adtInstrumentation &&
                     <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />

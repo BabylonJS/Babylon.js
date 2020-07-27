@@ -7,7 +7,7 @@ import { AsyncLoop } from "../Misc/tools";
 import { Epsilon } from '../Maths/math.constants';
 /**
  * A simplifier interface for future simplification implementations
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export interface ISimplifier {
     /**
@@ -23,7 +23,7 @@ export interface ISimplifier {
 /**
  * Expected simplification settings.
  * Quality should be between 0 and 1 (1 being 100%, 0 being 0%)
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export interface ISimplificationSettings {
     /**
@@ -42,7 +42,7 @@ export interface ISimplificationSettings {
 
 /**
  * Class used to specify simplification options
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export class SimplificationSettings implements ISimplificationSettings {
     /**
@@ -89,7 +89,7 @@ export interface ISimplificationTask {
 
 /**
  * Queue used to order the simplification tasks
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export class SimplificationQueue {
     private _simplificationArray: Array<ISimplificationTask>;
@@ -187,7 +187,7 @@ export class SimplificationQueue {
 /**
  * The implemented types of simplification
  * At the moment only Quadratic Error Decimation is implemented
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
 export enum SimplificationType {
     /** Quadratic error decimation */
@@ -295,9 +295,9 @@ class Reference {
  * Original paper : http://www1.cs.columbia.edu/~cs4162/html05s/garland97.pdf
  * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
  * @author RaananW
- * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+ * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
-class QuadraticErrorSimplification implements ISimplifier {
+export class QuadraticErrorSimplification implements ISimplifier {
 
     private triangles: Array<DecimationTriangle>;
     private vertices: Array<DecimationVertex>;
@@ -305,19 +305,34 @@ class QuadraticErrorSimplification implements ISimplifier {
 
     private _reconstructedMesh: Mesh;
 
+    /** Gets or sets the number pf sync interations */
     public syncIterations = 5000;
 
+    /** Gets or sets the aggressiveness of the simplifier */
     public aggressiveness: number;
+
+    /** Gets or sets the number of allowed iterations for decimation */
     public decimationIterations: number;
 
+    /** Gets or sets the espilon to use for bounding box computation */
     public boundingBoxEpsilon: number;
 
+    /**
+     * Creates a new QuadraticErrorSimplification
+     * @param _mesh defines the target mesh
+     */
     constructor(private _mesh: Mesh) {
         this.aggressiveness = 7;
         this.decimationIterations = 100;
         this.boundingBoxEpsilon = Epsilon;
     }
 
+    /**
+     * Simplification of a given mesh according to the given settings.
+     * Since this requires computation, it is assumed that the function runs async.
+     * @param settings The settings of the simplification, including quality and distance
+     * @param successCallback A callback that will be called after the mesh was simplified.
+     */
     public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
         this.initDecimatedMesh();
         //iterating through the submeshes array, one after the other.

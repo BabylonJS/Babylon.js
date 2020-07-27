@@ -18,7 +18,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Create a multi render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multiple-render-target
+         * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
          * @param size defines the size of the texture
          * @param options defines the creation options
          * @returns the cube texture as an InternalTexture
@@ -27,14 +27,26 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update the sample count for a given multiple render target texture
-         * @see http://doc.babylonjs.com/features/webgl2#multisample-render-targets
+         * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
          * @param textures defines the textures to update
          * @param samples defines the sample count to set
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)
          */
         updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
+
+        /**
+         * Select a subsets of attachments to draw to.
+         * @param attachments gl attachments
+         */
+        bindAttachments(attachments: number[]) : void;
     }
 }
+
+ThinEngine.prototype.bindAttachments = function(attachments: number[]): void {
+    const gl = this._gl;
+
+    gl.drawBuffers(attachments);
+};
 
 ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: InternalTexture[], disableGenerateMipMaps: boolean = false, onBeforeUnbind?: () => void): void {
     this._currentRenderTarget = null;
@@ -42,20 +54,17 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
     // If MSAA, we need to bitblt back to main texture
     var gl = this._gl;
 
+    var attachments = textures[0]._attachments!;
+    var count = attachments.length;
+
     if (textures[0]._MSAAFramebuffer) {
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, textures[0]._MSAAFramebuffer);
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, textures[0]._framebuffer);
 
-        var attachments = textures[0]._attachments;
-        if (!attachments) {
-            attachments = new Array(textures.length);
-            textures[0]._attachments = attachments;
-        }
-
-        for (var i = 0; i < textures.length; i++) {
+        for (var i = 0; i < count; i++) {
             var texture = textures[i];
 
-            for (var j = 0; j < attachments.length; j++) {
+            for (var j = 0; j < count; j++) {
                 attachments[j] = gl.NONE;
             }
 
@@ -67,13 +76,15 @@ ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function(textures: 
                 gl.COLOR_BUFFER_BIT, gl.NEAREST);
 
         }
-        for (var i = 0; i < attachments.length; i++) {
+
+        for (var i = 0; i < count; i++) {
             attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
         }
+
         gl.drawBuffers(attachments);
     }
 
-    for (var i = 0; i < textures.length; i++) {
+    for (var i = 0; i < count; i++) {
         var texture = textures[i];
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
@@ -192,6 +203,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         texture._generateDepthBuffer = generateDepthBuffer;
         texture._generateStencilBuffer = generateStencilBuffer;
         texture._attachments = attachments;
+        texture._textureArray = textures;
 
         this._internalTexturesCache.push(texture);
     }
@@ -243,7 +255,6 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
     }
 
     gl.drawBuffers(attachments);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     this._bindUnboundFramebuffer(null);
 
     this.resetTextureCache();
@@ -252,12 +263,18 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
 };
 
 ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(textures: Nullable<InternalTexture[]>, samples: number): number {
-    if (this.webGLVersion < 2 || !textures || textures.length == 0) {
+    if (this.webGLVersion < 2 || !textures) {
         return 1;
     }
 
     if (textures[0].samples === samples) {
         return samples;
+    }
+
+    var count = textures[0]._attachments!.length;
+
+    if (count === 0) {
+        return 1;
     }
 
     var gl = this._gl;
@@ -275,14 +292,14 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(tex
         textures[0]._MSAAFramebuffer = null;
     }
 
-    for (var i = 0; i < textures.length; i++) {
+    for (var i = 0; i < count; i++) {
         if (textures[i]._MSAARenderBuffer) {
             gl.deleteRenderbuffer(textures[i]._MSAARenderBuffer);
             textures[i]._MSAARenderBuffer = null;
         }
     }
 
-    if (samples > 1) {
+    if (samples > 1 && gl.renderbufferStorageMultisample) {
         let framebuffer = gl.createFramebuffer();
 
         if (!framebuffer) {
@@ -295,7 +312,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function(tex
 
         var attachments = [];
 
-        for (var i = 0; i < textures.length; i++) {
+        for (var i = 0; i < count; i++) {
             var texture = textures[i];
             var attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 

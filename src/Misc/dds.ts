@@ -165,12 +165,12 @@ export class DDSTools {
 
     /**
      * Gets DDS information from an array buffer
-     * @param arrayBuffer defines the array buffer to read data from
+     * @param data defines the array buffer view to read data from
      * @returns the DDS information
      */
-    public static GetDDSInfo(arrayBuffer: any): DDSInfo {
-        var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
-        var extendedHeader = new Int32Array(arrayBuffer, 0, headerLengthInt + 4);
+    public static GetDDSInfo(data: ArrayBufferView): DDSInfo {
+        var header = new Int32Array(data.buffer, data.byteOffset, headerLengthInt);
+        var extendedHeader = new Int32Array(data.buffer, data.byteOffset, headerLengthInt + 4);
 
         var mipmapCount = 1;
         if (header[off_flags] & DDSD_MIPMAPCOUNT) {
@@ -445,14 +445,14 @@ export class DDSTools {
      * Uploads DDS Levels to a Babylon Texture
      * @hidden
      */
-    public static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
+    public static UploadDDSLevels(engine: ThinEngine, texture: InternalTexture, data: ArrayBufferView, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number) {
         var sphericalPolynomialFaces: Nullable<Array<ArrayBufferView>> = null;
         if (info.sphericalPolynomial) {
             sphericalPolynomialFaces = new Array<ArrayBufferView>();
         }
         var ext = engine.getCaps().s3tc;
 
-        var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
+        var header = new Int32Array(data.buffer, data.byteOffset, headerLengthInt);
         var fourCC: number, width: number, height: number, dataLength: number = 0, dataOffset: number;
         var byteArray: Uint8Array, mipmapCount: number, mip: number;
         let internalCompressedFormat = 0;
@@ -558,15 +558,15 @@ export class DDSTools {
 
                         if (engine._badOS || engine._badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                             if (bpp === 128) {
-                                floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
                                 if (sphericalPolynomialFaces && i == 0) {
-                                    sphericalPolynomialFaces.push(DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i));
+                                    sphericalPolynomialFaces.push(DDSTools._GetFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i));
                                 }
                             }
                             else if (bpp === 64) {
-                                floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
                                 if (sphericalPolynomialFaces && i == 0) {
-                                    sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i));
+                                    sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i));
                                 }
                             }
 
@@ -575,21 +575,21 @@ export class DDSTools {
                         else {
                             if (bpp === 128) {
                                 texture.type = Constants.TEXTURETYPE_FLOAT;
-                                floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
                                 if (sphericalPolynomialFaces && i == 0) {
                                     sphericalPolynomialFaces.push(floatArray);
                                 }
                             } else if (bpp === 64 && !engine.getCaps().textureHalfFloat) {
                                 texture.type = Constants.TEXTURETYPE_FLOAT;
-                                floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
                                 if (sphericalPolynomialFaces && i == 0) {
                                     sphericalPolynomialFaces.push(floatArray);
                                 }
                             } else { // 64
                                 texture.type = Constants.TEXTURETYPE_HALF_FLOAT;
-                                floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
+                                floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, i);
                                 if (sphericalPolynomialFaces && i == 0) {
-                                    sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i));
+                                    sphericalPolynomialFaces.push(DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, data.buffer, i));
                                 }
                             }
                         }
@@ -602,12 +602,12 @@ export class DDSTools {
                         if (bpp === 24) {
                             texture.format = Constants.TEXTUREFORMAT_RGB;
                             dataLength = width * height * 3;
-                            byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset);
+                            byteArray = DDSTools._GetRGBArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset);
                             engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                         } else { // 32
                             texture.format = Constants.TEXTUREFORMAT_RGBA;
                             dataLength = width * height * 4;
-                            byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset, aOffset);
+                            byteArray = DDSTools._GetRGBAArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer, rOffset, gOffset, bOffset, aOffset);
                             engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                         }
                     } else if (info.isLuminance) {
@@ -616,14 +616,14 @@ export class DDSTools {
                         var paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
                         dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
 
-                        byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                        byteArray = DDSTools._GetLuminanceArrayBuffer(width, height, data.byteOffset + dataOffset, dataLength, data.buffer);
                         texture.format = Constants.TEXTUREFORMAT_LUMINANCE;
                         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
 
                         engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                     } else {
                         dataLength = Math.max(4, width) / 4 * Math.max(4, height) / 4 * blockBytes;
-                        byteArray = new Uint8Array(arrayBuffer, dataOffset, dataLength);
+                        byteArray = new Uint8Array(data.buffer, data.byteOffset + dataOffset, dataLength);
 
                         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
                         engine._uploadCompressedDataToTextureDirectly(texture, internalCompressedFormat, width, height, byteArray, face, i);

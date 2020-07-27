@@ -17,7 +17,7 @@ declare type Engine = import("../Engines/engine").Engine;
 export class ScreenshotTools {
     /**
      * Captures a screenshot of the current rendering
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -69,7 +69,7 @@ export class ScreenshotTools {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -96,7 +96,7 @@ export class ScreenshotTools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -112,8 +112,9 @@ export class ScreenshotTools {
      * @param samples Texture samples (default: 1)
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
+     * @param renderSprites Whether the sprites should be rendered or not (default: false)
      */
-    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
+    public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string, renderSprites: boolean = false): void {
         const { height, width } = ScreenshotTools._getScreenshotSize(engine, camera, size);
         let targetTextureSize = { width, height };
 
@@ -144,6 +145,7 @@ export class ScreenshotTools {
         var texture = new RenderTargetTexture("screenShot", targetTextureSize, scene, false, false, Constants.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
         texture.renderList = null;
         texture.samples = samples;
+        texture.renderSprites = renderSprites;
         texture.onAfterRenderObservable.add(() => {
             Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);
         });
@@ -183,7 +185,7 @@ export class ScreenshotTools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -196,10 +198,11 @@ export class ScreenshotTools {
      * @param samples Texture samples (default: 1)
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
+     * @param renderSprites Whether the sprites should be rendered or not (default: false)
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
-    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): Promise<string> {
+    public static CreateScreenshotUsingRenderTargetAsync(engine: Engine, camera: Camera, size: any, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string,  renderSprites: boolean = false): Promise<string> {
         return new Promise((resolve, reject) => {
             ScreenshotTools.CreateScreenshotUsingRenderTarget(engine, camera, size, (data) => {
                 if (typeof(data) !== "undefined") {
@@ -207,7 +210,7 @@ export class ScreenshotTools {
                 } else {
                     reject(new Error("Data is undefined"));
                 }
-            }, mimeType, samples, antialiasing, fileName);
+            }, mimeType, samples, antialiasing, fileName, renderSprites);
         });
     }
 
@@ -251,7 +254,18 @@ export class ScreenshotTools {
             width = size;
         }
 
-        return { height, width };
+        // When creating the image data from the CanvasRenderingContext2D, the width and height is clamped to the size of the _gl context
+        // On certain GPUs, it seems as if the _gl context truncates to an integer automatically. Therefore, if a user tries to pass the width of their canvas element
+        // and it happens to be a float (1000.5 x 600.5 px), the engine.readPixels will return a different size array than context.createImageData
+        // to resolve this, we truncate the floats here to ensure the same size
+        if (width) {
+            width = Math.floor(width);
+        }
+        if (height) {
+            height = Math.floor(height);
+        }
+
+        return { height: height | 0, width: width | 0 };
     }
 }
 

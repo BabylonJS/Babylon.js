@@ -65,6 +65,14 @@ export interface IEffectCreationOptions {
      * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
      */
     transformFeedbackVaryings?: Nullable<string[]>;
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+     */
+    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    /**
+     * Is this effect rendering to several color attachments ?
+     */
+    multiTarget?: boolean;
 }
 
 /**
@@ -75,6 +83,10 @@ export class Effect implements IDisposable {
      * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
      */
     public static ShadersRepository = "src/Shaders/";
+    /**
+     * Enable logging of the shader code when a compilation error occurs
+     */
+    public static LogShaderCodeOnCompilationError = true;
     /**
      * Name of the effect.
      */
@@ -113,6 +125,12 @@ export class Effect implements IDisposable {
     public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
+     * @hidden
+     * Specifies if the effect was previously ready
+     */
+    public _wasPreviouslyReady = false;
+
+    /**
      * Observable that will be called when effect is bound.
      */
     public get onBindObservable(): Observable<Effect> {
@@ -125,10 +143,13 @@ export class Effect implements IDisposable {
 
     /** @hidden */
     public _bonesComputationForcedToCPU = false;
+    /** @hidden */
+    public _multiTarget: boolean = false;
 
     private static _uniqueIdSeed = 0;
     private _engine: Engine;
     private _uniformBuffersNames: { [key: string]: number } = {};
+    private _uniformBuffersNamesList: string[];
     private _uniformsNames: string[];
     private _samplerList: string[];
     private _samplers: { [key: string]: number } = {};
@@ -137,6 +158,7 @@ export class Effect implements IDisposable {
     private _allFallbacksProcessed = false;
     private _attributesNames: string[];
     private _attributes: number[];
+    private _attributeLocationByName: { [name: string] : number };
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
@@ -177,6 +199,8 @@ export class Effect implements IDisposable {
         fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
         this.name = baseName;
 
+        let processFinalCode: Nullable<(shaderType: string, code: string) => string> = null;
+
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <IEffectCreationOptions>attributesNamesOrOptions;
             this._engine = <Engine>uniformsNamesOrEngine;
@@ -190,18 +214,23 @@ export class Effect implements IDisposable {
             this._fallbacks = options.fallbacks;
             this._indexParameters = options.indexParameters;
             this._transformFeedbackVaryings = options.transformFeedbackVaryings || null;
+            this._multiTarget = !!options.multiTarget;
 
             if (options.uniformBuffersNames) {
+                this._uniformBuffersNamesList = options.uniformBuffersNames.slice();
                 for (var i = 0; i < options.uniformBuffersNames.length; i++) {
                     this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
                 }
             }
+
+            processFinalCode = options.processFinalCode ?? null;
         } else {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
             this._samplerList = samplers ? <string[]>samplers.slice() : [];
             this._attributesNames = (<string[]>attributesNamesOrOptions);
+            this._uniformBuffersNamesList = [];
 
             this.onError = onError;
             this.onCompiled = onCompiled;
@@ -209,6 +238,8 @@ export class Effect implements IDisposable {
             this._indexParameters = indexParameters;
             this._fallbacks = fallbacks;
         }
+
+        this._attributeLocationByName = { };
 
         this.uniqueId = Effect._uniqueIdSeed++;
 
@@ -257,8 +288,14 @@ export class Effect implements IDisposable {
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
             this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
                 ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
+                    if (processFinalCode) {
+                        migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
+                    }
                     processorOptions.isFragment = true;
                     ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
+                        if (processFinalCode) {
+                            migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
+                        }
                         this._useFinalCode(migratedVertexCode, migratedFragmentCode, baseName);
                     });
                 });
@@ -349,9 +386,7 @@ export class Effect implements IDisposable {
      * @returns the attribute location.
      */
     public getAttributeLocationByName(name: string): number {
-        var index = this._attributesNames.indexOf(name);
-
-        return this._attributes[index];
+        return this._attributeLocationByName[name];
     }
 
     /**
@@ -382,10 +417,34 @@ export class Effect implements IDisposable {
 
     /**
      * Returns an array of sampler variable names
-     * @returns The array of sampler variable neames.
+     * @returns The array of sampler variable names.
      */
     public getSamplers(): string[] {
         return this._samplerList;
+    }
+
+    /**
+     * Returns an array of uniform variable names
+     * @returns The array of uniform variable names.
+     */
+    public getUniformNames(): string[] {
+        return this._uniformsNames;
+    }
+
+    /**
+     * Returns an array of uniform buffer variable names
+     * @returns The array of uniform buffer variable names.
+     */
+    public getUniformBuffersNames(): string[] {
+        return this._uniformBuffersNamesList;
+    }
+
+    /**
+     * Returns the index parameters used to create the effect
+     * @returns The index parameters object
+     */
+    public getIndexParameters(): any {
+        return this._indexParameters;
     }
 
     /**
@@ -487,6 +546,20 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Gets the vertex shader source code of this effect
+     */
+    public get vertexSourceCode(): string {
+        return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._vertexSourceCodeOverride : this._vertexSourceCode;
+    }
+
+    /**
+     * Gets the fragment shader source code of this effect
+     */
+    public get fragmentSourceCode(): string {
+        return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._fragmentSourceCodeOverride : this._fragmentSourceCode;
+    }
+
+    /**
      * Recompiles the webGL program
      * @param vertexSourceCode The source code for the vertex shader.
      * @param fragmentSourceCode The source code for the fragment shader.
@@ -555,6 +628,12 @@ export class Effect implements IDisposable {
                 });
 
                 this._attributes = engine.getAttributes(this._pipelineContext!, attributesNames);
+                if (attributesNames) {
+                    for (let i = 0; i < attributesNames.length; i++) {
+                        const name = attributesNames[i];
+                        this._attributeLocationByName[name] = this._attributes[i];
+                    }
+                }
 
                 var index: number;
                 for (index = 0; index < this._samplerList.length; index++) {
@@ -599,6 +678,25 @@ export class Effect implements IDisposable {
         }
     }
 
+    private _getShaderCodeAndErrorLine(code: Nullable<string>, error: Nullable<string>, isFragment: boolean): [Nullable<string>, Nullable<string>] {
+        const regexp = isFragment ? /FRAGMENT SHADER ERROR: 0:(\d+?):/ : /VERTEX SHADER ERROR: 0:(\d+?):/;
+
+        let errorLine = null;
+
+        if (error && code) {
+            const res = error.match(regexp);
+            if (res && res.length === 2) {
+                const lineNumber = parseInt(res[1]);
+                const lines = code.split("\n", -1);
+                if (lines.length >= lineNumber) {
+                    errorLine = `Offending line [${lineNumber}] in ${isFragment ? "fragment" : "vertex"} code: ${lines[lineNumber - 1]}`;
+                }
+            }
+        }
+
+        return [code, errorLine];
+    }
+
     private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IPipelineContext> = null) {
         this._compilationError = e.message;
         let attributesNames = this._attributesNames;
@@ -613,6 +711,29 @@ export class Effect implements IDisposable {
             return " " + attribute;
         }));
         Logger.Error("Defines:\r\n" + this.defines);
+        if (Effect.LogShaderCodeOnCompilationError) {
+            let lineErrorVertex = null, lineErrorFragment = null, code = null;
+            if (this._pipelineContext?._getVertexShaderCode()) {
+                [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(this._pipelineContext._getVertexShaderCode(), this._compilationError, false);
+                if (code) {
+                    Logger.Error("Vertex code:");
+                    Logger.Error(code);
+                }
+            }
+            if (this._pipelineContext?._getFragmentShaderCode()) {
+                [code, lineErrorFragment] = this._getShaderCodeAndErrorLine(this._pipelineContext?._getFragmentShaderCode(), this._compilationError, true);
+                if (code) {
+                    Logger.Error("Fragment code:");
+                    Logger.Error(code);
+                }
+            }
+            if (lineErrorVertex) {
+                Logger.Error(lineErrorVertex);
+            }
+            if (lineErrorFragment) {
+                Logger.Error(lineErrorFragment);
+            }
+        }
         Logger.Error("Error: " + this._compilationError);
         if (previousPipelineContext) {
             this._pipelineContext = previousPipelineContext;
@@ -661,7 +782,7 @@ export class Effect implements IDisposable {
      * @param texture Texture to bind.
      * @hidden
      */
-    public _bindTexture(channel: string, texture: InternalTexture): void {
+    public _bindTexture(channel: string, texture: Nullable<InternalTexture>): void {
         this._engine._bindTexture(this._samplers[channel], texture);
     }
 
@@ -743,7 +864,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 2) {
             cache = [x, y];
             this._valueCache[uniformName] = cache;
             return true;
@@ -765,7 +886,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 3) {
             cache = [x, y, z];
             this._valueCache[uniformName] = cache;
             return true;
@@ -791,7 +912,7 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
         var cache = this._valueCache[uniformName];
-        if (!cache) {
+        if (!cache || cache.length !== 4) {
             cache = [x, y, z, w];
             this._valueCache[uniformName] = cache;
             return true;
@@ -1022,13 +1143,13 @@ export class Effect implements IDisposable {
      * @param matrices matrices to be set.
      * @returns this effect.
      */
-    public setMatrices(uniformName: string, matrices: Float32Array): Effect {
+    public setMatrices(uniformName: string, matrices: Float32Array | Array<number>): Effect {
         if (!matrices) {
             return this;
         }
 
         this._valueCache[uniformName] = null;
-        this._engine.setMatrices(this._uniforms[uniformName], matrices);
+        this._engine.setMatrices(this._uniforms[uniformName], matrices as Float32Array); // the cast is ok because it is gl.uniformMatrix4fv() which is called at the end, and this function accepts Float32Array and Array<number>
 
         return this;
     }
@@ -1052,9 +1173,9 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
+    public setMatrix3x3(uniformName: string, matrix: Float32Array | Array<number>): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix3x3(this._uniforms[uniformName], matrix);
+        this._engine.setMatrix3x3(this._uniforms[uniformName], matrix as Float32Array); // the cast is ok because it is gl.uniformMatrix3fv() which is called at the end, and this function accepts Float32Array and Array<number>
 
         return this;
     }
@@ -1065,9 +1186,9 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
+    public setMatrix2x2(uniformName: string, matrix: Float32Array | Array<number>): Effect {
         this._valueCache[uniformName] = null;
-        this._engine.setMatrix2x2(this._uniforms[uniformName], matrix);
+        this._engine.setMatrix2x2(this._uniforms[uniformName], matrix as Float32Array); // the cast is ok because it is gl.uniformMatrix2fv() which is called at the end, and this function accepts Float32Array and Array<number>
 
         return this;
     }
@@ -1201,7 +1322,6 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setColor3(uniformName: string, color3: IColor3Like): Effect {
-
         if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
             this._engine.setFloat3(this._uniforms[uniformName], color3.r, color3.g, color3.b);
         }

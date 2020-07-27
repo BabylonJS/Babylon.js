@@ -3,10 +3,10 @@ import { GlobalState } from '../globalState';
 import { Nullable } from 'babylonjs/types';
 import { Observer } from 'babylonjs/Misc/observable';
 import { NodeMaterialConnectionPoint } from 'babylonjs/Materials/Node/nodeMaterialBlockConnectionPoint';
-import { GraphCanvasComponent } from './graphCanvas';
+import { GraphCanvasComponent, FramePortData } from './graphCanvas';
 import { PropertyLedger } from './propertyLedger';
 import * as React from 'react';
-import { GenericPropertyTabComponent } from './properties/genericNodePropertyComponent';
+import { GenericPropertyComponent } from './properties/genericNodePropertyComponent';
 import { DisplayLedger } from './displayLedger';
 import { IDisplayManager } from './display/displayManager';
 import { NodeLink } from './nodeLink';
@@ -31,13 +31,52 @@ export class GraphNode {
     private _mouseStartPointX: Nullable<number> = null;
     private _mouseStartPointY: Nullable<number> = null    
     private _globalState: GlobalState;
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphNode | NodeLink | GraphFrame>>>;   
+    private _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;  
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;  
-    private _onGroupAboutToMoveObserver: Nullable<Observer<GraphFrame>>;  
+    private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>; 
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;  
     private _ownerCanvas: GraphCanvasComponent; 
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
+    private _isVisible = true;
+    private _enclosingFrameId: number;
+
+    public get isVisible() {
+        return this._isVisible;
+    }
+
+    public set isVisible(value: boolean) {
+        this._isVisible = value;
+
+        if (!value) {
+            this._visual.classList.add("hidden");
+        } else {
+            this._visual.classList.remove("hidden");
+            this._upateNodePortNames();
+        }
+
+        for (var link of this._links) {
+            link.isVisible = value;
+        }
+
+        this._refreshLinks();
+    }
+
+    private _upateNodePortNames(){
+        for (var port of this._inputPorts.concat(this._outputPorts)) {
+            if(port.hasLabel()){
+                port.portName = port.connectionPoint.displayName || port.connectionPoint.name;
+            }
+        }
+    }
+
+    public get outputPorts() {
+        return this._outputPorts;
+    }
+
+    public get inputPorts() {
+        return this._inputPorts;
+    }
 
     public get links() {
         return this._links;
@@ -65,6 +104,7 @@ export class GraphNode {
         this._visual.style.left = `${this._gridAlignedX}px`;
 
         this._refreshLinks();
+        this._refreshFrames();
     }
 
     public get y() {
@@ -82,6 +122,7 @@ export class GraphNode {
         this._visual.style.top = `${this._gridAlignedY}px`;
 
         this._refreshLinks();
+        this._refreshFrames();
     }
 
     public get width() {
@@ -102,6 +143,14 @@ export class GraphNode {
 
     public get isSelected() {
         return this._isSelected;
+    }
+
+    public get enclosingFrameId() {
+        return this._enclosingFrameId;
+    }
+
+    public set enclosingFrameId(value: number) {
+        this._enclosingFrameId = value;
     }
 
     public set isSelected(value: boolean) {
@@ -152,18 +201,34 @@ export class GraphNode {
             this.isSelected = overlap;
         });
 
-        this._onGroupAboutToMoveObserver = this._globalState.onGroupAboutToMove.add(group => {
-            const rect2 = this._visual.getBoundingClientRect();
-            const rect1 = group.element.getBoundingClientRect();
-            var overlap = !(rect1.right < rect2.left || 
-                rect1.left > rect2.right || 
-                rect1.bottom < rect2.top || 
-                rect1.top > rect2.bottom);
+        this._onFrameCreatedObserver = this._globalState.onFrameCreatedObservable.add(frame => {      
+            if (this._ownerCanvas.frames.some(f => f.nodes.indexOf(this) !== -1)) {
+                return;
+            }
             
-            if (overlap) {
-                group.nodes.push(this);
+            if (this.isOverlappingFrame(frame)) {
+                frame.nodes.push(this);
             }
         });
+    }
+
+    public isOverlappingFrame(frame: GraphFrame) {
+        const rect2 = this._visual.getBoundingClientRect();
+        const rect1 = frame.element.getBoundingClientRect();
+
+        // Add a tiny margin
+        rect1.width -= 5;
+        rect1.height -= 5;
+
+        const isOverlappingFrame = !(rect1.right < rect2.left || 
+            rect1.left > rect2.right || 
+            rect1.bottom < rect2.top || 
+            rect1.top > rect2.bottom);
+
+        if (isOverlappingFrame) {
+            this.enclosingFrameId = frame.id;
+        }
+        return isOverlappingFrame;
     }
 
     public getPortForConnectionPoint(point: NodeMaterialConnectionPoint) {
@@ -189,8 +254,22 @@ export class GraphNode {
     public getLinksForConnectionPoint(point: NodeMaterialConnectionPoint) {
         return this._links.filter(link => link.portA.connectionPoint === point || link.portB!.connectionPoint === point);
     }
+    
+    private _refreshFrames() {       
+        if (this._ownerCanvas._frameIsMoving || this._ownerCanvas._isLoading) {
+            return;
+        }
+        
+        // Frames
+        for (var frame of this._ownerCanvas.frames) {
+            frame.syncNode(this);
+        }
+    }
 
-    private _refreshLinks() {
+    public _refreshLinks() {
+        if (this._ownerCanvas._isLoading) {
+            return;
+        }
         for (var link of this._links) {
             link.update();
         }
@@ -201,6 +280,11 @@ export class GraphNode {
             this._header.innerHTML = this._displayManager.getHeaderText(this.block);
             this._displayManager.updatePreviewContent(this.block, this._content);
             this._visual.style.background = this._displayManager.getBackgroundColor(this.block);
+            let additionalClass = this._displayManager.getHeaderClass(this.block);
+            this._header.classList.value = "header";
+            if (additionalClass) {
+                this._header.classList.add(additionalClass);
+            }
         } else {
             this._header.innerHTML = this.block.name;
         }
@@ -215,21 +299,7 @@ export class GraphNode {
 
         this._comments.innerHTML = this.block.comments || "";
         this._comments.title = this.block.comments || "";
-    }
 
-    private _appendConnection(connectionPoint: NodeMaterialConnectionPoint, root: HTMLDivElement, displayManager: Nullable<IDisplayManager>) {
-        let portContainer = root.ownerDocument!.createElement("div");
-        portContainer.classList.add("portLine");
-        root.appendChild(portContainer);
-
-        if (!displayManager || displayManager.shouldDisplayPortLabels(this.block)) {
-            let portLabel = root.ownerDocument!.createElement("div");
-            portLabel.classList.add("label");
-            portLabel.innerHTML = connectionPoint.name;        
-            portContainer.appendChild(portLabel);
-        }
-    
-        return new NodePort(portContainer, connectionPoint, this, this._globalState);
     }
 
     private _onDown(evt: PointerEvent) {
@@ -239,7 +309,7 @@ export class GraphNode {
         }
 
         const indexInSelection = this._ownerCanvas.selectedNodes.indexOf(this) ;
-        if (indexInSelection=== -1) {
+        if (indexInSelection === -1) {
             this._globalState.onSelectionChangedObservable.notifyObservers(this);
         } else if (evt.ctrlKey) {
             this.isSelected = false;
@@ -247,15 +317,19 @@ export class GraphNode {
 
         evt.stopPropagation();
 
+        for (var selectedNode of this._ownerCanvas.selectedNodes) {
+            selectedNode.cleanAccumulation();
+        }
+
         this._mouseStartPointX = evt.clientX;
         this._mouseStartPointY = evt.clientY;        
         
         this._visual.setPointerCapture(evt.pointerId);
     }
 
-    public cleanAccumulation() {
-        this.x = this.gridAlignedX;
-        this.y = this.gridAlignedY;
+    public cleanAccumulation(useCeil = false) {
+        this.x = this._ownerCanvas.getGridPosition(this.x, useCeil);
+        this.y = this._ownerCanvas.getGridPosition(this.y, useCeil);
     }
 
     private _onUp(evt: PointerEvent) {
@@ -293,7 +367,7 @@ export class GraphNode {
         let control = PropertyLedger.RegisteredControls[this.block.getClassName()];
 
         if (!control) {
-            control = GenericPropertyTabComponent;
+            control = GenericPropertyComponent;
         }
 
         return React.createElement(control, {
@@ -326,13 +400,6 @@ export class GraphNode {
 
         this._visual.appendChild(this._header);      
 
-        if (this._displayManager) {
-            let additionalClass = this._displayManager.getHeaderClass(this.block);
-            if (additionalClass) {
-                this._header.classList.add(additionalClass);
-            }
-        }
-
         this._connections = root.ownerDocument!.createElement("div");
         this._connections.classList.add("connections");
         this._visual.appendChild(this._connections);        
@@ -363,17 +430,20 @@ export class GraphNode {
 
         // Connections
         for (var input of this.block.inputs) {
-            this._inputPorts.push(this._appendConnection(input, this._inputsContainer, this._displayManager));
+            this._inputPorts.push(NodePort.CreatePortElement(input,  this, this._inputsContainer, this._displayManager, this._globalState));
         }
 
         for (var output of this.block.outputs) {
-            this._outputPorts.push(this._appendConnection(output, this._outputsContainer, this._displayManager));
+            this._outputPorts.push(NodePort.CreatePortElement(output,  this, this._outputsContainer, this._displayManager, this._globalState));
         }
 
         this.refresh();
     }
 
     public dispose() {
+        // notify frame observers that this node is being deleted
+        this._globalState.onGraphNodeRemovalObservable.notifyObservers(this);
+
         if (this._onSelectionChangedObserver) {
             this._globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -390,8 +460,8 @@ export class GraphNode {
             this._visual.parentElement.removeChild(this._visual);
         }
 
-        if (this._onGroupAboutToMoveObserver) {
-            this._globalState.onGroupAboutToMove.remove(this._onGroupAboutToMoveObserver);
+        if (this._onFrameCreatedObserver) {
+            this._globalState.onFrameCreatedObservable.remove(this._onFrameCreatedObserver);
         }
 
         for (var port of this._inputPorts) {

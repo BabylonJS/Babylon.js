@@ -18,6 +18,8 @@ import { Vector2LineComponent } from '../../../lines/vector2LineComponent';
 import { TextureLinkLineComponent } from '../../../lines/textureLinkLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
+import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
+import { Color4LineComponent } from '../../../lines/color4LineComponent';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -55,7 +57,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                     textureBlocks.map((textureBlock, i) => {
                         return (
                             <TextureLinkLineComponent label={textureBlock.name} 
-                                key={i} 
+                                key={"nodematText" + i} 
                                 texture={textureBlock.texture} 
                                 material={material} 
                                 onTextureCreated={texture => textureBlock.texture = texture}
@@ -66,6 +68,57 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 }
                </LineContainerComponent>
         );
+    }
+
+    renderInputBlock(block: InputBlock) {
+        switch (block.type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                    let cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
+                    return (
+                        <div key={block.name}>                            
+                            {
+                                block.isBoolean &&
+                                <CheckBoxLineComponent key={block.name} label={block.name} target={block} propertyName="value" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                            }
+                            {
+                                !block.isBoolean && cantDisplaySlider &&
+                                <FloatLineComponent key={block.name} lockObject={this.props.lockObject} label={block.name} target={block} propertyName="value" 
+                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                />
+                            }        
+                            {
+                                !block.isBoolean && !cantDisplaySlider &&
+                                <SliderLineComponent key={block.name} label={block.name} target={block} propertyName="value" step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                            }
+                        </div>
+                    );  
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                return (
+                    <Color3LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                )     
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return (
+                    <Color4LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                )                         
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return (
+                        <Vector2LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    )                                
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                return (
+                    <Vector3LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                )
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                return (
+                    <Vector4LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                )
+            }
+        return null;
     }
 
     renderInputValues() {
@@ -79,53 +132,43 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             return null;
         }
 
-        return (
-            <LineContainerComponent globalState={this.props.globalState} title="INPUTS">
+        let namedGroups: string[] = [];
+
+        configurableInputBlocks.forEach(block => {
+            if (!block.groupInInspector) {
+                return;
+            }
+
+            if (namedGroups.indexOf(block.groupInInspector) === -1) {
+                namedGroups.push(block.groupInInspector);
+            }
+        });
+
+        namedGroups.sort();
+
+        return (           
+            <>
+                <LineContainerComponent globalState={this.props.globalState} title="INPUTS">
+                    {
+                        configurableInputBlocks.filter(block => !block.groupInInspector).map(block => {
+                            return this.renderInputBlock(block);
+                        })
+                    }           
+                </LineContainerComponent>
                 {
-                    configurableInputBlocks.map(block => {
-                        switch (block.type) {
-                            case NodeMaterialBlockConnectionPointTypes.Float:
-                                    let cantDisplaySlider = (isNaN(block.min) || isNaN(block.max) || block.min === block.max);
-                                    return (
-                                        <>
-                                            {
-                                                cantDisplaySlider &&
-                                                <FloatLineComponent key={block.name} lockObject={this.props.lockObject} label={block.name} target={block} propertyName="value" 
-                                                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                                                />
-                                            }        
-                                            {
-                                                !cantDisplaySlider &&
-                                                <SliderLineComponent key={block.name} label={block.name} target={block} propertyName="value" step={(block.max - block.min) / 100.0} minimum={block.min} maximum={block.max} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
-                                            }
-                                        </>
-                                    );  
-                            case NodeMaterialBlockConnectionPointTypes.Color3:
-                            case NodeMaterialBlockConnectionPointTypes.Color4:
-                                return (
-                                    <Color3LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
-                                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                                )     
-                            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                                    return (
-                                        <Vector2LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
-                                            onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                                    )                                
-                            case NodeMaterialBlockConnectionPointTypes.Vector3:
-                                return (
-                                    <Vector3LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
-                                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                                )
-                            case NodeMaterialBlockConnectionPointTypes.Vector4:
-                                return (
-                                    <Vector4LineComponent key={block.name} label={block.name} target={block} propertyName="value" 
-                                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                                )
+                    namedGroups.map((name, i) => {
+                        return (
+                            <LineContainerComponent key={"inputValue" + i} globalState={this.props.globalState} title={name.toUpperCase()}>
+                            {
+                                configurableInputBlocks.filter(block => block.groupInInspector === name).map(block => {
+                                    return this.renderInputBlock(block);
+                                })
                             }
-                        return null;
+                            </LineContainerComponent>
+                        )
                     })
-                }           
-           </LineContainerComponent>
+                }
+          </>
         );
     }
 
@@ -137,7 +180,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 <CommonMaterialPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} material={material} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="CONFIGURATION">
                 <CheckBoxLineComponent label="Ignore alpha" target={material} propertyName="ignoreAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <ButtonLineComponent label="Edit" onClick={() => this.edit()} />
+                <ButtonLineComponent label="Node Material Editor" onClick={() => this.edit()} />
                 </LineContainerComponent>
                 {
                     this.renderInputValues()

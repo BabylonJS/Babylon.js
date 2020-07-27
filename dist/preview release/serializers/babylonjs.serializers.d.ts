@@ -57,7 +57,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param mimeType The mime-type of the generated image
          * @returns A promise that resolves with the exported texture
          */
-        preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
+        preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Texture>;
         /**
          * Define this method to get notified when a texture info is created
          * @param context The context when loading the asset
@@ -73,7 +73,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param binaryWriter glTF serializer binary writer instance
          * @returns nullable IMeshPrimitive promise
          */
-        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
+        postExportMeshPrimitiveAsync?(context: string, meshPrimitive: Nullable<IMeshPrimitive>, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<IMeshPrimitive>;
         /**
          * Define this method to modify the default behavior when exporting a node
          * @param context The context when exporting the node
@@ -81,21 +81,27 @@ declare module BABYLON.GLTF2.Exporter {
          * @param babylonNode BabylonJS node
          * @returns nullable INode promise
          */
-        postExportNodeAsync?(context: string, node: INode, babylonNode: Node): Promise<INode>;
+        postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
         /**
          * Define this method to modify the default behavior when exporting a material
          * @param material glTF material
          * @param babylonMaterial BabylonJS material
          * @returns nullable IMaterial promise
          */
-        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+        postExportMaterialAsync?(context: string, node: Nullable<IMaterial>, babylonMaterial: Material): Promise<IMaterial>;
         /**
-         * Defint this method to return additional textures to export from a material
+         * Define this method to return additional textures to export from a material
          * @param material glTF material
          * @param babylonMaterial BabylonJS material
          * @returns List of textures
          */
         postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+        /** Gets a boolean indicating that this extension was used */
+        wasUsed: boolean;
+        /** Gets a boolean indicating that this extension is required for the file to work */
+        required: boolean;
         /**
          * Called after the exporter state changes to EXPORTING
          */
@@ -370,6 +376,10 @@ declare module BABYLON {
          * Begin serialization without waiting for the scene to be ready
          */
         exportWithoutWaitingForScene?: boolean;
+        /**
+         * Indicates if coordinate system swapping root nodes should be included in export
+         */
+        includeCoordinateSystemConversionNodes?: boolean;
     }
     /**
      * Class for generating glTF data from a Babylon scene.
@@ -488,6 +498,7 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
         static _NormalizeTangentFromRef(tangent: Vector4): void;
+        static _GetRightHandedMatrixFromRef(matrix: Matrix): void;
     }
 }
 declare module BABYLON.GLTF2.Exporter {
@@ -511,7 +522,7 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Stores all the generated nodes, which contains transform and/or mesh information per node
          */
-        private _nodes;
+        _nodes: INode[];
         /**
          * Stores all the generated glTF scenes, which stores multiple node hierarchies
          */
@@ -540,6 +551,10 @@ declare module BABYLON.GLTF2.Exporter {
          */
         _samplers: ISampler[];
         /**
+         * Stores all the generated glTF skins
+         */
+        _skins: ISkin[];
+        /**
          * Stores all the generated animation samplers, which is referenced by glTF animations
          */
         /**
@@ -567,11 +582,20 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * Stores a map of the unique id of a node to its index in the node array
          */
-        private _nodeMap;
+        _nodeMap: {
+            [key: number]: number;
+        };
         /**
-         * Specifies if the Babylon scene should be converted to right-handed on export
+         * Specifies if the source Babylon scene was left handed, and needed conversion.
          */
         _convertToRightHandedSystem: boolean;
+        /**
+         * Specifies if a Babylon node should be converted to right-handed on export
+         */
+        _convertToRightHandedSystemMap: {
+            [nodeId: number]: boolean;
+        };
+        _includeCoordinateSystemConversionNodes: boolean;
         /**
          * Baked animation sample rate
          */
@@ -584,10 +608,12 @@ declare module BABYLON.GLTF2.Exporter {
         private static _ExtensionFactories;
         private _applyExtension;
         private _applyExtensions;
-        _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>>;
+        _extensionsPreExportTextureAsync(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>>;
         _extensionsPostExportMeshPrimitiveAsync(context: string, meshPrimitive: IMeshPrimitive, babylonSubMesh: SubMesh, binaryWriter: _BinaryWriter): Promise<Nullable<IMeshPrimitive>>;
-        _extensionsPostExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<Nullable<INode>>;
-        _extensionsPostExportMaterialAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<Nullable<IMaterial>>;
+        _extensionsPostExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
+        _extensionsPostExportMaterialAsync(context: string, material: Nullable<IMaterial>, babylonMaterial: Material): Promise<Nullable<IMaterial>>;
         _extensionsPostExportMaterialAdditionalTextures(context: string, material: IMaterial, babylonMaterial: Material): BaseTexture[];
         _extensionsPostExportTextures(context: string, textureInfo: ITextureInfo, babylonTexture: BaseTexture): void;
         private _forEachExtensions;
@@ -616,7 +642,7 @@ declare module BABYLON.GLTF2.Exporter {
          */
         static UnregisterExtension(name: string): boolean;
         /**
-         * Lazy load a local engine with premultiplied alpha set to false
+         * Lazy load a local engine
          */
         _getLocalEngine(): Engine;
         private reorderIndicesBasedOnPrimitiveMode;
@@ -630,6 +656,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray The vertex attribute data
          * @param byteOffset The offset to the binary data
          * @param binaryWriter The binary data for the glTF file
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private reorderVertexAttributeDataBasedOnPrimitiveMode;
         /**
@@ -642,6 +669,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray The vertex attribute data
          * @param byteOffset The offset to the binary data
          * @param binaryWriter The binary data for the glTF file
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private reorderTriangleFillMode;
         /**
@@ -654,6 +682,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray The vertex attribute data
          * @param byteOffset The offset to the binary data
          * @param binaryWriter The binary data for the glTF file
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private reorderTriangleStripDrawMode;
         /**
@@ -666,6 +695,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param meshAttributeArray The vertex attribute data
          * @param byteOffset The offset to the binary data
          * @param binaryWriter The binary data for the glTF file
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private reorderTriangleFanMode;
         /**
@@ -675,6 +705,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param vertexAttributeKind The vertex attribute type
          * @param meshAttributeArray The vertex attribute data
          * @param binaryWriter The writer containing the binary data
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private writeVertexAttributeData;
         /**
@@ -682,10 +713,11 @@ declare module BABYLON.GLTF2.Exporter {
          * Returns the bytelength of the data
          * @param vertexBufferKind Indicates what kind of vertex data is being passed in
          * @param meshAttributeArray Array containing the attribute data
+         * @param byteStride Specifies the space between data
          * @param binaryWriter The buffer to write the binary data to
-         * @param indices Used to specify the order of the vertex data
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
-        writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, byteStride: number, binaryWriter: _BinaryWriter): void;
+        writeAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, babylonTransformNode: TransformNode): void;
         /**
          * Generates glTF json data
          * @param shouldUseGlb Indicates whether the json should be written for a glb file
@@ -720,14 +752,17 @@ declare module BABYLON.GLTF2.Exporter {
          * Sets the TRS for each node
          * @param node glTF Node for storing the transformation data
          * @param babylonTransformNode Babylon mesh used as the source for the transformation data
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private setNodeTransformation;
         private getVertexBufferFromMesh;
         /**
          * Creates a bufferview based on the vertices type for the Babylon mesh
          * @param kind Indicates the type of vertices data
+         * @param componentType Indicates the numerical type used to store the data
          * @param babylonTransformNode The Babylon mesh to get the vertices data from
          * @param binaryWriter The buffer to write the bufferview data to
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private createBufferViewKind;
         /**
@@ -753,8 +788,15 @@ declare module BABYLON.GLTF2.Exporter {
          * @param mesh glTF Mesh object to store the primitive attribute information
          * @param babylonTransformNode Babylon mesh to get the primitive attribute data from
          * @param binaryWriter Buffer to write the attribute data to
+         * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private setPrimitiveAttributesAsync;
+        /**
+         * Check if the node is used to convert its descendants from a right handed coordinate system to the Babylon scene's coordinate system.
+         * @param node The node to check
+         * @returns True if the node is used to convert its descendants from right-handed to left-handed. False otherwise
+         */
+        private isBabylonCoordinateSystemConvertingNode;
         /**
          * Creates a glTF scene based on the array of meshes
          * Returns the the total byte offset
@@ -774,9 +816,19 @@ declare module BABYLON.GLTF2.Exporter {
          * Creates a glTF node from a Babylon mesh
          * @param babylonMesh Source Babylon mesh
          * @param binaryWriter Buffer for storing geometry data
+         * @param convertToRightHandedSystem Converts the values to right-handed
+         * @param nodeMap Node mapping of unique id to glTF node index
          * @returns glTF node
          */
         private createNodeAsync;
+        /**
+         * Creates a glTF skin from a Babylon skeleton
+         * @param babylonScene Babylon Scene
+         * @param nodes Babylon transform nodes
+         * @param binaryWriter Buffer to write binary data to
+         * @returns Node mapping of unique id to index
+         */
+        private createSkinsAsync;
     }
     /**
      * @hidden
@@ -822,6 +874,12 @@ declare module BABYLON.GLTF2.Exporter {
          * @param byteOffset If defined, specifies where to set the value as an offset.
          */
         setUInt8(entry: number, byteOffset?: number): void;
+        /**
+         * Stores an UInt16 in the array buffer
+         * @param entry
+         * @param byteOffset If defined, specifies where to set the value as an offset.
+         */
+        setUInt16(entry: number, byteOffset?: number): void;
         /**
          * Gets an UInt32 in the array buffer
          * @param entry
@@ -919,6 +977,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param bufferViews
          * @param accessors
          * @param convertToRightHandedSystem
+         * @param animationSampleRate
          */
         static _CreateNodeAnimationFromNodeAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
@@ -933,11 +992,14 @@ declare module BABYLON.GLTF2.Exporter {
          * @param binaryWriter
          * @param bufferViews
          * @param accessors
-         * @param convertToRightHandedSystem
+         * @param convertToRightHandedSystemMap
+         * @param animationSampleRate
          */
         static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
-        }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
+        }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystemMap: {
+            [nodeId: number]: boolean;
+        }, animationSampleRate: number): void;
         private static AddAnimation;
         /**
          * Create a baked animation
@@ -1039,9 +1101,12 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _exporter;
+        private _wasUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
+        /** @hidden */
+        get wasUsed(): boolean;
+        postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         preExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Texture>;
         /**
          * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
@@ -1073,15 +1138,20 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
+        get wasUsed(): boolean;
+        /** @hidden */
         onExporting(): void;
         /**
          * Define this method to modify the default behavior when exporting a node
          * @param context The context when exporting the node
          * @param node glTF node
          * @param babylonNode BabylonJS node
+         * @param nodeMap Node mapping of unique id to glTF node index
          * @returns nullable INode promise
          */
-        postExportNodeAsync(context: string, node: INode, babylonNode: Node): Promise<INode>;
+        postExportNodeAsync(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: {
+            [key: number]: number;
+        }): Promise<Nullable<INode>>;
     }
 }
 declare module BABYLON.GLTF2.Exporter.Extensions {
@@ -1096,16 +1166,35 @@ declare module BABYLON.GLTF2.Exporter.Extensions {
         /** Defines whether this extension is required */
         required: boolean;
         /** Reference to the glTF exporter */
-        private _exporter;
-        private _textureInfo;
-        private _exportedTexture;
+        private _textureInfos;
+        private _exportedTextures;
         private _wasUsed;
         constructor(exporter: _Exporter);
         dispose(): void;
         /** @hidden */
-        onExporting(): void;
+        get wasUsed(): boolean;
+        private _getTextureIndex;
         postExportTexture?(context: string, textureInfo: ITextureInfo, babylonTexture: Texture): void;
         postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+        postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
+    }
+}
+declare module BABYLON.GLTF2.Exporter.Extensions {
+    /**
+     * @hidden
+     */
+    export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
+        /** Name of this extension */
+        readonly name: string;
+        /** Defines whether this extension is enabled */
+        enabled: boolean;
+        /** Defines whether this extension is required */
+        required: boolean;
+        private _wasUsed;
+        constructor(exporter: _Exporter);
+        /** @hidden */
+        get wasUsed(): boolean;
+        dispose(): void;
         postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial>;
     }
 }

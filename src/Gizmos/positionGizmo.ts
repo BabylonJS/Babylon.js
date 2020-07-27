@@ -4,8 +4,8 @@ import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Gizmo } from "./gizmo";
 import { AxisDragGizmo } from "./axisDragGizmo";
 import { PlaneDragGizmo } from "./planeDragGizmo";
@@ -43,6 +43,7 @@ export class PositionGizmo extends Gizmo {
      * private variables
      */
     private _meshAttached: Nullable<AbstractMesh> = null;
+    private _nodeAttached: Nullable<Node> = null;
     private _updateGizmoRotationToMatchAttachedMesh: boolean;
     private _snapDistance: number;
     private _scaleRatio: number;
@@ -62,6 +63,7 @@ export class PositionGizmo extends Gizmo {
     }
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
+        this._nodeAttached = mesh;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
@@ -70,17 +72,33 @@ export class PositionGizmo extends Gizmo {
                 gizmo.attachedMesh = null;
             }
         });
+    }
 
+    public get attachedNode() {
+        return this._nodeAttached;
+    }
+    public set attachedNode(node: Nullable<Node>) {
+        this._meshAttached = null;
+        this._nodeAttached = null;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo.isEnabled) {
+                gizmo.attachedNode = node;
+            }
+            else {
+                gizmo.attachedNode = null;
+            }
+        });
     }
     /**
      * Creates a PositionGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
+      @param thickness display gizmo axis thickness
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1) {
         super(gizmoLayer);
-        this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this);
-        this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this);
-        this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this);
+        this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
+        this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
+        this.zGizmo = new AxisDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this, thickness);
 
         this.xPlaneGizmo = new PlaneDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), this.gizmoLayer, this);
         this.yPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), this.gizmoLayer, this);
@@ -108,7 +126,12 @@ export class PositionGizmo extends Gizmo {
             if (gizmo) {
                 gizmo.isEnabled = value;
                 if (value) {
-                    gizmo.attachedMesh = this.attachedMesh;
+                    if (gizmo.attachedMesh) {
+                        gizmo.attachedMesh = this.attachedMesh;
+                    } else {
+                        gizmo.attachedNode = this.attachedNode;
+                    }
+
                 }
             }
         }, this);

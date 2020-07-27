@@ -1,4 +1,5 @@
 import * as FileLoader from "../glTF/glTFFileLoader";
+import * as Validation from "../glTF/glTFValidation";
 
 /**
  * This is the entry point for the UMD module.
@@ -10,6 +11,10 @@ if (typeof globalObject !== "undefined") {
     for (var key in FileLoader) {
         (<any>globalObject).BABYLON[key] = (<any>FileLoader)[key];
     }
+    for (var key in Validation) {
+        (<any>globalObject).BABYLON[key] = (<any>Validation)[key];
+    }
 }
 
 export * from "../glTF/glTFFileLoader";
+export * from "../glTF/glTFValidation";

@@ -404,13 +404,45 @@ describe('Babylon Scene Loader', function() {
             const scene = new BABYLON.Scene(subject);
             const promises = new Array<Promise<void>>();
 
+            const expectedSetRequestHeaderCalls = [
+                "Range: bytes=0-19",
+                "Range: bytes=20-1399",
+                "Range: bytes=1400-1817",
+                "Range: bytes=1820-3149",
+                "Range: bytes=3152-8841",
+            ];
+
+            const setRequestHeaderCalls = new Array<string>();
+            const origSetRequestHeader = BABYLON.WebRequest.prototype.setRequestHeader;
+            const setRequestHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "setRequestHeader").callsFake(function(...args) {
+                setRequestHeaderCalls.push(args.join(": "));
+                origSetRequestHeader.apply(this, args);
+            });
+
+            // Simulate default CORS policy on some web servers that reject getResponseHeader calls with `Content-Range`.
+            const origGetResponseHeader = BABYLON.WebRequest.prototype.getResponseHeader;
+            const getResponseHeaderStub = sinon.stub(BABYLON.WebRequest.prototype, "getResponseHeader").callsFake(function(...args) {
+                return (args[0] === "Content-Range") ? null : origGetResponseHeader.apply(this, args);
+            });
+
             BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce((loader: BABYLON.GLTFFileLoader) => {
                 loader.useRangeRequests = true;
-                promises.push(loader.whenCompleteAsync());
+                loader.onExtensionLoadedObservable.add((extension) => {
+                    if (extension instanceof BABYLON.GLTF2.Loader.Extensions.MSFT_lod) {
+                        extension.onMaterialLODsLoadedObservable.add((indexLOD) => {
+                            expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls.slice(0, 3 + indexLOD));
+                        });
+                    }
+                });
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls);
+                    setRequestHeaderStub.restore();
+                    getResponseHeaderStub.restore();
+                }));
             });
 
             promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "LevelOfDetail.glb", scene).then(() => {
-                // do nothing
+                expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls.slice(0, 3));
             }));
 
             return Promise.all(promises);

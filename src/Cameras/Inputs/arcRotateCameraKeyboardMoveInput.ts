@@ -9,7 +9,7 @@ import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
     /**
@@ -50,7 +50,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
     /**
      * Defines the panning sensibility of the inputs.
-     * (How fast is the camera paning)
+     * (How fast is the camera panning)
      */
     @serialize()
     public panningSensibility: number = 50.0;
@@ -63,7 +63,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     public zoomingSensibility: number = 25.0;
 
     /**
-     * Defines wether maintaining the alt key down switch the movement mode from
+     * Defines whether maintaining the alt key down switch the movement mode from
      * orientation to zoom.
      */
     @serialize()

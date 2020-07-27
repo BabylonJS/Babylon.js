@@ -4,7 +4,6 @@ import { Engine } from "../Engines/engine";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { SceneComponentConstants, ISceneSerializableComponent } from "../sceneComponent";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { AssetContainer } from "../assetContainer";
@@ -26,8 +25,8 @@ declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of effect layers (highlights/glow) added to the scene
-         * @see http://doc.babylonjs.com/how_to/highlight_layer
-         * @see http://doc.babylonjs.com/how_to/glow_layer
+         * @see https://doc.babylonjs.com/how_to/highlight_layer
+         * @see https://doc.babylonjs.com/how_to/glow_layer
          */
         effectLayers: Array<EffectLayer>;
 

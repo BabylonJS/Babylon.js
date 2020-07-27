@@ -2,7 +2,6 @@ import { Observable } from "../Misc/observable";
 import { DomManagement } from "../Misc/domManagement";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { PoseEnabledControllerHelper } from "../Gamepads/Controllers/poseEnabledController";
 import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";
@@ -18,7 +17,7 @@ export class GamepadManager {
     /** @hidden */
     public _isMonitoring: boolean = false;
     private _gamepadEventSupported: boolean;
-    private _gamepadSupport: () => Array<any>;
+    private _gamepadSupport?: () => Array<any>;
 
     /**
      * observable to be triggered when the gamepad controller has been connected

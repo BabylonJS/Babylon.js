@@ -381,10 +381,9 @@ export abstract class Light extends Node {
      * @param scene The scene where the light belongs to
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
      * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false, rebuildInParallel = false): void {
+    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
         let iAsString = lightIndex.toString();
         let needUpdate = false;
 
@@ -402,10 +401,10 @@ export abstract class Light extends Node {
             this.transferToEffect(effect, iAsString);
 
             this.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-            this._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? this.radius : this.range, iAsString);
+            this._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], this.range, iAsString);
             if (useSpecular) {
                 this.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
-                this._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
+                this._uniformBuffer.updateColor4("vLightSpecular", TmpColors.Color3[1], this.radius, iAsString);
             }
             needUpdate = true;
         }
@@ -587,15 +586,21 @@ export abstract class Light extends Node {
     /**
      * Returns a new Light object, named "name", from the current one.
      * @param name The name of the cloned light
+     * @param newParent The parent of this light, if it has one
      * @returns the new created light
      */
-    public clone(name: string): Nullable<Light> {
+    public clone(name: string, newParent: Nullable<Node> = null): Nullable<Light> {
         let constructor = Light.GetConstructorFromName(this.getTypeID(), name, this.getScene());
 
         if (!constructor) {
             return null;
         }
-        return SerializationHelper.Clone(constructor, this);
+        let clonedLight = SerializationHelper.Clone(constructor, this);
+        if (newParent) {
+            clonedLight.parent = newParent;
+        }
+        clonedLight.setEnabled(this.isEnabled());
+        return clonedLight;
     }
 
     /**

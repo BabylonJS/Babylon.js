@@ -25,7 +25,7 @@ declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * This is the base class of all the camera used in the application.
- * @see http://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/cameras
  */
 export class Camera extends Node {
     /** @hidden */
@@ -77,6 +77,10 @@ export class Camera extends Node {
      * Defines that both eyes of the camera will be rendered over under each other.
      */
     public static readonly RIG_MODE_STEREOSCOPIC_OVERUNDER = 13;
+    /**
+     * Defines that both eyes of the camera will be rendered on successive lines interlaced for passive 3d monitors.
+     */
+    public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = 14;
     /**
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
      */
@@ -186,7 +190,7 @@ export class Camera extends Node {
     public mode = Camera.PERSPECTIVE_CAMERA;
 
     /**
-     * Define wether the camera is intermediate.
+     * Define whether the camera is intermediate.
      * This is useful to not present the output directly to the screen in case of rig without post process for instance
      */
     public isIntermediate = false;
@@ -262,6 +266,17 @@ export class Camera extends Node {
      */
     public onRestoreStateObservable = new Observable<Camera>();
 
+    /**
+     * Is this camera a part of a rig system?
+     */
+    public isRigCamera: boolean = false;
+
+    /**
+     * If isRigCamera set to true this will be set with the parent camera.
+     * The parent camera is not (!) necessarily the .parent of this camera (like in the case of XR)
+     */
+    public rigParent?: Camera;
+
     /** @hidden */
     public _cameraRigParams: any;
     /** @hidden */
@@ -296,7 +311,7 @@ export class Camera extends Node {
     /**
      * Instantiates a new camera object.
      * This should not be used directly but through the inherited cameras: ArcRotate, Free...
-     * @see http://doc.babylonjs.com/features/cameras
+     * @see https://doc.babylonjs.com/features/cameras
      * @param name Defines the name of the camera in the scene
      * @param position Defines the position of the camera
      * @param scene Defines the scene the camera belongs too
@@ -396,7 +411,7 @@ export class Camera extends Node {
     }
 
     /**
-     * Check wether a mesh is part of the current active mesh list of the camera
+     * Check whether a mesh is part of the current active mesh list of the camera
      * @param mesh Defines the mesh to check
      * @returns true if active, false otherwise
      */
@@ -583,7 +598,7 @@ export class Camera extends Node {
 
     /**
      * Attach a post process to the camera.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
      * @param postProcess The post process to attach to the camera
      * @param insertAt The position of the post process in case several of them are in use in the scene
      * @returns the position the post process has been inserted at
@@ -607,7 +622,7 @@ export class Camera extends Node {
 
     /**
      * Detach a post process to the camera.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
      * @param postProcess The post process to detach from the camera
      */
     public detachPostProcess(postProcess: PostProcess): void {
@@ -737,18 +752,18 @@ export class Camera extends Node {
             var halfWidth = engine.getRenderWidth() / 2.0;
             var halfHeight = engine.getRenderHeight() / 2.0;
             if (scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(this.orthoLeft || -halfWidth,
-                    this.orthoRight || halfWidth,
-                    this.orthoBottom || -halfHeight,
-                    this.orthoTop || halfHeight,
+                Matrix.OrthoOffCenterRHToRef(this.orthoLeft ?? -halfWidth,
+                    this.orthoRight ?? halfWidth,
+                    this.orthoBottom ?? -halfHeight,
+                    this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix);
             } else {
-                Matrix.OrthoOffCenterLHToRef(this.orthoLeft || -halfWidth,
-                    this.orthoRight || halfWidth,
-                    this.orthoBottom || -halfHeight,
-                    this.orthoTop || halfHeight,
+                Matrix.OrthoOffCenterLHToRef(this.orthoLeft ?? -halfWidth,
+                    this.orthoRight ?? halfWidth,
+                    this.orthoBottom ?? -halfHeight,
+                    this.orthoTop ?? halfHeight,
                     this.minZ,
                     this.maxZ,
                     this._projectionMatrix);
@@ -834,6 +849,18 @@ export class Camera extends Node {
      * @returns the forward ray
      */
     public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
+        throw _DevTools.WarnImport("Ray");
+    }
+
+    /**
+     * Gets a ray in the forward direction from the camera.
+     * @param refRay the ray to (re)use when setting the values
+     * @param length Defines the length of the ray to create
+     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param origin Defines the start point of the ray which defaults to the camera position
+     * @returns the forward ray
+     */
+    public getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {
         throw _DevTools.WarnImport("Ray");
     }
 
@@ -1003,7 +1030,8 @@ export class Camera extends Node {
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
-                Camera._setStereoscopicRigMode(this);
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
+                    Camera._setStereoscopicRigMode(this);
                 break;
             case Camera.RIG_MODE_VR:
                 Camera._setVRRigMode(this, rigParams);

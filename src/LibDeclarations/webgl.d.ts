@@ -8,7 +8,7 @@ interface WebGLRenderingContext {
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
 
     blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
-    renderbufferStorageMultisample(target: number, samples: number, internalformat: number, width: number, height: number): void;
+    renderbufferStorageMultisample?(target: number, samples: number, internalformat: number, width: number, height: number): void;
 
     bindBufferBase(target: number, index: number, buffer: WebGLBuffer | null): void;
     getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;

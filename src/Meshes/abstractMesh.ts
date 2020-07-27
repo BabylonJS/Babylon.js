@@ -29,6 +29,7 @@ import { Color3, Color4 } from '../Maths/math.color';
 import { Epsilon } from '../Maths/math.constants';
 import { Plane } from '../Maths/math.plane';
 import { Axis } from '../Maths/math.axis';
+import { IParticleSystem } from '../Particles/IParticleSystem';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -182,18 +183,18 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * - AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
      * Please read each static variable documentation to get details about the culling process.
      * */
-    public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_STANDARD;
+    public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
 
     /**
      * Gets the number of facets in the mesh
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
      */
     public get facetNb(): number {
         return this._internalAbstractMeshDataInfo._facetData.facetNb;
     }
     /**
      * Gets or set the number (integer) of subdivisions per axis in the partioning space
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
      */
     public get partitioningSubdivisions(): number {
         return this._internalAbstractMeshDataInfo._facetData.partitioningSubdivisions;
@@ -204,7 +205,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * The ratio (float) to apply to the bouding box size to set to the partioning space.
      * Ex : 1.01 (default) the partioning space is 1% bigger than the bounding box
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
      */
     public get partitioningBBoxRatio(): number {
         return this._internalAbstractMeshDataInfo._facetData.partitioningBBoxRatio;
@@ -217,7 +218,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets or sets a boolean indicating that the facets must be depth sorted on next call to `updateFacetData()`.
      * Works only for updatable meshes.
      * Doesn't work with multi-materials
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
      */
     public get mustDepthSortFacets(): boolean {
         return this._internalAbstractMeshDataInfo._facetData.facetDepthSort;
@@ -230,7 +231,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * The location (Vector3) where the facet depth sort must be computed from.
      * By default, the active camera position.
      * Used only when facet depth sort is enabled
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
      */
     public get facetDepthSortFrom(): Vector3 {
         return this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom;
@@ -241,7 +242,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * gets a boolean indicating if facetData is enabled
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
      */
     public get isFacetDataEnabled(): boolean {
         return this._internalAbstractMeshDataInfo._facetData.facetDataEnabled;
@@ -322,7 +323,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** Gets or sets the alpha index used to sort transparent meshes
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#alpha-index
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#alpha-index
      */
     public alphaIndex = Number.MAX_VALUE;
 
@@ -340,7 +341,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public showSubMeshesBoundingBox = false;
 
     /** Gets or sets a boolean indicating if the mesh must be considered as a ray blocker for lens flares (false by default)
-     * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+     * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
      */
     public isBlocker = false;
 
@@ -351,7 +352,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Specifies the rendering group id for this mesh (0 by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
     public renderingGroupId = 0;
     private _material: Nullable<Material> = null;
@@ -376,7 +377,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             value.meshMap[this.uniqueId] = this;
         }
 
-        if (this.onMaterialChangedObservable.hasObservers) {
+        if (this.onMaterialChangedObservable.hasObservers()) {
             this.onMaterialChangedObservable.notifyObservers(this);
         }
 
@@ -389,7 +390,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets a boolean indicating that this mesh can receive realtime shadows
-     * @see http://doc.babylonjs.com/babylon101/shadows
+     * @see https://doc.babylonjs.com/babylon101/shadows
      */
     public get receiveShadows(): boolean {
         return this._internalAbstractMeshDataInfo._receiveShadows;
@@ -490,7 +491,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets the current layer mask (default is 0x0FFFFFFF)
-     * @see http://doc.babylonjs.com/how_to/layermasks_and_multi-cam_textures
+     * @see https://doc.babylonjs.com/how_to/layermasks_and_multi-cam_textures
      */
     public get layerMask(): number {
         return this._internalAbstractMeshDataInfo._layerMask;
@@ -517,7 +518,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets the current action manager
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions
      */
     public actionManager: Nullable<AbstractActionManager> = null;
 
@@ -526,12 +527,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets the ellipsoid used to impersonate this mesh when using collision engine (default is (0.5, 1, 0.5))
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public ellipsoid = new Vector3(0.5, 1, 0.5);
     /**
      * Gets or sets the ellipsoid offset used to impersonate this mesh when using collision engine (default is (0, 0, 0))
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public ellipsoidOffset = new Vector3(0, 0, 0);
 
@@ -559,6 +560,23 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._meshCollisionData._collisionGroup = !isNaN(mask) ? mask : -1;
     }
 
+    /**
+     * Gets or sets current surrounding meshes (null by default).
+     *
+     * By default collision detection is tested against every mesh in the scene.
+     * It is possible to set surroundingMeshes to a defined list of meshes and then only these specified
+     * meshes will be tested for the collision.
+     *
+     * Note: if set to an empty array no collision will happen when this mesh is moved.
+     */
+    public get surroundingMeshes(): Nullable<AbstractMesh[]> {
+        return this._meshCollisionData._surroundingMeshes;
+    }
+
+    public set surroundingMeshes(meshes: Nullable<AbstractMesh[]>) {
+        this._meshCollisionData._surroundingMeshes = meshes;
+    }
+
     // Edges
     /**
      * Defines edge width used when edgesRenderer is enabled
@@ -582,7 +600,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets the list of subMeshes
-     * @see http://doc.babylonjs.com/how_to/multi_materials
+     * @see https://doc.babylonjs.com/how_to/multi_materials
      */
     public subMeshes: SubMesh[];
 
@@ -625,7 +643,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets a skeleton to apply skining transformations
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
     public set skeleton(value: Nullable<Skeleton>) {
         let skeleton = this._internalAbstractMeshDataInfo._skeleton;
@@ -768,7 +786,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         var isIn = light.isEnabled() && light.canAffectMesh(this);
 
         var index = this._lightSources.indexOf(light);
-
+        var removed = false;
         if (index === -1) {
             if (!isIn) {
                 return;
@@ -778,10 +796,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             if (isIn) {
                 return;
             }
+            removed = true;
             this._lightSources.splice(index, 1);
         }
 
-        this._markSubMeshesAsLightDirty();
+        this._markSubMeshesAsLightDirty(removed);
     }
 
     /** @hidden */
@@ -827,16 +846,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /** @hidden */
     public _markSubMeshesAsMiscDirty() {
-        if (!this.subMeshes) {
-            return;
-        }
-
-        for (var subMesh of this.subMeshes) {
-            var material = subMesh.getMaterial();
-            if (material) {
-                material.markAsDirty(Constants.MATERIAL_MiscDirtyFlag);
-            }
-        }
+        this._markSubMeshesAsDirty((defines) => defines.markAsMiscDirty());
     }
 
     /**
@@ -1077,6 +1087,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets a boolean indicating if this mesh has instances
      */
     public get hasInstances(): boolean {
+        return false;
+    }
+
+    /**
+     * Gets a boolean indicating if this mesh has thin instances
+     */
+    public get hasThinInstances(): boolean {
         return false;
     }
 
@@ -1342,7 +1359,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets or sets a boolean indicating that this mesh can be used in the collision engine
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public get checkCollisions(): boolean {
         return this._meshCollisionData._checkCollisions;
@@ -1354,7 +1371,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets Collider object used to compute collisions (not physics)
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      */
     public get collider(): Nullable<Collider> {
         return this._meshCollisionData._collider;
@@ -1362,7 +1379,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Move the mesh using collision engine
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
      * @param displacement defines the requested displacement vector
      * @returns the current mesh
      */
@@ -1467,14 +1484,23 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param ray defines the ray to use
      * @param fastCheck defines if fast mode (but less precise) must be used (false by default)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
+     * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
      * @returns the picking info
-     * @see http://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+     * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
      */
-    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate): PickingInfo {
+    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false): PickingInfo {
         var pickingInfo = new PickingInfo();
         const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
         const boundingInfo = this._boundingInfo;
         if (!this.subMeshes || !boundingInfo || !ray.intersectsSphere(boundingInfo.boundingSphere, intersectionThreshold) || !ray.intersectsBox(boundingInfo.boundingBox, intersectionThreshold)) {
+            return pickingInfo;
+        }
+
+        if (onlyBoundingInfo) {
+            pickingInfo.hit = true;
+            pickingInfo.pickedMesh = this;
+            pickingInfo.distance = Vector3.Distance(ray.origin, boundingInfo.boundingSphere.center);
+            pickingInfo.subMeshId = 0;
             return pickingInfo;
         }
 
@@ -1512,7 +1538,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         if (intersectInfo) {
             // Get picked point
-            const world = this.getWorldMatrix();
+            const world = this.skeleton && this.skeleton.overrideMesh ? this.skeleton.overrideMesh.getWorldMatrix() : this.getWorldMatrix();
             const worldOrigin = TmpVectors.Vector3[0];
             const direction = TmpVectors.Vector3[1];
             Vector3.TransformCoordinatesToRef(ray.origin, world, worldOrigin);
@@ -1527,7 +1553,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             pickingInfo.pickedMesh = this;
             pickingInfo.bu = intersectInfo.bu || 0;
             pickingInfo.bv = intersectInfo.bv || 0;
-            pickingInfo.faceId = intersectInfo.faceId;
+            pickingInfo.subMeshFaceId = intersectInfo.faceId;
+            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo.subMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
             pickingInfo.subMeshId = intersectInfo.subMeshId;
             return pickingInfo;
         }
@@ -1737,7 +1764,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * This method can be called within the render loop.
      * You don't need to call this method by yourself in the render loop when you update/morph a mesh with the methods CreateXXX() as they automatically manage this computation
      * @returns the current mesh
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public updateFacetData(): AbstractMesh {
         const data = this._internalAbstractMeshDataInfo._facetData;
@@ -1838,7 +1865,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Returns the facetLocalNormals array.
      * The normals are expressed in the mesh local spac
      * @returns an array of Vector3
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetLocalNormals(): Vector3[] {
         let facetData = this._internalAbstractMeshDataInfo._facetData;
@@ -1852,7 +1879,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Returns the facetLocalPositions array.
      * The facet positions are expressed in the mesh local space
      * @returns an array of Vector3
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetLocalPositions(): Vector3[] {
         let facetData = this._internalAbstractMeshDataInfo._facetData;
@@ -1865,7 +1892,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Returns the facetLocalPartioning array
      * @returns an array of array of numbers
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetLocalPartitioning(): number[][] {
         let facetData = this._internalAbstractMeshDataInfo._facetData;
@@ -1881,7 +1908,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * This method allocates a new Vector3 per call
      * @param i defines the facet index
      * @returns a new Vector3
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetPosition(i: number): Vector3 {
         var pos = Vector3.Zero();
@@ -1894,7 +1921,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param i defines the facet index
      * @param ref defines the target vector
      * @returns the current mesh
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetPositionToRef(i: number, ref: Vector3): AbstractMesh {
         var localPos = (this.getFacetLocalPositions())[i];
@@ -1908,7 +1935,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * This method allocates a new Vector3 per call
      * @param i defines the facet index
      * @returns a new Vector3
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetNormal(i: number): Vector3 {
         var norm = Vector3.Zero();
@@ -1921,7 +1948,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param i defines the facet index
      * @param ref defines the target vector
      * @returns the current mesh
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetNormalToRef(i: number, ref: Vector3) {
         var localNorm = (this.getFacetLocalNormals())[i];
@@ -1935,7 +1962,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param y defines y coordinate
      * @param z defines z coordinate
      * @returns the array of facet indexes
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetsAtLocalCoordinates(x: number, y: number, z: number): Nullable<number[]> {
         var bInfo = this.getBoundingInfo();
@@ -1959,7 +1986,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param y defines y coordinate
      * @param z defines z coordinate
      * @returns the face index if found (or null instead)
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): Nullable<number> {
         var world = this.getWorldMatrix();
@@ -1984,7 +2011,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param y defines y coordinate
      * @param z defines z coordinate
      * @returns the face index if found (or null instead)
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): Nullable<number> {
         var closest = null;
@@ -2045,7 +2072,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Returns the object "parameter" set with all the expected parameters for facetData computation by ComputeNormals()
      * @returns the parameters
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public getFacetDataParameters(): any {
         return this._internalAbstractMeshDataInfo._facetData.facetParameters;
@@ -2054,7 +2081,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Disables the feature FacetData and frees the related memory
      * @returns the current mesh
-     * @see http://doc.babylonjs.com/how_to/how_to_use_facetdata
+     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata
      */
     public disableFacetData(): AbstractMesh {
         let facetData = this._internalAbstractMeshDataInfo._facetData;
@@ -2148,6 +2175,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     enableEdgesRendering(epsilon?: number, checkVerticesInsteadOfIndices?: boolean): AbstractMesh {
         throw _DevTools.WarnImport("EdgesRenderer");
+    }
+
+    /**
+     * This function returns all of the particle systems in the scene that use the mesh as an emitter.
+     * @returns an array of particle systems in the scene that use the mesh as an emitter
+     */
+    public getConnectedParticleSystems(): IParticleSystem[] {
+        return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
     }
 
 }

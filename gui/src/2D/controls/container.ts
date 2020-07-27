@@ -8,11 +8,11 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Root class for 2D containers
- * @see http://doc.babylonjs.com/how_to/gui#containers
+ * @see https://doc.babylonjs.com/how_to/gui#containers
  */
 export class Container extends Control {
     /** @hidden */
-    protected _children = new Array<Control>();
+    public _children = new Array<Control>();
     /** @hidden */
     protected _measureForChildren = Measure.Empty();
     /** @hidden */
@@ -304,6 +304,8 @@ export class Container extends Control {
             return false;
         }
 
+        this.host._numLayoutCalls++;
+
         if (this._isDirty) {
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }
@@ -329,10 +331,10 @@ export class Container extends Control {
                     if (child._layout(this._measureForChildren, context)) {
 
                         if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels);
                         }
                         if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels);
                         }
                     }
                 }
@@ -414,7 +416,7 @@ export class Container extends Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -426,7 +428,7 @@ export class Container extends Control {
         // Checking backwards to pick closest first
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
-            if (child._processPicking(x, y, type, pointerId, buttonIndex)) {
+            if (child._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
                 }
@@ -438,7 +440,7 @@ export class Container extends Control {
             return false;
         }
 
-        return this._processObservables(type, x, y, pointerId, buttonIndex);
+        return this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
     }
 
     /** @hidden */

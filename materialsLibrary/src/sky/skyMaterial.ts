@@ -23,6 +23,8 @@ class SkyMaterialDefines extends MaterialDefines {
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public POINTSIZE = false;
     public FOG = false;
     public VERTEXCOLOR = false;
@@ -113,8 +115,6 @@ export class SkyMaterial extends PushMaterial {
     // Private members
     private _cameraPosition: Vector3 = Vector3.Zero();
 
-    private _renderId: number;
-
     /**
      * Instantiates a new sky material.
      * This material allows to create dynamic and texture free
@@ -161,7 +161,7 @@ export class SkyMaterial extends PushMaterial {
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -173,10 +173,8 @@ export class SkyMaterial extends PushMaterial {
         var defines = <SkyMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
@@ -209,7 +207,7 @@ export class SkyMaterial extends PushMaterial {
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                 attribs,
                 ["world", "viewProjection", "view",
-                    "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4",
+                    "vFogInfos", "vFogColor", "pointSize", "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6",
                     "luminance", "turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG", "sunPosition",
                     "cameraPosition", "cameraOffset"
                 ],
@@ -221,8 +219,8 @@ export class SkyMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }

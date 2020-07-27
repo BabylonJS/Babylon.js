@@ -13,7 +13,6 @@ import { MaterialHelper } from '../Materials/materialHelper';
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
-import { AbstractMesh } from './abstractMesh';
 
 /**
  * Line mesh
@@ -81,7 +80,7 @@ export class LinesMesh extends Mesh {
         var defines: string[] = [];
         var options = {
             attributes: [VertexBuffer.PositionKind, "world0", "world1", "world2", "world3"],
-            uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "world", "viewProjection"],
+            uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "world", "viewProjection"],
             needAlphaBlending: true,
             defines: defines
         };
@@ -132,6 +131,8 @@ export class LinesMesh extends Mesh {
         scene.clipPlane2 ? this._addClipPlaneDefine("CLIPPLANE2") : this._removeClipPlaneDefine("CLIPPLANE2");
         scene.clipPlane3 ? this._addClipPlaneDefine("CLIPPLANE3") : this._removeClipPlaneDefine("CLIPPLANE3");
         scene.clipPlane4 ? this._addClipPlaneDefine("CLIPPLANE4") : this._removeClipPlaneDefine("CLIPPLANE4");
+        scene.clipPlane5 ? this._addClipPlaneDefine("CLIPPLANE5") : this._removeClipPlaneDefine("CLIPPLANE5");
+        scene.clipPlane6 ? this._addClipPlaneDefine("CLIPPLANE6") : this._removeClipPlaneDefine("CLIPPLANE6");
 
         if (!this._colorShader.isReady()) {
             return false;
@@ -222,13 +223,13 @@ export class LinesMesh extends Mesh {
     /**
      * Returns a new LineMesh object cloned from the current one.
      */
-    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
+    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): LinesMesh {
         return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
     }
 
     /**
      * Creates a new InstancedLinesMesh object from the mesh model.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
      * @param name defines the name of the new instance
      * @returns a new InstancedLinesMesh
      */

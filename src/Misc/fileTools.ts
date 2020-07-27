@@ -8,6 +8,8 @@ import { FilesInputStore } from './filesInputStore';
 import { RetryStrategy } from './retryStrategy';
 import { BaseError } from './baseError';
 import { StringTools } from './stringTools';
+import { ThinEngine } from '../Engines/thinEngine';
+import { ShaderProcessor } from '../Engines/Processors/shaderProcessor';
 
 /** @ignore */
 export class LoadFileError extends BaseError {
@@ -110,12 +112,12 @@ export class FileTools {
             return;
         }
 
-        if (this.CorsBehavior) {
-            if (typeof (this.CorsBehavior) === 'string' || this.CorsBehavior instanceof String) {
-                element.crossOrigin = <string>this.CorsBehavior;
+        if (FileTools.CorsBehavior) {
+            if (typeof (FileTools.CorsBehavior) === 'string' || this.CorsBehavior instanceof String) {
+                element.crossOrigin = <string>FileTools.CorsBehavior;
             }
             else {
-                var result = this.CorsBehavior(url);
+                var result = FileTools.CorsBehavior(url);
                 if (result) {
                     element.crossOrigin = result;
                 }
@@ -132,16 +134,16 @@ export class FileTools {
      * @param mimeType optional mime type
      * @returns the HTMLImageElement of the loaded image
      */
-    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType?: string): Nullable<HTMLImageElement> {
+    public static LoadImage(input: string | ArrayBuffer | ArrayBufferView | Blob, onLoad: (img: HTMLImageElement | ImageBitmap) => void, onError: (message?: string, exception?: any) => void, offlineProvider: Nullable<IOfflineProvider>, mimeType: string = ""): Nullable<HTMLImageElement> {
         let url: string;
         let usingObjectURL = false;
 
         if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
             if (typeof Blob !== 'undefined') {
-                url = URL.createObjectURL(new Blob([input]));
+                url = URL.createObjectURL(new Blob([input], { type: mimeType }));
                 usingObjectURL = true;
             } else {
-                url = `data:${mimeType || "image/jpg"};base64,` + StringTools.EncodeArrayBufferToBase64(input);
+                url = `data:${mimeType};base64,` + StringTools.EncodeArrayBufferToBase64(input);
             }
         }
         else if (input instanceof Blob) {
@@ -149,13 +151,13 @@ export class FileTools {
             usingObjectURL = true;
         }
         else {
-            url = this._CleanUrl(input);
-            url = this.PreprocessUrl(input);
+            url = FileTools._CleanUrl(input);
+            url = FileTools.PreprocessUrl(input);
         }
 
         if (typeof Image === "undefined") {
-            this.LoadFile(url, (data) => {
-                createImageBitmap(new Blob([data])).then((imgBmp) => {
+            FileTools.LoadFile(url, (data) => {
+                createImageBitmap(new Blob([data], { type: mimeType })).then((imgBmp) => {
                     onLoad(imgBmp);
                     if (usingObjectURL) {
                         URL.revokeObjectURL(url);
@@ -175,7 +177,7 @@ export class FileTools {
         }
 
         var img = new Image();
-        this.SetCorsBehavior(url, img);
+        FileTools.SetCorsBehavior(url, img);
 
         const loadHandler = () => {
             img.removeEventListener("load", loadHandler);
@@ -195,7 +197,8 @@ export class FileTools {
             img.removeEventListener("error", errorHandler);
 
             if (onError) {
-                onError("Error while trying to load image: " + input, err);
+                const inputText = input.toString();
+                onError("Error while trying to load image: " + (inputText.length < 32 ? inputText : inputText.slice(0, 32) + "..."), err);
             }
 
             if (usingObjectURL && img.src) {
@@ -301,14 +304,17 @@ export class FileTools {
     public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
         // If file and file input are set
         if (url.indexOf("file:") !== -1) {
-            const fileName = decodeURIComponent(url.substring(5).toLowerCase());
+            let fileName = decodeURIComponent(url.substring(5).toLowerCase());
+            if (fileName.indexOf('./') === 0) {
+                fileName = fileName.substring(2);
+            }
             const file = FilesInputStore.FilesToLoad[fileName];
             if (file) {
-                return this.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError ? (error) => onError(undefined, new LoadFileError(error.message, error.file)) : undefined);
+                return FileTools.ReadFile(file, onSuccess, onProgress, useArrayBuffer, onError ? (error) => onError(undefined, new LoadFileError(error.message, error.file)) : undefined);
             }
         }
 
-        return this.RequestFile(url, (data, request) => {
+        return FileTools.RequestFile(url, (data, request) => {
             onSuccess(data, request ? request.responseURL : undefined);
         }, onProgress, offlineProvider, useArrayBuffer, onError ? (error) => {
             onError(error.request, new LoadFileError(error.message, error.request));
@@ -326,10 +332,10 @@ export class FileTools {
      * @returns a file request object
      */
     public static RequestFile(url: string, onSuccess: (data: string | ArrayBuffer, request?: WebRequest) => void, onProgress?: (event: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (error: RequestFileError) => void, onOpened?: (request: WebRequest) => void): IFileRequest {
-        url = this._CleanUrl(url);
-        url = this.PreprocessUrl(url);
+        url = FileTools._CleanUrl(url);
+        url = FileTools.PreprocessUrl(url);
 
-        const loadUrl = this.BaseUrl + url;
+        const loadUrl = FileTools.BaseUrl + url;
 
         let aborted = false;
         const fileRequest: IFileRequest = {
@@ -387,12 +393,12 @@ export class FileTools {
                         // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
                         request.removeEventListener("readystatechange", onReadyStateChange);
 
-                        if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || this.IsFileURL()))) {
+                        if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!DomManagement.IsWindowObjectExist() || FileTools.IsFileURL()))) {
                             onSuccess(useArrayBuffer ? request.response : request.responseText, request);
                             return;
                         }
 
-                        let retryStrategy = this.DefaultRetryStrategy;
+                        let retryStrategy = FileTools.DefaultRetryStrategy;
                         if (retryStrategy) {
                             let waitTime = retryStrategy(loadUrl, request, retryIndex);
                             if (waitTime !== -1) {
@@ -435,7 +441,7 @@ export class FileTools {
                 // TODO: database needs to support aborting and should return a IFileRequest
 
                 if (offlineProvider) {
-                    offlineProvider.loadFile(this.BaseUrl + url, (data) => {
+                    offlineProvider.loadFile(FileTools.BaseUrl + url, (data) => {
                         if (!aborted) {
                             onSuccess(data);
                         }
@@ -466,3 +472,7 @@ export class FileTools {
         return location.protocol === "file:";
     }
 }
+
+ThinEngine._FileToolsLoadImage = FileTools.LoadImage.bind(FileTools);
+ThinEngine._FileToolsLoadFile = FileTools.LoadFile.bind(FileTools);
+ShaderProcessor._FileToolsLoadFile = FileTools.LoadFile.bind(FileTools);

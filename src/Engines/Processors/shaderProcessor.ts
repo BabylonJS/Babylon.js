@@ -8,7 +8,15 @@ import { ShaderDefineAndOperator } from './Expressions/Operators/shaderDefineAnd
 import { ShaderDefineExpression } from './Expressions/shaderDefineExpression';
 import { ShaderDefineArithmeticOperator } from './Expressions/Operators/shaderDefineArithmeticOperator';
 import { ProcessingOptions } from './shaderProcessingOptions';
-import { FileTools } from '../../Misc/fileTools';
+import { _DevTools } from '../../Misc/devTools';
+
+declare type WebRequest = import("../../Misc/webRequest").WebRequest;
+declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
+declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
+declare type IFileRequest  = import("../../Misc/fileRequest").IFileRequest;
+
+const regexSE = /defined\s*?\((.+?)\)/g;
+const regexSERevert = /defined\s*?\[(.+?)\]/g;
 
 /** @hidden */
 export class ShaderProcessor {
@@ -69,37 +77,55 @@ export class ShaderProcessor {
     }
 
     private static _BuildSubExpression(expression: string): ShaderDefineExpression {
-        let indexOr = expression.indexOf("||");
-        if (indexOr === -1) {
-            let indexAnd = expression.indexOf("&&");
-            if (indexAnd > -1) {
-                let andOperator = new ShaderDefineAndOperator();
-                let leftPart = expression.substring(0, indexAnd).trim();
-                let rightPart = expression.substring(indexAnd + 2).trim();
+        expression = expression.replace(regexSE, "defined[$1]");
 
-                andOperator.leftOperand = this._BuildSubExpression(leftPart);
-                andOperator.rightOperand = this._BuildSubExpression(rightPart);
+        const postfix = ShaderDefineExpression.infixToPostfix(expression);
 
-                return andOperator;
-            } else {
-                return this._ExtractOperation(expression);
+        const stack: (string | ShaderDefineExpression)[] = [];
+
+        for (let c of postfix) {
+            if (c !== '||' && c !== '&&') {
+                stack.push(c);
+            } else if (stack.length >= 2) {
+                let v1 = stack[stack.length - 1],
+                    v2 = stack[stack.length - 2];
+
+                stack.length -= 2;
+
+                let operator = c == '&&' ? new ShaderDefineAndOperator() : new ShaderDefineOrOperator();
+
+                if (typeof(v1) === 'string') {
+                    v1 = v1.replace(regexSERevert, "defined($1)");
+                }
+
+                if (typeof(v2) === 'string') {
+                    v2 = v2.replace(regexSERevert, "defined($1)");
+                }
+
+                operator.leftOperand = typeof(v2) === 'string' ? this._ExtractOperation(v2) : v2;
+                operator.rightOperand = typeof(v1) === 'string' ? this._ExtractOperation(v1) : v1;
+
+                stack.push(operator);
             }
-        } else {
-            let orOperator = new ShaderDefineOrOperator();
-            let leftPart = expression.substring(0, indexOr).trim();
-            let rightPart = expression.substring(indexOr + 2).trim();
-
-            orOperator.leftOperand = this._BuildSubExpression(leftPart);
-            orOperator.rightOperand = this._BuildSubExpression(rightPart);
-
-            return orOperator;
         }
+
+        let result = stack[stack.length - 1];
+
+        if (typeof(result) === 'string') {
+            result = result.replace(regexSERevert, "defined($1)");
+        }
+
+        // note: stack.length !== 1 if there was an error in the parsing
+
+        return typeof(result) === 'string' ? this._ExtractOperation(result) : result;
     }
 
     private static _BuildExpression(line: string, start: number): ShaderCodeTestNode {
         let node = new ShaderCodeTestNode();
         let command = line.substring(0, start);
-        let expression = line.substring(start).trim();
+        let expression = line.substring(start);
+
+        expression = expression.substring(0, ((expression.indexOf("//") + 1) || (expression.length + 1)) - 1).trim();
 
         if (command === "#ifdef") {
             node.testExpression = new ShaderDefineIsDefinedOperator(expression);
@@ -264,6 +290,7 @@ export class ShaderProcessor {
         var match = regex.exec(sourceCode);
 
         var returnValue = new String(sourceCode);
+        var keepProcessing = false;
 
         while (match != null) {
             var includeFile = match[1];
@@ -328,10 +355,12 @@ export class ShaderProcessor {
 
                 // Replace
                 returnValue = returnValue.replace(match[0], includeContent);
+
+                keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0;
             } else {
                 var includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-                FileTools.LoadFile(includeShaderUrl, (fileContent) => {
+                ShaderProcessor._FileToolsLoadFile(includeShaderUrl, (fileContent) => {
                     options.includesShadersStore[includeFile] = fileContent as string;
                     this._ProcessIncludes(<string>returnValue, options, callback);
                 });
@@ -341,6 +370,25 @@ export class ShaderProcessor {
             match = regex.exec(sourceCode);
         }
 
-        callback(returnValue);
+        if (keepProcessing) {
+            this._ProcessIncludes(returnValue.toString(), options, callback);
+        } else {
+            callback(returnValue);
+        }
+    }
+
+    /**
+     * Loads a file from a url
+     * @param url url to load
+     * @param onSuccess callback called when the file successfully loads
+     * @param onProgress callback called while file is loading (if the server supports this mode)
+     * @param offlineProvider defines the offline provider for caching
+     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @param onError callback called when the file fails to load
+     * @returns a file request object
+     * @hidden
+     */
+    public static _FileToolsLoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (ev: ProgressEvent) => void, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean, onError?: (request?: WebRequest, exception?: LoadFileError) => void): IFileRequest {
+        throw  _DevTools.WarnImport("FileTools");
     }
 }

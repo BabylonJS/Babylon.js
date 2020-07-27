@@ -11,7 +11,7 @@
         <script src="https://preview.babylonjs.com/ammo.js"></script>
         <script src="https://preview.babylonjs.com/cannon.js"></script>
         <script src="https://preview.babylonjs.com/Oimo.js"></script>
-        <script src="https://preview.babylonjs.com/gltf_validator.js"></script>
+        <script src="https://preview.babylonjs.com/libktx.js"></script>
         <script src="https://preview.babylonjs.com/earcut.min.js"></script>
         <script src="https://preview.babylonjs.com/babylon.js"></script>
         <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
@@ -46,8 +46,8 @@
 ####INJECT####
 
         engine.runRenderLoop(function () {
-            if (scene) {
-                scene.render();
+            if (sceneToRender) {
+                sceneToRender.render();
             }
         });
 

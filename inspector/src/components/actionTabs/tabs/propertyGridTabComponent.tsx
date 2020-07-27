@@ -3,7 +3,7 @@ import { PaneComponent, IPaneComponentProps } from "../paneComponent";
 
 import { ArcRotateCamera } from "babylonjs/Cameras/arcRotateCamera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Material } from "babylonjs/Materials/material";
 import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
@@ -50,7 +50,7 @@ import { Grid } from "babylonjs-gui/2D/controls/grid";
 import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
 
 import { ColorPickerPropertyGridComponent } from "./propertyGrids/gui/colorPickerPropertyGridComponent";
-import { AnimationGroupGridComponent } from "./propertyGrids/animationGroupPropertyGridComponent";
+import { AnimationGroupGridComponent } from "./propertyGrids/animations/animationGroupPropertyGridComponent";
 import { LockObject } from "./propertyGrids/lockObject";
 import { ImagePropertyGridComponent } from "./propertyGrids/gui/imagePropertyGridComponent";
 import { SliderPropertyGridComponent } from "./propertyGrids/gui/sliderPropertyGridComponent";
@@ -89,6 +89,13 @@ import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { NodeMaterialPropertyGridComponent } from './propertyGrids/materials/nodeMaterialPropertyGridComponent';
 import { MultiMaterial } from 'babylonjs/Materials/multiMaterial';
 import { MultiMaterialPropertyGridComponent } from './propertyGrids/materials/multiMaterialPropertyGridComponent';
+import { ParticleSystemPropertyGridComponent } from './propertyGrids/particleSystems/particleSystemPropertyGridComponent';
+import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { SpriteManagerPropertyGridComponent } from './propertyGrids/sprites/spriteManagerPropertyGridComponent';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { SpritePropertyGridComponent } from './propertyGrids/sprites/spritePropertyGridComponent';
+import { Sprite } from 'babylonjs/Sprites/sprite';
+import { TargetedAnimationGridComponent } from './propertyGrids/animations/targetedAnimationPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -135,6 +142,24 @@ export class PropertyGridTabComponent extends PaneComponent {
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
 
+            if (className === "Sprite") {
+                const sprite = entity as Sprite;
+                return (<SpritePropertyGridComponent sprite={sprite}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className === "SpriteManager") {
+                const spriteManager = entity as SpriteManager;
+                return (<SpriteManagerPropertyGridComponent spriteManager={spriteManager}
+                    globalState={this.props.globalState}
+                    lockObject={this._lockObject}                    
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
             if (className.indexOf("Mesh") !== -1) {
                 const mesh = entity as Mesh;
                 if (mesh.getTotalVertices() > 0) {
@@ -149,7 +174,16 @@ export class PropertyGridTabComponent extends PaneComponent {
                 }
             }
 
-            if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1) {
+            if (className.indexOf("ParticleSystem") !== -1) {
+                const particleSystem = entity as IParticleSystem;
+                return (<ParticleSystemPropertyGridComponent globalState={this.props.globalState} system={particleSystem}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("FreeCamera") !== -1 || className.indexOf("UniversalCamera") !== -1
+            || className.indexOf("WebXRCamera") !== -1  || className.indexOf("DeviceOrientationCamera") !== -1) {
                 const freeCamera = entity as FreeCamera;
                 return (<FreeCameraPropertyGridComponent globalState={this.props.globalState} camera={freeCamera}
                     lockObject={this._lockObject}
@@ -286,6 +320,17 @@ export class PropertyGridTabComponent extends PaneComponent {
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }
+
+            if (className === "TargetedAnimation") {
+                const targetedAnimation = entity as TargetedAnimation;
+                return (<TargetedAnimationGridComponent
+                    globalState={this.props.globalState}
+                    targetedAnimation={targetedAnimation}
+                    scene={this.props.scene}
+                    lockObject={this._lockObject}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }            
 
             if (className.indexOf("Material") !== -1) {
                 const material = entity as Material;

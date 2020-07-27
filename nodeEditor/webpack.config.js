@@ -20,7 +20,18 @@ var config = babylonWebpackConfig({
         {
             test: /\.css$/,
             use: ['style-loader', 'css-loader']
-        }],
+        },
+    {
+        test: /\.svg$/,
+        use: [
+          {
+            loader: 'svg-url-loader',
+            options: {
+              limit: 10000,
+            },
+          },
+        ],
+      }],
     plugins: [
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output

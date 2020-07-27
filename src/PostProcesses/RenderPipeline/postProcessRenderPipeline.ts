@@ -5,6 +5,9 @@ import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
 import { PostProcessRenderEffect } from "./postProcessRenderEffect";
 import { IInspectable } from '../../Misc/iInspectable';
+
+declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
+
 /**
  * PostProcessRenderPipeline
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
@@ -139,6 +142,9 @@ export class PostProcessRenderPipeline {
         var i: number;
         for (i = 0; i < cams.length; i++) {
             var camera = cams[i];
+            if (!camera) {
+                continue;
+            }
             var cameraName = camera.name;
 
             if (this._cameras.indexOf(camera) === -1) {
@@ -192,6 +198,9 @@ export class PostProcessRenderPipeline {
         }
 
         for (var i = 0; i < this._cameras.length; i++) {
+            if (! this._cameras[i]) {
+                continue;
+            }
             var cameraName = this._cameras[i].name;
             if ((<any>this._renderEffectsForIsolatedPass)[cameraName]) {
                 (<any>this._renderEffectsForIsolatedPass)[cameraName]._update();
@@ -219,6 +228,16 @@ export class PostProcessRenderPipeline {
             }
         }
         return true;
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup.
+     * @returns true if the pre pass is needed.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        // Do Nothing by default
+        return false;
     }
 
     /**

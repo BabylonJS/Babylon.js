@@ -36,10 +36,9 @@ import "../../Meshes/Builders/cylinderBuilder";
 import "../../Gamepads/gamepadSceneComponent";
 import "../../Animations/animatable";
 import { Axis } from '../../Maths/math.axis';
-import { WebXRSessionManager } from '../XR/webXRSessionManager';
-import { WebXRDefaultExperience } from '../XR/webXRDefaultExperience';
-import { WebXRState } from '../XR/webXRTypes';
-import { WebXRControllerTeleportation } from '../XR/webXRControllerTeleportation';
+import { WebXRSessionManager } from '../../XR/webXRSessionManager';
+import { WebXRDefaultExperience } from '../../XR/webXRDefaultExperience';
+import { WebXRState } from '../../XR/webXRTypes';
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -255,6 +254,11 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
     }
 
     /** @hidden */
+    public _setLaserPointerLightingDisabled(disabled: boolean) {
+        (<StandardMaterial>this._laserPointer.material).disableLighting = disabled;
+    }
+
+    /** @hidden */
     public _setLaserPointerParent(mesh: AbstractMesh) {
         var makeNotPick = (root: AbstractMesh) => {
             root.isPickable = false;
@@ -318,7 +322,7 @@ export class OnAfterEnteringVRObservableEvent {
 
 /**
  * Helps to quickly add VR support to an existing scene.
- * See http://doc.babylonjs.com/how_to/webvr_helper
+ * See https://doc.babylonjs.com/how_to/webvr_helper
  */
 export class VRExperienceHelper {
     private _scene: Scene;
@@ -429,6 +433,11 @@ export class VRExperienceHelper {
     private _leftController: Nullable<VRExperienceHelperControllerGazer> = null;
     private _rightController: Nullable<VRExperienceHelperControllerGazer> = null;
 
+    private _gazeColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    private _laserColor: Color3 = new Color3(0.7, 0.7, 0.7);
+    private _pickedLaserColor: Color3 = new Color3(0.2, 0.2, 1);
+    private _pickedGazeColor: Color3 = new Color3(0, 0, 1);
+
     /**
      * Observable raised when a new mesh is selected based on meshSelectionPredicate
      */
@@ -507,7 +516,7 @@ export class VRExperienceHelper {
     /**
      * The mesh used to display where the user is selecting, this mesh will be cloned and set as the gazeTracker for the left and right controller
      * when set bakeCurrentTransformIntoVertices will be called on the mesh.
-     * See http://doc.babylonjs.com/resources/baking_transformations
+     * See https://doc.babylonjs.com/resources/baking_transformations
      */
     public get gazeTrackerMesh(): Mesh {
         return this._cameraGazer._gazeTracker;
@@ -680,7 +689,7 @@ export class VRExperienceHelper {
     }
 
     /**
-     * Defines wether or not Pointer lock should be requested when switching to
+     * Defines whether or not Pointer lock should be requested when switching to
      * full screen.
      */
     public requestPointerLockOnFullScreen = true;
@@ -709,6 +718,14 @@ export class VRExperienceHelper {
         public webVROptions: VRExperienceHelperOptions = {}) {
         this._scene = scene;
         this._inputElement = scene.getEngine().getInputElement();
+
+        // check for VR support:
+
+        const vrSupported = 'getVRDisplays' in navigator;
+        // no VR support? force XR
+        if (!vrSupported) {
+            webVROptions.useXR = true;
+        }
 
         // Parse options
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined) {
@@ -796,38 +813,16 @@ export class VRExperienceHelper {
                             switch (state) {
                                 case WebXRState.ENTERING_XR:
                                     this.onEnteringVRObservable.notifyObservers(this);
-                                    if (this._interactionsEnabled) {
-                                        this._scene.registerBeforeRender(this.beforeRender);
+                                    if (!this._interactionsEnabled) {
+                                        this.xr.pointerSelection.detach();
                                     }
-                                    if (this._displayLaserPointer) {
-                                        [this._leftController, this._rightController].forEach((controller) => {
-                                            if (controller) {
-                                                controller._activatePointer();
-                                            }
-                                        });
-                                    }
+                                    this.xr.pointerSelection.displayLaserPointer = this._displayLaserPointer;
                                     break;
                                 case WebXRState.EXITING_XR:
                                     this.onExitingVRObservable.notifyObservers(this);
-                                    if (this._interactionsEnabled) {
-                                        this._scene.unregisterBeforeRender(this.beforeRender);
-                                        this._cameraGazer._gazeTracker.isVisible = false;
-                                        if (this._leftController) {
-                                            this._leftController._gazeTracker.isVisible = false;
-                                        }
-                                        if (this._rightController) {
-                                            this._rightController._gazeTracker.isVisible = false;
-                                        }
-                                    }
 
                                     // resize to update width and height when exiting vr exits fullscreen
                                     this._scene.getEngine().resize();
-
-                                    [this._leftController, this._rightController].forEach((controller) => {
-                                        if (controller) {
-                                            controller._deactivatePointer();
-                                        }
-                                    });
                                     break;
                                 case WebXRState.IN_XR:
                                     this._hasEnteredVR = true;
@@ -835,21 +830,6 @@ export class VRExperienceHelper {
                                 case WebXRState.NOT_IN_XR:
                                     this._hasEnteredVR = false;
                                     break;
-                            }
-                        });
-
-                        this.xr.input.onControllerAddedObservable.add((controller) => {
-                            var webVRController = controller.gamepadController;
-                            if (webVRController) {
-                                var localController = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
-
-                                if (controller.inputSource.handedness === "right" || (this._leftController && this._leftController.webVRController != webVRController)) {
-                                    this._rightController = localController;
-                                } else {
-                                    this._leftController = localController;
-                                }
-
-                                this._tryEnableInteractionOnController(localController);
                             }
                         });
                     });
@@ -1343,6 +1323,14 @@ export class VRExperienceHelper {
         if (!this._interactionsEnabled) {
             this._interactionsRequested = true;
 
+            // in XR it is enabled by default, but just to make sure, re-attach
+            if (this.xr) {
+                if (this.xr.baseExperience.state === WebXRState.IN_XR) {
+                    this.xr.pointerSelection.attach();
+                }
+                return;
+            }
+
             if (this._leftController) {
                 this._enableInteractionOnController(this._leftController);
             }
@@ -1455,14 +1443,21 @@ export class VRExperienceHelper {
                     }
                 }
                 if (this.xr) {
-                    this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, floorMeshes);
+                    floorMeshes.forEach((mesh) => {
+                        this.xr.teleportation.addFloorMesh(mesh);
+                    });
+                    if (!this.xr.teleportation.attached) {
+                        this.xr.teleportation.attach();
+                    }
                     return;
                 } else if (!this.xrTestDone) {
                     const waitForXr = () => {
                         if (this.xrTestDone) {
                             this._scene.unregisterBeforeRender(waitForXr);
                             if (this.xr) {
-                                this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, floorMeshes);
+                                if (!this.xr.teleportation.attached) {
+                                    this.xr.teleportation.attach();
+                                }
                             } else {
                                 this.enableTeleportation(vrTeleportationOptions);
                             }
@@ -1470,15 +1465,6 @@ export class VRExperienceHelper {
                     };
                     this._scene.registerBeforeRender(waitForXr);
                     return;
-                }
-            }
-
-            if (this.xr && vrTeleportationOptions.floorMeshes) {
-                this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, vrTeleportationOptions.floorMeshes);
-                return;
-            } else {
-                if (this.webVROptions.useXR && !this.xrTestDone) {
-
                 }
             }
 
@@ -2193,13 +2179,13 @@ export class VRExperienceHelper {
                     this.onNewMeshPicked.notifyObservers(hit);
                     gazer._currentMeshSelected = hit.pickedMesh;
                     if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
-                        this.changeGazeColor(new Color3(0, 0, 1));
-                        this.changeLaserColor(new Color3(0.2, 0.2, 1));
+                        this.changeGazeColor(this._pickedGazeColor);
+                        this.changeLaserColor(this._pickedLaserColor);
                         gazer._isActionableMesh = true;
                     }
                     else {
-                        this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
-                        this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
+                        this.changeGazeColor(this._gazeColor);
+                        this.changeLaserColor(this._laserColor);
                         gazer._isActionableMesh = false;
                     }
                     try {
@@ -2216,8 +2202,8 @@ export class VRExperienceHelper {
                 else {
                     this._notifySelectedMeshUnselected(gazer._currentMeshSelected);
                     gazer._currentMeshSelected = null;
-                    this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
-                    this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
+                    this.changeGazeColor(this._gazeColor);
+                    this.changeLaserColor(this._laserColor);
                 }
             }
         }
@@ -2225,8 +2211,8 @@ export class VRExperienceHelper {
             this._notifySelectedMeshUnselected(gazer._currentMeshSelected);
             gazer._currentMeshSelected = null;
             //this._teleportationAllowed = false;
-            this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
-            this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
+            this.changeGazeColor(this._gazeColor);
+            this.changeLaserColor(this._laserColor);
         }
     }
 
@@ -2234,6 +2220,40 @@ export class VRExperienceHelper {
         if (mesh) {
             this.onSelectedMeshUnselected.notifyObservers(mesh);
         }
+    }
+
+    /**
+     * Permanently set new colors for the laser pointer
+     * @param color the new laser color
+     * @param pickedColor the new laser color when picked mesh detected
+     */
+    public setLaserColor(color: Color3, pickedColor: Color3 = this._pickedLaserColor) {
+        this._laserColor = color;
+        this._pickedLaserColor = pickedColor;
+    }
+
+    /**
+     * Set lighting enabled / disabled on the laser pointer of both controllers
+     * @param enabled should the lighting be enabled on the laser pointer
+     */
+    public setLaserLightingState(enabled: boolean = true) {
+        if (this._leftController) {
+            this._leftController._setLaserPointerLightingDisabled(!enabled);
+
+        }
+        if (this._rightController) {
+            this._rightController._setLaserPointerLightingDisabled(!enabled);
+        }
+    }
+
+    /**
+     * Permanently set new colors for the gaze pointer
+     * @param color the new gaze color
+     * @param pickedColor the new gaze color when picked mesh detected
+     */
+    public setGazeColor(color: Color3, pickedColor: Color3 = this._pickedGazeColor) {
+        this._gazeColor = color;
+        this._pickedGazeColor = pickedColor;
     }
 
     /**

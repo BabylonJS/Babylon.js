@@ -6,12 +6,13 @@ import { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
+import { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Class used to create a trail following a mesh
  */
 export class TrailMesh extends Mesh {
-    private _generator: AbstractMesh;
+    private _generator: TransformNode;
     private _autoStart: boolean;
     private _running: boolean;
     private _diameter: number;
@@ -24,13 +25,13 @@ export class TrailMesh extends Mesh {
     /**
      * @constructor
      * @param name The value used by scene.getMeshByName() to do a lookup.
-     * @param generator The mesh to generate a trail.
+     * @param generator The mesh or transform node to generate a trail.
      * @param scene The scene to add this mesh to.
      * @param diameter Diameter of trailing mesh. Default is 1.
      * @param length Length of trailing mesh. Default is 60.
      * @param autoStart Automatically start trailing mesh. Default true.
      */
-    constructor(name: string, generator: AbstractMesh, scene: Scene, diameter: number = 1, length: number = 60, autoStart: boolean = true) {
+    constructor(name: string, generator: TransformNode, scene: Scene, diameter: number = 1, length: number = 60, autoStart: boolean = true) {
         super(name, scene);
 
         this._running = false;
@@ -61,8 +62,10 @@ export class TrailMesh extends Mesh {
         let normals: Array<number> = [];
         let indices: Array<number> = [];
         let meshCenter = Vector3.Zero();
-        if (this._generator._boundingInfo) {
+        if (this._generator instanceof AbstractMesh && this._generator._boundingInfo) {
             meshCenter = this._generator._boundingInfo.boundingBox.centerWorld;
+        } else {
+            meshCenter = this._generator.position;
         }
         let alpha: number = 2 * Math.PI / this._sectionPolygonPointsCount;
         for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
@@ -185,7 +188,7 @@ export class TrailMesh extends Mesh {
      * @param newGenerator use new generator object for cloned trail mesh
      * @returns a new mesh
      */
-    public clone(name: string = "", newGenerator: AbstractMesh): TrailMesh {
+    public clone(name: string = "", newGenerator: TransformNode): TrailMesh {
         return new TrailMesh(name, (newGenerator === undefined ? this._generator : newGenerator), this.getScene(), this._diameter, this._length, this._autoStart);
     }
 

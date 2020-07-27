@@ -7,7 +7,6 @@ import { Node } from "../node";
 import { Effect } from "../Materials/effect";
 import { Light } from "./light";
 import { IShadowGenerator } from "./Shadows/shadowGenerator";
-import { _TimeToken } from "../Instrumentation/timeToken";
 
 Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
     return () => new HemisphericLight(name, Vector3.Zero(), scene);
@@ -48,7 +47,7 @@ export class HemisphericLight extends Light {
     protected _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 3);
+        this._uniformBuffer.addUniform("vLightSpecular", 4);
         this._uniformBuffer.addUniform("vLightGround", 3);
         this._uniformBuffer.addUniform("shadowsInfo", 3);
         this._uniformBuffer.addUniform("depthValues", 2);

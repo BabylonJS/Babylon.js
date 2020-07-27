@@ -1,6 +1,5 @@
 import { Nullable } from "../../types";
 import { Engine, IDisplayChangedEventArgs } from "../../Engines/engine";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Size } from '../../Maths/math.size';
 import { Observable } from '../../Misc/observable';
 import { Tools } from '../../Misc/tools';
@@ -98,7 +97,7 @@ declare module "../../Engines/engine" {
          * Call this function to switch to webVR mode
          * Will do nothing if webVR is not supported or if there is no webVR device
          * @param options the webvr options provided to the camera. mainly used for multiview
-         * @see http://doc.babylonjs.com/how_to/webvr_camera
+         * @see https://doc.babylonjs.com/how_to/webvr_camera
          */
         enableVR(options: WebVROptions): void;
 

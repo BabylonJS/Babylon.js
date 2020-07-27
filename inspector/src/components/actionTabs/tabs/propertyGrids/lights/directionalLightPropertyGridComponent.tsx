@@ -9,6 +9,9 @@ import { Vector3LineComponent } from "../../../lines/vector3LineComponent";
 import { CommonShadowLightPropertyGridComponent } from "./commonShadowLightPropertyGridComponent";
 import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
+import { CheckBoxLineComponent } from '../../../lines/checkBoxLineComponent';
+import { ShadowGenerator } from 'babylonjs/Lights/Shadows/shadowGenerator';
+import { CascadedShadowGenerator } from 'babylonjs/Lights/Shadows/cascadedShadowGenerator';
 
 interface IDirectionalLightPropertyGridComponentProps {
     globalState: GlobalState,
@@ -25,6 +28,10 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
     render() {
         const light = this.props.light;
 
+        const generator = light.getShadowGenerator() as (ShadowGenerator | CascadedShadowGenerator) || null;
+
+        const hideAutoCalcShadowZBounds = generator instanceof CascadedShadowGenerator;
+
         return (
             <div className="pane">
                 <CommonLightPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} light={light} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -33,6 +40,9 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
                     <Color3LineComponent label="Specular" target={light} propertyName="specular" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Position" target={light} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Vector3LineComponent label="Direction" target={light} propertyName="direction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    { !hideAutoCalcShadowZBounds &&
+                        <CheckBoxLineComponent label="Auto Calc Shadow ZBounds" target={light} propertyName="autoCalcShadowZBounds" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                 </LineContainerComponent>
                 <CommonShadowLightPropertyGridComponent globalState={this.props.globalState} lockObject={this.props.lockObject} light={light} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </div>

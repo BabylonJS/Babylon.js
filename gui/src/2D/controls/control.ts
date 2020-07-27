@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { Logger } from "babylonjs/Misc/logger";
 import { Tools } from "babylonjs/Misc/tools";
@@ -17,7 +17,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Root class used for all 2D controls
- * @see http://doc.babylonjs.com/how_to/gui#controls
+ * @see https://doc.babylonjs.com/how_to/gui#controls
  */
 export class Control {
     /**
@@ -96,8 +96,12 @@ export class Control {
     private _downPointerIds: { [id: number]: boolean } = {};
     protected _isEnabled = true;
     protected _disabledColor = "#9a9a9a";
+    protected _disabledColorItem = "#6a6a6a";
     /** @hidden */
     protected _rebuildLayout = false;
+
+    /** @hidden */
+    public _customData: any = {};
 
     /** @hidden */
     public _isClipped = false;
@@ -228,6 +232,10 @@ export class Control {
     }
 
     /**
+    * An event triggered when pointer wheel is scrolled
+    */
+    public onWheelObservable = new Observable<Vector2>();
+    /**
     * An event triggered when the pointer move over the control.
     */
     public onPointerMoveObservable = new Observable<Vector2>();
@@ -271,6 +279,11 @@ export class Control {
      * An event triggered after the control was drawn
      */
     public onAfterDrawObservable = new Observable<Control>();
+
+    /**
+    * An event triggered when the control has been disposed
+    */
+   public onDisposeObservable = new Observable<Control>();
 
     /**
      * Get the hosting AdvancedDynamicTexture
@@ -319,7 +332,7 @@ export class Control {
     }
 
     /** Gets or sets a value indicating the scale factor on X axis (1 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
     public get scaleX(): number {
         return this._scaleX;
@@ -336,7 +349,7 @@ export class Control {
     }
 
     /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
     public get scaleY(): number {
         return this._scaleY;
@@ -353,7 +366,7 @@ export class Control {
     }
 
     /** Gets or sets the rotation angle (0 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
     public get rotation(): number {
         return this._rotation;
@@ -370,7 +383,7 @@ export class Control {
     }
 
     /** Gets or sets the transformation center on Y axis (0 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
     public get transformCenterY(): number {
         return this._transformCenterY;
@@ -387,7 +400,7 @@ export class Control {
     }
 
     /** Gets or sets the transformation center on X axis (0 by default)
-     * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
     */
     public get transformCenterX(): number {
         return this._transformCenterX;
@@ -405,7 +418,7 @@ export class Control {
 
     /**
      * Gets or sets the horizontal alignment
-     * @see http://doc.babylonjs.com/how_to/gui#alignments
+     * @see https://doc.babylonjs.com/how_to/gui#alignments
      */
     public get horizontalAlignment(): number {
         return this._horizontalAlignment;
@@ -422,7 +435,7 @@ export class Control {
 
     /**
      * Gets or sets the vertical alignment
-     * @see http://doc.babylonjs.com/how_to/gui#alignments
+     * @see https://doc.babylonjs.com/how_to/gui#alignments
      */
     public get verticalAlignment(): number {
         return this._verticalAlignment;
@@ -439,7 +452,7 @@ export class Control {
 
     /**
      * Gets or sets control width
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get width(): string | number {
         return this._width.toString(this._host);
@@ -457,7 +470,7 @@ export class Control {
 
     /**
      * Gets or sets the control width in pixel
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get widthInPixels(): number {
         return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -472,7 +485,7 @@ export class Control {
 
     /**
      * Gets or sets control height
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get height(): string | number {
         return this._height.toString(this._host);
@@ -490,7 +503,7 @@ export class Control {
 
     /**
      * Gets or sets control height in pixel
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get heightInPixels(): number {
         return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -550,7 +563,7 @@ export class Control {
 
     /**
      * Gets or sets style
-     * @see http://doc.babylonjs.com/how_to/gui#styles
+     * @see https://doc.babylonjs.com/how_to/gui#styles
      */
     public get style(): Nullable<Style> {
         return this._style;
@@ -687,7 +700,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding to use on the left of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingLeft(): string | number {
         return this._paddingLeft.toString(this._host);
@@ -701,7 +714,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the left of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingLeftInPixels(): number {
         return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -716,7 +729,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding to use on the right of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingRight(): string | number {
         return this._paddingRight.toString(this._host);
@@ -730,7 +743,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the right of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingRightInPixels(): number {
         return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -745,7 +758,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding to use on the top of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingTop(): string | number {
         return this._paddingTop.toString(this._host);
@@ -759,7 +772,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the top of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingTopInPixels(): number {
         return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -774,7 +787,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding to use on the bottom of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingBottom(): string | number {
         return this._paddingBottom.toString(this._host);
@@ -788,7 +801,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get paddingBottomInPixels(): number {
         return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -803,7 +816,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the left coordinate of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get left(): string | number {
         return this._left.toString(this._host);
@@ -817,7 +830,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the left coordinate in pixels of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get leftInPixels(): number {
         return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -832,7 +845,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the top coordinate of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get top(): string | number {
         return this._top.toString(this._host);
@@ -846,7 +859,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the top coordinate in pixels of the control
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get topInPixels(): number {
         return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -861,7 +874,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset on X axis to the linked mesh
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetX(): string | number {
         return this._linkOffsetX.toString(this._host);
@@ -875,7 +888,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetXInPixels(): number {
         return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -890,7 +903,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset on Y axis to the linked mesh
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetY(): string | number {
         return this._linkOffsetY.toString(this._host);
@@ -904,7 +917,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public get linkOffsetYInPixels(): number {
         return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -951,6 +964,19 @@ export class Control {
         }
 
         this._disabledColor = value;
+        this._markAsDirty();
+    }
+    /** Gets or sets front color of control if it's disabled*/
+    public get disabledColorItem(): string {
+        return this._disabledColorItem;
+    }
+
+    public set disabledColorItem(value: string) {
+        if (this._disabledColorItem === value) {
+            return;
+        }
+
+        this._disabledColorItem = value;
         this._markAsDirty();
     }
     // Functions
@@ -1101,7 +1127,7 @@ export class Control {
     /**
      * Link current control with a target mesh
      * @param mesh defines the mesh to link with
-     * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
     public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
         if (!this._host || this.parent && this.parent !== this._host._rootContainer) {
@@ -1356,6 +1382,8 @@ export class Control {
         }
 
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
+            this.host._numLayoutCalls++;
+
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
             context.save();
@@ -1596,6 +1624,9 @@ export class Control {
             this._isDirty = false;
             return false;
         }
+
+        this.host._numRenderCalls++;
+
         context.save();
 
         this._applyStates(context);
@@ -1675,7 +1706,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1687,7 +1718,7 @@ export class Control {
             return false;
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex);
+        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
@@ -1789,7 +1820,17 @@ export class Control {
     }
 
     /** @hidden */
-    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean {
+    public _onWheelScroll(deltaX?: number, deltaY?: number): void {
+        if (!this._isEnabled) {
+            return;
+        }
+        var canNotify: boolean = this.onWheelObservable.notifyObservers(new Vector2(deltaX, deltaY));
+
+        if (canNotify && this.parent != null) { this.parent._onWheelScroll(deltaX, deltaY); }
+    }
+
+    /** @hidden */
+    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1825,6 +1866,13 @@ export class Control {
             return true;
         }
 
+        if (type === PointerEventTypes.POINTERWHEEL) {
+            if (this._host._lastControlOver[pointerId]) {
+                this._host._lastControlOver[pointerId]._onWheelScroll(deltaX, deltaY);
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -1853,6 +1901,7 @@ export class Control {
         this.onPointerOutObservable.clear();
         this.onPointerUpObservable.clear();
         this.onPointerClickObservable.clear();
+        this.onWheelObservable.clear();
 
         if (this._styleObserver && this._style) {
             this._style.onChangedObservable.remove(this._styleObserver);
@@ -1870,6 +1919,10 @@ export class Control {
                 this.linkWithMesh(null);
             }
         }
+
+        // Callback
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 
     // Statics

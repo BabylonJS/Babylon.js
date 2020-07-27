@@ -1,6 +1,6 @@
 import { Camera } from "babylonjs/Cameras/camera";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
-import { AnimationGroup } from "babylonjs/Animations/animationGroup";
+import { AnimationGroup, TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Material } from "babylonjs/Materials/material";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
@@ -30,6 +30,13 @@ import { SkeletonTreeItemComponent } from './entities/skeletonTreeItemComponent'
 import { Skeleton } from 'babylonjs/Bones/skeleton';
 import { BoneTreeItemComponent } from './entities/boneTreeItemComponent';
 import { Bone } from 'babylonjs/Bones/bone';
+import { ParticleSystemTreeItemComponent } from './entities/particleSystemTreeItemComponent';
+import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { SpriteManagerTreeItemComponent } from './entities/spriteManagerTreeItemComponent';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { SpriteTreeItemComponent } from './entities/spriteTreeItemComponent';
+import { Sprite } from 'babylonjs/Sprites/sprite';
+import { TargetedAnimationItemComponent } from './entities/targetedAnimationTreeItemComponent';
 
 
 interface ITreeItemSpecializedComponentProps {
@@ -68,6 +75,14 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 }
             }
 
+            if (className.indexOf("SpriteManager") !== -1) {
+                return (<SpriteManagerTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} spriteManager={entity as SpriteManager} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("Sprite") !== -1) {
+                return (<SpriteTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} sprite={entity as Sprite} onClick={() => this.onClick()} />);
+            }
+
             if (className.indexOf("Skeleton") !== -1) {
                 return (<SkeletonTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} skeleton={entity as Skeleton} onClick={() => this.onClick()} />);
             }
@@ -92,12 +107,20 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 return (<MaterialTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} material={entity as Material} onClick={() => this.onClick()} />);
             }
 
+            if (className.indexOf("ParticleSystem") !== -1) {
+                return (<ParticleSystemTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} system={entity as IParticleSystem} onClick={() => this.onClick()} />);
+            }
+
             if (className === "AdvancedDynamicTexture") {
                 return (<AdvancedDynamicTextureTreeItemComponent onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable} extensibilityGroups={this.props.extensibilityGroups} texture={entity as AdvancedDynamicTexture} onClick={() => this.onClick()} />);
             }
 
             if (className === "AnimationGroup") {
                 return (<AnimationGroupItemComponent extensibilityGroups={this.props.extensibilityGroups} animationGroup={entity as AnimationGroup} onClick={() => this.onClick()} />);
+            }
+
+            if (className === "TargetedAnimation") {
+                return (<TargetedAnimationItemComponent extensibilityGroups={this.props.extensibilityGroups} targetedAnimation={entity as TargetedAnimation} onClick={() => this.onClick()} />);
             }
 
             if (className.indexOf("Texture") !== -1) {

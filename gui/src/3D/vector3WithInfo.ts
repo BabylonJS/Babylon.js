@@ -1,4 +1,4 @@
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 
 /**
  * Class used to transport Vector3 information for pointer events

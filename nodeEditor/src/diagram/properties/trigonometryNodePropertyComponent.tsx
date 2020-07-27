@@ -4,7 +4,7 @@ import { LineContainerComponent } from '../../sharedComponents/lineContainerComp
 import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 import { TrigonometryBlockOperations, TrigonometryBlock } from 'babylonjs/Materials/Node/Blocks/trigonometryBlock';
 import { IPropertyComponentProps } from './propertyComponentProps';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class TrigonometryPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -41,11 +41,12 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
         
         return (
             <div>                
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">  
                     <OptionsLineComponent label="Operation" options={operationOptions} target={trigonometryBlock} propertyName="operation" onSelect={(value: any) => {
-                        this.forceUpdate();
+                        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
                         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                        this.forceUpdate();
                     }} />                  
                 </LineContainerComponent>
             </div>

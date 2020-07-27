@@ -91,27 +91,18 @@
 			// Post-processes
 			var aaPostProcess = new BABYLON.AsciiArtPostProcess("AsciiArt", camera);
 			var drPostProcess = new BABYLON.DigitalRainPostProcess("AsciiArt", camera);
-
-			var oceanPostProcess = new BABYLON.OceanPostProcess("Ocean", camera);
-			if (oceanPostProcess.isSupported) {
-				oceanPostProcess.refractionTexture.renderList = scene.meshes;
-				oceanPostProcess.reflectionTexture.renderList = scene.meshes;
-				oceanPostProcess.reflectionEnabled = oceanPostProcess.refractionEnabled = true;
-			}
 			
 			//camera.detachPostProcess(aaPostProcess);
 			camera.detachPostProcess(drPostProcess);
-			camera.detachPostProcess(oceanPostProcess);
 
 			var gui = new dat.GUI();
 			var options = {
 				postProcess: "asciiArt"
 			}
 
-			gui.add(options, 'postProcess', ['asciiArt', 'digitalRain', 'ocean']).onFinishChange(function () {
+			gui.add(options, 'postProcess', ['asciiArt', 'digitalRain']).onFinishChange(function () {
 				camera.detachPostProcess(aaPostProcess);
 				camera.detachPostProcess(drPostProcess);
-				camera.detachPostProcess(oceanPostProcess);
 
 				skybox.setEnabled(false);
 
@@ -121,10 +112,6 @@
 						break;
 					case "digitalRain":
 						camera.attachPostProcess(drPostProcess);
-						break;
-					case "ocean":
-						camera.attachPostProcess(oceanPostProcess);
-						skybox.setEnabled(true);
 						break;
 				}
 			});

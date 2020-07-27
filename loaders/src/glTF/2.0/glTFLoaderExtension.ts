@@ -8,8 +8,7 @@ import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { IDisposable } from "babylonjs/scene";
-
-import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
+import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, ITexture, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 import { IProperty } from 'babylonjs-gltf2interface';
 
@@ -54,7 +53,8 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     loadCameraAsync?(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>>;
 
     /**
-     * @hidden Define this method to modify the default behavior when loading vertex data for mesh primitives.
+     * @hidden
+     * Define this method to modify the default behavior when loading vertex data for mesh primitives.
      * @param context The context when loading the asset
      * @param primitive The glTF mesh primitive property
      * @returns A promise that resolves with the loaded geometry when the load is complete or null if not handled
@@ -62,7 +62,8 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     _loadVertexDataAsync?(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>>;
 
     /**
-     * @hidden Define this method to modify the default behavior when loading data for mesh primitives.
+     * @hidden
+     * Define this method to modify the default behavior when loading data for mesh primitives.
      * @param context The context when loading the asset
      * @param name The mesh name when loading the asset
      * @param node The glTF node when loading the asset
@@ -71,10 +72,11 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded mesh when the load is complete or null if not handled
      */
-    _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Promise<AbstractMesh>;
+    _loadMeshPrimitiveAsync?(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>>;
 
     /**
-     * @hidden Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
+     * @hidden
+     * Define this method to modify the default behavior when loading materials. Load material creates the material and then loads material properties.
      * @param context The context when loading the asset
      * @param material The glTF material property
      * @param assign A function called synchronously after parsing the glTF properties
@@ -110,6 +112,16 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
 
     /**
+     * @hidden
+     * Define this method to modify the default behavior when loading textures.
+     * @param context The context when loading the asset
+     * @param texture The glTF texture property
+     * @param assign A function called synchronously after parsing the glTF properties
+     * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
+     */
+    _loadTextureAsync?(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+
+    /**
      * Define this method to modify the default behavior when loading animations.
      * @param context The context when loading the asset
      * @param animation The glTF animation property
@@ -118,7 +130,8 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     loadAnimationAsync?(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>>;
 
     /**
-     * @hidden Define this method to modify the default behavior when loading skins.
+     * @hidden
+     * Define this method to modify the default behavior when loading skins.
      * @param context The context when loading the asset
      * @param node The glTF node property
      * @param skin The glTF skin property
@@ -127,7 +140,8 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
     _loadSkinAsync?(context: string, node: INode, skin: ISkin): Nullable<Promise<void>>;
 
     /**
-     * @hidden Define this method to modify the default behavior when loading uris.
+     * @hidden
+     * Define this method to modify the default behavior when loading uris.
      * @param context The context when loading the asset
      * @param property The glTF property associated with the uri
      * @param uri The uri to load
