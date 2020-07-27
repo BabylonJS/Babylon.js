@@ -483,32 +483,36 @@ export class AnimationCurveEditorComponent extends React.Component<
         }
 
         if (newFrame > keys[index].frame) {
-            const nextKf = keys[index + 1];
-
-            if (nextKf) {
-                if (nextKf.frame <= newFrame) {
-                    keys[index].frame = keys[index].frame;
-                } else {
-                    keys[index].frame = newFrame;
+            if (index === keys.length - 1) {
+                keys[index].frame = newFrame;
+            } else {
+                const nextKf = keys[index + 1];
+                if (nextKf) {
+                    if (nextKf.frame <= newFrame) {
+                        keys[index].frame = keys[index].frame;
+                    } else {
+                        keys[index].frame = newFrame;
+                    }
                 }
             }
         }
 
         if (newFrame < keys[index].frame) {
-            const prevKf = keys[index - 1];
-            if (prevKf) {
-                if (prevKf.frame >= newFrame) {
-                    keys[index].frame = keys[index].frame;
-                } else {
-                    keys[index].frame = newFrame;
+            if (index === 0) {
+                keys[index].frame = newFrame;
+            } else {
+                const prevKf = keys[index - 1];
+                if (prevKf) {
+                    if (prevKf.frame >= newFrame) {
+                        keys[index].frame = keys[index].frame;
+                    } else {
+                        keys[index].frame = newFrame;
+                    }
                 }
             }
         }
 
-        //let updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * this._scaleFactor; // this value comes inverted svg from 0 = 100 to 100 = 0
-        //let updatedValue = ((100 - updatedSvgKeyFrame.keyframePoint.y) / 100) * 2; // this value comes inverted svg from 0 = 100 to 100 = 0
-        //let updatedValue = ((100 - updatedSvgKeyFrame.keyframePoint.y) / 100) * this._scaleFactor;
-        let updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * this._scaleFactor; //?
+        let updatedValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * this._scaleFactor;
 
         const updatedValueInCoordinate = this.updateValuePerCoordinate(animation.dataType, keys[index].value, updatedValue, coordinate);
 
