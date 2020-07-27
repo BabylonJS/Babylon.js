@@ -241,15 +241,15 @@ export class ContainerAssetTask extends AbstractAssetTask {
     /**
      * Callback called when the task is successful
      */
-    public onSuccess: (task: MeshAssetTask) => void;
+    public onSuccess: (task: ContainerAssetTask) => void;
 
     /**
      * Callback called when the task is successful
      */
-    public onError: (task: MeshAssetTask, message?: string, exception?: any) => void;
+    public onError: (task: ContainerAssetTask, message?: string, exception?: any) => void;
 
     /**
-     * Creates a new MeshAssetTask
+     * Creates a new ContainerAssetTask
      * @param name defines the name of the task
      * @param meshesNames defines the list of mesh's names you want to load
      * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
