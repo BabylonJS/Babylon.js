@@ -38750,6 +38750,8 @@ declare module BABYLON {
         static DoubleClickDelay: number;
         /** If you need to check double click without raising a single click at first click, enable this flag */
         static ExclusiveDoubleClickMode: boolean;
+        /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
+        private _alreadyAttached;
         private _wheelEventName;
         private _onPointerMove;
         private _onPointerDown;
