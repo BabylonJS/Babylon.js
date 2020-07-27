@@ -42,7 +42,7 @@ export class TransmissionHelper {
     private _opaqueRenderTarget: RenderTargetTexture;
     private _opaqueMeshesCache: Mesh[] = [];
     private _transparentMeshesCache: Mesh[] = [];
-    
+
     public disabled: boolean = false;
 
     /**
@@ -63,7 +63,7 @@ export class TransmissionHelper {
         };
         this._scene = scene;
         this.onErrorObservable = new Observable();
-        
+
         this._parseScene();
         this._setupRenderTargets();
     }
@@ -92,7 +92,7 @@ export class TransmissionHelper {
 
 
         // If size changes, recreate everything
-        if (newOptions.renderSize !== oldOptions.renderSize ) {
+        if (newOptions.renderSize !== oldOptions.renderSize) {
 
             this._setupRenderTargets();
         }
@@ -173,7 +173,7 @@ export class TransmissionHelper {
                 } else if (transparent_idx === -1) {
                     this._transparentMeshesCache.push(mesh);
                 }
-            // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
+                // If the material is opaque, make sure that it's added to the opaque list and removed from the transparent list
             } else {
                 if (transparent_idx !== -1) {
                     this._transparentMeshesCache.splice(transparent_idx, 1);
@@ -219,7 +219,7 @@ export class TransmissionHelper {
         this._opaqueRenderTarget.gammaSpace = true;
         this._opaqueRenderTarget.lodGenerationScale = 1;
         this._opaqueRenderTarget.lodGenerationOffset = -4;
-        
+
         if (this._opaqueRTIndex >= 0) {
             this._scene.customRenderTargets.splice(this._opaqueRTIndex, 0, this._opaqueRenderTarget);
         } else {
@@ -233,14 +233,14 @@ export class TransmissionHelper {
                 layer.renderTargetTextures.push(this._opaqueRenderTarget);
             });
         }
-        
+
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
             if (this.shouldRenderAsTransmission(mesh.material) && mesh.material instanceof PBRMaterial) {
                 mesh.material.refractionTexture = this._opaqueRenderTarget;
                 mesh.material.getRenderTargetTextures = null;
             }
         });
-        
+
     }
 
     // private _errorHandler = (message?: string, exception?: any) => {
