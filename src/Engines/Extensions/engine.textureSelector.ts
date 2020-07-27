@@ -62,8 +62,8 @@ function transformTextureUrl(this: Engine, url: string): string {
     }
 
     const lastDot = url.lastIndexOf('.');
-    const lastQuestionMark = url.lastIndexOf('?');    
-    const querystring = lastQuestionMark > -1 ? url.substring(lastQuestionMark, url.length) : ''
+    const lastQuestionMark = url.lastIndexOf('?');
+    const querystring = lastQuestionMark > -1 ? url.substring(lastQuestionMark, url.length) : '';
     return (lastDot > -1 ? url.substring(0, lastDot) : url) + this._textureFormatInUse + querystring;
 }
 
