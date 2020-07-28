@@ -12,6 +12,7 @@ import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
 import { AnimationGroup } from '../Animations/animationGroup';
+import { AssetContainer } from "../assetContainer";
 
 /**
  * Defines the list of states available for a task inside a AssetsManager
@@ -209,6 +210,90 @@ export class AssetsProgressEvent implements IAssetsProgressEvent {
         this.remainingCount = remainingCount;
         this.totalCount = totalCount;
         this.task = task;
+    }
+}
+
+/**
+ * Define a task used by AssetsManager to load assets into a container
+ */
+export class ContainerAssetTask extends AbstractAssetTask {
+    /**
+     * Get the loaded asset container
+     */
+    public loadedContainer: AssetContainer;
+    /**
+     * Gets the list of loaded meshes
+     */
+    public loadedMeshes: Array<AbstractMesh>;
+    /**
+     * Gets the list of loaded particle systems
+     */
+    public loadedParticleSystems: Array<IParticleSystem>;
+    /**
+     * Gets the list of loaded skeletons
+     */
+    public loadedSkeletons: Array<Skeleton>;
+    /**
+     * Gets the list of loaded animation groups
+     */
+    public loadedAnimationGroups: Array<AnimationGroup>;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onSuccess: (task: ContainerAssetTask) => void;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onError: (task: ContainerAssetTask, message?: string, exception?: any) => void;
+
+    /**
+     * Creates a new ContainerAssetTask
+     * @param name defines the name of the task
+     * @param meshesNames defines the list of mesh's names you want to load
+     * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
+     * @param sceneFilename defines the filename or File of the scene to load from
+     */
+    constructor(
+        /**
+         * Defines the name of the task
+         */
+        public name: string,
+        /**
+         * Defines the list of mesh's names you want to load
+         */
+        public meshesNames: any,
+        /**
+         * Defines the root url to use as a base to load your meshes and associated resources
+         */
+        public rootUrl: string,
+        /**
+         * Defines the filename or File of the scene to load from
+         */
+        public sceneFilename: string | File) {
+        super(name);
+    }
+
+    /**
+     * Execute the current task
+     * @param scene defines the scene where you want your assets to be loaded
+     * @param onSuccess is a callback called when the task is successfully executed
+     * @param onError is a callback called if an error occurs
+     */
+    public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        SceneLoader.LoadAssetContainer(this.rootUrl, this.sceneFilename, scene,
+            (container: AssetContainer) => {
+                this.loadedContainer = container;
+                this.loadedMeshes = container.meshes;
+                this.loadedParticleSystems = container.particleSystems;
+                this.loadedSkeletons = container.skeletons;
+                this.loadedAnimationGroups = container.animationGroups;
+                onSuccess();
+            }, null, (scene, message, exception) => {
+                onError(message, exception);
+            }
+        );
     }
 }
 
@@ -832,6 +917,21 @@ export class AssetsManager {
      */
     constructor(scene: Scene) {
         this._scene = scene;
+    }
+
+    /**
+     * Add a ContainerAssetTask to the list of active tasks
+     * @param taskName defines the name of the new task
+     * @param meshesNames defines the name of meshes to load
+     * @param rootUrl defines the root url to use to locate files
+     * @param sceneFilename defines the filename of the scene file
+     * @returns a new ContainerAssetTask object
+     */
+    public addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): ContainerAssetTask {
+        var task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
+        this._tasks.push(task);
+
+        return task;
     }
 
     /**
