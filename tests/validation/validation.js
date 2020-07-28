@@ -241,8 +241,7 @@ function runTest(index, done) {
                     }, retryTime);
                 }
                 else {
-                    // Skip the test as we can not fetch the source.
-                    done(true);
+                    done(false);
                 }
             }
 
