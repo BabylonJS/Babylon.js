@@ -71903,6 +71903,86 @@ declare module BABYLON {
         constructor(remainingCount: number, totalCount: number, task: AbstractAssetTask);
     }
     /**
+     * Define a task used by AssetsManager to load assets into a container
+     */
+    export class ContainerAssetTask extends AbstractAssetTask {
+        /**
+         * Defines the name of the task
+         */
+        name: string;
+        /**
+         * Defines the list of mesh's names you want to load
+         */
+        meshesNames: any;
+        /**
+         * Defines the root url to use as a base to load your meshes and associated resources
+         */
+        rootUrl: string;
+        /**
+         * Defines the filename or File of the scene to load from
+         */
+        sceneFilename: string | File;
+        /**
+         * Get the loaded asset container
+         */
+        loadedContainer: AssetContainer;
+        /**
+         * Gets the list of loaded meshes
+         */
+        loadedMeshes: Array<AbstractMesh>;
+        /**
+         * Gets the list of loaded particle systems
+         */
+        loadedParticleSystems: Array<IParticleSystem>;
+        /**
+         * Gets the list of loaded skeletons
+         */
+        loadedSkeletons: Array<Skeleton>;
+        /**
+         * Gets the list of loaded animation groups
+         */
+        loadedAnimationGroups: Array<AnimationGroup>;
+        /**
+         * Callback called when the task is successful
+         */
+        onSuccess: (task: ContainerAssetTask) => void;
+        /**
+         * Callback called when the task is successful
+         */
+        onError: (task: ContainerAssetTask, message?: string, exception?: any) => void;
+        /**
+         * Creates a new ContainerAssetTask
+         * @param name defines the name of the task
+         * @param meshesNames defines the list of mesh's names you want to load
+         * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
+         * @param sceneFilename defines the filename or File of the scene to load from
+         */
+        constructor(
+        /**
+         * Defines the name of the task
+         */
+        name: string, 
+        /**
+         * Defines the list of mesh's names you want to load
+         */
+        meshesNames: any, 
+        /**
+         * Defines the root url to use as a base to load your meshes and associated resources
+         */
+        rootUrl: string, 
+        /**
+         * Defines the filename or File of the scene to load from
+         */
+        sceneFilename: string | File);
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
+        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
+    }
+    /**
      * Define a task used by AssetsManager to load meshes
      */
     export class MeshAssetTask extends AbstractAssetTask {
@@ -72498,6 +72578,15 @@ declare module BABYLON {
          * @param scene defines the scene to work on
          */
         constructor(scene: Scene);
+        /**
+         * Add a ContainerAssetTask to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param meshesNames defines the name of meshes to load
+         * @param rootUrl defines the root url to use to locate files
+         * @param sceneFilename defines the filename of the scene file
+         * @returns a new ContainerAssetTask object
+         */
+        addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string): ContainerAssetTask;
         /**
          * Add a MeshAssetTask to the list of active tasks
          * @param taskName defines the name of the new task
