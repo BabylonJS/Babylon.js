@@ -30,7 +30,6 @@ import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLine
 import { OptionsLineComponent } from '../lines/optionsLineComponent';
 import { MessageLineComponent } from '../lines/messageLineComponent';
 import { FileButtonLineComponent } from '../lines/fileButtonLineComponent';
-import { SceneRecorder } from 'babylonjs';
 import { IndentedTextLineComponent } from '../lines/indentedTextLineComponent';
 
 const GIF = require('gif.js.optimized')
@@ -270,8 +269,7 @@ export class ToolsTabComponent extends PaneComponent {
 
     applyDelta(file: File) {
         Tools.ReadFile(file, (data) => {
-            SceneRecorder.ApplyDelta(data, this.props.scene);
-            this.props.globalState.recorder.cancel();
+            this.props.globalState.recorder.applyDelta(data, this.props.scene);
 
             this.forceUpdate();
         });
