@@ -175,12 +175,12 @@ export class SceneRecorder {
     }
 
     private static GetShadowGeneratorById(scene: Scene, id: string) {
-        var generators = scene.lights.map(l => l.getShadowGenerator());
+        var generators = scene.lights.map((l) => l.getShadowGenerator());
 
         for (var generator of generators) {
             if (generator && generator.id === id) {
                 return generator;
-            } 
+            }
         }
 
         return null;
@@ -210,9 +210,9 @@ export class SceneRecorder {
                         break;
                     case "lights":
                         this._ApplyDeltaForEntity(source, scene, scene.getLightByID.bind(scene), (data) => Light.Parse(data, scene));
-                        break;                        
+                        break;
                     case "shadowGenerators":
-                        this._ApplyDeltaForEntity(source, scene, id => this.GetShadowGeneratorById(scene, id), (data) => ShadowGenerator.Parse(data, scene));
+                        this._ApplyDeltaForEntity(source, scene, (id) => this.GetShadowGeneratorById(scene, id), (data) => ShadowGenerator.Parse(data, scene));
                         break;
                     case "meshes":
                         this._ApplyDeltaForEntity(source, scene, scene.getMeshByID.bind(scene), (data) => Mesh.Parse(data, scene, ""));
