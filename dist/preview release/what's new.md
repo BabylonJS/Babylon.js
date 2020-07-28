@@ -17,6 +17,7 @@
 
 ### General
 
+- Added support for querystrings on KTX file URLs ([abogartz](https://github.com/abogartz/Babylon.js)
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
 - Node support (Transform, Bone) for gizmos ([cedricguillemet](https://github.com/cedricguillemet))
