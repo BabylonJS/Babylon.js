@@ -42,7 +42,6 @@ export class SceneRecorder {
         let deltaJSON: any = {};
 
         for (var node in newJSON) {
-            console.log("Processing " + node);
             this._compareCollections(node, this._savedJSON[node], newJSON[node], deltaJSON);
         }
 
@@ -150,9 +149,6 @@ export class SceneRecorder {
     }
 
     private _compareCollections(key: string, original: any[], current: any[], deltaJSON: any) {
-        console.log(original, typeof original);
-        console.log(current, typeof current);
-
         // Same ?
         if (original === current) {
             return;
