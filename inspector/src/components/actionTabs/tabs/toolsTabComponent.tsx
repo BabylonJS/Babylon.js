@@ -29,6 +29,9 @@ import { TextLineComponent } from '../lines/textLineComponent';
 import { FileMultipleButtonLineComponent } from '../lines/fileMultipleButtonLineComponent';
 import { OptionsLineComponent } from '../lines/optionsLineComponent';
 import { MessageLineComponent } from '../lines/messageLineComponent';
+import { FileButtonLineComponent } from '../lines/fileButtonLineComponent';
+import { SceneRecorder } from 'babylonjs';
+import { IndentedTextLineComponent } from '../lines/indentedTextLineComponent';
 
 const GIF = require('gif.js.optimized')
 
@@ -265,6 +268,15 @@ export class ToolsTabComponent extends PaneComponent {
         this.forceUpdate();
     }
 
+    applyDelta(file: File) {
+        Tools.ReadFile(file, (data) => {
+            SceneRecorder.ApplyDelta(data, this.props.scene);
+            this.props.globalState.recorder.cancel();
+
+            this.forceUpdate();
+        });
+    }
+
     render() {
         const scene = this.props.scene;
 
@@ -328,8 +340,13 @@ export class ToolsTabComponent extends PaneComponent {
                     }
                     {
                         this.props.globalState.recorder.isRecording &&
+                        <IndentedTextLineComponent value={"Record in progress"}/>                        
+                    }
+                    {
+                        this.props.globalState.recorder.isRecording &&
                         <ButtonLineComponent label="Generate delta file" onClick={() => this.exportReplay()} />
                     }
+                    <FileButtonLineComponent label={`Apply delta file`} onClick={(file) => this.applyDelta(file)} accept=".json" />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCENE IMPORT">
                     <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
