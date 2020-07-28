@@ -644,9 +644,21 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     setFlatTangent() {
+        const keyframes = this.state.svgKeyframes?.filter((kf) => kf.selected).map((k) => this.decodeCurveId(k.id));
+
         if (this.state.selected !== null) {
-            let animation = this.state.selected;
-            this.setState({ isFlatTangentMode: true }, () => this.selectAnimation(animation));
+            let currentAnimation = this.state.selected;
+            const keys = currentAnimation.getKeys();
+
+            keyframes?.forEach((k) => {
+                const keyframe = keys[k.order];
+                keyframe.inTangent = this.returnZero(currentAnimation.dataType);
+                keyframe.outTangent = this.returnZero(currentAnimation.dataType);
+            });
+
+            currentAnimation.setKeys(keys);
+
+            this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
         }
     }
 
@@ -692,6 +704,31 @@ export class AnimationCurveEditorComponent extends React.Component<
                 }
             }
 
+            // calculate point between prevkeyframe and nextkeyframe.
+            const previousKFs = keys.filter((kf) => kf.frame < x);
+            const nextKFs = keys.filter((kf) => kf.frame > x);
+            const prev = previousKFs.slice(-1)[0];
+            const next = nextKFs[0];
+
+            if (prev === undefined && next) {
+                y = next.value;
+            }
+
+            if (prev && next === undefined) {
+                y = prev.value;
+            }
+
+            if (prev && next) {
+                const value1 = new Vector2(prev.frame, prev.value);
+                const tangent1 = new Vector2(prev.outTangent, prev.outTangent);
+                const value2 = new Vector2(next.frame, next.value);
+                const tangent2 = new Vector2(next.inTangent, next.inTangent);
+
+                const amount = (x - prev.frame) / (next.frame - prev.frame);
+                const newV = Vector2.Hermite(value1, tangent1, value2, tangent2, amount);
+                y = newV.y;
+            }
+
             arrayValue[this.state.selectedCoordinate] = y;
 
             let actualValue = this.setValueAsType(currentAnimation.dataType, arrayValue);
@@ -721,7 +758,7 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                 currentAnimation.setKeys(filteredKeys);
 
-                this.selectAnimation(currentAnimation);
+                this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
             }
         }
     }
@@ -746,7 +783,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                 currentAnimation.setKeys(filteredKeys);
                 this.deselectKeyframes();
 
-                this.selectAnimation(currentAnimation);
+                this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
             }
         }
     }
