@@ -30,6 +30,9 @@ export class SkeletonViewer {
     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
     public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
 
+    /** If SkeletonViewer scene scope. */
+    private _scene : Scene;
+
     /** Gets or sets the color used to render the skeleton */
     public color: Color3 = Color3.White();
 
@@ -46,7 +49,7 @@ export class SkeletonViewer {
     private _ready : boolean;
 
     /** SkeletonViewer render observable. */
-    private obs: Nullable<Observer<Scene>> = null;
+    private _obs: Nullable<Observer<Scene>> = null;
 
      /** The Utility Layer to render the gizmos in. */
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
@@ -91,6 +94,7 @@ export class SkeletonViewer {
      * @param scene defines the hosting scene
      * @param autoUpdateBonesMatrices defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)
      * @param renderingGroupId defines the rendering group id to use with the viewer
+     * @param options All of the extra constructor options for the SkeletonViewer
      */
     constructor(
         /** defines the skeleton to render */
@@ -98,7 +102,7 @@ export class SkeletonViewer {
         /** defines the mesh attached to the skeleton */
         public mesh: AbstractMesh,
         /** The Scene scope*/
-        private _scene: Scene,
+        scene: Scene,
         /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
         public autoUpdateBonesMatrices: boolean = true,
         /** defines the rendering group id to use with the viewer */
@@ -107,7 +111,9 @@ export class SkeletonViewer {
         public options: Partial<ISkeletonViewerOptions> = {}
         ) {
 
+        this._scene = scene;
         this._ready = false;
+
         //Defaults
         options.pauseAnimations = options.pauseAnimations || true;
         options.returnToRest = options.returnToRest || true;
@@ -140,7 +146,7 @@ export class SkeletonViewer {
         let displayMode = this.options.displayMode || 0;
         switch (displayMode){
             case SkeletonViewer.DISPLAY_LINES: {
-                    this.obs = this.scene.onBeforeRenderObservable.add(() => {
+                    this._obs = this.scene.onBeforeRenderObservable.add(() => {
                         this._displayLinesUpdate();
                     });
                 break;
@@ -179,11 +185,11 @@ export class SkeletonViewer {
             this.debugMesh.setEnabled(value);
         }
 
-        if (value && !this.obs) {
+        if (value && !this._obs) {
             this._bindObs();
-        } else if (!value && this.obs) {
-            this.scene.onBeforeRenderObservable.remove(this.obs);
-            this.obs = null;
+        } else if (!value && this._obs) {
+            this.scene.onBeforeRenderObservable.remove(this._obs);
+            this._obs = null;
         }
     }
 
