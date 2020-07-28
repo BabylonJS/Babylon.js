@@ -115,16 +115,16 @@ export class SkeletonViewer {
         this._ready = false;
 
         //Defaults
-        options.pauseAnimations = options.pauseAnimations || true;
-        options.returnToRest = options.returnToRest || true;
-        options.displayMode = options.displayMode || SkeletonViewer.DISPLAY_LINES;
-        options.displayOptions = options.displayOptions || {};
-        options.displayOptions.midStep = options.displayOptions.midStep || 0.235;
-        options.displayOptions.midStepFactor = options.displayOptions.midStepFactor || 0.155;
-        options.displayOptions.sphereBaseSize = options.displayOptions.sphereBaseSize || 0.15;
-        options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit || 2;
-        options.displayOptions.sphereFactor = options.displayOptions.sphereFactor || 0.865;
-        options.computeBonesUsingShaders = options.computeBonesUsingShaders || true;
+        options.pauseAnimations = options.pauseAnimations ?? true;
+        options.returnToRest = options.returnToRest ?? true;
+        options.displayMode = options.displayMode ?? SkeletonViewer.DISPLAY_LINES;
+        options.displayOptions = options.displayOptions ?? {};
+        options.displayOptions.midStep = options.displayOptions.midStep ?? 0.235;
+        options.displayOptions.midStepFactor = options.displayOptions.midStepFactor ?? 0.155;
+        options.displayOptions.sphereBaseSize = options.displayOptions.sphereBaseSize ?? 0.15;
+        options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit ?? 2;
+        options.displayOptions.sphereFactor = options.displayOptions.sphereFactor ?? 0.865;
+        options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
 
         /* Create Utility Layer */
         this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
@@ -143,8 +143,7 @@ export class SkeletonViewer {
 
     /** The Dynamic bindings for the update functions */
     private _bindObs(): void {
-        let displayMode = this.options.displayMode || 0;
-        switch (displayMode){
+        switch (this.options.displayMode){
             case SkeletonViewer.DISPLAY_LINES: {
                     this._obs = this.scene.onBeforeRenderObservable.add(() => {
                         this._displayLinesUpdate();
@@ -152,7 +151,6 @@ export class SkeletonViewer {
                 break;
             }
         }
-
     }
 
     /** Update the viewer to sync with current skeleton state, only used to manually update. */
