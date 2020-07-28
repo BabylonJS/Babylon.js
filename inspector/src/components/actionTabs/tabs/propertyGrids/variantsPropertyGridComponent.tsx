@@ -22,7 +22,7 @@ interface IVariantsPropertyGridComponentProps {
 
 export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
     // private _lastOne = 0;
-    private _selectedTags: string[] = [];
+    private _selectedVariants: string[] = [];
 
     constructor(props: IVariantsPropertyGridComponentProps) {
         super(props);
@@ -49,11 +49,11 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
             let aIsActive = lastPickedVariants && lastPickedVariants.indexOf ? lastPickedVariants.indexOf(a) > -1 : lastPickedVariants === a;
             let bIsActive = lastPickedVariants && lastPickedVariants.indexOf ? lastPickedVariants.indexOf(b) > -1 : lastPickedVariants === b;
 
-            if (!aIsActive && this._selectedTags.indexOf(a) > -1) {
+            if (!aIsActive && this._selectedVariants.indexOf(a) > -1) {
                 aIsActive = true;
             }
 
-            if (!bIsActive && this._selectedTags.indexOf(b) > -1) {
+            if (!bIsActive && this._selectedVariants.indexOf(b) > -1) {
                 bIsActive = true;
             }
 
@@ -65,7 +65,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                 return -1;
             }
 
-            return 1
+            return 1;
         });
 
         // let options = variants.map((v: string, i: number) =>  {
@@ -80,45 +80,45 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                     {
                         variants.map((v: string, i: number) => {
                             return (
-                                <CheckBoxLineComponent key={i} label={v} 
+                                <CheckBoxLineComponent key={i} label={v}
                                         isSelected={() => {
                                             if (lastPickedVariants) {
                                                 if (Object.prototype.toString.call(lastPickedVariants) === '[object String]') {
                                                     if (lastPickedVariants === v) {
-                                                        if (this._selectedTags.indexOf(v) === -1) {                                                            
-                                                            this._selectedTags.push(v);
+                                                        if (this._selectedVariants.indexOf(v) === -1) {
+                                                            this._selectedVariants.push(v);
                                                         }
                                                         return true;
                                                     }
                                                 } else {
                                                     let index = lastPickedVariants.indexOf(v);
                                                     if (index > -1) {
-                                                        return true
+                                                        return true;
                                                     }
                                                 }
                                             }
 
-                                            return this._selectedTags.indexOf(v) > -1;
+                                            return this._selectedVariants.indexOf(v) > -1;
                                         }}
                                         onSelect={(value) => {
                                             if (value) {
-                                                this._selectedTags.push(v);
+                                                this._selectedVariants.push(v);
                                                 extension.selectVariant(this.props.host, v);
                                             } else {
                                                 // Do something on extension?
-                                                let index = this._selectedTags.indexOf(v);
+                                                let index = this._selectedVariants.indexOf(v);
 
                                                 if (index > -1) {
-                                                    this._selectedTags.splice(index, 1);
+                                                    this._selectedVariants.splice(index, 1);
                                                 }
                                             }
                                         }}
                                     />
-                            )
+                            );
                         })
                     }
-                    {/* <OptionsLineComponent 
-                        label="Active variant" options={options} noDirectUpdate={true} 
+                    {/* <OptionsLineComponent
+                        label="Active variant" options={options} noDirectUpdate={true}
                         target={this.props.host}
                         propertyName=""
                         onSelect={(value: number) => {
@@ -146,7 +146,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                     /> */}
                     <ButtonLineComponent label="Reset" onClick={() => {
                         extension.reset(this.props.host);
-                        this._selectedTags = [];
+                        this._selectedVariants = [];
                         this.forceUpdate();
                     }} />
                 </LineContainerComponent>

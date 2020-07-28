@@ -36,6 +36,7 @@
 - Added an option when creating the engine to switch matrix computation to 64 bits ([Popov72](https://github.com/Popov72))
 - Added support for the alpha component to the SSR post-process ([Popov72](https://github.com/Popov72))
 - Force compute world matrix of the newly-attached mesh of a ray helper ([RaananW](https://github.com/RaananW))
+- Allow 180 monoscopic videos on top of the video dome ([#8575](https://github.com/BabylonJS/Babylon.js/issues/8575)) ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -67,6 +68,7 @@
 
 ### Inspector
 
+- New delta tool used to apply delta changes to a scene ([Deltakosh](https://github.com/deltakosh))
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
 - Edit all textures (anisotropic, clear coat, sheen, ...) for the PBR materials ([Popov72](https://github.com/Popov72))
@@ -74,13 +76,14 @@
 - Added support for recording GIF ([Deltakosh](https://github.com/deltakosh))
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
-- View textures in pop out inspector with zoom & pan and individual channels, and save to local machine. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
+- View & edit textures in pop out inspector with zoom & pan and individual channels, and save to local machine. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Cameras
 
 - Fixed up vector not correctly handled with stereoscopic rig ([cedricguillemet](https://github.com/cedricguillemet))
-- handle reattachment of panning button for `ArcRotateCamera` ([cedricguillemet](https://github.com/cedricguillemet))
+- Handle reattachment of panning button for `ArcRotateCamera` ([cedricguillemet](https://github.com/cedricguillemet))
+- Unattach previous control in `scene.InputManager` when attaching a new one ([cedricguillemet](https://github.com/cedricguillemet))
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 - Handle scales in camera matrices ([Popov72](https://github.com/Popov72))

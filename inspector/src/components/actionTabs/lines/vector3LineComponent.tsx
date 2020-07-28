@@ -16,7 +16,6 @@ interface IVector3LineComponentProps {
     step?: number;
     onChange?: (newvalue: Vector3) => void;
     useEuler?: boolean,
-    replaySourceReplacement?: string,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
@@ -63,7 +62,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.replaySourceReplacement ?? this.props.target,
+            object: this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
             initialValue: previousValue

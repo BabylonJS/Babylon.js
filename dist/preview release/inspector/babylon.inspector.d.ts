@@ -9,20 +9,12 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    export class CodeChangedEvent {
-        object: any;
-        code: string;
-    }
-}
-declare module INSPECTOR {
     export class ReplayRecorder {
-        private _recordedCodeLines;
-        private _previousObject;
-        private _previousProperty;
-        reset(): void;
-        private _getIndirectData;
-        recordCode(event: CodeChangedEvent): void;
-        record(event: PropertyChangedEvent): void;
+        private _sceneRecorder;
+        private _isRecording;
+        get isRecording(): boolean;
+        cancel(): void;
+        trackScene(scene: BABYLON.Scene): void;
         export(): void;
     }
 }
@@ -30,7 +22,6 @@ declare module INSPECTOR {
     export class GlobalState {
         onSelectionChangedObservable: BABYLON.Observable<any>;
         onPropertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>;
-        onCodeChangedObservable: BABYLON.Observable<CodeChangedEvent>;
         onInspectorClosedObservable: BABYLON.Observable<BABYLON.Scene>;
         onTabChangedObservable: BABYLON.Observable<number>;
         onSelectionRenamedObservable: BABYLON.Observable<void>;
@@ -175,7 +166,6 @@ declare module INSPECTOR {
         isSelected?: () => boolean;
         onSelect?: (value: boolean) => void;
         onValueChanged?: () => void;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponentProps, {
@@ -227,7 +217,6 @@ declare module INSPECTOR {
         useEuler?: boolean;
         onChange?: (value: number) => void;
         onInput?: (value: number) => void;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         decimalCount?: number;
     }
@@ -374,7 +363,6 @@ declare module INSPECTOR {
         step?: number;
         onChange?: (newvalue: BABYLON.Vector3) => void;
         useEuler?: boolean;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
@@ -491,7 +479,6 @@ declare module INSPECTOR {
         lockObject?: LockObject;
         onChange?: (newValue: number) => void;
         isInteger?: boolean;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
         additionalClass?: string;
         step?: string;
@@ -1333,9 +1320,13 @@ declare module INSPECTOR {
     }
     interface ToolBarState {
         toolURL: string;
+        pickerOpen: boolean;
+        addOpen: boolean;
     }
     export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
+        private pickerRef;
         constructor(props: ToolBarProps);
+        computeRGBAColor(): string;
         render(): JSX.Element;
     }
 }
@@ -1375,7 +1366,6 @@ declare module INSPECTOR {
         private _UICanvas;
         private _size;
         private _2DCanvas;
-        private _texture;
         private _displayCanvas;
         private _channels;
         private _face;
@@ -1413,7 +1403,11 @@ declare module INSPECTOR {
         set tool(tool: BABYLON.Nullable<Tool>);
         get tool(): BABYLON.Nullable<Tool>;
         set face(face: number);
-        resetTexture(): void;
+        private makePlane;
+        reset(): void;
+        resize(newSize: BABYLON.ISize): Promise<void>;
+        private updateSize;
+        upload(file: File): void;
         dispose(): void;
     }
 }
@@ -1425,13 +1419,20 @@ declare module INSPECTOR {
         face: number;
         setFace(face: number): void;
         resetTexture(): void;
+        resizeTexture(width: number, height: number): void;
+        uploadTexture(file: File): void;
+    }
+    interface PropertiesBarState {
+        width: number;
+        height: number;
     }
     interface PixelDataProps {
         name: string;
         data?: number;
     }
     function PixelData(props: PixelDataProps): JSX.Element;
-    export class PropertiesBar extends React.Component<PropertiesBarProps> {
+    export class PropertiesBar extends React.Component<PropertiesBarProps, PropertiesBarState> {
+        constructor(props: PropertiesBarProps);
         render(): JSX.Element;
     }
 }
@@ -1456,6 +1457,19 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    export const Paintbrush: ToolData;
+}
+declare module INSPECTOR {
+    export const Eyedropper: ToolData;
+}
+declare module INSPECTOR {
+    export const Floodfill: ToolData;
+}
+declare module INSPECTOR {
+    const _default: import("babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent").ToolData[];
+    export default _default;
+}
+declare module INSPECTOR {
     interface TextureEditorComponentProps {
         globalState: GlobalState;
         texture: BABYLON.BaseTexture;
@@ -1469,7 +1483,15 @@ declare module INSPECTOR {
         pixelData: PixelData;
         face: number;
     }
-    interface ToolData {
+    export interface ToolParameters {
+        scene: BABYLON.Scene;
+        canvas2D: HTMLCanvasElement;
+        size: BABYLON.ISize;
+        updateTexture: () => void;
+        getMetadata: () => any;
+        setMetadata: (data: any) => void;
+    }
+    export interface ToolData {
         name: string;
         type: any;
         icon: string;
@@ -1486,12 +1508,16 @@ declare module INSPECTOR {
         componentDidMount(): void;
         componentDidUpdate(): void;
         componentWillUnmount(): void;
-        loadTool(url: string): void;
+        loadToolFromURL(url: string): void;
+        addTools(tools: ToolData[]): void;
+        getToolParameters(): ToolParameters;
         changeTool(index: number): void;
         setMetadata(newMetadata: any): void;
         setFace(face: number): void;
         saveTexture(): void;
         resetTexture(): void;
+        resizeTexture(width: number, height: number): void;
+        uploadTexture(file: File): void;
         render(): JSX.Element;
     }
 }
@@ -1748,7 +1774,7 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
-        private _selectedTags;
+        private _selectedVariants;
         constructor(props: IVariantsPropertyGridComponentProps);
         private _getVariantsExtension;
         render(): JSX.Element | null;
@@ -2311,7 +2337,6 @@ declare module INSPECTOR {
     interface IBoxEmitterGridComponentProps {
         globalState: GlobalState;
         emitter: BABYLON.BoxParticleEmitter;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class BoxEmitterGridComponent extends React.Component<IBoxEmitterGridComponentProps> {
@@ -2324,7 +2349,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.ConeParticleEmitter;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridComponentProps> {
@@ -2337,7 +2361,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.CylinderParticleEmitter;
         lockObject: LockObject;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class CylinderEmitterGridComponent extends React.Component<ICylinderEmitterGridComponentProps> {
@@ -2350,7 +2373,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.HemisphericParticleEmitter;
         lockObject: LockObject;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class HemisphericEmitterGridComponent extends React.Component<IHemisphericEmitterGridComponentProps> {
@@ -2363,7 +2385,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.PointParticleEmitter;
         lockObject: LockObject;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class PointEmitterGridComponent extends React.Component<IPointEmitterGridComponentProps> {
@@ -2376,7 +2397,6 @@ declare module INSPECTOR {
         globalState: GlobalState;
         emitter: BABYLON.SphereParticleEmitter;
         lockObject: LockObject;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGridComponentProps> {
@@ -2391,7 +2411,6 @@ declare module INSPECTOR {
         property: string;
         scene: BABYLON.Scene;
         label: string;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class MeshPickerComponent extends React.Component<IMeshPickerComponentProps> {
@@ -2406,7 +2425,6 @@ declare module INSPECTOR {
         scene: BABYLON.Scene;
         lockObject: LockObject;
         onSelectionChangedObservable?: BABYLON.Observable<any>;
-        replaySourceReplacement?: string;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class MeshEmitterGridComponent extends React.Component<IMeshEmitterGridComponentProps> {
@@ -2696,8 +2714,8 @@ declare module INSPECTOR {
         exportGLTF(): void;
         exportBabylon(): void;
         createEnvTexture(): void;
-        resetReplay(): void;
         exportReplay(): void;
+        startRecording(): void;
         render(): JSX.Element | null;
     }
 }

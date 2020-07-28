@@ -2093,6 +2093,13 @@ declare module BABYLON {
          */
         toArray(array: FloatArray, index?: number): Vector2;
         /**
+         * Update the current vector from an array
+         * @param array defines the destination array
+         * @param index defines the offset in the destination array
+         * @returns the current Vector3
+         */
+        fromArray(array: FloatArray, index?: number): Vector2;
+        /**
          * Copy the current vector to an array
          * @returns a new array with 2 elements: the Vector2 coordinates.
          */
@@ -2493,6 +2500,13 @@ declare module BABYLON {
          * @returns the current Vector3
          */
         toArray(array: FloatArray, index?: number): Vector3;
+        /**
+         * Update the current vector from an array
+         * @param array defines the destination array
+         * @param index defines the offset in the destination array
+         * @returns the current Vector3
+         */
+        fromArray(array: FloatArray, index?: number): Vector3;
         /**
          * Converts the current Vector3 into a quaternion (considering that the Vector3 contains Euler angles representation of a rotation)
          * @returns a new Quaternion object, computed from the Vector3 coordinates
@@ -3249,6 +3263,13 @@ declare module BABYLON {
          * @returns the Vector4.
          */
         toArray(array: FloatArray, index?: number): Vector4;
+        /**
+         * Update the current vector from an array
+         * @param array defines the destination array
+         * @param index defines the offset in the destination array
+         * @returns the current Vector3
+         */
+        fromArray(array: FloatArray, index?: number): Vector4;
         /**
          * Adds the given vector to the current Vector4.
          * @param otherVector the vector to add
@@ -5512,6 +5533,13 @@ declare module BABYLON {
          */
         toArray(array: FloatArray, index?: number): Color3;
         /**
+         * Update the current color with values stored in an array from the starting index of the given array
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @returns the current Color3 object
+         */
+        fromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Color3;
+        /**
          * Returns a new Color4 object from the current Color3 and the given alpha
          * @param alpha defines the alpha component on the new Color4 object (default is 1)
          * @returns a new Color4 object
@@ -5695,6 +5723,13 @@ declare module BABYLON {
          */
         static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Color3;
         /**
+         * Creates a new Color3 from the starting index element of the given array
+         * @param array defines the source array to read from
+         * @param offset defines the offset in the source array
+         * @param result defines the target Color3 object
+         */
+        static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number | undefined, result: Color3): void;
+        /**
          * Creates a new Color3 from integer values (< 256)
          * @param r defines the red component to read from (value between 0 and 255)
          * @param g defines the green component to read from (value between 0 and 255)
@@ -5840,6 +5875,13 @@ declare module BABYLON {
          * @returns the current Color4 object
          */
         toArray(array: number[], index?: number): Color4;
+        /**
+         * Update the current color with values stored in an array from the starting index of the given array
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @returns the current Color4 object
+         */
+        fromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Color4;
         /**
          * Determines equality between Color4 objects
          * @param otherColor defines the second operand
@@ -6014,6 +6056,13 @@ declare module BABYLON {
          * @returns a new Color4 object
          */
         static FromArray(array: DeepImmutable<ArrayLike<number>>, offset?: number): Color4;
+        /**
+         * Creates a new Color4 from the starting index element of the given array
+         * @param array defines the source array to read from
+         * @param offset defines the offset in the source array
+         * @param result defines the target Color4 object
+         */
+        static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number | undefined, result: Color4): void;
         /**
          * Creates a new Color3 from integer values (< 256)
          * @param r defines the red component to read from (value between 0 and 255)
@@ -10493,13 +10542,13 @@ declare module BABYLON {
          */
         static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): Ray;
         /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        * @returns the new ray
-        */
+         * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+         * transformed to the given world matrix.
+         * @param origin The origin point
+         * @param end The end point
+         * @param world a matrix to transform the ray to. Default is the identity matrix.
+         * @returns the new ray
+         */
         static CreateNewFromTo(origin: Vector3, end: Vector3, world?: DeepImmutable<Matrix>): Ray;
         /**
          * Transforms a ray by a matrix
@@ -10516,15 +10565,15 @@ declare module BABYLON {
          */
         static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): void;
         /**
-          * Unproject a ray from screen space to object space
-          * @param sourceX defines the screen space x coordinate to use
-          * @param sourceY defines the screen space y coordinate to use
-          * @param viewportWidth defines the current width of the viewport
-          * @param viewportHeight defines the current height of the viewport
-          * @param world defines the world matrix to use (can be set to Identity to go to world space)
-          * @param view defines the view matrix to use
-          * @param projection defines the projection matrix to use
-          */
+         * Unproject a ray from screen space to object space
+         * @param sourceX defines the screen space x coordinate to use
+         * @param sourceY defines the screen space y coordinate to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         */
         unprojectRayToRef(sourceX: float, sourceY: float, viewportWidth: number, viewportHeight: number, world: DeepImmutable<Matrix>, view: DeepImmutable<Matrix>, projection: DeepImmutable<Matrix>): void;
     }
     /**
@@ -29463,6 +29512,15 @@ declare module BABYLON {
          */
         getForwardRay(length?: number, transform?: Matrix, origin?: Vector3): Ray;
         /**
+         * Gets a ray in the forward direction from the camera.
+         * @param refRay the ray to (re)use when setting the values
+         * @param length Defines the length of the ray to create
+         * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+         * @param origin Defines the start point of the ray which defaults to the camera position
+         * @returns the forward ray
+         */
+        getForwardRayToRef(refRay: Ray, length?: number, transform?: Matrix, origin?: Vector3): Ray;
+        /**
          * Releases resources associated with this node.
          * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
          * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
@@ -38692,6 +38750,8 @@ declare module BABYLON {
         static DoubleClickDelay: number;
         /** If you need to check double click without raising a single click at first click, enable this flag */
         static ExclusiveDoubleClickMode: boolean;
+        /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
+        private _alreadyAttached;
         private _wheelEventName;
         private _onPointerMove;
         private _onPointerDown;
@@ -47433,6 +47493,19 @@ declare module BABYLON {
         NoSync = 3
     }
     /**
+     * Defines a plugin registered by the SceneLoader
+     */
+    interface IRegisteredPlugin {
+        /**
+         * Defines the plugin to use
+         */
+        plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        /**
+         * Defines if the plugin supports binary data
+         */
+        isBinary: boolean;
+    }
+    /**
      * Class used to load scene from various file formats using registered plugins
      * @see https://doc.babylonjs.com/how_to/load_from_any_file_type
      */
@@ -47480,13 +47553,17 @@ declare module BABYLON {
         static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
         private static _registeredPlugins;
         private static _showingLoadingScreen;
-        private static _getDefaultPlugin;
-        private static _getPluginForExtension;
-        private static _getPluginForDirectLoad;
-        private static _getPluginForFilename;
-        private static _getDirectLoad;
-        private static _loadData;
-        private static _getFileInfo;
+        /**
+         * Gets the default plugin (used to load Babylon files)
+         * @returns the .babylon plugin
+         */
+        static GetDefaultPlugin(): IRegisteredPlugin;
+        private static _GetPluginForExtension;
+        private static _GetPluginForDirectLoad;
+        private static _GetPluginForFilename;
+        private static _GetDirectLoad;
+        private static _LoadData;
+        private static _GetFileInfo;
         /**
          * Gets a plugin that can load the given extension
          * @param extension defines the extension to load
@@ -48520,7 +48597,7 @@ declare module BABYLON {
          */
         disablePointerUpOnTouchOut: boolean;
         /**
-         * For gaze mode (time to select instead of press)
+         * For gaze mode for tracked-pointer / controllers (time to select instead of button press)
          */
         forceGazeMode: boolean;
         /**
@@ -48547,6 +48624,10 @@ declare module BABYLON {
          * Should meshes created here be added to a utility layer or the main scene
          */
         useUtilityLayer?: boolean;
+        /**
+         * Optional WebXR camera to be used for gaze selection
+         */
+        gazeCamera?: WebXRCamera;
         /**
          * the xr input to use with this pointer selection
          */
@@ -73391,6 +73472,36 @@ declare module BABYLON {
          * @param value The value to write
          */
         static WriteNumber(key: string, value: number): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Class used to record delta files between 2 scene states
+     */
+    export class SceneRecorder {
+        private _trackedScene;
+        private _savedJSON;
+        /**
+         * Track a given scene. This means the current scene state will be considered the original state
+         * @param scene defines the scene to track
+         */
+        track(scene: Scene): void;
+        /**
+         * Get the delta between current state and original state
+         * @returns a string containing the delta
+         */
+        getDelta(): any;
+        private _compareArray;
+        private _compareObjects;
+        private _compareCollections;
+        /**
+         * Apply a given delta to a given scene
+         * @param deltaJSON defines the JSON containing the delta
+         * @param scene defines the scene to apply the delta to
+         */
+        static ApplyDelta(deltaJSON: any | string, scene: Scene): void;
+        private static _ApplyPropertiesToEntity;
+        private static _ApplyDeltaForEntity;
     }
 }
 declare module BABYLON {
