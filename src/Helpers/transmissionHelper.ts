@@ -39,7 +39,7 @@ export class TransmissionHelper {
     private _options: ITransmissionHelperOptions;
     private _opaqueRTIndex: number = -1;
 
-    private _opaqueRenderTarget: RenderTargetTexture;
+    private _opaqueRenderTarget: Nullable<RenderTargetTexture> = null;
     private _opaqueMeshesCache: Mesh[] = [];
     private _transparentMeshesCache: Mesh[] = [];
 
@@ -200,16 +200,18 @@ export class TransmissionHelper {
         // Remove any layers rendering to the opaque scene.
         if (this._scene.layers) {
             this._scene.layers.forEach((layer) => {
-                let idx = layer.renderTargetTextures.indexOf(this._opaqueRenderTarget);
-                if (idx >= 0) {
-                    layer.renderTargetTextures.splice(idx, 1);
+                if (this._opaqueRenderTarget) {
+                    let idx = layer.renderTargetTextures.indexOf(this._opaqueRenderTarget);
+                    if (idx >= 0) {
+                        layer.renderTargetTextures.splice(idx, 1);
+                    }
                 }
             });
         }
 
         // Remove opaque render target
-        this._opaqueRTIndex = this._scene.customRenderTargets.indexOf(this._opaqueRenderTarget);
         if (this._opaqueRenderTarget) {
+            this._opaqueRTIndex = this._scene.customRenderTargets.indexOf(this._opaqueRenderTarget);
             this._opaqueRenderTarget.dispose();
         }
 
@@ -230,27 +232,29 @@ export class TransmissionHelper {
         // If there are other layers, they should be included in the render of the opaque background.
         if (this._scene.layers) {
             this._scene.layers.forEach((layer) => {
-                layer.renderTargetTextures.push(this._opaqueRenderTarget);
+                if (this._opaqueRenderTarget) {
+                    layer.renderTargetTextures.push(this._opaqueRenderTarget);
+                }
             });
         }
 
         this._transparentMeshesCache.forEach((mesh: AbstractMesh) => {
             if (this.shouldRenderAsTransmission(mesh.material) && mesh.material instanceof PBRMaterial) {
                 mesh.material.refractionTexture = this._opaqueRenderTarget;
-                mesh.material.getRenderTargetTextures = null;
             }
         });
 
     }
 
-    // private _errorHandler = (message?: string, exception?: any) => {
-    //     this.onErrorObservable.notifyObservers({ message: message, exception: exception });
-    // }
-
     /**
      * Dispose all the elements created by the Helper.
      */
     public dispose(): void {
-
+        if (this._opaqueRenderTarget) {
+            this._opaqueRenderTarget.dispose();
+            this._opaqueRenderTarget = null;
+        }
+        this._transparentMeshesCache = [];
+        this._opaqueMeshesCache = [];
     }
 }
