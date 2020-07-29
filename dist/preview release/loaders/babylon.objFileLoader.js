@@ -436,13 +436,13 @@ var OBJFileLoader = /** @class */ (function () {
         /** @hidden */
         this.smooth = /^s /;
         /** @hidden */
-        this.vertexPattern = /v( +[\d|\.|\+|\-|e|E]+){3,7}/;
+        this.vertexPattern = /v(\s+[\d|\.|\+|\-|e|E]+){3,7}/;
         // vn float float float
         /** @hidden */
-        this.normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+        this.normalPattern = /vn(\s+[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // vt float float
         /** @hidden */
-        this.uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+        this.uvPattern = /vt(\s+[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
         // f vertex vertex vertex ...
         /** @hidden */
         this.facePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;
