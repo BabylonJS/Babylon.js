@@ -452,7 +452,7 @@ export class SkeletonViewer {
         }).catch((err) => {
             console.log(err);
             this.dispose();
-        });        
+        });
     }
 
     /** Update the viewer to sync with current skeleton state, only used for the line display. */
