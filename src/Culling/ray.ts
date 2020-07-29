@@ -701,7 +701,7 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
             pickingInfo = result;
 
             if (fastCheck) {
-                break;
+                return pickingInfo;
             }
         }
 
@@ -714,7 +714,7 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
                     pickingInfo = result;
         
                     if (fastCheck) {
-                        break;
+                        return pickingInfo;
                     }
                 }
             }
