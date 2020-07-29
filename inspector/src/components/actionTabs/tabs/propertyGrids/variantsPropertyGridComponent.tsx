@@ -7,9 +7,7 @@ import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { LockObject } from "./lockObject";
 import { GlobalState } from "../../../globalState";
-// import { OptionsLineComponent } from '../../lines/optionsLineComponent';
 import { ButtonLineComponent } from '../../lines/buttonLineComponent';
-import { CheckBoxLineComponent } from '../../lines/checkBoxLineComponent';
 import { OptionsLineComponent } from '../../lines/optionsLineComponent';
 
 declare type KHR_materials_variants = import("babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants").KHR_materials_variants;
