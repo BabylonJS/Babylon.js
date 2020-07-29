@@ -77,6 +77,10 @@ export class WebXRFeatureName {
      * The name of the teleportation feature
      */
     public static TELEPORTATION = "xr-controller-teleportation";
+    /**
+     * The name of the feature points feature.
+     */
+    public static FEATURE_POINTS = "xr-feature-points";
 }
 
 /**
