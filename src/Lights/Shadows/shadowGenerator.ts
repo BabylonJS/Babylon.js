@@ -66,6 +66,8 @@ export interface ICustomShaderOptions {
  * Interface to implement to create a shadow generator compatible with BJS.
  */
 export interface IShadowGenerator {
+    /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
+    id: string;
     /**
      * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
      * @returns The render target texture if present otherwise, null
@@ -217,6 +219,9 @@ export class ShadowGenerator implements IShadowGenerator {
      * Execute PCSS with 16 taps blocker search and 16 taps PCF.
      */
     public static readonly QUALITY_LOW = 2;
+
+    /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
+    public id: string;
 
     /** Gets or sets the custom shader name to use */
     public customShaderOptions: ICustomShaderOptions;
@@ -816,6 +821,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._light = light;
         this._scene = light.getScene();
         light._shadowGenerator = this;
+        this.id = light.id;
 
         ShadowGenerator._SceneComponentInitialization(this._scene);
 
@@ -1728,6 +1734,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         serializationObject.className = this.getClassName();
         serializationObject.lightId = this._light.id;
+        serializationObject.id = this._light.id;
         serializationObject.mapSize = shadowMap.getRenderSize();
         serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
         serializationObject.darkness = this.getDarkness();
@@ -1785,6 +1792,10 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
                 shadowMap.renderList.push(mesh);
             });
+        }
+
+        if (parsedShadowGenerator.id !== undefined) {
+            shadowGenerator.id = parsedShadowGenerator.id;
         }
 
         shadowGenerator.forceBackFacesOnly = !!parsedShadowGenerator.forceBackFacesOnly;
