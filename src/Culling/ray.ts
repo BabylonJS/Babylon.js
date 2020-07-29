@@ -9,11 +9,17 @@ import { BoundingSphere } from "./boundingSphere";
 import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
 import { Plane } from "../Maths/math.plane";
+import { SmartArray } from '../Misc/smartArray';
+
+declare type Mesh = import("../Meshes/mesh").Mesh;
+
 /**
  * Class representing a ray with position and direction
  */
 export class Ray {
-    private static readonly TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
+    private static readonly _TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
+    /** @hidden */
+    public static readonly _TempWorldMatrices = new SmartArray<Matrix>(256);
     private _tmpRay: Ray;
 
     /**
@@ -41,8 +47,8 @@ export class Ray {
      * @returns if the box was hit
      */
     public intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionTreshold: number = 0): boolean {
-        const newMinimum = Ray.TmpVector3[0].copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
-        const newMaximum = Ray.TmpVector3[1].copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
+        const newMinimum = Ray._TmpVector3[0].copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
+        const newMaximum = Ray._TmpVector3[1].copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
         var d = 0.0;
         var maxValue = Number.MAX_VALUE;
         var inv: number;
@@ -178,11 +184,11 @@ export class Ray {
      * @returns intersection information if hit
      */
     public intersectsTriangle(vertex0: DeepImmutable<Vector3>, vertex1: DeepImmutable<Vector3>, vertex2: DeepImmutable<Vector3>): Nullable<IntersectionInfo> {
-        const edge1 = Ray.TmpVector3[0];
-        const edge2 = Ray.TmpVector3[1];
-        const pvec = Ray.TmpVector3[2];
-        const tvec = Ray.TmpVector3[3];
-        const qvec = Ray.TmpVector3[4];
+        const edge1 = Ray._TmpVector3[0];
+        const edge2 = Ray._TmpVector3[1];
+        const pvec = Ray._TmpVector3[2];
+        const tvec = Ray._TmpVector3[3];
+        const qvec = Ray._TmpVector3[4];
 
         vertex1.subtractToRef(vertex0, edge1);
         vertex2.subtractToRef(vertex0, edge2);
@@ -658,10 +664,10 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
         return null;
     }
 
-    var pickingInfo = null;
+    let pickingInfo = null;
 
-    for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-        var mesh = this.meshes[meshIndex];
+    for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+        let mesh = this.meshes[meshIndex];
 
         if (predicate) {
             if (!predicate(mesh)) {
@@ -671,22 +677,33 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
             continue;
         }
 
-        var world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
-        var ray = rayFunction(world);
+        let worldMatrices = Ray._TempWorldMatrices;
 
-        var result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo);
-        if (!result || !result.hit) {
-            continue;
+        worldMatrices.reset();
+        worldMatrices.push(mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix());
+
+        if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
+            worldMatrices.concat((mesh as Mesh).thinInstanceGetWorldMatrices());
         }
 
-        if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
-            continue;
-        }
+        for (let index = 0; index < worldMatrices.length; index++) {
+            let world = worldMatrices.data[index];
+            let ray = rayFunction(world);
 
-        pickingInfo = result;
+            let result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world);
+            if (!result || !result.hit) {
+                continue;
+            }
 
-        if (fastCheck) {
-            break;
+            if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
+                continue;
+            }
+
+            pickingInfo = result;
+
+            if (fastCheck) {
+                break;
+            }
         }
     }
 
@@ -697,10 +714,11 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix) => R
     if (!PickingInfo) {
         return null;
     }
-    var pickingInfos = new Array<PickingInfo>();
+    let pickingInfos = new Array<PickingInfo>();
+    let worldMatrices = Ray._TempWorldMatrices;
 
-    for (var meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
-        var mesh = this.meshes[meshIndex];
+    for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
+        let mesh = this.meshes[meshIndex];
 
         if (predicate) {
             if (!predicate(mesh)) {
@@ -710,15 +728,24 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix) => R
             continue;
         }
 
-        var world = mesh.getWorldMatrix();
-        var ray = rayFunction(world);
+        worldMatrices.reset();
+        worldMatrices.push(mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix());
 
-        var result = mesh.intersects(ray, false, trianglePredicate);
-        if (!result || !result.hit) {
-            continue;
+        if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
+            worldMatrices.concat((mesh as Mesh).thinInstanceGetWorldMatrices());
         }
 
-        pickingInfos.push(result);
+        for (let index = 0; index < worldMatrices.length; index++) {
+            let world = worldMatrices.data[index];
+            let ray = rayFunction(world);
+
+            let result = mesh.intersects(ray, false, trianglePredicate, false, world);
+            if (!result || !result.hit) {
+                continue;
+            }
+
+            pickingInfos.push(result);
+        }
     }
 
     return pickingInfos;
