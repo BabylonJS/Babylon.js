@@ -659,7 +659,6 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
     return this;
 };
 
-
 Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate) {
     let ray = rayFunction(world);
 
@@ -673,7 +672,7 @@ Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingIn
     }
 
     return result;
-}
+};
 
 Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
     if (!PickingInfo) {
@@ -707,18 +706,18 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-            for (let world of thinMatrices) {   
+            for (let world of thinMatrices) {
                 let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
-    
+
                 if (result) {
                     pickingInfo = result;
-        
+
                     if (fastCheck) {
                         return pickingInfo;
                     }
                 }
             }
-        }       
+        }
     }
 
     return pickingInfo || new PickingInfo();
@@ -751,14 +750,14 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix) => R
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-            for (let world of thinMatrices) {   
+            for (let world of thinMatrices) {
                 let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
-    
+
                 if (result) {
                     pickingInfos.push(result);
                 }
             }
-        }       
+        }
     }
 
     return pickingInfos;
