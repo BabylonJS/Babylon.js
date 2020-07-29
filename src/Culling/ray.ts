@@ -9,7 +9,6 @@ import { BoundingSphere } from "./boundingSphere";
 import { Scene } from "../scene";
 import { Camera } from "../Cameras/camera";
 import { Plane } from "../Maths/math.plane";
-import { SmartArray } from '../Misc/smartArray';
 
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
@@ -18,8 +17,6 @@ declare type Mesh = import("../Meshes/mesh").Mesh;
  */
 export class Ray {
     private static readonly _TmpVector3 = ArrayTools.BuildArray(6, Vector3.Zero);
-    /** @hidden */
-    public static readonly _TempWorldMatrices = new SmartArray<Matrix>(256);
     private _tmpRay: Ray;
 
     /**
@@ -592,6 +589,9 @@ declare module "../scene" {
 
         /** @hidden */
         _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
+
+        /** @hidden */
+        _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
     }
 }
 
@@ -659,6 +659,22 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
     return this;
 };
 
+
+Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate) {
+    let ray = rayFunction(world);
+
+    let result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world);
+    if (!result || !result.hit) {
+        return null;
+    }
+
+    if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
+        return null;
+    }
+
+    return result;
+}
+
 Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo> {
     if (!PickingInfo) {
         return null;
@@ -677,34 +693,32 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
             continue;
         }
 
-        let worldMatrices = Ray._TempWorldMatrices;
+        let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
 
-        worldMatrices.reset();
-        worldMatrices.push(mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix());
+        let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
 
-        if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
-            worldMatrices.concat((mesh as Mesh).thinInstanceGetWorldMatrices());
-        }
-
-        for (let index = 0; index < worldMatrices.length; index++) {
-            let world = worldMatrices.data[index];
-            let ray = rayFunction(world);
-
-            let result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world);
-            if (!result || !result.hit) {
-                continue;
-            }
-
-            if (!fastCheck && pickingInfo != null && result.distance >= pickingInfo.distance) {
-                continue;
-            }
-
+        if (result) {
             pickingInfo = result;
 
             if (fastCheck) {
                 break;
             }
         }
+
+        if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
+            let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+            for (let world of thinMatrices) {   
+                let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
+    
+                if (result) {
+                    pickingInfo = result;
+        
+                    if (fastCheck) {
+                        break;
+                    }
+                }
+            }
+        }       
     }
 
     return pickingInfo || new PickingInfo();
@@ -715,7 +729,6 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix) => R
         return null;
     }
     let pickingInfos = new Array<PickingInfo>();
-    let worldMatrices = Ray._TempWorldMatrices;
 
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
         let mesh = this.meshes[meshIndex];
@@ -728,24 +741,24 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix) => R
             continue;
         }
 
-        worldMatrices.reset();
-        worldMatrices.push(mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix());
+        let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
 
-        if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
-            worldMatrices.concat((mesh as Mesh).thinInstanceGetWorldMatrices());
-        }
+        let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
 
-        for (let index = 0; index < worldMatrices.length; index++) {
-            let world = worldMatrices.data[index];
-            let ray = rayFunction(world);
-
-            let result = mesh.intersects(ray, false, trianglePredicate, false, world);
-            if (!result || !result.hit) {
-                continue;
-            }
-
+        if (result) {
             pickingInfos.push(result);
         }
+
+        if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
+            let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+            for (let world of thinMatrices) {   
+                let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
+    
+                if (result) {
+                    pickingInfos.push(result);
+                }
+            }
+        }       
     }
 
     return pickingInfos;
