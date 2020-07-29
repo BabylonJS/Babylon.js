@@ -15,6 +15,7 @@ declare module INSPECTOR {
         get isRecording(): boolean;
         cancel(): void;
         trackScene(scene: BABYLON.Scene): void;
+        applyDelta(json: any, scene: BABYLON.Scene): void;
         export(): void;
     }
 }
@@ -2751,6 +2752,7 @@ declare module INSPECTOR {
         createEnvTexture(): void;
         exportReplay(): void;
         startRecording(): void;
+        applyDelta(file: File): void;
         render(): JSX.Element | null;
     }
 }
