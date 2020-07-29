@@ -1810,7 +1810,6 @@ declare module INSPECTOR {
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
     }
     export class VariantsPropertyGridComponent extends React.Component<IVariantsPropertyGridComponentProps> {
-        private _selectedVariants;
         constructor(props: IVariantsPropertyGridComponentProps);
         private _getVariantsExtension;
         render(): JSX.Element | null;
