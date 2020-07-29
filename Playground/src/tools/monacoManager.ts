@@ -70,6 +70,7 @@ export class MonacoManager {
 
             if (this._editor) {
                 this._editor?.setValue(code);
+                this._isDirty = false;
                 this.globalState.onRunRequiredObservable.notifyObservers();
             } else {
                 this.globalState.currentCode = code;
