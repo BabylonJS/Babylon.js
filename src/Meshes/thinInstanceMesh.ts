@@ -138,6 +138,10 @@ Mesh.prototype.thinInstanceSetMatrixAt = function(index: number, matrix: DeepImm
 
     matrix.copyToArray(matrixData, index * 16);
 
+    if (this._thinInstanceDataStorage.worldMatrices) {
+        this._thinInstanceDataStorage.worldMatrices[index] = matrix as Matrix;
+    }
+
     if (refresh) {
         this.thinInstanceBufferUpdated("matrix");
 
@@ -238,7 +242,6 @@ Mesh.prototype.thinInstanceBufferUpdated = function(kind: string): void {
     if (kind === "matrix") {
         if (this._thinInstanceDataStorage.matrixBuffer) {
             this._thinInstanceDataStorage.matrixBuffer!.updateDirectly(this._thinInstanceDataStorage.matrixData!, 0, this._thinInstanceDataStorage.instancesCount);
-            this._thinInstanceDataStorage.worldMatrices = null;
         }
     } else if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
         this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(this._userThinInstanceBuffersStorage.data[kind], 0);
@@ -251,16 +254,12 @@ Mesh.prototype.thinInstanceGetWorldMatrices = function(): Matrix[] {
     }
     const matrixData = this._thinInstanceDataStorage.matrixData;
 
-    if (!this._thinInstanceDataStorage.worldMatrices || this._thinInstanceDataStorage.worldMatrices.length !== this._thinInstanceDataStorage.instancesCount) {
+    if (!this._thinInstanceDataStorage.worldMatrices) {
         this._thinInstanceDataStorage.worldMatrices = new Array<Matrix>();
 
         for (let i = 0; i < this._thinInstanceDataStorage.instancesCount; ++i) {
-            this._thinInstanceDataStorage.worldMatrices[i] = Matrix.Zero();
+            this._thinInstanceDataStorage.worldMatrices[i] = Matrix.FromArray(matrixData, i * 16);
         }
-    }
-
-    for (let i = 0; i < this._thinInstanceDataStorage.instancesCount; ++i) {
-        Matrix.FromArrayToRef(matrixData, i * 16, this._thinInstanceDataStorage.worldMatrices[i]);
     }
 
     return this._thinInstanceDataStorage.worldMatrices;

@@ -692,29 +692,31 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
             continue;
         }
 
-        let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
-
-        let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
-
-        if (result) {
-            pickingInfo = result;
-
-            if (fastCheck) {
-                return pickingInfo;
-            }
-        }
-
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-            for (let world of thinMatrices) {
+            for (let index = 0; index < thinMatrices.length; index++) {
+                let world = thinMatrices[index];
                 let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
 
                 if (result) {
                     pickingInfo = result;
+                    pickingInfo.thinInstanceIndex = index;
 
                     if (fastCheck) {
                         return pickingInfo;
                     }
+                }
+            }
+        } else {
+            let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
+
+            let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, onlyBoundingInfo, trianglePredicate);
+
+            if (result) {
+                pickingInfo = result;
+
+                if (fastCheck) {
+                    return pickingInfo;
                 }
             }
         }
@@ -740,22 +742,24 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix) => R
             continue;
         }
 
-        let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
-
-        let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
-
-        if (result) {
-            pickingInfos.push(result);
-        }
-
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-            for (let world of thinMatrices) {
+            for (let index = 0; index < thinMatrices.length; index++) {
+                let world = thinMatrices[index];
                 let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
 
                 if (result) {
+                    result.thinInstanceIndex = index;
                     pickingInfos.push(result);
                 }
+            }
+        } else {
+            let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
+
+            let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, false, trianglePredicate);
+
+            if (result) {
+                pickingInfos.push(result);
             }
         }
     }
