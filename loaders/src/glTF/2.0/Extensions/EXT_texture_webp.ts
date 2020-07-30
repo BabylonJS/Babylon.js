@@ -8,8 +8,7 @@ import { IKHRTextureBasisU } from 'babylonjs-gltf2interface';
 const NAME = "EXT_texture_webp";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1534)
- * !!! Experimental Extension Subject to Changes !!!
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_texture_webp/)
  */
 export class EXT_texture_webp implements IGLTFLoaderExtension {
     /** The name of this extension. */
