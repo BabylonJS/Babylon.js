@@ -7,7 +7,7 @@
 		exports["babylonjs-serializers"] = factory(require("babylonjs"));
 	else
 		root["SERIALIZERS"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math_vector__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_tools__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -154,7 +154,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OBJExport", function() { return OBJExport; });
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
 
 
@@ -341,14 +341,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Maths/math.vector":
+/***/ "babylonjs/Misc/tools":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math_vector__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_tools__;
 
 /***/ })
 
