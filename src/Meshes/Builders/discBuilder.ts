@@ -20,14 +20,16 @@ VertexData.CreateDisc = function(options: { radius?: number, tessellation?: numb
     uvs.push(0.5, 0.5);
 
     var theta = Math.PI * 2 * arc;
-    var step = theta / tessellation;
-    for (var a = 0; a < theta; a += step) {
+    var step = arc === 1 ? theta / tessellation : theta / (tessellation - 1);
+    var a = 0;
+    for (var t = 0; t < tessellation; t++) {
         var x = Math.cos(a);
         var y = Math.sin(a);
         var u = (x + 1) / 2;
         var v = (1 - y) / 2;
         positions.push(radius * x, radius * y, 0);
         uvs.push(u, v);
+        a += step;
     }
     if (arc === 1) {
         positions.push(positions[3], positions[4], positions[5]); // close the circle
