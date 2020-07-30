@@ -6,6 +6,10 @@ import { Matrix, Vector3, TmpVectors } from '../Maths/math.vector';
 declare module "./mesh" {
     export interface Mesh {
         /**
+         * Gets or sets a boolean defining if we want picking to pick thin instances as well
+         */
+        thinInstanceEnablePicking: boolean;
+        /**
          * Creates a new thin instance
          * @param matrix the matrix or array of matrices (position, rotation, scale) of the thin instance(s) to create
          * @param refresh true to refresh the underlying gpu buffer (default: true). If you do multiple calls to this method in a row, set refresh to true only for the last call to save performance
@@ -59,6 +63,12 @@ declare module "./mesh" {
         thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>,  stride: number, staticBuffer: boolean): void;
 
         /**
+         * Gets the list of world matrices
+         * @return an array containing all the world matrices from the thin instances
+         */
+        thinInstanceGetWorldMatrices(): Matrix[];
+
+        /**
          * Synchronize the gpu buffers with a thin instance buffer. Call this method if you update later on the buffers passed to thinInstanceSetBuffer
          * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
          */
@@ -83,7 +93,6 @@ declare module "./mesh" {
             vertexBuffers: {[key: string]: Nullable<VertexBuffer>},
             strides: {[key: string]: number}
         };
-
     }
 }
 
@@ -128,6 +137,10 @@ Mesh.prototype.thinInstanceSetMatrixAt = function(index: number, matrix: DeepImm
     const matrixData = this._thinInstanceDataStorage.matrixData;
 
     matrix.copyToArray(matrixData, index * 16);
+
+    if (this._thinInstanceDataStorage.worldMatrices) {
+        this._thinInstanceDataStorage.worldMatrices[index] = matrix as Matrix;
+    }
 
     if (refresh) {
         this.thinInstanceBufferUpdated("matrix");
@@ -179,6 +192,7 @@ Mesh.prototype.thinInstanceSetBuffer = function(kind: string, buffer: Nullable<F
         this._thinInstanceDataStorage.matrixBuffer = null;
         this._thinInstanceDataStorage.matrixBufferSize = buffer ? buffer.length : 32 * stride;
         this._thinInstanceDataStorage.matrixData = buffer;
+        this._thinInstanceDataStorage.worldMatrices = null;
 
         if (buffer !== null) {
             this._thinInstanceDataStorage.instancesCount = buffer.length / stride;
@@ -232,6 +246,23 @@ Mesh.prototype.thinInstanceBufferUpdated = function(kind: string): void {
     } else if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
         this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(this._userThinInstanceBuffersStorage.data[kind], 0);
     }
+};
+
+Mesh.prototype.thinInstanceGetWorldMatrices = function(): Matrix[] {
+    if (!this._thinInstanceDataStorage.matrixData || !this._thinInstanceDataStorage.matrixBuffer) {
+        return [];
+    }
+    const matrixData = this._thinInstanceDataStorage.matrixData;
+
+    if (!this._thinInstanceDataStorage.worldMatrices) {
+        this._thinInstanceDataStorage.worldMatrices = new Array<Matrix>();
+
+        for (let i = 0; i < this._thinInstanceDataStorage.instancesCount; ++i) {
+            this._thinInstanceDataStorage.worldMatrices[i] = Matrix.FromArray(matrixData, i * 16);
+        }
+    }
+
+    return this._thinInstanceDataStorage.worldMatrices;
 };
 
 Mesh.prototype.thinInstanceRefreshBoundingInfo = function(forceRefreshParentInfo: boolean = false) {
