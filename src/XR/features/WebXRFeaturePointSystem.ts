@@ -5,7 +5,7 @@ import { Vector3 } from "../../Maths/math.vector";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 
 /**
- * A babylon interface for a WebXR feature point.
+ * A babylon interface for a "WebXR" feature point.
  * Represents the position and confidence value of a given feature point.
  */
 export interface IWebXRFeaturePoint {
@@ -25,7 +25,7 @@ export interface IWebXRFeaturePoint {
 type GetPointCloud = () => IWebXRFeaturePoint[];
 
 /**
- * The feature point is used to detect feature points from real world geometry.
+ * The feature point system is used to detect feature points from real world geometry.
  * This feature is currently experimental and only supported on BabylonNative, and should not be used in the browser.
  * The newly introduced API can be seen in webxr.nativeextensions.d.ts.
  */
@@ -63,7 +63,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     }
 
     /**
-     * detach this feature.
+     * Detach this feature.
      * Will usually be called by the features manager
      *
      * @returns true if successful.
@@ -87,6 +87,10 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
         this.onFeaturePointsAvailableObservable.clear();
     }
 
+    /**
+     * On receiving a new XR frame if this feature is attached notify observers new feature points are available.
+     * Include a callback to query the current frame for feature points.
+     */
     protected _onXRFrame(frame: XRFrame) {
         if (!this.attached || !this._enabled || !frame) {
             return;
@@ -122,6 +126,9 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
          });
     }
 
+    /**
+     * Initializes the feature. If the feature point feature is not available for this environment do not mark the feature as enabled.
+     */
     private _init() {
         if (!this._xrSessionManager.session.setFeaturePointCloudEnabled || !this._xrSessionManager.session.setFeaturePointCloudEnabled(true)) {
             // fail silently
