@@ -69267,6 +69267,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "../../node_modules/@fortawesome/free-solid-svg-icons/index.es.js");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _sharedComponents_colorPickerComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/colorPickerComponent */ "./sharedComponents/colorPickerComponent.tsx");
+
 
 
 
@@ -69297,7 +69299,10 @@ var GradientStepComponent = /** @class */ (function (_super) {
         var step = this.props.step;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "gradient-step" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step" }, "#" + this.props.lineIndex),
-            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { type: "color", value: step.color.toHexString(), onChange: function (evt) { return _this.updateColor(evt.target.value); } }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_colorPickerComponent__WEBPACK_IMPORTED_MODULE_5__["ColorPickerLineComponent"], { value: step.color, disableAlpha: true, globalState: this.props.globalState, onColorChanged: function (color) {
+                        _this.updateColor(color);
+                    } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-value" }, step.step.toFixed(2)),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "step-slider" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { className: "range", type: "range", step: 0.01, min: 0, max: 1.0, value: step.step, onPointerUp: function (evt) { return _this.onPointerUp(); }, onChange: function (evt) { return _this.updateStep(parseFloat(evt.target.value)); } })),
@@ -71730,6 +71735,7 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
     ColorPickerLineComponent.prototype.render = function () {
         var _this = this;
         var color = this.state.color;
+        this.props.globalState.blockKeyboardEvents = this.state.pickerEnabled;
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-picker" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "color-rect", ref: this._floatHostRef, style: { background: this.state.hex }, onClick: function () { return _this.setPickerState(true); } }),
             this.state.pickerEnabled &&
