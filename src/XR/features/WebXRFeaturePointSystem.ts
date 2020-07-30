@@ -26,7 +26,7 @@ type GetPointCloud = () => IWebXRFeaturePoint[];
 
 /**
  * The feature point is used to detect feature points from real world geometry.
- * This feature is currently only supported on BabylonNative, and should not be used in the browser.
+ * This feature is currently experimental and only supported on BabylonNative, and should not be used in the browser.
  * The newly introduced API can be seen in webxr.nativeextensions.d.ts.
  */
 export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
@@ -50,9 +50,8 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     /**
      * construct the feature point system
      * @param _xrSessionManager an instance of xr Session manager
-     * @param _options configuration to use when constructing this feature
      */
-    constructor(_xrSessionManager: WebXRSessionManager, _options: any = {}) {
+    constructor(_xrSessionManager: WebXRSessionManager) {
         super(_xrSessionManager);
         if (this._xrSessionManager.session) {
             this._init();
@@ -93,14 +92,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
             return;
         }
 
-        if (!("featurePointCloud" in frame))
-        {
-            this._enabled = false;
-            this.detach();
-        }
-
         this._featurePoints = null;
-
         this.onFeaturePointsAvailableObservable.notifyObservers(() => {
             if (this._featurePoints)
             {
@@ -131,7 +123,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     }
 
     private _init() {
-        if (!this._xrSessionManager.session.updateWorldTrackingState) {
+        if (!this._xrSessionManager.session.setFeaturePointCloudEnabled || !this._xrSessionManager.session.setFeaturePointCloudEnabled(true)) {
             // fail silently
             return;
         }
@@ -143,8 +135,8 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
 //register the plugin
 WebXRFeaturesManager.AddWebXRFeature(
     WebXRFeaturePointSystem.Name,
-    (xrSessionManager, options) => {
-        return () => new WebXRFeaturePointSystem(xrSessionManager, options);
+    (xrSessionManager) => {
+        return () => new WebXRFeaturePointSystem(xrSessionManager);
     },
     WebXRFeaturePointSystem.Version
 );
