@@ -79,6 +79,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
+        const displayInspector = this._scene?.debugLayer.isVisible();
+
+
         if (this._engine) {
             try {
                 this._engine.dispose();
@@ -234,6 +237,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     message: "You must at least create a scene.",
                 });
                 return;
+            }
+
+            if (this._engine.scenes[0] && displayInspector) {
+                this.props.globalState.onInspectorRequiredObservable.notifyObservers();
             }
 
             if (checkCamera && this._engine.scenes[0].activeCamera == null) {

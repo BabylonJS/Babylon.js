@@ -61,6 +61,7 @@ export class Utilities {
         if (Utilities.CheckSafeMode("Are you sure you want to switch the language?")) {
             Utilities.StoreStringToStore("language", language);
             globalState.language = language;
+            globalState.currentCode = "";
             globalState.onLanguageChangedObservable.notifyObservers();
         }
     }

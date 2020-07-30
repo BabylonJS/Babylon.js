@@ -2809,7 +2809,7 @@ export class ThinEngine {
 
         // establish the file extension, if possible
         const lastDot = url.lastIndexOf('.');
-        let extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");        
+        let extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
         let loader: Nullable<IInternalTextureLoader> = null;
 
         // Remove query string
