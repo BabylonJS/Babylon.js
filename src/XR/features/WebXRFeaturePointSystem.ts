@@ -98,16 +98,14 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
 
         this._featurePoints = null;
         this.onFeaturePointsAvailableObservable.notifyObservers(() => {
-            if (this._featurePoints)
-            {
+            if (this._featurePoints) {
                 return this._featurePoints;
             }
 
             let featurePointRawData : number[] | undefined = frame.featurePointCloud;
             if (!featurePointRawData) {
                 return new Array<IWebXRFeaturePoint>();
-            }
-            else {
+            } else {
                 let numberOfFeaturePoints : number = featurePointRawData.length / 4;
                 this._featurePoints = new Array<IWebXRFeaturePoint>(featurePointRawData.length / 4);
                 for (var i = 0; i < numberOfFeaturePoints; i++) {
