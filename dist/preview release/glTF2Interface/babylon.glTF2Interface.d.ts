@@ -1086,7 +1086,7 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IEXTTextureWebp {
+    interface IEXTTextureWebP {
         source: number;
     }
 
