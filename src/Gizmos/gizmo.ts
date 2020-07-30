@@ -5,6 +5,8 @@ import { Scene, IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
+import { Camera } from "../Cameras";
+import { TargetCamera } from "../Cameras";
 import { Node } from "../node";
 import { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
@@ -161,7 +163,34 @@ export class Gizmo implements IDisposable {
         if (!this._attachedNode) {
             return;
         }
-        if (this._attachedNode.getClassName() === "Mesh" || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
+        var inheritsTargetCamera = this._attachedNode.getClassName() === "FreeCamera"
+                        || this._attachedNode.getClassName() === "FlyCamera"
+                        || this._attachedNode.getClassName() === "ArcFollowCamera"
+                        || this._attachedNode.getClassName() === "TargetCamera"
+                        || this._attachedNode.getClassName() === "TouchCamera"
+                        || this._attachedNode.getClassName() === "UniversalCamera";
+        if  (this._attachedNode.getClassName() === "ArcRotateCamera" || inheritsTargetCamera) {
+
+            var camera = this._attachedNode as Camera;
+            var transformQuaternion = new Quaternion(0, 0, 0, 1);
+            var position = new Vector3(0, 0, 0);
+            var scaling = new Vector3(1, 1, 1);
+            if (camera.parent) {
+                var parentInv = new Matrix();
+                var localMat = new Matrix();
+                camera.parent.getWorldMatrix().invertToRef(parentInv);
+                this._attachedNode._worldMatrix.multiplyToRef(parentInv, localMat);
+                localMat.decompose(scaling, transformQuaternion, position);
+            } else {
+                this._attachedNode._worldMatrix.decompose(scaling, transformQuaternion, position);
+            }
+            camera.position = position;
+            if (inheritsTargetCamera) {
+                var targetCamera = this._attachedNode as TargetCamera;
+                var angles = transformQuaternion.toEulerAngles();
+                targetCamera.rotation = angles;
+            }
+        } else if (this._attachedNode.getClassName() === "Mesh" || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
             var transform = this._attachedNode as TransformNode;
             var transformQuaternion = new Quaternion(0, 0, 0, 1);
             if (transform.parent) {
