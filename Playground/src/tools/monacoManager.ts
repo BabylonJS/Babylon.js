@@ -95,8 +95,8 @@ export class MonacoManager {
             });
         });
 
-        globalState.onLanguageChangedObservable.add(() => {
-            this.setupMonacoAsync(this._hostElement);
+        globalState.onLanguageChangedObservable.add(async () => {
+            await this.setupMonacoAsync(this._hostElement);
         });
 
         globalState.onThemeChangedObservable.add(() => {
@@ -187,7 +187,7 @@ export class MonacoManager {
         }
     }
 
-    public async setupMonacoAsync(hostElement: HTMLDivElement) {
+    public async setupMonacoAsync(hostElement: HTMLDivElement, initialCall = false) {
         this._hostElement = hostElement;
 
         let response = await fetch("https://preview.babylonjs.com/babylon.d.ts");
@@ -209,11 +209,6 @@ export class MonacoManager {
         // Definition worker
         this._setupDefinitionWorker(libContent);
 
-        // Load code templates
-        response = await fetch("templates.json");
-        if (response.ok) {
-            this._templates = await response.json();
-        }
 
         // Setup the Monaco compilation pipeline, so we can reuse it directly for our scrpting needs
         this._setupMonacoCompilationPipeline(libContent);
@@ -221,13 +216,22 @@ export class MonacoManager {
         // This is used for a vscode-like color preview for ColorX types
         this._setupMonacoColorProvider();
 
-        // enhance templates with extra properties
-        for (const template of this._templates) {
-            (template.kind = monaco.languages.CompletionItemKind.Snippet), (template.sortText = "!" + template.label); // make sure templates are on top of the completion window
-            template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+        if (initialCall) {
+            // Load code templates
+            response = await fetch("templates.json");
+            if (response.ok) {
+                this._templates = await response.json();
+            }        
+            
+            // enhance templates with extra properties
+            for (const template of this._templates) {
+                (template.kind = monaco.languages.CompletionItemKind.Snippet), (template.sortText = "!" + template.label); // make sure templates are on top of the completion window
+                template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+            }       
+            
+            this._hookMonacoCompletionProvider();
         }
 
-        this._hookMonacoCompletionProvider();
 
         if (!this.globalState.loadingCodeInProgress) {
             this._setDefaultContent();

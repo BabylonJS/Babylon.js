@@ -2809,8 +2809,15 @@ export class ThinEngine {
 
         // establish the file extension, if possible
         const lastDot = url.lastIndexOf('.');
-        const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
+        let extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
         let loader: Nullable<IInternalTextureLoader> = null;
+
+        // Remove query string
+        let queryStringIndex = extension.indexOf("?");
+
+        if (queryStringIndex > -1) {
+            extension = extension.split("?")[0];
+        }
 
         for (const availableLoader of ThinEngine._TextureLoaders) {
             if (availableLoader.canLoad(extension, mimeType)) {
