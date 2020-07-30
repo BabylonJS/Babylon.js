@@ -170,7 +170,6 @@ export class Gizmo implements IDisposable {
                         || this._attachedNode.getClassName() === "TouchCamera"
                         || this._attachedNode.getClassName() === "UniversalCamera";
         if  (this._attachedNode.getClassName() === "ArcRotateCamera" || inheritsTargetCamera) {
-
             var camera = this._attachedNode as Camera;
             var transformQuaternion = new Quaternion(0, 0, 0, 1);
             var position = new Vector3(0, 0, 0);
