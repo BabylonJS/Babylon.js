@@ -112,16 +112,17 @@ export class WebGPUConstants {
     public static readonly GPUVertexFormat_int3: GPUVertexFormat = "int3";
     public static readonly GPUVertexFormat_int4: GPUVertexFormat = "int4";
 
-    public static readonly GPUBufferUsage_NONE = 0;
-    public static readonly GPUBufferUsage_MAP_READ = 1;
-    public static readonly GPUBufferUsage_MAP_WRITE = 2;
-    public static readonly GPUBufferUsage_TRANSFER_SRC = 4;
-    public static readonly GPUBufferUsage_TRANSFER_DST = 8;
-    public static readonly GPUBufferUsage_INDEX = 16;
-    public static readonly GPUBufferUsage_VERTEX = 32;
-    public static readonly GPUBufferUsage_UNIFORM = 64;
-    public static readonly GPUBufferUsage_STORAGE = 128;
-    public static readonly GPUBufferUsage_INDIRECT = 256;
+    public static readonly GPUBufferUsage_NONE = 0x0000;
+    public static readonly GPUBufferUsage_MAP_READ = 0x0001;
+    public static readonly GPUBufferUsage_MAP_WRITE = 0x0002;
+    public static readonly GPUBufferUsage_COPY_SRC = 0x0004;
+    public static readonly GPUBufferUsage_COPY_DST = 0x0008;
+    public static readonly GPUBufferUsage_INDEX = 0x0010;
+    public static readonly GPUBufferUsage_VERTEX = 0x0020;
+    public static readonly GPUBufferUsage_UNIFORM = 0x0040;
+    public static readonly GPUBufferUsage_STORAGE = 0x0080;
+    public static readonly GPUBufferUsage_INDIRECT = 0x0100;
+    public static readonly GPUBufferUsage_QUERY_RESOLVE = 0x0200;
 
     public static readonly GPUMapMode_READ = 1;
     public static readonly GPUMapMode_WRITE = 2;
