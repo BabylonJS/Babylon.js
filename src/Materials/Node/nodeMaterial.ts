@@ -1659,6 +1659,10 @@ export class NodeMaterial extends PushMaterial {
                 }
             }
 
+            if (merge && this.editorData && this.editorData.locations) {
+                locations.concat(this.editorData.locations);
+            }
+
             if (source.locations) {
                 this.editorData = {
                     locations: locations
