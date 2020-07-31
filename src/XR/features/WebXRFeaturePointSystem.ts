@@ -119,8 +119,8 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
                              featurePointRawData[rawIndex],
                              featurePointRawData[rawIndex + 1],
                              featurePointRawData[rawIndex + 2]),
-                        confidenceValue: featurePointRawData[4],
-                        id: featurePointRawData[5]
+                        confidenceValue: featurePointRawData[rawIndex + 3],
+                        id: featurePointRawData[rawIndex + 4]
                         };
                 }
 
