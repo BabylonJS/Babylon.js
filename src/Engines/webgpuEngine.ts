@@ -570,7 +570,7 @@ export class WebGPUEngine extends Engine {
             throw new Error("Cannot create zero-sized buffer"); // 0 size buffer would kill the tab in chrome
         }
         const uploadBuffer = this._device.createBuffer({
-            usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_MAP_WRITE,
+            usage: WebGPUConstants.GPUBufferUsage_COPY_SRC | WebGPUConstants.GPUBufferUsage_MAP_WRITE,
             size: byteLength - srcByteOffset
         });
 
@@ -614,7 +614,7 @@ export class WebGPUEngine extends Engine {
             view = data;
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_VERTEX | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_VERTEX | WebGPUConstants.GPUBufferUsage_COPY_DST);
         return dataBuffer;
     }
 
@@ -676,7 +676,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_INDEX | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_INDEX | WebGPUConstants.GPUBufferUsage_COPY_DST);
         dataBuffer.is32Bits = is32Bits;
         return dataBuffer;
     }
@@ -751,7 +751,7 @@ export class WebGPUEngine extends Engine {
             view = elements;
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_UNIFORM | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_UNIFORM | WebGPUConstants.GPUBufferUsage_COPY_DST);
         return dataBuffer;
     }
 
@@ -1021,7 +1021,7 @@ export class WebGPUEngine extends Engine {
 
         let dataBuffer: DataBuffer;
         if (bytesPerRow == width * 4) {
-            dataBuffer = this._createBuffer(pixels, WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
+            dataBuffer = this._createBuffer(pixels, WebGPUConstants.GPUBufferUsage_COPY_SRC | WebGPUConstants.GPUBufferUsage_COPY_DST);
             const bufferView: GPUBufferCopyView = {
                 buffer: dataBuffer.underlyingResource,
                 bytesPerRow: bytesPerRow,
@@ -1043,7 +1043,7 @@ export class WebGPUEngine extends Engine {
                     pixelsIndex += 4;
                 }
             }
-            dataBuffer = this._createBuffer(alignedPixels, WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
+            dataBuffer = this._createBuffer(alignedPixels, WebGPUConstants.GPUBufferUsage_COPY_SRC | WebGPUConstants.GPUBufferUsage_COPY_DST);
             const bufferView: GPUBufferCopyView = {
                 buffer: dataBuffer.underlyingResource,
                 bytesPerRow: bytesPerRow,
@@ -2286,10 +2286,15 @@ export class WebGPUEngine extends Engine {
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height
+     * @returns true if the size was changed
      */
-    public setSize(width: number, height: number): void {
-        super.setSize(width, height);
+    public setSize(width: number, height: number): boolean {
+        if (!super.setSize(width, height)) {
+            return false;
+        }
+
         this._initializeMainAttachments();
+        return true;
     }
 
     //------------------------------------------------------------------------------

@@ -250,6 +250,7 @@ interface GPUBindGroupDescriptor extends GPUObjectDescriptorBase {
 interface GPUBindGroupLayoutEntry {
   binding: number;
   visibility: GPUShaderStageFlags;
+  type: GPUBindingType;
   hasDynamicOffset?: boolean;
   minBufferBindingSize?: number;
   viewDimension?: GPUTextureViewDimension;
