@@ -567,7 +567,7 @@ export class WebGPUEngine extends Engine {
         // Chunk
         const commandEncoder = this._device.createCommandEncoder();
         if (byteLength - srcByteOffset < 1) {
-            throw new Error("Unable to create WebGPU buffer"); // 0 size buffer would kill the tab in chrome
+            throw new Error("Cannot create zero-sized buffer"); // 0 size buffer would kill the tab in chrome
         }
         const uploadBuffer = this._device.createBuffer({
             usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_MAP_WRITE,
