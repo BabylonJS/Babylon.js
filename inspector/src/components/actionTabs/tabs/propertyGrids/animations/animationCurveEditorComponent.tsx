@@ -182,6 +182,19 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.state.selected && this.selectAnimation(this.state.selected);
     }
 
+    componentDidUpdate(prevProps: IAnimationCurveEditorComponentProps, prevState: any) {
+        if (prevState.currentFrame !== this.state.currentFrame) {
+            this.onCurrentFrameChangeChangeScene(this.state.currentFrame);
+        }
+    }
+
+    onCurrentFrameChangeChangeScene(value: number) {
+        if (!this._mainAnimatable) {
+            return;
+        }
+        this._mainAnimatable.goToFrame(value);
+    }
+
     /**
      * Notifications
      * To add notification we set the state and clear to make the notification bar hide.
@@ -1291,13 +1304,35 @@ export class AnimationCurveEditorComponent extends React.Component<
         }
 
         // check for empty svgKeyframes, lastframe, selected
-        this.setState({
-            selected: animation,
-            svgKeyframes: coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes,
-            selectedPathData: updatedPath,
-            selectedCoordinate: selectedCurve,
-            fps: animation.framePerSecond,
-        });
+        this.setState(
+            {
+                selected: animation,
+                svgKeyframes: coordinate !== undefined ? filteredSvgKeys : this._svgKeyframes,
+                selectedPathData: updatedPath,
+                selectedCoordinate: selectedCurve,
+                fps: animation.framePerSecond,
+            },
+            () => this.setMainAnimatable()
+        );
+    }
+
+    setMainAnimatable() {
+        if (this.state.selected) {
+            let target = this.props.entity;
+            if (this.props.entity instanceof TargetedAnimation) {
+                target = this.props.entity.target;
+            }
+
+            this.props.scene.stopAllAnimations();
+
+            if (this._mainAnimatable?.target !== target) {
+                const keys = this.state.selected.getKeys();
+                const firstFrame = keys[0].frame;
+                const LastFrame = this.state.selected.getHighestFrame();
+                this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, this.state.isLooping);
+                this._mainAnimatable.pause();
+            }
+        }
     }
 
     isAnimationPlaying() {
@@ -1421,9 +1456,11 @@ export class AnimationCurveEditorComponent extends React.Component<
                 let firstFrame = keys[0].frame;
                 let LastFrame = this.state.selected.getHighestFrame();
                 if (direction === 1) {
+                    // Runtime Animation adds Frame 0
                     this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, this.state.isLooping);
                 }
                 if (direction === -1) {
+                    // Runtime Animation adds Frame 0
                     this._mainAnimatable = this.props.scene.beginAnimation(target, LastFrame, firstFrame, this.state.isLooping);
                 }
                 this._isPlaying = true;
@@ -1582,7 +1619,7 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                                             {f.value % this.state.fps === 0 && f.value !== 0 ? <line x1={f.value} y1="-100%" x2={f.value} y2="5%"></line> : null}
 
-                                            {this.isCurrentFrame(f.label) ? (
+                                            {this.state.selected && this.isCurrentFrame(f.label) ? (
                                                 <svg>
                                                     <line
                                                         x1={f.value}
