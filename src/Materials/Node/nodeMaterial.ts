@@ -1627,20 +1627,19 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        // Connections
-        if (!merge) {
-            // Starts with input blocks only
-            for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
-                let parsedBlock = source.blocks[blockIndex];
-                let block = map[parsedBlock.id];
+        // Connections - Starts with input blocks only (except if in "merge" mode where we scan all blocks)
+        for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
+            let parsedBlock = source.blocks[blockIndex];
+            let block = map[parsedBlock.id];
 
-                if (block.inputs.length) {
-                    continue;
-                }
-                this._restoreConnections(block, source, map);
+            if (block.inputs.length && !merge) {
+                continue;
             }
+            this._restoreConnections(block, source, map);
+        }
 
-            // Outputs
+        // Outputs
+        if (source.outputNodes) {
             for (var outputNodeId of source.outputNodes) {
                 this.addOutputNode(map[outputNodeId]);
             }
