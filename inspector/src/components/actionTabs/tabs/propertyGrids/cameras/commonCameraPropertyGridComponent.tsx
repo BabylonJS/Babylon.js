@@ -11,6 +11,8 @@ import { LockObject } from "../lockObject";
 import { GlobalState } from '../../../../globalState';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 interface ICommonCameraPropertyGridComponentProps {
     globalState: GlobalState;
@@ -41,6 +43,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent globalState={this.props.globalState} title="GENERAL">
                     <TextLineComponent label="ID" value={camera.id} />
+                    <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={camera} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <TextLineComponent label="Unique ID" value={camera.uniqueId.toString()} />
                     <TextLineComponent label="Class" value={camera.getClassName()} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Near plane" target={camera} propertyName="minZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -72,6 +75,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />                       
                 </LineContainerComponent>
+                <AnimationGridComponent globalState={this.props.globalState} animatable={camera} scene={camera.getScene()} lockObject={this.props.lockObject} />
             </div>
         );
     }

@@ -1,5 +1,5 @@
 import { Tools } from "babylonjs/Misc/tools";
-import { TmpVectors, Vector3 } from "babylonjs/Maths/math";
+import { TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { float } from "babylonjs/types";
 
 import { VolumeBasedPanel } from "./volumeBasedPanel";

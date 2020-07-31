@@ -1,4 +1,4 @@
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { AnimationGroup, Animatable } from "babylonjs/Animations/index";
 
 /**

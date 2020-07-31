@@ -69,7 +69,6 @@ export class FireMaterial extends PushMaterial {
     public speed = 1.0;
 
     private _scaledDiffuse = new Color3();
-    private _renderId: number;
     private _lastTime: number = 0;
 
     constructor(name: string, scene: Scene) {
@@ -103,10 +102,8 @@ export class FireMaterial extends PushMaterial {
         var defines = <FireMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -202,7 +199,7 @@ export class FireMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
+        defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
 
         return true;

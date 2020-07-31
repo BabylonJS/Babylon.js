@@ -1,7 +1,7 @@
 import { IBufferView, AccessorType, AccessorComponentType, IAccessor } from "babylonjs-gltf2interface";
 
 import { FloatArray, Nullable } from "babylonjs/types";
-import { Vector3, Vector4, Quaternion } from "babylonjs/Maths/math";
+import { Vector3, Vector4, Quaternion } from "babylonjs/Maths/math.vector";
 
 /**
  * @hidden

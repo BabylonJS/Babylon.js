@@ -3,13 +3,13 @@ var canvas = null;
 var scene = null;
 var globalParent = null;
 
-handleException = function(parent, e) {
+handleException = function (parent, e) {
     parent.utils.showError(e.message, e);
     // Also log error in console to help debug playgrounds
     console.error(e);
 }
 
-fastEval = function(code) {
+fastEval = function (code) {
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.setAttribute('type', 'text/javascript');
@@ -25,7 +25,7 @@ fastEval = function(code) {
 /**
  * Compile the script in the editor, and run the preview in the canvas
  */
-compileAndRun = function(parent, fpsLabel) {
+compileAndRun = function (parent, fpsLabel) {
     // If we need to change the version, don't do this
     if (parent.settingsPG.mustModifyBJSversion()) return;
 
@@ -33,24 +33,25 @@ compileAndRun = function(parent, fpsLabel) {
         parent.menuPG.hideWaitDiv();
         globalParent = parent;
 
-        if (!BABYLON.Engine.isSupported()) {
+        if (typeof BABYLON === 'undefined' || !BABYLON.Engine || !BABYLON.Engine.isSupported()) {
             parent.utils.showError("Your browser does not support WebGL. Please, try to update it, or install a compatible one.", null);
             return;
         }
 
         var showInspector = false;
         parent.menuPG.showBJSPGMenu();
-        parent.monacoCreator.JsEditor.updateOptions({ readOnly: false });
+        parent.monacoCreator.JsEditor.updateOptions({
+            readOnly: false
+        });
 
-        if (BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine && BABYLON.Engine.LastCreatedScene && BABYLON.Engine.LastCreatedScene.debugLayer && BABYLON.Engine.LastCreatedScene.debugLayer.isVisible()) {
             showInspector = true;
         }
 
         if (engine) {
             try {
                 engine.dispose();
-            }
-            catch (ex) { }
+            } catch (ex) {}
             engine = null;
         }
 
@@ -65,10 +66,13 @@ compileAndRun = function(parent, fpsLabel) {
 
         parent.monacoCreator.getRunCode().then(code => {
             createDefaultEngine = function () {
-                return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+                return new BABYLON.Engine(canvas, true, {
+                    preserveDrawingBuffer: true,
+                    stencil: true
+                });
             }
 
-            var zipVariables = "var engine = null;\r\nvar scene = null;\r\n";
+            var zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
             var defaultEngineZip = "var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); }";
 
             if (code.indexOf("createEngine") !== -1) {
@@ -97,13 +101,19 @@ compileAndRun = function(parent, fpsLabel) {
 
                 parent.zipTool.ZipCode = zipVariables + defaultEngineZip + "var engine = createDefaultEngine();" + ";\r\nvar scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
             } else {
-                code += "\r\n\r\nengine = " + createEngineFunction + "();";
+                code += `
+var engine;
+try {
+    engine = ${createEngineFunction}();
+} catch(e) {
+    console.log("the available createEngine function failed. Creating the default engine instead");
+    engine = createDefaultEngine();
+}`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
 
                 if (parent.settingsPG.ScriptLanguage == "JS") {
                     code += "\r\n" + "scene = " + createSceneFunction + "();";
-                }
-                else {
+                } else {
                     var startCar = code.search('var ' + createSceneFunction);
                     code = code.substr(0, startCar) + code.substr(startCar + 4);
                     code += "\n" + "scene = " + createSceneFunction + "();";
@@ -122,24 +132,28 @@ compileAndRun = function(parent, fpsLabel) {
                     return;
                 }
 
+                let sceneToRenderCode = 'sceneToRender = scene';
+
                 // if scene returns a promise avoid checks
                 if (scene.then) {
                     checkCamera = false;
                     checkSceneCount = false;
-                }
+                    sceneToRenderCode = 'scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n';
+                } 
 
-                var createEngineZip = (createEngineFunction === "createEngine")
-                    ? zipVariables
-                    : zipVariables + defaultEngineZip;
+                var createEngineZip = (createEngineFunction === "createEngine") ?
+                    zipVariables :
+                    zipVariables + defaultEngineZip;
 
                 parent.zipTool.zipCode =
                     createEngineZip + ";\r\n" +
-                    code;
+                    code + ";\r\n" +
+                    sceneToRenderCode;
             }
 
             engine = engine;
             var sceneToRender;
-            if(scene.then) {
+            if (scene.then) {
                 scene.then(s => {
                     sceneToRender = s;
                 });
@@ -161,7 +175,12 @@ compileAndRun = function(parent, fpsLabel) {
                     sceneToRender.render();
                 }
 
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                // Update FPS if camera is not a webxr camera
+                if(!(sceneToRender.activeCamera && 
+                    sceneToRender.activeCamera.getClassName && 
+                    sceneToRender.activeCamera.getClassName() === 'WebXRCamera')) {
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                }
             }.bind(this));
 
             if (checkSceneCount && engine.scenes.length === 0) {
@@ -188,12 +207,16 @@ compileAndRun = function(parent, fpsLabel) {
                         // Handle if scene is a promise
                         scene.then(function (s) {
                             if (!s.debugLayer.isVisible()) {
-                                s.debugLayer.show({ embedMode: true });
+                                s.debugLayer.show({
+                                    embedMode: true
+                                });
                             }
                         })
                     } else {
                         if (!scene.debugLayer.isVisible()) {
-                            scene.debugLayer.show({ embedMode: true });
+                            scene.debugLayer.show({
+                                embedMode: true
+                            });
                         }
                     }
                 }
@@ -213,7 +236,9 @@ class Main {
     constructor(parent) {
         this.parent = parent;
 
-        BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine) {
+            BABYLON.Engine.ShadersRepository = "/src/Shaders/";
+        }
         this.snippetV3Url = "https://snippet.babylonjs.com"
         this.currentSnippetToken;
         this.currentSnippetTitle = null;
@@ -222,6 +247,17 @@ class Main {
         this.fpsLabel = document.getElementById("fpsLabel");
         this.scripts;
         this.previousHash = "";
+
+        // Restore BJS version if needed
+        var restoreVersionResult = true;
+        if (this.parent.settingsPG.restoreVersion() == false) {
+            // Check if there a hash in the URL
+            this.checkHash();
+            restoreVersionResult = false;
+        }
+
+        // Load scripts list
+        this.loadScriptsList(restoreVersionResult);
     }
 
     /**
@@ -259,46 +295,38 @@ class Main {
             }.bind(this)
         );
 
-        // Restore BJS version if needed
-        var restoreVersionResult = true;
-        if (this.parent.settingsPG.restoreVersion() == false) {
-            // Check if there a hash in the URL
-            this.checkHash();
-            restoreVersionResult = false;
-        }
-
-        // Load scripts list
-        this.loadScriptsList(restoreVersionResult);
-
         // -------------------- UI --------------------
+        var handleRun = () => compileAndRun(this.parent, this.fpsLabel);
+        var handleSave = () => this.askForSave();
+        var handleGetZip = () => this.parent.zipTool.getZip(engine);
 
         // Display BJS version
-        if (BABYLON) this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
+        if (typeof BABYLON !== 'undefined' && BABYLON.Engine) {
+            this.parent.utils.setToMultipleID("mainTitle", "innerHTML", "v" + BABYLON.Engine.Version);
+        }
         // Run
-        this.parent.utils.setToMultipleID("runButton", "click", () => compileAndRun(this.parent, this.fpsLabel));
+        this.parent.utils.setToMultipleID("runButton", "click", handleRun);
         // New
         this.parent.utils.setToMultipleID("newButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
             this.createNewScript.call(this);
         }.bind(this));
-        // Clear 
+        // Clear
         this.parent.utils.setToMultipleID("clearButton", "click", function () {
             this.parent.menuPG.removeAllOptions();
             this.clear.call(this);
         }.bind(this));
         // Save
-        this.parent.utils.setToMultipleID("saveButton", "click", this.askForSave.bind(this));
+        this.parent.utils.setToMultipleID("saveButton", "click", handleSave);
         // Diff
         this.parent.utils.setToMultipleID("diffButton", "click", this.askForDiff.bind(this));
         this.parent.utils.setToMultipleID("previousButton", "click", this.navigateToPrevious.bind(this));
         this.parent.utils.setToMultipleID("nextButton", "click", this.navigateToNext.bind(this));
-        this.parent.utils.setToMultipleID("exitButton", "click", function() {
+        this.parent.utils.setToMultipleID("exitButton", "click", function () {
             this.toggleDiffEditor(this.parent.monacoCreator, this.parent.menuPG)
         }.bind(this));
         // Zip
-        this.parent.utils.setToMultipleID("zipButton", "click", function () {
-            this.parent.zipTool.getZip(engine);
-        }.bind(this));
+        this.parent.utils.setToMultipleID("zipButton", "click", handleGetZip);
         // Themes
         this.parent.utils.setToMultipleID("darkTheme", "click", function () {
             this.parent.menuPG.removeAllOptions();
@@ -328,55 +356,56 @@ class Main {
             }
         }
         // Language (JS / TS)
-        this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
-            if(location.hash != null && location.hash != ""){
-                this.parent.settingsPG.ScriptLanguage = "TS";
-                window.location = "./";
-            }else{
-                if (this.parent.settingsPG.ScriptLanguage == "JS") {
-                    //revert in case the reload is cancel due to safe mode
-                    if(document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')){
-                        // Message before unload
-                        var languageTSswapper =  function () {
+        if (this.parent.settingsPG.ScriptLanguage === "JS") {
+            this.parent.utils.setToMultipleID("toTSbutton", "click", function () {
+                if (location.hash != null && location.hash != "") {
+                    this.parent.settingsPG.ScriptLanguage = "TS";
+                    window.location = "./";
+                } else {
+                    if (this.parent.settingsPG.ScriptLanguage == "JS") {
+                        //revert in case the reload is cancel due to safe mode
+                        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+                            // Message before unload
+                            var languageTSswapper = function () {
+                                this.parent.settingsPG.ScriptLanguage = "TS";
+                                window.removeEventListener('unload', languageTSswapper.bind(this));
+                            };
+                            window.addEventListener('unload', languageTSswapper.bind(this));
+
+                            location.reload();
+                        } else {
                             this.parent.settingsPG.ScriptLanguage = "TS";
-                            window.removeEventListener('unload', languageTSswapper.bind(this));
-                        };
-                        window.addEventListener('unload',languageTSswapper.bind(this));
-                        
-                        location.reload();
-                    }
-                    else {
-                        this.parent.settingsPG.ScriptLanguage = "TS";
-                        location.reload();
+                            location.reload();
+                        }
                     }
                 }
-            }
-           
-        }.bind(this));
-        this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
-            if(location.hash != null && location.hash != ""){
-                this.parent.settingsPG.ScriptLanguage = "JS";
-                window.location = "./";
-            }else{
-                if (this.parent.settingsPG.ScriptLanguage == "TS") {
-                    //revert in case the reload is cancel due to safe mode
-                    if(document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')){
-                        // Message before unload
-                        var LanguageJSswapper =  function () {
+
+            }.bind(this));
+        } else {
+            this.parent.utils.setToMultipleID("toJSbutton", "click", function () {
+                if (location.hash != null && location.hash != "") {
+                    this.parent.settingsPG.ScriptLanguage = "JS";
+                    window.location = "./";
+                } else {
+                    if (this.parent.settingsPG.ScriptLanguage == "TS") {
+                        //revert in case the reload is cancel due to safe mode
+                        if (document.getElementById("safemodeToggle" + this.parent.utils.getCurrentSize()).classList.contains('checked')) {
+                            // Message before unload
+                            var LanguageJSswapper = function () {
+                                this.parent.settingsPG.ScriptLanguage = "JS";
+                                window.removeEventListener('unload', LanguageJSswapper.bind(this));
+                            };
+                            window.addEventListener('unload', LanguageJSswapper.bind(this));
+
+                            location.reload();
+                        } else {
                             this.parent.settingsPG.ScriptLanguage = "JS";
-                            window.removeEventListener('unload', LanguageJSswapper.bind(this));
-                        };
-                        window.addEventListener('unload',LanguageJSswapper.bind(this));
-                        
-                        location.reload();
-                    }
-                    else {
-                        this.parent.settingsPG.ScriptLanguage = "JS";
-                        location.reload();
+                            location.reload();
+                        }
                     }
                 }
-            }
-        }.bind(this));
+            }.bind(this));
+        }
         // Safe mode
         this.parent.utils.setToMultipleID("safemodeToggle", 'click', function () {
             document.getElementById("safemodeToggle1280").classList.toggle('checked');
@@ -426,11 +455,35 @@ class Main {
         this.parent.settingsPG.setScriptLanguage();
         // Check if it's mobile mode. If true, switch to full canvas by default
         this.parent.menuPG.resizeBigCanvas();
+
+        // HotKeys
+        document.onkeydown = function (e) {
+            // Alt+Enter to Run
+            if (e.altKey && (e.key === 'Enter' || event.which === 13)) {
+                handleRun();
+            }
+            // Ctrl+Shift+S to Download Zip
+            else if (
+                (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&
+                e.shiftKey &&
+                (e.key === 'S' || event.which === 83)
+            ) {
+                handleGetZip();
+            }
+            // Ctrl+S to Save
+            else if (
+                (window.navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey) &&
+                (e.key === 'S' || event.which === 83)
+            ) {
+                e.preventDefault();
+                handleSave();
+            }
+        };
     };
 
     /**
      * Check if we're in the correct language for the selected script
-     * @param {*} xhr 
+     * @param {*} xhr
      */
     checkTypescriptSupport(xhr) {
         // If we're loading TS content and it's JS page
@@ -452,8 +505,8 @@ class Main {
 
     /**
      * Load a script in the database
-     * @param {*} scriptURL 
-     * @param {*} title 
+     * @param {*} scriptURL
+     * @param {*} title
      */
     loadScript(scriptURL, title) {
         var xhr = new XMLHttpRequest();
@@ -467,11 +520,16 @@ class Main {
                     if (!this.checkTypescriptSupport(xhr)) return;
 
                     xhr.onreadystatechange = null;
-                    this.parent.monacoCreator.BlockEditorChange = true;
-                    this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
-                    this.parent.monacoCreator.JsEditor.setPosition({ lineNumber: 0, column: 0 });
-                    this.parent.monacoCreator.BlockEditorChange = false;
-                    compileAndRun(this.parent, this.fpsLabel);
+                    this.parent.monacoCreator.addOnMonacoLoadedCallback(function () {
+                        this.parent.monacoCreator.BlockEditorChange = true;
+                        this.parent.monacoCreator.JsEditor.setValue(xhr.responseText);
+                        this.parent.monacoCreator.JsEditor.setPosition({
+                            lineNumber: 0,
+                            column: 0
+                        });
+                        this.parent.monacoCreator.BlockEditorChange = false;
+                        compileAndRun(this.parent, this.fpsLabel);
+                    }, this);
 
                     this.currentSnippetToken = null;
                 }
@@ -490,8 +548,7 @@ class Main {
         // Open Typescript or Javascript examples
         if (exampleList.className != 'typescript') {
             xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list.json', true);
-        }
-        else {
+        } else {
             xhr.open('GET', 'https://raw.githubusercontent.com/BabylonJS/Documentation/master/examples/list_ts.json', true);
         }
 
@@ -507,69 +564,6 @@ class Main {
                     this.scripts.sort(sortScriptsList);
 
                     if (exampleList) {
-                        for (var i = 0; i < this.scripts.length; i++) {
-                            this.scripts[i].samples.sort(sortScriptsList);
-
-                            var exampleCategory = document.createElement("div");
-                            exampleCategory.classList.add("categoryContainer");
-
-                            var exampleCategoryTitle = document.createElement("p");
-                            exampleCategoryTitle.innerText = this.scripts[i].title;
-                            exampleCategory.appendChild(exampleCategoryTitle);
-
-                            for (var ii = 0; ii < this.scripts[i].samples.length; ii++) {
-                                var example = document.createElement("div");
-                                example.classList.add("itemLine");
-                                example.id = ii;
-
-                                var exampleImg = document.createElement("img");
-                                exampleImg.src = this.scripts[i].samples[ii].icon.replace("icons", "https://doc.babylonjs.com/examples/icons");
-                                exampleImg.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
-
-                                var exampleContent = document.createElement("div");
-                                exampleContent.classList.add("itemContent");
-                                exampleContent.setAttribute("onClick", "document.getElementById('PGLink_" + this.scripts[i].samples[ii].PGID + "').click();");
-
-                                var exampleContentLink = document.createElement("div");
-                                exampleContentLink.classList.add("itemContentLink");
-
-                                var exampleTitle = document.createElement("h3");
-                                exampleTitle.classList.add("exampleCategoryTitle");
-                                exampleTitle.innerText = this.scripts[i].samples[ii].title;
-                                var exampleDescr = document.createElement("div");
-                                exampleDescr.classList.add("itemLineChild");
-                                exampleDescr.innerText = this.scripts[i].samples[ii].description;
-
-                                var exampleDocLink = document.createElement("a");
-                                exampleDocLink.classList.add("itemLineDocLink");
-                                exampleDocLink.innerText = "Documentation";
-                                exampleDocLink.href = this.scripts[i].samples[ii].doc;
-                                exampleDocLink.target = "_blank";
-
-                                var examplePGLink = document.createElement("a");
-                                examplePGLink.id = "PGLink_" + this.scripts[i].samples[ii].PGID;
-                                examplePGLink.classList.add("itemLinePGLink");
-                                examplePGLink.innerText = "Display";
-                                examplePGLink.href = this.scripts[i].samples[ii].PGID;
-                                examplePGLink.addEventListener("click", function() {
-                                    location.href = this.href;
-                                    location.reload();
-                                });
-
-                                exampleContentLink.appendChild(exampleTitle);
-                                exampleContentLink.appendChild(exampleDescr);
-                                exampleContent.appendChild(exampleContentLink);
-                                exampleContent.appendChild(exampleDocLink);
-                                exampleContent.appendChild(examplePGLink);
-
-                                example.appendChild(exampleImg);
-                                example.appendChild(exampleContent);
-
-                                exampleCategory.appendChild(example);
-                            }
-
-                            exampleList.appendChild(exampleCategory);
-                        }
 
                         var noResultContainer = document.createElement("div");
                         noResultContainer.id = "noResultsContainer";
@@ -579,7 +573,7 @@ class Main {
                         exampleList.appendChild(noResultContainer);
                     }
 
-                    if (!location.hash && restoreVersionResult == false) {
+                    if (!location.hash && restoreVersionResult == false && location.pathname.indexOf('pg/') === -1) {
                         // Query string
                         var queryString = window.location.search;
 
@@ -589,49 +583,117 @@ class Main {
                             if (!isNaN(index)) {
                                 var newPG = "";
                                 switch (index) {
-                                    case 1: newPG = "#TAZ2CB#0"; break; // Basic scene
-                                    case 2: newPG = "#A1210C#0"; break; // Basic elements
-                                    case 3: newPG = "#CURCZC#0"; break; // Rotation and scaling
-                                    case 4: newPG = "#DXARSP#0"; break; // Materials
-                                    case 5: newPG = "#1A3M5C#0"; break; // Cameras
-                                    case 6: newPG = "#AQRDKW#0"; break; // Lights
-                                    case 7: newPG = "#QYFDDP#1"; break; // Animations
-                                    case 8: newPG = "#9RI8CG#0"; break; // Sprites
-                                    case 9: newPG = "#U8MEB0#0"; break; // Collisions
-                                    case 10: newPG = "#KQV9SA#0"; break; // Intersections
-                                    case 11: newPG = "#NU4F6Y#0"; break; // Picking
-                                    case 12: newPG = "#EF9X5R#0"; break; // Particles
-                                    case 13: newPG = "#7G0IQW#0"; break; // Environment
-                                    case 14: newPG = "#95PXRY#0"; break; // Height map
-                                    case 15: newPG = "#IFYDRS#0"; break; // Shadows
-                                    case 16: newPG = "#AQZJ4C#0"; break; // Import meshes
-                                    case 17: newPG = "#J19GYK#0"; break; // Actions
-                                    case 18: newPG = "#UZ23UH#0"; break; // Drag and drop
-                                    case 19: newPG = "#AQZJ4C#0"; break; // Fresnel
-                                    case 20: newPG = "#8ZNVGR#0"; break; // Easing functions
-                                    case 21: newPG = "#B2ZXG6#0"; break; // Procedural texture
-                                    case 22: newPG = "#DXAEUY#0"; break; // Basic sounds
-                                    case 23: newPG = "#EDVU95#0"; break; // Sound on mesh
-                                    case 24: newPG = "#N96NXC#0"; break; // SSAO rendering pipeline
-                                    case 25: newPG = "#7D2QDD#0"; break; // SSAO 2
-                                    case 26: newPG = "#V2DAKC#0"; break; // Volumetric light scattering
-                                    case 27: newPG = "#XH85A9#0"; break; // Refraction and reflection
-                                    case 28: newPG = "#8MGKWK#0"; break; // PBR
-                                    case 29: newPG = "#0K8EYN#0"; break; // Instanced bones
-                                    case 30: newPG = "#C245A1#0"; break; // Pointer events handling
-                                    case 31: newPG = "#TAFSN0#2"; break; // WebVR
-                                    case 32: newPG = "#3VMTI9#0"; break; // GUI
-                                    case 33: newPG = "#7149G4#0"; break; // Physics
+                                    case 1:
+                                        newPG = "#TAZ2CB#0";
+                                        break; // Basic scene
+                                    case 2:
+                                        newPG = "#A1210C#0";
+                                        break; // Basic elements
+                                    case 3:
+                                        newPG = "#CURCZC#0";
+                                        break; // Rotation and scaling
+                                    case 4:
+                                        newPG = "#DXARSP#0";
+                                        break; // Materials
+                                    case 5:
+                                        newPG = "#1A3M5C#0";
+                                        break; // Cameras
+                                    case 6:
+                                        newPG = "#AQRDKW#0";
+                                        break; // Lights
+                                    case 7:
+                                        newPG = "#QYFDDP#1";
+                                        break; // Animations
+                                    case 8:
+                                        newPG = "#9RI8CG#0";
+                                        break; // Sprites
+                                    case 9:
+                                        newPG = "#U8MEB0#0";
+                                        break; // Collisions
+                                    case 10:
+                                        newPG = "#KQV9SA#0";
+                                        break; // Intersections
+                                    case 11:
+                                        newPG = "#NU4F6Y#0";
+                                        break; // Picking
+                                    case 12:
+                                        newPG = "#EF9X5R#0";
+                                        break; // Particles
+                                    case 13:
+                                        newPG = "#7G0IQW#0";
+                                        break; // Environment
+                                    case 14:
+                                        newPG = "#95PXRY#0";
+                                        break; // Height map
+                                    case 15:
+                                        newPG = "#IFYDRS#0";
+                                        break; // Shadows
+                                    case 16:
+                                        newPG = "#AQZJ4C#0";
+                                        break; // Import meshes
+                                    case 17:
+                                        newPG = "#J19GYK#0";
+                                        break; // Actions
+                                    case 18:
+                                        newPG = "#UZ23UH#0";
+                                        break; // Drag and drop
+                                    case 19:
+                                        newPG = "#AQZJ4C#0";
+                                        break; // Fresnel
+                                    case 20:
+                                        newPG = "#8ZNVGR#0";
+                                        break; // Easing functions
+                                    case 21:
+                                        newPG = "#B2ZXG6#0";
+                                        break; // Procedural texture
+                                    case 22:
+                                        newPG = "#DXAEUY#0";
+                                        break; // Basic sounds
+                                    case 23:
+                                        newPG = "#EDVU95#0";
+                                        break; // Sound on mesh
+                                    case 24:
+                                        newPG = "#N96NXC#0";
+                                        break; // SSAO rendering pipeline
+                                    case 25:
+                                        newPG = "#7D2QDD#0";
+                                        break; // SSAO 2
+                                    case 26:
+                                        newPG = "#V2DAKC#0";
+                                        break; // Volumetric light scattering
+                                    case 27:
+                                        newPG = "#XH85A9#0";
+                                        break; // Refraction and reflection
+                                    case 28:
+                                        newPG = "#8MGKWK#0";
+                                        break; // PBR
+                                    case 29:
+                                        newPG = "#0K8EYN#0";
+                                        break; // Instanced bones
+                                    case 30:
+                                        newPG = "#C245A1#0";
+                                        break; // Pointer events handling
+                                    case 31:
+                                        newPG = "#TAFSN0#2";
+                                        break; // WebVR
+                                    case 32:
+                                        newPG = "#3VMTI9#0";
+                                        break; // GUI
+                                    case 33:
+                                        newPG = "#7149G4#0";
+                                        break; // Physics
 
-                                    default: newPG = ""; break;
+                                    default:
+                                        newPG = "";
+                                        break;
                                 }
                                 window.location.href = location.protocol + "//" + location.host + location.pathname + "#" + newPG;
                             } else if (query.indexOf("=") === -1) {
                                 this.loadScript("scripts/" + query + ".js", query);
-                            } else {
+                            } else if (query.indexOf('pg=') === -1 && !location.pathname.match(/\/pg\//)) {
                                 this.loadScript(this.parent.settingsPG.DefaultScene, "Basic scene");
                             }
-                        } else {
+                        } else if (!location.pathname.match(/\/pg\//)) {
                             this.loadScript(this.parent.settingsPG.DefaultScene, "Basic scene");
                         }
                     }
@@ -659,7 +721,10 @@ class Main {
         } else {
             this.parent.monacoCreator.JsEditor.setValue('// You have to create a class called Playground. This class must provide a static function named CreateScene(engine, canvas) which must return a BABYLON.Scene object\r\n// You must at least define a camera inside the CreateScene function\r\n\r\nclass Playground {\r\n\tpublic static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {\r\n\t\tvar scene = new BABYLON.Scene(engine);\r\n\r\n\t\tvar camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);\r\n\t\tcamera.setTarget(BABYLON.Vector3.Zero());\r\n\t\tcamera.attachControl(canvas, true);\r\n\r\n\t\treturn scene;\r\n\t}\r\n}');
         }
-        this.parent.monacoCreator.JsEditor.setPosition({ lineNumber: 11, column: 0 });
+        this.parent.monacoCreator.JsEditor.setPosition({
+            lineNumber: 11,
+            column: 0
+        });
         this.parent.monacoCreator.JsEditor.focus();
         compileAndRun(this.parent, this.fpsLabel);
     };
@@ -670,7 +735,10 @@ class Main {
         location.hash = "";
         this.currentSnippetToken = null;
         this.parent.monacoCreator.JsEditor.setValue('');
-        this.parent.monacoCreator.JsEditor.setPosition({ lineNumber: 0, column: 0 });
+        this.parent.monacoCreator.JsEditor.setPosition({
+            lineNumber: 0,
+            column: 0
+        });
         this.parent.monacoCreator.JsEditor.focus();
     };
 
@@ -702,24 +770,21 @@ class Main {
         if (this.currentSnippetTitle) {
             document.getElementById("saveFormTitle").value = this.currentSnippetTitle;
             document.getElementById("saveFormTitle").readOnly = true;
-        }
-        else {
+        } else {
             document.getElementById("saveFormTitle").value = '';
             document.getElementById("saveFormTitle").readOnly = false;
         }
         if (this.currentSnippetDescription) {
             document.getElementById("saveFormDescription").value = this.currentSnippetDescription;
             document.getElementById("saveFormDescription").readOnly = true;
-        }
-        else {
+        } else {
             document.getElementById("saveFormDescription").value = '';
             document.getElementById("saveFormDescription").readOnly = false;
         }
         if (this.currentSnippetTags) {
             document.getElementById("saveFormTags").value = this.currentSnippetTags;
             document.getElementById("saveFormTags").readOnly = true;
-        }
-        else {
+        } else {
             document.getElementById("saveFormTags").value = '';
             document.getElementById("saveFormTags").readOnly = false;
         }
@@ -734,8 +799,8 @@ class Main {
     };
 
     /*
-    * Metadatas save
-    */
+     * Metadatas save
+     */
     save() {
 
         // Retrieve title if necessary
@@ -745,21 +810,42 @@ class Main {
             this.currentSnippetTags = document.getElementById("saveFormTags").value;
         }
 
+        this.updateMetadata();
+
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState === 4) {
                 if (xmlHttp.status === 200) {
-                    var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    var newUrl = baseUrl + "#" + snippet.id;
-                    this.currentSnippetToken = snippet.id;
-                    if (snippet.version && snippet.version !== "0") {
-                        newUrl += "#" + snippet.version;
+                    if (location.pathname && location.pathname.indexOf('pg/') !== -1) {
+                        // full path with /pg/??????
+                        if (location.pathname.indexOf('revision') !== -1) {
+                            location.href = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
+                        } else {
+                            location.href = location.href + '/revision/' + snippet.version;
+                        }
+                    } else if (location.search && location.search.indexOf('pg=') !== -1) {
+                        // query string with ?pg=??????
+                        const currentQuery = this.parseQuery(location.search);
+                        if (currentQuery.revision) {
+                            location.href = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
+                        } else {
+                            location.href = location.href + '&revision=' + snippet.version;
+                        }
+                    } else {
+                        // default behavior!
+                        var baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                        var newUrl = baseUrl + "#" + snippet.id;
+                        newUrl = newUrl.replace('##', '#');
+                        this.currentSnippetToken = snippet.id;
+                        if (snippet.version && snippet.version !== "0") {
+                            newUrl += "#" + snippet.version;
+                        }
+                        location.href = newUrl;
+                        // Hide the complete title & co message
+                        this.hideNoMetadata();
+                        compileAndRun(this.parent, this.fpsLabel);
                     }
-                    location.href = newUrl;
-                    // Hide the complete title & co message
-                    this.hideNoMetadata();
-                    compileAndRun(this.parent, this.fpsLabel);
                 } else {
                     this.parent.utils.showError("Unable to save your code. It may be too long.", null);
                 }
@@ -781,13 +867,12 @@ class Main {
         xmlHttp.send(JSON.stringify(dataToSend));
     };
     askForSave() {
-        if (this.currentSnippetTitle == null
-            || this.currentSnippetDescription == null
-            || this.currentSnippetTags == null) {
+        if (this.currentSnippetTitle == null ||
+            this.currentSnippetDescription == null ||
+            this.currentSnippetTags == null) {
 
             document.getElementById("saveLayer").style.display = "block";
-        }
-        else {
+        } else {
             this.save();
         }
     };
@@ -799,7 +884,7 @@ class Main {
         if (this.previousHash && right.value === "") {
             // Use the previous snippet hash for right comparison, if present
             right.value = this.previousHash;
-        } 
+        }
 
         diffLayer.style.display = "block";
     }
@@ -815,8 +900,8 @@ class Main {
         let result = await response.json();
         return JSON.parse(result.jsonPayload).code.toString();
     }
-	
-	async getSnippetCode(value) {
+
+    async getSnippetCode(value) {
         if (!value || value === "") {
             // use current snippet
             return this.parent.monacoCreator.JsEditor.getValue();
@@ -832,7 +917,7 @@ class Main {
             const rightText = await this.getSnippetCode(document.getElementById("diffFormCompareTo").value);
 
             this.toggleDiffEditor(this.parent.monacoCreator, this.parent.menuPG, leftText, rightText);
-        } catch(e) {
+        } catch (e) {
             // only pass the message, we don't want to inspect the stacktrace in this case
             this.parent.utils.showError(e.message, null);
         }
@@ -875,26 +960,36 @@ class Main {
     }
 
     /**
-         * Toggle the code editor
-         */
+     * Toggle the code editor
+     */
     toggleEditor() {
         var editorButton = document.getElementById("editorButton1280");
+        var gutter = document.querySelector(".gutter");
+        var canvas = document.getElementById("canvasZone");
+        var jsEditor = document.getElementById("jsEditor");
         var scene = engine.scenes[0];
 
         // If the editor is present
         if (editorButton.classList.contains('checked')) {
             this.parent.utils.setToMultipleID("editorButton", "removeClass", 'checked');
+            gutter.style.display = "none";
+            jsEditor.style.display = "none";
             this.parent.splitInstance.collapse(0);
+            canvas.style.width = "100%";
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-square" aria-hidden="true"></i>');
         } else {
             this.parent.utils.setToMultipleID("editorButton", "addClass", 'checked');
-            this.parent.splitInstance.setSizes([50, 50]);  // Reset
+            gutter.style.display = "";            
+            jsEditor.style.display = "";
+            this.parent.splitInstance.setSizes([50, 50]); // Reset
             this.parent.utils.setToMultipleID("editorButton", "innerHTML", 'Editor <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
         engine.resize();
 
         if (scene.debugLayer.isVisible()) {
-            scene.debugLayer.show({ embedMode: true });
+            scene.debugLayer.show({
+                embedMode: true
+            });
         }
     };
 
@@ -906,9 +1001,10 @@ class Main {
         var scene = engine.scenes[0];
         if (scene.debugLayer.isVisible()) {
             scene.debugLayer.hide();
-        }
-        else {
-            scene.debugLayer.show({ embedMode: true });
+        } else {
+            scene.debugLayer.show({
+                embedMode: true
+            });
         }
     };
 
@@ -916,7 +1012,8 @@ class Main {
      * HASH part
      */
     cleanHash() {
-        var splits = decodeURIComponent(location.hash.substr(1)).split("#");
+        var substr = location.hash[1]==='#' ? 2 : 1
+        var splits = decodeURIComponent(location.hash.substr(substr)).split("#");
 
         if (splits.length > 2) {
             splits.splice(2, splits.length - 2);
@@ -925,76 +1022,144 @@ class Main {
         location.hash = splits.join("#");
     };
     checkHash() {
-        if (location.hash) {
+        let pgHash = "";
+        if (location.search && (!location.pathname  || location.pathname === '/') && !location.hash) {
+            var query = this.parseQuery(location.search);
+            if (query.pg) {
+                pgHash = "#" + query.pg + "#" + (query.revision || "0")
+            }
+        } else if (location.hash) {
             if (this.previousHash !== location.hash) {
                 this.cleanHash();
-
-                this.previousHash = location.hash;
-
-                try {
-                    var xmlHttp = new XMLHttpRequest();
-                    xmlHttp.onreadystatechange = function () {
-                        if (xmlHttp.readyState === 4) {
-                            if (xmlHttp.status === 200) {
-
-                                if (!this.checkTypescriptSupport(xmlHttp)) {
-                                    return;
-                                }
-
-                                var snippet = JSON.parse(xmlHttp.responseText);
-
-                                this.parent.monacoCreator.BlockEditorChange = true;
-                                this.parent.monacoCreator.JsEditor.setValue(JSON.parse(snippet.jsonPayload).code.toString());
-
-                                // Check if title / descr / tags are already set
-                                if (snippet.name != null && snippet.name != "") {
-                                    this.currentSnippetTitle = snippet.name;
-                                }
-                                else this.currentSnippetTitle = null;
-
-                                if (snippet.description != null && snippet.description != "") {
-                                    this.currentSnippetDescription = snippet.description;
-                                }
-                                else this.currentSnippetDescription = null;
-
-                                if (snippet.tags != null && snippet.tags != "") {
-                                    this.currentSnippetTags = snippet.tags;
-                                }
-                                else this.currentSnippetTags = null;
-
-                                if (this.currentSnippetTitle != null && this.currentSnippetTags != null && this.currentSnippetDescription) {
-                                    if (document.getElementById("saveLayer")) {
-
-                                        document.getElementById("saveFormTitle").value = this.currentSnippetTitle;
-                                        document.getElementById("saveFormDescription").value = this.currentSnippetDescription;
-                                        document.getElementById("saveFormTags").value = this.currentSnippetTags;
-
-                                        this.hideNoMetadata();
-                                    }
-                                }
-                                else {
-                                    this.showNoMetadata();
-                                }
-
-                                this.parent.monacoCreator.JsEditor.setPosition({ lineNumber: 0, column: 0 });
-                                this.parent.monacoCreator.BlockEditorChange = false;
-                                compileAndRun(this.parent, this.fpsLabel);
-                            }
-                        }
-                    }.bind(this);
-
-                    var hash = location.hash.substr(1);
-                    this.currentSnippetToken = hash.split("#")[0];
-                    if (!hash.split("#")[1]) hash += "#0";
-
-
-                    xmlHttp.open("GET", this.snippetV3Url + "/" + hash.replace("#", "/"));
-                    xmlHttp.send();
-                } catch (e) {
-
+                pgHash = location.hash;
+            }
+        } else if (location.pathname) {
+            const pgMatch = location.pathname.match(/\/pg\/(.*)/);
+            const withRevision = location.pathname.match(/\/pg\/(.*)\/revision\/(\d*)/);
+            if (pgMatch || withRevision) {
+                if (withRevision) {
+                    pgHash = "#" + withRevision[1] + "#" + withRevision[2];
+                } else {
+                    pgHash = "#" + pgMatch[1] + "#0";
                 }
             }
         }
-        setTimeout(this.checkHash.bind(this), 200);
+        if (pgHash) {
+            var match = pgHash.match(/^(#[A-Za-z\d]*)(%23)([\d]+)$/);
+            if (match) {
+                pgHash = match[1] + '#' + match[3];
+                parent.location.hash = pgHash;
+            }
+            this.previousHash = pgHash;
+            this.loadPlayground(pgHash.substr(1))
+        }
+        window.addEventListener("hashchange", this.checkHash.bind(this));
     };
+    loadPlayground(id) {
+        try {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState === 4) {
+                    if (xmlHttp.status === 200) {
+
+                        if (!this.checkTypescriptSupport(xmlHttp)) {
+                            return;
+                        }
+
+                        var snippet = JSON.parse(xmlHttp.responseText);
+
+                        // Check if title / descr / tags are already set
+                        if (snippet.name != null && snippet.name != "") {
+                            this.currentSnippetTitle = snippet.name;
+                        } else this.currentSnippetTitle = null;
+
+                        if (snippet.description != null && snippet.description != "") {
+                            this.currentSnippetDescription = snippet.description;
+                        } else this.currentSnippetDescription = null;
+
+                        if (snippet.tags != null && snippet.tags != "") {
+                            this.currentSnippetTags = snippet.tags;
+                        } else this.currentSnippetTags = null;
+
+                        if (this.currentSnippetTitle != null && this.currentSnippetTags != null && this.currentSnippetDescription) {
+                            if (document.getElementById("saveLayer")) {
+
+                                document.getElementById("saveFormTitle").value = this.currentSnippetTitle;
+                                document.getElementById("saveFormDescription").value = this.currentSnippetDescription;
+                                document.getElementById("saveFormTags").value = this.currentSnippetTags;
+
+                                this.hideNoMetadata();
+                            }
+                        } else {
+                            this.showNoMetadata();
+                        }
+
+                        this.updateMetadata();
+
+                        var code = JSON.parse(snippet.jsonPayload).code.toString();
+                        var editorSpace = document.getElementById('jsEditor');
+                        if (editorSpace) {
+                            // editorSpace.style.overflow = "overlay";
+                            // editorSpace.innerHTML = '<pre class="loading-pre">' + code + "</pre>";
+                            // this.parent.menuPG.resizeBigJsEditor();
+                        }
+
+                        this.parent.monacoCreator.addOnMonacoLoadedCallback(function () {
+                            this.parent.monacoCreatorjs = true;
+                            this.parent.monacoCreator.JsEditor.setValue(code);
+
+                            this.parent.monacoCreator.JsEditor.setPosition({
+                                lineNumber: 0,
+                                column: 0
+                            });
+                            this.parent.monacoCreator.BlockEditorChange = false;
+                            compileAndRun(this.parent, this.fpsLabel);
+                        }, this);
+
+                    }
+                }
+            }.bind(this);
+
+            this.currentSnippetToken = id.split("#")[0];
+            if (!id.split("#")[1]) id += "#0";
+
+            xmlHttp.open("GET", this.snippetV3Url + "/" + id.replace("#", "/"));
+            xmlHttp.send();
+        } catch (e) {
+
+        }
+    }
+    updateMetadata() {
+        var selection;
+
+        if (this.currentSnippetTitle) {
+            selection = document.querySelector('title');
+            if (selection) {
+                selection.innerText = (this.currentSnippetTitle + " | Babylon.js Playground");
+            }
+        }
+
+        if (this.currentSnippetDescription) {
+            selection = document.querySelector('meta[name="description"]');
+            if (selection) {
+                selection.setAttribute("content", this.currentSnippetDescription + " - Babylon.js Playground");
+            }
+        }
+
+        if (this.currentSnippetTags) {
+            selection = document.querySelector('meta[name="keywords"]');
+            if (selection) {
+                selection.setAttribute("content", "babylon.js, game engine, webgl, 3d," + this.currentSnippetTags);
+            }
+        }
+    }
+    parseQuery(queryString) {
+        var query = {};
+        var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+        for (var i = 0; i < pairs.length; i++) {
+            var pair = pairs[i].split('=');
+            query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+        }
+        return query;
+    }
 }

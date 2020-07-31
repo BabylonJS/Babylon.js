@@ -149,7 +149,7 @@ export class SpriteMap implements ISpriteMap {
         let am = this._createTileAnimationBuffer(buffer);
         this._animationMap.dispose();
         this._animationMap = am;
-        this._material.setTexture('animationMap', this._animationMap);
+        this._material.setTexture("animationMap", this._animationMap);
     }
 
     /** Scene that the SpriteMap was created in */
@@ -183,124 +183,133 @@ export class SpriteMap implements ISpriteMap {
      */
     constructor(name : string, atlasJSON: ISpriteJSONAtlas, spriteSheet: Texture, options: ISpriteMapOptions, scene : Scene) {
 
-    this.name = name;
-    this.sprites = [];
-    this.atlasJSON = atlasJSON;
-    this.sprites = this.atlasJSON['frames'];
-    this.spriteSheet = spriteSheet;
+        this.name = name;
+        this.sprites = [];
+        this.atlasJSON = atlasJSON;
+        this.sprites = this.atlasJSON["frames"];
+        this.spriteSheet = spriteSheet;
 
-    /**
-    * Run through the options and set what ever defaults are needed that where not declared.
-    */
-    this.options = options;
-    this.options.stageSize = this.options.stageSize || new Vector2(1, 1);
-    this.options.outputSize = this.options.outputSize || this.options.stageSize;
-    this.options.outputPosition = this.options.outputPosition || Vector3.Zero();
-    this.options.outputRotation = this.options.outputRotation || Vector3.Zero();
-    this.options.layerCount = this.options.layerCount || 1;
-    this.options.maxAnimationFrames = this.options.maxAnimationFrames || 0;
-    this.options.baseTile = this.options.baseTile || 0;
-    this.options.flipU = this.options.flipU || false;
-    this.options.colorMultiply = this.options.colorMultiply || new Vector3(1, 1, 1);
+        /**
+        * Run through the options and set what ever defaults are needed that where not declared.
+        */
+        this.options = options;
+        options.stageSize = options.stageSize || new Vector2(1, 1);
+        options.outputSize = options.outputSize || options.stageSize;
+        options.outputPosition = options.outputPosition || Vector3.Zero();
+        options.outputRotation = options.outputRotation || Vector3.Zero();
+        options.layerCount = options.layerCount || 1;
+        options.maxAnimationFrames = options.maxAnimationFrames || 0;
+        options.baseTile = options.baseTile || 0;
+        options.flipU = options.flipU || false;
+        options.colorMultiply = options.colorMultiply || new Vector3(1, 1, 1);
 
-    this._scene = scene;
+        this._scene = scene;
 
-    this._frameMap = this._createFrameBuffer();
+        this._frameMap = this._createFrameBuffer();
 
-    this._tileMaps = new Array();
-    for (let i = 0; i < this.options.layerCount; i++) {
-        this._tileMaps.push(this._createTileBuffer(null, i));
-    }
+        this._tileMaps = new Array();
+        for (let i = 0; i < options.layerCount; i++) {
+            this._tileMaps.push(this._createTileBuffer(null, i));
+        }
 
-    this._animationMap = this._createTileAnimationBuffer(null);
+        this._animationMap = this._createTileAnimationBuffer(null);
 
-    let defines = [];
-    defines.push("#define LAYERS " + this.options.layerCount);
+        let defines = [];
+        defines.push("#define LAYERS " + options.layerCount);
 
-    if (this.options.flipU) {
-        defines.push("#define FLIPU");
-    }
+        if (options.flipU) {
+            defines.push("#define FLIPU");
+        }
 
-    let shaderString: string = Effect.ShadersStore['spriteMapPixelShader'];
-    let layerSampleString: string = '';
+        defines.push(`#define MAX_ANIMATION_FRAMES ${options.maxAnimationFrames}.0`);
 
-    for (let i = 0; i < this.options.layerCount; i++) {
-        layerSampleString += 'case ' + i + ' : frameID = texture(tileMaps[' + i + '], (tileID + 0.5) / stageSize, 0.).x;';
-        layerSampleString += 'break;';
-    }
+        let shaderString: string = Effect.ShadersStore["spriteMapPixelShader"];
 
-    Effect.ShadersStore['spriteMap' + this.name + 'PixelShader'] = shaderString.replace('#define LAYER_ID_SWITCH',  layerSampleString);
-
-    this._material = new ShaderMaterial("spriteMap:" + this.name, this._scene, {
-        vertex: "spriteMap",
-        fragment: "spriteMap" + this.name,
-    }, {
-        defines,
-        attributes: ["position", "normal", "uv"],
-        uniforms: [
-            "worldViewProjection",
-            "time",
-            'stageSize',
-            'outputSize',
-            'spriteMapSize',
-            'spriteCount',
-            'time',
-            'maxAnimationFrames',
-            'colorMul',
-            'mousePosition',
-            'curTile',
-            'flipU'
-        ],
-        samplers: [
-           "spriteSheet", "frameMap", "tileMaps", "animationMap"
-        ],
-        needAlphaBlending: true
-    });
-
-    this._time = 0;
-
-    this._material.setFloat('spriteCount', this.spriteCount);
-    this._material.setFloat('maxAnimationFrames', this.options.maxAnimationFrames);
-    this._material.setVector2('stageSize', this.options.stageSize);
-    this._material.setVector2('outputSize', this.options.outputSize);
-    this._material.setTexture('spriteSheet', this.spriteSheet);
-    this._material.setVector2('spriteMapSize', new Vector2(1, 1));
-    this._material.setVector3('colorMul', this.options.colorMultiply);
-
-    let tickSave = 0;
-
-    const bindSpriteTexture = () => {
-        if ((this.spriteSheet) && this.spriteSheet.isReady()) {
-            if (this.spriteSheet._texture) {
-                this._material.setVector2('spriteMapSize', new Vector2(this.spriteSheet._texture.baseWidth || 1, this.spriteSheet._texture.baseHeight || 1));
-                return;
+        let layerSampleString: string;
+        if (this._scene.getEngine().webGLVersion === 1) {
+            layerSampleString = "";
+            for (let i = 0; i < options.layerCount; i++) {
+                layerSampleString += `if (${i} == i) { frameID = texture2D(tileMaps[${i}], (tileID + 0.5) / stageSize, 0.).x; }`;
             }
         }
-        if (tickSave < 100) {
-            setTimeout(() => {tickSave++; bindSpriteTexture(); }, 100);
+        else {
+            layerSampleString = "switch(i) {";
+            for (let i = 0; i < options.layerCount; i++) {
+                layerSampleString += "case " + i + " : frameID = texture(tileMaps[" + i + "], (tileID + 0.5) / stageSize, 0.).x;";
+                layerSampleString += "break;";
+            }
+            layerSampleString += "}";
         }
-    };
 
-    bindSpriteTexture();
+        Effect.ShadersStore["spriteMap" + this.name + "PixelShader"] = shaderString.replace("#define LAYER_ID_SWITCH",  layerSampleString);
 
-    this._material.setVector3('colorMul', this.options.colorMultiply);
-    this._material.setTexture("frameMap", this._frameMap);
-    this._material.setTextureArray("tileMaps", this._tileMaps);
-    this._material.setTexture("animationMap", this._animationMap);
-    this._material.setFloat('time', this._time);
+        this._material = new ShaderMaterial("spriteMap:" + this.name, this._scene, {
+            vertex: "spriteMap",
+            fragment: "spriteMap" + this.name,
+        }, {
+            defines,
+            attributes: ["position", "normal", "uv"],
+            uniforms: [
+                "worldViewProjection",
+                "time",
+                "stageSize",
+                "outputSize",
+                "spriteMapSize",
+                "spriteCount",
+                "time",
+                "colorMul",
+                "mousePosition",
+                "curTile",
+                "flipU"
+            ],
+            samplers: [
+            "spriteSheet", "frameMap", "tileMaps", "animationMap"
+            ],
+            needAlphaBlending: true
+        });
 
-    this._output = Mesh.CreatePlane(name + ":output", 1, scene, true);
-    this._output.scaling.x = this.options.outputSize.x;
-    this._output.scaling.y = this.options.outputSize.y;
+        this._time = 0;
 
-    let obfunction = () => {
-        this._time += this._scene.getEngine().getDeltaTime();
-        this._material.setFloat('time', this._time);
-    };
+        this._material.setFloat("spriteCount", this.spriteCount);
+        this._material.setVector2("stageSize", options.stageSize);
+        this._material.setVector2("outputSize", options.outputSize);
+        this._material.setTexture("spriteSheet", this.spriteSheet);
+        this._material.setVector2("spriteMapSize", new Vector2(1, 1));
+        this._material.setVector3("colorMul", options.colorMultiply);
 
-    this._scene.onBeforeRenderObservable.add(obfunction);
-    this._output.material = this._material;
+        let tickSave = 0;
 
+        const bindSpriteTexture = () => {
+            if ((this.spriteSheet) && this.spriteSheet.isReady()) {
+                if (this.spriteSheet._texture) {
+                    this._material.setVector2("spriteMapSize", new Vector2(this.spriteSheet._texture.baseWidth || 1, this.spriteSheet._texture.baseHeight || 1));
+                    return;
+                }
+            }
+            if (tickSave < 100) {
+                setTimeout(() => {tickSave++; bindSpriteTexture(); }, 100);
+            }
+        };
+
+        bindSpriteTexture();
+
+        this._material.setVector3("colorMul", options.colorMultiply);
+        this._material.setTexture("frameMap", this._frameMap);
+        this._material.setTextureArray("tileMaps", this._tileMaps);
+        this._material.setTexture("animationMap", this._animationMap);
+        this._material.setFloat("time", this._time);
+
+        this._output = Mesh.CreatePlane(name + ":output", 1, scene, true);
+        this._output.scaling.x = options.outputSize.x;
+        this._output.scaling.y = options.outputSize.y;
+
+        let obfunction = () => {
+            this._time += this._scene.getEngine().getDeltaTime();
+            this._material.setFloat("time", this._time);
+        };
+
+        this._scene.onBeforeRenderObservable.add(obfunction);
+        this._output.material = this._material;
     }
 
     /**
@@ -359,15 +368,15 @@ export class SpriteMap implements ISpriteMap {
             data.push(0, 0, 0, 0); //frame
             data.push(0, 0, 0, 0); //spriteSourceSize
             data.push(0, 0, 0, 0); //sourceSize, rotated, trimmed
-            data.push(0, 0, 0, 0); //Keep it pow2 cause I'm cool like that... it helps with sampling accuracy as well. Plus then we have 4 other parameters for future stuff.
+            data.push(0, 0, 0, 0); //Keep it pow2 cause I"m cool like that... it helps with sampling accuracy as well. Plus then we have 4 other parameters for future stuff.
         }
         //Second Pass
         for (let i = 0; i < this.spriteCount; i++) {
-            let f = this.sprites[i]['frame'];
-            let sss = this.sprites[i]['spriteSourceSize'];
-            let ss = this.sprites[i]['sourceSize'];
-            let r = (this.sprites[i]['rotated']) ? 1 : 0;
-            let t = (this.sprites[i]['trimmed']) ? 1 : 0;
+            let f = this.sprites[i]["frame"];
+            let sss = this.sprites[i]["spriteSourceSize"];
+            let ss = this.sprites[i]["sourceSize"];
+            let r = (this.sprites[i]["rotated"]) ? 1 : 0;
+            let t = (this.sprites[i]["trimmed"]) ? 1 : 0;
 
             //frame
             data[i * 4] = f.x;
@@ -543,16 +552,16 @@ export class SpriteMap implements ISpriteMap {
     * Exports the .tilemaps file
     */
     public saveTileMaps(): void {
-        let maps = '';
+        let maps = "";
         for (var i = 0; i < this._tileMaps.length; i++) {
-            if (i > 0) {maps += '\n\r'; }
+            if (i > 0) {maps += "\n\r"; }
 
             maps += this._tileMaps[i]!._texture!._bufferView!.toString();
         }
-        var hiddenElement = document.createElement('a');
-        hiddenElement.href = 'data:octet/stream;charset=utf-8,' + encodeURI(maps);
-        hiddenElement.target = '_blank';
-        hiddenElement.download = this.name + '.tilemaps';
+        var hiddenElement = document.createElement("a");
+        hiddenElement.href = "data:octet/stream;charset=utf-8," + encodeURI(maps);
+        hiddenElement.target = "_blank";
+        hiddenElement.download = this.name + ".tilemaps";
         hiddenElement.click();
         hiddenElement.remove();
     }
@@ -569,9 +578,9 @@ export class SpriteMap implements ISpriteMap {
 
         xhr.onload = () =>
         {
-            let data = xhr.response.split('\n\r');
+            let data = xhr.response.split("\n\r");
             for (let i = 0; i < _lc; i++) {
-                let d = (data[i].split(',')).map(Number);
+                let d = (data[i].split(",")).map(Number);
                 let t = this._createTileBuffer(d);
                 this._tileMaps[i].dispose();
                 this._tileMaps[i] = t;

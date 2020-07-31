@@ -8,7 +8,6 @@ import { Effect } from "../Materials/effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { Texture } from '../Materials/Textures/texture';
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
@@ -303,6 +302,16 @@ export class SpotLight extends ShadowLight {
         this._projectionTextureDirty = false;
 
         this._projectionTextureViewLightMatrix.multiplyToRef(this._projectionTextureProjectionLightMatrix, this._projectionTextureMatrix);
+        if (this._projectionTexture instanceof Texture) {
+            const u = this._projectionTexture.uScale / 2.0;
+            const v = this._projectionTexture.vScale / 2.0;
+            Matrix.FromValuesToRef(
+                u,   0.0, 0.0, 0.0,
+                0.0, v,   0.0, 0.0,
+                0.0, 0.0, 0.5, 0.0,
+                0.5, 0.5, 0.5, 1.0
+            , this._projectionTextureScalingMatrix);
+        }
         this._projectionTextureMatrix.multiplyToRef(this._projectionTextureScalingMatrix, this._projectionTextureMatrix);
     }
 

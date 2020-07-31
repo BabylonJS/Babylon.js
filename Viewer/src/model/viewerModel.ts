@@ -8,7 +8,7 @@ import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { Animation, Animatable, CircleEase, BackEase, BounceEase, CubicEase, ElasticEase, ExponentialEase, PowerEase, QuadraticEase, QuarticEase, QuinticEase, SineEase } from "babylonjs/Animations/index";
 import { Nullable } from "babylonjs/types";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math";
+import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { Tags } from "babylonjs/Misc/tags";
 import { Material } from "babylonjs/Materials/material";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";

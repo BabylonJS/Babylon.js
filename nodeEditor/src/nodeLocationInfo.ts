@@ -10,9 +10,10 @@ export interface IFrameData {
     width: number;
     height: number;
     color: number[];
-    name: string,
-    isCollapsed: boolean,
-    blocks: number[]
+    name: string;
+    isCollapsed: boolean;
+    blocks: number[];
+    comments: string;
 }
 
 export interface IEditorData {

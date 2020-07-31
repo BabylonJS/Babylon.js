@@ -44,7 +44,8 @@ declare module "../Engines/engine" {
     export interface Engine {
         /**
          * Create an effect to use with particle systems.
-         * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration
+         * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration, except if you pass
+         * the particle system for which you want to create a custom effect in the last parameter
          * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
          * @param uniformsNames defines a list of attribute names
          * @param samplers defines an array of string used to represent textures
@@ -52,18 +53,27 @@ declare module "../Engines/engine" {
          * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
          * @param onCompiled defines a function to call when the effect creation is successful
          * @param onError defines a function to call when the effect creation has failed
+         * @param particleSystem the particle system you want to create the effect for
          * @returns the new Effect
          */
         createEffectForParticles(fragmentName: string, uniformsNames: string[], samplers: string[], defines: string, fallbacks?: EffectFallbacks,
-            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, particleSystem?: IParticleSystem): Effect;
     }
 }
 
 Engine.prototype.createEffectForParticles = function(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
-    onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
+    onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, particleSystem?: IParticleSystem): Effect {
 
-    var attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
-    var effectCreationOption = ParticleSystem._GetEffectCreationOptions();
+    var attributesNamesOrOptions: Array<string> = [];
+    var effectCreationOption: Array<string> = [];
+    var allSamplers: Array<string> = [];
+
+    if (particleSystem) {
+        particleSystem.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, allSamplers);
+    } else {
+        attributesNamesOrOptions = ParticleSystem._GetAttributeNamesOrOptions();
+        effectCreationOption = ParticleSystem._GetEffectCreationOptions();
+    }
 
     if (defines.indexOf(" BILLBOARD") === -1) {
         defines += "\n#define BILLBOARD\n";
@@ -75,12 +85,12 @@ Engine.prototype.createEffectForParticles = function(fragmentName: string, unifo
 
     return this.createEffect(
         {
-            vertex: "particles",
+            vertex: particleSystem?.vertexShaderName ?? "particles",
             fragmentElement: fragmentName
         },
         attributesNamesOrOptions,
         effectCreationOption.concat(uniformsNames),
-        samplers, defines, fallbacks, onCompiled, onError);
+        allSamplers.concat(samplers), defines, fallbacks, onCompiled, onError);
 };
 
 declare module "../Meshes/mesh" {

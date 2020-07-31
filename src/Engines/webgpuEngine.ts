@@ -17,7 +17,6 @@ import { WebGPUPipelineContext, IWebGPUPipelineContextVertexInputsCache } from '
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
-import { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { IShaderProcessor } from "./Processors/iShaderProcessor";
 import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
@@ -360,9 +359,8 @@ export class WebGPUEngine extends Engine {
         };
 
         if (this._options.antialiasing) {
-            const mainTextureDescriptor = {
+            const mainTextureDescriptor: GPUTextureDescriptor = {
                 size: this._mainTextureExtends,
-                arrayLayerCount: 1,
                 mipLevelCount: 1,
                 sampleCount: this._mainPassSampleCount,
                 dimension: WebGPUConstants.GPUTextureDimension_2d,
@@ -388,9 +386,8 @@ export class WebGPUEngine extends Engine {
             }];
         }
 
-        const depthTextureDescriptor = {
+        const depthTextureDescriptor: GPUTextureDescriptor = {
             size: this._mainTextureExtends,
-            arrayLayerCount: 1,
             mipLevelCount: 1,
             sampleCount: this._mainPassSampleCount,
             dimension: WebGPUConstants.GPUTextureDimension_2d,
@@ -540,7 +537,9 @@ export class WebGPUEngine extends Engine {
         dataBuffer.references = 1;
         dataBuffer.capacity = view.byteLength;
         if (arrBuffer) {
-            new Uint8Array(arrBuffer).set(new Uint8Array(view.buffer));
+            const outputView = new Uint8Array(arrBuffer);
+            const inputView = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+            outputView.set(inputView);
             buffer.unmap();
         } else {
             this._setSubData(dataBuffer, 0, view);
@@ -1022,24 +1021,24 @@ export class WebGPUEngine extends Engine {
         };
 
         const commandEncoder = this._device.createCommandEncoder({});
-        const rowPitch = Math.ceil(width * 4 / 256) * 256;
+        const bytesPerRow = Math.ceil(width * 4 / 256) * 256;
 
         let dataBuffer: DataBuffer;
-        if (rowPitch == width * 4) {
+        if (bytesPerRow == width * 4) {
             dataBuffer = this._createBuffer(pixels, WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
             const bufferView: GPUBufferCopyView = {
                 buffer: dataBuffer.underlyingResource,
-                rowPitch: rowPitch,
-                imageHeight: height,
+                bytesPerRow: bytesPerRow,
+                rowsPerImage: height,
                 offset: 0,
             };
             commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
         } else {
-            const alignedPixels = new Uint8Array(rowPitch * height);
+            const alignedPixels = new Uint8Array(bytesPerRow * height);
             let pixelsIndex = 0;
             for (let y = 0; y < height; ++y) {
                 for (let x = 0; x < width; ++x) {
-                    let i = x * 4 + y * rowPitch;
+                    let i = x * 4 + y * bytesPerRow;
 
                     alignedPixels[i] = (pixels as any)[pixelsIndex];
                     alignedPixels[i + 1] = (pixels as any)[pixelsIndex + 1];
@@ -1051,8 +1050,8 @@ export class WebGPUEngine extends Engine {
             dataBuffer = this._createBuffer(alignedPixels, WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_TRANSFER_DST);
             const bufferView: GPUBufferCopyView = {
                 buffer: dataBuffer.underlyingResource,
-                rowPitch: rowPitch,
-                imageHeight: height,
+                bytesPerRow: bytesPerRow,
+                rowsPerImage: height,
                 offset: 0,
             };
             commandEncoder.copyBufferToTexture(bufferView, textureView, textureExtent);
@@ -1215,7 +1214,6 @@ export class WebGPUEngine extends Engine {
             const textureDescriptor: GPUTextureDescriptor = {
                 dimension: WebGPUConstants.GPUTextureDimension_2d,
                 format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
-                arrayLayerCount: 1,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 sampleCount: 1,
                 size: textureExtent,
@@ -1252,7 +1250,7 @@ export class WebGPUEngine extends Engine {
         return texture;
     }
 
-    public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, excludeLoaders: Array<IInternalTextureLoader> = []): InternalTexture {
+    public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
         var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
         texture.url = rootUrl;
@@ -1289,12 +1287,11 @@ export class WebGPUEngine extends Engine {
             const textureExtent = {
                 width,
                 height,
-                depth,
+                depth: depth * 6,
             };
             const textureDescriptor: GPUTextureDescriptor = {
                 dimension: WebGPUConstants.GPUTextureDimension_2d,
                 format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
-                arrayLayerCount: 6,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 sampleCount: 1,
                 size: textureExtent,
@@ -1314,7 +1311,6 @@ export class WebGPUEngine extends Engine {
                 }
             }
             texture._webGPUTextureView = gpuTexture.createView({
-                arrayLayerCount: 6,
                 dimension: WebGPUConstants.GPUTextureViewDimension_cube,
                 format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
@@ -1326,7 +1322,7 @@ export class WebGPUEngine extends Engine {
 
             onLoad && onLoad();
         };
-        webglEngineTexture = this._decodeEngine.createCubeTexture(rootUrl, scene, files, noMipmap, onLoadInternal, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback, excludeLoaders);
+        webglEngineTexture = this._decodeEngine.createCubeTexture(rootUrl, scene, files, noMipmap, onLoadInternal, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback);
 
         this._internalTexturesCache.push(texture);
 
@@ -1991,15 +1987,15 @@ export class WebGPUEngine extends Engine {
         for (let i = 0; i < webgpuPipelineContext.orderedUBOsAndSamplers.length; i++) {
             const setDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i];
             if (setDefinition === undefined) {
-                const bindings: GPUBindGroupLayoutBinding[] = [];
+                const entries: GPUBindGroupLayoutEntry[] = [];
                 const uniformsBindGroupLayout = this._device.createBindGroupLayout({
-                    bindings,
+                    entries,
                 });
                 bindGroupLayouts[i] = uniformsBindGroupLayout;
                 continue;
             }
 
-            const bindings: GPUBindGroupLayoutBinding[] = [];
+            const entries: GPUBindGroupLayoutEntry[] = [];
             for (let j = 0; j < setDefinition.length; j++) {
                 const bindingDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i][j];
                 if (bindingDefinition === undefined) {
@@ -2008,13 +2004,16 @@ export class WebGPUEngine extends Engine {
 
                 // TODO WEBGPU. Optimize shared samplers visibility for vertex/framgent.
                 if (bindingDefinition.isSampler) {
-                    bindings.push({
+                    entries.push({
                         binding: j,
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_sampledTexture,
-                        textureDimension: bindingDefinition.textureDimension,
+                        viewDimension: bindingDefinition.textureDimension,
                         // TODO WEBGPU. Handle texture component type properly.
                         // textureComponentType?: GPUTextureComponentType,
+                        // multisampled?: boolean;
+                        // hasDynamicOffset?: boolean;
+                        // storageTextureFormat?: GPUTextureFormat;
                     }, {
                         // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
                         binding: j + 1,
@@ -2023,7 +2022,7 @@ export class WebGPUEngine extends Engine {
                     });
                 }
                 else {
-                    bindings.push({
+                    entries.push({
                         binding: j,
                         visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
                         type: WebGPUConstants.GPUBindingType_uniformBuffer,
@@ -2031,9 +2030,9 @@ export class WebGPUEngine extends Engine {
                 }
             }
 
-            if (bindings.length > 0) {
+            if (entries.length > 0) {
                 const uniformsBindGroupLayout = this._device.createBindGroupLayout({
-                    bindings,
+                    entries,
                 });
                 bindGroupLayouts[i] = uniformsBindGroupLayout;
             }
@@ -2160,7 +2159,7 @@ export class WebGPUEngine extends Engine {
                 continue;
             }
 
-            const bindings: GPUBindGroupBinding[] = [];
+            const entries: GPUBindGroupEntry[] = [];
             for (let j = 0; j < setDefinition.length; j++) {
                 const bindingDefinition = webgpuPipelineContext.orderedUBOsAndSamplers[i][j];
                 if (bindingDefinition === undefined) {
@@ -2177,7 +2176,7 @@ export class WebGPUEngine extends Engine {
                             bindingInfo.texture._webGPUSampler = gpuSampler;
                         }
 
-                        bindings.push({
+                        entries.push({
                             binding: bindingInfo.textureBinding,
                             resource: bindingInfo.texture._webGPUTextureView!,
                         }, {
@@ -2193,7 +2192,7 @@ export class WebGPUEngine extends Engine {
                     const dataBuffer = this._uniformsBuffers[bindingDefinition.name];
                     if (dataBuffer) {
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
-                        bindings.push({
+                        entries.push({
                             binding: j,
                             resource: {
                                 buffer: webgpuBuffer,
@@ -2208,7 +2207,7 @@ export class WebGPUEngine extends Engine {
                 }
             }
 
-            if (bindings.length > 0) {
+            if (entries.length > 0) {
                 let groupLayout: GPUBindGroupLayout;
                 if (bindGroupLayouts && bindGroupLayouts[i]) {
                     groupLayout = bindGroupLayouts[i];
@@ -2218,7 +2217,7 @@ export class WebGPUEngine extends Engine {
                 }
                 bindGroups[i] = this._device.createBindGroup({
                     layout: groupLayout,
-                    entries: bindings,
+                    entries,
                 });
             }
         }

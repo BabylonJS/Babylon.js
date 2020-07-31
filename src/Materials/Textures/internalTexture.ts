@@ -1,7 +1,6 @@
 import { Observable } from "../../Misc/observable";
 import { Nullable, int } from "../../types";
 import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTargetCreationOptions";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 import { _DevTools } from '../../Misc/devTools';
 import { Engine } from '../../Engines/engine';
@@ -221,6 +220,8 @@ export class InternalTexture {
     public _lodGenerationScale: number = 0;
     /** @hidden */
     public _lodGenerationOffset: number = 0;
+    /** @hidden */
+    public _depthStencilTexture: Nullable<InternalTexture>;
 
     // Multiview
     /** @hidden */
@@ -379,7 +380,8 @@ export class InternalTexture {
                 } else {
                     let size = {
                         width: this.width,
-                        height: this.height
+                        height: this.height,
+                        layers: this.is2DArray ? this.depth : undefined
                     };
 
                     proxy = (this._engine as Engine).createRenderTargetTexture(size, options);
@@ -396,7 +398,12 @@ export class InternalTexture {
                     isCube: this.isCube
                 };
 
-                proxy = this._engine.createDepthStencilTexture({ width: this.width, height: this.height }, depthTextureOptions);
+                let size = {
+                    width: this.width,
+                    height: this.height,
+                    layers: this.is2DArray ? this.depth : undefined
+                };
+                proxy = this._engine.createDepthStencilTexture(size, depthTextureOptions);
                 proxy._swapAndDie(this);
 
                 this.isReady = true;
@@ -448,6 +455,8 @@ export class InternalTexture {
         if (this._depthStencilBuffer) {
             target._depthStencilBuffer = this._depthStencilBuffer;
         }
+
+        target._depthStencilTexture = this._depthStencilTexture;
 
         if (this._lodTextureHigh) {
             if (target._lodTextureHigh) {

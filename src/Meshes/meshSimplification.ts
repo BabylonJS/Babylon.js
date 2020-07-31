@@ -297,7 +297,7 @@ class Reference {
  * @author RaananW
  * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
  */
-class QuadraticErrorSimplification implements ISimplifier {
+export class QuadraticErrorSimplification implements ISimplifier {
 
     private triangles: Array<DecimationTriangle>;
     private vertices: Array<DecimationVertex>;
@@ -305,19 +305,34 @@ class QuadraticErrorSimplification implements ISimplifier {
 
     private _reconstructedMesh: Mesh;
 
+    /** Gets or sets the number pf sync interations */
     public syncIterations = 5000;
 
+    /** Gets or sets the aggressiveness of the simplifier */
     public aggressiveness: number;
+
+    /** Gets or sets the number of allowed iterations for decimation */
     public decimationIterations: number;
 
+    /** Gets or sets the espilon to use for bounding box computation */
     public boundingBoxEpsilon: number;
 
+    /**
+     * Creates a new QuadraticErrorSimplification
+     * @param _mesh defines the target mesh
+     */
     constructor(private _mesh: Mesh) {
         this.aggressiveness = 7;
         this.decimationIterations = 100;
         this.boundingBoxEpsilon = Epsilon;
     }
 
+    /**
+     * Simplification of a given mesh according to the given settings.
+     * Since this requires computation, it is assumed that the function runs async.
+     * @param settings The settings of the simplification, including quality and distance
+     * @param successCallback A callback that will be called after the mesh was simplified.
+     */
     public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
         this.initDecimatedMesh();
         //iterating through the submeshes array, one after the other.

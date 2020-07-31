@@ -142,7 +142,8 @@
             },
             "es6": {
                 "packageName": "@babylonjs/core",
-                "readme": "readme-es6.md"
+                "readme": "readme-es6.md",
+                "license": "license.md"
             }
         }
     },
@@ -262,11 +263,6 @@
             {
                 "output": "babylon.digitalRainPostProcess.min.js",
                 "entry": "./legacy/legacy-digitalRain.ts",
-                "preventLoadLibrary": true
-            },
-            {
-                "output": "babylon.oceanPostProcess.min.js",
-                "entry": "./legacy/legacy-ocean.ts",
                 "preventLoadLibrary": true
             }
         ],

@@ -27,6 +27,8 @@ enum ChannelToDisplay {
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, { channel: ChannelToDisplay, face: number }> {
+    private canvasRef: React.RefObject<HTMLCanvasElement>;
+
     constructor(props: ITextureLineComponentProps) {
         super(props);
 
@@ -34,6 +36,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             channel: ChannelToDisplay.All,
             face: 0
         };
+
+        this.canvasRef = React.createRef();
     }
 
     shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { channel: ChannelToDisplay, face: number }): boolean {
@@ -82,7 +86,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             return;
         }
 
-        const previewCanvas = this.refs.canvas as HTMLCanvasElement;
+        const previewCanvas = this.canvasRef.current as HTMLCanvasElement;
 
         if (this.props.globalState) {
             this.props.globalState.blockMutationUpdates = true;
@@ -190,12 +194,12 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                     {
                         !this.props.hideChannelSelect && texture.isCube &&
                         <div className="control3D">
-                            <button className={this.state.face === 0 ? "px command selected" : "px command"} onClick={() => this.setState({ face: 0 })}>PX</button>
-                            <button className={this.state.face === 1 ? "nx command selected" : "nx command"} onClick={() => this.setState({ face: 1 })}>NX</button>
-                            <button className={this.state.face === 2 ? "py command selected" : "py command"} onClick={() => this.setState({ face: 2 })}>PY</button>
-                            <button className={this.state.face === 3 ? "ny command selected" : "ny command"} onClick={() => this.setState({ face: 3 })}>NY</button>
-                            <button className={this.state.face === 4 ? "pz command selected" : "pz command"} onClick={() => this.setState({ face: 4 })}>PZ</button>
-                            <button className={this.state.face === 5 ? "nz command selected" : "nz command"} onClick={() => this.setState({ face: 5 })}>NZ</button>
+                            <button className={this.state.face === 0 ? "px command selected" : "px command"} onClick={() => this.setState({ face: 0 })}>+X</button>
+                            <button className={this.state.face === 1 ? "nx command selected" : "nx command"} onClick={() => this.setState({ face: 1 })}>-X</button>
+                            <button className={this.state.face === 2 ? "py command selected" : "py command"} onClick={() => this.setState({ face: 2 })}>+Y</button>
+                            <button className={this.state.face === 3 ? "ny command selected" : "ny command"} onClick={() => this.setState({ face: 3 })}>-Y</button>
+                            <button className={this.state.face === 4 ? "pz command selected" : "pz command"} onClick={() => this.setState({ face: 4 })}>+Z</button>
+                            <button className={this.state.face === 5 ? "nz command selected" : "nz command"} onClick={() => this.setState({ face: 5 })}>-Z</button>
                         </div>
                     }
                     {
@@ -208,7 +212,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                             <button className={this.state.channel === ChannelToDisplay.All ? "all command selected" : "all command"} onClick={() => this.setState({ channel: ChannelToDisplay.All })}>ALL</button>
                         </div>
                     }
-                    <canvas ref="canvas" className="preview" />
+                    <canvas ref={this.canvasRef} className="preview" />
                 </div>
                 {
                     texture.isRenderTarget &&

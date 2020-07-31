@@ -17,10 +17,11 @@
 //   ../../../../../Tools/Gulp/babylonjs/types
 //   ../../../../../Tools/Gulp/babylonjs/Materials/material
 //   ../../../../../Tools/Gulp/babylonjs-gltf2interface
-//   ../../../../../Tools/Gulp/babylonjs/Maths/math
+//   ../../../../../Tools/Gulp/babylonjs/Maths/math.vector
 //   ../../../../../Tools/Gulp/babylonjs-loaders/glTF/glTFFileLoader
 //   ../../../../../Tools/Gulp/babylonjs/Materials/Textures/baseTexture
 //   ../../../../../Tools/Gulp/babylonjs/Engines/thinEngine
+//   ../../../../../Tools/Gulp/babylonjs/Maths/math
 //   ../../../../../Tools/Gulp/babylonjs/Misc/sceneOptimizer
 //   ../../../../../Tools/Gulp/babylonjs/Cameras/arcRotateCamera
 //   ../../../../../Tools/Gulp/babylonjs/Lights/light

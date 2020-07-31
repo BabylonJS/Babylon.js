@@ -129,7 +129,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
-        if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4) {
+        if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4)) {
             state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\r\n`;
         } else {
             state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\r\n`;

@@ -160,8 +160,7 @@ export class FilesInput {
                 continue;
             }
 
-            if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
-                && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
+            if (SceneLoader.IsPluginForExtensionAvailable("." + extension)) {
                 this._sceneFileToLoad = files[i];
             }
 

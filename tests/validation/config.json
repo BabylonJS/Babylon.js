@@ -1,14 +1,43 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
-    "tests": [    
+    "tests": [     
+        {
+            "title": "CSGVertColor",
+            "playgroundId": "#R0H1IX#0",            
+            "referenceImage": "csgVertColor.png"
+        },
+        {
+            "title": "Particle subemitters",
+            "playgroundId": "#1LK70I#20",            
+            "renderCount": 50,
+            "referenceImage": "subemitters.png"
+        },    
         {
             "title": "Black and White post-process",
             "playgroundId": "#N55Q2M#0",
             "referenceImage": "bwpp.png"
-        },       
+        },           
+        {
+            "title": "Sprite maps",
+            "playgroundId": "#ARLADE#23",
+            "referenceImage": "sprite-maps.png",            
+            "excludeFromAutomaticTesting": true
+        },              
+        {
+            "title": "Point light shadows",
+            "playgroundId": "#U2F7P9#4",
+            "referenceImage": "point-light-shadows.png"
+        },             
+        {
+            "title": "Node material #0",
+            "playgroundId": "#M5VQE9#20",
+            "referenceImage": "node-material0.png",
+            "renderCount": 5,
+            "excludeFromAutomaticTesting": true
+        },    
         {
             "title": "Node material #1",
-            "playgroundId": "#QJ71C6#0",
+            "playgroundId": "#QJ71C6#1",
             "referenceImage": "node-material1.png",
             "renderCount": 20
         },     
@@ -86,7 +115,7 @@
         },
         {
             "title": "Camera rig",
-            "playgroundId": "#ATL1CS#11",
+            "playgroundId": "#ATL1CS#12",
             "referenceImage": "cameraRig.png"
         },
         {
@@ -115,7 +144,7 @@
         },
         {
             "title": "Simulate pointer",
-            "playgroundId": "#8MGKWK#78",
+            "playgroundId": "#8MGKWK#269",
             "referenceImage": "simulatePointer.png"
         },
         {
@@ -269,6 +298,11 @@
             "referenceImage": "softShadows.png"
         },
         {
+            "title": "Soft Shadows (Right Handed)",
+            "playgroundId": "#0YYQ3N#2",
+            "referenceImage": "softShadowsRightHanded.png"
+        },
+        {
             "title": "Fresnel",
             "playgroundId": "#603JUZ#1",
             "referenceImage": "fresnel.png"
@@ -324,10 +358,14 @@
         },
         {
             "title": "point light shadows",
-            "scriptToRun": "/Demos/PointLightShadowMap/pointLightShadows.js",
-            "functionToCall": "CreatePointLightShadowScene",
-            "referenceImage": "pointLightShadows.png",
-            "replace": "/ground, /Ground"
+            "playgroundId": "#XDNVAY#1",
+            "referenceImage": "pointLightShadows.png"
+        },
+        {
+            "title": "Shadow depth wrappers",
+            "playgroundId": "#PNQRY1#9",
+            "referenceImage": "shadowDepthWrappers.png",
+            "renderCount": 20
         },
         {
             "title": "Displacement map",
@@ -534,13 +572,13 @@
         },
         {
             "title": "GLTF Serializer with Negative World Matrix",
-            "playgroundId": "#KX53VK#27",
+            "playgroundId": "#KX53VK#35",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (Right Handed)",
-            "playgroundId": "#KX53VK#30",
+            "playgroundId": "#KX53VK#36",
             "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png",
             "errorRatio": 1.1
         },
@@ -639,15 +677,30 @@
         },
         {
             "title": "PBR",
-            "playgroundId": "#LCA0Q4#0",
+            "playgroundId": "#LCA0Q4#27",
             "referenceImage": "pbr.png"
         },
         {
             "title": "PBR refraction",
-            "playgroundId": "#LCA0Q4#25",
+            "playgroundId": "#LCA0Q4#26",
             "referenceImage": "pbr_refraction.png"
         },
         {
+            "title": "PBR shader code coverage #1",
+            "playgroundId": "#QI7TL3#16",
+            "referenceImage": "pbr_codecoverage1.png"
+        },
+        {
+            "title": "PBR shader code coverage #2",
+            "playgroundId": "#QI7TL3#17",
+            "referenceImage": "pbr_codecoverage2.png"
+        },
+        {
+            "title": "PBR shader code coverage #3",
+            "playgroundId": "#QI7TL3#18",
+            "referenceImage": "pbr_codecoverage3.png"
+        },
+                {
             "title": "Texture cache",
             "playgroundId": "#20OAV9#237",
             "referenceImage": "texture cache.png"

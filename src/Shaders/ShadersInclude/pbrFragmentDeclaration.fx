@@ -5,6 +5,7 @@ uniform vec4 vAlbedoColor;
 uniform vec4 vLightingIntensity;
 
 uniform vec4 vReflectivityColor;
+uniform vec4 vMetallicReflectanceFactors;
 uniform vec3 vEmissiveColor;
 
 uniform float visibility;
@@ -102,6 +103,9 @@ uniform mat4 view;
 // Sheen
 #ifdef SHEEN
     uniform vec4 vSheenColor;
+    #ifdef SHEEN_ROUGHNESS
+        uniform float vSheenRoughness;
+    #endif
 
     #ifdef SHEEN_TEXTURE
         uniform vec2 vSheenInfos;
@@ -119,7 +123,7 @@ uniform mat4 view;
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         uniform vec2 vThicknessInfos;
-        uniform mat4 thicknessMatrix;;
+        uniform mat4 thicknessMatrix;
     #endif
 
     uniform vec2 vThicknessParam;

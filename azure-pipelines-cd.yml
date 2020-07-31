@@ -1,0 +1,125 @@
+trigger:
+- preview
+
+jobs:
+- job: NetlifyStaticDeploy
+  displayName: 'Deploy'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+    demands: npm
+  steps:
+  - script: 'npm install netlify-cli'
+    displayName: 'npm install netlify'
+  - script: 'npm install --prefix Playground/'
+    displayName: 'npm install playground'
+  - script: 'npm install typescript'
+    displayName: 'npm install typescript'
+# Controllers
+  - script: 'npx netlify link --id=220a52f0-ea85-4244-8342-8ec149cd78d6'
+    displayName: 'netlify link babylonjscontrollers'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=assets/meshes/controllers'
+    displayName: 'netlify deploy babylonjscontrollers'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# Sandbox
+  - script: 'npx netlify unlink'
+    displayName: 'netlify unlink'
+  - script: 'npx netlify link --id=4deda23f-f382-458b-897e-2f2111b5f263'
+    displayName: 'netlify link babylonjs-sandbox'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=sandbox/'
+    displayName: 'netlify deploy babylonjs-sandbox'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# playground
+#  - script: 'npx netlify unlink'
+#    displayName: 'netlify unlink'
+#  - script: 'npx netlify link --id=9161d5f0-b208-4b86-a281-9300386f6c94'
+#    displayName: 'netlify link babylonjs-playground'
+#    env:
+#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+#  - script: 'npx netlify deploy --prod --dir=Playground/'
+#    displayName: 'netlify deploy babylonjs-playground'
+#    env:
+#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# babylonjs-preview
+#  - script: 'npx netlify unlink'
+#    displayName: 'netlify unlink'
+#  - script: 'npx netlify link --id=e1c1c520-e3a4-4d5b-91e6-254f1bea1b6b'
+#    displayName: 'netlify link babylonjs-preview'
+#    env:
+#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+#  - script: 'npx netlify deploy --prod --dir="dist/preview release"'
+#    displayName: 'netlify deploy babylonjs-preview'
+#    env:
+#      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+#      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# assets-babylonjs
+  - script: 'npx netlify unlink'
+    displayName: 'netlify unlink'
+  - script: 'npx netlify link --id=bd58224a-5f56-42de-afd2-ffa72b85fd71'
+    displayName: 'netlify link assets-babylonjs'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=assets/'
+    displayName: 'netlify deploy assets-babylonjs'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# nodeeditor
+  - script: 'npm install --prefix Tools/Gulp && npx gulp nodeEditor --gulpfile ./Tools/Gulp/gulpfile.js'
+    displayName: 'gulp build nodeeditor'
+  - script: 'npx netlify unlink'
+    displayName: 'netlify unlink'
+  - script: 'npx netlify link --id=d232f0dc-cdb2-473e-b0f5-91fb1dd1d398'
+    displayName: 'netlify link nodeeditor'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=nodeEditor/public'
+    displayName: 'netlify deploy nodeeditor'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+# viewer-babylonjs
+  - script: 'npm install --prefix Tools/Gulp && npx gulp viewer --gulpfile ./Tools/Gulp/gulpfile.js'
+    displayName: 'gulp build viewer-babylonjs'
+  - script: 'npx netlify unlink'
+    displayName: 'netlify unlink'
+  - script: 'npx netlify link --id=a32b113f-8187-43ab-9133-8844521f26f4'
+    displayName: 'netlify link viewer-babylonjs'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - script: 'npx netlify deploy --prod --dir=Viewer/dist/'
+    displayName: 'netlify deploy viewer-babylonjs'
+    env:
+      AZURE_PULLREQUESTID: $(System.PullRequest.PullRequestId)
+      NETLIFY_AUTH_TOKEN: $(babylon.netlify.authToken)
+  - task: AzureFileCopy@2
+    displayName: 'Update Preview Storage'
+    inputs:
+      SourcePath: 'dist/preview release'
+      azureSubscription: 'Visual Studio Enterprise (2bb1afe6-4492-4d3d-9cf8-e658f447d211)'
+      Destination: AzureBlob
+      storage: previewcdn
+      ContainerName: '$web'
+
+  - task: AzureCLI@2
+    displayName: 'Purge preview CDN'
+    inputs:
+      azureSubscription: 'Visual Studio Enterprise(2bb1afe6-4492-4d3d-9cf8-e658f447d211)'
+      scriptType: 'ps'
+      scriptLocation: 'inlineScript'
+      inlineScript: 'az cdn endpoint purge --resource-group Playground-Resources --profile-name Preview-CDN --name babylonjspreview --content-paths /*'

@@ -293,7 +293,7 @@ export class SceneSerializer {
         // Particles Systems
         serializationObject.particleSystems = [];
         for (index = 0; index < scene.particleSystems.length; index++) {
-            serializationObject.particleSystems.push(scene.particleSystems[index].serialize());
+            serializationObject.particleSystems.push(scene.particleSystems[index].serialize(false));
         }
 
         // Action Manager

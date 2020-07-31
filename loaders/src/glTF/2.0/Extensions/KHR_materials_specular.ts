@@ -5,17 +5,18 @@ import { Material } from "babylonjs/Materials/material";
 import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 const NAME = "KHR_materials_specular";
 
 interface IKHR_materials_specular {
     specularFactor: number;
+    specularColorFactor: number[];
     specularTexture: ITextureInfo;
 }
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
- * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+ * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1719)
  * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_materials_specular implements IGLTFLoaderExtension {
@@ -32,7 +33,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 230;
+    public order = 190;
 
     private _loader: GLTFLoader;
 
@@ -62,16 +63,24 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        const promises = new Array<Promise<any>>();
+
         if (properties.specularFactor !== undefined) {
             babylonMaterial.metallicF0Factor = properties.specularFactor;
         }
 
-        if (properties.specularTexture) {
-            // This does not allow a separate sampler for it at the moment but is currently under discussion.
-            babylonMaterial.useMetallicF0FactorFromMetallicTexture = true;
+        if (properties.specularColorFactor !== undefined) {
+            babylonMaterial.metallicReflectanceColor = Color3.FromArray(properties.specularColorFactor);
         }
 
-        return Promise.resolve();
+        if (properties.specularTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Specular F0 Color)`;
+                babylonMaterial.metallicReflectanceTexture = texture;
+            }));
+        }
+
+        return Promise.all(promises).then(() => { });
     }
 }
 

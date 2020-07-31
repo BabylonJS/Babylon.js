@@ -2,7 +2,6 @@ import { Observable } from "../Misc/observable";
 import { Nullable, IndicesArray, DataArray } from "../types";
 import { Scene } from "../scene";
 import { InternalTexture } from "../Materials/Textures/internalTexture";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { IAudioEngine } from "../Audio/audioEngine";
 import { IOfflineProvider } from "../Offline/IOfflineProvider";
 import { ILoadingScreen } from "../Loading/loadingScreen";
@@ -23,6 +22,7 @@ import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { Logger } from '../Misc/logger';
 
 import "./Extensions/engine.alpha";
+import "./Extensions/engine.readTexture";
 
 declare type Material = import("../Materials/material").Material;
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
@@ -418,7 +418,6 @@ export class Engine extends ThinEngine {
 
     private _loadingScreen: ILoadingScreen;
     private _pointerLockRequested: boolean;
-    private _dummyFramebuffer: WebGLFramebuffer;
     private _rescalePostProcess: PostProcess;
 
     // Deterministic lockstepMaxSteps
@@ -436,6 +435,9 @@ export class Engine extends ThinEngine {
 
     /** @hidden */
     public _drawCalls = new PerfCounter();
+
+    /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+    public canvasTabIndex = 1;
 
     /**
      * Turn this value on if you want to pause FPS computation when in background
@@ -1185,36 +1187,6 @@ export class Engine extends ThinEngine {
         this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
     }
 
-    /** @hidden */
-    public _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
-        // Create new RGBA data container.
-        var rgbaData: any;
-        if (textureType === Constants.TEXTURETYPE_FLOAT) {
-            rgbaData = new Float32Array(width * height * 4);
-        }
-        else {
-            rgbaData = new Uint32Array(width * height * 4);
-        }
-
-        // Convert each pixel.
-        for (let x = 0; x < width; x++) {
-            for (let y = 0; y < height; y++) {
-                let index = (y * width + x) * 3;
-                let newIndex = (y * width + x) * 4;
-
-                // Map Old Value to new value.
-                rgbaData[newIndex + 0] = rgbData[index + 0];
-                rgbaData[newIndex + 1] = rgbData[index + 1];
-                rgbaData[newIndex + 2] = rgbData[index + 2];
-
-                // Add fully opaque alpha channel.
-                rgbaData[newIndex + 3] = 1;
-            }
-        }
-
-        return rgbaData;
-    }
-
     protected _rebuildBuffers(): void {
         // Index / Vertex
         for (var scene of this.scenes) {
@@ -1354,50 +1326,6 @@ export class Engine extends ThinEngine {
         }
 
         super.resize();
-    }
-
-    /**
-     * Set the compressed texture format to use, based on the formats you have, and the formats
-     * supported by the hardware / browser.
-     *
-     * Khronos Texture Container (.ktx) files are used to support this.  This format has the
-     * advantage of being specifically designed for OpenGL.  Header elements directly correspond
-     * to API arguments needed to compressed textures.  This puts the burden on the container
-     * generator to house the arcane code for determining these for current & future formats.
-     *
-     * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
-     * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-     *
-     * Note: The result of this call is not taken into account when a texture is base64.
-     *
-     * @param formatsAvailable defines the list of those format families you have created
-     * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-     *
-     * Current families are astc, dxt, pvrtc, etc2, & etc1.
-     * @returns The extension selected.
-     */
-    public setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string> {
-        for (var i = 0, len1 = this.texturesSupported.length; i < len1; i++) {
-            for (var j = 0, len2 = formatsAvailable.length; j < len2; j++) {
-                if (this._texturesSupported[i] === formatsAvailable[j].toLowerCase()) {
-                    return this._textureFormatInUse = this._texturesSupported[i];
-                }
-            }
-        }
-        // actively set format to nothing, to allow this to be called more than once
-        // and possibly fail the 2nd time
-        this._textureFormatInUse = null;
-        return null;
-    }
-
-    /**
-     * Set the compressed texture extensions or file names to skip.
-     *
-     * @param skippedFiles defines the list of those texture files you want to skip
-     * Example: [".dds", ".env", "myfile.png"]
-     */
-    public setCompressedTextureExclusions(skippedFiles: Array<string>): void {
-        this._excludedCompressedTextures = skippedFiles;
     }
 
     /**
@@ -1650,40 +1578,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-     * @param renderTarget The render target to set the frame buffer for
-     */
-    public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
-        // Create the framebuffer
-        var internalTexture = renderTarget.getInternalTexture();
-        if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
-            return;
-        }
-
-        var gl = this._gl;
-        var depthStencilTexture = renderTarget.depthStencilTexture;
-
-        this._bindUnboundFramebuffer(internalTexture._framebuffer);
-        if (depthStencilTexture.isCube) {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        else {
-            if (depthStencilTexture._generateStencilBuffer) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-            else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
-            }
-        }
-        this._bindUnboundFramebuffer(null);
-    }
-
-    /**
      * Update a dynamic index buffer
      * @param indexBuffer defines the target index buffer
      * @param indices defines the data to update
@@ -1771,7 +1665,6 @@ export class Engine extends ThinEngine {
         texture.samples = samples;
         texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture.width, texture.height, samples);
 
-        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
         this._bindUnboundFramebuffer(null);
 
         return samples;
@@ -1851,47 +1744,56 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, interval_ms = 10) {
+        let gl = <WebGL2RenderingContext>(this._gl as any);
+        return new Promise((resolve, reject) => {
+            let check = () => {
+                const res = gl.clientWaitSync(sync, flags, 0);
+                if (res == gl.WAIT_FAILED) {
+                reject();
+                return;
+                }
+                if (res == gl.TIMEOUT_EXPIRED) {
+                setTimeout(check, interval_ms);
+                return;
+                }
+                resolve();
+            };
+
+            check();
+        });
+    }
+
     /** @hidden */
-    public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
-        let gl = this._gl;
-        if (!this._dummyFramebuffer) {
-            let dummy = gl.createFramebuffer();
-
-            if (!dummy) {
-                throw new Error("Unable to create dummy framebuffer");
-            }
-
-            this._dummyFramebuffer = dummy;
-        }
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._dummyFramebuffer);
-
-        if (faceIndex > -1) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, level);
-        } else {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, level);
+    public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
+        if (this._webGLVersion < 2) {
+            throw new Error("_readPixelsAsync only work on WebGL2+");
         }
 
-        let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
+        let gl = <WebGL2RenderingContext>(this._gl as any);
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+        gl.bufferData(gl.PIXEL_PACK_BUFFER, outputBuffer.byteLength, gl.STREAM_READ);
+        gl.readPixels(x, y, w, h, format, type, 0);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
 
-        switch (readType) {
-            case gl.UNSIGNED_BYTE:
-                if (!buffer) {
-                    buffer = new Uint8Array(4 * width * height);
-                }
-                readType = gl.UNSIGNED_BYTE;
-                break;
-            default:
-                if (!buffer) {
-                    buffer = new Float32Array(4 * width * height);
-                }
-                readType = gl.FLOAT;
-                break;
+        const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+        if (!sync) {
+            return null;
         }
 
-        gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
+        gl.flush();
 
-        return buffer;
+        return this._clientWaitAsync(sync, 0, 10).then(() => {
+            gl.deleteSync(sync);
+
+            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+            gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, outputBuffer);
+            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+            gl.deleteBuffer(buf);
+
+            return outputBuffer;
+        });
     }
 
     public dispose(): void {
@@ -1919,10 +1821,6 @@ export class Engine extends ThinEngine {
             Engine.audioEngine.dispose();
         }
 
-        if (this._dummyFramebuffer) {
-            this._gl.deleteFramebuffer(this._dummyFramebuffer);
-        }
-
         //WebVR
         this.disableVR();
 
@@ -1930,19 +1828,23 @@ export class Engine extends ThinEngine {
         if (DomManagement.IsWindowObjectExist()) {
             window.removeEventListener("blur", this._onBlur);
             window.removeEventListener("focus", this._onFocus);
+
             if (this._renderingCanvas) {
                 this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
                 this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
                 this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
             }
-            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+
+            if (DomManagement.IsDocumentAvailable()) {
+                document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+                document.removeEventListener("pointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
+                document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+            }
         }
 
         super.dispose();

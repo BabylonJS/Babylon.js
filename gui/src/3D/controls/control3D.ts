@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observable } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { PointerEventTypes } from "babylonjs/Events/pointerEvents";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";

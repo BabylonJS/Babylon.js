@@ -3,7 +3,7 @@ import * as React from "react";
 import { Nullable } from "babylonjs/types";
 import { Observable } from "babylonjs/Misc/observable";
 import { Tools } from "babylonjs/Misc/tools";
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { CubeTexture } from "babylonjs/Materials/Textures/cubeTexture";
 import { ImageProcessingConfiguration } from "babylonjs/Materials/imageProcessingConfiguration";

@@ -367,6 +367,15 @@ declare module BABYLON.GUI {
         private _renderScale;
         private _rootElement;
         private _cursorChanged;
+        private _defaultMousePointerId;
+        /** @hidden */
+        _numLayoutCalls: number;
+        /** Gets the number of layout calls made the last time the ADT has been rendered */
+        get numLayoutCalls(): number;
+        /** @hidden */
+        _numRenderCalls: number;
+        /** Gets the number of render calls made the last time the ADT has been rendered */
+        get numRenderCalls(): number;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
@@ -435,6 +444,11 @@ declare module BABYLON.GUI {
         */
         get renderAtIdealSize(): boolean;
         set renderAtIdealSize(value: boolean);
+        /**
+         * Gets the ratio used when in "ideal mode"
+        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * */
+        get idealRatio(): number;
         /**
         * Gets the underlying layer used to render the texture when in fullscreen mode
         */
@@ -698,8 +712,11 @@ declare module BABYLON.GUI {
         private _downPointerIds;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
+        protected _disabledColorItem: string;
         /** @hidden */
         protected _rebuildLayout: boolean;
+        /** @hidden */
+        _customData: any;
         /** @hidden */
         _isClipped: boolean;
         /** @hidden */
@@ -765,6 +782,10 @@ declare module BABYLON.GUI {
          */
         getClassName(): string;
         /**
+        * An event triggered when pointer wheel is scrolled
+        */
+        onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
+        /**
         * An event triggered when the pointer move over the control.
         */
         onPointerMoveObservable: BABYLON.Observable<BABYLON.Vector2>;
@@ -800,6 +821,10 @@ declare module BABYLON.GUI {
          * An event triggered after the control was drawn
          */
         onAfterDrawObservable: BABYLON.Observable<Control>;
+        /**
+        * An event triggered when the control has been disposed
+        */
+        onDisposeObservable: BABYLON.Observable<Control>;
         /**
          * Get the hosting AdvancedDynamicTexture
          */
@@ -1031,6 +1056,9 @@ declare module BABYLON.GUI {
         /** Gets or sets background color of control if it's disabled*/
         get disabledColor(): string;
         set disabledColor(value: string);
+        /** Gets or sets front color of control if it's disabled*/
+        get disabledColorItem(): string;
+        set disabledColorItem(value: string);
         /**
          * Creates a new control
          * @param name defines the name of the control
@@ -1157,7 +1185,7 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         /** @hidden */
@@ -1171,7 +1199,9 @@ declare module BABYLON.GUI {
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean;
+        _onWheelScroll(deltaX?: number, deltaY?: number): void;
+        /** @hidden */
+        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -1226,7 +1256,7 @@ declare module BABYLON.GUI {
     export class Container extends Control {
         name?: string | undefined;
         /** @hidden */
-        protected _children: Control[];
+        _children: Control[];
         /** @hidden */
         protected _measureForChildren: Measure;
         /** @hidden */
@@ -1320,7 +1350,7 @@ declare module BABYLON.GUI {
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -1509,6 +1539,8 @@ declare module BABYLON.GUI {
         private _sourceTop;
         private _sourceWidth;
         private _sourceHeight;
+        private _svgAttributesComputationCompleted;
+        private _isSVG;
         private _cellWidth;
         private _cellHeight;
         private _cellId;
@@ -1581,6 +1613,10 @@ declare module BABYLON.GUI {
          */
         get sourceHeight(): number;
         set sourceHeight(value: number);
+        /** Indicates if the format of the image is SVG */
+        get isSVG(): boolean;
+        /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+        get svgAttributesComputationCompleted(): boolean;
         /**
          * Gets or sets a boolean indicating if the image can force its container to adapt its size
          * @see http://doc.babylonjs.com/how_to/gui#image
@@ -1591,7 +1627,9 @@ declare module BABYLON.GUI {
         get stretch(): number;
         set stretch(value: number);
         /** @hidden */
-        _rotate90(n: number): Image;
+        _rotate90(n: number, preserveProperties?: boolean): Image;
+        private _handleRotationForSVGImage;
+        private _rotate90SourceProperties;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
@@ -1708,7 +1746,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
@@ -2867,6 +2905,25 @@ declare module BABYLON.GUI {
     export class _ScrollViewerWindow extends Container {
         parentClientWidth: number;
         parentClientHeight: number;
+        private _freezeControls;
+        private _parentMeasure;
+        private _oldLeft;
+        private _oldTop;
+        get freezeControls(): boolean;
+        set freezeControls(value: boolean);
+        private _bucketWidth;
+        private _bucketHeight;
+        private _buckets;
+        private _bucketLen;
+        get bucketWidth(): number;
+        get bucketHeight(): number;
+        setBucketSizes(width: number, height: number): void;
+        private _useBuckets;
+        private _makeBuckets;
+        private _dispatchInBuckets;
+        private _updateMeasures;
+        private _updateChildrenMeasures;
+        private _restoreMeasures;
         /**
         * Creates a new ScrollViewerWindow
         * @param name of ScrollViewerWindow
@@ -2875,6 +2932,12 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /** @hidden */
+        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        private _scrollChildren;
+        private _scrollChildrenWithBuckets;
+        /** @hidden */
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         protected _postMeasure(): void;
     }
 }
@@ -2923,6 +2986,8 @@ declare module BABYLON.GUI {
         private _thumbHeight;
         private _barImageHeight;
         private _tempMeasure;
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        num90RotationInVerticalMode: number;
         /**
          * Gets or sets the image used to render the background for horizontal bar
          */
@@ -2978,20 +3043,26 @@ declare module BABYLON.GUI {
         private _barColor;
         private _barBackground;
         private _barImage;
+        private _horizontalBarImage;
+        private _verticalBarImage;
         private _barBackgroundImage;
+        private _horizontalBarBackgroundImage;
+        private _verticalBarBackgroundImage;
         private _barSize;
-        private _endLeft;
-        private _endTop;
         private _window;
         private _pointerIsOver;
         private _wheelPrecision;
-        private _onPointerObserver;
+        private _onWheelObserver;
         private _clientWidth;
         private _clientHeight;
         private _useImageBar;
         private _thumbLength;
         private _thumbHeight;
         private _barImageHeight;
+        private _horizontalBarImageHeight;
+        private _verticalBarImageHeight;
+        private _oldWindowContentsWidth;
+        private _oldWindowContentsHeight;
         /**
          * Gets the horizontal scrollbar
          */
@@ -3015,6 +3086,41 @@ declare module BABYLON.GUI {
         /** Gets the list of children */
         get children(): Control[];
         _flagDescendantsAsMatrixDirty(): void;
+        /**
+         * Freezes or unfreezes the controls in the window.
+         * When controls are frozen, the scroll viewer can render a lot more quickly but updates to positions/sizes of controls
+         * are not taken into account. If you want to change positions/sizes, unfreeze, perform the changes then freeze again
+         */
+        get freezeControls(): boolean;
+        set freezeControls(value: boolean);
+        /** Gets the bucket width */
+        get bucketWidth(): number;
+        /** Gets the bucket height */
+        get bucketHeight(): number;
+        /**
+         * Sets the bucket sizes.
+         * When freezeControls is true, setting a non-zero bucket size will improve performances by updating only
+         * controls that are visible. The bucket sizes is used to subdivide (internally) the window area to smaller areas into which
+         * controls are dispatched. So, the size should be roughly equals to the mean size of all the controls of
+         * the window. To disable the usage of buckets, sets either width or height (or both) to 0.
+         * Please note that using this option will raise the memory usage (the higher the bucket sizes, the less memory
+         * used), that's why it is not enabled by default.
+         * @param width width of the bucket
+         * @param height height of the bucket
+         */
+        setBucketSizes(width: number, height: number): void;
+        private _forceHorizontalBar;
+        private _forceVerticalBar;
+        /**
+         * Forces the horizontal scroll bar to be displayed
+         */
+        get forceHorizontalBar(): boolean;
+        set forceHorizontalBar(value: boolean);
+        /**
+         * Forces the vertical scroll bar to be displayed
+         */
+        get forceVerticalBar(): boolean;
+        set forceVerticalBar(value: boolean);
         /**
         * Creates a new ScrollViewer
         * @param name of ScrollViewer
@@ -3041,6 +3147,12 @@ declare module BABYLON.GUI {
         /** Gets or sets the bar image */
         get thumbImage(): Image;
         set thumbImage(value: Image);
+        /** Gets or sets the horizontal bar image */
+        get horizontalThumbImage(): Image;
+        set horizontalThumbImage(value: Image);
+        /** Gets or sets the vertical bar image */
+        get verticalThumbImage(): Image;
+        set verticalThumbImage(value: Image);
         /** Gets or sets the size of the bar */
         get barSize(): number;
         set barSize(value: number);
@@ -3053,12 +3165,25 @@ declare module BABYLON.GUI {
         /** Gets or sets the height of the bar image */
         get barImageHeight(): number;
         set barImageHeight(value: number);
+        /** Gets or sets the height of the horizontal bar image */
+        get horizontalBarImageHeight(): number;
+        set horizontalBarImageHeight(value: number);
+        /** Gets or sets the height of the vertical bar image */
+        get verticalBarImageHeight(): number;
+        set verticalBarImageHeight(value: number);
         /** Gets or sets the bar background */
         get barBackground(): string;
         set barBackground(color: string);
         /** Gets or sets the bar background image */
         get barImage(): Image;
         set barImage(value: Image);
+        /** Gets or sets the horizontal bar background image */
+        get horizontalBarImage(): Image;
+        set horizontalBarImage(value: Image);
+        /** Gets or sets the vertical bar background image */
+        get verticalBarImage(): Image;
+        set verticalBarImage(value: Image);
+        private _setWindowPosition;
         /** @hidden */
         private _updateScroller;
         _link(host: AdvancedDynamicTexture): void;

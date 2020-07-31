@@ -156,9 +156,14 @@ export class WebGPUConstants {
     public static readonly GPUCompareFunction_always: GPUCompareFunction = "always";
 
     public static readonly GPUBindingType_uniformBuffer: GPUBindingType = "uniform-buffer";
-    public static readonly GPUBindingType_sampler: GPUBindingType = "sampler";
-    public static readonly GPUBindingType_sampledTexture: GPUBindingType = "sampled-texture";
     public static readonly GPUBindingType_storageBuffer: GPUBindingType = "storage-buffer";
+    public static readonly GPUBindingType_readonlyStorageBuffer: GPUBindingType = "readonly-storage-buffer";
+    public static readonly GPUBindingType_sampler: GPUBindingType = "sampler";
+    public static readonly GPUBindingType_comparisonSampler: GPUBindingType = "comparison-sampler";
+    public static readonly GPUBindingType_sampledTexture: GPUBindingType = "sampled-texture";
+    public static readonly GPUBindingType_storageTexture: GPUBindingType = "storage-texture";
+    public static readonly GPUBindingType_readonlyStorageTexture: GPUBindingType = "readonly-storage-texture";
+    public static readonly GPUBindingType_writeonlyStorageTexture: GPUBindingType = "writeonly-storage-texture";
 
     public static readonly GPUInputStepMode_vertex: GPUInputStepMode = "vertex";
     public static readonly GPUInputStepMode_instance: GPUInputStepMode = "instance";

@@ -6,7 +6,7 @@ declare module "babylonjs-procedural-textures/brick/brickProceduralTexture.fragm
     };
 }
 declare module "babylonjs-procedural-textures/brick/brickProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -52,7 +52,7 @@ declare module "babylonjs-procedural-textures/cloud/cloudProceduralTexture.fragm
     };
 }
 declare module "babylonjs-procedural-textures/cloud/cloudProceduralTexture" {
-    import { Color4 } from "babylonjs/Maths/math";
+    import { Color4 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -92,7 +92,8 @@ declare module "babylonjs-procedural-textures/fire/fireProceduralTexture.fragmen
     };
 }
 declare module "babylonjs-procedural-textures/fire/fireProceduralTexture" {
-    import { Vector2, Color3 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { Color3 } from 'babylonjs/Maths/math.color';
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -146,7 +147,7 @@ declare module "babylonjs-procedural-textures/grass/grassProceduralTexture.fragm
     };
 }
 declare module "babylonjs-procedural-textures/grass/grassProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -186,7 +187,7 @@ declare module "babylonjs-procedural-textures/marble/marbleProceduralTexture.fra
     };
 }
 declare module "babylonjs-procedural-textures/marble/marbleProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -309,7 +310,7 @@ declare module "babylonjs-procedural-textures/road/roadProceduralTexture.fragmen
     };
 }
 declare module "babylonjs-procedural-textures/road/roadProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";
@@ -412,7 +413,7 @@ declare module "babylonjs-procedural-textures/wood/woodProceduralTexture.fragmen
     };
 }
 declare module "babylonjs-procedural-textures/wood/woodProceduralTexture" {
-    import { Color3 } from "babylonjs/Maths/math";
+    import { Color3 } from "babylonjs/Maths/math.color";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
     import { Scene } from "babylonjs/scene";

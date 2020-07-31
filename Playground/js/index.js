@@ -12,7 +12,7 @@
         /**
          * View split
          */
-        this.splitInstance = Split(['#jsEditor', '#canvasZone']);
+        this.splitInstance = Split(['#jsEditor', '#canvasZone'], {minSize: 0});
 
         /**
          * Run the main script

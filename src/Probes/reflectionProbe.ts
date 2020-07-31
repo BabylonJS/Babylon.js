@@ -91,7 +91,19 @@ export class ReflectionProbe {
         }
         this._scene.reflectionProbes.push(this);
 
-        this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, useFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INT, true);
+        let textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (useFloat) {
+            const caps = this._scene.getEngine().getCaps();
+            if (caps.textureHalfFloatRender) {
+                textureType = Constants.TEXTURETYPE_HALF_FLOAT;
+            }
+            else if (caps.textureFloatRender) {
+                textureType = Constants.TEXTURETYPE_FLOAT;
+            }
+        }
+        this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, textureType, true);
+
+        this._renderTargetTexture.realTimeFiltering = true;
 
         this._renderTargetTexture.onBeforeRenderObservable.add((faceIndex: number) => {
             switch (faceIndex) {

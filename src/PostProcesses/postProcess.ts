@@ -11,6 +11,7 @@ import { Engine } from '../Engines/engine';
 import { Color4 } from '../Maths/math.color';
 
 import "../Engines/Extensions/engine.renderTarget";
+import { NodeMaterial } from '../Materials/Node/nodeMaterial';
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -36,10 +37,16 @@ export class PostProcess {
     * Width of the texture to apply the post process on
     */
     public width = -1;
+
     /**
     * Height of the texture to apply the post process on
     */
     public height = -1;
+
+    /**
+     * Gets the node material used to create this postprocess (null if the postprocess was manually created)
+     */
+    public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
     /**
     * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
@@ -136,6 +143,7 @@ export class PostProcess {
     private _options: number | PostProcessOptions;
     private _reusable = false;
     private _textureType: number;
+    private _textureFormat: number;
     /**
     * Smart array of input and output textures for the post process.
     * @hidden
@@ -301,12 +309,14 @@ export class PostProcess {
      * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
      * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
         /** Name of the PostProcess. */
         public name: string,
         fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
-        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
+        samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
+        indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
         if (camera != null) {
             this._camera = camera;
             this._scene = camera.getScene();
@@ -324,6 +334,7 @@ export class PostProcess {
         this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         this._reusable = reusable || false;
         this._textureType = textureType;
+        this._textureFormat = textureFormat;
 
         this._samplers = samplers || [];
         this._samplers.push("textureSampler");
@@ -398,10 +409,12 @@ export class PostProcess {
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
      * @param onCompiled Called when the shader has been compiled.
      * @param onError Called if there is an error when compiling a shader.
+     * @param vertexUrl The url of the vertex shader to be used (default: the one given at construction time)
+     * @param fragmentUrl The url of the fragment shader to be used (default: the one given at construction time)
      */
     public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
-        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
-        this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl },
+        onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, vertexUrl?: string, fragmentUrl?: string) {
+        this._effect = this._engine.createEffect({ vertex: vertexUrl ?? this._vertexUrl, fragment: fragmentUrl ?? this._fragmentUrl },
             ["position"],
             uniforms || this._parameters,
             samplers || this._samplers,
@@ -495,7 +508,8 @@ export class PostProcess {
                     generateDepthBuffer: forceDepthStencil || camera._postProcesses.indexOf(this) === 0,
                     generateStencilBuffer: (forceDepthStencil || camera._postProcesses.indexOf(this) === 0) && this._engine.isStencilEnable,
                     samplingMode: this.renderTargetSamplingMode,
-                    type: this._textureType
+                    type: this._textureType,
+                    format: this._textureFormat
                 };
 
                 this._textures.push(this._engine.createRenderTargetTexture(textureSize, textureOptions));

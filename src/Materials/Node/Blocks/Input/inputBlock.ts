@@ -12,6 +12,25 @@ import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Color3, Color4 } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
+import { Observable } from '../../../../Misc/observable';
+import { MaterialHelper } from '../../../../Materials/materialHelper';
+
+const remapAttributeName: { [name: string]: string }  = {
+    "position2d": "position",
+    "particle_uv": "vUV",
+    "particle_color": "vColor",
+    "particle_texturemask": "textureMask",
+};
+
+const attributeInFragmentOnly: { [name: string]: boolean }  = {
+    "particle_uv": true,
+    "particle_color": true,
+    "particle_texturemask": true,
+};
+
+const attributeAsUniform: { [name: string]: boolean }  = {
+    "particle_texturemask": true,
+};
 
 /**
  * Block used to expose an input value
@@ -30,6 +49,9 @@ export class InputBlock extends NodeMaterialBlock {
     /** Gets or set a value used to limit the range of float values */
     public max: number = 0;
 
+    /** Gets or set a value indicating that this input can only get 0 and 1 values */
+    public isBoolean: boolean = false;
+
     /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
     public matrixMode: number = 0;
 
@@ -44,6 +66,9 @@ export class InputBlock extends NodeMaterialBlock {
 
     /** Gets or sets the group to use to display this block in the Inspector */
     public groupInInspector = "";
+
+    /** Gets an observable raised when the value is changed */
+    public onValueChangedObservable = new Observable<InputBlock>();
 
     /**
      * Gets or sets the connection point type (default is float)
@@ -72,6 +97,9 @@ export class InputBlock extends NodeMaterialBlock {
                     case "Color4":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
+                    case "Matrix":
+                        this._type = NodeMaterialBlockConnectionPointTypes.Matrix;
+                        return this._type;
                 }
             }
 
@@ -84,6 +112,8 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case "uv":
                     case "uv2":
+                    case "position2d":
+                    case "particle_uv":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
                         return this._type;
                     case "matricesIndices":
@@ -95,6 +125,8 @@ export class InputBlock extends NodeMaterialBlock {
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
                         return this._type;
                     case "color":
+                    case "particle_color":
+                    case "particle_texturemask":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
                 }
@@ -181,8 +213,20 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     public set value(value: any) {
+        if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
+            if (this.isBoolean) {
+                value = value ? 1 : 0;
+            }
+            else if (this.min !== this.max) {
+                value = Math.max(this.min, value);
+                value = Math.min(this.max, value);
+            }
+        }
+
         this._storedValue = value;
         this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
+
+        this.onValueChangedObservable.notifyObservers(this);
     }
 
     /**
@@ -369,6 +413,11 @@ export class InputBlock extends NodeMaterialBlock {
         return "";
     }
 
+    /** @hidden */
+    public get _noContextSwitch(): boolean {
+        return attributeInFragmentOnly[this.name];
+    }
+
     private _emit(state: NodeMaterialBuildState, define?: string) {
         // Uniforms
         if (this.isUniform) {
@@ -420,10 +469,18 @@ export class InputBlock extends NodeMaterialBlock {
 
         // Attribute
         if (this.isAttribute) {
-            this.associatedVariableName = this.name;
+            this.associatedVariableName = remapAttributeName[this.name] ?? this.name;
 
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) { // Attribute for fragment need to be carried over by varyings
-                this._emit(state._vertexState, define);
+                if (attributeInFragmentOnly[this.name]) {
+                    if (attributeAsUniform[this.name]) {
+                        state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    } else {
+                        state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    }
+                } else {
+                    this._emit(state._vertexState, define);
+                }
                 return;
             }
 
@@ -432,12 +489,21 @@ export class InputBlock extends NodeMaterialBlock {
             }
 
             state.attributes.push(this.associatedVariableName);
-            if (define) {
-                state._attributeDeclaration += this._emitDefine(define);
-            }
-            state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
-            if (define) {
-                state._attributeDeclaration += `#endif\r\n`;
+
+            if (attributeInFragmentOnly[this.name]) {
+                if (attributeAsUniform[this.name]) {
+                    state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                } else {
+                    state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                }
+            } else {
+                if (define) {
+                    state._attributeDeclaration += this._emitDefine(define);
+                }
+                state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
+                if (define) {
+                    state._attributeDeclaration += `#endif\r\n`;
+                }
             }
         }
     }
@@ -485,7 +551,7 @@ export class InputBlock extends NodeMaterialBlock {
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
                 case NodeMaterialSystemValues.CameraPosition:
-                    effect.setVector3(variableName, scene.activeCamera!.globalPosition);
+                    MaterialHelper.BindEyePosition(effect, scene, variableName);
                     break;
                 case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
@@ -550,17 +616,14 @@ export class InputBlock extends NodeMaterialBlock {
             return `${variableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
         }
         if (this.isUniform) {
+            const codes: string[] = [];
+
             let valueString = "";
+
             switch (this.type) {
                 case NodeMaterialBlockConnectionPointTypes.Float:
-                    let returnValue = `${variableName}.value = ${this.value};\r\n`;
-
-                    returnValue += `${variableName}.min = ${this.min};\r\n`;
-                    returnValue += `${variableName}.max = ${this.max};\r\n`;
-                    returnValue += `${variableName}.matrixMode = ${this.matrixMode};\r\n`;
-                    returnValue += `${variableName}.animationType  = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]};\r\n`;
-
-                    return returnValue;
+                    valueString = `${this.value}`;
+                    break;
                 case NodeMaterialBlockConnectionPointTypes.Vector2:
                     valueString = `new BABYLON.Vector2(${this.value.x}, ${this.value.y})`;
                     break;
@@ -576,14 +639,42 @@ export class InputBlock extends NodeMaterialBlock {
                 case NodeMaterialBlockConnectionPointTypes.Color4:
                     valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
                     break;
+                case NodeMaterialBlockConnectionPointTypes.Matrix:
+                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m}])`;
+                    break;
             }
-            let finalOutput = `${variableName}.value = ${valueString};\r\n`;
-            finalOutput += `${variableName}.isConstant = ${this.isConstant ? "true" : "false"};\r\n`;
-            finalOutput += `${variableName}.visibleInInspector = ${this.visibleInInspector ? "true" : "false"};\r\n`;
 
-            return finalOutput;
+            // Common Property "Value"
+            codes.push(`${variableName}.value = ${valueString}`);
+
+            // Float-Value-Specific Properties
+            if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                codes.push(
+                    `${variableName}.min = ${this.min}`,
+                    `${variableName}.max = ${this.max}`,
+                    `${variableName}.isBoolean = ${this.isBoolean}`,
+                    `${variableName}.matrixMode = ${this.matrixMode}`,
+                    `${variableName}.animationType = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]}`
+                );
+            }
+
+            // Common Property "Type"
+            codes.push(
+                `${variableName}.isConstant = ${this.isConstant}`,
+                `${variableName}.visibleInInspector = ${this.visibleInInspector}`
+            );
+
+            codes.push('');
+
+            return codes.join(';\r\n');
         }
         return "";
+    }
+
+    public dispose() {
+        this.onValueChangedObservable.clear();
+
+        super.dispose();
     }
 
     public serialize(): any {
@@ -596,6 +687,7 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.visibleInInspector = this.visibleInInspector;
         serializationObject.min = this.min;
         serializationObject.max = this.max;
+        serializationObject.isBoolean = this.isBoolean;
         serializationObject.matrixMode = this.matrixMode;
         serializationObject.isConstant = this.isConstant;
         serializationObject.groupInInspector = this.groupInInspector;
@@ -623,6 +715,7 @@ export class InputBlock extends NodeMaterialBlock {
         this.visibleInInspector = serializationObject.visibleInInspector;
         this.min = serializationObject.min || 0;
         this.max = serializationObject.max || 0;
+        this.isBoolean = !!serializationObject.isBoolean;
         this.matrixMode = serializationObject.matrixMode || 0;
         this.isConstant = !!serializationObject.isConstant;
         this.groupInInspector = serializationObject.groupInInspector || "";

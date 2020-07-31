@@ -1,7 +1,6 @@
 import { Nullable } from "../../../types";
 import { Scene } from "../../../scene";
 import { EngineStore } from "../../../Engines/engineStore";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
 import { Texture } from "../../../Materials/Textures/texture";
 import { ProceduralTexture } from "./proceduralTexture";
 import { _TypeStore } from '../../../Misc/typeStore';
@@ -80,6 +79,30 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         serializationObject.generateMipMaps = this._generateMipMaps;
 
         return serializationObject;
+    }
+
+    /**
+     * Clone the texture.
+     * @returns the cloned texture
+     */
+    public clone(): NoiseProceduralTexture {
+        var textureSize = this.getSize();
+        var newTexture = new NoiseProceduralTexture(this.name, textureSize.width, this.getScene(), this._fallbackTexture ? this._fallbackTexture : undefined, this._generateMipMaps);
+
+        // Base texture
+        newTexture.hasAlpha = this.hasAlpha;
+        newTexture.level = this.level;
+
+        // RenderTarget Texture
+        newTexture.coordinatesMode = this.coordinatesMode;
+
+        // Noise Specifics
+        newTexture.brightness = this.brightness;
+        newTexture.octaves = this.octaves;
+        newTexture.persistence = this.persistence;
+        newTexture.animationSpeedFactor = this.animationSpeedFactor;
+
+        return newTexture;
     }
 
     /**

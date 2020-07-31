@@ -165,7 +165,7 @@ class ZipTool {
 
         this.addContentToZip(zip,
             "index.html",
-            "zipContent/index.html",
+            "/zipContent/index.html",
             this.zipCode,
             false,
             function () {

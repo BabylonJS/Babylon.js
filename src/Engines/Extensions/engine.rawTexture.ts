@@ -1,15 +1,14 @@
 import { Nullable } from "../../types";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { InternalTexture, InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Logger } from '../../Misc/logger';
 import { Tools } from '../../Misc/tools';
 import { Scene } from '../../scene';
 import { Constants } from '../constants';
-import { Engine } from '../engine';
+import { ThinEngine } from '../thinEngine';
 import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
 
-declare module "../../Engines/engine" {
-    export interface Engine {
+declare module "../../Engines/thinEngine" {
+    export interface ThinEngine {
         /**
          * Creates a raw texture
          * @param data defines the data to store in the texture
@@ -106,7 +105,7 @@ declare module "../../Engines/engine" {
          * @param onError defines a callback called if there is an error
          * @returns the cube texture as an InternalTexture
          */
-        createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+        createRawCubeTextureFromUrl(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
             mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
             onLoad: Nullable<() => void>,
@@ -128,7 +127,7 @@ declare module "../../Engines/engine" {
          * @param invertY defines if data must be stored with Y axis inverted
          * @returns the cube texture as an InternalTexture
          */
-        createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+        createRawCubeTextureFromUrl(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
             callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
             mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
             onLoad: Nullable<() => void>,
@@ -210,7 +209,7 @@ declare module "../../Engines/engine" {
     }
 }
 
-Engine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+ThinEngine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
     if (!texture) {
         return;
     }
@@ -249,7 +248,7 @@ Engine.prototype.updateRawTexture = function(texture: Nullable<InternalTexture>,
     texture.isReady = true;
 };
 
-Engine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+ThinEngine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
     var texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -286,7 +285,7 @@ Engine.prototype.createRawTexture = function(data: Nullable<ArrayBufferView>, wi
     return texture;
 };
 
-Engine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
+ThinEngine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number,
     generateMipMaps: boolean, invertY: boolean, samplingMode: number,
     compression: Nullable<string> = null): InternalTexture {
     var gl = this._gl;
@@ -362,7 +361,7 @@ Engine.prototype.createRawCubeTexture = function(data: Nullable<ArrayBufferView[
     return texture;
 };
 
-Engine.prototype.updateRawCubeTexture = function(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level: number = 0): void {
+ThinEngine.prototype.updateRawCubeTexture = function(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level: number = 0): void {
     texture._bufferViewArray = data;
     texture.format = format;
     texture.type = type;
@@ -395,7 +394,7 @@ Engine.prototype.updateRawCubeTexture = function(texture: InternalTexture, data:
             gl.compressedTexImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, (<any>(this.getCaps().s3tc))[compression], texture.width, texture.height, 0, <DataView>faceData);
         } else {
             if (needConversion) {
-                faceData = this._convertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
+                faceData = _convertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
             }
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, faceData);
         }
@@ -411,7 +410,7 @@ Engine.prototype.updateRawCubeTexture = function(texture: InternalTexture, data:
     texture.isReady = true;
 };
 
-Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean,
+ThinEngine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Nullable<Scene>, size: number, format: number, type: number, noMipmap: boolean,
     callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
     mipmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>,
     onLoad: Nullable<() => void> = null,
@@ -421,12 +420,12 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
 
     var gl = this._gl;
     var texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode, null);
-    scene._addPendingData(texture);
+    scene?._addPendingData(texture);
     texture.url = url;
     this._internalTexturesCache.push(texture);
 
     var onerror = (request?: IWebRequest, exception?: any) => {
-        scene._removePendingData(texture);
+        scene?._removePendingData(texture);
         if (onError && request) {
             onError(request.status + " " + request.statusText, exception);
         }
@@ -461,7 +460,7 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
                 for (var faceIndex = 0; faceIndex < 6; faceIndex++) {
                     let mipFaceData = mipData[level][faceIndex];
                     if (needConversion) {
-                        mipFaceData = this._convertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
+                        mipFaceData = _convertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
                     }
                     gl.texImage2D(faceIndex, level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipFaceData);
                 }
@@ -475,7 +474,7 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
 
         texture.isReady = true;
         // this.resetTextureCache();
-        scene._removePendingData(texture);
+        scene?._removePendingData(texture);
 
         if (onLoad) {
             onLoad();
@@ -484,10 +483,40 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
 
     this._loadFile(url, (data) => {
         internalCallback(data);
-    }, undefined, scene.offlineProvider, true, onerror);
+    }, undefined, scene?.offlineProvider, true, onerror);
 
     return texture;
 };
+
+/** @hidden */
+function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {
+    // Create new RGBA data container.
+    var rgbaData: any;
+    if (textureType === Constants.TEXTURETYPE_FLOAT) {
+        rgbaData = new Float32Array(width * height * 4);
+    }
+    else {
+        rgbaData = new Uint32Array(width * height * 4);
+    }
+
+    // Convert each pixel.
+    for (let x = 0; x < width; x++) {
+        for (let y = 0; y < height; y++) {
+            let index = (y * width + x) * 3;
+            let newIndex = (y * width + x) * 4;
+
+            // Map Old Value to new value.
+            rgbaData[newIndex + 0] = rgbData[index + 0];
+            rgbaData[newIndex + 1] = rgbData[index + 1];
+            rgbaData[newIndex + 2] = rgbData[index + 2];
+
+            // Add fully opaque alpha channel.
+            rgbaData[newIndex + 3] = 1;
+        }
+    }
+
+    return rgbaData;
+}
 
 /**
  * Create a function for createRawTexture3D/createRawTexture2DArray
@@ -495,7 +524,7 @@ Engine.prototype.createRawCubeTextureFromUrl = function(url: string, scene: Scen
  * @hidden
  */
 function _makeCreateRawTextureFunction(is3D: boolean) {
-    return function(this: Engine, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+    return function(this: ThinEngine, data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
         var target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         var source = is3D ? InternalTextureSource.Raw3D : InternalTextureSource.Raw2DArray;
         var texture = new InternalTexture(this, source);
@@ -544,8 +573,8 @@ function _makeCreateRawTextureFunction(is3D: boolean) {
     };
 }
 
-Engine.prototype.createRawTexture2DArray = _makeCreateRawTextureFunction(false);
-Engine.prototype.createRawTexture3D = _makeCreateRawTextureFunction(true);
+ThinEngine.prototype.createRawTexture2DArray = _makeCreateRawTextureFunction(false);
+ThinEngine.prototype.createRawTexture3D = _makeCreateRawTextureFunction(true);
 
 /**
  * Create a function for updateRawTexture3D/updateRawTexture2DArray
@@ -553,7 +582,7 @@ Engine.prototype.createRawTexture3D = _makeCreateRawTextureFunction(true);
  * @hidden
  */
 function _makeUpdateRawTextureFunction(is3D: boolean) {
-    return function(this: Engine, texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
+    return function(this: ThinEngine, texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT): void {
         var target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         var internalType = this._getWebGLTextureType(textureType);
         var internalFormat = this._getInternalFormat(format);
@@ -588,5 +617,5 @@ function _makeUpdateRawTextureFunction(is3D: boolean) {
     };
 }
 
-Engine.prototype.updateRawTexture2DArray = _makeUpdateRawTextureFunction(false);
-Engine.prototype.updateRawTexture3D = _makeUpdateRawTextureFunction(true);
+ThinEngine.prototype.updateRawTexture2DArray = _makeUpdateRawTextureFunction(false);
+ThinEngine.prototype.updateRawTexture3D = _makeUpdateRawTextureFunction(true);

@@ -136,8 +136,9 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      */
     public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
         var container = new AssetContainer(scene);
+        scene._blockEntityCollection = true;
         this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-        container.removeAllFromScene();
+        scene._blockEntityCollection = false;
         return container;
     }
 

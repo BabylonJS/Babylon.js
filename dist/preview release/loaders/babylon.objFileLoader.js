@@ -158,8 +158,8 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MTLFileLoader", function() { return MTLFileLoader; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
 
 
 
@@ -182,8 +182,9 @@ var MTLFileLoader = /** @class */ (function () {
      * @param scene defines the scene the material will be created in
      * @param data defines the mtl data to parse
      * @param rootUrl defines the rooturl to use in order to load relative dependencies
+     * @param forAssetContainer defines if the material should be registered in the scene
      */
-    MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
+    MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl, forAssetContainer) {
         if (data instanceof ArrayBuffer) {
             return;
         }
@@ -218,7 +219,9 @@ var MTLFileLoader = /** @class */ (function () {
                 }
                 //Create a new material.
                 // value is the name of the material read in the mtl file
-                material = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["StandardMaterial"](value, scene);
+                scene._blockEntityCollection = forAssetContainer;
+                material = new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["StandardMaterial"](value, scene);
+                scene._blockEntityCollection = false;
             }
             else if (key === "kd" && material) {
                 // Diffuse color (color under white light) using RGB values
@@ -226,7 +229,7 @@ var MTLFileLoader = /** @class */ (function () {
                 color = value.split(delimiter_pattern, 3).map(parseFloat);
                 //color = [r,g,b]
                 //Set tghe color into the material
-                material.diffuseColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(color);
+                material.diffuseColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(color);
             }
             else if (key === "ka" && material) {
                 // Ambient color (color under shadow) using RGB values
@@ -234,7 +237,7 @@ var MTLFileLoader = /** @class */ (function () {
                 color = value.split(delimiter_pattern, 3).map(parseFloat);
                 //color = [r,g,b]
                 //Set tghe color into the material
-                material.ambientColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(color);
+                material.ambientColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(color);
             }
             else if (key === "ks" && material) {
                 // Specular color (color when light is reflected from shiny surface) using RGB values
@@ -242,12 +245,12 @@ var MTLFileLoader = /** @class */ (function () {
                 color = value.split(delimiter_pattern, 3).map(parseFloat);
                 //color = [r,g,b]
                 //Set the color into the material
-                material.specularColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(color);
+                material.specularColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(color);
             }
             else if (key === "ke" && material) {
                 // Emissive color using RGB values
                 color = value.split(delimiter_pattern, 3).map(parseFloat);
-                material.emissiveColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(color);
+                material.emissiveColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(color);
             }
             else if (key === "ns" && material) {
                 //value = "Integer"
@@ -368,7 +371,7 @@ var MTLFileLoader = /** @class */ (function () {
         else {
             url += value;
         }
-        return new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Texture"](url, scene, false, MTLFileLoader.INVERT_TEXTURE_Y);
+        return new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Texture"](url, scene, false, MTLFileLoader.INVERT_TEXTURE_Y);
     };
     /**
      * Invert Y-Axis of referenced textures on load
@@ -391,9 +394,10 @@ var MTLFileLoader = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "OBJFileLoader", function() { return OBJFileLoader; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _mtlFileLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mtlFileLoader */ "./OBJ/mtlFileLoader.ts");
+
 
 
 
@@ -454,6 +458,7 @@ var OBJFileLoader = /** @class */ (function () {
         // f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal ...
         /** @hidden */
         this.facePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
+        this._forAssetContainer = false;
         this._meshLoadOptions = meshLoadOptions || OBJFileLoader.currentMeshLoadOptions;
     }
     Object.defineProperty(OBJFileLoader, "INVERT_TEXTURE_Y", {
@@ -498,9 +503,9 @@ var OBJFileLoader = /** @class */ (function () {
      */
     OBJFileLoader.prototype._loadMTL = function (url, rootUrl, onSuccess, onFailure) {
         //The complete path to the mtl file
-        var pathOfFile = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].BaseUrl + rootUrl + url;
+        var pathOfFile = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].BaseUrl + rootUrl + url;
         // Loads through the babylon tools to allow fileInput search.
-        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].LoadFile(pathOfFile, onSuccess, undefined, undefined, false, function (request, exception) {
+        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].LoadFile(pathOfFile, onSuccess, undefined, undefined, false, function (request, exception) {
             onFailure(pathOfFile, exception);
         });
     };
@@ -566,8 +571,10 @@ var OBJFileLoader = /** @class */ (function () {
      * @returns The loaded asset container
      */
     OBJFileLoader.prototype.loadAssetContainerAsync = function (scene, data, rootUrl, onProgress, fileName) {
+        var _this = this;
+        this._forAssetContainer = true;
         return this.importMeshAsync(null, scene, data, rootUrl).then(function (result) {
-            var container = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
+            var container = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
             result.meshes.forEach(function (mesh) { return container.meshes.push(mesh); });
             result.meshes.forEach(function (mesh) {
                 var material = mesh.material;
@@ -585,8 +592,11 @@ var OBJFileLoader = /** @class */ (function () {
                     }
                 }
             });
-            container.removeAllFromScene();
+            _this._forAssetContainer = false;
             return container;
+        }).catch(function (ex) {
+            _this._forAssetContainer = false;
+            throw ex;
         });
     };
     /**
@@ -628,7 +638,7 @@ var OBJFileLoader = /** @class */ (function () {
         var objMeshName = ""; //The name of the current obj mesh
         var increment = 1; //Id for meshes created by the multimaterial
         var isFirstMaterial = true;
-        var grayColor = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color4"](0.5, 0.5, 0.5, 1);
+        var grayColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color4"](0.5, 0.5, 0.5, 1);
         /**
          * Search for obj in the given array.
          * This function is called to check if a couple of data already exists in an array.
@@ -783,7 +793,7 @@ var OBJFileLoader = /** @class */ (function () {
                 var indicePositionFromObj = parseInt(triangles[k]) - 1;
                 setData(indicePositionFromObj, 0, 0, //In the pattern 1, normals and uvs are not defined
                 positions[indicePositionFromObj], //Get the vectors data
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero(), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Up(), //Create default vectors
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Up(), //Create default vectors
                 _this._meshLoadOptions.ImportVertexColors === true ? colors[indicePositionFromObj] : undefined);
             }
             //Reset variable for the next line
@@ -808,7 +818,7 @@ var OBJFileLoader = /** @class */ (function () {
                 var indiceUvsFromObj = parseInt(point[1]) - 1;
                 setData(indicePositionFromObj, indiceUvsFromObj, 0, //Default value for normals
                 positions[indicePositionFromObj], //Get the values for each element
-                uvs[indiceUvsFromObj], babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Up(), //Default value for normals
+                uvs[indiceUvsFromObj], babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Up(), //Default value for normals
                 _this._meshLoadOptions.ImportVertexColors === true ? colors[indicePositionFromObj] : undefined);
             }
             //Reset variable for the next line
@@ -856,7 +866,7 @@ var OBJFileLoader = /** @class */ (function () {
                 var indiceNormalFromObj = parseInt(point[1]) - 1;
                 setData(indicePositionFromObj, 1, //Default value for uv
                 indiceNormalFromObj, positions[indicePositionFromObj], //Get each vector of data
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero(), normals[indiceNormalFromObj], _this._meshLoadOptions.ImportVertexColors === true ? colors[indicePositionFromObj] : undefined);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"].Zero(), normals[indiceNormalFromObj], _this._meshLoadOptions.ImportVertexColors === true ? colors[indicePositionFromObj] : undefined);
             }
             //Reset variable for the next line
             triangles = [];
@@ -930,11 +940,11 @@ var OBJFileLoader = /** @class */ (function () {
                 // Value of result with line: "v 1.0 2.0 3.0"
                 // ["v", "1.0", "2.0", "3.0"]
                 // Create a Vector3 with the position x, y, z
-                positions.push(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"](parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])));
+                positions.push(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"](parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])));
                 if (this._meshLoadOptions.ImportVertexColors === true) {
                     if (result.length >= 7) {
                         // TODO: if these numbers are > 1 we can use Color4.FromInts(r,g,b,a)
-                        colors.push(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color4"](parseFloat(result[4]), parseFloat(result[5]), parseFloat(result[6]), (result.length === 7 || result[7] === undefined) ? 1 : parseFloat(result[7])));
+                        colors.push(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color4"](parseFloat(result[4]), parseFloat(result[5]), parseFloat(result[6]), (result.length === 7 || result[7] === undefined) ? 1 : parseFloat(result[7])));
                     }
                     else {
                         // TODO: maybe push NULL and if all are NULL to skip (and remove grayColor var).
@@ -947,14 +957,14 @@ var OBJFileLoader = /** @class */ (function () {
                 //Value of result
                 // ["vn 1.0 2.0 3.0", "1.0", "2.0", "3.0"]
                 //Add the Vector in the list of normals
-                normals.push(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"](parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])));
+                normals.push(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"](parseFloat(result[1]), parseFloat(result[2]), parseFloat(result[3])));
             }
             else if ((result = this.uvPattern.exec(line)) !== null) {
                 //Create a Vector2 with the normals u, v
                 //Value of result
                 // ["vt 0.1 0.2 0.3", "0.1", "0.2"]
                 //Add the Vector in the list of uvs
-                uvs.push(new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](parseFloat(result[1]) * OBJFileLoader.UV_SCALING.x, parseFloat(result[2]) * OBJFileLoader.UV_SCALING.y));
+                uvs.push(new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](parseFloat(result[1]) * OBJFileLoader.UV_SCALING.x, parseFloat(result[2]) * OBJFileLoader.UV_SCALING.y));
                 //Identify patterns of faces
                 //Face could be defined in different type of pattern
             }
@@ -1020,14 +1030,14 @@ var OBJFileLoader = /** @class */ (function () {
                 //Get the name of the material
                 materialNameFromObj = line.substring(7).trim();
                 //If this new material is in the same mesh
-                if (!isFirstMaterial) {
+                if (!isFirstMaterial || !hasMeshes) {
                     //Set the data for the previous mesh
                     addPreviousObjMesh();
                     //Create a new mesh
                     var objMesh = 
                     //Set the name of the current obj mesh
                     {
-                        name: objMeshName + "_mm" + increment.toString(),
+                        name: (objMeshName || "mesh") + "_mm" + increment.toString(),
                         indices: undefined,
                         positions: undefined,
                         normals: undefined,
@@ -1038,6 +1048,7 @@ var OBJFileLoader = /** @class */ (function () {
                     increment++;
                     //If meshes are already defined
                     meshesFromObj.push(objMesh);
+                    hasMeshes = true;
                 }
                 //Set the material name if the previous line define a mesh
                 if (hasMeshes && isFirstMaterial) {
@@ -1087,7 +1098,7 @@ var OBJFileLoader = /** @class */ (function () {
             unwrapData();
             //Set data for one mesh
             meshesFromObj.push({
-                name: babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Geometry"].RandomId(),
+                name: babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Geometry"].RandomId(),
                 indices: indicesForBabylon,
                 positions: unwrappedPositionsForBabylon,
                 colors: unwrappedColorsForBabylon,
@@ -1118,18 +1129,20 @@ var OBJFileLoader = /** @class */ (function () {
             //Set the data with VertexBuffer for each mesh
             handledMesh = meshesFromObj[j];
             //Create a Mesh with the name of the obj mesh
-            var babylonMesh = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Mesh"](meshesFromObj[j].name, scene);
+            scene._blockEntityCollection = this._forAssetContainer;
+            var babylonMesh = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Mesh"](meshesFromObj[j].name, scene);
+            scene._blockEntityCollection = false;
             //Push the name of the material to an array
             //This is indispensable for the importMesh function
             materialToUse.push(meshesFromObj[j].materialName);
-            var vertexData = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexData"](); //The container for the values
+            var vertexData = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["VertexData"](); //The container for the values
             //Set the data for the babylonMesh
             vertexData.uvs = handledMesh.uvs;
             vertexData.indices = handledMesh.indices;
             vertexData.positions = handledMesh.positions;
             if (this._meshLoadOptions.ComputeNormals === true) {
                 var normals_1 = new Array();
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["VertexData"].ComputeNormals(handledMesh.positions, handledMesh.indices, normals_1);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["VertexData"].ComputeNormals(handledMesh.positions, handledMesh.indices, normals_1);
                 vertexData.normals = normals_1;
             }
             else {
@@ -1155,7 +1168,7 @@ var OBJFileLoader = /** @class */ (function () {
                 _this._loadMTL(fileToLoad, rootUrl, function (dataLoaded) {
                     try {
                         //Create materials thanks MTLLoader function
-                        materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl);
+                        materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl, _this._forAssetContainer);
                         //Look at each material loaded in the mtl file
                         for (var n = 0; n < materialsFromMTLFile.materials.length; n++) {
                             //Three variables to get all meshes with the same material
@@ -1184,7 +1197,7 @@ var OBJFileLoader = /** @class */ (function () {
                         resolve();
                     }
                     catch (e) {
-                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Error processing MTL file: '" + fileToLoad + "'");
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Error processing MTL file: '" + fileToLoad + "'");
                         if (_this._meshLoadOptions.MaterialLoadingFailsSilently) {
                             resolve();
                         }
@@ -1193,7 +1206,7 @@ var OBJFileLoader = /** @class */ (function () {
                         }
                     }
                 }, function (pathOfFile, exception) {
-                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Error downloading MTL file: '" + fileToLoad + "'");
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].Warn("Error downloading MTL file: '" + fileToLoad + "'");
                     if (_this._meshLoadOptions.MaterialLoadingFailsSilently) {
                         resolve();
                     }
@@ -1227,7 +1240,7 @@ var OBJFileLoader = /** @class */ (function () {
     /**
      * Defines custom scaling of UV coordinates of loaded meshes.
      */
-    OBJFileLoader.UV_SCALING = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector2"](1, 1);
+    OBJFileLoader.UV_SCALING = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector2"](1, 1);
     /**
      * Skip loading the materials even if defined in the OBJ file (materials are ignored).
      */
@@ -1241,9 +1254,9 @@ var OBJFileLoader = /** @class */ (function () {
     return OBJFileLoader;
 }());
 
-if (babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"]) {
+if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"]) {
     //Add this loader into the register plugin
-    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].RegisterPlugin(new OBJFileLoader());
+    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["SceneLoader"].RegisterPlugin(new OBJFileLoader());
 }
 
 

@@ -10,8 +10,6 @@ import { Mesh } from "../../Meshes/mesh";
 
 import { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
-
-import { Material } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { Effect } from "../../Materials/effect";
@@ -20,15 +18,19 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { Constants } from "../../Engines/constants";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
+import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
+import { RenderingManager } from '../../Rendering/renderingManager';
+
+const tmpMatrix = new Matrix(),
+      tmpMatrix2 = new Matrix();
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -69,19 +71,15 @@ export interface IShadowGenerator {
      * @returns The render target texture if present otherwise, null
      */
     getShadowMap(): Nullable<RenderTargetTexture>;
-    /**
-     * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
-     * @returns The render target texture if the shadow map is present otherwise, null
-     */
-    getShadowMapForRendering(): Nullable<RenderTargetTexture>;
 
     /**
      * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
      * @param useInstances Defines wether will draw in the map using instances
+     * @param isTransparent Indicates that isReady is called for a transparent subMesh
      * @returns true if ready otherwise, false
      */
-    isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean;
 
     /**
      * Prepare all the defines in a material relying on a shadow map at the specified light index.
@@ -115,7 +113,7 @@ export interface IShadowGenerator {
      * @param onCompiled Callback triggered at the and of the effects compilation
      * @param options Sets of optional options forcing the compilation with different modes
      */
-    forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void;
+    forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void;
 
     /**
      * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
@@ -142,6 +140,12 @@ export interface IShadowGenerator {
  * Documentation: https://doc.babylonjs.com/babylon101/shadows
  */
 export class ShadowGenerator implements IShadowGenerator {
+
+    /**
+     * Name of the shadow generator class
+     */
+    public static CLASSNAME = "ShadowGenerator";
+
     /**
      * Shadow generator mode None: no filtering applied.
      */
@@ -239,7 +243,7 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public onAfterShadowMapRenderMeshObservable = new Observable<Mesh>();
 
-    private _bias = 0.00005;
+    protected _bias = 0.00005;
     /**
      * Gets the bias: offset applied on the depth preventing acnea (in light direction).
      */
@@ -253,7 +257,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._bias = bias;
     }
 
-    private _normalBias = 0;
+    protected _normalBias = 0;
     /**
      * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
      */
@@ -267,7 +271,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._normalBias = normalBias;
     }
 
-    private _blurBoxOffset = 1;
+    protected _blurBoxOffset = 1;
     /**
      * Gets the blur box offset: offset applied during the blur pass.
      * Only useful if useKernelBlur = false
@@ -288,7 +292,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._disposeBlurPostProcesses();
     }
 
-    private _blurScale = 2;
+    protected _blurScale = 2;
     /**
      * Gets the blur scale: scale of the blurred texture compared to the main shadow map.
      * 2 means half of the size.
@@ -309,7 +313,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._disposeBlurPostProcesses();
     }
 
-    private _blurKernel = 1;
+    protected _blurKernel = 1;
     /**
      * Gets the blur kernel: kernel size of the blur pass.
      * Only useful if useKernelBlur = true
@@ -330,7 +334,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._disposeBlurPostProcesses();
     }
 
-    private _useKernelBlur = false;
+    protected _useKernelBlur = false;
     /**
      * Gets whether the blur pass is a kernel blur (if true) or box blur.
      * Only useful in filtered mode (useBlurExponentialShadowMap...)
@@ -351,7 +355,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._disposeBlurPostProcesses();
     }
 
-    private _depthScale: number;
+    protected _depthScale: number;
     /**
      * Gets the depth scale used in ESM mode.
      */
@@ -366,7 +370,11 @@ export class ShadowGenerator implements IShadowGenerator {
         this._depthScale = value;
     }
 
-    private _filter = ShadowGenerator.FILTER_NONE;
+    protected _validateFilter(filter: number): number {
+        return filter;
+    }
+
+    protected _filter = ShadowGenerator.FILTER_NONE;
     /**
      * Gets the current mode of the shadow generator (normal, PCF, ESM...).
      * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
@@ -379,6 +387,8 @@ export class ShadowGenerator implements IShadowGenerator {
      * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
      */
     public set filter(value: number) {
+        value = this._validateFilter(value);
+
         // Blurring the cubemap is going to be too expensive. Reverting to unblurred version
         if (this._light.needCube()) {
             if (value === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP) {
@@ -424,11 +434,13 @@ export class ShadowGenerator implements IShadowGenerator {
      * Sets the current filter to Poisson Sampling.
      */
     public set usePoissonSampling(value: boolean) {
+        let filter = this._validateFilter(ShadowGenerator.FILTER_POISSONSAMPLING);
+
         if (!value && this.filter !== ShadowGenerator.FILTER_POISSONSAMPLING) {
             return;
         }
 
-        this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
+        this.filter = (value ? filter : ShadowGenerator.FILTER_NONE);
     }
 
     /**
@@ -441,10 +453,12 @@ export class ShadowGenerator implements IShadowGenerator {
      * Sets the current filter is to ESM.
      */
     public set useExponentialShadowMap(value: boolean) {
+        let filter = this._validateFilter(ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP);
+
         if (!value && this.filter !== ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) {
             return;
         }
-        this.filter = (value ? ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
+        this.filter = (value ? filter : ShadowGenerator.FILTER_NONE);
     }
 
     /**
@@ -457,10 +471,12 @@ export class ShadowGenerator implements IShadowGenerator {
      * Gets if the current filter is set to filtered  ESM.
      */
     public set useBlurExponentialShadowMap(value: boolean) {
+        let filter = this._validateFilter(ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP);
+
         if (!value && this.filter !== ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP) {
             return;
         }
-        this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
+        this.filter = (value ? filter : ShadowGenerator.FILTER_NONE);
     }
 
     /**
@@ -475,10 +491,12 @@ export class ShadowGenerator implements IShadowGenerator {
      * exponential to prevent steep falloff artifacts).
      */
     public set useCloseExponentialShadowMap(value: boolean) {
+        let filter = this._validateFilter(ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP);
+
         if (!value && this.filter !== ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP) {
             return;
         }
-        this.filter = (value ? ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
+        this.filter = (value ? filter : ShadowGenerator.FILTER_NONE);
     }
 
     /**
@@ -493,10 +511,12 @@ export class ShadowGenerator implements IShadowGenerator {
      * exponential to prevent steep falloff artifacts).
      */
     public set useBlurCloseExponentialShadowMap(value: boolean) {
+        let filter = this._validateFilter(ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP);
+
         if (!value && this.filter !== ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) {
             return;
         }
-        this.filter = (value ? ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
+        this.filter = (value ? filter : ShadowGenerator.FILTER_NONE);
     }
 
     /**
@@ -509,13 +529,15 @@ export class ShadowGenerator implements IShadowGenerator {
      * Sets the current filter to "PCF" (percentage closer filtering).
      */
     public set usePercentageCloserFiltering(value: boolean) {
+        let filter = this._validateFilter(ShadowGenerator.FILTER_PCF);
+
         if (!value && this.filter !== ShadowGenerator.FILTER_PCF) {
             return;
         }
-        this.filter = (value ? ShadowGenerator.FILTER_PCF : ShadowGenerator.FILTER_NONE);
+        this.filter = (value ? filter : ShadowGenerator.FILTER_NONE);
     }
 
-    private _filteringQuality = ShadowGenerator.QUALITY_HIGH;
+    protected _filteringQuality = ShadowGenerator.QUALITY_HIGH;
     /**
      * Gets the PCF or PCSS Quality.
      * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
@@ -549,13 +571,15 @@ export class ShadowGenerator implements IShadowGenerator {
      * Sets the current filter to "PCSS" (contact hardening).
      */
     public set useContactHardeningShadow(value: boolean) {
+        let filter = this._validateFilter(ShadowGenerator.FILTER_PCSS);
+
         if (!value && this.filter !== ShadowGenerator.FILTER_PCSS) {
             return;
         }
-        this.filter = (value ? ShadowGenerator.FILTER_PCSS : ShadowGenerator.FILTER_NONE);
+        this.filter = (value ? filter : ShadowGenerator.FILTER_NONE);
     }
 
-    private _contactHardeningLightSizeUVRatio = 0.1;
+    protected _contactHardeningLightSizeUVRatio = 0.1;
     /**
      * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
      * Using a ratio helps keeping shape stability independently of the map size.
@@ -581,7 +605,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._contactHardeningLightSizeUVRatio = contactHardeningLightSizeUVRatio;
     }
 
-    private _darkness = 0;
+    protected _darkness = 0;
 
     /** Gets or sets the actual darkness of a shadow */
     public get darkness() {
@@ -618,7 +642,7 @@ export class ShadowGenerator implements IShadowGenerator {
         return this;
     }
 
-    private _transparencyShadow = false;
+    protected _transparencyShadow = false;
 
     /** Gets or sets the ability to have transparent shadow  */
     public get transparencyShadow() {
@@ -639,8 +663,18 @@ export class ShadowGenerator implements IShadowGenerator {
         return this;
     }
 
-    private _shadowMap: Nullable<RenderTargetTexture>;
-    private _shadowMap2: Nullable<RenderTargetTexture>;
+    /**
+     * Enables or disables shadows with varying strength based on the transparency
+     * When it is enabled, the strength of the shadow is taken equal to mesh.visibility
+     * If you enabled an alpha texture on your material, the alpha value red from the texture is also combined to compute the strength:
+     *          mesh.visibility * alphaTexture.a
+     * Note that by definition transparencyShadow must be set to true for enableSoftTransparentShadow to work!
+     */
+    public enableSoftTransparentShadow: boolean = false;
+
+    protected _shadowMap: Nullable<RenderTargetTexture>;
+    protected _shadowMap2: Nullable<RenderTargetTexture>;
+
     /**
      * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
      * @returns The render target texture if present otherwise, null
@@ -648,6 +682,7 @@ export class ShadowGenerator implements IShadowGenerator {
     public getShadowMap(): Nullable<RenderTargetTexture> {
         return this._shadowMap;
     }
+
     /**
      * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
      * @returns The render target texture if the shadow map is present otherwise, null
@@ -665,7 +700,7 @@ export class ShadowGenerator implements IShadowGenerator {
      * @returns "ShadowGenerator"
      */
     public getClassName(): string {
-        return "ShadowGenerator";
+        return ShadowGenerator.CLASSNAME;
     }
 
     /**
@@ -720,11 +755,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
     /**
      * Controls the extent to which the shadows fade out at the edge of the frustum
-     * Used only by directionals and spots
      */
     public frustumEdgeFalloff = 0;
 
-    private _light: IShadowLight;
+    protected _light: IShadowLight;
     /**
      * Returns the associated light object.
      * @returns the light generating the shadow
@@ -740,28 +774,28 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public forceBackFacesOnly = false;
 
-    private _scene: Scene;
-    private _lightDirection = Vector3.Zero();
+    protected _scene: Scene;
+    protected _lightDirection = Vector3.Zero();
 
-    private _effect: Effect;
+    protected _effect: Effect;
 
-    private _viewMatrix = Matrix.Zero();
-    private _projectionMatrix = Matrix.Zero();
-    private _transformMatrix = Matrix.Zero();
-    private _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    private _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    private _cachedDefines: string;
-    private _currentRenderID: number;
-    private _boxBlurPostprocess: Nullable<PostProcess>;
-    private _kernelBlurXPostprocess: Nullable<PostProcess>;
-    private _kernelBlurYPostprocess: Nullable<PostProcess>;
-    private _blurPostProcesses: PostProcess[];
-    private _mapSize: number;
-    private _currentFaceIndex = 0;
-    private _currentFaceIndexCache = 0;
-    private _textureType: number;
-    private _defaultTextureMatrix = Matrix.Identity();
-    private _storedUniqueId: Nullable<number>;
+    protected _viewMatrix = Matrix.Zero();
+    protected _projectionMatrix = Matrix.Zero();
+    protected _transformMatrix = Matrix.Zero();
+    protected _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    protected _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    protected _cachedDefines: string;
+    protected _currentRenderID: number;
+    protected _boxBlurPostprocess: Nullable<PostProcess>;
+    protected _kernelBlurXPostprocess: Nullable<PostProcess>;
+    protected _kernelBlurYPostprocess: Nullable<PostProcess>;
+    protected _blurPostProcesses: PostProcess[];
+    protected _mapSize: number;
+    protected _currentFaceIndex = 0;
+    protected _currentFaceIndexCache = 0;
+    protected _textureType: number;
+    protected _defaultTextureMatrix = Matrix.Identity();
+    protected _storedUniqueId: Nullable<number>;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -814,13 +848,12 @@ export class ShadowGenerator implements IShadowGenerator {
         this._applyFilterValues();
     }
 
-    private _initializeGenerator(): void {
+    protected _initializeGenerator(): void {
         this._light._markMeshesAsLightDirty();
         this._initializeShadowMap();
     }
 
-    private _initializeShadowMap(): void {
-        // Render target
+    protected _createTargetRenderTexture(): void {
         let engine = this._scene.getEngine();
         if (engine.webGLVersion > 1) {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube(), undefined, false, false);
@@ -829,6 +862,15 @@ export class ShadowGenerator implements IShadowGenerator {
         else {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
         }
+    }
+
+    protected _initializeShadowMap(): void {
+        this._createTargetRenderTexture();
+
+        if (this._shadowMap === null) {
+            return;
+        }
+
         this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._shadowMap.anisotropicFilteringLevel = 1;
@@ -839,19 +881,41 @@ export class ShadowGenerator implements IShadowGenerator {
             this._shadowMap.uniqueId = this._storedUniqueId;
         }
 
+        // Custom render function.
+        this._shadowMap.customRenderFunction = this._renderForShadowMap.bind(this);
+
+        // Force the mesh is ready funcion to true as we are double checking it
+        // in the custom render function. Also it prevents side effects and useless
+        // shader variations in DEPTHPREPASS mode.
+        this._shadowMap.customIsReadyFunction = (m: AbstractMesh, r: number) => {
+            return true;
+        };
+
+        let engine = this._scene.getEngine();
+
         // Record Face Index before render.
         this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
             this._currentFaceIndex = faceIndex;
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
             }
+            if (this._scene.getSceneUniformBuffer().useUbo) {
+                const sceneUBO = this._scene.getSceneUniformBuffer();
+                sceneUBO.updateMatrix("viewProjection", this.getTransformMatrix());
+                sceneUBO.updateMatrix("view", this._viewMatrix);
+                sceneUBO.update();
+            }
         });
-
-        // Custom render function.
-        this._shadowMap.customRenderFunction = this._renderForShadowMap.bind(this);
 
         // Blur if required afer render.
         this._shadowMap.onAfterUnbindObservable.add(() => {
+            if (this._scene.getSceneUniformBuffer().useUbo) {
+                const sceneUBO = this._scene.getSceneUniformBuffer();
+                sceneUBO.updateMatrix("viewProjection", this._scene.getTransformMatrix());
+                sceneUBO.updateMatrix("view", this._scene.getViewMatrix());
+                sceneUBO.update();
+            }
+
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(true);
             }
@@ -861,7 +925,9 @@ export class ShadowGenerator implements IShadowGenerator {
             let shadowMap = this.getShadowMapForRendering();
 
             if (shadowMap) {
-                this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.getInternalTexture(), true);
+                const texture = shadowMap.getInternalTexture()!;
+                this._scene.postProcessManager.directRender(this._blurPostProcesses, texture, true);
+                engine.unBindFramebuffer(texture, true);
             }
         });
 
@@ -880,15 +946,22 @@ export class ShadowGenerator implements IShadowGenerator {
             }
         });
 
+        // Recreate on resize.
         this._shadowMap.onResizeObservable.add((RTT) => {
             this._storedUniqueId = this._shadowMap!.uniqueId;
             this._mapSize = RTT.getRenderSize();
             this._light._markMeshesAsLightDirty();
             this.recreateShadowMap();
         });
+
+        // Ensures rendering groupids do not erase the depth buffer
+        // or we would lose the shadows information.
+        for (let i = RenderingManager.MIN_RENDERINGGROUPS; i < RenderingManager.MAX_RENDERINGGROUPS; i++) {
+            this._shadowMap.setRenderingAutoClearDepthStencil(i, false);
+        }
     }
 
-    private _initializeBlurRTTAndPostProcesses(): void {
+    protected _initializeBlurRTTAndPostProcesses(): void {
         var engine = this._scene.getEngine();
         var targetSize = this._mapSize / this.blurScale;
 
@@ -932,16 +1005,17 @@ export class ShadowGenerator implements IShadowGenerator {
         }
     }
 
-    private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
+    protected _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
         var index: number;
         let engine = this._scene.getEngine();
 
+        const colorWrite = engine.getColorWrite();
         if (depthOnlySubMeshes.length) {
             engine.setColorWrite(false);
             for (index = 0; index < depthOnlySubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(depthOnlySubMeshes.data[index]);
             }
-            engine.setColorWrite(true);
+            engine.setColorWrite(colorWrite);
         }
 
         for (index = 0; index < opaqueSubMeshes.length; index++) {
@@ -954,18 +1028,39 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (this._transparencyShadow) {
             for (index = 0; index < transparentSubMeshes.length; index++) {
-                this._renderSubMeshForShadowMap(transparentSubMeshes.data[index]);
+                this._renderSubMeshForShadowMap(transparentSubMeshes.data[index], true);
             }
         }
     }
 
-    private _renderSubMeshForShadowMap(subMesh: SubMesh): void {
-        var mesh = subMesh.getRenderingMesh();
+    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, matriceNames: any, mesh: AbstractMesh): void {
+        effect.setMatrix(matriceNames?.viewProjection ?? "viewProjection", this.getTransformMatrix());
+
+        effect.setMatrix(matriceNames?.view ?? "view", this._viewMatrix);
+
+        effect.setMatrix(matriceNames?.projection ?? "projection", this._projectionMatrix);
+
+        const world = mesh.getWorldMatrix();
+
+        world.multiplyToRef(this.getTransformMatrix(), tmpMatrix);
+
+        effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);
+
+        world.multiplyToRef(this._viewMatrix, tmpMatrix2);
+
+        effect.setMatrix(matriceNames?.worldView ?? "worldView", tmpMatrix2);
+    }
+
+    protected _renderSubMeshForShadowMap(subMesh: SubMesh, isTransparent: boolean = false): void {
+        var ownerMesh = subMesh.getMesh();
+        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var renderingMesh = subMesh.getRenderingMesh();
+        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
         var scene = this._scene;
         var engine = scene.getEngine();
         let material = subMesh.getMaterial();
 
-        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+        effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
         if (!material || subMesh.verticesCount === 0) {
             return;
@@ -975,80 +1070,105 @@ export class ShadowGenerator implements IShadowGenerator {
         engine.setState(material.backFaceCulling);
 
         // Managing instances
-        var batch = mesh._getInstancesRenderList(subMesh._id);
+        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
         if (batch.mustReturn) {
             return;
         }
 
         var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null) && (batch.visibleInstances[subMesh._id] !== undefined);
-        if (this.isReady(subMesh, hardwareInstancedRendering)) {
-            engine.enableEffect(this._effect);
-            mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
+        if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
+            const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
 
-            this._effect.setFloat3("biasAndScale", this.bias, this.normalBias, this.depthScale);
+            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? this._effect;
 
-            this._effect.setMatrix("viewProjection", this.getTransformMatrix());
+            engine.enableEffect(effect);
+
+            renderingMesh._bind(subMesh, effect, material.fillMode);
+
+            this.getTransformMatrix(); // make sur _cachedDirection et _cachedPosition are up to date
+
+            effect.setFloat3("biasAndScaleSM", this.bias, this.normalBias, this.depthScale);
+
             if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                this._effect.setVector3("lightData", this._cachedDirection);
+                effect.setVector3("lightDataSM", this._cachedDirection);
             }
             else {
-                this._effect.setVector3("lightData", this._cachedPosition);
+                effect.setVector3("lightDataSM", this._cachedPosition);
             }
 
             if (scene.activeCamera) {
-                this._effect.setFloat2("depthValues", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
+                effect.setFloat2("depthValuesSM", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
             }
 
-            // Alpha test
-            if (material && material.needAlphaTesting()) {
-                var alphaTexture = material.getAlphaTestTexture();
-                if (alphaTexture) {
-                    this._effect.setTexture("diffuseSampler", alphaTexture);
-                    this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix() || this._defaultTextureMatrix);
-                }
+            if (isTransparent && this.enableSoftTransparentShadow) {
+                effect.setFloat("softTransparentShadowSM", effectiveMesh.visibility);
             }
 
-            // Bones
-            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                const skeleton = mesh.skeleton;
-
-                if (skeleton.isUsingTextureForMatrices) {
-                    const boneTexture = skeleton.getTransformMatrixTexture(mesh);
-
-                    if (!boneTexture) {
-                        return;
-                    }
-
-                    this._effect.setTexture("boneSampler", boneTexture);
-                    this._effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+            if (shadowDepthWrapper) {
+                subMesh._effectOverride = effect;
+                if (shadowDepthWrapper.standalone) {
+                    shadowDepthWrapper.baseMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 } else {
-                    this._effect.setMatrices("mBones", skeleton.getTransformMatrices((mesh)));
+                    material.bindForSubMesh(effectiveMesh.getWorldMatrix(), renderingMesh, subMesh);
                 }
+                subMesh._effectOverride = null;
+            } else {
+                effect.setMatrix("viewProjection", this.getTransformMatrix());
+                // Alpha test
+                if (material && material.needAlphaTesting()) {
+                    var alphaTexture = material.getAlphaTestTexture();
+                    if (alphaTexture) {
+                        effect.setTexture("diffuseSampler", alphaTexture);
+                        effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix() || this._defaultTextureMatrix);
+                    }
+                }
+
+                // Bones
+                if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                    const skeleton = renderingMesh.skeleton;
+
+                    if (skeleton.isUsingTextureForMatrices) {
+                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
+
+                        if (!boneTexture) {
+                            return;
+                        }
+
+                        effect.setTexture("boneSampler", boneTexture);
+                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                    } else {
+                        effect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
+                    }
+                }
+
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+
+                // Clip planes
+                MaterialHelper.BindClipPlane(effect, scene);
             }
 
-            // Morph targets
-            MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+            this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect, shadowDepthWrapper?._matriceNames, effectiveMesh);
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, true);
             }
 
             // Observables
-            this.onBeforeShadowMapRenderMeshObservable.notifyObservers(mesh);
-            this.onBeforeShadowMapRenderObservable.notifyObservers(this._effect);
+            this.onBeforeShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
+            this.onBeforeShadowMapRenderObservable.notifyObservers(effect);
 
             // Draw
-            mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
-                (isInstance, world) => this._effect.setMatrix("world", world));
+            renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering,
+                (isInstance, world) => effect.setMatrix("world", world));
 
             if (this.forceBackFacesOnly) {
                 engine.setState(true, 0, false, false);
             }
 
             // Observables
-            this.onAfterShadowMapRenderObservable.notifyObservers(this._effect);
-            this.onAfterShadowMapRenderMeshObservable.notifyObservers(mesh);
-
+            this.onAfterShadowMapRenderObservable.notifyObservers(effect);
+            this.onAfterShadowMapRenderMeshObservable.notifyObservers(renderingMesh);
         } else {
             // Need to reset refresh rate of the shadowMap
             if (this._shadowMap) {
@@ -1057,7 +1177,7 @@ export class ShadowGenerator implements IShadowGenerator {
         }
     }
 
-    private _applyFilterValues(): void {
+    protected _applyFilterValues(): void {
         if (!this._shadowMap) {
             return;
         }
@@ -1074,7 +1194,7 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param onCompiled Callback triggered at the and of the effects compilation
      * @param options Sets of optional options forcing the compilation with different modes
      */
-    public forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void {
+    public forceCompilation(onCompiled?: (generator: IShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void {
         let localOptions = {
             useInstances: false,
             ...options
@@ -1114,7 +1234,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 return;
             }
 
-            while (this.isReady(subMeshes[currentIndex], localOptions.useInstances)) {
+            while (this.isReady(subMeshes[currentIndex], localOptions.useInstances, subMeshes[currentIndex].getMaterial()?.needAlphaBlendingForMesh(subMeshes[currentIndex].getMesh()) ?? false)) {
                 currentIndex++;
                 if (currentIndex >= subMeshes.length) {
                     if (onCompiled) {
@@ -1142,160 +1262,206 @@ export class ShadowGenerator implements IShadowGenerator {
         });
     }
 
+    protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {
+    }
+
+    private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[], isTransparent: boolean): string[] {
+        defines.push("#define SM_FLOAT " + (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT ? "1" : "0"));
+
+        defines.push("#define SM_ESM " + (this.useExponentialShadowMap || this.useBlurExponentialShadowMap ? "1" : "0"));
+
+        defines.push("#define SM_DEPTHTEXTURE " + (this.usePercentageCloserFiltering || this.useContactHardeningShadow ? "1" : "0"));
+
+        var mesh = subMesh.getMesh();
+
+        // Normal bias.
+        defines.push("#define SM_NORMALBIAS " + (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind) ? "1" : "0"));
+        defines.push("#define SM_DIRECTIONINLIGHTDATA " + (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT ? "1" : "0"));
+
+        // Point light
+        defines.push("#define SM_USEDISTANCE " + (this._light.needCube() ? "1" : "0"));
+
+        // Soft transparent shadows
+        defines.push("#define SM_SOFTTRANSPARENTSHADOW " + (this.enableSoftTransparentShadow && isTransparent ? "1" : "0"));
+
+        this._isReadyCustomDefines(defines, subMesh, useInstances);
+
+        return defines;
+    }
+
     /**
      * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
      * @param subMesh The submesh we want to render in the shadow map
      * @param useInstances Defines wether will draw in the map using instances
+     * @param isTransparent Indicates that isReady is called for a transparent subMesh
      * @returns true if ready otherwise, false
      */
-    public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
-        var defines = [];
+    public isReady(subMesh: SubMesh, useInstances: boolean, isTransparent: boolean): boolean {
+        const material = subMesh.getMaterial(),
+              shadowDepthWrapper = material?.shadowDepthWrapper;
 
-        if (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT) {
-            defines.push("#define FLOAT");
-        }
+        const defines: string[] = [];
 
-        if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
-            defines.push("#define ESM");
-        }
-        else if (this.usePercentageCloserFiltering || this.useContactHardeningShadow) {
-            defines.push("#define DEPTHTEXTURE");
-        }
+        this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
-        var attribs = [VertexBuffer.PositionKind];
-
-        var mesh = subMesh.getMesh();
-        var material = subMesh.getMaterial();
-
-        // Normal bias.
-        if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            attribs.push(VertexBuffer.NormalKind);
-            defines.push("#define NORMAL");
-            if (mesh.nonUniformScaling) {
-                defines.push("#define NONUNIFORMSCALING");
+        if (shadowDepthWrapper) {
+            if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
+                return false;
             }
-            if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
-                defines.push("#define DIRECTIONINLIGHTDATA");
-            }
-        }
-
-        // Alpha test
-        if (material && material.needAlphaTesting()) {
-            var alphaTexture = material.getAlphaTestTexture();
-            if (alphaTexture) {
-                defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
-                }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    if (alphaTexture.coordinatesIndex === 1) {
-                        attribs.push(VertexBuffer.UV2Kind);
-                        defines.push("#define UV2");
-                    }
-                }
-            }
-        }
-
-        // Bones
-        const fallbacks = new EffectFallbacks();
-        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            attribs.push(VertexBuffer.MatricesIndicesKind);
-            attribs.push(VertexBuffer.MatricesWeightsKind);
-            if (mesh.numBoneInfluencers > 4) {
-                attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-            }
-            const skeleton = mesh.skeleton;
-            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            if (mesh.numBoneInfluencers > 0) {
-                fallbacks.addCPUSkinningFallback(0, mesh);
-            }
-
-            if (skeleton.isUsingTextureForMatrices) {
-                defines.push("#define BONETEXTURE");
-            } else {
-                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
-            }
-
         } else {
-            defines.push("#define NUM_BONE_INFLUENCERS 0");
-        }
+            var attribs = [VertexBuffer.PositionKind];
 
-        // Morph targets
-        var manager = (<Mesh>mesh).morphTargetManager;
-        let morphInfluencers = 0;
-        if (manager) {
-            if (manager.numInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-                morphInfluencers = manager.numInfluencers;
-                defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
-                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+            var mesh = subMesh.getMesh();
+
+            // Normal bias.
+            if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                attribs.push(VertexBuffer.NormalKind);
+                defines.push("#define NORMAL");
+                if (mesh.nonUniformScaling) {
+                    defines.push("#define NONUNIFORMSCALING");
+                }
             }
-        }
 
-        // Instances
-        if (useInstances) {
-            defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
-        }
-
-        if (this.customShaderOptions) {
-            if (this.customShaderOptions.defines) {
-                for (var define of this.customShaderOptions.defines) {
-                    if (defines.indexOf(define) === -1) {
-                        defines.push(define);
+            // Alpha test
+            if (material && material.needAlphaTesting()) {
+                var alphaTexture = material.getAlphaTestTexture();
+                if (alphaTexture) {
+                    defines.push("#define ALPHATEST");
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                        attribs.push(VertexBuffer.UVKind);
+                        defines.push("#define UV1");
+                    }
+                    if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                        if (alphaTexture.coordinatesIndex === 1) {
+                            attribs.push(VertexBuffer.UV2Kind);
+                            defines.push("#define UV2");
+                        }
                     }
                 }
             }
-        }
 
-        // Get correct effect
-        var join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
+            // Bones
+            const fallbacks = new EffectFallbacks();
+            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+                }
+                const skeleton = mesh.skeleton;
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+                if (mesh.numBoneInfluencers > 0) {
+                    fallbacks.addCPUSkinningFallback(0, mesh);
+                }
 
-            let shaderName = "shadowMap";
-            let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences", "boneTextureWidth"];
-            let samplers = ["diffuseSampler", "boneSampler"];
+                if (skeleton.isUsingTextureForMatrices) {
+                    defines.push("#define BONETEXTURE");
+                } else {
+                    defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+                }
 
-            // Custom shader?
+            } else {
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
+            }
+
+            // Morph targets
+            var manager = (<Mesh>mesh).morphTargetManager;
+            let morphInfluencers = 0;
+            if (manager) {
+                if (manager.numInfluencers > 0) {
+                    defines.push("#define MORPHTARGETS");
+                    morphInfluencers = manager.numInfluencers;
+                    defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
+                    MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+                }
+            }
+
+            // ClipPlanes
+            const scene = this._scene;
+            if (scene.clipPlane) {
+                defines.push("#define CLIPPLANE");
+            }
+            if (scene.clipPlane2) {
+                defines.push("#define CLIPPLANE2");
+            }
+            if (scene.clipPlane3) {
+                defines.push("#define CLIPPLANE3");
+            }
+            if (scene.clipPlane4) {
+                defines.push("#define CLIPPLANE4");
+            }
+            if (scene.clipPlane5) {
+                defines.push("#define CLIPPLANE5");
+            }
+            if (scene.clipPlane6) {
+                defines.push("#define CLIPPLANE6");
+            }
+
+            // Instances
+            if (useInstances) {
+                defines.push("#define INSTANCES");
+                MaterialHelper.PushAttributesForInstances(attribs);
+            }
+
             if (this.customShaderOptions) {
-                shaderName = this.customShaderOptions.shaderName;
-
-                if (this.customShaderOptions.attributes) {
-                    for (var attrib of this.customShaderOptions.attributes) {
-                        if (attribs.indexOf(attrib) === -1) {
-                            attribs.push(attrib);
-                        }
-                    }
-                }
-
-                if (this.customShaderOptions.uniforms) {
-                    for (var uniform of this.customShaderOptions.uniforms) {
-                        if (uniforms.indexOf(uniform) === -1) {
-                            uniforms.push(uniform);
-                        }
-                    }
-                }
-
-                if (this.customShaderOptions.samplers) {
-                    for (var sampler of this.customShaderOptions.samplers) {
-                        if (samplers.indexOf(sampler) === -1) {
-                            samplers.push(sampler);
+                if (this.customShaderOptions.defines) {
+                    for (var define of this.customShaderOptions.defines) {
+                        if (defines.indexOf(define) === -1) {
+                            defines.push(define);
                         }
                     }
                 }
             }
 
-            this._effect = this._scene.getEngine().createEffect(shaderName,
-                attribs, uniforms,
-                samplers, join,
-                fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
-        }
+            // Get correct effect
+            var join = defines.join("\n");
+            if (this._cachedDefines !== join) {
+                this._cachedDefines = join;
 
-        if (!this._effect.isReady()) {
-            return false;
+                let shaderName = "shadowMap";
+                let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
+                                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "softTransparentShadowSM"];
+                let samplers = ["diffuseSampler", "boneSampler"];
+
+                // Custom shader?
+                if (this.customShaderOptions) {
+                    shaderName = this.customShaderOptions.shaderName;
+
+                    if (this.customShaderOptions.attributes) {
+                        for (var attrib of this.customShaderOptions.attributes) {
+                            if (attribs.indexOf(attrib) === -1) {
+                                attribs.push(attrib);
+                            }
+                        }
+                    }
+
+                    if (this.customShaderOptions.uniforms) {
+                        for (var uniform of this.customShaderOptions.uniforms) {
+                            if (uniforms.indexOf(uniform) === -1) {
+                                uniforms.push(uniform);
+                            }
+                        }
+                    }
+
+                    if (this.customShaderOptions.samplers) {
+                        for (var sampler of this.customShaderOptions.samplers) {
+                            if (samplers.indexOf(sampler) === -1) {
+                                samplers.push(sampler);
+                            }
+                        }
+                    }
+                }
+
+                this._effect = this._scene.getEngine().createEffect(shaderName,
+                    attribs, uniforms,
+                    samplers, join,
+                    fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+            }
+
+            if (!this._effect.isReady()) {
+                return false;
+            }
         }
 
         if (this.useBlurExponentialShadowMap || this.useBlurCloseExponentialShadowMap) {
@@ -1342,7 +1508,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
             // else default to high.
         }
-        if (this.usePercentageCloserFiltering) {
+        else if (this.usePercentageCloserFiltering) {
             defines["SHADOWPCF" + lightIndex] = true;
             if (this._filteringQuality === ShadowGenerator.QUALITY_LOW) {
                 defines["SHADOWLOWQUALITY" + lightIndex] = true;
@@ -1374,19 +1540,19 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param effect The effect we are binfing the information for
      */
     public bindShadowLight(lightIndex: string, effect: Effect): void {
-        var light = this._light;
-        var scene = this._scene;
+        const light = this._light;
+        const scene = this._scene;
 
         if (!scene.shadowsEnabled || !light.shadowEnabled) {
             return;
         }
 
-        let camera = scene.activeCamera;
+        const camera = scene.activeCamera;
         if (!camera) {
             return;
         }
 
-        let shadowMap = this.getShadowMap();
+        const shadowMap = this.getShadowMap();
 
         if (!shadowMap) {
             return;
@@ -1485,7 +1651,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._shadowMap!.renderList = renderList;
     }
 
-    private _disposeBlurPostProcesses(): void {
+    protected _disposeBlurPostProcesses(): void {
         if (this._shadowMap2) {
             this._shadowMap2.dispose();
             this._shadowMap2 = null;
@@ -1509,7 +1675,7 @@ export class ShadowGenerator implements IShadowGenerator {
         this._blurPostProcesses = [];
     }
 
-    private _disposeRTTandPostProcesses(): void {
+    protected _disposeRTTandPostProcesses(): void {
         if (this._shadowMap) {
             this._shadowMap.dispose();
             this._shadowMap = null;
@@ -1548,30 +1714,29 @@ export class ShadowGenerator implements IShadowGenerator {
             return serializationObject;
         }
 
+        serializationObject.className = this.getClassName();
         serializationObject.lightId = this._light.id;
         serializationObject.mapSize = shadowMap.getRenderSize();
+        serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
+        serializationObject.darkness = this.getDarkness();
+        serializationObject.transparencyShadow = this._transparencyShadow;
+        serializationObject.frustumEdgeFalloff = this.frustumEdgeFalloff;
+        serializationObject.bias = this.bias;
+        serializationObject.normalBias = this.normalBias;
+        serializationObject.usePercentageCloserFiltering = this.usePercentageCloserFiltering;
+        serializationObject.useContactHardeningShadow = this.useContactHardeningShadow;
+        serializationObject.contactHardeningLightSizeUVRatio = this.contactHardeningLightSizeUVRatio;
+        serializationObject.filteringQuality = this.filteringQuality;
         serializationObject.useExponentialShadowMap = this.useExponentialShadowMap;
         serializationObject.useBlurExponentialShadowMap = this.useBlurExponentialShadowMap;
         serializationObject.useCloseExponentialShadowMap = this.useBlurExponentialShadowMap;
         serializationObject.useBlurCloseExponentialShadowMap = this.useBlurExponentialShadowMap;
         serializationObject.usePoissonSampling = this.usePoissonSampling;
-        serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
         serializationObject.depthScale = this.depthScale;
-        serializationObject.darkness = this.getDarkness();
         serializationObject.blurBoxOffset = this.blurBoxOffset;
         serializationObject.blurKernel = this.blurKernel;
         serializationObject.blurScale = this.blurScale;
         serializationObject.useKernelBlur = this.useKernelBlur;
-        serializationObject.transparencyShadow = this._transparencyShadow;
-        serializationObject.frustumEdgeFalloff = this.frustumEdgeFalloff;
-
-        serializationObject.bias = this.bias;
-        serializationObject.normalBias = this.normalBias;
-
-        serializationObject.usePercentageCloserFiltering = this.usePercentageCloserFiltering;
-        serializationObject.useContactHardeningShadow = this.useContactHardeningShadow;
-        serializationObject.filteringQuality = this.filteringQuality;
-        serializationObject.contactHardeningLightSizeUVRatio = this.contactHardeningLightSizeUVRatio;
 
         serializationObject.renderList = [];
         if (shadowMap.renderList) {
@@ -1589,11 +1754,12 @@ export class ShadowGenerator implements IShadowGenerator {
      * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
      * @param parsedShadowGenerator The JSON object to parse
      * @param scene The scene to create the shadow map for
+     * @param constr A function that builds a shadow generator or undefined to create an instance of the default shadow generator
      * @returns The parsed shadow generator
      */
-    public static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
+    public static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight) => ShadowGenerator): ShadowGenerator {
         var light = <IShadowLight>scene.getLightByID(parsedShadowGenerator.lightId);
-        var shadowGenerator = new ShadowGenerator(parsedShadowGenerator.mapSize, light);
+        var shadowGenerator = constr ? constr(parsedShadowGenerator.mapSize, light) : new ShadowGenerator(parsedShadowGenerator.mapSize, light);
         var shadowMap = shadowGenerator.getShadowMap();
 
         for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
@@ -1609,42 +1775,56 @@ export class ShadowGenerator implements IShadowGenerator {
             });
         }
 
-        if (parsedShadowGenerator.usePoissonSampling) {
+        shadowGenerator.forceBackFacesOnly = !!parsedShadowGenerator.forceBackFacesOnly;
+
+        if (parsedShadowGenerator.darkness !== undefined) {
+            shadowGenerator.setDarkness(parsedShadowGenerator.darkness);
+        }
+
+        if (parsedShadowGenerator.transparencyShadow) {
+            shadowGenerator.setTransparencyShadow(true);
+        }
+
+        if (parsedShadowGenerator.frustumEdgeFalloff !== undefined) {
+            shadowGenerator.frustumEdgeFalloff = parsedShadowGenerator.frustumEdgeFalloff;
+        }
+
+        if (parsedShadowGenerator.bias !== undefined) {
+            shadowGenerator.bias = parsedShadowGenerator.bias;
+        }
+
+        if (parsedShadowGenerator.normalBias !== undefined) {
+            shadowGenerator.normalBias = parsedShadowGenerator.normalBias;
+        }
+
+        if (parsedShadowGenerator.usePercentageCloserFiltering) {
+            shadowGenerator.usePercentageCloserFiltering = true;
+        } else if (parsedShadowGenerator.useContactHardeningShadow) {
+            shadowGenerator.useContactHardeningShadow = true;
+        } else if (parsedShadowGenerator.usePoissonSampling) {
             shadowGenerator.usePoissonSampling = true;
-        }
-        else if (parsedShadowGenerator.useExponentialShadowMap) {
+        } else if (parsedShadowGenerator.useExponentialShadowMap) {
             shadowGenerator.useExponentialShadowMap = true;
-        }
-        else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
+        } else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
+            shadowGenerator.useBlurExponentialShadowMap = true;
+        } else if (parsedShadowGenerator.useCloseExponentialShadowMap) {
+            shadowGenerator.useCloseExponentialShadowMap = true;
+        } else if (parsedShadowGenerator.useBlurCloseExponentialShadowMap) {
+            shadowGenerator.useBlurCloseExponentialShadowMap = true;
+        } else
+        // Backward compat
+        if (parsedShadowGenerator.useVarianceShadowMap) {
+            shadowGenerator.useExponentialShadowMap = true;
+        } else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
             shadowGenerator.useBlurExponentialShadowMap = true;
         }
-        else if (parsedShadowGenerator.useCloseExponentialShadowMap) {
-            shadowGenerator.useCloseExponentialShadowMap = true;
-        }
-        else if (parsedShadowGenerator.useBlurCloseExponentialShadowMap) {
-            shadowGenerator.useBlurCloseExponentialShadowMap = true;
-        }
-        else if (parsedShadowGenerator.usePercentageCloserFiltering) {
-            shadowGenerator.usePercentageCloserFiltering = true;
-        }
-        else if (parsedShadowGenerator.useContactHardeningShadow) {
-            shadowGenerator.useContactHardeningShadow = true;
-        }
 
-        if (parsedShadowGenerator.filteringQuality) {
-            shadowGenerator.filteringQuality = parsedShadowGenerator.filteringQuality;
-        }
-
-        if (parsedShadowGenerator.contactHardeningLightSizeUVRatio) {
+        if (parsedShadowGenerator.contactHardeningLightSizeUVRatio !== undefined) {
             shadowGenerator.contactHardeningLightSizeUVRatio = parsedShadowGenerator.contactHardeningLightSizeUVRatio;
         }
 
-        // Backward compat
-        else if (parsedShadowGenerator.useVarianceShadowMap) {
-            shadowGenerator.useExponentialShadowMap = true;
-        }
-        else if (parsedShadowGenerator.useBlurVarianceShadowMap) {
-            shadowGenerator.useBlurExponentialShadowMap = true;
+        if (parsedShadowGenerator.filteringQuality !== undefined) {
+            shadowGenerator.filteringQuality = parsedShadowGenerator.filteringQuality;
         }
 
         if (parsedShadowGenerator.depthScale) {
@@ -1666,28 +1846,6 @@ export class ShadowGenerator implements IShadowGenerator {
         if (parsedShadowGenerator.blurKernel) {
             shadowGenerator.blurKernel = parsedShadowGenerator.blurKernel;
         }
-
-        if (parsedShadowGenerator.bias !== undefined) {
-            shadowGenerator.bias = parsedShadowGenerator.bias;
-        }
-
-        if (parsedShadowGenerator.normalBias !== undefined) {
-            shadowGenerator.normalBias = parsedShadowGenerator.normalBias;
-        }
-
-        if (parsedShadowGenerator.frustumEdgeFalloff !== undefined) {
-            shadowGenerator.frustumEdgeFalloff = parsedShadowGenerator.frustumEdgeFalloff;
-        }
-
-        if (parsedShadowGenerator.darkness) {
-            shadowGenerator.setDarkness(parsedShadowGenerator.darkness);
-        }
-
-        if (parsedShadowGenerator.transparencyShadow) {
-            shadowGenerator.setTransparencyShadow(true);
-        }
-
-        shadowGenerator.forceBackFacesOnly = parsedShadowGenerator.forceBackFacesOnly;
 
         return shadowGenerator;
     }

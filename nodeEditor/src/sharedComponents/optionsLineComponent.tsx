@@ -38,6 +38,10 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.state = { value: this._getValue(props) };
     }
 
+    setValue(value: string | number) {
+        this.setState({ value: value });
+    }
+
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
         if (this._localChange) {
             this._localChange = false;
@@ -90,7 +94,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
                 </div>
                 <div className={"options" + (this.props.className ? " " + this.props.className : "")}>
-                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value || ""}>
+                    <select onChange={evt => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
                         {
                             this.props.options.map(option => {
                                 return (

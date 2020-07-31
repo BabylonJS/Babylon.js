@@ -1,5 +1,4 @@
 import { Scene } from "../../scene";
-import { Engine } from "../../Engines/engine";
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
@@ -10,8 +9,6 @@ import "../../Engines/Extensions/engine.rawTexture";
  * if you wish to create your texture pixel by pixel.
  */
 export class RawTexture extends Texture {
-    private _engine: Engine;
-
     /**
      * Instantiates a new RawTexture.
      * Raw texture can help creating a texture directly from an array of data.
@@ -34,7 +31,7 @@ export class RawTexture extends Texture {
         public format: number,
         scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(null, scene, !generateMipMaps, invertY);
-        this._engine = scene.getEngine();
+
         this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type);
 
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -46,7 +43,7 @@ export class RawTexture extends Texture {
      * @param data Define the new data of the texture
      */
     public update(data: ArrayBufferView): void {
-        this._engine.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, null, this._texture!.type);
+        this._getEngine()!.updateRawTexture(this._texture, data, this._texture!.format, this._texture!.invertY, null, this._texture!.type);
     }
 
     /**

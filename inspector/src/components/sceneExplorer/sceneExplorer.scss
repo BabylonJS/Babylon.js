@@ -415,9 +415,45 @@
                 width: 20px;
                 grid-column: 3;
             }
-        }
+        }        
+        
+        .spriteTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }   
+
+        .spriteManagerTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }        
 
         .materialTools {
+            grid-column: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 5px;
+            align-items: center;
+
+            .extensions {
+                width: 20px;
+                grid-column: 2;
+            }
+        }
+
+        .particleSystemTools {
             grid-column: 2;
             display: grid;
             grid-template-columns: 1fr auto 5px;

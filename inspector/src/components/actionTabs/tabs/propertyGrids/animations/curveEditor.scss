@@ -1,0 +1,284 @@
+
+#animation-curve-editor {
+
+    .header{
+        display: flex;
+        padding: 9px;
+        background: black;
+        color: white;
+        height: 1.3em;
+        justify-content: space-between;
+        align-items: center;
+        padding-left: 12px;
+        padding-right: 12px;
+        .title{  text-transform: uppercase; }
+
+        .close {
+            grid-column: 2;
+            display: grid;
+            align-items: center;   
+            justify-items: center;
+            cursor: pointer;     
+        }   
+    }
+
+    .actions-wrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: flex-end;
+        padding: 6px;
+
+        .action-input{
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            align-items: center;
+            label { margin-right: 0.5em }
+            input {
+                width: 4em;
+                height: 2em;
+            }
+        }
+    }
+
+    .content{
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        flex-direction: column;
+
+        .row {
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-start;
+            flex-direction: row;
+            width: 100vw;
+            height: 78.5vh;
+
+            .timeline{
+                width: 100vw;
+                background: gray;
+                display: flex;
+                align-items: center;
+                justify-content: stretch;
+                height: 2.5rem;
+
+                .display-line {
+                    width: 80vw;
+                    height: 2em;
+                    overflow: hidden;
+                    overflow-x: scroll;
+                    scrollbar-color: cornflowerblue slategrey;
+                    scrollbar-width: thin;
+                    margin-right: 1.3em;
+                    padding-left: 1em;
+                    padding-right: 1em;
+
+                    &::-webkit-scrollbar{
+                        height: 0.4em;
+                    }
+
+                    &::-webkit-scrollbar-track {
+                        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+                      }
+                       
+                    &::-webkit-scrollbar-thumb {
+                        background-color: cornflowerblue;
+                        outline: 1px solid slategrey;
+                      }
+                }
+
+                .controls {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 8em;
+
+                    .input-frame input {
+                        width: 3em;
+                    }
+
+                    .button {
+                        margin-left: 0.5em;
+                        margin-right: 0.5em;
+                    }
+                }
+            }
+        }
+
+        .animation-list{
+            padding: 1.5rem;
+            background: rgb(87, 86, 86);
+            color: white;
+            ul {
+                list-style:none;
+                padding-left: 0px;
+                li {
+                    cursor: pointer;
+                    &:before {
+                        content: '';
+                        display: inline-block;
+                        height: 1em;
+                        width: 1em;
+                        background-size: contain;
+                        background-repeat: no-repeat;
+                        margin-right:0.5em; 
+                        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="far" data-icon="circle" class="svg-inline--fa fa-circle fa-w-16" role="img" viewBox="0 0 512 512"><path fill="currentColor" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200z"/></svg>'); 
+                    }
+                   
+                   }
+                }
+                li.active {
+                    cursor: pointer;
+                    &:before{
+                        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check-circle" class="svg-inline--fa fa-check-circle fa-w-16" role="img" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"/></svg>'); 
+                    }
+                
+                
+            }
+
+            .object-tree{
+                background-color: rgba(0, 0, 0, 0.3);
+                padding: 10px;
+                margin-top: 19px;
+                height: 15em;
+            }
+
+            .label-input{
+                display: grid;
+                height: 54px;
+                place-items: center stretch;
+                color:white;
+            }
+        }
+
+        .sample-chart{
+            .linear {
+                .draggable {
+                    cursor: move;
+                }
+            }
+        }
+
+        .graph-chart{
+            flex: 1 1 0%;
+            overflow-x: scroll;
+            padding-left: 32px;
+            overflow-y: scroll;
+            scroll-behavior: smooth;
+            background-color: #444444;
+
+            .linear{
+                height: 360px;
+                overflow: visible;
+                border: 0px solid lightgrey;
+
+                svg {
+                    overflow: visible;
+                }
+
+                &:focus {
+                    outline-color: transparent;
+                }
+
+                line {
+                    stroke: #cecece;
+                    stroke-width: 0.2;
+                }
+                text {
+                    fill: #cecece;
+                }
+            }
+
+            .playhead-wrapper {
+                position: relative;
+                left: -13px;
+            }
+
+            .playhead {
+                width: fit-content;
+                background-color: #ffc60e;
+                color: black;
+                text-align: center;
+                min-width: 2em;
+                justify-content: center;
+                display: flex;
+                padding: 0.1em;
+                font-size: 0.75em;
+            }
+
+            .playhead-triangle {
+                background-color: transparent;
+                width: 0px;
+                height: 0px;
+                border-left: 13.5px solid transparent;
+                border-right: 13.5px solid transparent;
+                border-top: 12px solid #ffc60e;
+            }
+
+            .playhead-line {
+                width: 2px;
+                height: calc(90vh - 100px);
+                background-color: rgb(255, 198, 14);
+                position: absolute;
+                margin-left: 12.5px;
+            }
+        }
+    }
+
+    .buttonLine {
+        height: 30px;
+        display: grid;
+        align-items: center;
+        justify-items: stretch;
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-upload {
+            background: #222222;
+            border: 1px solid rgb(51, 122, 183);
+            margin: 5px 10px 5px 10px;
+            color:white;
+            padding: 4px 5px;
+            opacity: 0.9;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .file-upload:hover {
+            opacity: 1.0;
+        }
+
+        .file-upload:active {
+            transform: scale(0.98);
+            transform-origin: 0.5 0.5;
+        }
+
+        button {
+            background: #222222;
+            border: 1px solid rgb(51, 122, 183);
+            margin: 5px 10px 5px 10px;
+            color:white;
+            padding: 4px 5px;
+            opacity: 0.9;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 1.0;
+        }
+
+        button:active {
+            background: #282828;
+        }   
+        
+        button:focus {
+            border: 1px solid rgb(51, 122, 183);
+            outline: 0px;
+        }  
+    }
+
+}

@@ -2,7 +2,6 @@ import { Observable } from "../Misc/observable";
 import { DomManagement } from "../Misc/domManagement";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { PoseEnabledControllerHelper } from "../Gamepads/Controllers/poseEnabledController";
 import { Xbox360Pad } from "./xboxGamepad";
 import { Gamepad, GenericPad } from "./gamepad";

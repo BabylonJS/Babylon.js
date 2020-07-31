@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** E:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -448,10 +448,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GLTFLoader", function() { return GLTFLoader; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GLTFLoaderExtension", function() { return GLTFLoaderExtension; });
 /* harmony import */ var _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./glTF/1.0/glTFLoaderInterfaces.ts");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _glTFLoaderUtils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./glTFLoaderUtils */ "./glTF/1.0/glTFLoaderUtils.ts");
 /* harmony import */ var _glTFFileLoader__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../glTFFileLoader */ "./glTF/glTFFileLoader.ts");
+
 
 
 
@@ -627,10 +628,10 @@ var loadAnimations = function (gltfRuntime) {
                 targetNode = gltfRuntime.scene.getNodeByName(targetID);
             }
             if (targetNode === null) {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Creating animation named " + anim + ". But cannot find node named " + targetID + " to attach to");
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Creating animation named " + anim + ". But cannot find node named " + targetID + " to attach to");
                 continue;
             }
-            var isBone = targetNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Bone"];
+            var isBone = targetNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Bone"];
             // Get target path (position, rotation or scaling)
             var targetPath = channel.target.path;
             var targetPathIndex = glTFAnimationPaths.indexOf(targetPath);
@@ -638,14 +639,14 @@ var loadAnimations = function (gltfRuntime) {
                 targetPath = babylonAnimationPaths[targetPathIndex];
             }
             // Determine animation type
-            var animationType = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONTYPE_MATRIX;
+            var animationType = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONTYPE_MATRIX;
             if (!isBone) {
                 if (targetPath === "rotationQuaternion") {
-                    animationType = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONTYPE_QUATERNION;
-                    targetNode.rotationQuaternion = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"]();
+                    animationType = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONTYPE_QUATERNION;
+                    targetNode.rotationQuaternion = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"]();
                 }
                 else {
-                    animationType = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONTYPE_VECTOR3;
+                    animationType = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONTYPE_VECTOR3;
                 }
             }
             // Create animation and key frames
@@ -658,24 +659,26 @@ var loadAnimations = function (gltfRuntime) {
                 modifyKey = true;
             }
             if (!modifyKey) {
-                babylonAnimation = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Animation"](anim, isBone ? "_matrix" : targetPath, 1, animationType, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONLOOPMODE_CYCLE);
+                gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+                babylonAnimation = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Animation"](anim, isBone ? "_matrix" : targetPath, 1, animationType, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Animation"].ANIMATIONLOOPMODE_CYCLE);
+                gltfRuntime.scene._blockEntityCollection = false;
             }
             // For each frame
             for (var j = 0; j < bufferInput.length; j++) {
                 var value = null;
                 if (targetPath === "rotationQuaternion") { // VEC4
-                    value = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
+                    value = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2], bufferOutput[arrayOffset + 3]]);
                     arrayOffset += 4;
                 }
                 else { // Position and scaling are VEC3
-                    value = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
+                    value = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray([bufferOutput[arrayOffset], bufferOutput[arrayOffset + 1], bufferOutput[arrayOffset + 2]]);
                     arrayOffset += 3;
                 }
                 if (isBone) {
                     var bone = targetNode;
-                    var translation = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
-                    var rotationQuaternion = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"]();
-                    var scaling = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
+                    var translation = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
+                    var rotationQuaternion = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"]();
+                    var scaling = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero();
                     // Warning on decompose
                     var mat = bone.getBaseMatrix();
                     if (modifyKey && lastAnimation) {
@@ -691,7 +694,7 @@ var loadAnimations = function (gltfRuntime) {
                     else {
                         scaling = value;
                     }
-                    value = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Compose(scaling, rotationQuaternion, translation);
+                    value = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Compose(scaling, rotationQuaternion, translation);
                 }
                 if (!modifyKey) {
                     keys.push({
@@ -720,13 +723,13 @@ var loadAnimations = function (gltfRuntime) {
 var configureBoneTransformation = function (node) {
     var mat = null;
     if (node.translation || node.rotation || node.scale) {
-        var scale = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(node.scale || [1, 1, 1]);
-        var rotation = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray(node.rotation || [0, 0, 0, 1]);
-        var position = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(node.translation || [0, 0, 0]);
-        mat = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Compose(scale, rotation, position);
+        var scale = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(node.scale || [1, 1, 1]);
+        var rotation = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray(node.rotation || [0, 0, 0, 1]);
+        var position = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(node.translation || [0, 0, 0]);
+        mat = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Compose(scale, rotation, position);
     }
     else {
-        mat = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].FromArray(node.matrix);
+        mat = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].FromArray(node.matrix);
     }
     return mat;
 };
@@ -755,7 +758,7 @@ var getParentBone = function (gltfRuntime, skins, jointName, newSkeleton) {
             }
             if (child.jointName === jointName) {
                 var mat = configureBoneTransformation(node);
-                var bone = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Bone"](node.name || "", newSkeleton, getParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
+                var bone = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Bone"](node.name || "", newSkeleton, getParentBone(gltfRuntime, skins, node.jointName, newSkeleton), mat);
                 bone.id = nde;
                 return bone;
             }
@@ -825,7 +828,7 @@ var getNodesToRoot = function (gltfRuntime, newSkeleton, skins, nodesToRoot) {
         }
         // Create node to root bone
         var mat = configureBoneTransformation(node);
-        var bone = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Bone"](node.name || "", newSkeleton, null, mat);
+        var bone = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Bone"](node.name || "", newSkeleton, null, mat);
         bone.id = id;
         nodesToRoot.push({ bone: bone, node: node, id: id });
     }
@@ -853,7 +856,7 @@ var getNodesToRoot = function (gltfRuntime, newSkeleton, skins, nodesToRoot) {
 */
 var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton, id) {
     if (!newSkeleton) {
-        newSkeleton = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Skeleton"](skins.name || "", "", gltfRuntime.scene);
+        newSkeleton = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Skeleton"](skins.name || "", "", gltfRuntime.scene);
     }
     if (!skins.babylonSkeleton) {
         return newSkeleton;
@@ -871,7 +874,7 @@ var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton, id) {
         }
         var node = jointNode.node;
         if (!node) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Joint named " + skins.jointNames[i] + " does not exist");
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Joint named " + skins.jointNames[i] + " does not exist");
             continue;
         }
         var id = jointNode.id;
@@ -891,7 +894,7 @@ var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton, id) {
             }
             var joint = jointNode_1.node;
             if (!joint) {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Joint named " + skins.jointNames[j] + " does not exist when looking for parent");
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Joint named " + skins.jointNames[j] + " does not exist when looking for parent");
                 continue;
             }
             var children = joint.children;
@@ -920,7 +923,7 @@ var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton, id) {
                 }
             }
         }
-        var bone = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Bone"](node.jointName || "", newSkeleton, parentBone, mat);
+        var bone = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Bone"](node.jointName || "", newSkeleton, parentBone, mat);
         bone.id = id;
     }
     // Polish
@@ -950,7 +953,9 @@ var importSkeleton = function (gltfRuntime, skins, mesh, newSkeleton, id) {
 */
 var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
     if (!newMesh) {
-        newMesh = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Mesh"](node.name || "", gltfRuntime.scene);
+        gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+        newMesh = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"](node.name || "", gltfRuntime.scene);
+        gltfRuntime.scene._blockEntityCollection = false;
         newMesh.id = id;
     }
     if (!node.babylonNode) {
@@ -971,7 +976,7 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
         // Positions, normals and UVs
         for (var i = 0; i < mesh.primitives.length; i++) {
             // Temporary vertex data
-            var tempVertexData = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexData"]();
+            var tempVertexData = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexData"]();
             var primitive = mesh.primitives[i];
             if (primitive.mode !== 4) {
                 // continue;
@@ -1005,7 +1010,7 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
                 }
                 else if (semantic.indexOf("TEXCOORD_") !== -1) {
                     var channel = Number(semantic.split("_")[1]);
-                    var uvKind = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind + (channel === 0 ? "" : (channel + 1));
+                    var uvKind = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].UVKind + (channel === 0 ? "" : (channel + 1));
                     var uvs = new Float32Array(buffer.length);
                     uvs.set(buffer);
                     normalizeUVs(uvs);
@@ -1056,12 +1061,13 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
         }
     }
     var material;
+    gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
     if (subMaterials.length > 1) {
-        material = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["MultiMaterial"]("multimat" + id, gltfRuntime.scene);
+        material = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["MultiMaterial"]("multimat" + id, gltfRuntime.scene);
         material.subMaterials = subMaterials;
     }
     else {
-        material = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("multimat" + id, gltfRuntime.scene);
+        material = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("multimat" + id, gltfRuntime.scene);
     }
     if (subMaterials.length === 1) {
         material = subMaterials[0];
@@ -1070,8 +1076,9 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
         newMesh.material = material;
     }
     // Apply geometry
-    new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Geometry"](id, gltfRuntime.scene, vertexData, false, newMesh);
+    new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Geometry"](id, gltfRuntime.scene, vertexData, false, newMesh);
     newMesh.computeWorldMatrix(true);
+    gltfRuntime.scene._blockEntityCollection = false;
     // Apply submeshes
     newMesh.subMeshes = [];
     var index = 0;
@@ -1085,7 +1092,7 @@ var importMesh = function (gltfRuntime, node, meshes, id, newMesh) {
             if (mesh.primitives[i].mode !== 4) {
                 //continue;
             }
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["SubMesh"].AddToMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["SubMesh"].AddToMesh(index, verticesStarts[index], verticesCounts[index], indexStarts[index], indexCounts[index], newMesh, newMesh, true);
             index++;
         }
     }
@@ -1111,15 +1118,15 @@ var configureNode = function (newNode, position, rotation, scaling) {
 */
 var configureNodeFromMatrix = function (newNode, node, parent) {
     if (node.matrix) {
-        var position = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
-        var rotation = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"]();
-        var scaling = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
-        var mat = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].FromArray(node.matrix);
+        var position = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        var rotation = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"]();
+        var scaling = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"](0, 0, 0);
+        var mat = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].FromArray(node.matrix);
         mat.decompose(scaling, rotation, position);
         configureNode(newNode, position, rotation, scaling);
     }
     else if (node.translation && node.rotation && node.scale) {
-        configureNode(newNode, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(node.translation), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray(node.rotation), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(node.scale));
+        configureNode(newNode, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(node.translation), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray(node.rotation), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(node.scale));
     }
     newNode.computeWorldMatrix(true);
 };
@@ -1161,37 +1168,37 @@ var importNode = function (gltfRuntime, node, id, parent) {
         if (light) {
             if (light.type === "ambient") {
                 var ambienLight = light[light.type];
-                var hemiLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["HemisphericLight"](node.light, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene);
+                var hemiLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["HemisphericLight"](node.light, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene);
                 hemiLight.name = node.name || "";
                 if (ambienLight.color) {
-                    hemiLight.diffuse = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(ambienLight.color);
+                    hemiLight.diffuse = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(ambienLight.color);
                 }
                 lastNode = hemiLight;
             }
             else if (light.type === "directional") {
                 var directionalLight = light[light.type];
-                var dirLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["DirectionalLight"](node.light, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene);
+                var dirLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["DirectionalLight"](node.light, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene);
                 dirLight.name = node.name || "";
                 if (directionalLight.color) {
-                    dirLight.diffuse = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(directionalLight.color);
+                    dirLight.diffuse = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(directionalLight.color);
                 }
                 lastNode = dirLight;
             }
             else if (light.type === "point") {
                 var pointLight = light[light.type];
-                var ptLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["PointLight"](node.light, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene);
+                var ptLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["PointLight"](node.light, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene);
                 ptLight.name = node.name || "";
                 if (pointLight.color) {
-                    ptLight.diffuse = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(pointLight.color);
+                    ptLight.diffuse = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(pointLight.color);
                 }
                 lastNode = ptLight;
             }
             else if (light.type === "spot") {
                 var spotLight = light[light.type];
-                var spLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["SpotLight"](node.light, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), 0, 0, gltfRuntime.scene);
+                var spLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["SpotLight"](node.light, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), 0, 0, gltfRuntime.scene);
                 spLight.name = node.name || "";
                 if (spotLight.color) {
-                    spLight.diffuse = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(spotLight.color);
+                    spLight.diffuse = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArray(spotLight.color);
                 }
                 if (spotLight.fallOfAngle) {
                     spLight.angle = spotLight.fallOfAngle;
@@ -1207,16 +1214,17 @@ var importNode = function (gltfRuntime, node, id, parent) {
     else if (node.camera && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
         var camera = gltfRuntime.cameras[node.camera];
         if (camera) {
+            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
             if (camera.type === "orthographic") {
-                var orthoCamera = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"](node.camera, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene, false);
+                var orthoCamera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"](node.camera, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene, false);
                 orthoCamera.name = node.name || "";
-                orthoCamera.mode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Camera"].ORTHOGRAPHIC_CAMERA;
+                orthoCamera.mode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Camera"].ORTHOGRAPHIC_CAMERA;
                 orthoCamera.attachControl(gltfRuntime.scene.getEngine().getInputElement());
                 lastNode = orthoCamera;
             }
             else if (camera.type === "perspective") {
                 var perspectiveCamera = camera[camera.type];
-                var persCamera = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"](node.camera, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene, false);
+                var persCamera = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["FreeCamera"](node.camera, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].Zero(), gltfRuntime.scene, false);
                 persCamera.name = node.name || "";
                 persCamera.attachControl(gltfRuntime.scene.getEngine().getInputElement());
                 if (!perspectiveCamera.aspectRatio) {
@@ -1228,6 +1236,7 @@ var importNode = function (gltfRuntime, node, id, parent) {
                 }
                 lastNode = persCamera;
             }
+            gltfRuntime.scene._blockEntityCollection = false;
         }
     }
     // Empty node
@@ -1236,20 +1245,22 @@ var importNode = function (gltfRuntime, node, id, parent) {
             return node.babylonNode;
         }
         else if (lastNode === null) {
-            var dummy = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Mesh"](node.name || "", gltfRuntime.scene);
+            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+            var dummy = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"](node.name || "", gltfRuntime.scene);
+            gltfRuntime.scene._blockEntityCollection = false;
             node.babylonNode = dummy;
             lastNode = dummy;
         }
     }
     if (lastNode !== null) {
-        if (node.matrix && lastNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
+        if (node.matrix && lastNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Mesh"]) {
             configureNodeFromMatrix(lastNode, node, parent);
         }
         else {
             var translation = node.translation || [0, 0, 0];
             var rotation = node.rotation || [0, 0, 0, 1];
             var scale = node.scale || [1, 1, 1];
-            configureNode(lastNode, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(translation), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray(rotation), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(scale));
+            configureNode(lastNode, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(translation), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Quaternion"].FromArray(rotation), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(scale));
         }
         lastNode.updateCache(true);
         node.babylonNode = lastNode;
@@ -1482,7 +1493,8 @@ var GLTFLoaderBase = /** @class */ (function () {
             loadedBufferViews: {},
             loadedShaderCount: 0,
             importOnlyMeshes: false,
-            dummyNodes: []
+            dummyNodes: [],
+            forAssetContainer: false
         };
         // Parse
         if (parsedData.extensions) {
@@ -1549,11 +1561,11 @@ var GLTFLoaderBase = /** @class */ (function () {
     };
     GLTFLoaderBase.LoadBufferAsync = function (gltfRuntime, id, onSuccess, onError, onProgress) {
         var buffer = gltfRuntime.buffers[id];
-        if (babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].IsBase64(buffer.uri)) {
-            setTimeout(function () { return onSuccess(new Uint8Array(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].DecodeBase64(buffer.uri))); });
+        if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].IsBase64(buffer.uri)) {
+            setTimeout(function () { return onSuccess(new Uint8Array(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].DecodeBase64(buffer.uri))); });
         }
         else {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].LoadFile(gltfRuntime.rootUrl + buffer.uri, function (data) { return onSuccess(new Uint8Array(data)); }, onProgress, undefined, true, function (request) {
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].LoadFile(gltfRuntime.rootUrl + buffer.uri, function (data) { return onSuccess(new Uint8Array(data)); }, onProgress, undefined, true, function (request) {
                 if (request) {
                     onError(request.status + " " + request.statusText);
                 }
@@ -1571,11 +1583,11 @@ var GLTFLoaderBase = /** @class */ (function () {
             return;
         }
         var source = gltfRuntime.images[texture.source];
-        if (babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].IsBase64(source.uri)) {
-            setTimeout(function () { return onSuccess(new Uint8Array(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].DecodeBase64(source.uri))); });
+        if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].IsBase64(source.uri)) {
+            setTimeout(function () { return onSuccess(new Uint8Array(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].DecodeBase64(source.uri))); });
         }
         else {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].LoadFile(gltfRuntime.rootUrl + source.uri, function (data) { return onSuccess(new Uint8Array(data)); }, undefined, undefined, true, function (request) {
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].LoadFile(gltfRuntime.rootUrl + source.uri, function (data) { return onSuccess(new Uint8Array(data)); }, undefined, undefined, true, function (request) {
                 if (request) {
                     onError(request.status + " " + request.statusText);
                 }
@@ -1593,11 +1605,11 @@ var GLTFLoaderBase = /** @class */ (function () {
             (sampler.minFilter === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].NEAREST_MIPMAP_LINEAR) ||
             (sampler.minFilter === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].LINEAR_MIPMAP_NEAREST) ||
             (sampler.minFilter === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].LINEAR_MIPMAP_LINEAR);
-        var samplingMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"].BILINEAR_SAMPLINGMODE;
+        var samplingMode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].BILINEAR_SAMPLINGMODE;
         var blob = buffer == null ? new Blob() : new Blob([buffer]);
         var blobURL = URL.createObjectURL(blob);
         var revokeBlobURL = function () { return URL.revokeObjectURL(blobURL); };
-        var newTexture = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"](blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
+        var newTexture = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"](blobURL, gltfRuntime.scene, !createMipMaps, true, samplingMode, revokeBlobURL, revokeBlobURL);
         if (sampler.wrapS !== undefined) {
             newTexture.wrapU = _glTFLoaderUtils__WEBPACK_IMPORTED_MODULE_2__["GLTFUtils"].GetWrapMode(sampler.wrapS);
         }
@@ -1610,14 +1622,14 @@ var GLTFLoaderBase = /** @class */ (function () {
     };
     GLTFLoaderBase.LoadShaderStringAsync = function (gltfRuntime, id, onSuccess, onError) {
         var shader = gltfRuntime.shaders[id];
-        if (babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].IsBase64(shader.uri)) {
+        if (babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].IsBase64(shader.uri)) {
             var shaderString = atob(shader.uri.split(",")[1]);
             if (onSuccess) {
                 onSuccess(shaderString);
             }
         }
         else {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, undefined, undefined, false, function (request) {
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, undefined, undefined, false, function (request) {
                 if (request && onError) {
                     onError(request.status + " " + request.statusText);
                 }
@@ -1634,16 +1646,18 @@ var GLTFLoaderBase = /** @class */ (function () {
         }
         var technique = gltfRuntime.techniques[material.technique];
         if (!technique) {
-            var defaultMaterial = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](id, gltfRuntime.scene);
-            defaultMaterial.diffuseColor = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 0.5, 0.5);
-            defaultMaterial.sideOrientation = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].CounterClockWiseSideOrientation;
+            gltfRuntime.scene._blockEntityCollection = gltfRuntime.forAssetContainer;
+            var defaultMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"](id, gltfRuntime.scene);
+            gltfRuntime.scene._blockEntityCollection = false;
+            defaultMaterial.diffuseColor = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.5, 0.5, 0.5);
+            defaultMaterial.sideOrientation = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Material"].CounterClockWiseSideOrientation;
             onSuccess(defaultMaterial);
             return;
         }
         var program = gltfRuntime.programs[technique.program];
         var states = technique.states;
-        var vertexShader = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[program.vertexShader + "VertexShader"];
-        var pixelShader = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[program.fragmentShader + "PixelShader"];
+        var vertexShader = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[program.vertexShader + "VertexShader"];
+        var pixelShader = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[program.fragmentShader + "PixelShader"];
         var newVertexShader = "";
         var newPixelShader = "";
         var vertexTokenizer = new Tokenizer(vertexShader);
@@ -1726,12 +1740,12 @@ var GLTFLoaderBase = /** @class */ (function () {
             samplers: samplers,
             needAlphaBlending: states && states.enable && states.enable.indexOf(3042) !== -1
         };
-        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
-        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[program.fragmentShader + id + "PixelShader"] = newPixelShader;
-        var shaderMaterial = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["ShaderMaterial"](id, gltfRuntime.scene, shaderPath, options);
+        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[program.vertexShader + id + "VertexShader"] = newVertexShader;
+        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[program.fragmentShader + id + "PixelShader"] = newPixelShader;
+        var shaderMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["ShaderMaterial"](id, gltfRuntime.scene, shaderPath, options);
         shaderMaterial.onError = onShaderCompileError(program, shaderMaterial, onError);
         shaderMaterial.onCompiled = onShaderCompileSuccess(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms, onSuccess);
-        shaderMaterial.sideOrientation = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Material"].CounterClockWiseSideOrientation;
+        shaderMaterial.sideOrientation = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Material"].CounterClockWiseSideOrientation;
         if (states && states.functions) {
             var functions = states.functions;
             if (functions.cullFace && functions.cullFace[0] !== _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ECullingType"].BACK) {
@@ -1740,22 +1754,22 @@ var GLTFLoaderBase = /** @class */ (function () {
             var blendFunc = functions.blendFuncSeparate;
             if (blendFunc) {
                 if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].SRC_ALPHA && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE_MINUS_SRC_ALPHA && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_COMBINE;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_COMBINE;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ZERO && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_ONEONE;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_ONEONE;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].SRC_ALPHA && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ZERO && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_ADD;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_ADD;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ZERO && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE_MINUS_SRC_COLOR && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_SUBTRACT;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_SUBTRACT;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].DST_COLOR && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ZERO && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_MULTIPLY;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_MULTIPLY;
                 }
                 else if (blendFunc[0] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].SRC_ALPHA && blendFunc[1] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE_MINUS_SRC_COLOR && blendFunc[2] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE && blendFunc[3] === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EBlendingFunction"].ONE) {
-                    shaderMaterial.alphaMode = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_MAXIMIZED;
+                    shaderMaterial.alphaMode = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Constants"].ALPHA_MAXIMIZED;
                 }
             }
         }
@@ -1773,7 +1787,7 @@ var GLTFLoader = /** @class */ (function () {
     }
     GLTFLoader.RegisterExtension = function (extension) {
         if (GLTFLoader.Extensions[extension.name]) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Tool with the same name \"" + extension.name + "\" already exists");
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Tool with the same name \"" + extension.name + "\" already exists");
             return;
         }
         GLTFLoader.Extensions[extension.name] = extension;
@@ -1781,10 +1795,11 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype.dispose = function () {
         // do nothing
     };
-    GLTFLoader.prototype._importMeshAsync = function (meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError) {
+    GLTFLoader.prototype._importMeshAsync = function (meshesNames, scene, data, rootUrl, forAssetContainer, onSuccess, onProgress, onError) {
         var _this = this;
         scene.useRightHandedSystem = true;
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
+            gltfRuntime.forAssetContainer = forAssetContainer;
             gltfRuntime.importOnlyMeshes = true;
             if (meshesNames === "") {
                 gltfRuntime.importMeshesNames = [];
@@ -1797,7 +1812,7 @@ var GLTFLoader = /** @class */ (function () {
             }
             else {
                 gltfRuntime.importMeshesNames = [];
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Argument meshesNames must be of type string or string[]");
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Warn("Argument meshesNames must be of type string or string[]");
             }
             // Create nodes
             _this._createNodes(gltfRuntime);
@@ -1806,13 +1821,13 @@ var GLTFLoader = /** @class */ (function () {
             // Fill arrays of meshes and skeletons
             for (var nde in gltfRuntime.nodes) {
                 var node = gltfRuntime.nodes[nde];
-                if (node.babylonNode instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["AbstractMesh"]) {
+                if (node.babylonNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["AbstractMesh"]) {
                     meshes.push(node.babylonNode);
                 }
             }
             for (var skl in gltfRuntime.skins) {
                 var skin = gltfRuntime.skins[skl];
-                if (skin.babylonSkeleton instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Skeleton"]) {
+                if (skin.babylonSkeleton instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Skeleton"]) {
                     skeletons.push(skin.babylonSkeleton);
                 }
             }
@@ -1836,27 +1851,30 @@ var GLTFLoader = /** @class */ (function () {
     * Imports one or more meshes from a loaded gltf file and adds them to the scene
     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
     * @param scene the scene the meshes should be added to
+    * @param forAssetContainer defines if the entities must be stored in the scene
     * @param data gltf data containing information of the meshes in a loaded file
     * @param rootUrl root url to load from
     * @param onProgress event that fires when loading progress has occured
     * @returns a promise containg the loaded meshes, particles, skeletons and animations
     */
-    GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress) {
+    GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, forAssetContainer, data, rootUrl, onProgress) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this._importMeshAsync(meshesNames, scene, data, rootUrl, function (meshes, skeletons) {
+            _this._importMeshAsync(meshesNames, scene, data, rootUrl, forAssetContainer, function (meshes, skeletons) {
                 resolve({
                     meshes: meshes,
                     particleSystems: [],
                     skeletons: skeletons,
-                    animationGroups: []
+                    animationGroups: [],
+                    lights: [],
+                    transformNodes: []
                 });
             }, onProgress, function (message) {
                 reject(new Error(message));
             });
         });
     };
-    GLTFLoader.prototype._loadAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
+    GLTFLoader.prototype._loadAsync = function (scene, data, rootUrl, forAssetContainer, onSuccess, onProgress, onError) {
         var _this = this;
         scene.useRightHandedSystem = true;
         GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, function (gltfRuntime) {
@@ -1891,7 +1909,7 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype.loadAsync = function (scene, data, rootUrl, onProgress) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this._loadAsync(scene, data, rootUrl, function () {
+            _this._loadAsync(scene, data, rootUrl, false, function () {
                 resolve();
             }, onProgress, function (message) {
                 reject(new Error(message));
@@ -1907,13 +1925,13 @@ var GLTFLoader = /** @class */ (function () {
                 }
                 gltfRuntime.loadedShaderCount++;
                 if (shaderString) {
-                    babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[sha + (shader.type === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EShaderType"].VERTEX ? "VertexShader" : "PixelShader")] = shaderString;
+                    babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore[sha + (shader.type === _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EShaderType"].VERTEX ? "VertexShader" : "PixelShader")] = shaderString;
                 }
                 if (gltfRuntime.loadedShaderCount === gltfRuntime.shaderscount) {
                     onload();
                 }
             }, function () {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Error when loading shader program named " + sha + " located at " + shader.uri);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Error when loading shader program named " + sha + " located at " + shader.uri);
             });
         };
         for (var sha in gltfRuntime.shaders) {
@@ -1923,7 +1941,7 @@ var GLTFLoader = /** @class */ (function () {
                 processShader.bind(this, sha, shader)();
             }
             else {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("No shader named: " + sha);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("No shader named: " + sha);
             }
         }
         if (!hasShaders) {
@@ -1937,7 +1955,7 @@ var GLTFLoader = /** @class */ (function () {
                 gltfRuntime.loadedBufferCount++;
                 if (bufferView) {
                     if (bufferView.byteLength != gltfRuntime.buffers[buf].byteLength) {
-                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Buffer named " + buf + " is length " + bufferView.byteLength + ". Expected: " + buffer.byteLength); // Improve error message
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Buffer named " + buf + " is length " + bufferView.byteLength + ". Expected: " + buffer.byteLength); // Improve error message
                     }
                     gltfRuntime.loadedBufferViews[buf] = bufferView;
                 }
@@ -1945,7 +1963,7 @@ var GLTFLoader = /** @class */ (function () {
                     onLoad();
                 }
             }, function () {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Error when loading buffer named " + buf + " located at " + buffer.uri);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("Error when loading buffer named " + buf + " located at " + buffer.uri);
             });
         };
         for (var buf in gltfRuntime.buffers) {
@@ -1955,7 +1973,7 @@ var GLTFLoader = /** @class */ (function () {
                 processBuffer.bind(this, buf, buffer)();
             }
             else {
-                babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("No buffer named: " + buf);
+                babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Tools"].Error("No buffer named: " + buf);
             }
         }
         if (!hasBuffers) {
@@ -2255,8 +2273,9 @@ var EBlendingFunction;
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GLTFUtils", function() { return GLTFUtils; });
 /* harmony import */ var _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./glTF/1.0/glTFLoaderInterfaces.ts");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
+
 
 
 
@@ -2289,7 +2308,7 @@ var GLTFUtils = /** @class */ (function () {
             mat = scene.getViewMatrix();
         }
         else if (parameter.semantic === "MODELVIEWINVERSETRANSPOSE") {
-            mat = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Transpose(source.getWorldMatrix().multiply(scene.getViewMatrix()).invert());
+            mat = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Transpose(source.getWorldMatrix().multiply(scene.getViewMatrix()).invert());
         }
         else if (parameter.semantic === "MODELVIEW") {
             mat = source.getWorldMatrix().multiply(scene.getViewMatrix());
@@ -2313,7 +2332,7 @@ var GLTFUtils = /** @class */ (function () {
             mat = source.getWorldMatrix().multiply(scene.getTransformMatrix()).invert();
         }
         else if (parameter.semantic === "MODELINVERSETRANSPOSE") {
-            mat = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Transpose(source.getWorldMatrix().invert());
+            mat = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].Transpose(source.getWorldMatrix().invert());
         }
         else {
             debugger;
@@ -2321,10 +2340,10 @@ var GLTFUtils = /** @class */ (function () {
         if (mat) {
             switch (parameter.type) {
                 case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EParameterType"].FLOAT_MAT2:
-                    shaderMaterial.setMatrix2x2(uniformName, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].GetAsMatrix2x2(mat));
+                    shaderMaterial.setMatrix2x2(uniformName, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].GetAsMatrix2x2(mat));
                     break;
                 case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EParameterType"].FLOAT_MAT3:
-                    shaderMaterial.setMatrix3x3(uniformName, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Matrix"].GetAsMatrix3x3(mat));
+                    shaderMaterial.setMatrix3x3(uniformName, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Matrix"].GetAsMatrix3x3(mat));
                     break;
                 case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EParameterType"].FLOAT_MAT4:
                     shaderMaterial.setMatrix(uniformName, mat);
@@ -2346,13 +2365,13 @@ var GLTFUtils = /** @class */ (function () {
                 shaderMaterial.setFloat(uniform, value);
                 return true;
             case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EParameterType"].FLOAT_VEC2:
-                shaderMaterial.setVector2(uniform, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector2"].FromArray(value));
+                shaderMaterial.setVector2(uniform, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector2"].FromArray(value));
                 return true;
             case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EParameterType"].FLOAT_VEC3:
-                shaderMaterial.setVector3(uniform, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(value));
+                shaderMaterial.setVector3(uniform, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(value));
                 return true;
             case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["EParameterType"].FLOAT_VEC4:
-                shaderMaterial.setVector4(uniform, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(value));
+                shaderMaterial.setVector4(uniform, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(value));
                 return true;
             default: return false;
         }
@@ -2363,10 +2382,10 @@ var GLTFUtils = /** @class */ (function () {
     */
     GLTFUtils.GetWrapMode = function (mode) {
         switch (mode) {
-            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureWrapMode"].CLAMP_TO_EDGE: return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"].CLAMP_ADDRESSMODE;
-            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureWrapMode"].MIRRORED_REPEAT: return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"].MIRROR_ADDRESSMODE;
-            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureWrapMode"].REPEAT: return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"].WRAP_ADDRESSMODE;
-            default: return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"].WRAP_ADDRESSMODE;
+            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureWrapMode"].CLAMP_TO_EDGE: return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].CLAMP_ADDRESSMODE;
+            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureWrapMode"].MIRRORED_REPEAT: return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].MIRROR_ADDRESSMODE;
+            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureWrapMode"].REPEAT: return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].WRAP_ADDRESSMODE;
+            default: return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].WRAP_ADDRESSMODE;
         }
     };
     /**
@@ -2394,10 +2413,10 @@ var GLTFUtils = /** @class */ (function () {
         switch (mode) {
             case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].LINEAR:
             case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].LINEAR_MIPMAP_NEAREST:
-            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].LINEAR_MIPMAP_LINEAR: return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE;
+            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].LINEAR_MIPMAP_LINEAR: return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE;
             case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].NEAREST:
-            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].NEAREST_MIPMAP_NEAREST: return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE;
-            default: return babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Texture"].BILINEAR_SAMPLINGMODE;
+            case _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_0__["ETextureFilterType"].NEAREST_MIPMAP_NEAREST: return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE;
+            default: return babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Texture"].BILINEAR_SAMPLINGMODE;
         }
     };
     GLTFUtils.GetBufferFromBufferView = function (gltfRuntime, bufferView, byteOffset, byteLength, componentType) {
@@ -2445,7 +2464,7 @@ var GLTFUtils = /** @class */ (function () {
      */
     GLTFUtils.GetDefaultMaterial = function (scene) {
         if (!GLTFUtils._DefaultMaterial) {
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore["GLTFDefaultMaterialVertexShader"] = [
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore["GLTFDefaultMaterialVertexShader"] = [
                 "precision highp float;",
                 "",
                 "uniform mat4 worldView;",
@@ -2458,7 +2477,7 @@ var GLTFUtils = /** @class */ (function () {
                 "    gl_Position = projection * worldView * vec4(position, 1.0);",
                 "}"
             ].join("\n");
-            babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore["GLTFDefaultMaterialPixelShader"] = [
+            babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Effect"].ShadersStore["GLTFDefaultMaterialPixelShader"] = [
                 "precision highp float;",
                 "",
                 "uniform vec4 u_emission;",
@@ -2478,8 +2497,8 @@ var GLTFUtils = /** @class */ (function () {
                 samplers: new Array(),
                 needAlphaBlending: false
             };
-            GLTFUtils._DefaultMaterial = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["ShaderMaterial"]("GLTFDefaultMaterial", scene, shaderPath, options);
-            GLTFUtils._DefaultMaterial.setColor4("u_emission", new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.5, 0.5, 0.5, 1.0));
+            GLTFUtils._DefaultMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["ShaderMaterial"]("GLTFDefaultMaterial", scene, shaderPath, options);
+            GLTFUtils._DefaultMaterial.setColor4("u_emission", new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color4"](0.5, 0.5, 0.5, 1.0));
         }
         return GLTFUtils._DefaultMaterial;
     };
@@ -2504,8 +2523,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GLTFMaterialsCommonExtension", function() { return GLTFMaterialsCommonExtension; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./glTFLoader */ "./glTF/1.0/glTFLoader.ts");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 
@@ -2539,35 +2559,35 @@ var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
                 var light = lights[thing];
                 switch (light.type) {
                     case "ambient":
-                        var ambientLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["HemisphericLight"](light.name, new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 1, 0), gltfRuntime.scene);
+                        var ambientLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["HemisphericLight"](light.name, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 1, 0), gltfRuntime.scene);
                         var ambient = light.ambient;
                         if (ambient) {
-                            ambientLight.diffuse = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(ambient.color || [1, 1, 1]);
+                            ambientLight.diffuse = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(ambient.color || [1, 1, 1]);
                         }
                         break;
                     case "point":
-                        var pointLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["PointLight"](light.name, new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](10, 10, 10), gltfRuntime.scene);
+                        var pointLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["PointLight"](light.name, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"](10, 10, 10), gltfRuntime.scene);
                         var point = light.point;
                         if (point) {
-                            pointLight.diffuse = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(point.color || [1, 1, 1]);
+                            pointLight.diffuse = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(point.color || [1, 1, 1]);
                         }
                         break;
                     case "directional":
-                        var dirLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["DirectionalLight"](light.name, new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, -1, 0), gltfRuntime.scene);
+                        var dirLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["DirectionalLight"](light.name, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, -1, 0), gltfRuntime.scene);
                         var directional = light.directional;
                         if (directional) {
-                            dirLight.diffuse = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(directional.color || [1, 1, 1]);
+                            dirLight.diffuse = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(directional.color || [1, 1, 1]);
                         }
                         break;
                     case "spot":
                         var spot = light.spot;
                         if (spot) {
-                            var spotLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["SpotLight"](light.name, new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 10, 0), new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, -1, 0), spot.fallOffAngle || Math.PI, spot.fallOffExponent || 0.0, gltfRuntime.scene);
-                            spotLight.diffuse = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(spot.color || [1, 1, 1]);
+                            var spotLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["SpotLight"](light.name, new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, 10, 0), new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Vector3"](0, -1, 0), spot.fallOffAngle || Math.PI, spot.fallOffExponent || 0.0, gltfRuntime.scene);
+                            spotLight.diffuse = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(spot.color || [1, 1, 1]);
                         }
                         break;
                     default:
-                        babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Tools"].Warn("GLTF Material Common extension: light type \"" + light.type + "\” not supported");
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Tools"].Warn("GLTF Material Common extension: light type \"" + light.type + "\” not supported");
                         break;
                 }
             }
@@ -2583,8 +2603,8 @@ var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
         if (!extension) {
             return false;
         }
-        var standardMaterial = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"](id, gltfRuntime.scene);
-        standardMaterial.sideOrientation = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Material"].CounterClockWiseSideOrientation;
+        var standardMaterial = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["StandardMaterial"](id, gltfRuntime.scene);
+        standardMaterial.sideOrientation = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Material"].CounterClockWiseSideOrientation;
         if (extension.technique === "CONSTANT") {
             standardMaterial.disableLighting = true;
         }
@@ -2596,28 +2616,28 @@ var GLTFMaterialsCommonExtension = /** @class */ (function (_super) {
             this._loadTexture(gltfRuntime, extension.values.ambient, standardMaterial, "ambientTexture", onError);
         }
         else {
-            standardMaterial.ambientColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(extension.values.ambient || [0, 0, 0]);
+            standardMaterial.ambientColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(extension.values.ambient || [0, 0, 0]);
         }
         // Diffuse
         if (typeof extension.values.diffuse === "string") {
             this._loadTexture(gltfRuntime, extension.values.diffuse, standardMaterial, "diffuseTexture", onError);
         }
         else {
-            standardMaterial.diffuseColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(extension.values.diffuse || [0, 0, 0]);
+            standardMaterial.diffuseColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(extension.values.diffuse || [0, 0, 0]);
         }
         // Emission
         if (typeof extension.values.emission === "string") {
             this._loadTexture(gltfRuntime, extension.values.emission, standardMaterial, "emissiveTexture", onError);
         }
         else {
-            standardMaterial.emissiveColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(extension.values.emission || [0, 0, 0]);
+            standardMaterial.emissiveColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(extension.values.emission || [0, 0, 0]);
         }
         // Specular
         if (typeof extension.values.specular === "string") {
             this._loadTexture(gltfRuntime, extension.values.specular, standardMaterial, "specularTexture", onError);
         }
         else {
-            standardMaterial.specularColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(extension.values.specular || [0, 0, 0]);
+            standardMaterial.specularColor = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_2__["Color3"].FromArray(extension.values.specular || [0, 0, 0]);
         }
         return true;
     };
@@ -2810,6 +2830,113 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 
 /***/ }),
 
+/***/ "./glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts":
+/*!********************************************************!*\
+  !*** ./glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts ***!
+  \********************************************************/
+/*! exports provided: EXT_mesh_gpu_instancing */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EXT_mesh_gpu_instancing", function() { return EXT_mesh_gpu_instancing; });
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
+
+
+var NAME = "EXT_mesh_gpu_instancing";
+/**
+ * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
+ * [Playground Sample](https://playground.babylonjs.com/#QFIGLW#9)
+ * !!! Experimental Extension Subject to Changes !!!
+ */
+var EXT_mesh_gpu_instancing = /** @class */ (function () {
+    /** @hidden */
+    function EXT_mesh_gpu_instancing(loader) {
+        /**
+         * The name of this extension.
+         */
+        this.name = NAME;
+        this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
+    }
+    /** @hidden */
+    EXT_mesh_gpu_instancing.prototype.dispose = function () {
+        delete this._loader;
+    };
+    /** @hidden */
+    EXT_mesh_gpu_instancing.prototype.loadNodeAsync = function (context, node, assign) {
+        var _this = this;
+        return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
+            return _this._loader.loadNodeAsync("#/nodes/" + node.index, node, function (babylonTransformNode) {
+                var promises = new Array();
+                var instanceCount = null;
+                var loadAttribute = function (attribute, assignBufferFunc) {
+                    if (extension.attributes[attribute] == undefined) {
+                        return;
+                    }
+                    var accessor = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(extensionContext + "/attributes/" + attribute, _this._loader.gltf.accessors, extension.attributes[attribute]);
+                    if (instanceCount === null) {
+                        instanceCount = accessor.count;
+                    }
+                    else if (instanceCount !== accessor.count) {
+                        throw new Error(extensionContext + "/attributes: Instance buffer accessors do not have the same count.");
+                    }
+                    promises.push(_this._loader._loadFloatAccessorAsync("/accessors/" + accessor.bufferView, accessor).then(function (data) {
+                        assignBufferFunc(data);
+                    }));
+                };
+                var translationBuffer = null;
+                var rotationBuffer = null;
+                var scaleBuffer = null;
+                loadAttribute("TRANSLATION", function (data) { translationBuffer = data; });
+                loadAttribute("ROTATION", function (data) { rotationBuffer = data; });
+                loadAttribute("SCALE", function (data) { scaleBuffer = data; });
+                return Promise.all(promises).then(function () {
+                    if (instanceCount) {
+                        var instanceName = "";
+                        var instance = null;
+                        var digitLength = instanceCount.toString().length;
+                        for (var i = 0; i < instanceCount; ++i) {
+                            if (node._primitiveBabylonMeshes) {
+                                for (var j = 0; j < node._primitiveBabylonMeshes.length; ++j) {
+                                    var babylonMeshPrimitive = node._primitiveBabylonMeshes[j];
+                                    instanceName = (babylonMeshPrimitive.name || babylonMeshPrimitive.id) + "_" + babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["StringTools"].PadNumber(i, digitLength);
+                                    if (babylonMeshPrimitive.isAnInstance) {
+                                        instance = babylonMeshPrimitive.sourceMesh.createInstance(instanceName);
+                                    }
+                                    else if (babylonMeshPrimitive.createInstance) {
+                                        instance = babylonMeshPrimitive.createInstance(instanceName);
+                                    }
+                                    if (instance) {
+                                        instance.setParent(babylonMeshPrimitive);
+                                        translationBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(translationBuffer, i * 3, instance.position)
+                                            : instance.position.set(0, 0, 0);
+                                        rotationBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Quaternion"].FromArrayToRef(rotationBuffer, i * 4, instance.rotationQuaternion)
+                                            : instance.rotationQuaternion.set(0, 0, 0, 1);
+                                        scaleBuffer ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].FromArrayToRef(scaleBuffer, i * 3, instance.scaling)
+                                            : instance.scaling.set(1, 1, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    assign(babylonTransformNode);
+                    return babylonTransformNode;
+                });
+            });
+        });
+    };
+    return EXT_mesh_gpu_instancing;
+}());
+
+_glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new EXT_mesh_gpu_instancing(loader); });
+
+
+/***/ }),
+
 /***/ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts":
 /*!*************************************************!*\
   !*** ./glTF/2.0/Extensions/ExtrasAsMetadata.ts ***!
@@ -2984,9 +3111,10 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_lights", function() { return KHR_lights; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
 
 
 
@@ -3001,7 +3129,7 @@ var LightType;
     LightType["SPOT"] = "spot";
 })(LightType || (LightType = {}));
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual)
  */
 var KHR_lights = /** @class */ (function () {
     /** @hidden */
@@ -3034,31 +3162,35 @@ var KHR_lights = /** @class */ (function () {
                 var babylonLight;
                 var light = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(extensionContext, _this._lights, extension.light);
                 var name = light.name || babylonMesh.name;
+                _this._loader.babylonScene._blockEntityCollection = _this._loader._forAssetContainer;
                 switch (light.type) {
                     case LightType.DIRECTIONAL: {
-                        babylonLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"](name, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Backward(), _this._loader.babylonScene);
+                        babylonLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["DirectionalLight"](name, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Backward(), _this._loader.babylonScene);
                         break;
                     }
                     case LightType.POINT: {
-                        babylonLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["PointLight"](name, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), _this._loader.babylonScene);
+                        babylonLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["PointLight"](name, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), _this._loader.babylonScene);
                         break;
                     }
                     case LightType.SPOT: {
-                        var babylonSpotLight = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["SpotLight"](name, babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Backward(), 0, 1, _this._loader.babylonScene);
+                        var babylonSpotLight = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["SpotLight"](name, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Backward(), 0, 1, _this._loader.babylonScene);
                         babylonSpotLight.angle = ((light.spot && light.spot.outerConeAngle) || Math.PI / 4) * 2;
                         babylonSpotLight.innerAngle = ((light.spot && light.spot.innerConeAngle) || 0) * 2;
                         babylonLight = babylonSpotLight;
                         break;
                     }
                     default: {
+                        _this._loader.babylonScene._blockEntityCollection = false;
                         throw new Error(extensionContext + ": Invalid light type (" + light.type + ")");
                     }
                 }
-                babylonLight.falloffType = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Light"].FALLOFF_GLTF;
-                babylonLight.diffuse = light.color ? babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(light.color) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
+                _this._loader.babylonScene._blockEntityCollection = false;
+                babylonLight.falloffType = babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Light"].FALLOFF_GLTF;
+                babylonLight.diffuse = light.color ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(light.color) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
                 babylonLight.intensity = light.intensity == undefined ? 1 : light.intensity;
                 babylonLight.range = light.range == undefined ? Number.MAX_VALUE : light.range;
                 babylonLight.parent = babylonMesh;
+                _this._loader._babylonLights.push(babylonLight);
                 _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].AddPointerMetadata(babylonLight, extensionContext);
                 assign(babylonMesh);
             });
@@ -3103,7 +3235,7 @@ var KHR_materials_clearcoat = /** @class */ (function () {
         /**
          * Defines a number that determines the order the extensions are applied.
          */
-        this.order = 220;
+        this.order = 190;
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
@@ -3172,6 +3304,78 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 
 /***/ }),
 
+/***/ "./glTF/2.0/Extensions/KHR_materials_ior.ts":
+/*!**************************************************!*\
+  !*** ./glTF/2.0/Extensions/KHR_materials_ior.ts ***!
+  \**************************************************/
+/*! exports provided: KHR_materials_ior */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_ior", function() { return KHR_materials_ior; });
+/* harmony import */ var babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/PBR/pbrMaterial */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
+
+var NAME = "KHR_materials_ior";
+/**
+ * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1718)
+ * !!! Experimental Extension Subject to Changes !!!
+ */
+var KHR_materials_ior = /** @class */ (function () {
+    /** @hidden */
+    function KHR_materials_ior(loader) {
+        /**
+         * The name of this extension.
+         */
+        this.name = NAME;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        this.order = 180;
+        this._loader = loader;
+        this.enabled = this._loader.isExtensionUsed(NAME);
+    }
+    /** @hidden */
+    KHR_materials_ior.prototype.dispose = function () {
+        delete this._loader;
+    };
+    /** @hidden */
+    KHR_materials_ior.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
+        var _this = this;
+        return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, material, this.name, function (extensionContext, extension) {
+            var promises = new Array();
+            promises.push(_this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
+            promises.push(_this._loadIorPropertiesAsync(extensionContext, extension, babylonMaterial));
+            return Promise.all(promises).then(function () { });
+        });
+    };
+    KHR_materials_ior.prototype._loadIorPropertiesAsync = function (context, properties, babylonMaterial) {
+        if (!(babylonMaterial instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"])) {
+            throw new Error(context + ": Material type not supported");
+        }
+        if (properties.ior !== undefined) {
+            babylonMaterial.indexOfRefraction = properties.ior;
+        }
+        else {
+            babylonMaterial.indexOfRefraction = KHR_materials_ior._DEFAULT_IOR;
+        }
+        return Promise.resolve();
+    };
+    /**
+     * Default ior Value from the spec.
+     */
+    KHR_materials_ior._DEFAULT_IOR = 1.5;
+    return KHR_materials_ior;
+}());
+
+_glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new KHR_materials_ior(loader); });
+
+
+/***/ }),
+
 /***/ "./glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts":
 /*!********************************************************************!*\
   !*** ./glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts ***!
@@ -3182,8 +3386,8 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_pbrSpecularGlossiness", function() { return KHR_materials_pbrSpecularGlossiness; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
 
 
@@ -3222,20 +3426,20 @@ var KHR_materials_pbrSpecularGlossiness = /** @class */ (function () {
         });
     };
     KHR_materials_pbrSpecularGlossiness.prototype._loadSpecularGlossinessPropertiesAsync = function (context, material, properties, babylonMaterial) {
-        if (!(babylonMaterial instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"])) {
+        if (!(babylonMaterial instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"])) {
             throw new Error(context + ": Material type not supported");
         }
         var promises = new Array();
         babylonMaterial.metallic = null;
         babylonMaterial.roughness = null;
         if (properties.diffuseFactor) {
-            babylonMaterial.albedoColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.diffuseFactor);
+            babylonMaterial.albedoColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.diffuseFactor);
             babylonMaterial.alpha = properties.diffuseFactor[3];
         }
         else {
-            babylonMaterial.albedoColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
+            babylonMaterial.albedoColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
         }
-        babylonMaterial.reflectivityColor = properties.specularFactor ? babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.specularFactor) : babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
+        babylonMaterial.reflectivityColor = properties.specularFactor ? babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.specularFactor) : babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
         babylonMaterial.microSurface = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
         if (properties.diffuseTexture) {
             promises.push(this._loader.loadTextureInfoAsync(context + "/diffuseTexture", properties.diffuseTexture, function (texture) {
@@ -3293,7 +3497,7 @@ var KHR_materials_sheen = /** @class */ (function () {
         /**
          * Defines a number that determines the order the extensions are applied.
          */
-        this.order = 240;
+        this.order = 190;
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
@@ -3332,6 +3536,13 @@ var KHR_materials_sheen = /** @class */ (function () {
                 babylonMaterial.sheen.texture = texture;
             }));
         }
+        if (properties.roughnessFactor !== undefined) {
+            babylonMaterial.sheen.roughness = properties.roughnessFactor;
+        }
+        else {
+            babylonMaterial.sheen.roughness = 0;
+        }
+        babylonMaterial.sheen.albedoScaling = true;
         return Promise.all(promises).then(function () { });
     };
     return KHR_materials_sheen;
@@ -3357,10 +3568,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
 
 
+
 var NAME = "KHR_materials_specular";
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
- * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
+ * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1719)
  * !!! Experimental Extension Subject to Changes !!!
  */
 var KHR_materials_specular = /** @class */ (function () {
@@ -3373,7 +3584,7 @@ var KHR_materials_specular = /** @class */ (function () {
         /**
          * Defines a number that determines the order the extensions are applied.
          */
-        this.order = 230;
+        this.order = 190;
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
@@ -3395,14 +3606,20 @@ var KHR_materials_specular = /** @class */ (function () {
         if (!(babylonMaterial instanceof babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"])) {
             throw new Error(context + ": Material type not supported");
         }
+        var promises = new Array();
         if (properties.specularFactor !== undefined) {
             babylonMaterial.metallicF0Factor = properties.specularFactor;
         }
-        if (properties.specularTexture) {
-            // This does not allow a separate sampler for it at the moment but is currently under discussion.
-            babylonMaterial.useMetallicF0FactorFromMetallicTexture = true;
+        if (properties.specularColorFactor !== undefined) {
+            babylonMaterial.metallicReflectanceColor = babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.specularColorFactor);
         }
-        return Promise.resolve();
+        if (properties.specularTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(context + "/specularTexture", properties.specularTexture, function (texture) {
+                texture.name = babylonMaterial.name + " (Specular F0 Color)";
+                babylonMaterial.metallicReflectanceTexture = texture;
+            }));
+        }
+        return Promise.all(promises).then(function () { });
     };
     return KHR_materials_specular;
 }());
@@ -3422,8 +3639,8 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_unlit", function() { return KHR_materials_unlit; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.color */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
 
 
@@ -3458,7 +3675,7 @@ var KHR_materials_unlit = /** @class */ (function () {
         });
     };
     KHR_materials_unlit.prototype._loadUnlitPropertiesAsync = function (context, material, babylonMaterial) {
-        if (!(babylonMaterial instanceof babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"])) {
+        if (!(babylonMaterial instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"])) {
             throw new Error(context + ": Material type not supported");
         }
         var promises = new Array();
@@ -3466,11 +3683,11 @@ var KHR_materials_unlit = /** @class */ (function () {
         var properties = material.pbrMetallicRoughness;
         if (properties) {
             if (properties.baseColorFactor) {
-                babylonMaterial.albedoColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.baseColorFactor);
+                babylonMaterial.albedoColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(properties.baseColorFactor);
                 babylonMaterial.alpha = properties.baseColorFactor[3];
             }
             else {
-                babylonMaterial.albedoColor = babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
+                babylonMaterial.albedoColor = babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_0__["Color3"].White();
             }
             if (properties.baseColorTexture) {
                 promises.push(this._loader.loadTextureInfoAsync(context + "/baseColorTexture", properties.baseColorTexture, function (texture) {
@@ -3530,6 +3747,55 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].RegisterExtension(NAME, f
 
 /***/ }),
 
+/***/ "./glTF/2.0/Extensions/KHR_texture_basisu.ts":
+/*!***************************************************!*\
+  !*** ./glTF/2.0/Extensions/KHR_texture_basisu.ts ***!
+  \***************************************************/
+/*! exports provided: KHR_texture_basisu */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_basisu", function() { return KHR_texture_basisu; });
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
+var NAME = "KHR_texture_basisu";
+/**
+ * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1751)
+ * !!! Experimental Extension Subject to Changes !!!
+ */
+var KHR_texture_basisu = /** @class */ (function () {
+    /** @hidden */
+    function KHR_texture_basisu(loader) {
+        /** The name of this extension. */
+        this.name = NAME;
+        this._loader = loader;
+        this.enabled = loader.isExtensionUsed(NAME);
+    }
+    /** @hidden */
+    KHR_texture_basisu.prototype.dispose = function () {
+        delete this._loader;
+    };
+    /** @hidden */
+    KHR_texture_basisu.prototype._loadTextureAsync = function (context, texture, assign) {
+        var _this = this;
+        return _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].LoadExtensionAsync(context, texture, this.name, function (extensionContext, extension) {
+            var sampler = (texture.sampler == undefined ? _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].DefaultSampler : _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(context + "/sampler", _this._loader.gltf.samplers, texture.sampler));
+            var image = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/source", _this._loader.gltf.images, extension.source);
+            return _this._loader._createTextureAsync(context, sampler, image, function (babylonTexture) {
+                babylonTexture.gammaSpace = false;
+                assign(babylonTexture);
+            });
+        });
+    };
+    return KHR_texture_basisu;
+}());
+
+_glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new KHR_texture_basisu(loader); });
+
+
+/***/ }),
+
 /***/ "./glTF/2.0/Extensions/KHR_texture_transform.ts":
 /*!******************************************************!*\
   !*** ./glTF/2.0/Extensions/KHR_texture_transform.ts ***!
@@ -3547,7 +3813,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var NAME = "KHR_texture_transform";
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform)
  */
 var KHR_texture_transform = /** @class */ (function () {
     /** @hidden */
@@ -3610,8 +3876,8 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return MSFT_audio_emitter; });
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math */ "babylonjs/Misc/tools");
-/* harmony import */ var babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/tools");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
 
 
@@ -3681,8 +3947,8 @@ var MSFT_audio_emitter = /** @class */ (function () {
                             var sound = _a[_i];
                             sound.attachToMesh(babylonMesh);
                             if (emitter.innerAngle != undefined || emitter.outerAngle != undefined) {
-                                sound.setLocalDirectionToMesh(babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Forward());
-                                sound.setDirectionalCone(2 * babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToDegrees(emitter.innerAngle == undefined ? Math.PI : emitter.innerAngle), 2 * babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToDegrees(emitter.outerAngle == undefined ? Math.PI : emitter.outerAngle), 0);
+                                sound.setLocalDirectionToMesh(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Forward());
+                                sound.setDirectionalCone(2 * babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToDegrees(emitter.innerAngle == undefined ? Math.PI : emitter.innerAngle), 2 * babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToDegrees(emitter.outerAngle == undefined ? Math.PI : emitter.outerAngle), 0);
                             }
                         }
                     }));
@@ -3748,7 +4014,7 @@ var MSFT_audio_emitter = /** @class */ (function () {
                 var clipContext = "#/extensions/" + this_1.name + "/clips";
                 var clip = _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["ArrayItem"].Get(clipContext, this_1._clips, emitter.clips[i].clip);
                 clipPromises.push(this_1._loadClipAsync(clipContext + "/" + emitter.clips[i].clip, clip).then(function (objectURL) {
-                    var sound = emitter._babylonSounds[i] = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Sound"](name_1, objectURL, _this._loader.babylonScene, null, options_1);
+                    var sound = emitter._babylonSounds[i] = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Sound"](name_1, objectURL, _this._loader.babylonScene, null, options_1);
                     sound.refDistance = emitter.refDistance || 1;
                     sound.maxDistance = emitter.maxDistance || 256;
                     sound.rolloffFactor = emitter.rolloffFactor || 1;
@@ -3762,12 +4028,12 @@ var MSFT_audio_emitter = /** @class */ (function () {
             }
             var promise = Promise.all(clipPromises).then(function () {
                 var weights = emitter.clips.map(function (clip) { return clip.weight || 1; });
-                var weightedSound = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["WeightedSound"](emitter.loop || false, emitter._babylonSounds, weights);
+                var weightedSound = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["WeightedSound"](emitter.loop || false, emitter._babylonSounds, weights);
                 if (emitter.innerAngle) {
-                    weightedSound.directionalConeInnerAngle = 2 * babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToDegrees(emitter.innerAngle);
+                    weightedSound.directionalConeInnerAngle = 2 * babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToDegrees(emitter.innerAngle);
                 }
                 if (emitter.outerAngle) {
-                    weightedSound.directionalConeOuterAngle = 2 * babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToDegrees(emitter.outerAngle);
+                    weightedSound.directionalConeOuterAngle = 2 * babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToDegrees(emitter.outerAngle);
                 }
                 if (emitter.volume) {
                     weightedSound.volume = emitter.volume;
@@ -3814,7 +4080,7 @@ var MSFT_audio_emitter = /** @class */ (function () {
         return this._loadEmitterAsync(context, emitter).then(function () {
             var sound = emitter._babylonData.sound;
             if (sound) {
-                var babylonAnimationEvent = new babylonjs_Maths_math__WEBPACK_IMPORTED_MODULE_0__["AnimationEvent"](event.time, _this._getEventAction(context, sound, event.action, event.time, event.startOffset));
+                var babylonAnimationEvent = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["AnimationEvent"](event.time, _this._getEventAction(context, sound, event.action, event.time, event.startOffset));
                 babylonAnimation.animation.addEvent(babylonAnimationEvent);
                 // Make sure all started audio stops when this animation is terminated.
                 babylonAnimationGroup.onAnimationGroupEndObservable.add(function () {
@@ -3894,7 +4160,6 @@ var MSFT_lod = /** @class */ (function () {
     }
     /** @hidden */
     MSFT_lod.prototype.dispose = function () {
-        this._disposeUnusedMaterials();
         delete this._loader;
         this._nodeIndexLOD = null;
         this._nodeSignalLODs.length = 0;
@@ -3955,6 +4220,14 @@ var MSFT_lod = /** @class */ (function () {
         }
     };
     /** @hidden */
+    MSFT_lod.prototype.loadSceneAsync = function (context, scene) {
+        var promise = this._loader.loadSceneAsync(context, scene);
+        if (this._bufferLODs.length !== 0) {
+            this._loadBufferLOD(0);
+        }
+        return promise;
+    };
+    /** @hidden */
     MSFT_lod.prototype.loadNodeAsync = function (context, node, assign) {
         var _this = this;
         return _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].LoadExtensionAsync(context, node, this.name, function (extensionContext, extension) {
@@ -3974,9 +4247,8 @@ var MSFT_lod = /** @class */ (function () {
                         // TODO: should not rely on _babylonTransformNode
                         var previousNodeLOD = nodeLODs[indexLOD - 1];
                         if (previousNodeLOD._babylonTransformNode) {
-                            previousNodeLOD._babylonTransformNode.dispose();
+                            _this._disposeTransformNode(previousNodeLOD._babylonTransformNode);
                             delete previousNodeLOD._babylonTransformNode;
-                            _this._disposeUnusedMaterials();
                         }
                     }
                     babylonMesh.setEnabled(true);
@@ -3984,9 +4256,6 @@ var MSFT_lod = /** @class */ (function () {
                 });
                 if (indexLOD === 0) {
                     firstPromise = promise;
-                    if (_this._bufferLODs.length !== 0) {
-                        _this._loadBufferLOD(0);
-                    }
                 }
                 else {
                     _this._nodeIndexLOD = null;
@@ -4029,7 +4298,7 @@ var MSFT_lod = /** @class */ (function () {
                         // TODO: should not rely on _data
                         var previousDataLOD = materialLODs[indexLOD - 1]._data;
                         if (previousDataLOD[babylonDrawMode]) {
-                            previousDataLOD[babylonDrawMode].babylonMaterial.dispose();
+                            _this._disposeMaterials([previousDataLOD[babylonDrawMode].babylonMaterial]);
                             delete previousDataLOD[babylonDrawMode];
                         }
                     }
@@ -4037,9 +4306,6 @@ var MSFT_lod = /** @class */ (function () {
                 });
                 if (indexLOD === 0) {
                     firstPromise = promise;
-                    if (_this._bufferLODs.length !== 0) {
-                        _this._loadBufferLOD(0);
-                    }
                 }
                 else {
                     _this._materialIndexLOD = null;
@@ -4127,26 +4393,43 @@ var MSFT_lod = /** @class */ (function () {
         properties.push(property);
         return properties;
     };
-    MSFT_lod.prototype._disposeUnusedMaterials = function () {
-        // TODO: should not rely on _data
-        var materials = this._loader.gltf.materials;
-        if (materials) {
-            for (var _i = 0, materials_1 = materials; _i < materials_1.length; _i++) {
-                var material = materials_1[_i];
-                if (material._data) {
-                    var _loop_5 = function (drawMode) {
-                        var data = material._data[drawMode];
-                        if (data.babylonMeshes.every(function (babylonMesh) { return babylonMesh.material !== data.babylonMaterial; })) {
-                            // TODO: check if texture is in use instead of force disposing textures
-                            data.babylonMaterial.dispose(false, true);
-                            delete material._data[drawMode];
-                        }
-                    };
-                    for (var drawMode in material._data) {
-                        _loop_5(drawMode);
-                    }
+    MSFT_lod.prototype._disposeTransformNode = function (babylonTransformNode) {
+        var _this = this;
+        var babylonMaterials = new Array();
+        var babylonMaterial = babylonTransformNode.material;
+        if (babylonMaterial) {
+            babylonMaterials.push(babylonMaterial);
+        }
+        for (var _i = 0, _a = babylonTransformNode.getChildMeshes(); _i < _a.length; _i++) {
+            var babylonMesh = _a[_i];
+            if (babylonMesh.material) {
+                babylonMaterials.push(babylonMesh.material);
+            }
+        }
+        babylonTransformNode.dispose();
+        var babylonMaterialsToDispose = babylonMaterials.filter(function (babylonMaterial) { return _this._loader.babylonScene.meshes.every(function (mesh) { return mesh.material != babylonMaterial; }); });
+        this._disposeMaterials(babylonMaterialsToDispose);
+    };
+    MSFT_lod.prototype._disposeMaterials = function (babylonMaterials) {
+        var babylonTextures = {};
+        for (var _i = 0, babylonMaterials_1 = babylonMaterials; _i < babylonMaterials_1.length; _i++) {
+            var babylonMaterial = babylonMaterials_1[_i];
+            for (var _a = 0, _b = babylonMaterial.getActiveTextures(); _a < _b.length; _a++) {
+                var babylonTexture = _b[_a];
+                babylonTextures[babylonTexture.uniqueId] = babylonTexture;
+            }
+            babylonMaterial.dispose();
+        }
+        for (var uniqueId in babylonTextures) {
+            for (var _c = 0, _d = this._loader.babylonScene.materials; _c < _d.length; _c++) {
+                var babylonMaterial = _d[_c];
+                if (babylonMaterial.hasTexture(babylonTextures[uniqueId])) {
+                    delete babylonTextures[uniqueId];
                 }
             }
+        }
+        for (var uniqueId in babylonTextures) {
+            babylonTextures[uniqueId].dispose();
         }
     };
     return MSFT_lod;
@@ -4267,7 +4550,7 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 /*!**************************************!*\
   !*** ./glTF/2.0/Extensions/index.ts ***!
   \**************************************/
-/*! exports provided: EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_mesh_quantization, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
+/*! exports provided: EXT_lights_image_based, EXT_mesh_gpu_instancing, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_materials_ior, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4275,47 +4558,59 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _EXT_lights_image_based__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./EXT_lights_image_based */ "./glTF/2.0/Extensions/EXT_lights_image_based.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_lights_image_based", function() { return _EXT_lights_image_based__WEBPACK_IMPORTED_MODULE_0__["EXT_lights_image_based"]; });
 
-/* harmony import */ var _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./KHR_draco_mesh_compression */ "./glTF/2.0/Extensions/KHR_draco_mesh_compression.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_1__["KHR_draco_mesh_compression"]; });
+/* harmony import */ var _EXT_mesh_gpu_instancing__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./EXT_mesh_gpu_instancing */ "./glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_mesh_gpu_instancing", function() { return _EXT_mesh_gpu_instancing__WEBPACK_IMPORTED_MODULE_1__["EXT_mesh_gpu_instancing"]; });
 
-/* harmony import */ var _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KHR_lights_punctual */ "./glTF/2.0/Extensions/KHR_lights_punctual.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights", function() { return _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_2__["KHR_lights"]; });
+/* harmony import */ var _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KHR_draco_mesh_compression */ "./glTF/2.0/Extensions/KHR_draco_mesh_compression.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_2__["KHR_draco_mesh_compression"]; });
 
-/* harmony import */ var _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./KHR_materials_pbrSpecularGlossiness */ "./glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_pbrSpecularGlossiness", function() { return _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_3__["KHR_materials_pbrSpecularGlossiness"]; });
+/* harmony import */ var _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./KHR_lights_punctual */ "./glTF/2.0/Extensions/KHR_lights_punctual.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights", function() { return _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_3__["KHR_lights"]; });
 
-/* harmony import */ var _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KHR_materials_unlit */ "./glTF/2.0/Extensions/KHR_materials_unlit.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_unlit", function() { return _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_4__["KHR_materials_unlit"]; });
+/* harmony import */ var _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KHR_materials_pbrSpecularGlossiness */ "./glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_pbrSpecularGlossiness", function() { return _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_4__["KHR_materials_pbrSpecularGlossiness"]; });
 
-/* harmony import */ var _KHR_materials_clearcoat__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./KHR_materials_clearcoat */ "./glTF/2.0/Extensions/KHR_materials_clearcoat.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_clearcoat", function() { return _KHR_materials_clearcoat__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_clearcoat"]; });
+/* harmony import */ var _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./KHR_materials_unlit */ "./glTF/2.0/Extensions/KHR_materials_unlit.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_unlit", function() { return _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_unlit"]; });
 
-/* harmony import */ var _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./KHR_materials_sheen */ "./glTF/2.0/Extensions/KHR_materials_sheen.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_6__["KHR_materials_sheen"]; });
+/* harmony import */ var _KHR_materials_clearcoat__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./KHR_materials_clearcoat */ "./glTF/2.0/Extensions/KHR_materials_clearcoat.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_clearcoat", function() { return _KHR_materials_clearcoat__WEBPACK_IMPORTED_MODULE_6__["KHR_materials_clearcoat"]; });
 
-/* harmony import */ var _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./KHR_materials_specular */ "./glTF/2.0/Extensions/KHR_materials_specular.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_specular", function() { return _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_7__["KHR_materials_specular"]; });
+/* harmony import */ var _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./KHR_materials_sheen */ "./glTF/2.0/Extensions/KHR_materials_sheen.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_7__["KHR_materials_sheen"]; });
 
-/* harmony import */ var _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./KHR_mesh_quantization */ "./glTF/2.0/Extensions/KHR_mesh_quantization.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_quantization", function() { return _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_8__["KHR_mesh_quantization"]; });
+/* harmony import */ var _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./KHR_materials_specular */ "./glTF/2.0/Extensions/KHR_materials_specular.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_specular", function() { return _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_8__["KHR_materials_specular"]; });
 
-/* harmony import */ var _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./KHR_texture_transform */ "./glTF/2.0/Extensions/KHR_texture_transform.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_9__["KHR_texture_transform"]; });
+/* harmony import */ var _KHR_materials_ior__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./KHR_materials_ior */ "./glTF/2.0/Extensions/KHR_materials_ior.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_ior", function() { return _KHR_materials_ior__WEBPACK_IMPORTED_MODULE_9__["KHR_materials_ior"]; });
 
-/* harmony import */ var _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./MSFT_audio_emitter */ "./glTF/2.0/Extensions/MSFT_audio_emitter.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_10__["MSFT_audio_emitter"]; });
+/* harmony import */ var _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./KHR_mesh_quantization */ "./glTF/2.0/Extensions/KHR_mesh_quantization.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_quantization", function() { return _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_10__["KHR_mesh_quantization"]; });
 
-/* harmony import */ var _MSFT_lod__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./MSFT_lod */ "./glTF/2.0/Extensions/MSFT_lod.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_lod", function() { return _MSFT_lod__WEBPACK_IMPORTED_MODULE_11__["MSFT_lod"]; });
+/* harmony import */ var _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./KHR_texture_basisu */ "./glTF/2.0/Extensions/KHR_texture_basisu.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_basisu", function() { return _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_11__["KHR_texture_basisu"]; });
 
-/* harmony import */ var _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./MSFT_minecraftMesh */ "./glTF/2.0/Extensions/MSFT_minecraftMesh.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_12__["MSFT_minecraftMesh"]; });
+/* harmony import */ var _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./KHR_texture_transform */ "./glTF/2.0/Extensions/KHR_texture_transform.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_12__["KHR_texture_transform"]; });
 
-/* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_13__["MSFT_sRGBFactors"]; });
+/* harmony import */ var _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./MSFT_audio_emitter */ "./glTF/2.0/Extensions/MSFT_audio_emitter.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_13__["MSFT_audio_emitter"]; });
 
-/* harmony import */ var _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./ExtrasAsMetadata */ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_14__["ExtrasAsMetadata"]; });
+/* harmony import */ var _MSFT_lod__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./MSFT_lod */ "./glTF/2.0/Extensions/MSFT_lod.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_lod", function() { return _MSFT_lod__WEBPACK_IMPORTED_MODULE_14__["MSFT_lod"]; });
+
+/* harmony import */ var _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./MSFT_minecraftMesh */ "./glTF/2.0/Extensions/MSFT_minecraftMesh.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_15__["MSFT_minecraftMesh"]; });
+
+/* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_16__["MSFT_sRGBFactors"]; });
+
+/* harmony import */ var _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./ExtrasAsMetadata */ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_17__["ExtrasAsMetadata"]; });
+
+
+
 
 
 
@@ -4350,6 +4645,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/deferred */ "babylonjs/Misc/tools");
 /* harmony import */ var babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTFFileLoader */ "./glTF/glTFFileLoader.ts");
+
 
 
 
@@ -4414,6 +4710,10 @@ var GLTFLoader = /** @class */ (function () {
     function GLTFLoader(parent) {
         /** @hidden */
         this._completePromises = new Array();
+        /** @hidden */
+        this._forAssetContainer = false;
+        /** Storage */
+        this._babylonLights = [];
         this._disposed = false;
         this._state = null;
         this._extensions = new Array();
@@ -4448,7 +4748,7 @@ var GLTFLoader = /** @class */ (function () {
     };
     Object.defineProperty(GLTFLoader.prototype, "state", {
         /**
-         * Gets the loader state.
+         * The loader state.
          */
         get: function () {
             return this._state;
@@ -4530,13 +4830,14 @@ var GLTFLoader = /** @class */ (function () {
         this._parent._clear();
     };
     /** @hidden */
-    GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress, fileName) {
+    GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, forAssetContainer, data, rootUrl, onProgress, fileName) {
         var _this = this;
         return Promise.resolve().then(function () {
             _this._babylonScene = scene;
             _this._rootUrl = rootUrl;
             _this._fileName = fileName || "scene";
             _this._progressCallback = onProgress;
+            _this._forAssetContainer = forAssetContainer;
             _this._loadData(data);
             var nodes = null;
             if (meshesNames) {
@@ -4563,7 +4864,9 @@ var GLTFLoader = /** @class */ (function () {
                     meshes: _this._getMeshes(),
                     particleSystems: [],
                     skeletons: _this._getSkeletons(),
-                    animationGroups: _this._getAnimationGroups()
+                    animationGroups: _this._getAnimationGroups(),
+                    lights: _this._babylonLights,
+                    transformNodes: _this._getTransformNodes()
                 };
             });
         });
@@ -4730,7 +5033,9 @@ var GLTFLoader = /** @class */ (function () {
         this.log(_glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoaderState"][this._state]);
     };
     GLTFLoader.prototype._createRootNode = function () {
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         this._rootBabylonMesh = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Mesh"]("__root__", this._babylonScene);
+        this._babylonScene._blockEntityCollection = false;
         this._rootBabylonMesh.setEnabled(false);
         var rootNode = {
             _babylonTransformNode: this._rootBabylonMesh,
@@ -4818,6 +5123,19 @@ var GLTFLoader = /** @class */ (function () {
             }
         }
         return meshes;
+    };
+    GLTFLoader.prototype._getTransformNodes = function () {
+        var transformNodes = new Array();
+        var nodes = this._gltf.nodes;
+        if (nodes) {
+            for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
+                var node = nodes_2[_i];
+                if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
+                    transformNodes.push(node._babylonTransformNode);
+                }
+            }
+        }
+        return transformNodes;
     };
     GLTFLoader.prototype._getSkeletons = function () {
         var skeletons = new Array();
@@ -4913,7 +5231,9 @@ var GLTFLoader = /** @class */ (function () {
         };
         if (node.mesh == undefined) {
             var nodeName = node.name || "node" + node.index;
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             node._babylonTransformNode = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["TransformNode"](nodeName, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             loadNode(node._babylonTransformNode);
         }
         else {
@@ -4947,7 +5267,9 @@ var GLTFLoader = /** @class */ (function () {
             }));
         }
         else {
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             node._babylonTransformNode = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["TransformNode"](name, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             node._primitiveBabylonMeshes = [];
             for (var _i = 0, primitives_1 = primitives; _i < primitives_1.length; _i++) {
                 var primitive = primitives_1[_i];
@@ -4993,7 +5315,9 @@ var GLTFLoader = /** @class */ (function () {
         }
         else {
             var promises = new Array();
+            this._babylonScene._blockEntityCollection = this._forAssetContainer;
             var babylonMesh_1 = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Mesh"](name, this._babylonScene);
+            this._babylonScene._blockEntityCollection = false;
             babylonMesh_1.overrideMaterialSideOrientation = this._babylonScene.useRightHandedSystem ? babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].CounterClockWiseSideOrientation : babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].ClockWiseSideOrientation;
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh_1);
             promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh_1).then(function (babylonGeometry) {
@@ -5213,7 +5537,9 @@ var GLTFLoader = /** @class */ (function () {
             return skin._data.promise;
         }
         var skeletonId = "skeleton" + skin.index;
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         var babylonSkeleton = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Skeleton"](skin.name || skeletonId, skeletonId, this._babylonScene);
+        this._babylonScene._blockEntityCollection = false;
         // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
         babylonSkeleton.overrideMesh = this._rootBabylonMesh;
         this._loadBones(context, skin, babylonSkeleton);
@@ -5295,7 +5621,9 @@ var GLTFLoader = /** @class */ (function () {
         }
         var promises = new Array();
         this.logOpen(context + " " + (camera.name || ""));
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         var babylonCamera = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["FreeCamera"](camera.name || "camera" + camera.index, babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Vector3"].Zero(), this._babylonScene, false);
+        this._babylonScene._blockEntityCollection = false;
         babylonCamera.rotation = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Vector3"](0, Math.PI, 0);
         switch (camera.type) {
             case "perspective" /* PERSPECTIVE */: {
@@ -5355,7 +5683,9 @@ var GLTFLoader = /** @class */ (function () {
         if (promise) {
             return promise;
         }
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         var babylonAnimationGroup = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["AnimationGroup"](animation.name || "animation" + animation.index, this._babylonScene);
+        this._babylonScene._blockEntityCollection = false;
         animation._babylonAnimationGroup = babylonAnimationGroup;
         var promises = new Array();
         ArrayItem.Assign(animation.channels);
@@ -5662,6 +5992,7 @@ var GLTFLoader = /** @class */ (function () {
         }
         return accessor._data;
     };
+    /** @hidden */
     GLTFLoader.prototype._loadFloatAccessorAsync = function (context, accessor) {
         return this._loadAccessorAsync(context, accessor, Float32Array);
     };
@@ -5800,7 +6131,9 @@ var GLTFLoader = /** @class */ (function () {
         });
     };
     GLTFLoader.prototype._createDefaultMaterial = function (name, babylonDrawMode) {
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
         var babylonMaterial = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["PBRMaterial"](name, this._babylonScene);
+        this._babylonScene._blockEntityCollection = false;
         // Moved to mesh so user can change materials on gltf meshes: babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.enableSpecularAntiAliasing = true;
@@ -5960,26 +6293,29 @@ var GLTFLoader = /** @class */ (function () {
         this.logClose();
         return promise;
     };
+    /** @hidden */
     GLTFLoader.prototype._loadTextureAsync = function (context, texture, assign) {
+        if (assign === void 0) { assign = function () { }; }
+        var extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign);
+        if (extensionPromise) {
+            return extensionPromise;
+        }
+        this.logOpen(context + " " + (texture.name || ""));
+        var sampler = (texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(context + "/sampler", this._gltf.samplers, texture.sampler));
+        var image = ArrayItem.Get(context + "/source", this._gltf.images, texture.source);
+        var promise = this._createTextureAsync(context, sampler, image, assign);
+        this.logClose();
+        return promise;
+    };
+    /** @hidden */
+    GLTFLoader.prototype._createTextureAsync = function (context, sampler, image, assign) {
         var _this = this;
         if (assign === void 0) { assign = function () { }; }
-        var promises = new Array();
-        this.logOpen(context + " " + (texture.name || ""));
-        var sampler = (texture.sampler == undefined ? GLTFLoader._DefaultSampler : ArrayItem.Get(context + "/sampler", this._gltf.samplers, texture.sampler));
         var samplerData = this._loadSampler("/samplers/" + sampler.index, sampler);
-        var image = ArrayItem.Get(context + "/source", this._gltf.images, texture.source);
-        var url = null;
-        if (image.uri) {
-            if (babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Tools"].IsBase64(image.uri)) {
-                url = image.uri;
-            }
-            else if (this._babylonScene.getEngine().textureFormatInUse) {
-                // If an image uri and a texture format is set like (eg. KTX) load from url instead of blob to support texture format and fallback
-                url = this._rootUrl + image.uri;
-            }
-        }
+        var promises = new Array();
         var deferred = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Deferred"]();
-        var babylonTexture = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Texture"](url, this._babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, function () {
+        this._babylonScene._blockEntityCollection = this._forAssetContainer;
+        var babylonTexture = new babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Texture"](null, this._babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, function () {
             if (!_this._disposed) {
                 deferred.resolve();
             }
@@ -5988,18 +6324,16 @@ var GLTFLoader = /** @class */ (function () {
                 deferred.reject(new Error(context + ": " + ((exception && exception.message) ? exception.message : message || "Failed to load texture")));
             }
         }, undefined, undefined, undefined, image.mimeType);
+        this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
-        if (!url) {
-            promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
-                var name = image.uri || _this._fileName + "#image" + image.index;
-                var dataUrl = "data:" + _this._uniqueRootUrl + name;
-                babylonTexture.updateURL(dataUrl, data);
-            }));
-        }
+        promises.push(this.loadImageAsync("/images/" + image.index, image).then(function (data) {
+            var name = image.uri || _this._fileName + "#image" + image.index;
+            var dataUrl = "data:" + _this._uniqueRootUrl + name;
+            babylonTexture.updateURL(dataUrl, data);
+        }));
         babylonTexture.wrapU = samplerData.wrapU;
         babylonTexture.wrapV = samplerData.wrapV;
         assign(babylonTexture);
-        this.logClose();
         return Promise.all(promises).then(function () {
             return babylonTexture;
         });
@@ -6330,6 +6664,9 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype._extensionsLoadTextureInfoAsync = function (context, textureInfo, assign) {
         return this._applyExtensions(textureInfo, "loadTextureInfo", function (extension) { return extension.loadTextureInfoAsync && extension.loadTextureInfoAsync(context, textureInfo, assign); });
     };
+    GLTFLoader.prototype._extensionsLoadTextureAsync = function (context, texture, assign) {
+        return this._applyExtensions(texture, "loadTexture", function (extension) { return extension._loadTextureAsync && extension._loadTextureAsync(context, texture, assign); });
+    };
     GLTFLoader.prototype._extensionsLoadAnimationAsync = function (context, animation) {
         return this._applyExtensions(animation, "loadAnimation", function (extension) { return extension.loadAnimationAsync && extension.loadAnimationAsync(context, animation); });
     };
@@ -6425,8 +6762,11 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype.endPerformanceCounter = function (counterName) {
         this._parent._endPerformanceCounter(counterName);
     };
-    GLTFLoader._DefaultSampler = { index: -1 };
     GLTFLoader._RegisteredExtensions = {};
+    /**
+     * The default glTF sampler.
+     */
+    GLTFLoader.DefaultSampler = { index: -1 };
     return GLTFLoader;
 }());
 
@@ -6450,7 +6790,7 @@ _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFFileLoader"]._CreateGLTF2Loade
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! exports provided: ArrayItem, GLTFLoader, EXT_lights_image_based, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_mesh_quantization, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
+/*! exports provided: ArrayItem, GLTFLoader, EXT_lights_image_based, EXT_mesh_gpu_instancing, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_materials_ior, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6462,6 +6802,8 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony import */ var _Extensions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Extensions */ "./glTF/2.0/Extensions/index.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_lights_image_based", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["EXT_lights_image_based"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_mesh_gpu_instancing", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["EXT_mesh_gpu_instancing"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_draco_mesh_compression"]; });
 
@@ -6477,7 +6819,11 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_specular", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_materials_specular"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_ior", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_materials_ior"]; });
+
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_quantization", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_mesh_quantization"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_basisu", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_texture_basisu"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_1__["KHR_texture_transform"]; });
 
@@ -6905,7 +7251,10 @@ var GLTFFileLoader = /** @class */ (function () {
                     readAsync: function (byteOffset, byteLength) {
                         return new Promise(function (resolve, reject) {
                             fileRequests_1.push(scene._requestFile(url, function (data, webRequest) {
-                                dataBuffer_1.byteLength = Number(webRequest.getResponseHeader("Content-Range").split("/")[1]);
+                                var contentRange = webRequest.getResponseHeader("Content-Range");
+                                if (contentRange) {
+                                    dataBuffer_1.byteLength = Number(contentRange.split("/")[1]);
+                                }
                                 resolve(new Uint8Array(data));
                             }, onProgress, true, true, function (error) {
                                 reject(error);
@@ -6962,7 +7311,7 @@ var GLTFFileLoader = /** @class */ (function () {
             _this.onParsedObservable.clear();
             _this._log("Loading " + (fileName || ""));
             _this._loader = _this._getLoader(data);
-            return _this._loader.importMeshAsync(meshesNames, scene, data, rootUrl, onProgress, fileName);
+            return _this._loader.importMeshAsync(meshesNames, scene, false, data, rootUrl, onProgress, fileName);
         });
     };
     /** @hidden */
@@ -6993,7 +7342,11 @@ var GLTFFileLoader = /** @class */ (function () {
             _this.onTextureLoadedObservable.add(function (texture) {
                 textures.push(texture);
             });
-            return _this._loader.importMeshAsync(null, scene, data, rootUrl, onProgress, fileName).then(function (result) {
+            var cameras = [];
+            _this.onCameraLoadedObservable.add(function (camera) {
+                cameras.push(camera);
+            });
+            return _this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then(function (result) {
                 var container = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["AssetContainer"](scene);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
@@ -7001,7 +7354,9 @@ var GLTFFileLoader = /** @class */ (function () {
                 Array.prototype.push.apply(container.animationGroups, result.animationGroups);
                 Array.prototype.push.apply(container.materials, materials);
                 Array.prototype.push.apply(container.textures, textures);
-                container.removeAllFromScene();
+                Array.prototype.push.apply(container.lights, result.lights);
+                Array.prototype.push.apply(container.transformNodes, result.transformNodes);
+                Array.prototype.push.apply(container.cameras, cameras);
                 return container;
             });
         });
@@ -7116,17 +7471,17 @@ var GLTFFileLoader = /** @class */ (function () {
                 _this._log("Binary version: " + version);
             }
             var length = dataReader.readUint32();
-            if (length !== dataReader.buffer.byteLength) {
+            if (dataReader.buffer.byteLength != 0 && length !== dataReader.buffer.byteLength) {
                 throw new Error("Length in header does not match actual data length: " + length + " != " + dataReader.buffer.byteLength);
             }
             var unpacked;
             switch (version) {
                 case 1: {
-                    unpacked = _this._unpackBinaryV1Async(dataReader);
+                    unpacked = _this._unpackBinaryV1Async(dataReader, length);
                     break;
                 }
                 case 2: {
-                    unpacked = _this._unpackBinaryV2Async(dataReader);
+                    unpacked = _this._unpackBinaryV2Async(dataReader, length);
                     break;
                 }
                 default: {
@@ -7137,7 +7492,7 @@ var GLTFFileLoader = /** @class */ (function () {
             return unpacked;
         });
     };
-    GLTFFileLoader.prototype._unpackBinaryV1Async = function (dataReader) {
+    GLTFFileLoader.prototype._unpackBinaryV1Async = function (dataReader, length) {
         var ContentFormat = {
             JSON: 0
         };
@@ -7146,7 +7501,7 @@ var GLTFFileLoader = /** @class */ (function () {
         if (contentFormat !== ContentFormat.JSON) {
             throw new Error("Unexpected content format: " + contentFormat);
         }
-        var bodyLength = dataReader.buffer.byteLength - dataReader.byteOffset;
+        var bodyLength = length - dataReader.byteOffset;
         var data = { json: this._parseJson(dataReader.readString(contentLength)), bin: null };
         if (bodyLength !== 0) {
             var startByteOffset_1 = dataReader.byteOffset;
@@ -7157,7 +7512,7 @@ var GLTFFileLoader = /** @class */ (function () {
         }
         return Promise.resolve(data);
     };
-    GLTFFileLoader.prototype._unpackBinaryV2Async = function (dataReader) {
+    GLTFFileLoader.prototype._unpackBinaryV2Async = function (dataReader, length) {
         var _this = this;
         var ChunkFormat = {
             JSON: 0x4E4F534A,
@@ -7170,7 +7525,7 @@ var GLTFFileLoader = /** @class */ (function () {
             throw new Error("First chunk format is not JSON");
         }
         // Bail if there are no other chunks.
-        if (dataReader.byteOffset + chunkLength === dataReader.buffer.byteLength) {
+        if (dataReader.byteOffset + chunkLength === length) {
             return dataReader.loadAsync(chunkLength).then(function () {
                 return { json: _this._parseJson(dataReader.readString(chunkLength)), bin: null };
             });
@@ -7200,7 +7555,7 @@ var GLTFFileLoader = /** @class */ (function () {
                         break;
                     }
                 }
-                if (dataReader.byteOffset !== dataReader.buffer.byteLength) {
+                if (dataReader.byteOffset !== length) {
                     return dataReader.loadAsync(8).then(readAsync);
                 }
                 return Promise.resolve(data);
@@ -7557,7 +7912,7 @@ if (typeof globalObject !== "undefined") {
 /*!*****************************************!*\
   !*** ./legacy/legacy-glTFFileLoader.ts ***!
   \*****************************************/
-/*! exports provided: GLTF1, GLTF2, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, GLTFLoaderState, GLTFFileLoader, GLTFValidation */
+/*! exports provided: GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, GLTFLoaderState, GLTFFileLoader, GLTFValidation, GLTF1, GLTF2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

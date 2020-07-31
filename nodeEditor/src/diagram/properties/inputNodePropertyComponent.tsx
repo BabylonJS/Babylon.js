@@ -16,36 +16,76 @@ import { NodeMaterialSystemValues } from 'babylonjs/Materials/Node/Enums/nodeMat
 import { AnimatedInputBlockTypes } from 'babylonjs/Materials/Node/Blocks/Input/animatedInputBlockTypes';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 import { TextInputLineComponent } from '../../sharedComponents/textInputLineComponent';
+import { CheckBoxLineComponent } from '../../sharedComponents/checkBoxLineComponent';
+import { Color4PropertyTabComponent } from '../../components/propertyTab/properties/color4PropertyTabComponent';
+import { Nullable } from 'babylonjs/types';
+import { Observer } from 'babylonjs/Misc/observable';
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+    
+    private onValueChangedObserver: Nullable<Observer<InputBlock>>;
+
     constructor(props: IPropertyComponentProps) {
         super(props)
     }
+
+    componentDidMount() {        
+        let inputBlock = this.props.block as InputBlock;
+        this.onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
+            this.forceUpdate()
+            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        });
+    }
+
+    componentWillUnmount() {
+        
+        let inputBlock = this.props.block as InputBlock;
+        if (this.onValueChangedObserver) {
+            inputBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
+            this.onValueChangedObserver = null;
+        }
+    }    
 
     renderValue(globalState: GlobalState) {
         let inputBlock = this.props.block as InputBlock;
         switch (inputBlock.type) {
             case NodeMaterialBlockConnectionPointTypes.Float: {
-                let cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);
+                let cantDisplaySlider = (isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max);            
                 return (
                     <>
-                        <FloatLineComponent label="Min" target={inputBlock} propertyName="min" onChange={() => {
-                            this.forceUpdate();
-                        }}></FloatLineComponent>
-                        <FloatLineComponent label="Max" target={inputBlock} propertyName="max" onChange={() => {
-                            this.forceUpdate();
-                        }}></FloatLineComponent>      
-
+                        <CheckBoxLineComponent label="Is boolean" target={inputBlock} propertyName="isBoolean" />
                         {
-                            cantDisplaySlider &&
+                            inputBlock.isBoolean &&
+                            <CheckBoxLineComponent label="Value" isSelected={() => {
+                                return inputBlock.value === 1
+                            }} onSelect={(value) => {
+                                inputBlock.value = value ? 1 : 0;
+                                if (inputBlock.isConstant) {
+                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
+                                }
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            }}/>
+                        }
+                        {
+                            !inputBlock.isBoolean &&
+                            <FloatLineComponent globalState={this.props.globalState} label="Min" target={inputBlock} propertyName="min" onChange={() => this.forceUpdate()}></FloatLineComponent>
+                        }
+                        {
+                            !inputBlock.isBoolean &&
+                            <FloatLineComponent globalState={this.props.globalState} label="Max" target={inputBlock} propertyName="max" onChange={() => this.forceUpdate()}></FloatLineComponent>      
+                        }
+                        {
+                            !inputBlock.isBoolean && cantDisplaySlider &&
                             <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                         }        
                         {
-                            !cantDisplaySlider &&
-                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={(inputBlock.max - inputBlock.min) / 100.0} minimum={inputBlock.min} maximum={inputBlock.max} onChange={() => {
-                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                            !inputBlock.isBoolean && !cantDisplaySlider &&
+                            <SliderLineComponent label="Value" target={inputBlock} propertyName="value" step={Math.abs(inputBlock.max - inputBlock.min) / 100.0} minimum={Math.min(inputBlock.min, inputBlock.max)} maximum={inputBlock.max} onChange={() => {
+                                if (inputBlock.isConstant) {
+                                    this.props.globalState.onRebuildRequiredObservable.notifyObservers();    
+                                }
                             }}/>
                         }
                     </>
@@ -56,9 +96,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     <Vector2PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Color3:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
                 return (
                     <Color3PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
+                );
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return (
+                    <Color4PropertyTabComponent globalState={globalState} inputBlock={inputBlock} />
                 );
             case NodeMaterialBlockConnectionPointTypes.Vector3:
                 return (
@@ -163,7 +206,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         return (
             <div>
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="PROPERTIES">
                     {
                         inputBlock.isUniform && !inputBlock.isSystemValue && inputBlock.animationType === AnimatedInputBlockTypes.None &&

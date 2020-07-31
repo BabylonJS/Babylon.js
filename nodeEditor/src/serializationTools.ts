@@ -1,7 +1,7 @@
 import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
 import { GlobalState } from './globalState';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
-import { DataStorage } from './dataStorage';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
 
 export class SerializationTools {
@@ -38,10 +38,11 @@ export class SerializationTools {
         return JSON.stringify(serializationObject, undefined, 2);
     }
 
-    public static Deserialize(serializationObject:any, globalState: GlobalState) {       
-        globalState.onIsLoadingChanged.notifyObservers(true); 
+    public static Deserialize(serializationObject: any, globalState: GlobalState) {
+        globalState.onIsLoadingChanged.notifyObservers(true);
         globalState.nodeMaterial!.loadFromSerialization(serializationObject, "");
-        
+        globalState.mode = globalState.nodeMaterial!.mode;
+
         globalState.onResetRequiredObservable.notifyObservers();
     }
 }

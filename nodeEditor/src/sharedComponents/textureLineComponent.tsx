@@ -16,14 +16,16 @@ interface ITextureLineComponentProps {
 }
 
 export interface ITextureLineComponentState {
-    displayRed: boolean, 
-    displayGreen: boolean, 
-    displayBlue: boolean, 
-    displayAlpha: boolean, 
-    face: number
+    displayRed: boolean;
+    displayGreen: boolean;
+    displayBlue: boolean;
+    displayAlpha: boolean;
+    face: number;
 }
 
 export class TextureLineComponent extends React.Component<ITextureLineComponentProps, ITextureLineComponentState> {
+    private canvasRef: React.RefObject<HTMLCanvasElement>;
+
     constructor(props: ITextureLineComponentProps) {
         super(props);
 
@@ -34,6 +36,8 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
             displayAlpha: true,
             face: 0
         };
+
+        this.canvasRef = React.createRef();
     }
 
     shouldComponentUpdate(nextProps: ITextureLineComponentProps, nextState: { displayRed: boolean, displayGreen: boolean, displayBlue: boolean, displayAlpha: boolean, face: number }): boolean {
@@ -49,7 +53,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
     }
 
     public updatePreview() {
-        TextureLineComponent.UpdatePreview(this.refs.canvas as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
+        TextureLineComponent.UpdatePreview(this.canvasRef.current as HTMLCanvasElement, this.props.texture, this.props.width, this.state, undefined, this.props.globalState);
     }
 
     public static UpdatePreview(previewCanvas: HTMLCanvasElement, texture: BaseTexture, width: number, options: ITextureLineComponentState, onReady?: ()=> void, globalState?: any) {
@@ -206,7 +210,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
                         <button className={this.state.displayRed && this.state.displayGreen ? "all command selected" : "all command"} onClick={() => this.setState({ displayRed: true, displayGreen: true, displayBlue: true, displayAlpha: true })}>ALL</button>
                     </div>
                 }
-                <canvas ref="canvas" className="preview" />
+                <canvas ref={this.canvasRef} className="preview" />
             </div>
         );
     }

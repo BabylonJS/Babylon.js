@@ -6,6 +6,7 @@ import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { Effect } from '../effect';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Mesh } from '../../Meshes/mesh';
+import { SubMesh } from '../../Meshes/subMesh';
 import { NodeMaterial, NodeMaterialDefines } from './nodeMaterial';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { UniqueIdGenerator } from '../../Misc/uniqueIdGenerator';
@@ -23,6 +24,9 @@ export class NodeMaterialBlock {
     private _isFinalMerger = false;
     private _isInput = false;
     protected _isUnique = false;
+
+    /** Gets or sets a boolean indicating that only one input can be connected at a time */
+    public inputsAreExclusive = false;
 
     /** @hidden */
     public _codeVariableName = "";
@@ -168,8 +172,9 @@ export class NodeMaterialBlock {
      * @param effect defines the effect to bind data to
      * @param nodeMaterial defines the hosting NodeMaterial
      * @param mesh defines the mesh that will be rendered
+     * @param subMesh defines the submesh that will be rendered
      */
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         // Do nothing
     }
 
@@ -210,10 +215,11 @@ export class NodeMaterialBlock {
      * @param type defines the connection point type
      * @param isOptional defines a boolean indicating that this input can be omitted
      * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
+     * @param point an already created connection point. If not provided, create a new one
      * @returns the current block
      */
-    public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets) {
-        let point = new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Input);
+    public registerInput(name: string, type: NodeMaterialBlockConnectionPointTypes, isOptional: boolean = false, target?: NodeMaterialBlockTargets, point?: NodeMaterialConnectionPoint) {
+        point = point ?? new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
         if (target) {
@@ -230,10 +236,11 @@ export class NodeMaterialBlock {
      * @param name defines the connection point name
      * @param type defines the connection point type
      * @param target defines the target to use to limit the connection point (will be VertexAndFragment by default)
+     * @param point an already created connection point. If not provided, create a new one
      * @returns the current block
      */
-    public registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets) {
-        let point = new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Output);
+    public registerOutput(name: string, type: NodeMaterialBlockConnectionPointTypes, target?: NodeMaterialBlockTargets, point?: NodeMaterialConnectionPoint) {
+        point = point ?? new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Output);
         point.type = type;
         if (target) {
             point.target = target;
@@ -413,11 +420,12 @@ export class NodeMaterialBlock {
         const otherBlockWasGeneratedInVertexShader = block._buildTarget === NodeMaterialBlockTargets.Vertex && block.target !== NodeMaterialBlockTargets.VertexAndFragment;
 
         if (localBlockIsFragment && (
+            ((block.target & block._buildTarget) === 0) ||
             ((block.target & input.target) === 0) ||
             (this.target !== NodeMaterialBlockTargets.VertexAndFragment && otherBlockWasGeneratedInVertexShader)
             )) { // context switch! We need a varying
             if ((!block.isInput && state.target !== block._buildTarget) // block was already emitted by vertex shader
-                || (block.isInput && (block as InputBlock).isAttribute) // block is an attribute
+                || (block.isInput && (block as InputBlock).isAttribute && !(block as InputBlock)._noContextSwitch) // block is an attribute
             ) {
                 let connectedPoint = input.connectedPoint!;
                 if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type))) {
@@ -652,9 +660,14 @@ export class NodeMaterialBlock {
         serializationObject.comments = this.comments;
 
         serializationObject.inputs = [];
+        serializationObject.outputs = [];
 
         for (var input of this.inputs) {
             serializationObject.inputs.push(input.serialize());
+        }
+
+        for (var output of this.outputs) {
+            serializationObject.outputs.push(output.serialize(false));
         }
 
         return serializationObject;
@@ -664,6 +677,26 @@ export class NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
+        this._deserializePortDisplayNames(serializationObject);
+    }
+
+    private _deserializePortDisplayNames(serializationObject: any) {
+        const serializedInputs = serializationObject.inputs;
+        const serializedOutputs = serializationObject.outputs;
+        if (serializedInputs) {
+            serializedInputs.forEach((port: any, i: number) => {
+                if (port.displayName) {
+                    this.inputs[i].displayName = port.displayName;
+                }
+            });
+        }
+        if (serializedOutputs) {
+            serializedOutputs.forEach((port: any, i: number) => {
+                if (port.displayName) {
+                    this.outputs[i].displayName = port.displayName;
+                }
+            });
+        }
     }
 
     /**

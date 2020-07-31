@@ -1,10 +1,10 @@
 import { PBREnvironment, EnvironmentDeserializer } from "./environmentSerializer";
 import { Scene } from "babylonjs/scene";
-import { Vector3, Quaternion, Axis, Matrix, TmpVectors } from "babylonjs/Maths/math";
+import { Vector3, Quaternion, Matrix, TmpVectors } from "babylonjs/Maths/math.vector";
 import { SphericalPolynomial } from "babylonjs/Maths/sphericalPolynomial";
 import { ShadowLight } from "babylonjs/Lights/shadowLight";
 import { TextureUtils } from "./texture";
-
+import { Axis } from "babylonjs/Maths/math.axis";
 
 /**
  * The ViewerLabs class will hold functions that are not (!) backwards compatible.

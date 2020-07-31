@@ -1,5 +1,5 @@
 import { Observable } from "babylonjs/Misc/observable";
-import { Color3, Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
@@ -10,6 +10,7 @@ import { Grid } from "./grid";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { TextBlock } from "../controls/textBlock";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {

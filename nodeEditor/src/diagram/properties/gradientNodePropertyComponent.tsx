@@ -6,7 +6,7 @@ import { GradientStepComponent } from './gradientStepComponent';
 import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { IPropertyComponentProps } from './propertyComponentProps';
-import { GenericPropertyTabComponent } from './genericNodePropertyComponent';
+import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -41,20 +41,39 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         this.forceUpdate();
     }
 
+    checkForReOrder() {
+        let gradientBlock = this.props.block as GradientBlock;
+        gradientBlock.colorSteps.sort((a, b) => {
+            if (a.step === b.step) {
+                return 0;
+            }
+
+            if (a.step > b.step) {
+                return 1;
+            }
+
+            return -1;
+        });
+
+        this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        this.forceUpdate();
+    }
+
     render() {
         let gradientBlock = this.props.block as GradientBlock;
       
         return (
             <div>
-                <GenericPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
                 <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                     {
                         gradientBlock.colorSteps.map((c, i) => {
                             return (
                                 <GradientStepComponent globalState={this.props.globalState} 
+                                onCheckForReOrder={() => this.checkForReOrder()}
                                 onUpdateStep={() => this.forceRebuild()}
-                                key={c.step} lineIndex={i} step={c} onDelete={() => this.deleteStep(c)}/>
+                                key={"step-" + i} lineIndex={i} step={c} onDelete={() => this.deleteStep(c)}/>
                             )
                         })
                     }

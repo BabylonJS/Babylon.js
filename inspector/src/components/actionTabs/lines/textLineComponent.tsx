@@ -6,7 +6,9 @@ interface ITextLineComponentProps {
     color?: string;
     underline?: boolean;
     onLink?: () => void;
-    ignoreValue?: boolean
+    url?: string;
+    ignoreValue?: boolean;
+    additionalClass?: string;
 }
 
 export class TextLineComponent extends React.Component<ITextLineComponentProps> {
@@ -15,6 +17,10 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
     }
 
     onLink() {
+        if (this.props.url) {
+            window.open(this.props.url, '_blank');
+            return;
+        }
         if (!this.props.onLink) {
             return;
         }
@@ -27,10 +33,10 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
             return null;
         }
 
-        if (this.props.onLink) {
+        if (this.props.onLink || this.props.url) {
             return (
                 <div className="link-value" title={this.props.value} onClick={() => this.onLink()}>
-                    {this.props.value || "no name"}
+                    {this.props.url ? "doc" : (this.props.value || "no name")}
                 </div>
             )
         }
@@ -43,7 +49,7 @@ export class TextLineComponent extends React.Component<ITextLineComponentProps> 
 
     render() {
         return (
-            <div className={this.props.underline ? "textLine underline" : "textLine"}>
+            <div className={this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : "")}>
                 <div className="label">
                     {this.props.label}
                 </div>
