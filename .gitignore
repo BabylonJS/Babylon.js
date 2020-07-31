@@ -202,3 +202,5 @@ gui/dist/
 /Viewer/tests/tsserver.cmd
 # Local Netlify folder
 .netlify
+Playground/dist/
+Sandbox/public/dist/

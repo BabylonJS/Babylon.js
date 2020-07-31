@@ -30,6 +30,9 @@ import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 import { RenderingManager } from 'babylonjs/Rendering/renderingManager';
+import { CommonPropertyGridComponent } from '../commonPropertyGridComponent';
+import { VariantsPropertyGridComponent } from '../variantsPropertyGridComponent';
+import { HexLineComponent } from '../../../lines/hexLineComponent';
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -355,6 +358,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />
                 </LineContainerComponent>
+                <CommonPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
+                <VariantsPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent globalState={this.props.globalState} title="TRANSFORMS">
                     <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
@@ -391,6 +396,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <CheckBoxLineComponent label="Infinite distance" target={mesh} propertyName="infiniteDistance" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
                     <SliderLineComponent label="Rendering group ID" decimalCount={0} target={mesh} propertyName="renderingGroupId" minimum={RenderingManager.MIN_RENDERINGGROUPS} maximum={RenderingManager.MAX_RENDERINGGROUPS - 1} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
+                    <HexLineComponent isInteger lockObject={this.props.lockObject} label="Layer mask" target={mesh} propertyName="layerMask" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 {
                     mesh.morphTargetManager != null &&

@@ -136,10 +136,19 @@ uniform mat4 view;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+
+    #ifdef SS_SCATTERING
+        uniform float scatteringDiffusionProfile;
+    #endif
 #endif
 
 #if DEBUGMODE > 0
     uniform vec2 vDebugMode;
+#endif
+
+#ifdef DETAIL
+    uniform vec4 vDetailInfos;
+    uniform mat4 detailMatrix;
 #endif
 
 #ifdef USESPHERICALFROMREFLECTIONMAP

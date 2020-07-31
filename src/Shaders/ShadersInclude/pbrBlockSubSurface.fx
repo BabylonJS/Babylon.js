@@ -25,6 +25,7 @@ struct subSurfaceOutParams
 };
 
 #ifdef SUBSURFACE
+    #define pbr_inline
     #define inline
     void subSurfaceBlock(
         const in vec3 vSubSurfaceIntensity,
@@ -111,9 +112,6 @@ struct subSurfaceOutParams
     #ifdef SS_TRANSLUCENCY
         float translucencyIntensity = vSubSurfaceIntensity.y;
     #endif
-    #ifdef SS_SCATTERING
-        float scatteringIntensity = vSubSurfaceIntensity.z;
-    #endif
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         float thickness = thicknessMap.r * vThicknessParam.y + vThicknessParam.x;
@@ -128,9 +126,6 @@ struct subSurfaceOutParams
             #endif
             #ifdef SS_TRANSLUCENCY
                 translucencyIntensity *= thicknessMap.b;
-            #endif
-            #ifdef SS_SCATTERING
-                scatteringIntensity *= thicknessMap.a;
             #endif
         #endif
     #else
@@ -267,6 +262,11 @@ struct subSurfaceOutParams
             // Compute tint from min distance only.
             vec3 volumeAlbedo = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
             refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
+        #endif
+
+        #ifdef SS_ALBEDOFORREFRACTIONTINT
+            // Tint the transmission with albedo.
+            environmentRefraction.rgb *= surfaceAlbedo.rgb;
         #endif
 
         // Decrease Albedo Contribution

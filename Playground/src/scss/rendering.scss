@@ -1,0 +1,17 @@
+#renderCanvas {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    overflow: unset;
+    border:none !important;
+    outline:none !important;
+    display: block;
+}
+
+#pg-root-frame, #pg-root-full {
+    #renderCanvas {
+        grid-column: 1;
+        grid-row: 1;
+    }
+}

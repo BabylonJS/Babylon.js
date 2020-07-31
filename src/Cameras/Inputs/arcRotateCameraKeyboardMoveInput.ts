@@ -9,7 +9,7 @@ import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
     /**

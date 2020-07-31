@@ -52,7 +52,7 @@ export class TextureBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string, fragmentOnly = false) {
-        super(name, NodeMaterialBlockTargets.VertexAndFragment);
+        super(name, fragmentOnly ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
 
         this._fragmentOnly = fragmentOnly;
 
@@ -129,6 +129,10 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public get target() {
+        if (this._fragmentOnly) {
+            return NodeMaterialBlockTargets.Fragment;
+        }
+
         // TextureBlock has a special optimizations for uvs that come from the vertex shaders as they can be packed into a single varyings.
         // But we need to detect uvs coming from fragment then
         if (!this.uv.isConnected) {
@@ -300,7 +304,7 @@ export class TextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment || this._fragmentOnly) {
+        if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
             state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName});\r\n`;
             return;
         }
@@ -332,13 +336,15 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
 
-        state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
-        state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
-        state.compilationString += `#endif\r\n`;
+        if (swizzle !== 'a') { // no conversion if the output is "a" (alpha)
+            state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
+            state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
+            state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
-        state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
-        state.compilationString += `#endif\r\n`;
+            state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
+            state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
+            state.compilationString += `#endif\r\n`;
+        }
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {

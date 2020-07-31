@@ -15,25 +15,29 @@ module.exports = function defaultConfig(options) {
     options.moduleRules = options.moduleRules || [];
     options.plugins = options.plugins || [];
 
+    options.entry = options.entry || {
+        [settings.build.umd.packageName]: settings.libraries[0].computed.entryPath
+    };
+
+    options.output = options.output || {
+        path: settings.computed.distDirectory,
+        filename: settings.libraries[0].output
+            .replace(".min.", ".")
+            .replace(".max.", "."),
+        libraryTarget: 'umd',
+        library: {
+            root: settings.build.umd.webpackRoot.split("."),
+            amd: settings.build.umd.packageName,
+            commonjs: settings.build.umd.packageName
+        },
+        umdNamedDefine: true,
+        globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)'
+    };
+
     return {
         context: settings.computed.srcDirectory,
-        entry: {
-            [settings.build.umd.packageName]: settings.libraries[0].computed.entryPath
-        },
-        output: {
-            path: settings.computed.distDirectory,
-            filename: settings.libraries[0].output
-                .replace(".min.", ".")
-                .replace(".max.", "."),
-            libraryTarget: 'umd',
-            library: {
-                root: settings.build.umd.webpackRoot.split("."),
-                amd: settings.build.umd.packageName,
-                commonjs: settings.build.umd.packageName
-            },
-            umdNamedDefine: true,
-            globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)'
-        },
+        entry: options.entry,
+        output: options.output,
         resolve: options.resolve || {
             extensions: [".ts", ...options.resolveExtensions]
         },

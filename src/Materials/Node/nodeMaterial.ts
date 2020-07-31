@@ -836,7 +836,7 @@ export class NodeMaterial extends PushMaterial {
         return postProcess;
     }
 
-    private _createEffectForParticles(particleSystem: IParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>) {
+    private _createEffectForParticles(particleSystem: IParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>, particleSystemDefinesJoined_ = "") {
         let tempName = this.name + this._buildId + "_" + blendMode;
 
         if (!defines) {
@@ -853,7 +853,7 @@ export class NodeMaterial extends PushMaterial {
         let buildId = this._buildId;
 
         let particleSystemDefines: Array<string> = [];
-        let particleSystemDefinesJoined = "";
+        let particleSystemDefinesJoined = particleSystemDefinesJoined_;
 
         if (!effect) {
             const result = this._processDefines(dummyMesh, defines);
@@ -898,7 +898,7 @@ export class NodeMaterial extends PushMaterial {
 
                 effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines!.toString() + "\n" + particleSystemDefinesJoined, result?.fallbacks, onCompiled, onError, particleSystem);
                 particleSystem.setCustomEffect(effect, blendMode);
-                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, dummyMesh); // add the effect.onBindObservable observer
+                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, dummyMesh, particleSystemDefinesJoined); // add the effect.onBindObservable observer
                 return;
             }
 
@@ -940,7 +940,7 @@ export class NodeMaterial extends PushMaterial {
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_MULTIPLY, onCompiled, onError);
     }
 
-    private _processDefines(mesh: AbstractMesh, defines: NodeMaterialDefines, useInstances = false): Nullable<{
+    private _processDefines(mesh: AbstractMesh, defines: NodeMaterialDefines, useInstances = false, subMesh?: SubMesh): Nullable<{
         lightDisposed: boolean,
         uniformBuffers: string[],
         mergedUniforms: string[],
@@ -955,7 +955,7 @@ export class NodeMaterial extends PushMaterial {
         });
 
         this._sharedData.blocksWithDefines.forEach((b) => {
-            b.prepareDefines(mesh, this, defines, useInstances);
+            b.prepareDefines(mesh, this, defines, useInstances, subMesh);
         });
 
         // Need to recompile?
@@ -1066,7 +1066,7 @@ export class NodeMaterial extends PushMaterial {
             return false;
         }
 
-        const result = this._processDefines(mesh, defines, useInstances);
+        const result = this._processDefines(mesh, defines, useInstances, subMesh);
 
         if (result) {
             let previousEffect = subMesh.effect;
@@ -1606,9 +1606,12 @@ export class NodeMaterial extends PushMaterial {
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the material
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param merge defines whether or not the source must be merged or replace the current content
      */
-    public loadFromSerialization(source: any, rootUrl: string = "") {
-        this.clear();
+    public loadFromSerialization(source: any, rootUrl: string = "", merge = false) {
+        if (!merge) {
+            this.clear();
+        }
 
         let map: {[key: number]: NodeMaterialBlock} = {};
 
@@ -1624,22 +1627,22 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        // Connections
-
-        // Starts with input blocks only
+        // Connections - Starts with input blocks only (except if in "merge" mode where we scan all blocks)
         for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
             let parsedBlock = source.blocks[blockIndex];
             let block = map[parsedBlock.id];
 
-            if (block.inputs.length) {
+            if (block.inputs.length && !merge) {
                 continue;
             }
             this._restoreConnections(block, source, map);
         }
 
         // Outputs
-        for (var outputNodeId of source.outputNodes) {
-            this.addOutputNode(map[outputNodeId]);
+        if (source.outputNodes) {
+            for (var outputNodeId of source.outputNodes) {
+                this.addOutputNode(map[outputNodeId]);
+            }
         }
 
         // UI related info
@@ -1654,6 +1657,10 @@ export class NodeMaterial extends PushMaterial {
                 if (map[location.blockId]) {
                     location.blockId = map[location.blockId].uniqueId;
                 }
+            }
+
+            if (merge && this.editorData && this.editorData.locations) {
+                locations.concat(this.editorData.locations);
             }
 
             if (source.locations) {
@@ -1674,7 +1681,9 @@ export class NodeMaterial extends PushMaterial {
             this.editorData.map = blockMap;
         }
 
-        this._mode = source.mode ?? NodeMaterialModes.Material;
+        if (!merge) {
+            this._mode = source.mode ?? NodeMaterialModes.Material;
+        }
     }
 
     /**

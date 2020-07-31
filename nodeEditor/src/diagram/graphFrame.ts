@@ -383,7 +383,7 @@ export class GraphFrame {
         }
 
         if (comments === "" || (comments && comments.length >= 0)) {
-            this._commentsElement.innerText = comments;
+            (this._commentsElement.children[0] as HTMLSpanElement).innerText = comments;
         }
         this.height = this._borderElement.offsetHeight;
         this._comments = comments;
@@ -548,6 +548,9 @@ export class GraphFrame {
         this._commentsElement.className = 'frame-comments';
         this._commentsElement.style.color = 'white';
         this._commentsElement.style.fontSize = '16px';
+        let commentSpan = document.createElement('span');
+        commentSpan.className = "frame-comment-span"
+        this._commentsElement.appendChild(commentSpan)
 
         this.element.appendChild(this._commentsElement);
 
@@ -1276,7 +1279,7 @@ export class GraphFrame {
             this._ownerCanvas.globalState.onExposePortOnFrameObservable.remove(this._onExposePortOnFrameObserver);
         };
 
-        this.element.parentElement!.removeChild(this.element);
+        this.element.parentElement?.removeChild(this.element);
 
         this._ownerCanvas.frames.splice(this._ownerCanvas.frames.indexOf(this), 1);
 
@@ -1299,7 +1302,7 @@ export class GraphFrame {
 
     public export() {
         const state = this._ownerCanvas.globalState;
-        const json = SerializationTools.Serialize(state.nodeMaterial, state, this.nodes.map(n => n.block));
+        const json = SerializationTools.Serialize(state.nodeMaterial, state, this);
         StringTools.DownloadAsFile(state.hostDocument, json, this._name + ".json");
     }
 

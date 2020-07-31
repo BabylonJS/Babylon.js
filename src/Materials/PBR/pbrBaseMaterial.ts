@@ -20,7 +20,7 @@ import { Scalar } from "../../Maths/math.scalar";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
 import { Effect, IEffectCreationOptions } from "../../Materials/effect";
-import { Material, IMaterialCompilationOptions } from "../../Materials/material";
+import { Material, IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -39,6 +39,9 @@ import "../../Shaders/pbr.fragment";
 import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from '../effectFallbacks';
+import { IMaterialDetailMapDefines, DetailMapConfiguration } from '../material.detailMapConfiguration';
+
+declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -52,10 +55,11 @@ export class PBRMaterialDefines extends MaterialDefines
     IMaterialAnisotropicDefines,
     IMaterialBRDFDefines,
     IMaterialSheenDefines,
-    IMaterialSubSurfaceDefines {
+    IMaterialSubSurfaceDefines,
+    IMaterialDetailMapDefines {
     public PBR = true;
 
-    public NUM_SAMPLES = "0u";
+    public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
 
     public MAINUV1 = false;
@@ -67,6 +71,10 @@ export class PBRMaterialDefines extends MaterialDefines
     public GAMMAALBEDO = false;
     public ALBEDODIRECTUV = 0;
     public VERTEXCOLOR = false;
+
+    public DETAIL = false;
+    public DETAILDIRECTUV = 0;
+    public DETAIL_NORMALBLENDMETHOD = 0;
 
     public AMBIENT = false;
     public AMBIENTDIRECTUV = 0;
@@ -152,6 +160,10 @@ export class PBRMaterialDefines extends MaterialDefines
     public HORIZONOCCLUSION = false;
 
     public INSTANCES = false;
+    public THIN_INSTANCES = false;
+
+    public PREPASS = false;
+    public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
@@ -228,7 +240,7 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SS_REFRACTION = false;
     public SS_TRANSLUCENCY = false;
-    public SS_SCATERRING = false;
+    public SS_SCATTERING = false;
 
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
@@ -240,6 +252,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SS_RGBDREFRACTION = false;
     public SS_LINEARSPECULARREFRACTION = false;
     public SS_LINKREFRACTIONTOTRANSPARENCY = false;
+    public SS_ALBEDOFORREFRACTIONTINT = false;
 
     public SS_MASK_FROM_THICKNESS_TEXTURE = false;
 
@@ -664,6 +677,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
+     * Can this material render to several textures at once
+     */
+    public get canRenderToMRT() {
+        return true;
+    }
+
+    /**
      * Force normal to face away from face.
      */
     protected _forceNormalForward = false;
@@ -787,7 +807,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines the SubSurface parameters for the material.
      */
-    public readonly subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
+    public readonly subSurface: PBRSubSurfaceConfiguration;
+
+    /**
+     * Defines the detail map parameters for the material.
+     */
+    public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
 
     protected _rebuildInParallel = false;
 
@@ -816,6 +841,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         };
 
         this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
+        this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
     }
 
     /**
@@ -1012,7 +1038,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (!this.subSurface.isReadyForSubMesh(defines, scene) ||
             !this.clearCoat.isReadyForSubMesh(defines, scene, engine, this._disableBumpMap) ||
             !this.sheen.isReadyForSubMesh(defines, scene) ||
-            !this.anisotropy.isReadyForSubMesh(defines, scene)) {
+            !this.anisotropy.isReadyForSubMesh(defines, scene) ||
+            !this.detailMap.isReadyForSubMesh(defines, scene)) {
             return false;
         }
 
@@ -1029,7 +1056,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
-        let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
+        let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         if (effect) {
             if (this._onEffectCreatedObservable) {
@@ -1079,8 +1106,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         return false;
     }
 
-    private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): Nullable<Effect> {
-        this._prepareDefines(mesh, defines, useInstances, useClipPlane);
+    private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null,
+                useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean): Nullable<Effect> {
+        this._prepareDefines(mesh, defines, useInstances, useClipPlane, useThinInstances);
 
         if (!defines.isDirty) {
             return null;
@@ -1231,6 +1259,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         var uniformBuffers = ["Material", "Scene", "Mesh"];
 
+        DetailMapConfiguration.AddUniforms(uniforms);
+        DetailMapConfiguration.AddSamplers(samplers);
+
         PBRSubSurfaceConfiguration.AddUniforms(uniforms);
         PBRSubSurfaceConfiguration.AddSamplers(samplers);
 
@@ -1256,8 +1287,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             maxSimultaneousLights: this._maxSimultaneousLights
         });
 
+        const csnrOptions: ICustomShaderNameResolveOptions = {};
+
         if (this.customShaderNameResolve) {
-            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs, csnrOptions);
         }
 
         var join = defines.toString();
@@ -1270,11 +1303,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks: fallbacks,
             onCompiled: onCompiled,
             onError: onError,
-            indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
+            indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+            processFinalCode: csnrOptions.processFinalCode,
+            multiTarget: defines.PREPASS
         }, engine);
     }
 
-    private _prepareDefines(mesh: AbstractMesh, defines: PBRMaterialDefines, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): void {
+    private _prepareDefines(mesh: AbstractMesh, defines: PBRMaterialDefines, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean = false): void {
         const scene = this.getScene();
         const engine = scene.getEngine();
 
@@ -1284,6 +1319,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         // Multiview
         MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+
+        // PrePass
+        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
@@ -1555,6 +1593,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // External config
+        this.detailMap.prepareDefines(defines, scene);
         this.subSurface.prepareDefines(defines, scene);
         this.clearCoat.prepareDefines(defines, scene);
         this.anisotropy.prepareDefines(defines, mesh, scene);
@@ -1562,7 +1601,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.sheen.prepareDefines(defines, scene);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
@@ -1579,7 +1618,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         };
 
         const defines = new PBRMaterialDefines();
-        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
+        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
         if (this._onEffectCreatedObservable) {
             onCreatedEffectParameters.effect = effect;
             onCreatedEffectParameters.subMesh = null;
@@ -1648,6 +1687,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRAnisotropicConfiguration.PrepareUniformBuffer(ubo);
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
+        DetailMapConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.addUniform("vSphericalL00", 3);
         ubo.addUniform("vSphericalL1_1", 3);
@@ -1722,7 +1762,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         mesh.transferToEffect(world);
 
         // Matrices
-        if (!defines.INSTANCES) {
+        if (!defines.INSTANCES || defines.THIN_INSTANCES) {
             this.bindOnlyWorldMatrix(world);
         }
 
@@ -1980,6 +2020,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
             }
 
+            this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
             this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
@@ -2062,6 +2103,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             results.push(this._lightmapTexture);
         }
 
+        this.detailMap.getAnimatables(results);
         this.subSurface.getAnimatables(results);
         this.clearCoat.getAnimatables(results);
         this.sheen.getAnimatables(results);
@@ -2133,6 +2175,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             activeTextures.push(this._lightmapTexture);
         }
 
+        this.detailMap.getActiveTextures(activeTextures);
         this.subSurface.getActiveTextures(activeTextures);
         this.clearCoat.getActiveTextures(activeTextures);
         this.sheen.getActiveTextures(activeTextures);
@@ -2191,10 +2234,24 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
-        return this.subSurface.hasTexture(texture) ||
+        return this.detailMap.hasTexture(texture) ||
+            this.subSurface.hasTexture(texture) ||
             this.clearCoat.hasTexture(texture) ||
             this.sheen.hasTexture(texture) ||
             this.anisotropy.hasTexture(texture);
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        if (this.subSurface.isScatteringEnabled) {
+            prePassRenderer.subSurfaceConfiguration.enabled = true;
+            prePassRenderer.materialsShouldRenderIrradiance = true;
+        }
+
+        return true;
     }
 
     /**
@@ -2221,6 +2278,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this._microSurfaceTexture?.dispose();
         }
 
+        this.detailMap.dispose(forceDisposeTextures);
         this.subSurface.dispose(forceDisposeTextures);
         this.clearCoat.dispose(forceDisposeTextures);
         this.sheen.dispose(forceDisposeTextures);

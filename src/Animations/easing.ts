@@ -3,7 +3,7 @@ import { BezierCurve } from "../Maths/math.path";
 /**
  * This represents the main contract an easing function should follow.
  * Easing functions are used throughout the animation system.
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export interface IEasingFunction {
     /**
@@ -19,7 +19,7 @@ export interface IEasingFunction {
 
 /**
  * Base class used for every default easing function.
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class EasingFunction implements IEasingFunction {
     /**
@@ -87,7 +87,7 @@ export class EasingFunction implements IEasingFunction {
 /**
  * Easing function with a circle shape (see link below).
  * @see https://easings.net/#easeInCirc
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class CircleEase extends EasingFunction implements IEasingFunction {
     /** @hidden */
@@ -100,7 +100,7 @@ export class CircleEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a ease back shape (see link below).
  * @see https://easings.net/#easeInBack
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class BackEase extends EasingFunction implements IEasingFunction {
     /**
@@ -124,7 +124,7 @@ export class BackEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a bouncing shape (see link below).
  * @see https://easings.net/#easeInBounce
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class BounceEase extends EasingFunction implements IEasingFunction {
     /**
@@ -167,7 +167,7 @@ export class BounceEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a power of 3 shape (see link below).
  * @see https://easings.net/#easeInCubic
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class CubicEase extends EasingFunction implements IEasingFunction {
     /** @hidden */
@@ -179,7 +179,7 @@ export class CubicEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with an elastic shape (see link below).
  * @see https://easings.net/#easeInElastic
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class ElasticEase extends EasingFunction implements IEasingFunction {
     /**
@@ -214,7 +214,7 @@ export class ElasticEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with an exponential shape (see link below).
  * @see https://easings.net/#easeInExpo
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class ExponentialEase extends EasingFunction implements IEasingFunction {
     /**
@@ -241,7 +241,7 @@ export class ExponentialEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a power shape (see link below).
  * @see https://easings.net/#easeInQuad
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class PowerEase extends EasingFunction implements IEasingFunction {
     /**
@@ -265,7 +265,7 @@ export class PowerEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a power of 2 shape (see link below).
  * @see https://easings.net/#easeInQuad
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class QuadraticEase extends EasingFunction implements IEasingFunction {
     /** @hidden */
@@ -277,7 +277,7 @@ export class QuadraticEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a power of 4 shape (see link below).
  * @see https://easings.net/#easeInQuart
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class QuarticEase extends EasingFunction implements IEasingFunction {
     /** @hidden */
@@ -289,7 +289,7 @@ export class QuarticEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a power of 5 shape (see link below).
  * @see https://easings.net/#easeInQuint
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class QuinticEase extends EasingFunction implements IEasingFunction {
     /** @hidden */
@@ -301,7 +301,7 @@ export class QuinticEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a sin shape (see link below).
  * @see https://easings.net/#easeInSine
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class SineEase extends EasingFunction implements IEasingFunction {
     /** @hidden */
@@ -313,7 +313,7 @@ export class SineEase extends EasingFunction implements IEasingFunction {
 /**
  * Easing function with a bezier shape (see link below).
  * @see http://cubic-bezier.com/#.17,.67,.83,.67
- * @see http://doc.babylonjs.com/babylon101/animations#easing-functions
+ * @see https://doc.babylonjs.com/babylon101/animations#easing-functions
  */
 export class BezierCurveEase extends EasingFunction implements IEasingFunction {
     /**

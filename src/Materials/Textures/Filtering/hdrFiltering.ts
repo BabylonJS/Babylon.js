@@ -148,6 +148,9 @@ export class HDRFiltering {
 
         // Internal Swap
         outputTexture._swapAndDie(texture._texture!);
+
+        texture._prefiltered = true;
+
         return texture;
     }
 

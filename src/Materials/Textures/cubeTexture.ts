@@ -33,7 +33,7 @@ export class CubeTexture extends BaseTexture {
     /**
      * Gets or sets the center of the bounding box associated with the cube texture.
      * It must define where the camera used to render the texture was set
-     * @see http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
+     * @see https://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
      */
     public boundingBoxPosition = Vector3.Zero();
 
@@ -57,7 +57,7 @@ export class CubeTexture extends BaseTexture {
     }
     /**
      * Returns the bounding box size
-     * @see http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
+     * @see https://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
      */
     public get boundingBoxSize(): Vector3 {
         return this._boundingBoxSize;
@@ -103,9 +103,6 @@ export class CubeTexture extends BaseTexture {
 
     private _format: number;
     private _createPolynomials: boolean;
-
-    /** @hidden */
-    public _prefiltered: boolean = false;
 
     /**
      * Creates a cube texture from an array of image urls
@@ -248,13 +245,6 @@ export class CubeTexture extends BaseTexture {
                 this._texture.onLoadedObservable.add(() => onLoadProcessing());
             }
         }
-    }
-
-    /**
-     * Gets a boolean indicating if the cube texture contains prefiltered mips (used to simulate roughness with PBR)
-     */
-    public get isPrefiltered(): boolean {
-        return this._prefiltered;
     }
 
     /**

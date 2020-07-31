@@ -18,107 +18,107 @@ import { Constants } from "../Engines/constants";
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
  * A single scene can have many Action Managers to handle predefined actions on specific meshes.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class ActionManager extends AbstractActionManager {
     /**
      * Nothing
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly NothingTrigger = Constants.ACTION_NothingTrigger;
 
     /**
      * On pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPickTrigger = Constants.ACTION_OnPickTrigger;
 
     /**
      * On left pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnLeftPickTrigger = Constants.ACTION_OnLeftPickTrigger;
 
     /**
      * On right pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnRightPickTrigger = Constants.ACTION_OnRightPickTrigger;
 
     /**
      * On center pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnCenterPickTrigger = Constants.ACTION_OnCenterPickTrigger;
 
     /**
      * On pick down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPickDownTrigger = Constants.ACTION_OnPickDownTrigger;
 
     /**
      * On double pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnDoublePickTrigger = Constants.ACTION_OnDoublePickTrigger;
 
     /**
      * On pick up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPickUpTrigger = Constants.ACTION_OnPickUpTrigger;
     /**
      * On pick out.
      * This trigger will only be raised if you also declared a OnPickDown
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPickOutTrigger = Constants.ACTION_OnPickOutTrigger;
 
     /**
      * On long press
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnLongPressTrigger = Constants.ACTION_OnLongPressTrigger;
 
     /**
      * On pointer over
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPointerOverTrigger = Constants.ACTION_OnPointerOverTrigger;
 
     /**
      * On pointer out
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnPointerOutTrigger = Constants.ACTION_OnPointerOutTrigger;
 
     /**
      * On every frame
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnEveryFrameTrigger = Constants.ACTION_OnEveryFrameTrigger;
     /**
      * On intersection enter
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnIntersectionEnterTrigger = Constants.ACTION_OnIntersectionEnterTrigger;
 
     /**
      * On intersection exit
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnIntersectionExitTrigger = Constants.ACTION_OnIntersectionExitTrigger;
 
     /**
      * On key down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnKeyDownTrigger = Constants.ACTION_OnKeyDownTrigger;
 
     /**
      * On key up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly OnKeyUpTrigger = 15;
 

@@ -13,7 +13,7 @@ Node.AddNodeConstructor("AnaglyphArcRotateCamera", (name, scene, options) => {
 
 /**
  * Camera used to simulate anaglyphic rendering (based on ArcRotateCamera)
- * @see http://doc.babylonjs.com/features/cameras#anaglyph-cameras
+ * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
  */
 export class AnaglyphArcRotateCamera extends ArcRotateCamera {
 

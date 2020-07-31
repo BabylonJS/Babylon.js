@@ -18,7 +18,7 @@ Node.AddNodeConstructor("ArcFollowCamera", (name, scene) => {
 /**
  * A follow camera takes a mesh as a target and follows it as it moves. Both a free camera version followCamera and
  * an arc rotate version arcFollowCamera are available.
- * @see http://doc.babylonjs.com/features/cameras#follow-camera
+ * @see https://doc.babylonjs.com/features/cameras#follow-camera
  */
 export class FollowCamera extends TargetCamera {
     /**
@@ -109,7 +109,7 @@ export class FollowCamera extends TargetCamera {
 
     /**
      * Instantiates the follow camera.
-     * @see http://doc.babylonjs.com/features/cameras#follow-camera
+     * @see https://doc.babylonjs.com/features/cameras#follow-camera
      * @param name Define the name of the camera in the scene
      * @param position Define the position of the camera
      * @param scene Define the scene the camera belong to
@@ -240,7 +240,7 @@ export class FollowCamera extends TargetCamera {
 /**
  * Arc Rotate version of the follow camera.
  * It still follows a Defined mesh but in an Arc Rotate Camera fashion.
- * @see http://doc.babylonjs.com/features/cameras#follow-camera
+ * @see https://doc.babylonjs.com/features/cameras#follow-camera
  */
 export class ArcFollowCamera extends TargetCamera {
 
@@ -248,7 +248,7 @@ export class ArcFollowCamera extends TargetCamera {
 
     /**
      * Instantiates a new ArcFollowCamera
-     * @see http://doc.babylonjs.com/features/cameras#follow-camera
+     * @see https://doc.babylonjs.com/features/cameras#follow-camera
      * @param name Define the name of the camera
      * @param alpha Define the rotation angle of the camera around the logitudinal axis
      * @param beta Define the rotation angle of the camera around the elevation axis
@@ -263,7 +263,7 @@ export class ArcFollowCamera extends TargetCamera {
         public beta: number,
         /** The radius of the camera from its target */
         public radius: number,
-        /** Define the camera target (the messh it should follow) */
+        /** Define the camera target (the mesh it should follow) */
         public target: Nullable<AbstractMesh>,
         scene: Scene) {
         super(name, Vector3.Zero(), scene);

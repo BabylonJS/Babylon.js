@@ -17,7 +17,7 @@ declare type Engine = import("../Engines/engine").Engine;
 export class ScreenshotTools {
     /**
      * Captures a screenshot of the current rendering
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -69,7 +69,7 @@ export class ScreenshotTools {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -96,7 +96,7 @@ export class ScreenshotTools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -185,7 +185,7 @@ export class ScreenshotTools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the

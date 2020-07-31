@@ -1,11 +1,11 @@
 ﻿const float PI = 3.1415926535897932384626433832795;
+const float HALF_MIN = 5.96046448e-08; // Smallest positive half.
 
 const float LinearEncodePowerApprox = 2.2;
 const float GammaEncodePowerApprox = 1.0 / LinearEncodePowerApprox;
 const vec3 LuminanceEncodeApprox = vec3(0.2126, 0.7152, 0.0722);
 
 const float Epsilon = 0.0000001;
-
 #define saturate(x)         clamp(x, 0.0, 1.0)
 
 #define absEps(x)           abs(x) + Epsilon
@@ -43,6 +43,11 @@ mat3 inverseMat3(mat3 inMatrix) {
               b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
 }
 
+float toLinearSpace(float color)
+{
+    return pow(color, LinearEncodePowerApprox);
+}
+
 vec3 toLinearSpace(vec3 color)
 {
     return pow(color, vec3(LinearEncodePowerApprox));
@@ -71,54 +76,6 @@ float toGammaSpace(float color)
 float square(float value)
 {
     return value * value;
-}
-
-#ifdef WEBGL2
-    // https://learnopengl.com/PBR/IBL/Specular-IBL
-    // Hammersley
-    float radicalInverse_VdC(uint bits) 
-    {
-        bits = (bits << 16u) | (bits >> 16u);
-        bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
-        bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
-        bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
-        bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-        return float(bits) * 2.3283064365386963e-10; // / 0x100000000
-    }
-
-    vec2 hammersley(uint i, uint N)
-    {
-        return vec2(float(i)/float(N), radicalInverse_VdC(i));
-    }
-#else
-    float vanDerCorpus(int n, int base)
-    {
-        float invBase = 1.0 / float(base);
-        float denom   = 1.0;
-        float result  = 0.0;
-
-        for(int i = 0; i < 32; ++i)
-        {
-            if(n > 0)
-            {
-                denom   = mod(float(n), 2.0);
-                result += denom * invBase;
-                invBase = invBase / 2.0;
-                n       = int(float(n) / 2.0);
-            }
-        }
-
-        return result;
-    }
-
-    vec2 hammersley(int i, int N)
-    {
-        return vec2(float(i)/float(N), vanDerCorpus(i, 2));
-    }
-#endif
-
-float log4(float x) {
-    return log2(x) / 2.;
 }
 
 float pow5(float value) {
