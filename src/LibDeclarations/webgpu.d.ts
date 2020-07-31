@@ -497,7 +497,8 @@ declare class GPUBuffer implements GPUObjectBase {
   //readonly mapping: ArrayBuffer | null;
   destroy(): void;
   unmap(): void;
-
+  mapAsync(mode:number, offset?:number, size?: number): Promise<void>;
+  getMappedRange(offset?:number, size?:number): ArrayBuffer;
   mapWriteAsync(): Promise<ArrayBuffer>;
   mapReadAsync(): Promise<ArrayBuffer>;
   // TODO: Remove setSubData (#280)
