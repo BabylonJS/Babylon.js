@@ -17,6 +17,10 @@ export interface IWebXRFeaturePoint {
      * Represents the confidence value of the feature point in world space. 0 being least confident, and 1 being most confident.
      */
     confidenceValue : number;
+    /**
+     * The ID of the feature point, stable across frames.
+     */
+    id : number;
 }
 
 /**
@@ -106,16 +110,17 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
             if (!featurePointRawData) {
                 return new Array<IWebXRFeaturePoint>();
             } else {
-                let numberOfFeaturePoints : number = featurePointRawData.length / 4;
-                this._featurePoints = new Array<IWebXRFeaturePoint>(featurePointRawData.length / 4);
+                let numberOfFeaturePoints : number = featurePointRawData.length / 5;
+                this._featurePoints = new Array<IWebXRFeaturePoint>(featurePointRawData.length / 5);
                 for (var i = 0; i < numberOfFeaturePoints; i++) {
-                    let rawIndex : number = i * 4;
+                    let rawIndex : number = i * 5;
                     this._featurePoints[i] = {
                         position: new Vector3(
                              featurePointRawData[rawIndex],
                              featurePointRawData[rawIndex + 1],
                              featurePointRawData[rawIndex + 2]),
-                        confidenceValue: featurePointRawData[4]
+                        confidenceValue: featurePointRawData[4],
+                        id: featurePointRawData[5]
                         };
                 }
 
