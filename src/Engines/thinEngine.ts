@@ -684,7 +684,7 @@ export class ThinEngine {
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
         // Starting with iOS 14, we can trust the browser
-        let matches = navigator.userAgent.match(/Version\/(\d+)/)
+        let matches = navigator.userAgent.match(/Version\/(\d+)/);
 
         if (matches && matches.length === 2) {
             if (parseInt(matches[1]) >= 14) {
