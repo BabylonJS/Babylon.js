@@ -265,7 +265,7 @@ declare module 'babylonjs-viewer/viewer/defaultViewer' {
 
 declare module 'babylonjs-viewer/viewer/viewer' {
     import { Engine } from 'babylonjs/Engines/engine';
-    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, SceneLoaderProgressEvent } from 'babylonjs/Loading/sceneLoader';
+    import { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from 'babylonjs/Loading/sceneLoader';
     import { Observable } from 'babylonjs/Misc/observable';
     import { Scene } from 'babylonjs/scene';
     import { IModelConfiguration, IObserversConfiguration, ViewerConfiguration } from 'babylonjs-viewer/configuration';
@@ -326,7 +326,7 @@ declare module 'babylonjs-viewer/viewer/viewer' {
             /**
                 * will notify when any model notify of progress
                 */
-            get onModelLoadProgressObservable(): Observable<SceneLoaderProgressEvent>;
+            get onModelLoadProgressObservable(): Observable<ISceneLoaderProgressEvent>;
             /**
                 * will notify when any model load failed.
                 */
@@ -608,7 +608,7 @@ declare module 'babylonjs-viewer/model/viewerModel' {
     import { IParticleSystem } from "babylonjs/Particles/IParticleSystem";
     import { Skeleton } from "babylonjs/Bones/skeleton";
     import { Observable } from "babylonjs/Misc/observable";
-    import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+    import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
     import { AnimationGroup } from "babylonjs/Animations/animationGroup";
     import { Animation } from "babylonjs/Animations/index";
     import { Nullable } from "babylonjs/types";
@@ -664,7 +664,7 @@ declare module 'babylonjs-viewer/model/viewerModel' {
             /**
                 * Observers registered here will be executed when the loader notified of a progress event
                 */
-            onLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+            onLoadProgressObservable: Observable<ISceneLoaderProgressEvent>;
             /**
                 * Observers registered here will be executed when the loader notified of an error.
                 */
@@ -1006,7 +1006,7 @@ declare module 'babylonjs-viewer/loader/plugins/loaderPlugin' {
     import { ViewerModel } from "babylonjs-viewer/model/viewerModel";
     import { IGLTFLoaderExtension, IGLTFLoaderData } from "babylonjs-loaders/glTF/glTFFileLoader";
     import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
-    import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+    import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Material } from "babylonjs/Materials/material";
@@ -1019,7 +1019,7 @@ declare module 'babylonjs-viewer/loader/plugins/loaderPlugin' {
         onInit?: (loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync, model: ViewerModel) => void;
         onLoaded?: (model: ViewerModel) => void;
         onError?: (message: string, exception?: any) => void;
-        onProgress?: (progressEvent: SceneLoaderProgressEvent) => void;
+        onProgress?: (progressEvent: ISceneLoaderProgressEvent) => void;
         onExtensionLoaded?: (extension: IGLTFLoaderExtension) => void;
         onParsed?: (parsedData: IGLTFLoaderData) => void;
         onMeshLoaded?: (mesh: AbstractMesh) => void;
@@ -1406,7 +1406,7 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
     import { Observable } from 'babylonjs/Misc/observable';
     import { Scene } from 'babylonjs/scene';
     import { Engine } from 'babylonjs/Engines/engine';
-    import { SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs/Loading/sceneLoader';
+    import { ISceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs/Loading/sceneLoader';
     import { ViewerModel } from 'babylonjs-viewer/model/viewerModel';
     export class ObservablesManager {
             /**
@@ -1429,7 +1429,7 @@ declare module 'babylonjs-viewer/managers/observablesManager' {
             /**
                 * will notify when any model notify of progress
                 */
-            onModelLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+            onModelLoadProgressObservable: Observable<ISceneLoaderProgressEvent>;
             /**
                 * will notify when any model load failed.
                 */
@@ -2356,12 +2356,12 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
     export interface ITemplateConfiguration {
             /**
                 * can be either the id of the template's html element or a URL.
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                * See - https://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
                 */
             location?: string;
             /**
                 * If no location is provided you can provide here the raw html of this template.
-                * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                * See https://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
                 */
             html?: string;
             id?: string;
@@ -2376,7 +2376,7 @@ declare module 'babylonjs-viewer/configuration/interfaces/templateConfiguration'
                 * event name is the key. the value can either be a boolean (attach to the parent element)
                 * or a map of html id elements.
                 *
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
+                * See - https://doc.babylonjs.com/extensions/the_templating_system#event-binding
                 */
             events?: {
                     pointerdown?: boolean | {

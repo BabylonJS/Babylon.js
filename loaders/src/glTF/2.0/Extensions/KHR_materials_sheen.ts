@@ -2,19 +2,13 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { ITextureInfo, IMaterial } from "../glTFLoaderInterfaces";
+import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from 'babylonjs/Maths/math.color';
+import { IKHRMaterialsSheen } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_sheen";
-
-interface IKHR_materials_sheen {
-    intensityFactor: number;
-    colorFactor: number[];
-    colorIntensityTexture: ITextureInfo;
-    roughnessFactor: number;
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1688)
@@ -52,7 +46,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHR_materials_sheen>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSheen>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadSheenPropertiesAsync(extensionContext, extension, babylonMaterial));
@@ -60,7 +54,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadSheenPropertiesAsync(context: string, properties: IKHR_materials_sheen, babylonMaterial: Material): Promise<void> {
+    private _loadSheenPropertiesAsync(context: string, properties: IKHRMaterialsSheen, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
@@ -68,27 +62,24 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
         const promises = new Array<Promise<any>>();
 
         babylonMaterial.sheen.isEnabled = true;
+        babylonMaterial.sheen.intensity = 1;
 
-        if (properties.intensityFactor != undefined) {
-            babylonMaterial.sheen.intensity = properties.intensityFactor;
+        if (properties.sheenColorFactor != undefined) {
+            babylonMaterial.sheen.color = Color3.FromArray(properties.sheenColorFactor);
         }
         else {
-            babylonMaterial.sheen.intensity = 0;
+            babylonMaterial.sheen.color = Color3.Black();
         }
 
-        if (properties.colorFactor != undefined) {
-            babylonMaterial.sheen.color = Color3.FromArray(properties.colorFactor);
-        }
-
-        if (properties.colorIntensityTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.colorIntensityTexture, (texture) => {
-                texture.name = `${babylonMaterial.name} (Sheen Intensity)`;
+        if (properties.sheenTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.sheenTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Sheen Color)`;
                 babylonMaterial.sheen.texture = texture;
             }));
         }
 
-        if (properties.roughnessFactor !== undefined) {
-            babylonMaterial.sheen.roughness = properties.roughnessFactor;
+        if (properties.sheenRoughnessFactor !== undefined) {
+            babylonMaterial.sheen.roughness = properties.sheenRoughnessFactor;
         } else {
             babylonMaterial.sheen.roughness = 0;
         }

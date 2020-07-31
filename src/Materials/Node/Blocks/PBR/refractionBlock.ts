@@ -213,7 +213,7 @@ export class RefractionBlock extends NodeMaterialBlock {
             }
         }
 
-        const indexOfRefraction = this.indexOfRefraction.connectInputBlock?.value ?? 1.0;
+        const indexOfRefraction = this.indexOfRefraction.connectInputBlock?.value ?? 1.5;
 
         effect.setFloat4(this._vRefractionInfosName, refractionTexture.level, 1 / indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
 

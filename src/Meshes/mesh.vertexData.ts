@@ -3,6 +3,7 @@ import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Meshes/buffer";
 import { _DevTools } from '../Misc/devTools';
 import { Color4, Color3 } from '../Maths/math.color';
+import { Logger } from '../Misc/logger';
 
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -171,6 +172,10 @@ export class VertexData {
      * @param kind the type of data that is being set, eg positions, colors etc
      */
     public set(data: FloatArray, kind: string) {
+        if (!data.length) {
+            Logger.Warn(`Setting vertex data kind '${kind}' with an empty array`);
+        }
+
         switch (kind) {
             case VertexBuffer.PositionKind:
                 this.positions = data;

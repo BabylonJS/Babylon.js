@@ -1,19 +1,14 @@
-import { Vector3, Quaternion } from 'babylonjs/Maths/math.vector';
-import { InstancedMesh } from 'babylonjs/Meshes/instancedMesh';
+import { Vector3, Quaternion, Matrix } from 'babylonjs/Maths/math.vector';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { TransformNode } from "babylonjs/Meshes/transformNode";
-import { StringTools } from 'babylonjs/Misc/stringTools';
 import { Nullable } from "babylonjs/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { INode } from "../glTFLoaderInterfaces";
+import { TmpVectors } from 'babylonjs/Maths/math.vector';
+import { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
 const NAME = "EXT_mesh_gpu_instancing";
-
-interface IEXTMeshGpuInstancing {
-    mesh?: number;
-    attributes: { [name: string]: number };
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
@@ -47,61 +42,61 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     /** @hidden */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
-            return this._loader.loadNodeAsync(`#/nodes/${node.index}`, node, (babylonTransformNode) => {
-                const promises = new Array<Promise<any>>();
-                let instanceCount: Nullable<number> = null;
-                const loadAttribute = (attribute: string, assignBufferFunc: (data: Float32Array) => void) => {
-                    if (extension.attributes[attribute] == undefined) {
-                        return;
-                    }
-                    const accessor = ArrayItem.Get(`${extensionContext}/attributes/${attribute}`, this._loader.gltf.accessors, extension.attributes[attribute]);
-                    if (instanceCount === null) {
-                        instanceCount = accessor.count;
-                    } else if (instanceCount !== accessor.count) {
-                        throw new Error(`${extensionContext}/attributes: Instance buffer accessors do not have the same count.`);
-                    }
-                    promises.push(this._loader._loadFloatAccessorAsync(`/accessors/${accessor.bufferView}`, accessor).then((data) => {
-                        assignBufferFunc(data);
-                    }));
-                };
-                let translationBuffer: Nullable<Float32Array> = null;
-                let rotationBuffer: Nullable<Float32Array> = null;
-                let scaleBuffer: Nullable<Float32Array> = null;
+            this._loader._disableInstancedMesh++;
 
-                loadAttribute("TRANSLATION", (data) => { translationBuffer = data; });
-                loadAttribute("ROTATION", (data) => { rotationBuffer = data; });
-                loadAttribute("SCALE", (data) => { scaleBuffer = data; });
+            const promise = this._loader.loadNodeAsync(`/nodes/${node.index}`, node, assign);
 
-                return Promise.all(promises).then(() => {
-                    if (instanceCount) {
-                        let instanceName: string = "";
-                        let instance: Nullable<TransformNode> = null;
-                        const digitLength = instanceCount.toString().length;
+            this._loader._disableInstancedMesh--;
 
-                        for (let i = 0; i < instanceCount; ++i) {
-                            if (node._primitiveBabylonMeshes) {
-                                for (let j = 0; j < node._primitiveBabylonMeshes.length; ++j) {
-                                    const babylonMeshPrimitive = node._primitiveBabylonMeshes[j];
-                                    instanceName = (babylonMeshPrimitive.name || babylonMeshPrimitive.id) + "_" + StringTools.PadNumber(i, digitLength);
-                                    if (babylonMeshPrimitive.isAnInstance) {
-                                        instance = (babylonMeshPrimitive as InstancedMesh).sourceMesh.createInstance(instanceName);
-                                    } else if ((babylonMeshPrimitive as Mesh).createInstance) {
-                                        instance = (babylonMeshPrimitive as Mesh).createInstance(instanceName);
-                                    }
-                                    if (instance) {
-                                        instance.setParent(babylonMeshPrimitive);
-                                        translationBuffer ? Vector3.FromArrayToRef(translationBuffer, i * 3, instance.position)
-                                            : instance.position.set(0, 0, 0);
-                                        rotationBuffer ? Quaternion.FromArrayToRef(rotationBuffer, i * 4, instance.rotationQuaternion!)
-                                            : instance.rotationQuaternion!.set(0, 0, 0, 1);
-                                        scaleBuffer ? Vector3.FromArrayToRef(scaleBuffer, i * 3, instance.scaling)
-                                            : instance.scaling.set(1, 1, 1);
-                                    }
-                                }
-                            }
-                        }
+            if (!node._primitiveBabylonMeshes) {
+                return promise;
+            }
+
+            const promises = new Array<Promise<Nullable<Float32Array>>>();
+            let instanceCount = 0;
+
+            const loadAttribute = (attribute: string) => {
+                if (extension.attributes[attribute] == undefined) {
+                    promises.push(Promise.resolve(null));
+                    return;
+                }
+
+                const accessor = ArrayItem.Get(`${extensionContext}/attributes/${attribute}`, this._loader.gltf.accessors, extension.attributes[attribute]);
+                promises.push(this._loader._loadFloatAccessorAsync(`/accessors/${accessor.bufferView}`, accessor));
+
+                if (instanceCount === 0) {
+                    instanceCount = accessor.count;
+                } else if (instanceCount !== accessor.count) {
+                    throw new Error(`${extensionContext}/attributes: Instance buffer accessors do not have the same count.`);
+                }
+            };
+
+            loadAttribute("TRANSLATION");
+            loadAttribute("ROTATION");
+            loadAttribute("SCALE");
+
+            return promise.then((babylonTransformNode) => {
+                return Promise.all(promises).then(([translationBuffer, rotationBuffer, scaleBuffer]) => {
+                    const matrices = new Float32Array(instanceCount * 16);
+
+                    TmpVectors.Vector3[0].copyFromFloats(0, 0, 0); // translation
+                    TmpVectors.Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
+                    TmpVectors.Vector3[1].copyFromFloats(1, 1, 1); // scale
+
+                    for (let i = 0; i < instanceCount; ++i) {
+                        translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, TmpVectors.Vector3[0]);
+                        rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, TmpVectors.Quaternion[0]);
+                        scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, TmpVectors.Vector3[1]);
+
+                        Matrix.ComposeToRef(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0], TmpVectors.Matrix[0]);
+
+                        TmpVectors.Matrix[0].copyToArray(matrices, i * 16);
                     }
-                    assign(babylonTransformNode);
+
+                    for (const babylonMesh of node._primitiveBabylonMeshes!) {
+                            (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
+                    }
+
                     return babylonTransformNode;
                 });
             });

@@ -5,416 +5,48 @@
         <title>Babylon.js Playground</title>
         <meta charset='utf-8' />
         <meta name="viewport" content="width=device-width, user-scalable=no">
+        <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico">
         <meta name="description" content="Babylon.js playground is a live editor for Babylon.js WebGL 3D scenes">
         <meta name="keywords" content="Babylon.js,WebGL,3D">
-        <meta name="google-site-verification" content="wcRjktXhF6DAjmhneKS7UatweBIkEF6QfqsNhAYbUgg" />
-        <link rel="shortcut icon" href="https://www.babylonjs.com/favicon.ico">
-
+        
+        <link rel="stylesheet" href="https://use.typekit.net/cta4xsb.css">
         <link rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
-        <link rel="stylesheet" href="/css/index.css" />
-        <link rel="stylesheet" href="/css/index_mobile.css" />
-
-    </head>
-
-    <body>
-        <!-- Big screens -->
-        <div class="navbar navBar1280 languageJS">
-            <div class="categoryTitle">
-                <img class="logo" src="/css/img/logo_v4.svg">
-                <div class="version">Playground <span class="versionSub" id="mainTitle1280"></span></div>
-            </div>
-
-            <div class="category languageJS" id="JStoTSbar">
-                <div class="buttonJStoTS languageTS" id="toTSbutton1280">TS</div>
-                <div class="buttonJStoTS languageJS" id="toJSbutton1280">JS</div>
-                <div class="buttonPG run removeOnDiff" id="runButton1280" title="Run&#10;(Alt+Enter)"><img
-                        src="/css/img/playButton.svg"></div>
-                <div class="buttonPG removeOnDiff" id="saveButton1280" title="Save&#10;(Ctrl+S)"><img
-                        src="/css/img/saveButton.svg"></div>
-                <div class="buttonPG removeOnPhone removeOnDiff" id="zipButton1280"
-                    title="Download ZIP&#10;(Ctrl+Shift+S)"><img src="/css/img/downloadButton.svg"></div>
-                <div class="buttonPG removeOnDiff" id="newButton1280" title="Create new"><img
-                        src="/css/img/newButton.svg"></div>
-                <div class="buttonPG removeOnPhone removeOnDiff" id="clearButton1280" title="Clear"><img
-                        src="/css/img/clearButton.svg"></div>
-                <div class="buttonPG removeOnPhone removeOnDiff" id="diffButton1280" title="Compare"><img
-                        src="/css/img/diffButton.svg"></div>
-                <div class="buttonPG removeOnPhone displayOnDiff" id="previousButton1280"
-                    title="Previous difference&#10;(Shift+Alt+F5)"><img src="/css/img/previousButton.svg"></div>
-                <div class="buttonPG removeOnPhone displayOnDiff" id="nextButton1280"
-                    title="Next difference&#10;(Alt+F5)"><img src="/css/img/nextButton.svg"></div>
-                <div class="buttonPG removeOnPhone displayOnDiff" id="exitButton1280" title="Exit&#10;(Esc)"><img
-                        src="/css/img/exitButton.svg"></div>
-                <div class="buttonPG select removeOnDiff" id="menuButton1280" title="Options"><img
-                        src="/css/img/optionsButton.svg">
-                    <div class="toDisplay languageJS">
-                        <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
-                            <div class="toDisplaySub languageJS">
-                                <div class="option selected" id="darkTheme1280">Dark</div>
-                                <div class="option" id="lightTheme1280">Light</div>
-                            </div>
-                        </div>
-                        <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
-                            <div class="toDisplaySub displayFontSize languageJS">
-                                <div class="option">12</div>
-                                <div class="option selected">14</div>
-                                <div class="option">16</div>
-                                <div class="option">18</div>
-                                <div class="option">20</div>
-                                <div class="option">22</div>
-                            </div>
-                        </div>
-                        <div class="option noSubSelect" id="safemodeToggle1280">Safe mode
-                            <i class="fa fa-square" aria-hidden="true"></i>
-                        </div>
-                        <div class="option checked noSubSelect" id="editorButton1280">Editor
-                            <i class="fa fa-check-square" aria-hidden="true"></i>
-                        </div>
-                        <div class="option noSubSelect" id="fullscreenButton1280">Fullscreen</div>
-                        <div class="option noSubSelect" id="editorFullscreenButton1280">Editor Fullscreen</div>
-                        <div class="option noSubSelect" id="formatButton1280">Format code</div>
-                        <div class="option noSubSelect" id="minimapToggle1280">Minimap
-                            <i class="fa fa-square" aria-hidden="true"></i>
-                        </div>
-                        <div class="option subSelect" id="qrCodeHover1280">QR Code Link <i class="fa fa-chevron-right"
-                                aria-hidden="true"></i>
-                            <div class="toDisplaySub qrCodeImage">
-                                <div class="option" id="qrCodeImage1280">[QR Code Image]</div>
-                            </div>
-                        </div>
-                        <div class="option uncheck noSubSelect" id="debugButton1280">Inspector</div>
-                        <div class="option nosubselect" id="metadataButton1280">Metadata</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="category right">
-                <div class="buttonPG select removeOnDiff" title="Select Babylon.js version">
-                    <span id="currentVersion1280"></span>
-                    <div class="toDisplay currentVersionDisplay" style="display: none"></div>
-                </div>
-                <div class="buttonPG select removeOnDiff" title="Examples"><img class="examplesButton"
-                        src="/css/img/examplesButton.svg"></div>
-            </div>
-        </div>
-
-        <!-- Mid-size screens -->
-        <div class="navbar navBar1024 languageJS">
-            <div class="categoryTitle">
-                <img class="logo" src="/css/img/logo_v4.svg">
-                <div class="version"><span class="versionSub" id="mainTitle1024"></span></div>
-            </div>
-
-            <div class="category languageJS" id="JStoTSbar">
-                <div class="buttonJStoTS languageTS" id="toTSbutton1024">TS</div>
-                <div class="buttonJStoTS languageJS" id="toJSbutton1024">JS</div>
-                <div class="buttonSpaceKiller"></div>
-                <div class="buttonPG run removeOnDiff" id="runButton1024" title="Run&#10;(Alt+Enter)"><img
-                        src="/css/img/playButton.svg"></div>
-                <div class="buttonPG removeOnDiff" id="saveButton1024" title="Save&#10;(Ctrl+S)"><img
-                        src="/css/img/saveButton.svg"></div>
-                <div class="buttonPG removeOnPhone removeOnDiff" id="zipButton1024"
-                    title="Download ZIP&#10;(Ctrl+Shift+S)"><img src="/css/img/downloadButton.svg"></div>
-                <div class="buttonPG removeOnDiff" id="newButton1024" title="Create new"><img
-                        src="/css/img/newButton.svg"></div>
-                <div class="buttonPG removeOnPhone removeOnDiff" id="clearButton1024" title="Clear"><img
-                        src="/css/img/clearButton.svg"></div>
-                <div class="buttonPG removeOnPhone removeOnDiff" id="diffButton1024" title="Compare"><img
-                        src="/css/img/diffButton.svg"></div>
-                <div class="buttonPG removeOnPhone displayOnDiff" id="previousButton1024"><img
-                        src="/css/img/previousButton.svg"></div>
-                <div class="buttonPG removeOnPhone displayOnDiff" id="nextButton1024"><img
-                        src="/css/img/nextButton.svg">
-                </div>
-                <div class="buttonPG removeOnPhone displayOnDiff" id="exitButton1024"><img
-                        src="/css/img/exitButton.svg">
-                </div>
-
-                <div class="buttonPG select removeOnDiff" id="menuButton1024" title="Options"><img
-                        src="/css/img/optionsButton.svg">
-                    <div class="toDisplay">
-                        <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
-
-                            <div class="toDisplaySub">
-                                <div class="option selected" id="darkTheme1024">Dark</div>
-                                <div class="option" id="lightTheme1024">Light</div>
-                            </div>
-                        </div>
-                        <div class="option subSelect">Font size <i class="fa fa-chevron-right" aria-hidden="true"></i>
-                            <div class="toDisplaySub displayFontSize">
-                                <div class="option">12</div>
-                                <div class="option selected">14</div>
-                                <div class="option">16</div>
-                                <div class="option">18</div>
-                                <div class="option">20</div>
-                                <div class="option">22</div>
-                            </div>
-                        </div>
-                        <div class="option noSubSelect" id="safemodeToggle1024">Safe mode
-                            <i class="fa fa-square" aria-hidden="true"></i>
-                        </div>
-                        <div class="option checked noSubSelect" id="editorButton1024">Editor
-                            <i class="fa fa-check-square" aria-hidden="true"></i>
-                        </div>
-                        <div class="option noSubSelect" id="fullscreenButton1024">Fullscreen</div>
-                        <div class="option noSubSelect" id="editorFullscreenButton1024">Editor Fullscreen</div>
-                        <div class="option noSubSelect" id="formatButton1024">Format code</div>
-                        <div class="option noSubSelect" id="minimapToggle1024">Minimap
-                            <i class="fa fa-square" aria-hidden="true"></i>
-                        </div>
-                        <div class="option subSelect" id="qrCodeHover1024">QR Code Link <i class="fa fa-chevron-right"
-                                aria-hidden="true"></i>
-                            <div class="toDisplaySub qrCodeImage">
-                                <div class="option" id="qrCodeImage1024">[QR Code Image]</div>
-                            </div>
-                        </div>
-                        <div class="option uncheck noSubSelect" id="debugButton1024">Inspector</div>
-                        <div class="option noSubSelect" id="metadataButton1024">Metadata</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="category right">
-                <div class="buttonPG select removeOnDiff" title="Select Babylon.js version">
-                    <span id="currentVersion1024"></span>
-                    <div class="toDisplay currentVersionDisplay" style="display: none">
-                    </div>
-                </div>
-                <div class="buttonPG select removeOnDiff" title="Examples"><img class="examplesButton"
-                        src="/css/img/examplesButton.svg"></div>
-            </div>
-        </div>
-
-        <!-- Mobile -->
-        <div class="navbar navBarMobile languageJS">
-            <div class="category languageJS" id="JStoTSbar">
-                <div class="buttonPG select" id="menuButtonMobile"><img src="/css/img/hamburgerButton.svg">
-                    <div class="toDisplay">
-                        <div class="option noSubSelect languageTS" id="toTSbuttonMobile">TypeScript</div>
-                        <div class="option noSubSelect languageJS" id="toJSbuttonMobile">JavaScript</div>
-                        <div class="option noSubSelect run removeOnDiff" id="runButtonMobile"><img
-                                src="/css/img/playButton.svg">Run</div>
-                        <div class="option noSubSelect removeOnDiff" id="saveButtonMobile"><img
-                                src="/css/img/saveButton.svg">Save</div>
-                        <div class="option noSubSelect removeOnDiff" id="zipButtonMobile"><img
-                                src="/css/img/downloadButton.svg">Download</div>
-                        <div class="option noSubSelect removeOnDiff" id="newButtonMobile"><img
-                                src="/css/img/newButton.svg">New</div>
-                        <div class="option noSubSelect removeOnDiff" id="clearButtonMobile"><img
-                                src="/css/img/clearButton.svg">Clear</div>
-                        <div class="option noSubSelect removeOnDiff" id="diffButtonMobile"><img
-                                src="/css/img/diffButton.svg">Diff</div>
-                        <div class="option noSubSelect displayOnDiff" id="previousButtonMobile"><img
-                                src="/css/img/previousButton.svg">Previous</div>
-                        <div class="option noSubSelect displayOnDiff" id="nextButtonMobile"><img
-                                src="/css/img/nextButton.svg">Next</div>
-                        <div class="option noSubSelect displayOnDiff" id="exitButtonMobile"><img
-                                src="/css/img/exitButton.svg">Exit</div>
-
-                        <div class="option noSubSelect removeOnDiff" id="debugButtonMobile"><img
-                                src="/css/img/inspectorButton.svg">Inspector</div>
-                        <div class="option subSelect removeOnDiff">
-                            <img src="/css/img/optionsButton.svg">
-                            <div id="currentVersionMobile"></div>
-                            <div class="toDisplaySub currentVersionDisplay">
-                            </div>
-                        </div>
-                        <div class="option subSelect removeOnDiff"><img src="/css/img/optionsButton.svg">Theme
-                            <div class="toDisplaySub">
-                                <div class="option selected" id="darkThemeMobile">Dark</div>
-                                <div class="option" id="lightThemeMobile">Light</div>
-                            </div>
-                        </div>
-                        <div class="option subSelect removeOnDiff"><img src="/css/img/optionsButton.svg">Font size
-                            <div class="toDisplaySub displayFontSize">
-                                <div class="option">8</div>
-                                <div class="option">10</div>
-                                <div class="option selected">12</div>
-                                <div class="option">14</div>
-                                <div class="option">16</div>
-                                <div class="option">18</div>
-                                <div class="option">20</div>
-                                <div class="option">22</div>
-                            </div>
-                        </div>
-                        <div style="display: none;" class="option noSubSelect" id="safemodeToggleMobile">Safe mode
-                            <i class="fa fa-square" aria-hidden="true"></i>
-                        </div>
-                        <div style="display: none;" class="option checked noSubSelect" id="editorButtonMobile">Editor
-                            <i class="fa fa-check-square" aria-hidden="true"></i>
-                        </div>
-                        <div style="display: none;" class="option nosubselect" id="fullscreenButtonMobile"
-                            style="display: none">Fullscreen</div>
-                        <div style="display: none;" class="option nosubselect" id="editorFullscreenButtonMobile"
-                            style="display: none">Editor
-                            Fullscreen</div>
-                        <div class="option nosubselect removeOnDiff" id="formatButtonMobile"><img
-                                src="/css/img/optionsButton.svg">Format
-                            code</div>
-                        <div style="display: none;" class="option nosubselect" id="minimapToggleMobile">Minimap
-                            <i class="fa fa-square" aria-hidden="true"></i>
-                        </div>
-                        <!-- <div class="option subSelect" id="qrCodeHoverMobile"><img src="/css/img/optionsButton.svg">QR Code Link
-                        <div class="toDisplaySub qrCodeImage">
-                            <div class="option" id="qrCodeImageMobile">[QR Code Image]</div>
-                        </div>
-                    </div> -->
-                        <div class="option nosubselect removeOnDiff" id="metadataButtonMobile"><img
-                                src="/css/img/metadataButton.svg">Metadata</div>
-                        <div class="option nosubselect removeOnDiff"><img class="examplesButton"
-                                src="/css/img/examplesButton.svg">Examples</div>
-                        <div class="option subSelect removeOnDiff"><img src="/css/img/examplesButton.svg">Links / Tools
-                            <div class="toDisplaySub displayFooterLinks">
-                                <div class="option link">
-                                    <a target='_new' href="https://forum.babylonjs.com/">Forum</a>
-                                </div>
-                                <div class="option link">
-                                    <a target='_new' href="https://sandbox.babylonjs.com/">Sandbox</a>
-                                </div>
-                                <div class="option link">
-                                    <a target='_new' href="https://doc.babylonjs.com">Documentation</a>
-                                </div>
-                                <div class="option link">
-                                    <a target='_new' href="https://doc.babylonjs.com/playground">Search</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="categoryTitle">
-                    <img class="logo" src="/css/img/logo_v4.svg">
-                    <div class="version"><span class="versionSub" id="mainTitleMobile"></span></div>
-                </div>
-            </div>
-
-            <div id="switchWrapper" class="languageJS removeOnDiff">
-                <img id="switchWrapperCode" src="/css/img/codeButton.svg">
-                <img id="switchWrapperCanvas" src="/css/img/canvas3Dbutton.svg">
-            </div>
-        </div>
-
-        <!-- Common things -->
-
-        <div class="wrapper">
-            <div id="jsEditor"></div>
-            <div id="diffView" class="diff-view"></div>
-            <div id="canvasZone">
-                <canvas touch-action="none" id="renderCanvas"></canvas>
-            </div>
-        </div>
-        <div id="exampleList" class="javascript">
-            <div id="exampleBanner" class="languageJS">
-                <h1>Examples<img id="examplesButtonClose" src="/css/img/clearButton.svg"></h1>
-            </div>
-            <div class="horizontalSeparator"></div>
-            <input id="filterBar" type="text" placeholder="Filter examples...">
-            <img id="filterBarClear" src="/css/img/clear_button.png">
-        </div>
-
-        <div class="fpsLabel languageJS" id="fpsLabel"></div>
-
-        <div id="errorZone">
-        </div>
-
-        <div class="navbarBottom">
-            <div id="statusBar"></div>
-            <div class="links">
-                <div class='link'>
-                    <a target='_new' href="https://forum.babylonjs.com/">Forum</a>
-                </div>
-                <div class='link'>
-                    <a target='_new' href="https://www.babylonjs.com/sandbox">Sandbox</a>
-                </div>
-                <div class='link'>
-                    <a target='_new' href="https://doc.babylonjs.com">Documentation</a>
-                </div>
-                <div class='link'>
-                    <a target='_new' href="https://doc.babylonjs.com/playground">Search</a>
-                </div>
-            </div>
-        </div>
-
-        <div id="saveLayer" class="save-layer">
-            <div class="save-form languageJS ">
-                <img id="saveFormButtonClose" src="/css/img/clearButton.svg">
-                <label for="saveFormTitle">TITLE</label>
-                <div class="separator"></div>
-                <input type="text" maxlength="120" id="saveFormTitle" class="save-form-title">
-
-                <label for="saveFormDescription">DESCRIPTION</label>
-                <div class="separator"></div>
-                <textarea id="saveFormDescription" rows="4" cols="10"></textarea>
-
-                <label for="saveFormTags">TAGS (separated by comma)</label>
-                <div class="separator"></div>
-                <textarea id="saveFormTags" rows="4" cols="10"></textarea>
-
-                <div class="save-form-buttons" id="saveFormButtons">
-                    <div id="saveFormButtonOk">OK</div>
-                    <div id="saveFormButtonCancel">Cancel</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="diffLayer" class="save-layer">
-            <div class="save-form diff-form">
-                <label for="diffFormSource">COMPARISON SOURCE</label>
-                <div class="separator"></div>
-                <input type="text" maxlength="120" id="diffFormSource"
-                    placeholder="leave blank to use current snippet, or use snippet ID" class="save-form-title">
-
-                <label for="diffFormCompareTo">COMPARE TO</label>
-                <div class="separator"></div>
-                <input type="text" maxlength="120" id="diffFormCompareTo" placeholder="snippet ID"
-                    class="save-form-title">
-
-                <div class="save-form-buttons" id="diffFormButtons">
-                    <div id="diffFormButtonOk">OK</div>
-                    <div id="diffFormButtonCancel">Cancel</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="waitDiv">
-            <div id="logo-part">
-                <img src="/css/img/v4.svg" id="waitLogo" />
-                <img src="/css/img/spinner.svg" id="waitSpinner" />
-            </div>
-        </div>
-
 
         <!-- Pep -->
-        <script src="/js/libs/pep.min.js"></script>
-        <!-- For canvas/code separator -->
-        <script src="/js/libs/split.js"></script>
+        <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
+        <!--For canvas/code separator-->
+        <script src="/libs/split.js"></script>
 
         <!-- DatGUI -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
         <!-- jszip -->
-        <script src="/js/libs/jszip.min.js"></script>
-        <script src="/js/libs/fileSaver.js"></script>
+        <script src="/libs/jszip.min.js"></script>
+        <script src="/libs/fileSaver.js"></script>
 
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery.js"></script>
+        <script src="https://rawcdn.githack.com/jeromeetienne/jquery-qrcode/master/jquery.qrcode.min.js"></script>        
+
+        <!-- Dependencies -->
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/recast.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/libktx.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        
         <!-- Babylon.js -->
         <script src="https://preview.babylonjs.com/babylon.js"></script>
         <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
-        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
         <script src="https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js"></script>
         <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
-        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js">
-        </script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
         <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
         <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
 
-         <!-- Dependencies -->
-         <script src="https://preview.babylonjs.com/ammo.js"></script>
-         <script src="https://preview.babylonjs.com/earcut.min.js"></script>
-         <script src="https://preview.babylonjs.com/recast.js"></script>
-         <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
-         <script src="https://cdnjs.cloudflare.com/ajax/libs/oimo/1.0.9/oimo.min.js"></script>
-         <script src="https://preview.babylonjs.com/libktx.js"></script>
- 
          <!-- Extensions -->
          <script
              src="https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js"
@@ -430,25 +62,28 @@
          </script>
          <script
              src="https://rawcdn.githack.com/MackeyK24/MackeyK24.github.io/14fda491c50cfca6d3e2f6cbc5e6afe22cc455d6/toolkit/babylon.navmesh.js">
-         </script>
+         </script>        
 
-        <!-- Monaco -->
-        <script src="/node_modules/monaco-editor/dev/vs/loader.js"></script>
+        <style>
+            html,
+            body,
+            #host-element {
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>        
+    </head>
 
-        <!-- jQuery -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
-
-        <!-- Main scripts -->
-        <script src="/js/config_versions.js"></script>
-        <script src="/js/examples.js"></script>
-        <script src="/js/main.js"></script>
-        <script src="/js/menuPG.js"></script>
-        <script src="/js/monacoCreator.js"></script>
-        <script src="/js/settingsPG.js"></script>
-        <script src="/js/utils.js"></script>
-        <script src="/js/zipTool.js"></script>
-        <script src="/js/index.js"></script>
+    <body>        
+        <div id="host-element">
+        </div>   
+        
+        <script src="/dist/babylon.playground.js"></script>
+        
+        <script src="/index.js"></script>
     </body>
 
 </html>

@@ -66,6 +66,14 @@ export interface IEffectCreationOptions {
      * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
      */
     transformFeedbackVaryings?: Nullable<string[]>;
+    /**
+     * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
+     */
+    processFinalCode?: Nullable<(shaderType: string, code: string) => string>;
+    /**
+     * Is this effect rendering to several color attachments ?
+     */
+    multiTarget?: boolean;
 }
 
 /**
@@ -140,6 +148,7 @@ export class Effect implements IDisposable {
     public _uniformBuffersNames: { [key: string]: number } = {};
     /** @hidden */
     public _samplerList: string[];
+    public _multiTarget: boolean = false;
 
     private static _uniqueIdSeed = 0;
     private _engine: Engine;
@@ -202,6 +211,8 @@ export class Effect implements IDisposable {
         this.name = baseName;
         this._key = key;
 
+        let processFinalCode: Nullable<(shaderType: string, code: string) => string> = null;
+
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             var options = <IEffectCreationOptions>attributesNamesOrOptions;
             this._engine = <Engine>uniformsNamesOrEngine;
@@ -215,6 +226,7 @@ export class Effect implements IDisposable {
             this._fallbacks = options.fallbacks;
             this._indexParameters = options.indexParameters;
             this._transformFeedbackVaryings = options.transformFeedbackVaryings || null;
+            this._multiTarget = !!options.multiTarget;
 
             if (options.uniformBuffersNames) {
                 this._uniformBuffersNamesList = options.uniformBuffersNames.slice();
@@ -222,6 +234,8 @@ export class Effect implements IDisposable {
                     this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
                 }
             }
+
+            processFinalCode = options.processFinalCode ?? null;
         } else {
             this._engine = <Engine>engine;
             this.defines = (defines == null ? "" : defines);
@@ -299,6 +313,9 @@ export class Effect implements IDisposable {
                 processorOptions.isFragment = true;
                 let [migratedVertexCode, fragmentCode] = shaderCodes;
                 ShaderProcessor.Process(fragmentCode, processorOptions, (migratedFragmentCode) => {
+                    if (processFinalCode) {
+                        migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
+                    }
                     const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
                     this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName);
                 });
@@ -307,6 +324,9 @@ export class Effect implements IDisposable {
         };
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
             ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
+                if (processFinalCode) {
+                    migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
+                }
                 shaderCodes[0] = migratedVertexCode;
                 shadersLoaded();
             });
@@ -1018,8 +1038,8 @@ export class Effect implements IDisposable {
      * @param matrices matrices to be set.
      * @returns this effect.
      */
-    public setMatrices(uniformName: string, matrices: Float32Array): Effect {
-        this._pipelineContext!.setMatrices(uniformName, matrices);
+    public setMatrices(uniformName: string, matrices: Float32Array | Array<number>): Effect {
+        this._pipelineContext!.setMatrices(uniformName, matrices as Float32Array);
         return this;
     }
 
@@ -1040,8 +1060,9 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
-        this._pipelineContext!.setMatrix3x3(uniformName, matrix);
+    public setMatrix3x3(uniformName: string, matrix: Float32Array | Array<number>): Effect {
+        // the cast is ok because it is gl.uniformMatrix3fv() which is called at the end, and this function accepts Float32Array and Array<number>
+        this._pipelineContext!.setMatrix3x3(uniformName, matrix as Float32Array);
         return this;
     }
 
@@ -1051,8 +1072,9 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
-        this._pipelineContext!.setMatrix2x2(uniformName, matrix);
+    public setMatrix2x2(uniformName: string, matrix: Float32Array | Array<number>): Effect {
+        // the cast is ok because it is gl.uniformMatrix3fv() which is called at the end, and this function accepts Float32Array and Array<number>
+        this._pipelineContext!.setMatrix2x2(uniformName, matrix as Float32Array);
         return this;
     }
 

@@ -42,15 +42,22 @@ export class Inspector {
     private static _GlobalState = new GlobalState();
 
     public static MarkLineContainerTitleForHighlighting(title: string) {
-        this._GlobalState.selectedLineContainerTitle = title;
+        this._GlobalState.selectedLineContainerTitles = [];
+        this._GlobalState.selectedLineContainerTitles.push(title);
+    }
+
+    public static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]) {
+        this._GlobalState.selectedLineContainerTitles = [];
+        this._GlobalState.selectedLineContainerTitles.push(...titles);
     }
 
     private static _CopyStyles(sourceDoc: HTMLDocument, targetDoc: HTMLDocument) {
         for (var index = 0; index < sourceDoc.styleSheets.length; index++) {
             var styleSheet: any = sourceDoc.styleSheets[index];
             try {
-                if (styleSheet.cssRules) { // for <style> elements
-                    const newStyleEl = sourceDoc.createElement('style');
+                if (styleSheet.cssRules) {
+                    // for <style> elements
+                    const newStyleEl = sourceDoc.createElement("style");
 
                     for (var cssRule of styleSheet.cssRules) {
                         // write the text of each rule into the body of the style element
@@ -58,17 +65,17 @@ export class Inspector {
                     }
 
                     targetDoc.head!.appendChild(newStyleEl);
-                } else if (styleSheet.href) { // for <link> elements loading CSS from a URL
-                    const newLinkEl = sourceDoc.createElement('link');
+                } else if (styleSheet.href) {
+                    // for <link> elements loading CSS from a URL
+                    const newLinkEl = sourceDoc.createElement("link");
 
-                    newLinkEl.rel = 'stylesheet';
+                    newLinkEl.rel = "stylesheet";
                     newLinkEl.href = styleSheet.href;
                     targetDoc.head!.appendChild(newLinkEl);
                 }
             } catch (e) {
                 console.log(e);
             }
-
         }
     }
 
@@ -85,7 +92,7 @@ export class Inspector {
                 handleResize: options.handleResize,
                 enablePopup: options.enablePopup,
                 enableClose: options.enableClose,
-                explorerExtensibility: options.explorerExtensibility
+                explorerExtensibility: options.explorerExtensibility,
             };
         }
 
@@ -111,10 +118,13 @@ export class Inspector {
         if (this._SceneExplorerHost) {
             this._OpenedPane++;
             const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
-                scene, globalState: this._GlobalState,
+                scene,
+                globalState: this._GlobalState,
                 extensibilityGroups: options.explorerExtensibility,
                 noClose: !options.enableClose,
-                noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
+                noExpand: !options.enablePopup,
+                popupMode: options.popup,
+                onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
 
                     this._RemoveElementFromDOM(this._SceneExplorerHost);
@@ -128,7 +138,8 @@ export class Inspector {
                     options.showInspector = false;
                     options.explorerWidth = options.popup ? "100%" : "300px";
                     Inspector.Show(scene, options);
-                }, onClose: () => {
+                },
+                onClose: () => {
                     ReactDOM.unmountComponentAtNode(this._SceneExplorerHost!);
                     Inspector._OpenedPane--;
 
@@ -139,7 +150,7 @@ export class Inspector {
                     if (options.popup) {
                         this._SceneExplorerWindow.close();
                     }
-                }
+                },
             });
             ReactDOM.render(sceneExplorerElement, this._SceneExplorerHost);
         }
@@ -167,9 +178,12 @@ export class Inspector {
         if (this._ActionTabsHost) {
             this._OpenedPane++;
             const actionTabsElement = React.createElement(ActionTabsComponent, {
-                globalState: this._GlobalState, scene: scene,
+                globalState: this._GlobalState,
+                scene: scene,
                 noClose: !options.enableClose,
-                noExpand: !options.enablePopup, popupMode: options.popup, onPopup: () => {
+                noExpand: !options.enablePopup,
+                popupMode: options.popup,
+                onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
 
                     this._RemoveElementFromDOM(this._ActionTabsHost);
@@ -183,7 +197,8 @@ export class Inspector {
                     options.showInspector = true;
                     options.inspectorWidth = options.popup ? "100%" : "300px";
                     Inspector.Show(scene, options);
-                }, onClose: () => {
+                },
+                onClose: () => {
                     ReactDOM.unmountComponentAtNode(this._ActionTabsHost!);
                     Inspector._OpenedPane--;
                     this._Cleanup();
@@ -194,14 +209,13 @@ export class Inspector {
                         this._ActionTabsWindow.close();
                     }
                 },
-                initialTab: options.initialTab
+                initialTab: options.initialTab,
             });
             ReactDOM.render(actionTabsElement, this._ActionTabsHost);
         }
     }
 
     private static _CreateEmbedHost(scene: Scene, options: IInternalInspectorOptions, parentControl: Nullable<HTMLElement>, onSelectionChangedObservable: Observable<string>) {
-
         // Prepare the inspector host
         if (parentControl) {
             const host = parentControl.ownerDocument!.createElement("div");
@@ -221,11 +235,13 @@ export class Inspector {
         if (this._EmbedHost) {
             this._OpenedPane++;
             const embedHostElement = React.createElement(EmbedHostComponent, {
-                globalState: this._GlobalState, scene: scene,
+                globalState: this._GlobalState,
+                scene: scene,
                 extensibilityGroups: options.explorerExtensibility,
                 noExpand: !options.enablePopup,
                 noClose: !options.enableClose,
-                popupMode: options.popup, onPopup: () => {
+                popupMode: options.popup,
+                onPopup: () => {
                     ReactDOM.unmountComponentAtNode(this._EmbedHost!);
 
                     if (options.popup) {
@@ -240,7 +256,8 @@ export class Inspector {
                     options.showInspector = true;
                     options.embedHostWidth = options.popup ? "100%" : "auto";
                     Inspector.Show(scene, options);
-                }, onClose: () => {
+                },
+                onClose: () => {
                     ReactDOM.unmountComponentAtNode(this._EmbedHost!);
 
                     this._OpenedPane = 0;
@@ -252,24 +269,22 @@ export class Inspector {
                         this._EmbedHostWindow.close();
                     }
                 },
-                initialTab: options.initialTab
+                initialTab: options.initialTab,
             });
             ReactDOM.render(embedHostElement, this._EmbedHost);
         }
     }
-    public static _CreatePopup(title: string, windowVariableName: string, width = 300, height = 800) {
+    public static _CreatePopup(title: string, windowVariableName: string, width = 300, height = 800, lateBinding?: boolean) {
         const windowCreationOptionsList = {
             width: width,
             height: height,
             top: (window.innerHeight - width) / 2 + window.screenY,
-            left: (window.innerWidth - height) / 2 + window.screenX
+            left: (window.innerWidth - height) / 2 + window.screenX,
         };
 
         var windowCreationOptions = Object.keys(windowCreationOptionsList)
-            .map(
-                (key) => key + '=' + (windowCreationOptionsList as any)[key]
-            )
-            .join(',');
+            .map((key) => key + "=" + (windowCreationOptionsList as any)[key])
+            .join(",");
 
         const popupWindow = window.open("", title, windowCreationOptions);
         if (!popupWindow) {
@@ -277,6 +292,13 @@ export class Inspector {
         }
 
         const parentDocument = popupWindow.document;
+
+        // Font
+        const newLinkEl = parentDocument.createElement("link");
+
+        newLinkEl.rel = "stylesheet";
+        newLinkEl.href = "https://use.typekit.net/cta4xsb.css";
+        parentDocument.head!.appendChild(newLinkEl);
 
         parentDocument.title = title;
         parentDocument.body.style.width = "100%";
@@ -293,6 +315,13 @@ export class Inspector {
         popupWindow.document.body.appendChild(parentControl);
 
         this._CopyStyles(window.document, parentDocument);
+
+        if (lateBinding) {
+            setTimeout(() => {
+                // need this for late bindings
+                this._CopyStyles(window.document, parentDocument);
+            }, 0);
+        }
 
         (this as any)[windowVariableName] = popupWindow;
 
@@ -325,7 +354,7 @@ export class Inspector {
             enableClose: true,
             handleResize: true,
             enablePopup: true,
-            ...userOptions
+            ...userOptions,
         };
 
         // Prepare state
@@ -352,8 +381,7 @@ export class Inspector {
         if (options.embedMode && options.showExplorer && options.showInspector) {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
-            }
-            else {
+            } else {
                 let parentControl = (options.globalRoot ? options.globalRoot : rootElement!.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
@@ -374,8 +402,7 @@ export class Inspector {
 
                 this._CreateEmbedHost(scene, options, parentControl, Inspector.OnSelectionChangeObservable);
             }
-        }
-        else if (options.popup) {
+        } else if (options.popup) {
             if (options.showExplorer) {
                 if (this._SceneExplorerHost) {
                     this._SceneExplorerHost.style.width = "0";
@@ -464,7 +491,7 @@ export class Inspector {
             if (g.light) {
                 this._GlobalState.enableLightGizmo(g.light, false);
             }
-        })
+        });
         if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
             this._Scene.reservedDataStore.gizmoManager.dispose();
             this._Scene.reservedDataStore.gizmoManager = null;

@@ -13,7 +13,7 @@ import { FragmentOutputBlock } from 'babylonjs/Materials/Node/Blocks/Fragment/fr
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
 import { GraphFrame } from './graphFrame';
-import { IEditorData } from '../nodeLocationInfo';
+import { IEditorData, IFrameData } from '../nodeLocationInfo';
 import { FrameNodePort } from './frameNodePort';
 
 require("./graphCanvas.scss");
@@ -233,14 +233,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }, false);     
 
         // Store additional data to serialization object
-        this.props.globalState.storeEditorData = (editorData) => {
-            editorData.zoom = this.zoom;
-            editorData.x = this.x;
-            editorData.y = this.y;
-
+        this.props.globalState.storeEditorData = (editorData, graphFrame) => {
             editorData.frames = [];
-            for (var frame of this._frames) {
-                editorData.frames.push(frame.serialize());
+            if (graphFrame) {
+                editorData.frames.push(graphFrame!.serialize());
+            } else {
+                editorData.x = this.x;
+                editorData.y = this.y;
+                editorData.zoom = this.zoom;
+                for (var frame of this._frames) {
+                    editorData.frames.push(frame.serialize());
+                }
             }
         }
     }
@@ -833,7 +836,45 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
 
-        nodeB.refresh();
+        if (pointB.innerType === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            // need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
+
+            const refreshNode = (node: GraphNode) => {
+                node.refresh();
+
+                const links = node.links;
+
+                // refresh first the nodes so that the right types are assigned to the auto-detect ports
+                links.forEach((link) => {
+                    const nodeA = link.nodeA, nodeB = link.nodeB;
+
+                    if (!visitedNodes.has(nodeA)) {
+                        visitedNodes.add(nodeA);
+                        refreshNode(nodeA);
+                    }
+
+                    if (nodeB && !visitedNodes.has(nodeB)) {
+                        visitedNodes.add(nodeB);
+                        refreshNode(nodeB);
+                    }
+                });
+
+                // then refresh the links to display the right color between ports
+                links.forEach((link) => {
+                    if (!visitedLinks.has(link)) {
+                        visitedLinks.add(link);
+                        link.update();
+                    }
+                });
+            };
+
+            const visitedNodes = new Set<GraphNode>([nodeA]);
+            const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
+
+            refreshNode(nodeB);
+        } else {
+            nodeB.refresh();
+        }
 
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     }
@@ -845,7 +886,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
 
         this._frames = [];
-
         this.x = editorData.x || 0;
         this.y = editorData.y || 0;
         this.zoom = editorData.zoom || 1;
@@ -855,8 +895,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             for (var frameData of editorData.frames) {
                 var frame = GraphFrame.Parse(frameData, this, editorData.map);
                 this._frames.push(frame);
-            }
+            }  
         }
+    }
+
+    addFrame(frameData: IFrameData) {
+            const frame = GraphFrame.Parse(frameData, this, this.props.globalState.nodeMaterial.editorData.map);
+            this._frames.push(frame);
+            this.globalState.onSelectionChangedObservable.notifyObservers(frame);
     }
  
     render() {

@@ -9,7 +9,7 @@ import { Engine } from "../Engines/engine";
 /**
  * This represents an audio engine and it is responsible
  * to play, synchronize and analyse sounds throughout the application.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
 export interface IAudioEngine extends IDisposable {
     /**
@@ -91,7 +91,7 @@ export interface IAudioEngine extends IDisposable {
     /**
      * Connect the audio engine to an audio analyser allowing some amazing
      * synchornization between the sounds/music and your visualization (VuMeter for instance).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
      * @param analyser The analyser to connect to the engine
      */
     connectToAnalyser(analyser: Analyser): void;
@@ -103,7 +103,7 @@ Engine.AudioEngineFactory = (hostElement: Nullable<HTMLElement>) => { return new
 /**
  * This represents the default audio engine used in babylon.
  * It is responsible to play, synchronize and analyse sounds throughout the  application.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
  */
 export class AudioEngine implements IAudioEngine {
     private _audioContext: Nullable<AudioContext> = null;
@@ -230,7 +230,7 @@ export class AudioEngine implements IAudioEngine {
 
     private _resumeAudioContext(): Promise<void> {
         let result: Promise<void>;
-        if (this._audioContext!.resume) {
+        if (this._audioContext!.resume !== undefined) {
             result = this._audioContext!.resume();
         }
         return result! || Promise.resolve();
@@ -270,14 +270,13 @@ export class AudioEngine implements IAudioEngine {
                 if (this._muteButton) {
                     this._hideMuteButton();
                 }
+                // Notify users that the audio stack is unlocked/unmuted
+                this.unlocked = true;
+                this.onAudioUnlockedObservable.notifyObservers(this);
             }).catch(() => {
                 this._tryToRun = false;
                 this.unlocked = false;
             });
-
-        // Notify users that the audio stack is unlocked/unmuted
-        this.unlocked = true;
-        this.onAudioUnlockedObservable.notifyObservers(this);
     }
 
     private _triggerSuspendedState() {
@@ -383,7 +382,7 @@ export class AudioEngine implements IAudioEngine {
     /**
      * Connect the audio engine to an audio analyser allowing some amazing
      * synchornization between the sounds/music and your visualization (VuMeter for instance).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
      * @param analyser The analyser to connect to the engine
      */
     public connectToAnalyser(analyser: Analyser): void {

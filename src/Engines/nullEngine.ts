@@ -10,6 +10,7 @@ import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { IColor4Like, IViewportLike } from '../Maths/math.like';
 import { ISceneLike } from './thinEngine';
+import { PerformanceConfigurator } from './performanceConfigurator';
 
 declare const global: any;
 
@@ -42,6 +43,11 @@ export class NullEngineOptions {
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      */
     public lockstepMaxSteps = 4;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -53,7 +59,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -62,7 +68,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
@@ -93,6 +99,8 @@ export class NullEngine extends Engine {
         }
 
         this._options = options;
+
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
         // Init caps
         // We consider we are on a webgl1 capable device
@@ -447,7 +455,7 @@ export class NullEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {

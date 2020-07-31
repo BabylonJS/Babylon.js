@@ -61,6 +61,10 @@
         "viewer",
         "nodeEditor"
     ],
+    "apps": [
+        "playground",
+        "sandbox"
+    ],
     "lintModules": [
         "core",
         "materialsLibrary",
@@ -634,6 +638,24 @@
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
             }
+        }
+    },
+    "playground": {
+        "distFile": "/Playground/dist/babylon.playground.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../Playground/dist/",
+            "mainFolder": "./Playground/"
+        }
+    },
+    "sandbox": {
+        "distFile": "/sandbox/public/dist/babylon.sandbox.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../sandbox/public/dist/",
+            "mainFolder": "./sandbox/"
         }
     },
     "viewer": {

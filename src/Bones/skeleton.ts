@@ -19,7 +19,7 @@ import { IAnimatable } from '../Animations/animatable.interface';
 
 /**
  * Class used to handle skinning animations
- * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+ * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
  */
 export class Skeleton implements IAnimatable {
     /**
@@ -354,8 +354,23 @@ export class Skeleton implements IAnimatable {
      * Forces the skeleton to go to rest pose
      */
     public returnToRest(): void {
+        const _localScaling = TmpVectors.Vector3[0];
+        const _localRotation = TmpVectors.Quaternion[0];
+        const _localPosition = TmpVectors.Vector3[1];
+
         for (var index = 0; index < this.bones.length; index++) {
-            this.bones[index].returnToRest();
+            const bone = this.bones[index];
+
+            if (bone._index !== -1) {
+                bone.returnToRest();
+                if (bone._linkedTransformNode) {
+                    bone.getRestPose().decompose(_localScaling, _localRotation, _localPosition);
+
+                    bone._linkedTransformNode.position = _localPosition.clone();
+                    bone._linkedTransformNode.rotationQuaternion = _localRotation.clone();
+                    bone._linkedTransformNode.scaling = _localScaling.clone();
+                }
+            }
         }
     }
 
@@ -645,7 +660,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Enable animation blending for this skeleton
      * @param blendingSpeed defines the blending speed to apply
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
      */
     public enableBlending(blendingSpeed = 0.01) {
         this.bones.forEach((bone) => {

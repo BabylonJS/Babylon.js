@@ -13,6 +13,7 @@ import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
+import { HexLineComponent } from '../../../lines/hexLineComponent';
 
 interface ICommonCameraPropertyGridComponentProps {
     globalState: GlobalState;
@@ -49,6 +50,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                     <FloatLineComponent lockObject={this.props.lockObject} label="Near plane" target={camera} propertyName="minZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Far plane" target={camera} propertyName="maxZ" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Inertia" target={camera} propertyName="inertia" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <HexLineComponent isInteger lockObject={this.props.lockObject} label="Layer mask" target={camera} propertyName="layerMask" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <OptionsLineComponent label="Mode" options={modeOptions} target={camera} propertyName="mode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => this.setState({ mode: value })} />
                     {
                         camera.mode === Camera.PERSPECTIVE_CAMERA &&

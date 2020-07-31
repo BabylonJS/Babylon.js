@@ -190,7 +190,7 @@ export class PBRCustomMaterial extends PBRMaterial {
             this._newUniformInstances = {};
         }
         if (param) {
-            if (kind.indexOf("sampler") == -1) {
+            if (kind.indexOf("sampler") != -1) {
                 (<any>this._newSamplerInstances)[kind + "-" + name] = param;
             }
             else {

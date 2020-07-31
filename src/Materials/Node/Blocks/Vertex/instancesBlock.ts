@@ -8,6 +8,7 @@ import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { SubMesh } from '../../../../Meshes/subMesh';
 
 /**
  * Block used to add support for instances
@@ -135,13 +136,18 @@ export class InstancesBlock extends NodeMaterialBlock {
             worldInput.output.connectTo(this.world);
         }
 
-        this.world.define = "!INSTANCES";
+        this.world.define = "!INSTANCES || THIN_INSTANCES";
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
         let changed = false;
         if (defines["INSTANCES"] !== useInstances) {
             defines.setValue("INSTANCES", useInstances);
+            changed = true;
+        }
+
+        if (subMesh && defines["THIN_INSTANCES"] !== !!subMesh?.getRenderingMesh().hasThinInstances) {
+            defines.setValue("THIN_INSTANCES", !!subMesh?.getRenderingMesh().hasThinInstances);
             changed = true;
         }
 
@@ -166,6 +172,9 @@ export class InstancesBlock extends NodeMaterialBlock {
 
         state.compilationString += `#ifdef INSTANCES\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\r\n`;
+        state.compilationString += `#ifdef THIN_INSTANCES\r\n`;
+        state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\r\n`;
+        state.compilationString += `#endif\r\n`;
         state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\r\n`;

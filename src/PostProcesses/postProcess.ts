@@ -102,9 +102,9 @@ export class PostProcess {
      *
      * | Value | Type                                | Description |
      * | ----- | ----------------------------------- | ----------- |
-     * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
-     * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
-     * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](http://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
+     * | 1     | SCALEMODE_FLOOR                     | [engine.scalemode_floor](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_floor) |
+     * | 2     | SCALEMODE_NEAREST                   | [engine.scalemode_nearest](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_nearest) |
+     * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
      *
      */
     public scaleMode = Constants.SCALEMODE_FLOOR;
@@ -137,7 +137,7 @@ export class PostProcess {
     public adaptScaleToCurrentViewport = false;
 
     private _camera: Camera;
-    private _scene: Scene;
+    protected _scene: Scene;
     private _engine: Engine;
 
     private _options: number | PostProcessOptions;
@@ -163,7 +163,7 @@ export class PostProcess {
     protected _indexParameters: any;
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
-    private _forcedOutputTexture: InternalTexture;
+    private _forcedOutputTexture: Nullable<InternalTexture>;
 
     /**
      * Returns the fragment url or shader name used in the post process.
@@ -267,6 +267,14 @@ export class PostProcess {
 
     public set inputTexture(value: InternalTexture) {
         this._forcedOutputTexture = value;
+    }
+
+    /**
+    * Since inputTexture should always be defined, if we previously manually set `inputTexture`,
+    * the only way to unset it is to use this function to restore its internal state
+    */
+    public restoreDefaultInputTexture() {
+        this._forcedOutputTexture = null;
     }
 
     /**
@@ -657,16 +665,17 @@ export class PostProcess {
 
         this._disposeTextures();
 
+        let index;
         if (this._scene) {
-            let index = this._scene.postProcesses.indexOf(this);
+            index = this._scene.postProcesses.indexOf(this);
             if (index !== -1) {
                 this._scene.postProcesses.splice(index, 1);
             }
-        } else {
-            let index = this._engine.postProcesses.indexOf(this);
-            if (index !== -1) {
-                this._engine.postProcesses.splice(index, 1);
-            }
+        }
+
+        index = this._engine.postProcesses.indexOf(this);
+        if (index !== -1) {
+            this._engine.postProcesses.splice(index, 1);
         }
 
         if (!camera) {
@@ -674,7 +683,7 @@ export class PostProcess {
         }
         camera.detachPostProcess(this);
 
-        var index = camera._postProcesses.indexOf(this);
+        index = camera._postProcesses.indexOf(this);
         if (index === 0 && camera._postProcesses.length > 0) {
             var firstPostProcess = this._camera._getFirstPostProcess();
             if (firstPostProcess) {

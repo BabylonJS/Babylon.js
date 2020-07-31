@@ -13,10 +13,13 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Color4 } from '../Maths/math.color';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { PBRMaterial } from '../Materials/PBR/pbrMaterial';
+import { _DevTools } from '../Misc/devTools';
+import { Observer } from '../Misc/observable';
+import { Engine } from '../Engines/engine';
+import { Nullable } from '../types';
 
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
-import { _DevTools } from '../Misc/devTools';
 
 /** @hidden */
 interface ISavedTransformationMatrix {
@@ -66,6 +69,7 @@ export class GeometryBufferRenderer {
     public renderTransparentMeshes = true;
 
     private _scene: Scene;
+    private _resizeObserver: Nullable<Observer<Engine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
     private _ratio: number;
     private _enablePosition: boolean = false;
@@ -223,6 +227,7 @@ export class GeometryBufferRenderer {
 
             if (material.bumpTexture && StandardMaterial.BumpTextureEnabled) {
                 defines.push("#define BUMP");
+                defines.push("#define BUMPDIRECTUV 0");
                 needUv = true;
             }
 
@@ -300,6 +305,9 @@ export class GeometryBufferRenderer {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Setup textures count
@@ -349,6 +357,11 @@ export class GeometryBufferRenderer {
      * Disposes the renderer and frees up associated resources.
      */
     public dispose(): void {
+        if (this._resizeObserver) {
+            const engine = this._scene.getEngine();
+            engine.onResizeObservable.remove(this._resizeObserver);
+            this._resizeObserver = null;
+        }
         this.getGBuffer().dispose();
     }
 
@@ -388,12 +401,16 @@ export class GeometryBufferRenderer {
             engine.clear(new Color4(0.0, 0.0, 0.0, 1.0), true, true, true);
         });
 
+        this._resizeObserver = engine.onResizeObservable.add(() => {
+            if (this._multiRenderTarget) {
+                this._multiRenderTarget.resize({ width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio });
+            }
+        });
+
         // Custom render function
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var ownerMesh = subMesh.getMesh();
-            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
             var renderingMesh = subMesh.getRenderingMesh();
-            var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+            var effectiveMesh = subMesh.getEffectiveMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
             let material = <any> subMesh.getMaterial();
@@ -421,13 +438,13 @@ export class GeometryBufferRenderer {
             engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
 
             // Managing instances
-            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
             var world = effectiveMesh.getWorldMatrix();
 
             if (this.isReady(subMesh, hardwareInstancedRendering)) {

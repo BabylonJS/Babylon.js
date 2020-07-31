@@ -281,7 +281,7 @@ declare module BabylonViewer {
             /**
                 * will notify when any model notify of progress
                 */
-            get onModelLoadProgressObservable(): BABYLON.Observable<BABYLON.SceneLoaderProgressEvent>;
+            get onModelLoadProgressObservable(): BABYLON.Observable<BABYLON.ISceneLoaderProgressEvent>;
             /**
                 * will notify when any model load failed.
                 */
@@ -593,7 +593,7 @@ declare module BabylonViewer {
             /**
                 * Observers registered here will be executed when the loader notified of a progress event
                 */
-            onLoadProgressObservable: BABYLON.Observable<BABYLON.SceneLoaderProgressEvent>;
+            onLoadProgressObservable: BABYLON.Observable<BABYLON.ISceneLoaderProgressEvent>;
             /**
                 * Observers registered here will be executed when the loader notified of an error.
                 */
@@ -937,7 +937,7 @@ declare module BabylonViewer {
         onInit?: (loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync, model: ViewerModel) => void;
         onLoaded?: (model: ViewerModel) => void;
         onError?: (message: string, exception?: any) => void;
-        onProgress?: (progressEvent: BABYLON.SceneLoaderProgressEvent) => void;
+        onProgress?: (progressEvent: BABYLON.ISceneLoaderProgressEvent) => void;
         onExtensionLoaded?: (extension: BABYLON.IGLTFLoaderExtension) => void;
         onParsed?: (parsedData: BABYLON.IGLTFLoaderData) => void;
         onMeshLoaded?: (mesh: BABYLON.AbstractMesh) => void;
@@ -1314,7 +1314,7 @@ declare module BabylonViewer {
             /**
                 * will notify when any model notify of progress
                 */
-            onModelLoadProgressObservable: BABYLON.Observable<BABYLON.SceneLoaderProgressEvent>;
+            onModelLoadProgressObservable: BABYLON.Observable<BABYLON.ISceneLoaderProgressEvent>;
             /**
                 * will notify when any model load failed.
                 */
@@ -2151,12 +2151,12 @@ declare module BabylonViewer {
     export interface ITemplateConfiguration {
             /**
                 * can be either the id of the template's html element or a URL.
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                * See - https://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
                 */
             location?: string;
             /**
                 * If no location is provided you can provide here the raw html of this template.
-                * See http://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
+                * See https://doc.babylonjs.com/extensions/the_templating_system#location-vs-html
                 */
             html?: string;
             id?: string;
@@ -2171,7 +2171,7 @@ declare module BabylonViewer {
                 * event name is the key. the value can either be a boolean (attach to the parent element)
                 * or a map of html id elements.
                 *
-                * See - http://doc.babylonjs.com/extensions/the_templating_system#event-binding
+                * See - https://doc.babylonjs.com/extensions/the_templating_system#event-binding
                 */
             events?: {
                     pointerdown?: boolean | {
