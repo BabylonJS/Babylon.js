@@ -24,18 +24,13 @@ export interface IWebXRFeaturePoint {
 }
 
 /**
- * Callback function type definition for GetPointCloud. If the user requests this goes and fetches the point cloud from.
- */
-type GetPointCloud = () => IWebXRFeaturePoint[];
-
-/**
  * The feature point system is used to detect feature points from real world geometry.
  * This feature is currently experimental and only supported on BabylonNative, and should not be used in the browser.
  * The newly introduced API can be seen in webxr.nativeextensions.d.ts.
  */
 export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     private _enabled: boolean = false;
-    private _featurePoints: Array<IWebXRFeaturePoint> | null = null;
+    private _featurePoints: Array<IWebXRFeaturePoint> = [];
 
     /**
      * The module's name
@@ -50,7 +45,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     /**
      * Observers registered here will be executed whenever new feature points are available (on XRFrame while the session is tracking).
      */
-    public onFeaturePointsAvailableObservable: Observable<GetPointCloud> = new Observable();
+    public onFeaturePointsUpdatedObservable: Observable<IWebXRFeaturePoint[]> = new Observable();
     /**
      * construct the feature point system
      * @param _xrSessionManager an instance of xr Session manager
@@ -77,7 +72,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
             return false;
         }
 
-        this._featurePoints = null;
+        this._featurePoints.length = 0;
         return true;
     }
 
@@ -87,46 +82,46 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     public dispose(): void {
         super.dispose();
 
-        this._featurePoints = null;
-        this.onFeaturePointsAvailableObservable.clear();
+        this._featurePoints.length = 0;
+        this.onFeaturePointsUpdatedObservable.clear();
     }
 
     /**
-     * On receiving a new XR frame if this feature is attached notify observers new feature points are available.
-     * Include a callback to query the current frame for feature points.
+     * On receiving a new XR frame if this feature is attached notify observers new feature point data is available.
      */
     protected _onXRFrame(frame: XRFrame) {
         if (!this.attached || !this._enabled || !frame) {
             return;
         }
+        let featurePointRawData : number[] | undefined = frame.featurePointCloud;
+        if (!featurePointRawData || featurePointRawData.length == 0) {
+            return;
+        } else {
+            let numberOfFeaturePoints : number = featurePointRawData.length / 5;
+            for (var i = 0; i < numberOfFeaturePoints; i++) {
+                let rawIndex : number = i * 5;
+                let id = featurePointRawData[rawIndex + 4];
 
-        this._featurePoints = null;
-        this.onFeaturePointsAvailableObservable.notifyObservers(() => {
-            if (this._featurePoints) {
-                return this._featurePoints;
-            }
-
-            let featurePointRawData : number[] | undefined = frame.featurePointCloud;
-            if (!featurePointRawData) {
-                return new Array<IWebXRFeaturePoint>();
-            } else {
-                let numberOfFeaturePoints : number = featurePointRawData.length / 5;
-                this._featurePoints = new Array<IWebXRFeaturePoint>(featurePointRawData.length / 5);
-                for (var i = 0; i < numberOfFeaturePoints; i++) {
-                    let rawIndex : number = i * 5;
-                    this._featurePoints[i] = {
+                // IDs should be durable across frames and strictly increasing from 0 up, so use them as indexing into the feature point array.
+                if (id == this._featurePoints.length) {
+                    this._featurePoints.push({
                         position: new Vector3(
                              featurePointRawData[rawIndex],
                              featurePointRawData[rawIndex + 1],
                              featurePointRawData[rawIndex + 2]),
                         confidenceValue: featurePointRawData[rawIndex + 3],
-                        id: featurePointRawData[rawIndex + 4]
-                        };
+                        id: id
+                        });
+                } else {
+                    this._featurePoints[id].position.x = featurePointRawData[rawIndex];
+                    this._featurePoints[id].position.y = featurePointRawData[rawIndex + 1];
+                    this._featurePoints[id].position.z = featurePointRawData[rawIndex + 2];
+                    this._featurePoints[id].confidenceValue = featurePointRawData[rawIndex + 3];
                 }
-
-                return this._featurePoints;
             }
-         });
+        }
+
+        this.onFeaturePointsUpdatedObservable.notifyObservers(this._featurePoints);
     }
 
     /**
