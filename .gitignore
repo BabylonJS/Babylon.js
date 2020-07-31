@@ -200,3 +200,5 @@ gui/dist/
 /Viewer/tests/tsc.cmd
 /Viewer/tests/tsserver
 /Viewer/tests/tsserver.cmd
+# Local Netlify folder
+.netlify

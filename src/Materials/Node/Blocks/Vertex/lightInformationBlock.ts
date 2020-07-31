@@ -127,8 +127,8 @@ export class LightInformationBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._lightDataUniformName, "vec3");
         state._emitUniformFromString(this._lightColorUniformName, "vec4");
 
-        state.compilationString += `#if ${this._lightTypeDefineName}\r\n`;
-        state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this._lightDataUniformName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
+        state.compilationString += `#ifdef ${this._lightTypeDefineName}\r\n`;
+        state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this.worldPosition.associatedVariableName}.xyz - ${this._lightDataUniformName});\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\r\n`;
         state.compilationString += `#endif\r\n`;

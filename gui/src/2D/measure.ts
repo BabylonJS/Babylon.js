@@ -1,6 +1,22 @@
 import { Matrix2D } from "./math2D";
-import { Vector2 } from "babylonjs/Maths/math";
-import { Polygon } from "babylonjs/Meshes/polygonMesh";
+import { Vector2 } from "babylonjs/Maths/math.vector";
+
+let tmpRect = [
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+];
+
+let tmpRect2 = [
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+];
+
+let tmpV1 = new Vector2(0, 0);
+let tmpV2 = new Vector2(0, 0);
 
 /**
  * Class used to store 2D control sizes
@@ -73,20 +89,24 @@ export class Measure {
      * @param result the resulting AABB
      */
     public transformToRef(transform: Matrix2D, result: Measure) {
-        var rectanglePoints = Polygon.Rectangle(this.left, this.top, this.left + this.width, this.top + this.height);
-        var min = new Vector2(Number.MAX_VALUE, Number.MAX_VALUE);
-        var max = new Vector2(0, 0);
+        tmpRect[0].copyFromFloats(this.left, this.top);
+        tmpRect[1].copyFromFloats(this.left + this.width, this.top);
+        tmpRect[2].copyFromFloats(this.left + this.width, this.top + this.height);
+        tmpRect[3].copyFromFloats(this.left, this.top + this.height);
+
+        tmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
+        tmpV2.copyFromFloats(0, 0);
         for (var i = 0; i < 4; i++) {
-            transform.transformCoordinates(rectanglePoints[i].x, rectanglePoints[i].y, rectanglePoints[i]);
-            min.x = Math.floor(Math.min(min.x, rectanglePoints[i].x));
-            min.y = Math.floor(Math.min(min.y, rectanglePoints[i].y));
-            max.x = Math.ceil(Math.max(max.x, rectanglePoints[i].x));
-            max.y = Math.ceil(Math.max(max.y, rectanglePoints[i].y));
+            transform.transformCoordinates(tmpRect[i].x, tmpRect[i].y, tmpRect2[i]);
+            tmpV1.x = Math.floor(Math.min(tmpV1.x, tmpRect2[i].x));
+            tmpV1.y = Math.floor(Math.min(tmpV1.y, tmpRect2[i].y));
+            tmpV2.x = Math.ceil(Math.max(tmpV2.x, tmpRect2[i].x));
+            tmpV2.y = Math.ceil(Math.max(tmpV2.y, tmpRect2[i].y));
         }
-        result.left = min.x;
-        result.top = min.y;
-        result.width = max.x - min.x;
-        result.height = max.y - min.y;
+        result.left = tmpV1.x;
+        result.top = tmpV1.y;
+        result.width = tmpV2.x - tmpV1.x;
+        result.height = tmpV2.y - tmpV1.y;
     }
 
     /**

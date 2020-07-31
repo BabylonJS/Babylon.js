@@ -266,7 +266,7 @@ export class Texture extends BaseTexture {
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
      * @see http://doc.babylonjs.com/babylon101/materials#texture
      * @param url defines the url of the picture to load as a texture
-     * @param scene defines the scene or engine the texture will belong to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param noMipmap defines if the texture will require mip maps or not
      * @param invertY defines if the texture needs to be inverted on the y axis during loading
      * @param samplingMode defines the sampling mode we want for the texture while fectching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -278,7 +278,7 @@ export class Texture extends BaseTexture {
      * @param mimeType defines an optional mime type information
      */
     constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, deleteBuffer: boolean = false, format?: number, mimeType?: string) {
-        super((sceneOrEngine && sceneOrEngine.getClassName() === "Scene") ? (sceneOrEngine as Scene) : null);
+        super(sceneOrEngine);
 
         this.name = url || "";
         this.url = url;
@@ -293,8 +293,7 @@ export class Texture extends BaseTexture {
         }
 
         var scene = this.getScene();
-        var engine = (sceneOrEngine && (sceneOrEngine as ThinEngine).getCaps) ? (sceneOrEngine as ThinEngine) : (scene ? scene.getEngine() : null);
-
+        var engine = this._getEngine();
         if (!engine) {
             return;
         }
@@ -345,7 +344,7 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, undefined, mimeType);
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType);
                 if (deleteBuffer) {
                     delete this._buffer;
                 }
@@ -399,7 +398,6 @@ export class Texture extends BaseTexture {
         }
 
         let scene = this.getScene();
-
         if (!scene) {
             return;
         }
@@ -408,7 +406,7 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, undefined, this._mimeType);
+            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType);
             if (this._deleteBuffer) {
                 delete this._buffer;
             }
@@ -592,10 +590,15 @@ export class Texture extends BaseTexture {
      */
     public serialize(): any {
         let savedName = this.name;
+
         if (!Texture.SerializeBuffers) {
             if (StringTools.StartsWith(this.name, "data:")) {
                 this.name = "";
             }
+        }
+
+        if (StringTools.StartsWith(this.name, "data:") && this.url === this.name) {
+            this.url = "";
         }
 
         var serializationObject = super.serialize();
@@ -705,7 +708,7 @@ export class Texture extends BaseTexture {
                 } else {
                     let url = rootUrl + parsedTexture.name;
 
-                    if (Texture.UseSerializedUrlIfAny && parsedTexture.url) {
+                    if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;
                     }
                     texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);

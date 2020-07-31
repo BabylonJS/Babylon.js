@@ -9,15 +9,18 @@ import { Light } from "babylonjs/Lights/light";
 import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from './replayRecorder';
-import { Tools } from '../tools';
+import { DataStorage } from 'babylonjs/Misc/dataStorage';
+import { CodeChangedEvent } from './codeChangedEvent';
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
     public onPropertyChangedObservable: Observable<PropertyChangedEvent>;
+    public onCodeChangedObservable = new Observable<CodeChangedEvent>();
     public onInspectorClosedObservable = new Observable<Scene>();
     public onTabChangedObservable = new Observable<number>();
+    public onSelectionRenamedObservable = new Observable<void>();
     public onPluginActivatedObserver: Nullable<Observer<ISceneLoaderPlugin | ISceneLoaderPluginAsync>>;
-
+    public onNewSceneObservable = new Observable<Scene>();
     public sceneImportDefaults: { [key: string]: any } = {};
 
     public validationResults: Nullable<IGLTFValidationResults> = null;
@@ -36,7 +39,7 @@ export class GlobalState {
 
     public get onlyUseEulers(): boolean {
         if (this._onlyUseEulers === null) {
-            this._onlyUseEulers = Tools.ReadLocalBooleanSettings("settings_onlyUseEulers", true);
+            this._onlyUseEulers = DataStorage.ReadBoolean("settings_onlyUseEulers", true);
         }
 
         return this._onlyUseEulers!;
@@ -45,14 +48,14 @@ export class GlobalState {
     public set onlyUseEulers(value: boolean) {
         this._onlyUseEulers = value;
 
-        Tools.StoreLocalBooleanSettings("settings_onlyUseEulers", value);
+        DataStorage.WriteBoolean("settings_onlyUseEulers", value);
     }
 
     private _ignoreBackfacesForPicking: Nullable<boolean> = null;
 
     public get ignoreBackfacesForPicking(): boolean {
         if (this._ignoreBackfacesForPicking === null) {
-            this._ignoreBackfacesForPicking = Tools.ReadLocalBooleanSettings("settings_ignoreBackfacesForPicking", false);
+            this._ignoreBackfacesForPicking = DataStorage.ReadBoolean("settings_ignoreBackfacesForPicking", false);
         }
 
         return this._ignoreBackfacesForPicking!;
@@ -61,7 +64,7 @@ export class GlobalState {
     public set ignoreBackfacesForPicking(value: boolean) {
         this._ignoreBackfacesForPicking = value;
 
-        Tools.StoreLocalBooleanSettings("settings_ignoreBackfacesForPicking", value);
+        DataStorage.WriteBoolean("settings_ignoreBackfacesForPicking", value);
     }
 
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
@@ -69,7 +72,15 @@ export class GlobalState {
 
         propertyChangedObservable.add(event => {
             this.recorder.record(event);
-        })
+
+            if (event.property === "name") {
+                this.onSelectionRenamedObservable.notifyObservers();
+            }
+        });
+
+        this.onCodeChangedObservable.add(code => {
+            this.recorder.recordCode(code);
+        });
     }
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {

@@ -30,6 +30,12 @@ import { SkeletonTreeItemComponent } from './entities/skeletonTreeItemComponent'
 import { Skeleton } from 'babylonjs/Bones/skeleton';
 import { BoneTreeItemComponent } from './entities/boneTreeItemComponent';
 import { Bone } from 'babylonjs/Bones/bone';
+import { ParticleSystemTreeItemComponent } from './entities/particleSystemTreeItemComponent';
+import { IParticleSystem } from 'babylonjs/Particles/IParticleSystem';
+import { SpriteManagerTreeItemComponent } from './entities/spriteManagerTreeItemComponent';
+import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { SpriteTreeItemComponent } from './entities/spriteTreeItemComponent';
+import { Sprite } from 'babylonjs/Sprites/sprite';
 
 
 interface ITreeItemSpecializedComponentProps {
@@ -68,6 +74,14 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 }
             }
 
+            if (className.indexOf("SpriteManager") !== -1) {
+                return (<SpriteManagerTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} spriteManager={entity as SpriteManager} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("Sprite") !== -1) {
+                return (<SpriteTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} sprite={entity as Sprite} onClick={() => this.onClick()} />);
+            }
+
             if (className.indexOf("Skeleton") !== -1) {
                 return (<SkeletonTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} skeleton={entity as Skeleton} onClick={() => this.onClick()} />);
             }
@@ -90,6 +104,10 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
             if (className.indexOf("Material") !== -1) {
                 return (<MaterialTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} material={entity as Material} onClick={() => this.onClick()} />);
+            }
+
+            if (className.indexOf("ParticleSystem") !== -1) {
+                return (<ParticleSystemTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} system={entity as IParticleSystem} onClick={() => this.onClick()} />);
             }
 
             if (className === "AdvancedDynamicTexture") {

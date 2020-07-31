@@ -30,6 +30,11 @@ export interface IExportOptions {
      * Begin serialization without waiting for the scene to be ready
      */
     exportWithoutWaitingForScene?: boolean;
+
+    /**
+     * Indicates if coordinate system swapping root nodes should be included in export
+     */
+    includeCoordinateSystemConversionNodes?: boolean;
 }
 
 /**

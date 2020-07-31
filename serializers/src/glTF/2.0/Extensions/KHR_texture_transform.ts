@@ -99,27 +99,18 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 return;
             }
 
-            let transformIsRequired = false;
+            let bakeTextureTransform = false;
 
-            if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
-                transformIsRequired = true;
+            /*
+            * The KHR_texture_transform schema only supports rotation around the origin.
+            * the texture must be baked to preserve appearance.
+            * see: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
+            */
+            if ((babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
+                bakeTextureTransform = true;
             }
 
-            if (babylonTexture.uScale !== 1 || babylonTexture.vScale !== 1) {
-                transformIsRequired = true;
-            }
-
-            if (babylonTexture.wAng !== 0) {
-                transformIsRequired = true;
-            }
-
-            if (!transformIsRequired) {
-                resolve(babylonTexture);
-                return;
-            }
-
-            // Do we need to flatten the transform?
-            if (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+            if (!bakeTextureTransform) {
                 resolve(babylonTexture);
                 return;
             }

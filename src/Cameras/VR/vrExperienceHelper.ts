@@ -36,10 +36,9 @@ import "../../Meshes/Builders/cylinderBuilder";
 import "../../Gamepads/gamepadSceneComponent";
 import "../../Animations/animatable";
 import { Axis } from '../../Maths/math.axis';
-import { WebXRSessionManager } from '../XR/webXRSessionManager';
-import { WebXRDefaultExperience } from '../XR/webXRDefaultExperience';
-import { WebXRState } from '../XR/webXRTypes';
-import { WebXRControllerTeleportation } from '../XR/webXRControllerTeleportation';
+import { WebXRSessionManager } from '../../XR/webXRSessionManager';
+import { WebXRDefaultExperience } from '../../XR/webXRDefaultExperience';
+import { WebXRState } from '../../XR/webXRTypes';
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -252,6 +251,11 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
     /** @hidden */
     public _setLaserPointerColor(color: Color3) {
         (<StandardMaterial>this._laserPointer.material).emissiveColor = color;
+    }
+
+    /** @hidden */
+    public _setLaserPointerLightingDisabled(disabled: boolean) {
+        (<StandardMaterial>this._laserPointer.material).disableLighting = disabled;
     }
 
     /** @hidden */
@@ -685,7 +689,7 @@ export class VRExperienceHelper {
     }
 
     /**
-     * Defines wether or not Pointer lock should be requested when switching to
+     * Defines whether or not Pointer lock should be requested when switching to
      * full screen.
      */
     public requestPointerLockOnFullScreen = true;
@@ -714,6 +718,14 @@ export class VRExperienceHelper {
         public webVROptions: VRExperienceHelperOptions = {}) {
         this._scene = scene;
         this._inputElement = scene.getEngine().getInputElement();
+
+        // check for VR support:
+
+        const vrSupported = 'getVRDisplays' in navigator;
+        // no VR support? force XR
+        if (!vrSupported) {
+            webVROptions.useXR = true;
+        }
 
         // Parse options
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera === undefined) {
@@ -801,38 +813,16 @@ export class VRExperienceHelper {
                             switch (state) {
                                 case WebXRState.ENTERING_XR:
                                     this.onEnteringVRObservable.notifyObservers(this);
-                                    if (this._interactionsEnabled) {
-                                        this._scene.registerBeforeRender(this.beforeRender);
+                                    if (!this._interactionsEnabled) {
+                                        this.xr.pointerSelection.detach();
                                     }
-                                    if (this._displayLaserPointer) {
-                                        [this._leftController, this._rightController].forEach((controller) => {
-                                            if (controller) {
-                                                controller._activatePointer();
-                                            }
-                                        });
-                                    }
+                                    this.xr.pointerSelection.displayLaserPointer = this._displayLaserPointer;
                                     break;
                                 case WebXRState.EXITING_XR:
                                     this.onExitingVRObservable.notifyObservers(this);
-                                    if (this._interactionsEnabled) {
-                                        this._scene.unregisterBeforeRender(this.beforeRender);
-                                        this._cameraGazer._gazeTracker.isVisible = false;
-                                        if (this._leftController) {
-                                            this._leftController._gazeTracker.isVisible = false;
-                                        }
-                                        if (this._rightController) {
-                                            this._rightController._gazeTracker.isVisible = false;
-                                        }
-                                    }
 
                                     // resize to update width and height when exiting vr exits fullscreen
                                     this._scene.getEngine().resize();
-
-                                    [this._leftController, this._rightController].forEach((controller) => {
-                                        if (controller) {
-                                            controller._deactivatePointer();
-                                        }
-                                    });
                                     break;
                                 case WebXRState.IN_XR:
                                     this._hasEnteredVR = true;
@@ -841,21 +831,6 @@ export class VRExperienceHelper {
                                     this._hasEnteredVR = false;
                                     break;
                             }
-                        });
-
-                        this.xr.input.onControllerAddedObservable.add((controller) => {
-                            // var webVRController = controller.gamepadController;
-                            // if (webVRController) {
-                            //     var localController = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
-
-                            //     if (controller.inputSource.handedness === "right" || (this._leftController)) {
-                            //         this._rightController = localController;
-                            //     } else {
-                            //         this._leftController = localController;
-                            //     }
-
-                            //     this._tryEnableInteractionOnController(localController);
-                            // }
                         });
                     });
                 } else {
@@ -1348,6 +1323,14 @@ export class VRExperienceHelper {
         if (!this._interactionsEnabled) {
             this._interactionsRequested = true;
 
+            // in XR it is enabled by default, but just to make sure, re-attach
+            if (this.xr) {
+                if (this.xr.baseExperience.state === WebXRState.IN_XR) {
+                    this.xr.pointerSelection.attach();
+                }
+                return;
+            }
+
             if (this._leftController) {
                 this._enableInteractionOnController(this._leftController);
             }
@@ -1460,14 +1443,21 @@ export class VRExperienceHelper {
                     }
                 }
                 if (this.xr) {
-                    this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, floorMeshes);
+                    floorMeshes.forEach((mesh) => {
+                        this.xr.teleportation.addFloorMesh(mesh);
+                    });
+                    if (!this.xr.teleportation.attached) {
+                        this.xr.teleportation.attach();
+                    }
                     return;
                 } else if (!this.xrTestDone) {
                     const waitForXr = () => {
                         if (this.xrTestDone) {
                             this._scene.unregisterBeforeRender(waitForXr);
                             if (this.xr) {
-                                this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, floorMeshes);
+                                if (!this.xr.teleportation.attached) {
+                                    this.xr.teleportation.attach();
+                                }
                             } else {
                                 this.enableTeleportation(vrTeleportationOptions);
                             }
@@ -1475,15 +1465,6 @@ export class VRExperienceHelper {
                     };
                     this._scene.registerBeforeRender(waitForXr);
                     return;
-                }
-            }
-
-            if (this.xr && vrTeleportationOptions.floorMeshes) {
-                this.xr.teleportation = new WebXRControllerTeleportation(this.xr.input, vrTeleportationOptions.floorMeshes);
-                return;
-            } else {
-                if (this.webVROptions.useXR && !this.xrTestDone) {
-
                 }
             }
 
@@ -2249,6 +2230,20 @@ export class VRExperienceHelper {
     public setLaserColor(color: Color3, pickedColor: Color3 = this._pickedLaserColor) {
         this._laserColor = color;
         this._pickedLaserColor = pickedColor;
+    }
+
+    /**
+     * Set lighting enabled / disabled on the laser pointer of both controllers
+     * @param enabled should the lighting be enabled on the laser pointer
+     */
+    public setLaserLightingState(enabled: boolean = true) {
+        if (this._leftController) {
+            this._leftController._setLaserPointerLightingDisabled(!enabled);
+
+        }
+        if (this._rightController) {
+            this._rightController._setLaserPointerLightingDisabled(!enabled);
+        }
     }
 
     /**

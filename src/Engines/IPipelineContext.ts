@@ -16,6 +16,12 @@ export interface IPipelineContext {
     isReady: boolean;
 
     /** @hidden */
+    _getVertexShaderCode(): string | null;
+
+    /** @hidden */
+    _getFragmentShaderCode(): string | null;
+
+    /** @hidden */
     _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
 
     /** @hidden */

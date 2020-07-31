@@ -13,11 +13,13 @@ interface IFloatLineComponentProps {
     lockObject?: LockObject;
     onChange?: (newValue: number) => void;
     isInteger?: boolean;
+    replaySourceReplacement?: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
     step?: string,
     digits?: number;
-    useEuler?: boolean
+    useEuler?: boolean;
+    min?: number
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -61,7 +63,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
+            object: this.props.replaySourceReplacement ?? this.props.target,
             property: this.props.propertyName,
             value: newValue,
             initialValue: previousValue
@@ -82,6 +84,13 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             valueAsNumber = parseFloat(valueString);
         }
 
+        if (!isNaN(valueAsNumber) && this.props.min !== undefined) {
+            if (valueAsNumber < this.props.min) {
+                valueAsNumber = this.props.min;
+                valueString = valueAsNumber.toString();
+            }            
+        }
+
         this._localChange = true;
         this.setState({ value: valueString });
 
@@ -89,8 +98,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
 
-        this.raiseOnPropertyChanged(valueAsNumber, this._store);
         this.props.target[this.props.propertyName] = valueAsNumber;
+        this.raiseOnPropertyChanged(valueAsNumber, this._store);
 
         this._store = valueAsNumber;
     }

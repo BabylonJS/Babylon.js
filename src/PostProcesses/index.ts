@@ -29,3 +29,4 @@ export * from "./tonemapPostProcess";
 export * from "./volumetricLightScatteringPostProcess";
 export * from "./vrDistortionCorrectionPostProcess";
 export * from "./vrMultiviewToSingleviewPostProcess";
+export * from "./screenSpaceReflectionPostProcess";

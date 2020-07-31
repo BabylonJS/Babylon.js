@@ -7,6 +7,8 @@ import { Texture } from "../Materials/Textures/texture";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Scene } from "../scene";
 import { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
+import { Effect } from "../Materials/effect";
+import { Observable } from "../Misc/observable";
 
 declare type Animation = import("../Animations/animation").Animation;
 
@@ -243,10 +245,24 @@ export interface IParticleSystem {
     disposeOnStop: boolean;
 
     /**
+     * Specifies if the particles are updated in emitter local space or world space
+     */
+    isLocal: boolean;
+
+    /** Snippet ID if the particle system was created from the snippet server */
+    snippetId: string;
+
+    /**
      * Gets the maximum number of particles active at the same time.
      * @returns The max number of active particles.
      */
     getCapacity(): number;
+
+    /**
+     * Gets the number of particles active at the same time.
+     * @returns The number of active particles.
+     */
+    getActiveCount(): number;
 
     /**
      * Gets if the system has been started. (Note: this will still be true after stop is called)
@@ -269,6 +285,10 @@ export interface IParticleSystem {
      */
     dispose(disposeTexture?: boolean): void;
     /**
+    * An event triggered when the system is disposed
+    */
+    onDisposeObservable: Observable<IParticleSystem>;
+    /**
      * Clones the particle system.
      * @param name The name of the cloned object
      * @param newEmitter The new emitter to use
@@ -276,14 +296,18 @@ export interface IParticleSystem {
      */
     clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
     /**
-     * Serializes the particle system to a JSON object.
+     * Serializes the particle system to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns the JSON object
      */
-    serialize(): any;
+    serialize(serializeTexture: boolean): any;
     /**
      * Rebuild the particle system
      */
     rebuild(): void;
+
+    /** Force the system to rebuild all gradients that need to be resync */
+    forceRefreshGradients(): void;
 
     /**
      * Starts the particle system and begins to emit
@@ -302,10 +326,56 @@ export interface IParticleSystem {
     reset(): void;
 
     /**
+     * Gets a boolean indicating that the system is stopping
+     * @returns true if the system is currently stopping
+     */
+    isStopping(): boolean;
+
+    /**
      * Is this system ready to be used/rendered
      * @return true if the system is ready
      */
     isReady(): boolean;
+    /**
+     * Returns the string "ParticleSystem"
+     * @returns a string containing the class name
+     */
+    getClassName(): string;
+    /**
+     * Gets the custom effect used to render the particles
+     * @param blendMode Blend mode for which the effect should be retrieved
+     * @returns The effect
+     */
+    getCustomEffect(blendMode: number): Nullable<Effect>;
+    /**
+     * Sets the custom effect used to render the particles
+     * @param effect The effect to set
+     * @param blendMode Blend mode for which the effect should be set
+     */
+    setCustomEffect(effect: Nullable<Effect>, blendMode: number): void;
+
+    /**
+     * Fill the defines array according to the current settings of the particle system
+     * @param defines Array to be updated
+     * @param blendMode blend mode to take into account when updating the array
+     */
+    fillDefines(defines: Array<string>, blendMode: number): void;
+    /**
+     * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
+     * @param uniforms Uniforms array to fill
+     * @param attributes Attributes array to fill
+     * @param samplers Samplers array to fill
+     */
+    fillUniformsAttributesAndSamplerNames(uniforms: Array<string>, attributes: Array<string>, samplers: Array<string>): void;
+    /**
+     * Observable that will be called just before the particles are drawn
+     */
+    onBeforeDrawParticlesObservable: Observable<Nullable<Effect>>;
+    /**
+     * Gets the name of the particle vertex shader
+     */
+    vertexShaderName: string;
+
     /**
      * Adds a new color gradient
      * @param gradient defines the gradient to use (between 0 and 1)

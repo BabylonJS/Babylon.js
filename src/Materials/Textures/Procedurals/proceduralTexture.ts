@@ -7,7 +7,6 @@ import { Color4, Color3 } from '../../../Maths/math.color';
 import { Engine } from "../../../Engines/engine";
 import { VertexBuffer } from "../../../Meshes/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
 
 import { Material } from "../../../Materials/material";
 import { Effect } from "../../../Materials/effect";
@@ -58,6 +57,9 @@ export class ProceduralTexture extends Texture {
     /** @hidden */
     public _textures: { [key: string]: Texture } = {};
 
+    /** @hidden */
+    protected _fallbackTexture: Nullable<Texture>;
+
     @serialize()
     private _size: number;
     private _currentRefreshId = -1;
@@ -78,10 +80,8 @@ export class ProceduralTexture extends Texture {
     private _vectors3: { [key: string]: Vector3 } = {};
     private _matrices: { [key: string]: Matrix } = {};
 
-    private _fallbackTexture: Nullable<Texture>;
-
     private _fallbackTextureUsed = false;
-    private _engine: Engine;
+    private _fullEngine: Engine;
 
     private _cachedDefines = "";
 
@@ -112,7 +112,7 @@ export class ProceduralTexture extends Texture {
         }
         scene.proceduralTextures.push(this);
 
-        this._engine = scene.getEngine();
+        this._fullEngine = scene.getEngine();
 
         this.name = name;
         this.isRenderTarget = true;
@@ -124,11 +124,11 @@ export class ProceduralTexture extends Texture {
         this._fallbackTexture = fallbackTexture;
 
         if (isCube) {
-            this._texture = this._engine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
+            this._texture = this._fullEngine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
             this.setFloat("face", 0);
         }
         else {
-            this._texture = this._engine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
+            this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
         }
 
         // VBO
@@ -138,7 +138,7 @@ export class ProceduralTexture extends Texture {
         vertices.push(-1, -1);
         vertices.push(1, -1);
 
-        this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._engine, vertices, VertexBuffer.PositionKind, false, false, 2);
+        this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._fullEngine, vertices, VertexBuffer.PositionKind, false, false, 2);
 
         this._createIndexBuffer();
     }
@@ -167,7 +167,7 @@ export class ProceduralTexture extends Texture {
     }
 
     private _createIndexBuffer(): void {
-        var engine = this._engine;
+        var engine = this._fullEngine;
 
         // Indices
         var indices = [];
@@ -217,7 +217,7 @@ export class ProceduralTexture extends Texture {
      * @returns true if ready, otherwise, false.
      */
     public isReady(): boolean {
-        var engine = this._engine;
+        var engine = this._fullEngine;
         var shaders;
 
         if (!this._fragment) {
@@ -341,7 +341,7 @@ export class ProceduralTexture extends Texture {
         }
 
         this.releaseInternalTexture();
-        this._texture = this._engine.createRenderTargetTexture(size, generateMipMaps);
+        this._texture = this._fullEngine.createRenderTargetTexture(size, generateMipMaps);
 
         // Update properties
         this._size = size;
@@ -484,7 +484,7 @@ export class ProceduralTexture extends Texture {
             return;
         }
 
-        var engine = this._engine;
+        var engine = this._fullEngine;
 
         // Render
         engine.enableEffect(this._effect);
@@ -627,7 +627,7 @@ export class ProceduralTexture extends Texture {
             this._vertexBuffers[VertexBuffer.PositionKind] = null;
         }
 
-        if (this._indexBuffer && this._engine._releaseBuffer(this._indexBuffer)) {
+        if (this._indexBuffer && this._fullEngine._releaseBuffer(this._indexBuffer)) {
             this._indexBuffer = null;
         }
 

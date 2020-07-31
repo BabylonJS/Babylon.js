@@ -20,7 +20,6 @@ import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
  */
 export class MorphTargetsBlock extends NodeMaterialBlock {
     private _repeatableContentAnchor: string;
-    private _repeatebleContentGenerated = 0;
 
     /**
      * Create a new MorphTargetsBlock
@@ -154,7 +153,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        if (mesh && this._repeatebleContentGenerated) {
+        if (mesh && mesh.morphTargetManager && mesh.morphTargetManager.numInfluencers > 0) {
             MaterialHelper.BindMorphTargetParameters(mesh, effect);
         }
     }
@@ -170,7 +169,6 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let uvOutput = this.uvOutput;
         let state = vertexShaderState;
         let repeatCount = defines.NUM_MORPH_INFLUENCERS as number;
-        this._repeatebleContentGenerated = repeatCount;
 
         var manager = (<Mesh>mesh).morphTargetManager;
         var hasNormals = manager && manager.supportsNormals && defines["NORMAL"];
@@ -197,7 +195,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
             if (hasUVs) {
                 injectionCode += `#ifdef MORPHTARGETS_UV\r\n`;
-                injectionCode += `${uvOutput.associatedVariableName}.xyz += (uv_${index} - ${uv.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
+                injectionCode += `${uvOutput.associatedVariableName}.xy += (uv_${index} - ${uv.associatedVariableName}.xy) * morphTargetInfluences[${index}];\r\n`;
                 injectionCode += `#endif\r\n`;
             }
 
@@ -216,6 +214,10 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
                 if (hasTangents) {
                     state.attributes.push(VertexBuffer.TangentKind + index);
+                }
+
+                if (hasUVs) {
+                    state.attributes.push(VertexBuffer.UVKind + "_" + index);
                 }
             }
         }
@@ -254,12 +256,18 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state.compilationString += `${this._declareOutput(positionOutput, state)} = ${position.associatedVariableName};\r\n`;
         state.compilationString += `#ifdef NORMAL\r\n`;
         state.compilationString += `${this._declareOutput(normalOutput, state)} = ${normal.associatedVariableName};\r\n`;
+        state.compilationString += `#else\r\n`;
+        state.compilationString += `${this._declareOutput(normalOutput, state)} = vec3(0., 0., 0.);\r\n`;
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef TANGENT\r\n`;
         state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\r\n`;
+        state.compilationString += `#else\r\n`;
+        state.compilationString += `${this._declareOutput(tangentOutput, state)} = vec3(0., 0., 0.);\r\n`;
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef UV1\r\n`;
         state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\r\n`;
+        state.compilationString += `#else\r\n`;
+        state.compilationString += `${this._declareOutput(uvOutput, state)} = vec2(0., 0.);\r\n`;
         state.compilationString += `#endif\r\n`;
 
         // Repeatable content

@@ -7,7 +7,6 @@ import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { AnimationGroup } from "../Animations/animationGroup";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { AssetContainer } from "../assetContainer";
 import { IParticleSystem } from "../Particles/IParticleSystem";
 import { Skeleton } from "../Bones/skeleton";

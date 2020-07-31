@@ -21,10 +21,10 @@
 #endif
 
 #if defined(ENVIRONMENTBRDF) && defined(HORIZONOCCLUSION)
-    float environmentHorizonOcclusion(vec3 view, vec3 normal) {
+    float environmentHorizonOcclusion(vec3 view, vec3 normal, vec3 geometricNormal) {
         // http://marmosetco.tumblr.com/post/81245981087
         vec3 reflection = reflect(view, normal);
-        float temp = saturate(1.0 + 1.1 * dot(reflection, normal));
+        float temp = saturate(1.0 + 1.1 * dot(reflection, geometricNormal));
         return square(temp);
     }
 #endif

@@ -1,5 +1,5 @@
 import { Observable } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Control } from "./control";
 import { StackPanel } from "./stackPanel";
@@ -120,7 +120,7 @@ export class Checkbox extends Control {
         }
 
         if (this._isChecked) {
-            context.fillStyle = this._isEnabled ? this.color : this._disabledColor;
+            context.fillStyle = this._isEnabled ? this.color : this._disabledColorItem;
             let offsetWidth = actualWidth * this._checkSizeRatio;
             let offseHeight = actualHeight * this._checkSizeRatio;
 

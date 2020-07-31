@@ -8,7 +8,7 @@ import { StandardMaterial } from "babylonjs/Materials/standardMaterial";
 
 import { TextLineComponent } from "./textLineComponent";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWrench } from '@fortawesome/free-solid-svg-icons';
+import { faWrench, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { FileButtonLineComponent } from './fileButtonLineComponent';
 import { Tools } from 'babylonjs/Misc/tools';
@@ -22,6 +22,7 @@ export interface ITextureLinkLineComponentProps {
     propertyName?: string;
     onTextureCreated?: (texture: BaseTexture) => void;
     customDebugAction?: (state: boolean) => void
+    onTextureRemoved?: () => void;
 }
 
 export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, { isDebugSelected: boolean }> {
@@ -140,7 +141,6 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.props.onSelectionChangedObservable.notifyObservers(texture!);
     }
 
-
     updateTexture(file: File) {
         let material = this.props.material!;
         Tools.ReadFile(file, (data) => {
@@ -160,6 +160,17 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         }, undefined, true);
     }
 
+    removeTexture() {
+        let material = this.props.material!;
+        if (this.props.propertyName) {
+            (material as any)[this.props.propertyName!] = null;
+        } else if (this.props.onTextureRemoved) {
+            this.props.onTextureRemoved();
+        }
+
+        this.forceUpdate();
+}
+
     render() {
         const texture = this.props.texture;
 
@@ -175,9 +186,16 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
             <div className="textureLinkLine">
                 {
                     !texture.isCube && this.props.material &&
-                    <div className={this.state.isDebugSelected ? "debug selected" : "debug"} onClick={() => this.debugTexture()} title="Render as main texture">
-                        <FontAwesomeIcon icon={faWrench} />
-                    </div>
+                    <>
+                        <div className={this.state.isDebugSelected ? "debug selected" : "debug"}>
+                            <span className="actionIcon" onClick={() => this.debugTexture()} title="Render as main texture">
+                                <FontAwesomeIcon icon={faWrench} />
+                            </span>
+                            <span className="actionIcon" onClick={() => this.removeTexture()} title="Remove texture">
+                                <FontAwesomeIcon icon={faTrash} />
+                            </span>
+                        </div>
+                    </>
                 }
                 <TextLineComponent label={this.props.label} value={texture.name} onLink={() => this.onLink()} />
             </div>

@@ -14,7 +14,6 @@ import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { PostProcess } from "../PostProcesses/postProcess";
-import { _TimeToken } from "../Instrumentation/timeToken";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -101,7 +100,7 @@ export abstract class EffectLayer {
     public neutralColor: Color4 = new Color4();
 
     /**
-     * Specifies wether the highlight layer is enabled or not.
+     * Specifies whether the highlight layer is enabled or not.
      */
     @serialize()
     public isEnabled: boolean = true;
@@ -197,13 +196,13 @@ export abstract class EffectLayer {
     /**
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
-     * @param useInstances specify wether or not to use instances to render the mesh
+     * @param useInstances specify whether or not to use instances to render the mesh
      * @return true if ready otherwise, false
      */
     public abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
     /**
-     * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+     * Returns whether or nood the layer needs stencil enabled during the mesh rendering.
      * @returns true if the effect requires stencil during the main canvas render pass.
      */
     public abstract needStencil(): boolean;
@@ -388,7 +387,7 @@ export abstract class EffectLayer {
     /**
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
-     * @param useInstances specify wether or not to use instances to render the mesh
+     * @param useInstances specify whether or not to use instances to render the mesh
      * @param emissiveTexture the associated emissive texture used to generate the glow
      * @return true if ready otherwise, false
      */
@@ -654,18 +653,21 @@ export abstract class EffectLayer {
         }
 
         var material = subMesh.getMaterial();
-        var mesh = subMesh.getRenderingMesh();
+        var ownerMesh = subMesh.getMesh();
+        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var renderingMesh = subMesh.getRenderingMesh();
+        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
         var scene = this._scene;
         var engine = scene.getEngine();
 
-        mesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
+        effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
         if (!material) {
             return;
         }
 
         // Do not block in blend mode.
-        if (!this._canRenderMesh(mesh, material)) {
+        if (!this._canRenderMesh(renderingMesh, material)) {
             return;
         }
 
@@ -673,28 +675,28 @@ export abstract class EffectLayer {
         engine.setState(material.backFaceCulling);
 
         // Managing instances
-        var batch = mesh._getInstancesRenderList(subMesh._id);
+        var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
         if (batch.mustReturn) {
             return;
         }
 
         // Early Exit per mesh
-        if (!this._shouldRenderMesh(mesh)) {
+        if (!this._shouldRenderMesh(renderingMesh)) {
             return;
         }
 
         var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
 
-        this._setEmissiveTextureAndColor(mesh, subMesh, material);
+        this._setEmissiveTextureAndColor(renderingMesh, subMesh, material);
 
-        this.onBeforeRenderMeshToEffect.notifyObservers(mesh);
+        this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
 
-        if (this._useMeshMaterial(mesh)) {
-            mesh.render(subMesh, hardwareInstancedRendering);
+        if (this._useMeshMaterial(renderingMesh)) {
+            renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
         }
         else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
             engine.enableEffect(this._effectLayerMapGenerationEffect);
-            mesh._bind(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode);
+            renderingMesh._bind(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode);
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -736,11 +738,11 @@ export abstract class EffectLayer {
             }
 
             // Bones
-            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                const skeleton = mesh.skeleton;
+            if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+                const skeleton = renderingMesh.skeleton;
 
                 if (skeleton.isUsingTextureForMatrices) {
-                    const boneTexture = skeleton.getTransformMatrixTexture(mesh);
+                    const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
                     if (!boneTexture) {
                         return;
                     }
@@ -748,12 +750,12 @@ export abstract class EffectLayer {
                     this._effectLayerMapGenerationEffect.setTexture("boneSampler", boneTexture);
                     this._effectLayerMapGenerationEffect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
                 } else {
-                    this._effectLayerMapGenerationEffect.setMatrices("mBones", skeleton.getTransformMatrices((mesh)));
+                    this._effectLayerMapGenerationEffect.setMatrices("mBones", skeleton.getTransformMatrices((renderingMesh)));
                 }
             }
 
             // Morph targets
-            MaterialHelper.BindMorphTargetParameters(mesh, this._effectLayerMapGenerationEffect);
+            MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effectLayerMapGenerationEffect);
 
             // Alpha mode
             if (enableAlphaMode) {
@@ -761,18 +763,18 @@ export abstract class EffectLayer {
             }
 
             // Draw
-            mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+            renderingMesh._processRendering(effectiveMesh, subMesh, this._effectLayerMapGenerationEffect, material.fillMode, batch, hardwareInstancedRendering,
                 (isInstance, world) => this._effectLayerMapGenerationEffect.setMatrix("world", world));
         } else {
             // Need to reset refresh rate of the main map
             this._mainTexture.resetRefreshCounter();
         }
 
-        this.onAfterRenderMeshToEffect.notifyObservers(mesh);
+        this.onAfterRenderMeshToEffect.notifyObservers(ownerMesh);
     }
 
     /**
-     * Defines wether the current material of the mesh should be use to render the effect.
+     * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
      */
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {

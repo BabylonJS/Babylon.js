@@ -18,12 +18,19 @@ import { Logger } from "../Misc/logger";
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Engine } from '../Engines/engine';
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * Defines the minimum interface to fullfil in order to be a sprite manager.
  */
 export interface ISpriteManager extends IDisposable {
+
+    /**
+     * Gets manager's name
+     */
+    name: string;
+
     /**
      * Restricts the camera to viewing objects with the same layerMask.
      * A camera with a layerMask of 1 will render spriteManager.layerMask & camera.layerMask!== 0
@@ -34,6 +41,11 @@ export interface ISpriteManager extends IDisposable {
      * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
      */
     isPickable: boolean;
+
+    /**
+     * Gets the hosting scene
+     */
+    scene: Scene;
 
     /**
      * Specifies the rendering group id for this mesh (0 by default)
@@ -47,16 +59,26 @@ export interface ISpriteManager extends IDisposable {
     sprites: Array<Sprite>;
 
     /**
+     * Gets or sets the spritesheet texture
+     */
+    texture: Texture;
+
+    /** Defines the default width of a cell in the spritesheet */
+    cellWidth: number;
+    /** Defines the default height of a cell in the spritesheet */
+    cellHeight: number;
+
+    /**
      * Tests the intersection of a sprite with a specific ray.
      * @param ray The ray we are sending to test the collision
      * @param camera The camera space we are sending rays in
      * @param predicate A predicate allowing excluding sprites from the list of object to test
-     * @param fastCheck Is the hit test done in a OOBB or AOBB fashion the faster, the less precise
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @returns picking info or null.
      */
     intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
 
-        /**
+    /**
      * Intersects the sprites with a ray
      * @param ray defines the ray to intersect with
      * @param camera defines the current active camera
@@ -98,6 +120,8 @@ export class SpriteManager implements ISpriteManager {
     /** True when packed cell data from JSON file is ready*/
     private _packedAndReady: boolean = false;
 
+    private _textureContent: Nullable<Uint8Array>;
+
     /**
     * An event triggered when the manager is disposed.
     */
@@ -130,6 +154,32 @@ export class SpriteManager implements ISpriteManager {
     private _effectFog: Effect;
 
     /**
+     * Gets or sets the unique id of the sprite
+     */
+    public uniqueId: number;
+
+    /**
+     * Gets the array of sprites
+     */
+    public get children() {
+        return this.sprites;
+    }
+
+    /**
+     * Gets the hosting scene
+     */
+    public get scene() {
+        return this._scene;
+    }
+
+    /**
+     * Gets the capacity of the manager
+     */
+    public get capacity() {
+        return this._capacity;
+    }
+
+    /**
      * Gets or sets the spritesheet texture
      */
     public get texture(): Texture {
@@ -138,7 +188,25 @@ export class SpriteManager implements ISpriteManager {
 
     public set texture(value: Texture) {
         this._spriteTexture = value;
+        this._textureContent = null;
     }
+
+    private _blendMode = Constants.ALPHA_COMBINE;
+    /**
+     * Blend mode use to render the particle, it can be any of
+     * the static Constants.ALPHA_x properties provided in this class.
+     * Default value is Constants.ALPHA_COMBINE
+     */
+    public get blendMode() { return this._blendMode; }
+    public set blendMode(blendMode: number) {
+        this._blendMode = blendMode;
+    }
+
+    /** Disables writing to the depth buffer when rendering the sprites.
+     *  It can be handy to disable depth writing when using textures without alpha channel
+     *  and setting some specific blend modes.
+    */
+    public disableDepthWrite: boolean = false;
 
     /**
      * Creates a new sprite manager
@@ -176,8 +244,9 @@ export class SpriteManager implements ISpriteManager {
         }
 
         this._epsilon = epsilon;
-        this._scene = scene;
+        this._scene = scene || Engine.LastCreatedScene;
         this._scene.spriteManagers.push(this);
+        this.uniqueId = this.scene.getUniqueId();
 
         var indices = [];
         var index = 0;
@@ -226,6 +295,14 @@ export class SpriteManager implements ISpriteManager {
         }
     }
 
+    /**
+     * Returns the string "SpriteManager"
+     * @returns "SpriteManager"
+     */
+    public getClassName(): string {
+        return "SpriteManager";
+    }
+
     private _makePacked(imgUrl: string, spriteJSON: any) {
         if (spriteJSON !== null) {
             try {
@@ -253,8 +330,6 @@ export class SpriteManager implements ISpriteManager {
 
                 let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
 
-                console.log(spritemap);
-
                 this._spriteMap = spritemap;
                 this._packedAndReady = true;
                 this._cellData = celldata.frames;
@@ -276,7 +351,7 @@ export class SpriteManager implements ISpriteManager {
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", jsonUrl, true);
             xmlhttp.onerror = () => {
-                Logger.Error("Unable to Load Sprite JSON Data. Spritesheet managed with constant cell size.");
+                Logger.Error("JSON ERROR: Unable to load JSON file.");
                 this._fromPacked = false;
                 this._packedAndReady = false;
             };
@@ -291,7 +366,7 @@ export class SpriteManager implements ISpriteManager {
                 catch (e) {
                     this._fromPacked = false;
                     this._packedAndReady = false;
-                    throw new Error("Invalid JSON from file. Spritesheet managed with constant cell size.");
+                    throw new Error("Invalid JSON format. Please check documentation for format specifications.");
                 }
             };
             xmlhttp.send();
@@ -325,8 +400,15 @@ export class SpriteManager implements ISpriteManager {
         this._vertexData[arrayOffset + 5] = sprite.height;
         this._vertexData[arrayOffset + 6] = offsetX;
         this._vertexData[arrayOffset + 7] = offsetY;
-        // Inverts
-        this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+
+        // Inverts according to Right Handed
+        if (this._scene.useRightHandedSystem) {
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 0 : 1;
+        }
+        else {
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+        }
+
         this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
         // CellIfo
         if (this._packedAndReady) {
@@ -337,10 +419,14 @@ export class SpriteManager implements ISpriteManager {
             if (typeof (num) === "number" && isFinite(num) && Math.floor(num) === num) {
                 sprite.cellRef = this._spriteMap[sprite.cellIndex];
             }
-            this._vertexData[arrayOffset + 10] = this._cellData[sprite.cellRef].frame.x / baseSize.width;
-            this._vertexData[arrayOffset + 11] = this._cellData[sprite.cellRef].frame.y / baseSize.height;
-            this._vertexData[arrayOffset + 12] = this._cellData[sprite.cellRef].frame.w / baseSize.width;
-            this._vertexData[arrayOffset + 13] = this._cellData[sprite.cellRef].frame.h / baseSize.height;
+            sprite._xOffset = this._cellData[sprite.cellRef].frame.x / baseSize.width;
+            sprite._yOffset = this._cellData[sprite.cellRef].frame.y / baseSize.height;
+            sprite._xSize = this._cellData[sprite.cellRef].frame.w;
+            sprite._ySize = this._cellData[sprite.cellRef].frame.h;
+            this._vertexData[arrayOffset + 10] = sprite._xOffset;
+            this._vertexData[arrayOffset + 11] = sprite._yOffset;
+            this._vertexData[arrayOffset + 12] = sprite._xSize / baseSize.width;
+            this._vertexData[arrayOffset + 13] = sprite._ySize / baseSize.height;
         }
         else {
             if (!sprite.cellIndex) {
@@ -348,8 +434,12 @@ export class SpriteManager implements ISpriteManager {
             }
             var rowSize = baseSize.width / this.cellWidth;
             var offset = (sprite.cellIndex / rowSize) >> 0;
-            this._vertexData[arrayOffset + 10] = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
-            this._vertexData[arrayOffset + 11] = offset * this.cellHeight / baseSize.height;
+            sprite._xOffset = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
+            sprite._yOffset = offset * this.cellHeight / baseSize.height;
+            sprite._xSize = this.cellWidth;
+            sprite._ySize = this.cellHeight;
+            this._vertexData[arrayOffset + 10] = sprite._xOffset;
+            this._vertexData[arrayOffset + 11] = sprite._yOffset;
             this._vertexData[arrayOffset + 12] = this.cellWidth / baseSize.width;
             this._vertexData[arrayOffset + 13] = this.cellHeight / baseSize.height;
         }
@@ -358,6 +448,41 @@ export class SpriteManager implements ISpriteManager {
         this._vertexData[arrayOffset + 15] = sprite.color.g;
         this._vertexData[arrayOffset + 16] = sprite.color.b;
         this._vertexData[arrayOffset + 17] = sprite.color.a;
+    }
+
+    private _checkTextureAlpha(sprite: Sprite, ray: Ray, distance: number, min: Vector3, max: Vector3) {
+        if (!sprite.useAlphaForPicking || !this._spriteTexture) {
+            return true;
+        }
+
+        let textureSize = this._spriteTexture.getSize();
+        if (!this._textureContent) {
+            this._textureContent = new Uint8Array(textureSize.width * textureSize.height * 4);
+            this._spriteTexture.readPixels(0, 0, this._textureContent);
+        }
+
+        let contactPoint = TmpVectors.Vector3[0];
+
+        contactPoint.copyFrom(ray.direction);
+
+        contactPoint.normalize();
+        contactPoint.scaleInPlace(distance);
+        contactPoint.addInPlace(ray.origin);
+
+        let contactPointU = ((contactPoint.x - min.x) / (max.x - min.x)) - 0.5;
+        let contactPointV = (1.0 - (contactPoint.y - min.y) / (max.y - min.y)) - 0.5;
+
+        // Rotate
+        let angle = sprite.angle;
+        let rotatedU = 0.5 + (contactPointU * Math.cos(angle) - contactPointV * Math.sin(angle));
+        let rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
+
+        let u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
+        let v = (sprite._yOffset * textureSize.height +  rotatedV * sprite._ySize) | 0;
+
+        let alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
+
+        return (alpha > 0.5);
     }
 
     /**
@@ -401,6 +526,11 @@ export class SpriteManager implements ISpriteManager {
                 var currentDistance = Vector3.Distance(cameraSpacePosition, ray.origin);
 
                 if (distance > currentDistance) {
+
+                    if (!this._checkTextureAlpha(sprite, ray, currentDistance, min, max)) {
+                        continue;
+                    }
+
                     distance = currentDistance;
                     currentSprite = sprite;
 
@@ -472,6 +602,10 @@ export class SpriteManager implements ISpriteManager {
 
             if (ray.intersectsBoxMinMax(min, max)) {
                 distance = Vector3.Distance(cameraSpacePosition, ray.origin);
+
+                if (!this._checkTextureAlpha(sprite, ray, distance, min, max)) {
+                    continue;
+                }
 
                 var result = new PickingInfo();
                 results.push(result);
@@ -563,17 +697,31 @@ export class SpriteManager implements ISpriteManager {
         // VBOs
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
+        // Handle Right Handed
+        const culling = engine.depthCullingState.cull || true;
+        const zOffset = engine.depthCullingState.zOffset;
+        if (this._scene.useRightHandedSystem) {
+            engine.setState(culling, zOffset, false, false);
+        }
+
         // Draw order
         engine.setDepthFunctionToLessOrEqual();
-        effect.setBool("alphaTest", true);
-        engine.setColorWrite(false);
-        engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
-        engine.setColorWrite(true);
-        effect.setBool("alphaTest", false);
+        if (!this.disableDepthWrite) {
+            effect.setBool("alphaTest", true);
+            engine.setColorWrite(false);
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+            engine.setColorWrite(true);
+            effect.setBool("alphaTest", false);
+        }
 
-        engine.setAlphaMode(Constants.ALPHA_COMBINE);
+        engine.setAlphaMode(this._blendMode);
         engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        // Restore Right Handed
+        if (this._scene.useRightHandedSystem) {
+            engine.setState(culling, zOffset, false, true);
+        }
     }
 
     /**
@@ -594,6 +742,8 @@ export class SpriteManager implements ISpriteManager {
             this._spriteTexture.dispose();
             (<any>this._spriteTexture) = null;
         }
+
+        this._textureContent = null;
 
         // Remove from scene
         var index = this._scene.spriteManagers.indexOf(this);

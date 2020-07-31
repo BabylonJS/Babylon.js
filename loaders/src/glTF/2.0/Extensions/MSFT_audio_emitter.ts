@@ -1,5 +1,5 @@
 import { Nullable } from "babylonjs/types";
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { AnimationEvent } from "babylonjs/Animations/animationEvent";

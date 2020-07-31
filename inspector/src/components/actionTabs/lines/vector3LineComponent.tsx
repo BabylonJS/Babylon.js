@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { NumericInputComponent } from "./numericInputComponent";
@@ -16,6 +16,7 @@ interface IVector3LineComponentProps {
     step?: number;
     onChange?: (newvalue: Vector3) => void;
     useEuler?: boolean,
+    replaySourceReplacement?: string,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
@@ -62,7 +63,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.target,
+            object: this.props.replaySourceReplacement ?? this.props.target,
             property: this.props.propertyName,
             value: this.state.value,
             initialValue: previousValue

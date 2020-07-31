@@ -1,5 +1,6 @@
 import { Nullable } from "babylonjs/types";
-import { Vector2, Epsilon } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
+import { Epsilon } from 'babylonjs/Maths/math.constants';
 
 /**
  * Class used to transport Vector2 information for pointer events

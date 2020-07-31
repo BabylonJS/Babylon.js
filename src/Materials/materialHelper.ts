@@ -31,10 +31,11 @@ export class MaterialHelper {
      * Bind the current view position to an effect.
      * @param effect The effect to be bound
      * @param scene The scene the eyes position is used from
+     * @param variableName name of the shader variable that will hold the eye position
      */
-    public static BindEyePosition(effect: Effect, scene: Scene): void {
+    public static BindEyePosition(effect: Effect, scene: Scene, variableName = "vEyePosition"): void {
         if (scene._forcedViewPosition) {
-            effect.setVector3("vEyePosition", scene._forcedViewPosition);
+            effect.setVector3(variableName, scene._forcedViewPosition);
             return;
         }
         var globalPosition = scene.activeCamera!.globalPosition;
@@ -42,7 +43,7 @@ export class MaterialHelper {
             // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
             globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
         }
-        effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
+        effect.setVector3(variableName, scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
     }
 
     /**
@@ -343,6 +344,12 @@ export class MaterialHelper {
 
         // Shadows
         defines["SHADOW" + lightIndex] = false;
+        defines["SHADOWCSM" + lightIndex] = false;
+        defines["SHADOWCSMDEBUG" + lightIndex] = false;
+        defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
+        defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
+        defines["SHADOWCSMNOBLEND" + lightIndex] = false;
+        defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = false;
         defines["SHADOWPCF" + lightIndex] = false;
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
@@ -421,6 +428,12 @@ export class MaterialHelper {
                 defines["DIRLIGHT" + index] = false;
                 defines["SPOTLIGHT" + index] = false;
                 defines["SHADOW" + index] = false;
+                defines["SHADOWCSM" + index] = false;
+                defines["SHADOWCSMDEBUG" + index] = false;
+                defines["SHADOWCSMNUM_CASCADES" + index] = false;
+                defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
+                defines["SHADOWCSMNOBLEND" + index] = false;
+                defines["SHADOWCSM_RIGHTHANDED" + index] = false;
                 defines["SHADOWPCF" + index] = false;
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
@@ -476,6 +489,15 @@ export class MaterialHelper {
 
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
+
+        uniformsList.push(
+            "viewFrustumZ" + lightIndex,
+            "cascadeBlendFactor" + lightIndex,
+            "lightSizeUVCorrection" + lightIndex,
+            "depthCorrection" + lightIndex,
+            "penumbraDarkness" + lightIndex,
+            "frustumLengths" + lightIndex,
+        );
 
         if (projectedLightTexture) {
             samplersList.push("projectionLightSampler" + lightIndex);

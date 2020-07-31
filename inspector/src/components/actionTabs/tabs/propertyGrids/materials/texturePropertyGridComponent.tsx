@@ -25,6 +25,7 @@ import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture"
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
+import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
 interface ITexturePropertyGridComponentProps {
     texture: BaseTexture,
@@ -36,11 +37,15 @@ interface ITexturePropertyGridComponentProps {
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
 
     private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
+    private textureLineRef: React.RefObject<TextureLineComponent>;
+    
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
 
         const texture = this.props.texture;
+
+        this.textureLineRef = React.createRef();
 
         if (!texture || !(texture as any).rootContainer) {
             return;
@@ -64,27 +69,32 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
         Tools.ReadFile(file, (data) => {
             var blob = new Blob([data], { type: "octet/stream" });
-            var url = URL.createObjectURL(blob);
 
-            if (texture.isCube) {
-                let extension: string | undefined = undefined;
-                if (file.name.toLowerCase().indexOf(".dds") > 0) {
-                    extension = ".dds";
-                } else if (file.name.toLowerCase().indexOf(".env") > 0) {
-                    extension = ".env";
+            var reader = new FileReader();
+            reader.readAsDataURL(blob); 
+            reader.onloadend = () => {
+                let base64data = reader.result as string;     
+
+                if (texture.isCube) {
+                    let extension: string | undefined = undefined;
+                    if (file.name.toLowerCase().indexOf(".dds") > 0) {
+                        extension = ".dds";
+                    } else if (file.name.toLowerCase().indexOf(".env") > 0) {
+                        extension = ".env";
+                    }
+
+                    (texture as CubeTexture).updateURL(base64data, extension, () => this.foreceRefresh());
+                } else {
+                    (texture as Texture).updateURL(base64data, null, () => this.foreceRefresh());
                 }
-
-                (texture as CubeTexture).updateURL(url, extension, () => this.foreceRefresh());
-            } else {
-                (texture as Texture).updateURL(url, null, () => this.foreceRefresh());
-            }
+            };
 
         }, undefined, true);
     }    
 
     foreceRefresh() {
         this.forceUpdate();
-        (this.refs["textureLine"] as TextureLineComponent).updatePreview();
+        (this.textureLineRef.current as TextureLineComponent).updatePreview();
     }
 
     render() {
@@ -111,24 +121,21 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
         let extension = "";
         let url = (texture as Texture).url;
+        let textureUrl = (!url || url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
 
-        if (url) {
-            for (var index = url.length - 1; index >= 0; index--) {
-                if (url[index] === ".") {
+        if (textureUrl) {
+            for (var index = textureUrl.length - 1; index >= 0; index--) {
+                if (textureUrl[index] === ".") {
                     break;
                 }
-                extension = url[index] + extension;
+                extension = textureUrl[index] + extension;
             }
-        } else {
-            url = "";
         }
-
-        let textureUrl = (url.substring(0, 4) === "data" || url.substring(0, 4) === "blob") ? "" : url;
 
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
-                    <TextureLineComponent ref="textureLine" texture={texture} width={256} height={256} globalState={this.props.globalState} />
+                    <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                     <TextInputLineComponent label="URL" value={textureUrl} lockObject={this.props.lockObject} onChange={url => {
                         (texture as Texture).updateURL(url);
@@ -172,6 +179,10 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <TextLineComponent label="Is 2D array" value={texture.is2DArray ? "Yes" : "No"} />
                     <TextLineComponent label="Is cube" value={texture.isCube ? "Yes" : "No"} />
                     <TextLineComponent label="Is render target" value={texture.isRenderTarget ? "Yes" : "No"} />
+                    {
+                        (texture instanceof Texture) && 
+                        <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />
+                    }
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent label="UV set" target={texture} propertyName="coordinatesIndex" minimum={0} maximum={3} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} decimalCount={0} />
                     <OptionsLineComponent label="Mode" options={coordinatesMode} target={texture} propertyName="coordinatesMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
@@ -181,6 +192,10 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <OptionsLineComponent label="Sampling" options={samplingMode} target={texture} noDirectUpdate={true} propertyName="samplingMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={(value) => texture.updateSamplingMode(value)} />
                     }
                 </LineContainerComponent>
+                {
+                    texture.getScene() &&
+                    <AnimationGridComponent globalState={this.props.globalState} animatable={texture} scene={texture.getScene()!} lockObject={this.props.lockObject} />
+                }
                 {
                     (texture as any).rootContainer &&
                     <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">

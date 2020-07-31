@@ -114,7 +114,7 @@ export class DepthRendererSceneComponent implements ISceneComponent {
         if (this.scene._depthRenderer) {
             for (var key in this.scene._depthRenderer) {
                 let depthRenderer = this.scene._depthRenderer[key];
-                if (!depthRenderer.useOnlyInActiveCamera) {
+                if (depthRenderer.enabled && !depthRenderer.useOnlyInActiveCamera) {
                     renderTargets.push(depthRenderer.getDepthMap());
                 }
             }
@@ -125,7 +125,7 @@ export class DepthRendererSceneComponent implements ISceneComponent {
         if (this.scene._depthRenderer) {
             for (var key in this.scene._depthRenderer) {
                 let depthRenderer = this.scene._depthRenderer[key];
-                if (depthRenderer.useOnlyInActiveCamera && this.scene.activeCamera!.id === key) {
+                if (depthRenderer.enabled && depthRenderer.useOnlyInActiveCamera && this.scene.activeCamera!.id === key) {
                     renderTargets.push(depthRenderer.getDepthMap());
                 }
             }

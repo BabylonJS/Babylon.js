@@ -70,7 +70,6 @@ ThinEngine.prototype.createRenderTargetCubeTexture = function(size: number, opti
 
     // Unbind
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     this._bindUnboundFramebuffer(null);
 
     texture._framebuffer = framebuffer;

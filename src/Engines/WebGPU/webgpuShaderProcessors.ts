@@ -3,6 +3,7 @@ import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import { WebGPUConstants } from './webgpuConstants';
+import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -235,7 +236,10 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             code += "gl_Position.y *= -1.; }";
         }
 
-        return code;
+        let sci = new ShaderCodeInliner(code);
+        // sci.debug = true;
+        sci.processCode();
+        return sci.code;
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {

@@ -202,6 +202,7 @@ export class LinesBuilder {
      * * The parameter `dashSize` is the size of the dashes relatively the dash number (positive float, default 3)
      * * The parameter `gapSize` is the size of the gap between two successive dashes relatively the dash number (positive float, default 1)
      * * The optional parameter `instance` is an instance of an existing LineMesh object to be updated with the passed `points` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#lines-and-dashedlines
+     * * The optional parameter `useVertexAlpha` is to be set to `false` (default `true`) when you don't need the alpha blending (faster)
      * * When updating an instance, remember that only point positions can change, not the number of points
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
      * @param name defines the name of the mesh
@@ -210,7 +211,7 @@ export class LinesBuilder {
      * @returns the dashed line mesh
      * @see https://doc.babylonjs.com/how_to/parametric_shapes#dashed-lines
      */
-    public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh }, scene: Nullable<Scene> = null): LinesMesh {
+    public static CreateDashedLines(name: string, options: { points: Vector3[], dashSize?: number, gapSize?: number, dashNb?: number, updatable?: boolean, instance?: LinesMesh, useVertexAlpha?: boolean }, scene: Nullable<Scene> = null): LinesMesh {
         var points = options.points;
         var instance = options.instance;
         var gapSize = options.gapSize || 1;
@@ -264,7 +265,7 @@ export class LinesBuilder {
             return instance;
         }
         // dashed lines creation
-        var dashedLines = new LinesMesh(name, scene);
+        var dashedLines = new LinesMesh(name, scene, null, undefined, undefined, undefined, options.useVertexAlpha);
         var vertexData = VertexData.CreateDashedLines(options);
         vertexData.applyToMesh(dashedLines, options.updatable);
 

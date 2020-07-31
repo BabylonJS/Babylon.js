@@ -3,12 +3,15 @@ import { Nullable } from "../types";
 import { ActionManager } from "../Actions/actionManager";
 import { ISpriteManager } from "./spriteManager";
 import { Color4 } from '../Maths/math.color';
+import { Observable } from '../Misc/observable';
+import { IAnimatable } from '../Animations/animatable.interface';
+declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Class used to represent a sprite
  * @see http://doc.babylonjs.com/babylon101/sprites
  */
-export class Sprite {
+export class Sprite implements IAnimatable {
     /** Gets or sets the current world position */
     public position: Vector3;
     /** Gets or sets the main color */
@@ -24,20 +27,36 @@ export class Sprite {
     /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
     public cellRef: string;
     /** Gets or sets a boolean indicating if UV coordinates should be inverted in U axis */
-    public invertU = 0;
+    public invertU = false;
     /** Gets or sets a boolean indicating if UV coordinates should be inverted in B axis */
-    public invertV = 0;
+    public invertV = false;
     /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
     public disposeWhenFinishedAnimating: boolean;
     /** Gets the list of attached animations */
-    public animations = new Array<Animation>();
+    public animations: Nullable<Array<Animation>> = new Array<Animation>();
     /** Gets or sets a boolean indicating if the sprite can be picked */
     public isPickable = false;
+    /** Gets or sets a boolean indicating that sprite texture alpha will be used for precise picking (false by default) */
+    public useAlphaForPicking = false;
+
+    /** @hidden */
+    public _xOffset: number;
+    /** @hidden */
+    public _yOffset: number;
+    /** @hidden */
+    public _xSize: number;
+    /** @hidden */
+    public _ySize: number;
 
     /**
      * Gets or sets the associated action manager
      */
     public actionManager: Nullable<ActionManager>;
+
+    /**
+    * An event triggered when the control has been disposed
+    */
+   public onDisposeObservable = new Observable<Sprite>();
 
     private _animationStarted = false;
     private _loopAnimation = false;
@@ -66,6 +85,25 @@ export class Sprite {
     }
 
     /**
+     * Returns a boolean indicating if the animation is started
+     */
+    public get animationStarted() {
+        return this._animationStarted;
+    }
+
+    /**
+     * Gets or sets the unique id of the sprite
+     */
+    public uniqueId: number;
+
+    /**
+     * Gets the manager of this sprite
+     */
+    public get manager() {
+        return this._manager;
+    }
+
+    /**
      * Creates a new Sprite
      * @param name defines the name
      * @param manager defines the manager
@@ -77,8 +115,53 @@ export class Sprite {
         this._manager = manager;
 
         this._manager.sprites.push(this);
+        this.uniqueId = this._manager.scene.getUniqueId();
 
         this.position = Vector3.Zero();
+    }
+
+    /**
+     * Returns the string "Sprite"
+     * @returns "Sprite"
+     */
+    public getClassName(): string {
+        return "Sprite";
+    }
+
+    /** Gets or sets the initial key for the animation (setting it will restart the animation)  */
+    public get fromIndex() {
+        return this._fromIndex;
+    }
+
+    public set fromIndex(value: number) {
+        this.playAnimation(value, this._toIndex, this._loopAnimation, this._delay, this._onAnimationEnd);
+    }
+
+    /** Gets or sets the end key for the animation (setting it will restart the animation)  */
+    public get toIndex() {
+        return this._toIndex;
+    }
+
+    public set toIndex(value: number) {
+        this.playAnimation(this._fromIndex, value, this._loopAnimation, this._delay, this._onAnimationEnd);
+    }
+
+    /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
+    public get loopAnimation() {
+        return this._loopAnimation;
+    }
+
+    public set loopAnimation(value: boolean) {
+        this.playAnimation(this._fromIndex, this._toIndex, value, this._delay, this._onAnimationEnd);
+    }
+
+    /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
+    public get delay() {
+        return Math.max(this._delay, 1);
+    }
+
+    public set delay(value: number) {
+        this.playAnimation(this._fromIndex, this._toIndex, this._loopAnimation, value, this._onAnimationEnd);
     }
 
     /**
@@ -93,7 +176,7 @@ export class Sprite {
         this._fromIndex = from;
         this._toIndex = to;
         this._loopAnimation = loop;
-        this._delay = delay;
+        this._delay = delay || 1;
         this._animationStarted = true;
 
         if (from < to) {
@@ -149,5 +232,9 @@ export class Sprite {
                 this._manager.sprites.splice(i, 1);
             }
         }
+
+        // Callback
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
     }
 }

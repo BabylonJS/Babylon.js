@@ -11,7 +11,6 @@ layout(std140, column_major) uniform;
 //     uniform vec3 vSphericalL20;
 //     uniform vec3 vSphericalL21;
 //     uniform vec3 vSphericalL22;
-
 //     uniform vec3 vSphericalX;
 //     uniform vec3 vSphericalY;
 //     uniform vec3 vSphericalZ;
@@ -22,7 +21,6 @@ layout(std140, column_major) uniform;
 //     uniform vec3 vSphericalYZ;
 //     uniform vec3 vSphericalZX;
 // }
-
 
 uniform Scene {
     mat4 viewProjection;
@@ -67,6 +65,10 @@ uniform Material {
 
     vec2 vDebugMode;
 
+    vec4 vMetallicReflectanceFactors;
+    vec2 vMetallicReflectanceInfos;
+    mat4 metallicReflectanceMatrix;
+
     vec2 vClearCoatParams;
     vec4 vClearCoatRefractionParams;
     vec2 vClearCoatInfos;
@@ -84,6 +86,7 @@ uniform Material {
     mat4 anisotropyMatrix;
 
     vec4 vSheenColor;
+    float vSheenRoughness;
     vec2 vSheenInfos;
     mat4 sheenMatrix;
 

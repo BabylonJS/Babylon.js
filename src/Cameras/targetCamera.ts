@@ -53,6 +53,17 @@ export class TargetCamera extends Camera {
     public noRotationConstraint = false;
 
     /**
+     * Reverses mouselook direction to 'natural' panning as opposed to traditional direct
+     * panning
+     */
+    public invertRotation = false;
+
+    /**
+     * Speed multiplier for inverse camera panning
+     */
+    public inverseRotationSpeed = 0.2;
+
+    /**
      * Define the current target of the camera as an object or a position.
      */
     @serializeAsMeshReference("lockedTargetId")
@@ -290,6 +301,7 @@ export class TargetCamera extends Camera {
 
     /** @hidden */
     public _checkInputs(): void {
+        var directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         var needToMove = this._decideIfNeedsToMove();
         var needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
 
@@ -300,8 +312,8 @@ export class TargetCamera extends Camera {
 
         // Rotate
         if (needToRotate) {
-            this.rotation.x += this.cameraRotation.x;
-            this.rotation.y += this.cameraRotation.y;
+            this.rotation.x += this.cameraRotation.x * directionMultiplier;
+            this.rotation.y += this.cameraRotation.y * directionMultiplier;
 
             //rotate, if quaternion is set and rotation was used
             if (this.rotationQuaternion) {
@@ -432,6 +444,8 @@ export class TargetCamera extends Camera {
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
+            rigCamera.isRigCamera = true;
+            rigCamera.rigParent = this;
             if (this.cameraRigMode === Camera.RIG_MODE_VR || this.cameraRigMode === Camera.RIG_MODE_WEBVR) {
                 if (!this.rotationQuaternion) {
                     this.rotationQuaternion = new Quaternion();
@@ -458,6 +472,7 @@ export class TargetCamera extends Camera {
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
             case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
             case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
+            case Camera.RIG_MODE_STEREOSCOPIC_INTERLACED:
                 //provisionnaly using _cameraRigParams.stereoHalfAngle instead of calculations based on _cameraRigParams.interaxialDistance:
                 var leftSign = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? 1 : -1;
                 var rightSign = (this.cameraRigMode === Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED) ? -1 : 1;
@@ -489,7 +504,7 @@ export class TargetCamera extends Camera {
         var newFocalTarget = TargetCamera._TargetFocalPoint.addInPlace(this.position);
 
         Matrix.TranslationToRef(-newFocalTarget.x, -newFocalTarget.y, -newFocalTarget.z, TargetCamera._TargetTransformMatrix);
-        TargetCamera._TargetTransformMatrix.multiplyToRef(Matrix.RotationY(halfSpace), TargetCamera._RigCamTransformMatrix);
+        TargetCamera._TargetTransformMatrix.multiplyToRef(Matrix.RotationAxis(rigCamera.upVector, halfSpace), TargetCamera._RigCamTransformMatrix);
         Matrix.TranslationToRef(newFocalTarget.x, newFocalTarget.y, newFocalTarget.z, TargetCamera._TargetTransformMatrix);
 
         TargetCamera._RigCamTransformMatrix.multiplyToRef(TargetCamera._TargetTransformMatrix, TargetCamera._RigCamTransformMatrix);

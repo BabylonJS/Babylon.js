@@ -6,7 +6,6 @@ import { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { Effect } from "../Materials/effect";
-import { Material } from "../Materials/material";
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
@@ -164,7 +163,10 @@ export class OutlineRenderer implements ISceneComponent {
             return;
         }
 
-        var mesh = subMesh.getRenderingMesh();
+        var ownerMesh = subMesh.getMesh();
+        var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
+        var renderingMesh = subMesh.getRenderingMesh();
+        var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
         var material = subMesh.getMaterial();
 
         if (!material || !scene.activeCamera) {
@@ -178,19 +180,19 @@ export class OutlineRenderer implements ISceneComponent {
             this._effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
         }
 
-        this._effect.setFloat("offset", useOverlay ? 0 : mesh.outlineWidth);
-        this._effect.setColor4("color", useOverlay ? mesh.overlayColor : mesh.outlineColor, useOverlay ? mesh.overlayAlpha : material.alpha);
+        this._effect.setFloat("offset", useOverlay ? 0 : renderingMesh.outlineWidth);
+        this._effect.setColor4("color", useOverlay ? renderingMesh.overlayColor : renderingMesh.outlineColor, useOverlay ? renderingMesh.overlayAlpha : material.alpha);
         this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
         // Bones
-        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+        if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
+            this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
         }
 
         // Morph targets
-        MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+        MaterialHelper.BindMorphTargetParameters(renderingMesh, this._effect);
 
-        mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
+        renderingMesh._bind(subMesh, this._effect, material.fillMode);
 
         // Alpha test
         if (material && material.needAlphaTesting()) {
@@ -202,8 +204,7 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         engine.setZOffset(-this.zOffset);
-
-        mesh._processRendering(subMesh, this._effect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
+        renderingMesh._processRendering(effectiveMesh, subMesh, this._effect, material.fillMode, batch, hardwareInstancedRendering,
             (isInstance, world) => { this._effect.setMatrix("world", world); });
 
         engine.setZOffset(0);

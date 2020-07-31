@@ -3,7 +3,6 @@ import { BRDFTextureTools } from "../../Misc/brdfTextureTools";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import { Color3 } from "../../Maths/math.color";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import { ColorCurves } from "../../Materials/colorCurves";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -166,23 +165,38 @@ export class PBRMaterial extends PBRBaseMaterial {
     public roughness: Nullable<number>;
 
     /**
-     * Specifies the an F0 factor to help configuring the material F0.
-     * Instead of the default 4%, 8% * factor will be used. As the factor is defaulting
-     * to 0.5 the previously hard coded value stays the same.
-     * Can also be used to scale the F0 values of the metallic texture.
+     * In metallic workflow, specifies an F0 factor to help configuring the material F0.
+     * By default the indexOfrefraction is used to compute F0;
+     *
+     * This is used as a factor against the default reflectance at normal incidence to tweak it.
+     *
+     * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor;
+     * F90 = metallicReflectanceColor;
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicF0Factor = 0.5;
+    public metallicF0Factor = 1;
 
     /**
-     * Specifies whether the F0 factor can be fetched from the mettalic texture.
-     * If set to true, please adapt the metallicF0Factor to ensure it fits with
-     * your expectation as it multiplies with the texture data.
+     * In metallic workflow, specifies an F90 color to help configuring the material F90.
+     * By default the F90 is always 1;
+     *
+     * Please note that this factor is also used as a factor against the default reflectance at normal incidence.
+     *
+     * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor
+     * F90 = metallicReflectanceColor;
      */
-    @serialize()
+    @serializeAsColor3()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useMetallicF0FactorFromMetallicTexture = false;
+    public metallicReflectanceColor = Color3.White();
+
+    /**
+     * Defines to store metallicReflectanceColor in RGB and metallicF0Factor in A
+     * This is multiply against the scalar values defined in the material.
+     */
+    @serializeAsTexture()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public metallicReflectanceTexture: Nullable<BaseTexture>;
 
     /**
      * Used to enable roughness/glossiness fetch from a separate channel depending on the current mode.
@@ -265,13 +279,18 @@ export class PBRMaterial extends PBRBaseMaterial {
     public microSurface = 1.0;
 
     /**
-     * source material index of refraction (IOR)' / 'destination material IOR.
+     * Index of refraction of the material base layer.
+     * https://en.wikipedia.org/wiki/List_of_refractive_indices
+     *
+     * This does not only impact refraction but also the Base F0 of Dielectric Materials.
+     *
+     * From dielectric fresnel rules: F0 = square((iorT - iorI) / (iorT + iorI))
      */
     public get indexOfRefraction(): number {
-        return 1 / this.subSurface.indexOfRefraction;
+        return this.subSurface.indexOfRefraction;
     }
     public set indexOfRefraction(value: number) {
-        this.subSurface.indexOfRefraction = 1 / value;
+        this.subSurface.indexOfRefraction = value;
     }
 
     /**
@@ -739,6 +758,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.anisotropy.copyTo(clone.anisotropy);
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
+        this.subSurface.copyTo(clone.subSurface);
 
         return clone;
     }

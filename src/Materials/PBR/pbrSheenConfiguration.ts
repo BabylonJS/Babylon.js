@@ -17,6 +17,8 @@ export interface IMaterialSheenDefines {
     SHEEN_TEXTURE: boolean;
     SHEEN_TEXTUREDIRECTUV: number;
     SHEEN_LINKWITHALBEDO: boolean;
+    SHEEN_ROUGHNESS: boolean;
+    SHEEN_ALBEDOSCALING: boolean;
 
     /** @hidden */
     _areTexturesDirty: boolean;
@@ -65,6 +67,26 @@ export class PBRSheenConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
+    private _roughness: Nullable<number> = null;
+    /**
+     * Defines the sheen roughness.
+     * It is not taken into account if linkSheenWithAlbedo is true.
+     * To stay backward compatible, material roughness is used instead if sheen roughness = null
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public roughness: Nullable<number> = null;
+
+    private _albedoScaling = false;
+    /**
+     * If true, the sheen effect is layered above the base BRDF with the albedo-scaling technique.
+     * It allows the strength of the sheen effect to not depend on the base color of the material,
+     * making it easier to setup and tweak the effect
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public albedoScaling = false;
+
     /** @hidden */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
@@ -110,6 +132,8 @@ export class PBRSheenConfiguration {
         if (this._isEnabled) {
             defines.SHEEN = this._isEnabled;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
+            defines.SHEEN_ROUGHNESS = this._roughness !== null;
+            defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -125,6 +149,8 @@ export class PBRSheenConfiguration {
             defines.SHEEN = false;
             defines.SHEEN_TEXTURE = false;
             defines.SHEEN_LINKWITHALBEDO = false;
+            defines.SHEEN_ROUGHNESS = false;
+            defines.SHEEN_ALBEDOSCALING = false;
         }
     }
 
@@ -147,6 +173,10 @@ export class PBRSheenConfiguration {
                 this.color.g,
                 this.color.b,
                 this.intensity);
+
+            if (this._roughness !== null) {
+                uniformBuffer.updateFloat("vSheenRoughness", this._roughness);
+            }
         }
 
         // Textures
@@ -229,7 +259,7 @@ export class PBRSheenConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("vSheenColor", "vSheenInfos", "sheenMatrix");
+        uniforms.push("vSheenColor", "vSheenRoughness", "vSheenInfos", "sheenMatrix");
     }
 
     /**
@@ -238,6 +268,7 @@ export class PBRSheenConfiguration {
      */
     public static PrepareUniformBuffer(uniformBuffer: UniformBuffer): void {
         uniformBuffer.addUniform("vSheenColor", 4);
+        uniformBuffer.addUniform("vSheenRoughness", 1);
         uniformBuffer.addUniform("vSheenInfos", 2);
         uniformBuffer.addUniform("sheenMatrix", 16);
     }

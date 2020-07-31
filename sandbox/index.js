@@ -135,7 +135,7 @@ if (BABYLON.Engine.isSupported()) {
 
         currentScene = babylonScene;
 
-        babylonScene.onAnimationFileImportedObservable.add((scene) => {
+        babylonScene.onAnimationFileImportedObservable.add(function (scene) {
             anyLoaded(scene, false);
         });
 

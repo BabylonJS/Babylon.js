@@ -1,7 +1,6 @@
 import { Logger } from "../../Misc/logger";
 import { Scene } from "../../scene";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { SceneLoader } from "../../Loading/sceneLoader";
 
 import { GamepadButtonChanges } from "../../Gamepads/gamepad";
