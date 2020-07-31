@@ -1,7 +1,6 @@
 // https://github.com/gpuweb/gpuweb/blob/01b20b4ad93fabae1e8e0d7752515f69708d33e0/spec/index.bs
 // except #494 which reverted the addition of GPUAdapter.limits
 // except #591 which removed Uint32Array from GPUShaderModuleDescriptor
-// except #708's removal of mapWriteAsync/mapReadAsync/createBufferMapped
 // except #691 et al which added pipeline statistics query (still in flux)
 // including #678 which adds GPUBindGroupLayoutEntry.minBufferBindingSize
 // including #605 which adds new mapping, but without removing the old mapping
@@ -523,9 +522,6 @@ declare class GPUBuffer implements GPUObjectBase {
 
   mapAsync(mode: GPUMapModeFlags, offset?: number, size?: number): Promise<void>;
   getMappedRange(offset?: number, size?: number): ArrayBuffer;
-
-  mapWriteAsync(): Promise<ArrayBuffer>;
-  mapReadAsync(): Promise<ArrayBuffer>;
 }
 
 declare class GPUCommandBuffer implements GPUObjectBase {
@@ -627,12 +623,6 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
     descriptor: GPUBindGroupLayoutDescriptor
   ): GPUBindGroupLayout;
   createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
-  createBufferMapped(
-    descriptor: GPUBufferDescriptor
-  ): [GPUBuffer, ArrayBuffer];
-  createBufferMappedAsync(
-    descriptor: GPUBufferDescriptor
-  ): Promise<[GPUBuffer, ArrayBuffer]>;
   createComputePipeline(
     descriptor: GPUComputePipelineDescriptor
   ): GPUComputePipeline;
