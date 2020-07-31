@@ -123,6 +123,9 @@ export class WebGPUConstants {
     public static readonly GPUBufferUsage_STORAGE = 128;
     public static readonly GPUBufferUsage_INDIRECT = 256;
 
+    public static readonly GPUMapMode_READ = 1;
+    public static readonly GPUMapMode_WRITE = 2;
+
     public static readonly GPUColorWriteBits_NONE = 0;
     public static readonly GPUColorWriteBits_RED = 1;
     public static readonly GPUColorWriteBits_GREEN = 2;
