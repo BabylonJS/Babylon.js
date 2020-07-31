@@ -1005,10 +1005,9 @@ export class WebGPUEngine extends Engine {
             origin: {
                 x: 0,
                 y: 0,
-                z: 0
+                z: Math.max(face, 0)
             },
-            mipLevel: mip,
-            arrayLayer: Math.max(face, 0),
+            mipLevel: mip
         };
         const textureExtent = {
             width,
