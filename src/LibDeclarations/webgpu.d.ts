@@ -297,7 +297,6 @@ interface GPUBufferCopyView extends GPUTextureDataLayout {
 interface GPUTextureCopyView {
   texture: GPUTexture;
   mipLevel?: number;
-  arrayLayer?: number;
   origin?: GPUOrigin3D;
 }
 
