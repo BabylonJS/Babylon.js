@@ -42,7 +42,7 @@ class Vertex {
         /**
          * The texture coordinate of the vertex
          */
-        public uv: Vector2,
+        public uv?: Vector2,
         /**
          * The texture coordinate of the vertex
          */
@@ -54,7 +54,7 @@ class Vertex {
      * @returns A new Vertex
      */
     public clone(): Vertex {
-        return new Vertex(this.pos.clone(), this.normal.clone(), this.uv.clone(), this.vertColor?.clone());
+        return new Vertex(this.pos.clone(), this.normal.clone(), this.uv?.clone(), this.vertColor?.clone());
     }
 
     /**
@@ -75,7 +75,7 @@ class Vertex {
     public interpolate(other: Vertex, t: number): Vertex {
         return new Vertex(Vector3.Lerp(this.pos, other.pos, t),
             Vector3.Lerp(this.normal, other.normal, t),
-            Vector2.Lerp(this.uv, other.uv, t),
+            this.uv && other.uv ? Vector2.Lerp(this.uv, other.uv, t) : undefined,
             this.vertColor && other.vertColor ? Color4.Lerp(this.vertColor, other.vertColor, t) : undefined
         );
     }
@@ -421,7 +421,7 @@ export class CSG {
      * @returns A new CSG from the Mesh
      */
     public static FromMesh(mesh: Mesh): CSG {
-        var vertex: Vertex, normal: Vector3, uv: Vector2, position: Vector3, vertColor: Color4,
+        var vertex: Vertex, normal: Vector3, uv: Vector2 | undefined = undefined, position: Vector3, vertColor: Color4 | undefined = undefined,
             polygon: Polygon,
             polygons = new Array<Polygon>(),
             vertices;
@@ -457,7 +457,9 @@ export class CSG {
                 vertices = [];
                 for (var j = 0; j < 3; j++) {
                     var sourceNormal = new Vector3(normals[indices[i + j] * 3], normals[indices[i + j] * 3 + 1], normals[indices[i + j] * 3 + 2]);
-                    uv = new Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
+                    if (uvs) {
+                        uv = new Vector2(uvs[indices[i + j] * 2], uvs[indices[i + j] * 2 + 1]);
+                    }
                     if (vertColors) {
                         vertColor = new Color4(vertColors[indices[i + j] * 4], vertColors[indices[i + j] * 4 + 1], vertColors[indices[i + j] * 4 + 2], vertColors[indices[i + j] * 4 + 3]);
                     }
@@ -465,7 +467,7 @@ export class CSG {
                     position = Vector3.TransformCoordinates(sourcePosition, matrix);
                     normal = Vector3.TransformNormal(sourceNormal, matrix);
 
-                    vertex = new Vertex(position, normal, uv, vertColor!);
+                    vertex = new Vertex(position, normal, uv, vertColor);
                     vertices.push(vertex);
                 }
 
@@ -673,8 +675,8 @@ export class CSG {
         var vertices = [];
         var indices = [];
         var normals = [];
-        var uvs = [];
-        var vertColors: Nullable<FloatArray> = null;
+        var uvs: Nullable<number[]> = null;
+        var vertColors: Nullable<number[]> = null;
         var vertex = Vector3.Zero();
         var normal = Vector3.Zero();
         var uv = Vector2.Zero();
@@ -723,7 +725,12 @@ export class CSG {
                 for (var k = 0; k < 3; k++) {
                     vertex.copyFrom(polygon.vertices[polygonIndices[k]].pos);
                     normal.copyFrom(polygon.vertices[polygonIndices[k]].normal);
-                    uv.copyFrom(polygon.vertices[polygonIndices[k]].uv);
+                    if (polygon.vertices[polygonIndices[k]].uv) {
+                        if (!uvs) {
+                            uvs = [];
+                        }
+                        uv.copyFrom(polygon.vertices[polygonIndices[k]].uv!);
+                    }
 
                     if (polygon.vertices[polygonIndices[k]].vertColor) {
                         if (!vertColors) {
@@ -735,6 +742,14 @@ export class CSG {
                     var localNormal = Vector3.TransformNormal(normal, matrix);
 
                     vertex_idx = (<any>vertice_dict)[localVertex.x + ',' + localVertex.y + ',' + localVertex.z];
+
+                    let areUvsDifferent = false;
+
+                    if (uvs &&
+                        !(uvs[vertex_idx * 2] === uv.x ||
+                        uvs[vertex_idx * 2 + 1] === uv.y)) {
+                        areUvsDifferent = true;
+                    }
 
                     let areColorsDifferent = false;
 
@@ -750,11 +765,11 @@ export class CSG {
                     if (!(typeof vertex_idx !== 'undefined' &&
                         normals[vertex_idx * 3] === localNormal.x &&
                         normals[vertex_idx * 3 + 1] === localNormal.y &&
-                        normals[vertex_idx * 3 + 2] === localNormal.z &&
-                        uvs[vertex_idx * 2] === uv.x &&
-                        uvs[vertex_idx * 2 + 1] === uv.y) || areColorsDifferent) {
+                        normals[vertex_idx * 3 + 2] === localNormal.z) || areUvsDifferent || areColorsDifferent) {
                             vertices.push(localVertex.x, localVertex.y, localVertex.z);
-                            uvs.push(uv.x, uv.y);
+                            if (uvs) {
+                                uvs.push(uv.x, uv.y);
+                            }
                             normals.push(normal.x, normal.y, normal.z);
                             if (vertColors) {
                                 vertColors.push(vertColor.r, vertColor.g, vertColor.b, vertColor.a);
@@ -775,7 +790,9 @@ export class CSG {
 
         mesh.setVerticesData(VertexBuffer.PositionKind, vertices);
         mesh.setVerticesData(VertexBuffer.NormalKind, normals);
-        mesh.setVerticesData(VertexBuffer.UVKind, uvs);
+        if (uvs) {
+            mesh.setVerticesData(VertexBuffer.UVKind, uvs);
+        }
         if (vertColors) {
             mesh.setVerticesData(VertexBuffer.ColorKind, vertColors);
         }

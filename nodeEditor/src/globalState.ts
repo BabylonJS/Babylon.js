@@ -40,6 +40,7 @@ export class GlobalState {
     onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
     onFrameCreatedObservable = new Observable<GraphFrame>();
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
+    onImportFrameObservable = new Observable<any>();
     onGraphNodeRemovalObservable = new Observable<GraphNode>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     onGridSizeChanged = new Observable<void>();
@@ -56,7 +57,7 @@ export class GlobalState {
     directionalLight0: boolean;
     directionalLight1: boolean;
     controlCamera: boolean;
-    storeEditorData: (serializationObject: any) => void;
+    storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
     _mode: NodeMaterialModes;
 
     /** Gets the mode */

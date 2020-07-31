@@ -51,11 +51,16 @@ vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 #ifdef NORMAL
     mat3 normWorldSM = mat3(finalWorld);
 
-    #ifdef NONUNIFORMSCALING
-        normWorldSM = transposeMat3(inverseMat3(normWorldSM));
-    #endif
+    #if defined(INSTANCES) && defined(THIN_INSTANCES)
+        vec3 vNormalW = normalUpdated / vec3(dot(normWorldSM[0], normWorldSM[0]), dot(normWorldSM[1], normWorldSM[1]), dot(normWorldSM[2], normWorldSM[2]));
+        vNormalW = normalize(normWorldSM * vNormalW);
+    #else
+        #ifdef NONUNIFORMSCALING
+            normWorldSM = transposeMat3(inverseMat3(normWorldSM));
+        #endif
 
-    vec3 vNormalW = normalize(normWorldSM * normalUpdated);
+        vec3 vNormalW = normalize(normWorldSM * normalUpdated);
+    #endif
 #endif
 
 #include<shadowMapVertexNormalBias>

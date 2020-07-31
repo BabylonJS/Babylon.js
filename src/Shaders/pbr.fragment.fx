@@ -1,4 +1,4 @@
-﻿#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+#if defined(BUMP) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -13,6 +13,8 @@
 #endif
 
 precision highp float;
+
+#include<prePassDeclaration>[SCENE_MRT_COUNT]
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
@@ -35,6 +37,7 @@ precision highp float;
 
 // Helper Functions
 #include<helperFunctions>
+#include<subSurfaceScatteringFunctions>
 #include<importanceSampling>
 #include<pbrHelperFunctions>
 #include<imageProcessingFunctions>
@@ -53,6 +56,8 @@ precision highp float;
     #include<reflectionFunction>
 #endif
 
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 #include<pbrBlockAlbedoOpacity>
 #include<pbrBlockReflectivity>
 #include<pbrBlockAmbientOcclusion>
@@ -62,8 +67,6 @@ precision highp float;
 #include<pbrBlockSheen>
 #include<pbrBlockClearcoat>
 #include<pbrBlockSubSurface>
-
-#define CUSTOM_FRAGMENT_DEFINITIONS
 
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
@@ -100,6 +103,10 @@ void main(void) {
         opacityMap,
         vOpacityInfos,
     #endif
+    #ifdef DETAIL
+        detailColor,
+        vDetailInfos,
+    #endif
         albedoOpacityOut
     );
 
@@ -126,6 +133,8 @@ void main(void) {
     #endif
         aoOut
     );
+
+    #include<pbrBlockLightmapInit>
 
 #ifdef UNLIT
     vec3 diffuseBase = vec3(1., 1., 1.);
@@ -173,6 +182,10 @@ void main(void) {
     #endif
     #ifdef MICROSURFACEMAP
         microSurfaceTexel,
+    #endif
+    #ifdef DETAIL
+        detailColor,
+        vDetailInfos,
     #endif
         reflectivityOut
     );
@@ -488,12 +501,33 @@ void main(void) {
 
     #include<logDepthFragment>
     #include<fogFragment>(color, finalColor)
-
     #include<pbrBlockImageProcessing>
 
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
-    gl_FragColor = finalColor;
+#ifdef PREPASS
+    vec3 irradiance = finalDiffuse;
+    #ifndef UNLIT
+        #ifdef REFLECTION
+            irradiance += finalIrradiance;
+        #endif
+    #endif
 
+    vec3 sqAlbedo = sqrt(surfaceAlbedo); // for pre and post scatter
+
+    // Irradiance is diffuse * surfaceAlbedo
+    #ifdef SS_SCATTERING
+    gl_FragData[0] = vec4(finalColor.rgb - irradiance, finalColor.a); // Lit without irradiance
+    irradiance /= sqAlbedo;
+    gl_FragData[1] = vec4(tagLightingForSSS(irradiance), scatteringDiffusionProfile / 255.); // Irradiance + SS diffusion profile
+    #else
+    gl_FragData[0] = vec4(finalColor.rgb, finalColor.a); // Lit without irradiance
+    gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0); // Irradiance
+    #endif
+    gl_FragData[2] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
+    gl_FragData[3] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
+#endif
+
+    gl_FragColor = finalColor;
     #include<pbrDebug>
 }

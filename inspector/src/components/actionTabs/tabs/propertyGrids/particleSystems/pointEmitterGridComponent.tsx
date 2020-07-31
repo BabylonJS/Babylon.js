@@ -11,7 +11,6 @@ interface IPointEmitterGridComponentProps {
     globalState: GlobalState;
     emitter: PointParticleEmitter,
     lockObject: LockObject,
-    replaySourceReplacement?: string,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -25,9 +24,9 @@ export class PointEmitterGridComponent extends React.Component<IPointEmitterGrid
         let emitter = this.props.emitter;
         return (
             <>                   
-                <Vector3LineComponent replaySourceReplacement={this.props.replaySourceReplacement} label="Direction 1" target={emitter} propertyName="direction1"
+                <Vector3LineComponent  label="Direction 1" target={emitter} propertyName="direction1"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <Vector3LineComponent replaySourceReplacement={this.props.replaySourceReplacement} label="Direction 2" target={emitter} propertyName="direction2"
+                <Vector3LineComponent  label="Direction 2" target={emitter} propertyName="direction2"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                 
             </>
         );

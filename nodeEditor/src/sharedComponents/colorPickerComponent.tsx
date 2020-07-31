@@ -81,6 +81,8 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     render() {
         var color = this.state.color;
 
+        this.props.globalState.blockKeyboardEvents = this.state.pickerEnabled;
+
         return (
             <div className="color-picker">
                 <div className="color-rect"  ref={this._floatHostRef} 

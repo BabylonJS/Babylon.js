@@ -15,6 +15,7 @@ import { SubMesh } from '../../../../Meshes/subMesh';
 import { Effect } from '../../../effect';
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { Scene } from '../../../../scene';
+import { Scalar } from '../../../../Maths/math.scalar';
 
 /**
  * Block used to implement the reflection module of the PBR material
@@ -30,6 +31,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     public _vReflectionMicrosurfaceInfosName: string;
     /** @hidden */
     public _vReflectionInfosName: string;
+    /** @hidden */
+    public _vReflectionFilteringInfoName: string;
     private _scene: Scene;
 
     /**
@@ -211,7 +214,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             effect.setTexture(this._2DSamplerName, reflectionTexture);
         }
 
-        effect.setFloat3(this._vReflectionMicrosurfaceInfosName, reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+        const width = reflectionTexture.getSize().width;
+
+        effect.setFloat3(this._vReflectionMicrosurfaceInfosName, width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+        effect.setFloat2(this._vReflectionFilteringInfoName, width, Scalar.Log2(width));
 
         const defines = subMesh._materialDefines as  NodeMaterialDefines;
 
@@ -345,6 +351,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, "vec3");
 
         this._vReflectionInfosName = state._getFreeVariableName("vReflectionInfos");
+
+        this._vReflectionFilteringInfoName = state._getFreeVariableName("vReflectionFilteringInfo");
+
+        state._emitUniformFromString(this._vReflectionFilteringInfoName, "vec2");
 
         code += `#ifdef REFLECTION
             vec2 ${this._vReflectionInfosName} = vec2(1., 0.);

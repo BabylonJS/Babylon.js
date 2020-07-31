@@ -206,6 +206,9 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (subMesh.getRenderingMesh().hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Get correct effect
@@ -291,10 +294,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
         // Custom render function for submeshes
         var renderSubMesh = (subMesh: SubMesh): void => {
-            var ownerMesh = subMesh.getMesh();
-            var replacementMesh = ownerMesh._internalAbstractMeshDataInfo._actAsRegularMesh ? ownerMesh : null;
             var renderingMesh = subMesh.getRenderingMesh();
-            var effectiveMesh = replacementMesh ? replacementMesh : renderingMesh;
+            var effectiveMesh = subMesh.getEffectiveMesh();
             if (this._meshExcluded(renderingMesh)) {
                 return;
             }
@@ -314,13 +315,13 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             engine.setState(material.backFaceCulling);
 
             // Managing instances
-            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
+            var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
 
             if (batch.mustReturn) {
                 return;
             }
 
-            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
+            var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
 
             if (this._isReady(subMesh, hardwareInstancedRendering)) {
                 var effect: Effect = this._volumetricLightScatteringPass;
