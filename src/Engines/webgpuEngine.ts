@@ -521,10 +521,10 @@ export class WebGPUEngine extends Engine {
         const padding = view.byteLength % 4;
         const mappedAtCreation: boolean = padding == 0 && view.byteLength < this._maxBufferChunk;
         const verticesBufferDescriptor = {
-                size: view.byteLength + padding,
-                usage: flags,
-                mappedAtCreation
-            };
+            size: view.byteLength + padding,
+            usage: flags,
+            mappedAtCreation
+        };
        const buffer = this._device.createBuffer(verticesBufferDescriptor);
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
