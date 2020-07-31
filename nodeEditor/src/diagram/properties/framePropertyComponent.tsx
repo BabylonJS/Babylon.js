@@ -59,9 +59,9 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
                                 this.props.frame!.isCollapsed = false;
                             }} />
                     }
-                    {/* <ButtonLineComponent label="Export" onClick={() => {
-                                this.state.currentFrame!.export();
-                            }} /> */}
+                    <ButtonLineComponent label="Export" onClick={() => {
+                                this.props.frame!.export();
+                            }} />
                 </LineContainerComponent>
             </div>
         </div>

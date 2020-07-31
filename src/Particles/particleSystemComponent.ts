@@ -136,8 +136,3 @@ Mesh.prototype.getHierarchyEmittedParticleSystems = function(): IParticleSystem[
 
     return results;
 };
-
-/**
- * @hidden
- */
-export var _IDoNeedToBeInTheBuild = 42;

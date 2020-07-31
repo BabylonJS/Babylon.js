@@ -8,7 +8,7 @@ import { Vector3 } from "../../Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 import { Ray } from "../../Culling/ray";
 import { PivotTools } from '../../Misc/pivotTools';
-
+import { ArcRotateCamera } from '../../Cameras/arcRotateCamera';
 import "../../Meshes/Builders/planeBuilder";
 
 /**
@@ -255,7 +255,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         // Reattach camera controls
         if (this.detachCameraControls && this._attachedElement && this._scene.activeCamera && !this._scene.activeCamera.leftCamera) {
-            this._scene.activeCamera.attachControl(this._attachedElement, this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
+            if (this._scene.activeCamera.getClassName() === "ArcRotateCamera") {
+                const arcRotateCamera = this._scene.activeCamera as ArcRotateCamera;
+                arcRotateCamera.attachControl(this._attachedElement, arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true, arcRotateCamera._useCtrlForPanning, arcRotateCamera._panningMouseButton);
+            } else {
+                this._scene.activeCamera.attachControl(this._attachedElement, this._scene.activeCamera.inputs ? this._scene.activeCamera.inputs.noPreventDefault : true);
+            }
         }
     }
 
@@ -393,10 +398,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
     // Variables to avoid instantiation in the below method
     private _pointA = new Vector3(0, 0, 0);
-    private _pointB = new Vector3(0, 0, 0);
     private _pointC = new Vector3(0, 0, 0);
-    private _lineA = new Vector3(0, 0, 0);
-    private _lineB = new Vector3(0, 0, 0);
     private _localAxis = new Vector3(0, 0, 0);
     private _lookAt = new Vector3(0, 0, 0);
     // Position the drag plane based on the attached mesh position, for single axis rotate the plane along the axis to face the camera
@@ -405,17 +407,25 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         if (this._options.dragAxis) {
             this.useObjectOrientationForDragging ? Vector3.TransformCoordinatesToRef(this._options.dragAxis, this.attachedNode.getWorldMatrix().getRotationMatrix(), this._localAxis) : this._localAxis.copyFrom(this._options.dragAxis);
 
-            // Calculate plane normal in direction of camera but perpendicular to drag axis
-            this._pointA.addToRef(this._localAxis, this._pointB); // towards drag axis
+            // Calculate plane normal that is the cross product of local axis and (eye-dragPlanePosition)
             ray.origin.subtractToRef(this._pointA, this._pointC);
-            this._pointA.addToRef(this._pointC.normalize(), this._pointC); // towards camera
-            // Get perpendicular line from direction to camera and drag axis
-            this._pointB.subtractToRef(this._pointA, this._lineA);
-            this._pointC.subtractToRef(this._pointA, this._lineB);
-            Vector3.CrossToRef(this._lineA, this._lineB, this._lookAt);
-            // Get perpendicular line from previous result and drag axis to adjust lineB to be perpendiculat to camera
-            Vector3.CrossToRef(this._lineA, this._lookAt, this._lookAt);
-            this._lookAt.normalize();
+            this._pointC.normalize();
+            if (Math.abs(Vector3.Dot(this._localAxis, this._pointC)) > 0.999)
+            {
+                // the drag axis is colinear with the (eye to position) ray. The cross product will give jittered values.
+                // A new axis vector need to be computed
+                if (Math.abs(Vector3.Dot(Vector3.UpReadOnly, this._pointC)) > 0.999)
+                {
+                    this._lookAt.copyFrom(Vector3.Right());
+                } else {
+                    this._lookAt.copyFrom(Vector3.UpReadOnly);
+                }
+            } else {
+                Vector3.CrossToRef(this._localAxis, this._pointC, this._lookAt);
+                // Get perpendicular line from previous result and drag axis to adjust lineB to be perpendiculat to camera
+                Vector3.CrossToRef(this._localAxis, this._lookAt, this._lookAt);
+                this._lookAt.normalize();
+            }
 
             this._dragPlane.position.copyFrom(this._pointA);
             this._pointA.addToRef(this._lookAt, this._lookAt);

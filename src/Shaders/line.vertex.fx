@@ -1,14 +1,20 @@
-﻿// Attributes
+﻿#include<instancesDeclaration>
+
+// Attributes
 attribute vec3 position;
 attribute vec4 normal;
 
 // Uniforms
-uniform mat4 worldViewProjection;
+uniform mat4 viewProjection;
 
 uniform float width;
 uniform float aspectRatio;
 
 void main(void) {
+    #include<instancesVertex>
+
+    mat4 worldViewProjection = viewProjection * finalWorld;
+
 	vec4 viewPosition = worldViewProjection * vec4(position, 1.0);
 	vec4 viewPositionNext = worldViewProjection * vec4(normal.xyz, 1.0);
 

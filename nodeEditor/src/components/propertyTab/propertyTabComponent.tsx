@@ -156,8 +156,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             let decoder = new TextDecoder("utf-8");
             SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
-            this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false);
+            if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
+                this.props.globalState.onResetRequiredObservable.notifyObservers();
+            }
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+        }, undefined, true);
+    }
+
+    loadFrame(file: File) {
+        Tools.ReadFile(file, (data) => {
+            // get Frame Data from file
+            let decoder = new TextDecoder("utf-8");
+            const frameData = JSON.parse(decoder.decode(data));
+            SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
         }, undefined, true);
     }
 
@@ -243,21 +254,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         NodeMaterial.ParseFromSnippetAsync(snippedID, scene, "", material).then(() => {
             material.build();
-            this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false);
-            this.props.globalState.onResetRequiredObservable.notifyObservers();
+            if (!this.changeMode(this.props.globalState.nodeMaterial!.mode, true, false)) {
+                this.props.globalState.onResetRequiredObservable.notifyObservers();
+            }
         }).catch((err) => {
             alert("Unable to load your node material: " + err);
         });
     }
 
-    changeMode(value: any, force = false, loadDefault = true) {
+    changeMode(value: any, force = false, loadDefault = true): boolean {
         if (this.props.globalState.mode === value) {
-            return;
+            return false;
         }
 
         if (!force && !confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
             this._modeSelect.current?.setValue(this.props.globalState.mode);
-            return;
+            return false;
         }
 
         if (force) {
@@ -267,27 +279,36 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         if (loadDefault) {
             switch (value) {
                 case NodeMaterialModes.Material:
-                    this.props.globalState.previewType = PreviewType.Sphere;
                     this.props.globalState.nodeMaterial!.setToDefault();
                     break;
                 case NodeMaterialModes.PostProcess:
                     this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
                     break;
                 case NodeMaterialModes.Particle:
-                    this.props.globalState.previewType = PreviewType.Bubbles;
                     this.props.globalState.nodeMaterial!.setToDefaultParticle();
                     break;
             }
-
-            this.props.globalState.listOfCustomPreviewFiles = [];
-            (this.props.globalState.previewFile as any) = undefined;
-
-            DataStorage.WriteNumber("PreviewType", this.props.globalState.previewType);
         }
+
+        switch (value) {
+            case NodeMaterialModes.Material:
+                this.props.globalState.previewType = PreviewType.Sphere;
+                break;
+            case NodeMaterialModes.Particle:
+                this.props.globalState.previewType = PreviewType.Bubbles;
+                break;
+        }
+
+        this.props.globalState.listOfCustomPreviewFiles = [];
+        (this.props.globalState.previewFile as any) = undefined;
+
+        DataStorage.WriteNumber("PreviewType", this.props.globalState.previewType);
 
         this.props.globalState.mode = value as NodeMaterialModes;
 
         this.props.globalState.onResetRequiredObservable.notifyObservers();
+
+        return true;
     }
 
     render() {
@@ -398,7 +419,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.customSave();
                             }} />
                         }
-
+                        <FileButtonLineComponent label="Load Frame" uploadName={'frame-upload'} onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {
                         !this.props.globalState.customSave &&

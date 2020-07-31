@@ -13,7 +13,7 @@ Node.AddNodeConstructor("StereoscopicArcRotateCamera", (name, scene, options) =>
 
 /**
  * Camera used to simulate stereoscopic rendering (based on ArcRotateCamera)
- * @see http://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/cameras
  */
 export class StereoscopicArcRotateCamera extends ArcRotateCamera {
     /**

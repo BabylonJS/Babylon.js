@@ -8,12 +8,15 @@ import { Axis } from '../Maths/math.axis';
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
  * This is the base of the follow, arc rotate cameras and Free camera
- * @see http://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/cameras
  */
 export class TargetCamera extends Camera {
     private static _RigCamTransformMatrix = new Matrix();
     private static _TargetTransformMatrix = new Matrix();
     private static _TargetFocalPoint = new Vector3();
+
+    private _tmpUpVector = Vector3.Zero();
+    private _tmpTargetVector = Vector3.Zero();
 
     /**
      * Define the current direction the camera is moving to
@@ -23,6 +26,10 @@ export class TargetCamera extends Camera {
      * Define the current rotation the camera is rotating to
      */
     public cameraRotation = new Vector2(0, 0);
+
+    /** Gets or sets a boolean indicating that the scaling of the parent hierarchy will not be taken in account by the camera */
+    public ignoreParentScaling = false;
+
     /**
      * When set, the up vector of the camera will be updated by the rotation of the camera
      */
@@ -87,9 +94,6 @@ export class TargetCamera extends Camera {
     /** @hidden */
     public _transformedReferencePoint = Vector3.Zero();
 
-    protected _globalCurrentTarget = Vector3.Zero();
-    protected _globalCurrentUpVector = Vector3.Zero();
-
     /** @hidden */
     public _reset: () => void;
 
@@ -98,7 +102,7 @@ export class TargetCamera extends Camera {
     /**
      * Instantiates a target camera that takes a mesh or position as a target and continues to look at it while it moves.
      * This is the base of the follow, arc rotate cameras and Free camera
-     * @see http://doc.babylonjs.com/features/cameras
+     * @see https://doc.babylonjs.com/features/cameras
      * @param name Defines the name of the camera in the scene
      * @param position Defines the start position of the camera in the scene
      * @param scene Defines the scene the camera belongs to
@@ -312,17 +316,15 @@ export class TargetCamera extends Camera {
 
         // Rotate
         if (needToRotate) {
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion.toEulerAnglesToRef(this.rotation);
+            }
+
             this.rotation.x += this.cameraRotation.x * directionMultiplier;
             this.rotation.y += this.cameraRotation.y * directionMultiplier;
 
-            //rotate, if quaternion is set and rotation was used
-            if (this.rotationQuaternion) {
-                var len = this.rotation.lengthSquared();
-                if (len) {
-                    Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
-                }
-            }
-
+            // Apply constraints
             if (!this.noRotationConstraint) {
                 var limit = 1.570796;
 
@@ -331,6 +333,14 @@ export class TargetCamera extends Camera {
                 }
                 if (this.rotation.x < -limit) {
                     this.rotation.x = -limit;
+                }
+            }
+
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                var len = this.rotation.lengthSquared();
+                if (len) {
+                    Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
                 }
             }
         }
@@ -419,22 +429,42 @@ export class TargetCamera extends Camera {
     }
 
     protected _computeViewMatrix(position: Vector3, target: Vector3, up: Vector3): void {
-        if (this.parent) {
-            const parentWorldMatrix = this.parent.getWorldMatrix();
-            Vector3.TransformCoordinatesToRef(position, parentWorldMatrix, this._globalPosition);
-            Vector3.TransformCoordinatesToRef(target, parentWorldMatrix, this._globalCurrentTarget);
-            Vector3.TransformNormalToRef(up, parentWorldMatrix, this._globalCurrentUpVector);
-            this._markSyncedWithParent();
-        } else {
-            this._globalPosition.copyFrom(position);
-            this._globalCurrentTarget.copyFrom(target);
-            this._globalCurrentUpVector.copyFrom(up);
+        if (this.ignoreParentScaling) {
+            if (this.parent) {
+                const parentWorldMatrix = this.parent.getWorldMatrix();
+                Vector3.TransformCoordinatesToRef(position, parentWorldMatrix, this._globalPosition);
+                Vector3.TransformCoordinatesToRef(target, parentWorldMatrix, this._tmpTargetVector);
+                Vector3.TransformNormalToRef(up, parentWorldMatrix, this._tmpUpVector);
+                this._markSyncedWithParent();
+            } else {
+                this._globalPosition.copyFrom(position);
+                this._tmpTargetVector.copyFrom(target);
+                this._tmpUpVector.copyFrom(up);
+            }
+
+            if (this.getScene().useRightHandedSystem) {
+                Matrix.LookAtRHToRef(this._globalPosition, this._tmpTargetVector, this._tmpUpVector, this._viewMatrix);
+            } else {
+                Matrix.LookAtLHToRef(this._globalPosition, this._tmpTargetVector, this._tmpUpVector, this._viewMatrix);
+            }
+            return;
         }
 
         if (this.getScene().useRightHandedSystem) {
-            Matrix.LookAtRHToRef(this._globalPosition, this._globalCurrentTarget, this._globalCurrentUpVector, this._viewMatrix);
+            Matrix.LookAtRHToRef(position, target, up, this._viewMatrix);
         } else {
-            Matrix.LookAtLHToRef(this._globalPosition, this._globalCurrentTarget, this._globalCurrentUpVector, this._viewMatrix);
+            Matrix.LookAtLHToRef(position, target, up, this._viewMatrix);
+        }
+
+        if (this.parent) {
+            const parentWorldMatrix = this.parent.getWorldMatrix();
+            this._viewMatrix.invert();
+            this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
+            this._viewMatrix.getTranslationToRef(this._globalPosition);
+            this._viewMatrix.invert();
+            this._markSyncedWithParent();
+        } else {
+            this._globalPosition.copyFrom(position);
         }
     }
 

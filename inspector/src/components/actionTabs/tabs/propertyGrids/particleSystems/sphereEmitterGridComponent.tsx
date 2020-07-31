@@ -12,7 +12,6 @@ interface ISphereEmitterGridComponentProps {
     globalState: GlobalState;
     emitter: SphereParticleEmitter,
     lockObject: LockObject,
-    replaySourceReplacement?: string,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -26,10 +25,10 @@ export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGr
         let emitter = this.props.emitter;
         return (
             <>                   
-                <FloatLineComponent replaySourceReplacement={this.props.replaySourceReplacement} lockObject={this.props.lockObject} label="Radius" target={emitter} propertyName="radius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <SliderLineComponent replaySourceReplacement={this.props.replaySourceReplacement} label="Radius range" target={emitter} propertyName="radiusRange" minimum={0} maximum={1} step={0.01} 
+                <FloatLineComponent lockObject={this.props.lockObject} label="Radius" target={emitter} propertyName="radius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <SliderLineComponent label="Radius range" target={emitter} propertyName="radiusRange" minimum={0} maximum={1} step={0.01} 
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <SliderLineComponent replaySourceReplacement={this.props.replaySourceReplacement} label="Direction randomizer" target={emitter} propertyName="directionRandomizer" minimum={0} maximum={1} step={0.01} 
+                <SliderLineComponent label="Direction randomizer" target={emitter} propertyName="directionRandomizer" minimum={0} maximum={1} step={0.01} 
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />               
             </>
         );

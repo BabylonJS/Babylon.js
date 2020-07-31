@@ -52,11 +52,6 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
 
         this.props.gradient.factor1 = valueAsNumber;
 
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.factor1 = ${valueAsNumber};`
-        });                 
-
         this.props.onUpdateGradient();
         this.forceUpdate();
     }    
@@ -76,11 +71,6 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
 
         this.props.gradient.factor2 = valueAsNumber;
 
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.factor2 = ${valueAsNumber};`
-        });         
-
         this.props.onUpdateGradient();
         this.forceUpdate();
     }   
@@ -89,11 +79,6 @@ export class FactorGradientStepGridComponent extends React.Component<IFactorGrad
         this.props.gradient.gradient = gradient;
 
         this.setState({gradient: gradient});
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.gradient = ${gradient};`
-        });         
 
         this.props.onUpdateGradient();
     }

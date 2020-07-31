@@ -581,7 +581,7 @@ export interface IParticleSystem {
     getRampGradients(): Nullable<Array<Color3Gradient>>;
 
     /** Gets or sets a boolean indicating that ramp gradients must be used
-     * @see http://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
      */
     useRampGradients: boolean;
 

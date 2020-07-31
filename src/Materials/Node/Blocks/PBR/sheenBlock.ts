@@ -29,7 +29,6 @@ export class SheenBlock extends NodeMaterialBlock {
         this.registerInput("intensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("roughness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("texture", NodeMaterialBlockConnectionPointTypes.Color4, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("sheen", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("sheen", this, NodeMaterialConnectionPointDirection.Output, SheenBlock, "SheenBlock"));
@@ -90,13 +89,6 @@ export class SheenBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the texture input component
-     */
-    public get texture(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
-    }
-
-    /**
      * Gets the sheen object output component
      */
     public get sheen(): NodeMaterialConnectionPoint {
@@ -110,7 +102,6 @@ export class SheenBlock extends NodeMaterialBlock {
         defines.setValue("SHEEN_LINKWITHALBEDO", this.linkSheenWithAlbedo, true);
         defines.setValue("SHEEN_ROUGHNESS", this.roughness.isConnected, true);
         defines.setValue("SHEEN_ALBEDOSCALING", this.albedoScaling, true);
-        defines.setValue("SHEEN_TEXTURE", this.texture.isConnected, true);
     }
 
     /**
@@ -124,7 +115,7 @@ export class SheenBlock extends NodeMaterialBlock {
         const color = this.color.isConnected ? this.color.associatedVariableName : "vec3(1.)";
         const intensity = this.intensity.isConnected ? this.intensity.associatedVariableName : "1.";
         const roughness = this.roughness.isConnected ? this.roughness.associatedVariableName : "0.";
-        const texture = this.texture.isConnected ? this.texture.associatedVariableName : "vec4(0.)";
+        const texture = "vec4(0.)";
 
         code = `#ifdef SHEEN
             sheenOutParams sheenOut;

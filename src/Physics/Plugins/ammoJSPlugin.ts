@@ -1031,7 +1031,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion) {
         var trans = impostor.physicsBody.getWorldTransform();
 
-        // If rotation/position has changed update and activate riged body
+        // If rotation/position has changed update and activate rigged body
         if (
             trans.getOrigin().x() != newPosition.x ||
             trans.getOrigin().y() != newPosition.y ||

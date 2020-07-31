@@ -1,14 +1,14 @@
-import { AbstractMesh } from '../../Meshes/abstractMesh';
-import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from './webXRAbstractMotionController';
-import { Scene } from '../../scene';
-import { SceneLoader } from '../../Loading/sceneLoader';
-import { Mesh } from '../../Meshes/mesh';
-import { Axis, Space } from '../../Maths/math.axis';
-import { Color3 } from '../../Maths/math.color';
-import { WebXRControllerComponent } from './webXRControllerComponent';
-import { SphereBuilder } from '../../Meshes/Builders/sphereBuilder';
-import { StandardMaterial } from '../../Materials/standardMaterial';
-import { Logger } from '../../Misc/logger';
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { WebXRAbstractMotionController, IMotionControllerProfile, IMotionControllerMeshMap } from "./webXRAbstractMotionController";
+import { Scene } from "../../scene";
+import { SceneLoader } from "../../Loading/sceneLoader";
+import { Mesh } from "../../Meshes/mesh";
+import { Axis, Space } from "../../Maths/math.axis";
+import { Color3 } from "../../Maths/math.color";
+import { WebXRControllerComponent } from "./webXRControllerComponent";
+import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
+import { StandardMaterial } from "../../Materials/standardMaterial";
+import { Logger } from "../../Misc/logger";
 
 /**
  * A profiled motion controller has its profile loaded from an online repository.
@@ -19,9 +19,9 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         [buttonName: string]: {
             mainMesh: AbstractMesh;
             states: {
-                [state: string]: IMotionControllerMeshMap
-            }
-        }
+                [state: string]: IMotionControllerMeshMap;
+            };
+        };
     } = {};
     private _touchDots: { [visKey: string]: AbstractMesh } = {};
 
@@ -42,17 +42,17 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         });
     }
 
-    protected _getFilenameAndPath(): { filename: string; path: string; } {
+    protected _getFilenameAndPath(): { filename: string; path: string } {
         return {
             filename: this.layout.assetPath,
-            path: `${this._repositoryUrl}/profiles/${this.profileId}/`
+            path: `${this._repositoryUrl}/profiles/${this.profileId}/`,
         };
     }
 
     protected _getModelLoadingConstraints(): boolean {
         const glbLoaded = SceneLoader.IsPluginForExtensionAvailable(".glb");
         if (!glbLoaded) {
-            Logger.Warn('glTF / glb loaded was not registered, using generic controller instead');
+            Logger.Warn("glTF / glb loaded was not registered, using generic controller instead");
         }
         return glbLoaded;
     }
@@ -62,7 +62,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
             const componentInLayout = this.layout.components[type];
             this._buttonMeshMapping[type] = {
                 mainMesh: this._getChildByName(this.rootMesh!, componentInLayout.rootNodeName),
-                states: {}
+                states: {},
             };
             Object.keys(componentInLayout.visualResponses).forEach((visualResponseKey) => {
                 const visResponse = componentInLayout.visualResponses[visualResponseKey];
@@ -70,21 +70,24 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                     this._buttonMeshMapping[type].states[visualResponseKey] = {
                         valueMesh: this._getChildByName(this.rootMesh!, visResponse.valueNodeName!),
                         minMesh: this._getChildByName(this.rootMesh!, visResponse.minNodeName!),
-                        maxMesh: this._getChildByName(this.rootMesh!, visResponse.maxNodeName!)
+                        maxMesh: this._getChildByName(this.rootMesh!, visResponse.maxNodeName!),
                     };
                 } else {
                     // visibility, usually for touchpads
-                    const nameOfMesh = (componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && componentInLayout.touchPointNodeName)
-                        ? componentInLayout.touchPointNodeName : visResponse.valueNodeName!;
+                    const nameOfMesh = componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && componentInLayout.touchPointNodeName ? componentInLayout.touchPointNodeName : visResponse.valueNodeName!;
                     this._buttonMeshMapping[type].states[visualResponseKey] = {
-                        valueMesh: this._getChildByName(this.rootMesh!, nameOfMesh)
+                        valueMesh: this._getChildByName(this.rootMesh!, nameOfMesh),
                     };
                     if (componentInLayout.type === WebXRControllerComponent.TOUCHPAD_TYPE && !this._touchDots[visualResponseKey]) {
-                        const dot = SphereBuilder.CreateSphere(visualResponseKey + 'dot', {
-                            diameter: 0.0015,
-                            segments: 8
-                        }, this.scene);
-                        dot.material = new StandardMaterial(visualResponseKey + 'mat', this.scene);
+                        const dot = SphereBuilder.CreateSphere(
+                            visualResponseKey + "dot",
+                            {
+                                diameter: 0.0015,
+                                segments: 8,
+                            },
+                            this.scene
+                        );
+                        dot.material = new StandardMaterial(visualResponseKey + "mat", this.scene);
                         (<StandardMaterial>dot.material).diffuseColor = Color3.Red();
                         dot.parent = this._buttonMeshMapping[type].states[visualResponseKey].valueMesh;
                         dot.isVisible = false;
@@ -125,7 +128,9 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         }
         this.getComponentIds().forEach((id) => {
             const component = this.getComponent(id);
-            if (!component.hasChanges) { return; }
+            if (!component.hasChanges) {
+                return;
+            }
             const meshes = this._buttonMeshMapping[id];
             const componentInLayout = this.layout.components[id];
             Object.keys(componentInLayout.visualResponses).forEach((visualResponseKey) => {

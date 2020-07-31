@@ -16,13 +16,14 @@ import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Mi
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
-import { NativeShaderProcessor } from './Native/nativeShaderProcessor';
 import { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike } from '../Maths/math.like';
 import { Logger } from "../Misc/logger";
 import { Constants } from './constants';
 import { ThinEngine, ISceneLike } from './thinEngine';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
+import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
+import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
 
 interface INativeEngine {
     dispose(): void;
@@ -41,6 +42,7 @@ interface INativeEngine {
     createVertexBuffer(data: ArrayBufferView, dynamic: boolean): any;
     deleteVertexBuffer(buffer: any): void;
     recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+    bindBuffer(buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
     updateDynamicVertexBuffer(buffer: any, data: ArrayBufferView, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
@@ -695,7 +697,7 @@ export class NativeEngine extends Engine {
             etc1: null,
             etc2: null,
             maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
-            uintIndices: false,
+            uintIndices: true,
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
@@ -730,7 +732,7 @@ export class NativeEngine extends Engine {
         }
 
         // Shader processor
-        this._shaderProcessor = new NativeShaderProcessor();
+        this._shaderProcessor = new WebGL2ShaderProcessor();
     }
 
     public dispose(): void {
@@ -803,9 +805,13 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
-        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
-            throw new Error("Could not create a native index buffer.");
+        if (data.length) {
+            buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
+            if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
+                throw new Error("Could not create a native index buffer.");
+            }
+        } else {
+            buffer.nativeVertexBuffer = this.INVALID_HANDLE;
         }
         return buffer;
     }
@@ -820,6 +826,23 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+        // TODO : support index buffer
+        const attributes = effect.getAttributesNames();
+        for (let index = 0; index < attributes.length; index++) {
+            const location = effect.getAttributeLocation(index);
+            if (location >= 0) {
+                const kind = attributes[index];
+                const vertexBuffer = vertexBuffers[kind];
+                if (vertexBuffer) {
+                    const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
+                    if (buffer) {
+                        this._native.bindBuffer(buffer.nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized);
+                    }
+                }
+            }
+        }
+    }
     public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
         const vertexArray = this._native.createVertexArray();
 
@@ -943,10 +966,19 @@ export class NativeEngine extends Engine {
 
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings: Nullable<string[]> = null): any {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
-        const program = this._native.createProgram(
-            ThinEngine._ConcatenateShader(vertexCode, defines),
-            ThinEngine._ConcatenateShader(fragmentCode, defines)
-        );
+
+        const vertexInliner = new ShaderCodeInliner(vertexCode);
+        vertexInliner.processCode();
+        vertexCode = vertexInliner.code;
+
+        const fragmentInliner = new ShaderCodeInliner(fragmentCode);
+        fragmentInliner.processCode();
+        fragmentCode = fragmentInliner.code;
+
+        vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
+        fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
+
+        const program = this._native.createProgram(vertexCode, fragmentCode);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program;
     }
@@ -1097,7 +1129,7 @@ export class NativeEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
@@ -1115,7 +1147,7 @@ export class NativeEngine extends Engine {
 
     /**
      * Gets the current alpha mode
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
      * @returns the current alpha mode
      */
     public getAlphaMode(): number {
@@ -1632,6 +1664,10 @@ export class NativeEngine extends Engine {
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_NEAREST:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+                return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
             default:
                 throw new Error("Unexpected sampling mode: " + samplingMode + ".");
         }

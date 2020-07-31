@@ -8,12 +8,14 @@ import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { IProperty } from 'babylonjs-gltf2interface';
+import { IProperty, IMSFTLOD } from 'babylonjs-gltf2interface';
 
 const NAME = "MSFT_lod";
 
-interface IMSFTLOD {
-    ids: number[];
+interface IBufferInfo {
+    start: number;
+    end: number;
+    loaded: Deferred<ArrayBufferView>;
 }
 
 /**
@@ -56,16 +58,17 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
+    private _bufferLODs = new Array<IBufferInfo>();
+
     private _nodeIndexLOD: Nullable<number> = null;
     private _nodeSignalLODs = new Array<Deferred<void>>();
     private _nodePromiseLODs = new Array<Array<Promise<any>>>();
+    private _nodeBufferLODs = new Array<IBufferInfo>();
 
     private _materialIndexLOD: Nullable<number> = null;
     private _materialSignalLODs = new Array<Deferred<void>>();
     private _materialPromiseLODs = new Array<Array<Promise<any>>>();
-
-    private _indexLOD: Nullable<number> = null;
-    private _bufferLODs = new Array<{ start: number, end: number, loaded: Deferred<ArrayBufferView> }>();
+    private _materialBufferLODs = new Array<IBufferInfo>();
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -80,13 +83,12 @@ export class MSFT_lod implements IGLTFLoaderExtension {
         this._nodeIndexLOD = null;
         this._nodeSignalLODs.length = 0;
         this._nodePromiseLODs.length = 0;
+        this._nodeBufferLODs.length = 0;
 
         this._materialIndexLOD = null;
         this._materialSignalLODs.length = 0;
         this._materialPromiseLODs.length = 0;
-
-        this._indexLOD = null;
-        this._bufferLODs.length = 0;
+        this._materialBufferLODs.length = 0;
 
         this.onMaterialLODsLoadedObservable.clear();
         this.onNodeLODsLoadedObservable.clear();
@@ -98,13 +100,14 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             const promise = Promise.all(this._nodePromiseLODs[indexLOD]).then(() => {
                 if (indexLOD !== 0) {
                     this._loader.endPerformanceCounter(`Node LOD ${indexLOD}`);
+                    this._loader.log(`Loaded node LOD ${indexLOD}`);
                 }
 
-                this._loader.log(`Loaded node LOD ${indexLOD}`);
                 this.onNodeLODsLoadedObservable.notifyObservers(indexLOD);
 
                 if (indexLOD !== this._nodePromiseLODs.length - 1) {
                     this._loader.startPerformanceCounter(`Node LOD ${indexLOD + 1}`);
+                    this._loadBufferLOD(this._nodeBufferLODs, indexLOD + 1);
                     if (this._nodeSignalLODs[indexLOD]) {
                         this._nodeSignalLODs[indexLOD].resolve();
                     }
@@ -118,13 +121,14 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             const promise = Promise.all(this._materialPromiseLODs[indexLOD]).then(() => {
                 if (indexLOD !== 0) {
                     this._loader.endPerformanceCounter(`Material LOD ${indexLOD}`);
+                    this._loader.log(`Loaded material LOD ${indexLOD}`);
                 }
 
-                this._loader.log(`Loaded material LOD ${indexLOD}`);
                 this.onMaterialLODsLoadedObservable.notifyObservers(indexLOD);
 
                 if (indexLOD !== this._materialPromiseLODs.length - 1) {
                     this._loader.startPerformanceCounter(`Material LOD ${indexLOD + 1}`);
+                    this._loadBufferLOD(this._materialBufferLODs, indexLOD + 1);
                     if (this._materialSignalLODs[indexLOD]) {
                         this._materialSignalLODs[indexLOD].resolve();
                     }
@@ -133,18 +137,12 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
             this._loader._completePromises.push(promise);
         }
-
-        for (let indexLOD = 1; indexLOD < this._bufferLODs.length; indexLOD++) {
-            this._loadBufferLOD(indexLOD);
-        }
     }
 
     /** @hidden */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         const promise = this._loader.loadSceneAsync(context, scene);
-        if (this._bufferLODs.length !== 0) {
-            this._loadBufferLOD(0);
-        }
+        this._loadBufferLOD(this._bufferLODs, 0);
         return promise;
     }
 
@@ -159,15 +157,13 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
                 const nodeLOD = nodeLODs[indexLOD];
 
-                this._indexLOD = indexLOD;
-
                 if (indexLOD !== 0) {
                     this._nodeIndexLOD = indexLOD;
                     this._nodeSignalLODs[indexLOD] = this._nodeSignalLODs[indexLOD] || new Deferred();
                 }
 
                 const assign = (babylonTransformNode: TransformNode) => { babylonTransformNode.setEnabled(false); };
-                const promise = this._loader.loadNodeAsync(`#/nodes/${nodeLOD.index}`, nodeLOD, assign).then((babylonMesh) => {
+                const promise = this._loader.loadNodeAsync(`/nodes/${nodeLOD.index}`, nodeLOD, assign).then((babylonMesh) => {
                     if (indexLOD !== 0) {
                         // TODO: should not rely on _babylonTransformNode
                         const previousNodeLOD = nodeLODs[indexLOD - 1];
@@ -181,17 +177,15 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     return babylonMesh;
                 });
 
+                this._nodePromiseLODs[indexLOD] = this._nodePromiseLODs[indexLOD] || [];
+
                 if (indexLOD === 0) {
                     firstPromise = promise;
                 }
                 else {
                     this._nodeIndexLOD = null;
+                    this._nodePromiseLODs[indexLOD].push(promise);
                 }
-
-                this._indexLOD = null;
-
-                this._nodePromiseLODs[indexLOD] = this._nodePromiseLODs[indexLOD] || [];
-                this._nodePromiseLODs[indexLOD].push(promise);
             }
 
             this._loader.logClose();
@@ -202,7 +196,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /** @hidden */
     public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
         // Don't load material LODs if already loading a node LOD.
-        if (this._indexLOD) {
+        if (this._nodeIndexLOD) {
             return null;
         }
 
@@ -215,13 +209,11 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             for (let indexLOD = 0; indexLOD < materialLODs.length; indexLOD++) {
                 const materialLOD = materialLODs[indexLOD];
 
-                this._indexLOD = indexLOD;
-
                 if (indexLOD !== 0) {
                     this._materialIndexLOD = indexLOD;
                 }
 
-                const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
+                const promise = this._loader._loadMaterialAsync(`/materials/${materialLOD.index}`, materialLOD, babylonMesh, babylonDrawMode, (babylonMaterial) => {
                     if (indexLOD === 0) {
                         assign(babylonMaterial);
                     }
@@ -240,17 +232,15 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                     return babylonMaterial;
                 });
 
+                this._materialPromiseLODs[indexLOD] = this._materialPromiseLODs[indexLOD] || [];
+
                 if (indexLOD === 0) {
                     firstPromise = promise;
                 }
                 else {
                     this._materialIndexLOD = null;
+                    this._materialPromiseLODs[indexLOD].push(promise);
                 }
-
-                this._indexLOD = null;
-
-                this._materialPromiseLODs[indexLOD] = this._materialPromiseLODs[indexLOD] || [];
-                this._materialPromiseLODs[indexLOD].push(promise);
             }
 
             this._loader.logClose();
@@ -260,20 +250,20 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
     /** @hidden */
     public _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
-        // Defer the loading of uris if loading a material or node LOD.
-        if (this._materialIndexLOD !== null) {
-            this._loader.log(`deferred`);
-            const previousIndexLOD = this._materialIndexLOD - 1;
-            this._materialSignalLODs[previousIndexLOD] = this._materialSignalLODs[previousIndexLOD] || new Deferred<void>();
-            return this._materialSignalLODs[previousIndexLOD].promise.then(() => {
-                return this._loader.loadUriAsync(context, property, uri);
-            });
-        }
-        else if (this._nodeIndexLOD !== null) {
+        // Defer the loading of uris if loading a node or material LOD.
+        if (this._nodeIndexLOD !== null) {
             this._loader.log(`deferred`);
             const previousIndexLOD = this._nodeIndexLOD - 1;
             this._nodeSignalLODs[previousIndexLOD] = this._nodeSignalLODs[previousIndexLOD] || new Deferred<void>();
             return this._nodeSignalLODs[this._nodeIndexLOD - 1].promise.then(() => {
+                return this._loader.loadUriAsync(context, property, uri);
+            });
+        }
+        else if (this._materialIndexLOD !== null) {
+            this._loader.log(`deferred`);
+            const previousIndexLOD = this._materialIndexLOD - 1;
+            this._materialSignalLODs[previousIndexLOD] = this._materialSignalLODs[previousIndexLOD] || new Deferred<void>();
+            return this._materialSignalLODs[previousIndexLOD].promise.then(() => {
                 return this._loader.loadUriAsync(context, property, uri);
             });
         }
@@ -288,36 +278,50 @@ export class MSFT_lod implements IGLTFLoaderExtension {
                 throw new Error(`${context}: Uri is missing or the binary glTF is missing its binary chunk`);
             }
 
-            // Non-LOD buffers will be bucketed into the first LOD.
-            const indexLOD = this._indexLOD || 0;
+            const loadAsync = (bufferLODs: Array<IBufferInfo>, indexLOD: number) => {
+                const start = byteOffset;
+                const end = start + byteLength - 1;
+                let bufferLOD = bufferLODs[indexLOD];
+                if (bufferLOD) {
+                    bufferLOD.start = Math.min(bufferLOD.start, start);
+                    bufferLOD.end = Math.max(bufferLOD.end, end);
+                }
+                else {
+                    bufferLOD = { start: start, end: end, loaded: new Deferred() };
+                    bufferLODs[indexLOD] = bufferLOD;
+                }
 
-            const start = byteOffset;
-            const end = start + byteLength - 1;
-            let bufferLOD = this._bufferLODs[indexLOD];
-            if (bufferLOD) {
-                bufferLOD.start = Math.min(bufferLOD.start, start);
-                bufferLOD.end = Math.max(bufferLOD.end, end);
+                return bufferLOD.loaded.promise.then((data) => {
+                    return new Uint8Array(data.buffer, data.byteOffset + byteOffset - bufferLOD.start, byteLength);
+                });
+            };
+
+            this._loader.log(`deferred`);
+
+            if (this._nodeIndexLOD !== null) {
+                return loadAsync(this._nodeBufferLODs, this._nodeIndexLOD);
+            }
+            else if (this._materialIndexLOD !== null) {
+                return loadAsync(this._materialBufferLODs, this._materialIndexLOD);
             }
             else {
-                bufferLOD = { start: start, end: end, loaded: new Deferred() };
-                this._bufferLODs[indexLOD] = bufferLOD;
+                return loadAsync(this._bufferLODs, 0);
             }
-
-            return bufferLOD.loaded.promise.then((data) => {
-                return new Uint8Array(data.buffer, data.byteOffset + byteOffset - bufferLOD.start, byteLength);
-            });
         }
 
         return null;
     }
 
-    private _loadBufferLOD(indexLOD: number): void {
-        const bufferLOD = this._bufferLODs[indexLOD];
-        this._loader.bin!.readAsync(bufferLOD.start, bufferLOD.end - bufferLOD.start + 1).then((data) => {
-            bufferLOD.loaded.resolve(data);
-        }, (error) => {
-            bufferLOD.loaded.reject(error);
-        });
+    private _loadBufferLOD(bufferLODs: Array<IBufferInfo>, indexLOD: number): void {
+        const bufferLOD = bufferLODs[indexLOD];
+        if (bufferLOD) {
+            this._loader.log(`Loading buffer range [${bufferLOD.start}-${bufferLOD.end}]`);
+            this._loader.bin!.readAsync(bufferLOD.start, bufferLOD.end - bufferLOD.start + 1).then((data) => {
+                bufferLOD.loaded.resolve(data);
+            }, (error) => {
+                bufferLOD.loaded.reject(error);
+            });
+        }
     }
 
     /**

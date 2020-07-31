@@ -50,6 +50,11 @@ export class TextBlock extends Control {
     public onLinesReadyObservable = new Observable<TextBlock>();
 
     /**
+     * Function used to split a string into words. By default, a string is split at each space character found
+     */
+    public wordSplittingFunction: Nullable<(line: string) => string[]>;
+
+    /**
      * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
      */
     public get lines(): any[] {
@@ -368,7 +373,7 @@ export class TextBlock extends Control {
     protected _parseLineWordWrap(line: string = '', width: number,
         context: CanvasRenderingContext2D): object[] {
         var lines = [];
-        var words = line.split(' ');
+        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(' ');
         var lineWidth = 0;
 
         for (var n = 0; n < words.length; n++) {

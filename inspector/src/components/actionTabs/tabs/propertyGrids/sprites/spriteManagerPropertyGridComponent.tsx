@@ -18,6 +18,8 @@ import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { Sprite } from 'babylonjs/Sprites/sprite';
 import { Tools } from 'babylonjs/Misc/tools';
 import { FileButtonLineComponent } from '../../../lines/fileButtonLineComponent';
+import { Constants } from 'babylonjs/Engines/constants';
+import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 
 interface ISpriteManagerPropertyGridComponentProps {
     globalState: GlobalState;
@@ -40,21 +42,11 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         var newSprite = new Sprite("new sprite", spriteManager);
 
         this.props.onSelectionChangedObservable?.notifyObservers(newSprite);
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: spriteManager,
-            code: `new BABYLON.Sprite("new sprite", TARGET);`
-        });
     }
 
     disposeManager() {
         const spriteManager = this.props.spriteManager;
         spriteManager.dispose();
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: spriteManager,
-            code: `TARGET.dispose();`
-        });
 
         this.props.onSelectionChangedObservable?.notifyObservers(null);
     }
@@ -111,7 +103,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = spriteManager.snippetId ;
+                    const oldId = spriteManager.snippetId || "_BLANK";
                     spriteManager.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
                         spriteManager.snippetId += "#" + snippet.version;
@@ -125,8 +117,8 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: spriteManager.snippetId
+                            regex: new RegExp(`SpriteManager.CreateFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `SpriteManager.CreateFromSnippetAsync("${spriteManager.snippetId}`
                         });
                     }
 
@@ -155,6 +147,16 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
 
     render() {
         const spriteManager = this.props.spriteManager;
+
+        var alphaModeOptions = [
+            { label: "Combine", value: Constants.ALPHA_COMBINE },
+            { label: "One one", value: Constants.ALPHA_ONEONE },
+            { label: "Add", value: Constants.ALPHA_ADD },
+            { label: "Subtract", value: Constants.ALPHA_SUBTRACT },
+            { label: "Multiply", value: Constants.ALPHA_MULTIPLY },
+            { label: "Maximized", value: Constants.ALPHA_MAXIMIZED },
+            { label: "Pre-multiplied", value: Constants.ALPHA_PREMULTIPLIED },
+        ];        
 
         return (
             <div className="pane">
@@ -186,8 +188,11 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     <CheckBoxLineComponent label="Fog enabled" target={spriteManager} propertyName="fogEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="No depth write" target={spriteManager} propertyName="disableDepthWrite" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Rendering group ID" decimalCount={0} target={spriteManager} propertyName="renderingGroupId" minimum={RenderingManager.MIN_RENDERINGGROUPS} maximum={RenderingManager.MAX_RENDERINGGROUPS - 1} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent label="Alpha mode" options={alphaModeOptions} target={spriteManager} propertyName="blendMode" 
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} 
+                        onSelect={(value) => this.setState({ blendMode: value })} />                                       
                 </LineContainerComponent>
-                <LineContainerComponent globalState={this.props.globalState} title="DEFAULT SIZE">
+                <LineContainerComponent globalState={this.props.globalState} title="CELLS">
                     <FloatLineComponent label="Cell width" isInteger={true} target={spriteManager} propertyName="cellWidth" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <FloatLineComponent label="Cell height" isInteger={true} target={spriteManager} propertyName="cellHeight" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>

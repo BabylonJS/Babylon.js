@@ -10,12 +10,10 @@ import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from './replayRecorder';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { CodeChangedEvent } from './codeChangedEvent';
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
     public onPropertyChangedObservable: Observable<PropertyChangedEvent>;
-    public onCodeChangedObservable = new Observable<CodeChangedEvent>();
     public onInspectorClosedObservable = new Observable<Scene>();
     public onTabChangedObservable = new Observable<number>();
     public onSelectionRenamedObservable = new Observable<void>();
@@ -29,9 +27,11 @@ export class GlobalState {
     public onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
     public glTFLoaderExtensionDefaults: { [name: string]: { [key: string]: any } } = {};
     public glTFLoaderDefaults: { [key: string]: any } = { "validate": true };
+    public glTFLoaderExtenstions: { [key: string]: IGLTFLoaderExtension } = { };
 
     public blockMutationUpdates = false;
-    public selectedLineContainerTitle = "";
+    public selectedLineContainerTitles:Array<string> = [];    
+    public selectedLineContainerTitlesNoFocus:Array<string> = [];
 
     public recorder = new ReplayRecorder();
 
@@ -70,20 +70,13 @@ export class GlobalState {
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
         this.onPropertyChangedObservable = propertyChangedObservable;
 
-        propertyChangedObservable.add(event => {
-            this.recorder.record(event);
-
-            if (event.property === "name") {
-                this.onSelectionRenamedObservable.notifyObservers();
-            }
-        });
-
-        this.onCodeChangedObservable.add(code => {
-            this.recorder.recordCode(code);
+        this.onNewSceneObservable.add(scene => {
+            this.recorder.cancel();
         });
     }
 
     public prepareGLTFPlugin(loader: GLTFFileLoader) {
+        this.glTFLoaderExtenstions = { };
         var loaderState = this.glTFLoaderDefaults;
         if (loaderState !== undefined) {
             for (const key in loaderState) {
@@ -98,6 +91,8 @@ export class GlobalState {
                     (extension as any)[key] = extensionState[key];
                 }
             }
+
+            this.glTFLoaderExtenstions[extension.name] = extension;
         });
 
         if (this.validationResults) {
@@ -110,6 +105,7 @@ export class GlobalState {
             this.onValidationResultsUpdatedObservable.notifyObservers(results);
 
             if (results.issues.numErrors || results.issues.numWarnings) {
+                this.selectedLineContainerTitlesNoFocus.push("GLTF VALIDATION");
                 this.onTabChangedObservable.notifyObservers(3);
             }
         });

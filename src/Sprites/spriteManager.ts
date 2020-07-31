@@ -50,7 +50,7 @@ export interface ISpriteManager extends IDisposable {
 
     /**
      * Specifies the rendering group id for this mesh (0 by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
     renderingGroupId: number;
 
@@ -96,7 +96,7 @@ export interface ISpriteManager extends IDisposable {
 
 /**
  * Class used to manage multiple sprites on the same spritesheet
- * @see http://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/babylon101/sprites
  */
 export class SpriteManager implements ISpriteManager {
     /** Define the Url to load snippets */
@@ -233,6 +233,11 @@ export class SpriteManager implements ISpriteManager {
         /** defines the manager's name */
         public name: string,
         imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: any | null = null) {
+
+        if (!scene) {
+            scene = Engine.LastCreatedScene!;
+        }
+
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));
         }
@@ -824,13 +829,51 @@ export class SpriteManager implements ISpriteManager {
     }
 
     /**
+     * Creates a sprite manager from a snippet saved in a remote file
+     * @param name defines the name of the sprite manager to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new sprite manager
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        if (name) {
+                            output.name = name;
+                        }
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the sprite manager");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
      * Creates a sprite manager from a snippet saved by the sprite editor
-     * @param snippetId defines the snippet to load
+     * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new sprite manager
      */
     public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve(new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene));
+        }
+
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -838,7 +881,7 @@ export class SpriteManager implements ISpriteManager {
                     if (request.status == 200) {
                         var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
                         let serializationObject = JSON.parse(snippet.spriteManager);
-                        let output = SpriteManager.Parse(serializationObject, scene, rootUrl);
+                        let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
 
                         output.snippetId = snippetId;
 

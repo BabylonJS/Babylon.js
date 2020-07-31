@@ -106,6 +106,14 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
+     * If the post process is supported.
+     */
+    public get isSupported(): boolean {
+        const effect = this.getEffect();
+        return !effect || effect.isSupported;
+    }
+
+    /**
      * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
      */
     public get colorCurves(): Nullable<ColorCurves> {
@@ -386,7 +394,10 @@ export class ImageProcessingPostProcess extends PostProcess {
         return "ImageProcessingPostProcess";
     }
 
-    protected _updateParameters(): void {
+    /**
+     * @hidden
+     */
+    public _updateParameters(): void {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;
         this.imageProcessingConfiguration.prepareDefines(this._defines, true);
         var defines = "";

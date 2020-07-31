@@ -6,7 +6,7 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     /**
@@ -42,7 +42,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     public _allowCameraRotation = true;
     /**
      * Manage the mouse inputs to control the movement of a free camera.
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      * @param touchEnabled Defines if touch is enabled or not
      */
     constructor(

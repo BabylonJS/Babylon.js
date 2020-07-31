@@ -101,6 +101,10 @@ uniform Material {
     vec3 vDiffusionDistance;
     vec4 vTintColor;
     vec3 vSubSurfaceIntensity;
+    float scatteringDiffusionProfile;
+
+    vec4 vDetailInfos;
+    mat4 detailMatrix;
 
     vec3 vSphericalL00;
     vec3 vSphericalL1_1;

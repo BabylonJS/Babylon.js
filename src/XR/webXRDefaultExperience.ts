@@ -1,13 +1,13 @@
 import { WebXRExperienceHelper } from "./webXRExperienceHelper";
-import { Scene } from '../scene';
-import { WebXRInput, IWebXRInputOptions } from './webXRInput';
-import { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from './features/WebXRControllerPointerSelection';
-import { WebXRRenderTarget } from './webXRTypes';
-import { WebXREnterExitUI, WebXREnterExitUIOptions } from './webXREnterExitUI';
-import { AbstractMesh } from '../Meshes/abstractMesh';
-import { WebXRManagedOutputCanvasOptions } from './webXRManagedOutputCanvas';
-import { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from './features/WebXRControllerTeleportation';
-import { Logger } from '../Misc/logger';
+import { Scene } from "../scene";
+import { WebXRInput, IWebXRInputOptions } from "./webXRInput";
+import { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from "./features/WebXRControllerPointerSelection";
+import { WebXRRenderTarget } from "./webXRTypes";
+import { WebXREnterExitUI, WebXREnterExitUIOptions } from "./webXREnterExitUI";
+import { AbstractMesh } from "../Meshes/abstractMesh";
+import { WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
+import { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from "./features/WebXRControllerTeleportation";
+import { Logger } from "../Misc/logger";
 
 /**
  * Options for the default xr helper
@@ -89,8 +89,7 @@ export class WebXRDefaultExperience {
      */
     public teleportation: WebXRMotionControllerTeleportation;
 
-    private constructor() {
-    }
+    private constructor() {}
 
     /**
      * Creates the default xr experience
@@ -102,67 +101,67 @@ export class WebXRDefaultExperience {
         var result = new WebXRDefaultExperience();
 
         // Create base experience
-        return WebXRExperienceHelper.CreateAsync(scene).then((xrHelper) => {
-            result.baseExperience = xrHelper;
+        return WebXRExperienceHelper.CreateAsync(scene)
+            .then((xrHelper) => {
+                result.baseExperience = xrHelper;
 
-            if (options.ignoreNativeCameraTransformation) {
-                result.baseExperience.camera.compensateOnFirstFrame = false;
-            }
-
-            // Add controller support
-            result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, {
-                controllerOptions: {
-                    renderingGroupId: options.renderingGroupId
-                },
-                ...(options.inputOptions || {})
-            });
-            result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest",
-            <IWebXRControllerPointerSelectionOptions>{
-                xrInput: result.input,
-                renderingGroupId: options.renderingGroupId
-            });
-
-            // Add default teleportation, including rotation
-            if (!options.disableTeleportation) {
-                result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest",
-                <IWebXRTeleportationOptions>{
-                    floorMeshes: options.floorMeshes,
-                    xrInput: result.input,
-                    renderingGroupId: options.renderingGroupId
-                });
-                result.teleportation.setSelectionFeature(result.pointerSelection);
-            }
-
-            // Create the WebXR output target
-            result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(options.outputCanvasOptions);
-
-            if (!options.disableDefaultUI) {
-
-                const uiOptions: WebXREnterExitUIOptions = {
-                    renderTarget: result.renderTarget,
-                    ...(options.uiOptions || {})
-                };
-                if (options.optionalFeatures) {
-                    if (typeof options.optionalFeatures === 'boolean') {
-                        uiOptions.optionalFeatures = ['hit-test', 'anchors'/*, 'hand-tracking'*/];
-                    } else {
-                        uiOptions.optionalFeatures = options.optionalFeatures;
-                    }
+                if (options.ignoreNativeCameraTransformation) {
+                    result.baseExperience.camera.compensateOnFirstFrame = false;
                 }
-                // Create ui for entering/exiting xr
-                return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, uiOptions).then((ui) => {
-                    result.enterExitUI = ui;
+
+                // Add controller support
+                result.input = new WebXRInput(xrHelper.sessionManager, xrHelper.camera, {
+                    controllerOptions: {
+                        renderingGroupId: options.renderingGroupId,
+                    },
+                    ...(options.inputOptions || {}),
                 });
-            } else {
-                return;
-            }
-        }).then(() => {
-            return result;
-        }).catch((error) => {
-            Logger.Error("Error initializing XR");
-            Logger.Error(error);
-            return result;
-        });
+                result.pointerSelection = <WebXRControllerPointerSelection>result.baseExperience.featuresManager.enableFeature(WebXRControllerPointerSelection.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRControllerPointerSelectionOptions>{
+                    xrInput: result.input,
+                    renderingGroupId: options.renderingGroupId,
+                });
+
+                // Add default teleportation, including rotation
+                if (!options.disableTeleportation) {
+                    result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(WebXRMotionControllerTeleportation.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRTeleportationOptions>{
+                        floorMeshes: options.floorMeshes,
+                        xrInput: result.input,
+                        renderingGroupId: options.renderingGroupId,
+                    });
+                    result.teleportation.setSelectionFeature(result.pointerSelection);
+                }
+
+                // Create the WebXR output target
+                result.renderTarget = result.baseExperience.sessionManager.getWebXRRenderTarget(options.outputCanvasOptions);
+
+                if (!options.disableDefaultUI) {
+                    const uiOptions: WebXREnterExitUIOptions = {
+                        renderTarget: result.renderTarget,
+                        ...(options.uiOptions || {}),
+                    };
+                    if (options.optionalFeatures) {
+                        if (typeof options.optionalFeatures === "boolean") {
+                            uiOptions.optionalFeatures = ["hit-test", "anchors", "planes", "hand-tracking"];
+                        } else {
+                            uiOptions.optionalFeatures = options.optionalFeatures;
+                        }
+                    }
+                    // Create ui for entering/exiting xr
+                    return WebXREnterExitUI.CreateAsync(scene, result.baseExperience, uiOptions).then((ui) => {
+                        result.enterExitUI = ui;
+                    });
+                } else {
+                    return;
+                }
+            })
+            .then(() => {
+                return result;
+            })
+            .catch((error) => {
+                Logger.Error("Error initializing XR");
+                Logger.Error(error);
+                return result;
+            });
     }
 
     /**

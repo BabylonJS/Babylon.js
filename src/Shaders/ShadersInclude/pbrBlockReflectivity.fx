@@ -17,6 +17,7 @@ struct reflectivityOutParams
 #endif
 };
 
+#define pbr_inline
 void reflectivityBlock(
     const in vec4 vReflectivityColor,
 #ifdef METALLICWORKFLOW
@@ -24,14 +25,18 @@ void reflectivityBlock(
     const in vec4 metallicReflectanceFactors,
 #endif
 #ifdef REFLECTIVITY
-    const in vec3 vReflectivityInfos,
+    const in vec3 reflectivityInfos,
     const in vec4 surfaceMetallicOrReflectivityColorMap,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-    const in vec3 ambientOcclusionColor,
+    const in vec3 ambientOcclusionColorIn,
 #endif
 #ifdef MICROSURFACEMAP
     const in vec4 microSurfaceTexel,
+#endif
+#ifdef DETAIL
+    const in vec4 detailColor,
+    const in vec4 vDetailInfos,
 #endif
     out reflectivityOutParams outParams
 )
@@ -49,7 +54,7 @@ void reflectivityBlock(
 
             #ifdef AOSTOREINMETALMAPRED
                 vec3 aoStoreInMetalMap = vec3(surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r);
-                outParams.ambientOcclusionColor = mix(ambientOcclusionColor, aoStoreInMetalMap, vReflectivityInfos.z);
+                outParams.ambientOcclusionColor = mix(ambientOcclusionColorIn, aoStoreInMetalMap, vReflectivityInfos.z);
             #endif
 
             #ifdef METALLNESSSTOREINMETALMAPBLUE
@@ -65,6 +70,11 @@ void reflectivityBlock(
                     metallicRoughness.g *= surfaceMetallicOrReflectivityColorMap.g;
                 #endif
             #endif
+        #endif
+
+        #ifdef DETAIL
+            float detailRoughness = 2.0 * mix(0.5, detailColor.b, vDetailInfos.w);
+            metallicRoughness.g = saturate(metallicRoughness.g * detailRoughness);
         #endif
 
         #ifdef MICROSURFACEMAP
@@ -118,7 +128,7 @@ void reflectivityBlock(
 
             #ifdef MICROSURFACEFROMREFLECTIVITYMAP
                 microSurface *= surfaceMetallicOrReflectivityColorMap.a;
-                microSurface *= vReflectivityInfos.z;
+                microSurface *= reflectivityInfos.z;
             #else
                 #ifdef MICROSURFACEAUTOMATIC
                     microSurface *= computeDefaultMicroSurface(microSurface, surfaceReflectivityColor);

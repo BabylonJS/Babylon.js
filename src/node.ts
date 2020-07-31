@@ -314,7 +314,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Attach a behavior to the node
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @param behavior defines the behavior to attach
      * @param attachImmediately defines that the behavior must be attached even if the scene is still loading
      * @returns the current Node
@@ -342,7 +342,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Remove an attached behavior
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @param behavior defines the behavior to attach
      * @returns the current Node
      */
@@ -361,7 +361,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Gets the list of attached behaviors
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      */
     public get behaviors(): Behavior<Node>[] {
         return this._behaviors;
@@ -370,7 +370,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Gets an attached behavior by name
      * @param name defines the name of the behavior to look for
-     * @see http://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/behaviour
      * @returns null if behavior was not found else the requested behavior
      */
     public getBehaviorByName(name: string): Nullable<Behavior<Node>> {

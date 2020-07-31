@@ -19,7 +19,7 @@ export class FlyCamera extends TargetCamera {
     /**
      * Define the collision ellipsoid of the camera.
      * This is helpful for simulating a camera body, like a player's body.
-     * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
      */
     @serializeAsVector3()
     public ellipsoid = new Vector3(1, 1, 1);
