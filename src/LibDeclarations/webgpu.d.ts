@@ -289,6 +289,7 @@ interface GPUImageBitmapCopyView {
 interface GPUBufferDescriptor extends GPUObjectDescriptorBase {
   size: number;
   usage: GPUBufferUsageFlags;
+  mappedAtCreation: boolean;
 }
 
 interface GPUCommandEncoderDescriptor extends GPUObjectDescriptorBase {

@@ -570,31 +570,27 @@ export class WebGPUEngine extends Engine {
             throw new Error("Cannot create zero-sized buffer"); // 0 size buffer would kill the tab in chrome
         }
         const uploadBuffer = this._device.createBuffer({
-            usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC | WebGPUConstants.GPUBufferUsage_MAP_WRITE,
-            size: byteLength - srcByteOffset
+            usage: WebGPUConstants.GPUBufferUsage_TRANSFER_SRC,
+            size: byteLength - srcByteOffset,
+            mappedAtCreation: true
         });
-
-        (async() => {
-            try {
-                for (let offset = 0; offset < byteLength; offset += this._maxBufferChunk) {
-                    const uploadCount = Math.min(byteLength - offset, this._maxBufferChunk);
-                    await uploadBuffer.mapAsync(WebGPUConstants.GPUMapMode_WRITE, offset, uploadCount);
-                    const uploadMapping = uploadBuffer.getMappedRange();
-
-                    new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount));
-                    uploadBuffer.unmap();
-                }
-                commandEncoder.copyBufferToBuffer(
-                    uploadBuffer, 0,
-                    buffer, dstByteOffset,
-                    byteLength);
-                this._device.defaultQueue.submit([commandEncoder.finish()]);
-            } catch (e) {
-                Logger.Error(e);
-            } finally {
-                uploadBuffer.destroy();
+        try {
+            for (let offset = 0; offset < byteLength; offset += this._maxBufferChunk) {
+                const uploadCount = Math.min(byteLength - offset, this._maxBufferChunk);
+                const uploadMapping = uploadBuffer.getMappedRange(offset, uploadCount);
+                new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount));
+                uploadBuffer.unmap();
             }
-        })();
+            commandEncoder.copyBufferToBuffer(
+                uploadBuffer, 0,
+                buffer, dstByteOffset,
+                byteLength);
+            this._device.defaultQueue.submit([commandEncoder.finish()]);
+        } catch (e) {
+            Logger.Error(e);
+        } finally {
+            uploadBuffer.destroy();
+        }
     }
 
     //------------------------------------------------------------------------------
