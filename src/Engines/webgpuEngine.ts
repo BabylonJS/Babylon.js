@@ -150,6 +150,7 @@ export class WebGPUEngine extends Engine {
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
+    private _maxBufferChunk = 1024 * 1024 * 15;
 
     // Caches
     private _compiledShaders: { [key: string]: {
@@ -513,21 +514,29 @@ export class WebGPUEngine extends Engine {
     //                              WebGPU Buffers
     //------------------------------------------------------------------------------
     private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
+        if (view.byteLength == 0) {
+            throw new Error("Unable to create WebGPU buffer: cannot create zero-sized buffer"); // Zero size buffer would kill the tab in chrome
+        }
         const padding = view.byteLength % 4;
+        const mappedAtCreation: boolean = padding == 0 && view.byteLength < this._maxBufferChunk
         const verticesBufferDescriptor = {
-            size: view.byteLength + padding,
-            usage: flags
-        };
-        const buffer = this._device.createBuffer(verticesBufferDescriptor);
+                size: view.byteLength + padding,
+                usage: flags,
+                mappedAtCreation
+            };
+       const buffer = this._device.createBuffer(verticesBufferDescriptor);
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
         dataBuffer.capacity = view.byteLength;
-
-        this._setSubData(dataBuffer, 0, view);
-
+        if (mappedAtCreation) {
+            const range = buffer.getMappedRange();
+            new Uint8Array(range).set(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
+            buffer.unmap();
+        } else {
+            this._setSubData(dataBuffer, 0, view);
+        }
         return dataBuffer;
     }
-
     private _setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void {
         const buffer = dataBuffer.underlyingResource as GPUBuffer;
 
@@ -553,14 +562,32 @@ export class WebGPUEngine extends Engine {
         }
 
         // Chunk
-        const maxChunk = 1024 * 1024 * 15;
-        let offset = 0;
-        while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
-            this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, maxChunk);
-            offset += maxChunk;
+        const commandEncoder = this._device.createCommandEncoder();
+        if (byteLength - srcByteOffset < 1) {
+            throw new Error("Cannot create zero-sized buffer"); // 0 size buffer would kill the tab in chrome
         }
-
-        this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
+        const uploadBuffer = this._device.createBuffer({
+            usage: WebGPUConstants.GPUBufferUsage_COPY_DST,
+            size: byteLength - srcByteOffset,
+            mappedAtCreation: true
+        });
+        try {
+            for (let offset = 0; offset < byteLength; offset += this._maxBufferChunk) {
+                const uploadCount = Math.min(byteLength - offset, this._maxBufferChunk);
+                const uploadMapping = uploadBuffer.getMappedRange(offset, uploadCount);
+                new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount));
+                uploadBuffer.unmap();
+            }
+            commandEncoder.copyBufferToBuffer(
+                uploadBuffer, 0,
+                buffer, dstByteOffset,
+                byteLength);
+            this._device.defaultQueue.submit([commandEncoder.finish()]);
+        } catch (e) {
+            Logger.Error(e);
+        } finally {
+            uploadBuffer.destroy();
+        }
     }
 
     //------------------------------------------------------------------------------
