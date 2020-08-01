@@ -211,7 +211,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             this._draggableArea.current?.style.setProperty("cursor", "initial");
         }
 
-        if (e.keyCode === 8) {
+        if (e.keyCode === 8 || e.keyCode === 46) {
             const pointsToDelete = this.props.keyframeSvgPoints.filter((kf) => kf.selected);
             this.props.removeSelectedKeyframes(pointsToDelete);
         }
