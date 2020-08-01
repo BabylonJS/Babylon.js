@@ -26,7 +26,7 @@ declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of lens flare system added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+         * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
          */
         lensFlareSystems: Array<LensFlareSystem>;
 

@@ -81,7 +81,7 @@ export class RenderTargetTexture extends Texture {
 
             var result = oldPush.apply(array, items);
 
-            if (wasEmpty) {
+            if (wasEmpty && this.getScene()) {
                 this.getScene()!.meshes.forEach((mesh) => {
                     mesh._markSubMeshesAsLightDirty();
                 });

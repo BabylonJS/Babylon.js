@@ -513,6 +513,17 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
+     * Returns true if the mesh can be rendered, otherwise false.
+     * @param mesh The mesh to render
+     * @param material The material used on the mesh
+     * @returns true if it can be rendered otherwise false
+     */
+    protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+        // all meshes can be rendered in the highlight layer, even transparent ones
+        return true;
+    }
+
+    /**
      * Adds specific effects defines.
      * @param defines The defines to add specifics to.
      */

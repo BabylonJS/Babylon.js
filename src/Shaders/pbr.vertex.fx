@@ -71,8 +71,16 @@ varying vec3 vPositionW;
     varying vec2 vMainUV2;
 #endif
 
+#ifdef PREPASS
+varying vec3 vViewPos;
+#endif
+
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0
 varying vec2 vAlbedoUV;
+#endif
+
+#if defined(DETAIL) && DETAILDIRECTUV == 0
+varying vec2 vDetailUV;
 #endif
 
 #if defined(AMBIENT) && AMBIENTDIRECTUV == 0
@@ -179,15 +187,23 @@ void main(void) {
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
+#ifdef PREPASS
+    vViewPos = (view * worldPos).rgb;
+#endif
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
 
-    #ifdef NONUNIFORMSCALING
-        normalWorld = transposeMat3(inverseMat3(normalWorld));
-    #endif
+    #if defined(INSTANCES) && defined(THIN_INSTANCES)
+        vNormalW = normalUpdated / vec3(dot(normalWorld[0], normalWorld[0]), dot(normalWorld[1], normalWorld[1]), dot(normalWorld[2], normalWorld[2]));
+        vNormalW = normalize(normalWorld * vNormalW);
+    #else
+        #ifdef NONUNIFORMSCALING
+            normalWorld = transposeMat3(inverseMat3(normalWorld));
+        #endif
 
-    vNormalW = normalize(normalWorld * normalUpdated);
+        vNormalW = normalize(normalWorld * normalUpdated);
+    #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
         vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
@@ -243,6 +259,17 @@ void main(void) {
     {
         vAlbedoUV = vec2(albedoMatrix * vec4(uv2, 1.0, 0.0));
     }
+#endif
+
+#if defined(DETAIL) && DETAILDIRECTUV == 0
+	if (vDetailInfos.x == 0.)
+	{
+		vDetailUV = vec2(detailMatrix * vec4(uvUpdated, 1.0, 0.0));
+	}
+	else
+	{
+		vDetailUV = vec2(detailMatrix * vec4(uv2, 1.0, 0.0));
+	}
 #endif
 
 #if defined(AMBIENT) && AMBIENTDIRECTUV == 0 

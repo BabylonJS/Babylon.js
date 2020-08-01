@@ -27,14 +27,14 @@ declare module "../scene" {
     export interface Scene {
         /**
          * Creates a default light for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-light
+         * @see https://doc.babylonjs.com/How_To/Fast_Build#create-default-light
          * @param replace has the default false, when true replaces the existing lights in the scene with a hemispheric light
          */
         createDefaultLight(replace?: boolean): void;
 
         /**
          * Creates a default camera for the scene.
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
+         * @see https://doc.babylonjs.com/How_To/Fast_Build#create-default-camera
          * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
          * @param replace has default false, when true replaces the active camera in the scene
          * @param attachCameraControls has default false, when true attaches camera controls to the canvas.
@@ -43,7 +43,7 @@ declare module "../scene" {
 
         /**
          * Creates a default camera and a default light.
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
+         * @see https://doc.babylonjs.com/how_to/Fast_Build#create-default-camera-or-light
          * @param createArcRotateCamera has the default false which creates a free camera, when true creates an arc rotate camera
          * @param replace has the default false, when true replaces the active camera/light in the scene
          * @param attachCameraControls has the default false, when true attaches camera controls to the canvas.
@@ -52,7 +52,7 @@ declare module "../scene" {
 
         /**
          * Creates a new sky box
-         * @see http://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
+         * @see https://doc.babylonjs.com/how_to/Fast_Build#create-default-skybox
          * @param environmentTexture defines the texture to use as environment texture
          * @param pbr has default false which requires the StandardMaterial to be used, when true PBRMaterial must be used
          * @param scale defines the overall scale of the skybox
@@ -64,7 +64,7 @@ declare module "../scene" {
 
         /**
          * Creates a new environment
-         * @see http://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
+         * @see https://doc.babylonjs.com/How_To/Fast_Build#create-default-environment
          * @param options defines the options you can use to configure the environment
          * @returns the new EnvironmentHelper
          */
@@ -72,7 +72,7 @@ declare module "../scene" {
 
         /**
          * Creates a new VREXperienceHelper
-         * @see http://doc.babylonjs.com/how_to/webvr_helper
+         * @see https://doc.babylonjs.com/how_to/webvr_helper
          * @param webVROptions defines the options used to create the new VREXperienceHelper
          * @returns a new VREXperienceHelper
          */
@@ -80,7 +80,7 @@ declare module "../scene" {
 
         /**
          * Creates a new WebXRDefaultExperience
-         * @see http://doc.babylonjs.com/how_to/webxr
+         * @see https://doc.babylonjs.com/how_to/introduction_to_webxr
          * @param options experience options
          * @returns a promise for a new WebXRDefaultExperience
          */
@@ -115,7 +115,7 @@ Scene.prototype.createDefaultCamera = function(createArcRotateCamera = false, re
 
     // Camera
     if (!this.activeCamera) {
-        var worldExtends = this.getWorldExtends();
+        var worldExtends = this.getWorldExtends((mesh) => mesh.isVisible && mesh.isEnabled());
         var worldSize = worldExtends.max.subtract(worldExtends.min);
         var worldCenter = worldExtends.min.add(worldSize.scale(0.5));
 
@@ -208,7 +208,7 @@ Scene.prototype.createDefaultVRExperience = function(webVROptions: VRExperienceH
     return new VRExperienceHelper(this, webVROptions);
 };
 
-Scene.prototype.createDefaultXRExperienceAsync = function(options: WebXRDefaultExperienceOptions): Promise<WebXRDefaultExperience> {
+Scene.prototype.createDefaultXRExperienceAsync = function(options: WebXRDefaultExperienceOptions = {}): Promise<WebXRDefaultExperience> {
     return WebXRDefaultExperience.CreateAsync(this, options).then((helper) => {
         return helper;
     });

@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
+import { Constants } from "babylonjs/Engines/constants";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
@@ -58,7 +59,9 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                 <TextureLinkLineComponent label="Opacity" texture={material.opacityTexture} propertyName="opacityTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent customDebugAction={(state) => this.switchAmbientMode(state)} label="Ambient" texture={material.ambientTexture} propertyName="ambientTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
                 <TextureLinkLineComponent label="Lightmap" texture={material.lightmapTexture} propertyName="lightmapTexture" material={material} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
-                <CheckBoxLineComponent label="Use lightmap as shadowmap" target={material} propertyName="useLightmapAsShadowmap " onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <TextureLinkLineComponent label="Detailmap" texture={material.detailMap.texture} material={material} onTextureCreated={(texture) => material.detailMap.texture = texture} onTextureRemoved={() => material.detailMap.texture = null} onSelectionChangedObservable={this.props.onSelectionChangedObservable} onDebugSelectionChangeObservable={onDebugSelectionChangeObservable} />
+                <CheckBoxLineComponent label="Use lightmap as shadowmap" target={material} propertyName="useLightmapAsShadowmap" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CheckBoxLineComponent label="Use detailmap" target={material.detailMap} propertyName="isEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </LineContainerComponent>
         );
     }
@@ -127,6 +130,12 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Sheen Reflectance", value: 85 },
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
+        ];
+
+        var realTimeFilteringQualityOptions = [
+            { label: "Low", value: Constants.TEXTURE_FILTERING_QUALITY_LOW },
+            { label: "Medium", value: Constants.TEXTURE_FILTERING_QUALITY_MEDIUM },
+            { label: "High", value: Constants.TEXTURE_FILTERING_QUALITY_HIGH }
         ];
 
         (material.sheen as any)._useRoughness = (material.sheen as any)._useRoughness ?? material.sheen.roughness !== null;
@@ -234,6 +243,12 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <Color3LineComponent label="Tint Color" target={material.subSurface} propertyName="tintColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} isLinear={true} />
 
+                    <CheckBoxLineComponent label="Scattering Enabled" target={material.subSurface} propertyName="isScatteringEnabled"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    { (material.subSurface as any).isScatteringEnabled && material.getScene().prePassRenderer &&
+                        <SliderLineComponent label="Meters per unit" target={ material.getScene().prePassRenderer!.subSurfaceConfiguration } propertyName="metersPerUnit" minimum={0.01} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    }
                     <CheckBoxLineComponent label="Refraction Enabled" target={material.subSurface} propertyName="isRefractionEnabled"
                         onValueChanged={() => this.forceUpdate()}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -245,6 +260,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             <SliderLineComponent label="Index of Refraction" target={material.subSurface} propertyName="indexOfRefraction" minimum={1} maximum={2} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <SliderLineComponent label="Tint at Distance" target={material.subSurface} propertyName="tintColorAtDistance" minimum={0} maximum={10} step={0.1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <CheckBoxLineComponent label="Link refraction with transparency" target={material.subSurface} propertyName="linkRefractionWithTransparency" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                            <CheckBoxLineComponent label="Use albedo to tint surface transparency" target={material.subSurface} propertyName="useAlbedoToTintRefraction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                         </div>
                     }
 
@@ -304,6 +320,12 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         material.subSurface.refractionTexture &&
                         <SliderLineComponent label="Refraction" target={material.subSurface.refractionTexture} propertyName="level" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     }
+                    {
+                        material.detailMap.isEnabled && <>
+                        <SliderLineComponent label="Detailmap diffuse" target={material.detailMap} propertyName="diffuseBlendLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <SliderLineComponent label="Detailmap bump" target={material.detailMap} propertyName="bumpLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <SliderLineComponent label="Detailmap roughness" target={material.detailMap} propertyName="roughnessBlendLevel" minimum={0} maximum={1} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    </> }
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="RENDERING" closed={true}>
                     <CheckBoxLineComponent label="Alpha from albedo" target={material} propertyName="useAlphaFromAlbedoTexture" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
@@ -312,6 +334,8 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Micro-surface from ref. map alpha" target={material} propertyName="useMicroSurfaceFromReflectivityMapAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Specular over alpha" target={material} propertyName="useSpecularOverAlpha" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent label="Specular anti-aliasing" target={material} propertyName="enableSpecularAntiAliasing" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent label="Realtime Filtering" target={material} propertyName="realTimeFiltering" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <OptionsLineComponent allowNullValue={true} label="Realtime Filtering quality" options={realTimeFilteringQualityOptions} target={material} propertyName="realTimeFilteringQuality" onPropertyChangedObservable={this.props.onPropertyChangedObservable}  />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="NORMAL MAP" closed={true}>
                     <CheckBoxLineComponent label="Invert X axis" target={material} propertyName="invertNormalMapX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />

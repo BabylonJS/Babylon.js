@@ -4,7 +4,7 @@ import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { SubMesh, BaseSubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -14,6 +14,8 @@ import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
+import { WebRequest } from '../Misc/webRequest';
+import { Engine } from '../Engines/engine';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -62,7 +64,7 @@ export interface IShaderMaterialOptions {
  *
  * This returned material effects how the mesh will look based on the code in the shaders.
  *
- * @see http://doc.babylonjs.com/how_to/shader_material
+ * @see https://doc.babylonjs.com/how_to/shader_material
  */
 export class ShaderMaterial extends Material {
     private _shaderPath: any;
@@ -80,9 +82,9 @@ export class ShaderMaterial extends Material {
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
     private _matrices: { [name: string]: Matrix } = {};
-    private _matrixArrays: { [name: string]: Float32Array } = {};
-    private _matrices3x3: { [name: string]: Float32Array } = {};
-    private _matrices2x2: { [name: string]: Float32Array } = {};
+    private _matrixArrays: { [name: string]: Float32Array | Array<number> } = {};
+    private _matrices3x3: { [name: string]: Float32Array | Array<number> } = {};
+    private _matrices2x2: { [name: string]: Float32Array | Array<number> } = {};
     private _vectors2Arrays: { [name: string]: number[] } = {};
     private _vectors3Arrays: { [name: string]: number[] } = {};
     private _vectors4Arrays: { [name: string]: number[] } = {};
@@ -92,11 +94,17 @@ export class ShaderMaterial extends Material {
     private _multiview: boolean = false;
     private _cachedDefines: string;
 
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the material was created from the snippet server */
+    public snippetId: string;
+
     /**
      * Instantiate a new shader material.
      * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
      * This returned material effects how the mesh will look based on the code in the shaders.
-     * @see http://doc.babylonjs.com/how_to/shader_material
+     * @see https://doc.babylonjs.com/how_to/shader_material
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
@@ -385,7 +393,7 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrix3x3(name: string, value: Float32Array): ShaderMaterial {
+    public setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
         this._matrices3x3[name] = value;
 
@@ -398,7 +406,7 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrix2x2(name: string, value: Float32Array): ShaderMaterial {
+    public setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
         this._matrices2x2[name] = value;
 
@@ -463,7 +471,7 @@ export class ShaderMaterial extends Material {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return this.isReady(mesh, useInstances);
     }
 
@@ -525,6 +533,9 @@ export class ShaderMaterial extends Material {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (mesh?.hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Bones
@@ -1226,6 +1237,71 @@ export class ShaderMaterial extends Material {
         }
 
         return material;
+    }
+
+    /**
+     * Creates a new ShaderMaterial from a snippet saved in a remote file
+     * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        if (name) {
+                            output.name = name;
+                        }
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the ShaderMaterial");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates a ShaderMaterial from a snippet saved by the Inspector
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.shaderMaterial);
+                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        output.snippetId = snippetId;
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 }
 

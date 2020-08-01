@@ -281,6 +281,7 @@ export class Tools {
 
     /**
      * Gets the pointer prefix to use
+     * @param engine defines the engine we are finding the prefix for
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
     public static GetPointerPrefix(engine: Engine): string {
@@ -291,8 +292,10 @@ export class Tools {
             eventPrefix = "mouse";
         }
 
-        // Special Fallback...
-        if (engine._badDesktopOS) {
+        // Special Fallback MacOS Safari...
+        if (engine._badDesktopOS && !engine._badOS &&
+            // And not ipad pros who claim to be macs...
+            !(document && 'ontouchend' in document)) {
             eventPrefix = "mouse";
         }
 
@@ -707,7 +710,7 @@ export class Tools {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -727,7 +730,7 @@ export class Tools {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -746,7 +749,7 @@ export class Tools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -769,7 +772,7 @@ export class Tools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see http://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the

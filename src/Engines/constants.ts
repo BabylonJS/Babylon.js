@@ -337,88 +337,88 @@ export class Constants {
 
     /**
      * Nothing
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_NothingTrigger = 0;
     /**
      * On pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickTrigger = 1;
     /**
      * On left pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnLeftPickTrigger = 2;
     /**
      * On right pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnRightPickTrigger = 3;
     /**
      * On center pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnCenterPickTrigger = 4;
     /**
      * On pick down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickDownTrigger = 5;
     /**
      * On double pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnDoublePickTrigger = 6;
     /**
      * On pick up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickUpTrigger = 7;
     /**
      * On pick out.
      * This trigger will only be raised if you also declared a OnPickDown
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickOutTrigger = 16;
     /**
      * On long press
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnLongPressTrigger = 8;
     /**
      * On pointer over
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPointerOverTrigger = 9;
     /**
      * On pointer out
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPointerOutTrigger = 10;
     /**
      * On every frame
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnEveryFrameTrigger = 11;
     /**
      * On intersection enter
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnIntersectionEnterTrigger = 12;
     /**
      * On intersection exit
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnIntersectionExitTrigger = 13;
     /**
      * On key down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnKeyDownTrigger = 14;
     /**
      * On key up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnKeyUpTrigger = 15;
 
@@ -486,4 +486,24 @@ export class Constants {
      * Detailled logging while loading
      */
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
+
+    /**
+     * Prepass texture index for color
+     */
+    public static readonly PREPASS_COLOR_INDEX = 0;
+
+    /**
+     * Prepass texture index for irradiance
+     */
+    public static readonly PREPASS_IRRADIANCE_INDEX = 1;
+
+    /**
+     * Prepass texture index for depth + normal
+     */
+    public static readonly PREPASS_DEPTHNORMAL_INDEX = 2;
+
+    /**
+     * Prepass texture index for albedo
+     */
+    public static readonly PREPASS_ALBEDO_INDEX = 3;
 }

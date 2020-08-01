@@ -13,7 +13,7 @@ Node.AddNodeConstructor("StereoscopicGamepadCamera", (name, scene, options) => {
 
 /**
  * Camera used to simulate stereoscopic rendering (based on GamepadCamera)
- * @see http://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/cameras
  */
 export class StereoscopicGamepadCamera extends GamepadCamera {
     /**

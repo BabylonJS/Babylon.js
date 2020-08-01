@@ -20,7 +20,7 @@ declare type Scene = import("../../scene").Scene;
 
 /**
  * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
- * @see http://doc.babylonjs.com/babylon101/materials#texture
+ * @see https://doc.babylonjs.com/babylon101/materials#texture
  */
 export class Texture extends BaseTexture {
     /**
@@ -116,49 +116,49 @@ export class Texture extends BaseTexture {
 
     /**
      * Define an offset on the texture to offset the u coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
+     * @see https://doc.babylonjs.com/how_to/more_materials#offsetting
      */
     @serialize()
     public uOffset = 0;
 
     /**
      * Define an offset on the texture to offset the v coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials#offsetting
+     * @see https://doc.babylonjs.com/how_to/more_materials#offsetting
      */
     @serialize()
     public vOffset = 0;
 
     /**
      * Define an offset on the texture to scale the u coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials#tiling
+     * @see https://doc.babylonjs.com/how_to/more_materials#tiling
      */
     @serialize()
     public uScale = 1.0;
 
     /**
      * Define an offset on the texture to scale the v coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials#tiling
+     * @see https://doc.babylonjs.com/how_to/more_materials#tiling
      */
     @serialize()
     public vScale = 1.0;
 
     /**
      * Define an offset on the texture to rotate around the u coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
     public uAng = 0;
 
     /**
      * Define an offset on the texture to rotate around the v coordinates of the UVs
-     * @see http://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
     public vAng = 0;
 
     /**
      * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
-     * @see http://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/how_to/more_materials
      */
     @serialize()
     public wAng = 0;
@@ -264,7 +264,7 @@ export class Texture extends BaseTexture {
     /**
      * Instantiates a new texture.
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
-     * @see http://doc.babylonjs.com/babylon101/materials#texture
+     * @see https://doc.babylonjs.com/babylon101/materials#texture
      * @param url defines the url of the picture to load as a texture
      * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param noMipmap defines if the texture will require mip maps or not
@@ -706,7 +706,13 @@ export class Texture extends BaseTexture {
                 if (parsedTexture.base64String) {
                     texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps, parsedTexture.invertY);
                 } else {
-                    let url = rootUrl + parsedTexture.name;
+                    let url: string;
+                    if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
+                        url = parsedTexture.name;
+                    }
+                    else {
+                        url = rootUrl + parsedTexture.name;
+                    }
 
                     if (StringTools.StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
                         url = parsedTexture.url;

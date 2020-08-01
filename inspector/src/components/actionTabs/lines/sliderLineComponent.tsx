@@ -14,7 +14,6 @@ interface ISliderLineComponentProps {
     useEuler?: boolean;
     onChange?: (value: number) => void;
     onInput?: (value: number) => void;    
-    replaySourceReplacement?: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     decimalCount?: number;
 }
@@ -68,7 +67,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         if (this.props.target) {
             if (this.props.onPropertyChangedObservable) {
                 this.props.onPropertyChangedObservable.notifyObservers({
-                    object: this.props.replaySourceReplacement ?? this.props.target,
+                    object: this.props.target,
                     property: this.props.propertyName!,
                     value: newValue,
                     initialValue: this.state.value

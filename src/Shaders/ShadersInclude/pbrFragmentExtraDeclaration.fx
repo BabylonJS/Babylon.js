@@ -24,3 +24,7 @@ varying vec3 vPositionW;
 #ifdef MAINUV2
     varying vec2 vMainUV2;
 #endif
+
+#ifdef PREPASS
+	varying vec3 vViewPos;
+#endif

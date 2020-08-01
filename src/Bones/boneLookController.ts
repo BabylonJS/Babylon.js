@@ -7,7 +7,7 @@ import { Space, Axis } from '../Maths/math.axis';
 
 /**
  * Class used to make a bone look toward a point in space
- * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
+ * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
  */
 export class BoneLookController {
 

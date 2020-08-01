@@ -250,6 +250,13 @@ var BABYLONDEVTOOLS;
             }
         }
 
+        Loader.prototype.loadApp = function(appName, app) {
+            if (!window || !window.location || window.location.pathname.toLowerCase().indexOf(appName.toLowerCase()) === -1) {
+                return;
+            }
+            this.loadScript(app.distFile);
+        }
+
         Loader.prototype.processDependency = function(settings, dependency, filesToLoad) {
             if (dependency.dependUpon) {
                 for (var i = 0; i < dependency.dependUpon.length; i++) {
@@ -272,6 +279,9 @@ var BABYLONDEVTOOLS;
             // Load all the modules from the config.json.
             for (var i = 0; i < settings.modules.length; i++) {
                 this.loadModule(settings.modules[i], settings[settings.modules[i]]);
+            }
+            for (var i = 0; i < settings.apps.length; i++) {
+                this.loadApp(settings.apps[i], settings[settings.apps[i]]);
             }
         }
 

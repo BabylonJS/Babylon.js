@@ -3,7 +3,6 @@ import { Deferred } from "babylonjs/Misc/deferred";
 import { Quaternion, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
-import { IFileRequest } from "babylonjs/Misc/fileRequest";
 import { Camera } from "babylonjs/Cameras/camera";
 import { FreeCamera } from "babylonjs/Cameras/freeCamera";
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
@@ -22,7 +21,7 @@ import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { MorphTargetManager } from "babylonjs/Morph/morphTargetManager";
-import { SceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
+import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData } from "./glTFLoaderInterfaces";
@@ -34,6 +33,8 @@ import { IDataBuffer } from 'babylonjs/Misc/dataReader';
 import { LoadFileError } from 'babylonjs/Misc/fileTools';
 import { Logger } from 'babylonjs/Misc/logger';
 import { Light } from 'babylonjs/Lights/light';
+import { TmpVectors } from 'babylonjs/Maths/math.vector';
+import { BoundingInfo } from 'babylonjs/Culling/boundingInfo';
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -43,12 +44,6 @@ interface TypedArrayLike extends ArrayBufferView {
 interface TypedArrayConstructor {
     new(length: number): TypedArrayLike;
     new(buffer: ArrayBufferLike, byteOffset: number, length?: number): TypedArrayLike;
-}
-
-interface IFileRequestInfo extends IFileRequest {
-    _lengthComputable?: boolean;
-    _loaded?: number;
-    _total?: number;
 }
 
 interface ILoaderProperty extends IProperty {
@@ -106,6 +101,9 @@ export class GLTFLoader implements IGLTFLoader {
     /** Storage */
     public _babylonLights: Light[] = [];
 
+    /** @hidden */
+    public _disableInstancedMesh = 0;
+
     private _disposed = false;
     private _parent: GLTFFileLoader;
     private _state: Nullable<GLTFLoaderState> = null;
@@ -118,8 +116,6 @@ export class GLTFLoader implements IGLTFLoader {
     private _babylonScene: Scene;
     private _rootBabylonMesh: Mesh;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
-    private _progressCallback?: (event: SceneLoaderProgressEvent) => void;
-    private _requests = new Array<IFileRequestInfo>();
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
@@ -212,12 +208,6 @@ export class GLTFLoader implements IGLTFLoader {
 
         this._disposed = true;
 
-        for (const request of this._requests) {
-            request.abort();
-        }
-
-        this._requests.length = 0;
-
         this._completePromises.length = 0;
 
         for (const name in this._extensions) {
@@ -229,18 +219,16 @@ export class GLTFLoader implements IGLTFLoader {
         delete this._gltf;
         delete this._babylonScene;
         delete this._rootBabylonMesh;
-        delete this._progressCallback;
 
-        this._parent._clear();
+        this._parent.dispose();
     }
 
     /** @hidden */
-    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<IImportMeshAsyncOutput> {
+    public importMeshAsync(meshesNames: any, scene: Scene, forAssetContainer: boolean, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<IImportMeshAsyncOutput> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
             this._rootUrl = rootUrl;
             this._fileName = fileName || "scene";
-            this._progressCallback = onProgress;
             this._forAssetContainer = forAssetContainer;
             this._loadData(data);
 
@@ -281,12 +269,11 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
+    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
         return Promise.resolve().then(() => {
             this._babylonScene = scene;
             this._rootUrl = rootUrl;
             this._fileName = fileName || "scene";
-            this._progressCallback = onProgress;
             this._loadData(data);
             return this._loadAsync(null, () => undefined);
         });
@@ -338,8 +325,8 @@ export class GLTFLoader implements IGLTFLoader {
                     this._rootBabylonMesh.setEnabled(true);
                 }
 
-                this._setState(GLTFLoaderState.READY);
                 this._extensionsOnReady();
+                this._setState(GLTFLoaderState.READY);
 
                 this._startAnimations();
 
@@ -371,7 +358,7 @@ export class GLTFLoader implements IGLTFLoader {
             });
 
             return resultPromise;
-        }, (error) => {
+        }).catch((error) => {
             if (!this._disposed) {
                 this._parent.onErrorObservable.notifyObservers(error);
                 this._parent.onErrorObservable.clear();
@@ -702,7 +689,12 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             this._forEachPrimitive(node, (babylonMesh) => {
-                babylonMesh.refreshBoundingInfo(true);
+                if ((babylonMesh as Mesh).geometry && (babylonMesh as Mesh).geometry!.useBoundingInfoFromGeometry) {
+                    // simply apply the world matrices to the bounding info - the extends are already ok
+                    babylonMesh._updateBoundingInfo();
+                } else {
+                    babylonMesh.refreshBoundingInfo(true);
+                }
             });
 
             return node._babylonTransformNode!;
@@ -777,7 +769,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        const shouldInstance = this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
+        const shouldInstance = (this._disableInstancedMesh === 0) && this._parent.createInstances && (node.skin == undefined && !mesh.primitives[0].targets);
 
         let babylonAbstractMesh: AbstractMesh;
         let promise: Promise<any>;
@@ -878,6 +870,16 @@ export class GLTFLoader implements IGLTFLoader {
 
             const accessor = ArrayItem.Get(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
             promises.push(this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
+                if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
+                    const mmin = accessor.min as [number, number, number], mmax = accessor.max as [number, number, number];
+                    if (mmin !== undefined && mmax !== undefined) {
+                        const min = TmpVectors.Vector3[0], max = TmpVectors.Vector3[1];
+                        min.copyFromFloats(...mmin);
+                        max.copyFromFloats(...mmax);
+                        babylonGeometry._boundingInfo = new BoundingInfo(min, max);
+                        babylonGeometry.useBoundingInfoFromGeometry = true;
+                    }
+                }
                 babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
             }));
 
@@ -1157,6 +1159,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._babylonScene._blockEntityCollection = this._forAssetContainer;
         const babylonCamera = new FreeCamera(camera.name || `camera${camera.index}`, Vector3.Zero(), this._babylonScene, false);
         this._babylonScene._blockEntityCollection = false;
+        babylonCamera.ignoreParentScaling = true;
 
         babylonCamera.rotation = new Vector3(0, Math.PI, 0);
 
@@ -1194,6 +1197,8 @@ export class GLTFLoader implements IGLTFLoader {
         GLTFLoader.AddPointerMetadata(babylonCamera, context);
         this._parent.onCameraLoadedObservable.notifyObservers(babylonCamera);
         assign(babylonCamera);
+
+        this.logClose();
 
         return Promise.all(promises).then(() => {
             return babylonCamera;
@@ -2035,62 +2040,17 @@ export class GLTFLoader implements IGLTFLoader {
         this.log(`Loading ${uri}`);
 
         return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
-            return new Promise<ArrayBufferView>((resolve, reject) => {
-                if (!this._disposed) {
-                    const request = Tools.LoadFile(url, (fileData) => {
-                        if (!this._disposed) {
-                            const data = new Uint8Array(fileData as ArrayBuffer);
-                            this.log(`Loaded ${uri} (${data.length} bytes)`);
-                            resolve(data);
-                        }
-                    }, (event) => {
-                        if (!this._disposed) {
-                            if (request) {
-                                request._lengthComputable = event.lengthComputable;
-                                request._loaded = event.loaded;
-                                request._total = event.total;
-                            }
-
-                            if (this._state === GLTFLoaderState.LOADING) {
-                                try {
-                                    this._onProgress();
-                                }
-                                catch (e) {
-                                    reject(e);
-                                }
-                            }
-                        }
-                    }, this._babylonScene.offlineProvider, true, (request, exception) => {
-                        if (!this._disposed) {
-                            reject(new LoadFileError(`${context}: Failed to load '${uri}'${request ? ": " + request.status + " " + request.statusText : ""}`, request));
-                        }
-                    }) as IFileRequestInfo;
-
-                    this._requests.push(request);
-                }
+            return new Promise((resolve, reject) => {
+                this._parent._loadFile(url, this._babylonScene, (data) => {
+                    if (!this._disposed) {
+                        this.log(`Loaded ${uri} (${(data as ArrayBuffer).byteLength} bytes)`);
+                        resolve(new Uint8Array(data as ArrayBuffer));
+                    }
+                }, true, (request) => {
+                    reject(new LoadFileError(`${context}: Failed to load '${uri}'${request ? ": " + request.status + " " + request.statusText : ""}`, request));
+                });
             });
         });
-    }
-
-    private _onProgress(): void {
-        if (!this._progressCallback) {
-            return;
-        }
-
-        let lengthComputable = true;
-        let loaded = 0;
-        let total = 0;
-        for (let request of this._requests) {
-            if (request._lengthComputable === undefined || request._loaded === undefined || request._total === undefined) {
-                return;
-            }
-
-            lengthComputable = lengthComputable && request._lengthComputable;
-            loaded += request._loaded;
-            total += request._total;
-        }
-
-        this._progressCallback(new SceneLoaderProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
     }
 
     /**
@@ -2200,7 +2160,8 @@ export class GLTFLoader implements IGLTFLoader {
         return (Tools.IsBase64(uri) || uri.indexOf("..") === -1);
     }
 
-    private static _GetDrawMode(context: string, mode: number | undefined): number {
+    /** @hidden */
+    public static _GetDrawMode(context: string, mode: number | undefined): number {
         if (mode == undefined) {
             mode = MeshPrimitiveMode.TRIANGLES;
         }

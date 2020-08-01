@@ -16,7 +16,7 @@ export class KhronosTextureContainer2 {
     public constructor(engine: ThinEngine) {
         if (!KhronosTextureContainer2._ModulePromise) {
             KhronosTextureContainer2._ModulePromise = new Promise((resolve) => {
-                LIBKTX().then((module: any) => {
+                LIBKTX({preinitializedWebGLContext: engine._gl}).then((module: any) => {
                     module.GL.makeContextCurrent(module.GL.registerContext(engine._gl, { majorVersion: engine._webGLVersion }));
                     KhronosTextureContainer2._TranscodeFormat = this._determineTranscodeFormat(module.TranscodeTarget, engine.getCaps());
                     resolve({ module: module });
@@ -31,7 +31,7 @@ export class KhronosTextureContainer2 {
 
             const ktxTexture = new module.ktxTexture(data);
             try {
-                if (ktxTexture.isBasisSupercompressed) {
+                if (ktxTexture.needsTranscoding) {
                     ktxTexture.transcodeBasis(KhronosTextureContainer2._TranscodeFormat, 0);
                 }
 

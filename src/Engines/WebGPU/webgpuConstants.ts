@@ -70,6 +70,21 @@ export class WebGPUConstants {
     public static readonly GPUTextureFormat_depth32float: GPUTextureFormat = "depth32float";
     public static readonly GPUTextureFormat_depth24plus: GPUTextureFormat = "depth24plus";
     public static readonly GPUTextureFormat_depth24plusStencil8: GPUTextureFormat = "depth24plus-stencil8";
+    /* Compressed formats */
+    public static readonly GPUTextureFormat_bc1rgbaunorm: GPUTextureFormat = "bc1-rgba-unorm";
+    public static readonly GPUTextureFormat_bc1rgbaunorm_srgb: GPUTextureFormat = "bc1-rgba-unorm-srgb";
+    public static readonly GPUTextureFormat_bc2rgbaunorm: GPUTextureFormat = "bc2-rgba-unorm";
+    public static readonly GPUTextureFormat_bc2rgbaunorm_srgb: GPUTextureFormat = "bc2-rgba-unorm-srgb";
+    public static readonly GPUTextureFormat_bc3rgbaunorm: GPUTextureFormat = "bc3-rgba-unorm";
+    public static readonly GPUTextureFormat_bc3rgbaunorm_srgb: GPUTextureFormat = "bc3-rgba-unorm-srgb";
+    public static readonly GPUTextureFormat_bc4runorm: GPUTextureFormat = "bc4-r-unorm";
+    public static readonly GPUTextureFormat_bc4rsnorm: GPUTextureFormat = "bc4-r-snorm";
+    public static readonly GPUTextureFormat_bc5rgunorm: GPUTextureFormat = "bc5-rg-unorm";
+    public static readonly GPUTextureFormat_bc5rgsnorm: GPUTextureFormat = "bc5-rg-snorm";
+    public static readonly GPUTextureFormat_bc6hrgbufloat: GPUTextureFormat = "bc6h-rgb-ufloat";
+    public static readonly GPUTextureFormat_bc6hrgbsfloat: GPUTextureFormat = "bc6h-rgb-sfloat";
+    public static readonly GPUTextureFormat_bc7rgbaunorm: GPUTextureFormat = "bc7-rgba-unorm";
+    public static readonly GPUTextureFormat_bc7rgbaunormsrgb: GPUTextureFormat = "bc7-rgba-unorm-srgb";
 
     public static readonly GPUTextureViewDimension_1d: GPUTextureViewDimension = "1d";
     public static readonly GPUTextureViewDimension_2d: GPUTextureViewDimension = "2d";
@@ -112,16 +127,17 @@ export class WebGPUConstants {
     public static readonly GPUVertexFormat_int3: GPUVertexFormat = "int3";
     public static readonly GPUVertexFormat_int4: GPUVertexFormat = "int4";
 
-    public static readonly GPUBufferUsage_NONE = 0;
-    public static readonly GPUBufferUsage_MAP_READ = 1;
-    public static readonly GPUBufferUsage_MAP_WRITE = 2;
-    public static readonly GPUBufferUsage_TRANSFER_SRC = 4;
-    public static readonly GPUBufferUsage_TRANSFER_DST = 8;
-    public static readonly GPUBufferUsage_INDEX = 16;
-    public static readonly GPUBufferUsage_VERTEX = 32;
-    public static readonly GPUBufferUsage_UNIFORM = 64;
-    public static readonly GPUBufferUsage_STORAGE = 128;
-    public static readonly GPUBufferUsage_INDIRECT = 256;
+    public static readonly GPUBufferUsage_NONE = 0x0000;
+    public static readonly GPUBufferUsage_MAP_READ = 0x0001;
+    public static readonly GPUBufferUsage_MAP_WRITE = 0x0002;
+    public static readonly GPUBufferUsage_COPY_SRC = 0x0004;
+    public static readonly GPUBufferUsage_COPY_DST = 0x0008;
+    public static readonly GPUBufferUsage_INDEX = 0x0010;
+    public static readonly GPUBufferUsage_VERTEX = 0x0020;
+    public static readonly GPUBufferUsage_UNIFORM = 0x0040;
+    public static readonly GPUBufferUsage_STORAGE = 0x0080;
+    public static readonly GPUBufferUsage_INDIRECT = 0x0100;
+    public static readonly GPUBufferUsage_QUERY_RESOLVE = 0x0200;
 
     public static readonly GPUMapMode_READ = 1;
     public static readonly GPUMapMode_WRITE = 2;

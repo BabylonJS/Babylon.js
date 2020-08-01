@@ -94,6 +94,7 @@ export class ShadowDepthWrapper {
         const prefix = baseMaterial.getClassName() === "NodeMaterial" ? "u_" : "";
 
         this._matriceNames = {
+            "world": prefix + "world",
             "view": prefix + "view",
             "projection": prefix + "projection",
             "viewProjection": prefix + "viewProjection",

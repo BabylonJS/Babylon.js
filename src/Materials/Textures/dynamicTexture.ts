@@ -9,7 +9,7 @@ import { CanvasGenerator } from '../../Misc/canvasGenerator';
 
 /**
  * A class extending Texture allowing drawing on a texture
- * @see http://doc.babylonjs.com/how_to/dynamictexture
+ * @see https://doc.babylonjs.com/how_to/dynamictexture
  */
 export class DynamicTexture extends Texture {
     private _generateMipMaps: boolean;
@@ -208,7 +208,7 @@ export class DynamicTexture extends Texture {
         }
 
         const serializationObject = super.serialize();
-        if ((this._canvas as HTMLCanvasElement).toDataURL) {
+        if (this._IsCanvasElement(this._canvas)) {
             serializationObject.base64String = (this._canvas as HTMLCanvasElement).toDataURL();
         }
 
@@ -216,6 +216,10 @@ export class DynamicTexture extends Texture {
         serializationObject.samplingMode = this.samplingMode;
 
         return serializationObject;
+    }
+
+    private _IsCanvasElement(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is HTMLCanvasElement {
+        return (canvas as HTMLCanvasElement).toDataURL !== undefined;
     }
 
     /** @hidden */
