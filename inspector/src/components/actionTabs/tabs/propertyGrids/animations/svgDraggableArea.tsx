@@ -80,7 +80,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
         if (e.target.classList.contains("pannable")) {
             this._active = true;
-            this._panStart.set(e.clientX, e.clientY);
+            this._panStart.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
         }
     }
 
@@ -95,7 +95,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             if (coord !== undefined) {
                 if (e.target.classList.contains("pannable")) {
                     if (this._panStart.x !== 0 && this._panStart.y !== 0) {
-                        this._panStop.set(e.clientX, e.clientY);
+                        this._panStop.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
                         this.panDirection();
                     }
                 }
@@ -146,6 +146,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._panStop.set(0, 0);
         this._playheadDrag = 0;
         this._playheadSelected = false;
+        this.movedX = 0;
     }
 
     getMousePosition(e: React.TouchEvent<SVGSVGElement>): Vector2 | undefined;
@@ -168,17 +169,34 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         }
     }
 
+    private movedX = 0;
+    private movedY = 0;
     panDirection() {
-        let movementX = this._panStart.x - this._panStop.x;
-        let movementY = this._panStart.y - this._panStop.y;
+        let directionX = 1;
+        if (this.movedX < this._panStop.x) {
+            directionX = -1;
+        } else {
+            directionX = 1;
+        }
 
-        let newX = this.state.panX + movementX / 20;
-        let newY = this.state.panY + movementY / 20;
+        let directionY = 1;
+        if (this.movedY < this._panStop.y) {
+            directionY = -1;
+        } else {
+            directionY = 1;
+        }
+
+        this.movedX = this._panStop.x;
+        this.movedY = this._panStop.y;
+
+        let newX = this.state.panX + directionX;
+        let newY = this.state.panY + directionY;
 
         this.setState({
             panX: Math.round(newX),
             panY: Math.round(newY),
         });
+
         this.props.panningY(Math.round(newY));
         this.props.panningX(Math.round(newX));
     }
