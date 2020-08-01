@@ -141,7 +141,21 @@ type GPUTextureFormat =
   | "rgba32float"
   | "depth32float"
   | "depth24plus"
-  | "depth24plus-stencil8";
+  | "depth24plus-stencil8"
+  | "bc1-rgba-unorm"
+  | "bc1-rgba-unorm-srgb"
+  | "bc2-rgba-unorm"
+  | "bc2-rgba-unorm-srgb"
+  | "bc3-rgba-unorm"
+  | "bc3-rgba-unorm-srgb"
+  | "bc4-r-unorm"
+  | "bc4-r-snorm"
+  | "bc5-rg-unorm"
+  | "bc5-rg-snorm"
+  | "bc6h-rgb-ufloat"
+  | "bc6h-rgb-sfloat"
+  | "bc7-rgba-unorm"
+  | "bc7-rgba-unorm-srgb";
 type GPUTextureComponentType = "float" | "sint" | "uint";
 type GPUTextureViewDimension =
   | "1d"

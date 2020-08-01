@@ -70,6 +70,21 @@ export class WebGPUConstants {
     public static readonly GPUTextureFormat_depth32float: GPUTextureFormat = "depth32float";
     public static readonly GPUTextureFormat_depth24plus: GPUTextureFormat = "depth24plus";
     public static readonly GPUTextureFormat_depth24plusStencil8: GPUTextureFormat = "depth24plus-stencil8";
+    /* Compressed formats */
+    public static readonly GPUTextureFormat_bc1rgbaunorm: GPUTextureFormat = "bc1-rgba-unorm";
+    public static readonly GPUTextureFormat_bc1rgbaunorm_srgb: GPUTextureFormat = "bc1-rgba-unorm-srgb";
+    public static readonly GPUTextureFormat_bc2rgbaunorm: GPUTextureFormat = "bc2-rgba-unorm";
+    public static readonly GPUTextureFormat_bc2rgbaunorm_srgb: GPUTextureFormat = "bc2-rgba-unorm-srgb";
+    public static readonly GPUTextureFormat_bc3rgbaunorm: GPUTextureFormat = "bc3-rgba-unorm";
+    public static readonly GPUTextureFormat_bc3rgbaunorm_srgb: GPUTextureFormat = "bc3-rgba-unorm-srgb";
+    public static readonly GPUTextureFormat_bc4runorm: GPUTextureFormat = "bc4-r-unorm";
+    public static readonly GPUTextureFormat_bc4rsnorm: GPUTextureFormat = "bc4-r-snorm";
+    public static readonly GPUTextureFormat_bc5rgunorm: GPUTextureFormat = "bc5-rg-unorm";
+    public static readonly GPUTextureFormat_bc5rgsnorm: GPUTextureFormat = "bc5-rg-snorm";
+    public static readonly GPUTextureFormat_bc6hrgbufloat: GPUTextureFormat = "bc6h-rgb-ufloat";
+    public static readonly GPUTextureFormat_bc6hrgbsfloat: GPUTextureFormat = "bc6h-rgb-sfloat";
+    public static readonly GPUTextureFormat_bc7rgbaunorm: GPUTextureFormat = "bc7-rgba-unorm";
+    public static readonly GPUTextureFormat_bc7rgbaunormsrgb: GPUTextureFormat = "bc7-rgba-unorm-srgb";
 
     public static readonly GPUTextureViewDimension_1d: GPUTextureViewDimension = "1d";
     public static readonly GPUTextureViewDimension_2d: GPUTextureViewDimension = "2d";
