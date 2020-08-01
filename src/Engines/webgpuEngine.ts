@@ -150,7 +150,6 @@ export class WebGPUEngine extends Engine {
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
-    private _maxBufferChunk = 1024 * 1024 * 15;
 
     // Caches
     private _compiledShaders: { [key: string]: {
@@ -262,8 +261,7 @@ export class WebGPUEngine extends Engine {
             .then(() => {
                 this._initializeLimits();
                 this._initializeContextAndSwapChain();
-                // this._initializeMainAttachments();
-                // Initialization is in the resize :-)
+                this._initializeMainAttachments();
                 this.resize();
             })
             .catch((e: any) => {
@@ -515,27 +513,18 @@ export class WebGPUEngine extends Engine {
     //                              WebGPU Buffers
     //------------------------------------------------------------------------------
     private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
-        if (view.byteLength == 0) {
-            throw new Error("Unable to create WebGPU buffer: cannot create zero-sized buffer"); // Zero size buffer would kill the tab in chrome
-        }
         const padding = view.byteLength % 4;
-        const mappedAtCreation: boolean = padding == 0 && view.byteLength < this._maxBufferChunk;
         const verticesBufferDescriptor = {
             size: view.byteLength + padding,
-            usage: flags,
-            mappedAtCreation
+            usage: flags
         };
-       const buffer = this._device.createBuffer(verticesBufferDescriptor);
+        const buffer = this._device.createBuffer(verticesBufferDescriptor);
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
         dataBuffer.capacity = view.byteLength;
-        if (mappedAtCreation) {
-            const range = buffer.getMappedRange();
-            new Uint8Array(range).set(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
-            buffer.unmap();
-        } else {
-            this._setSubData(dataBuffer, 0, view);
-        }
+
+        this._setSubData(dataBuffer, 0, view);
+
         return dataBuffer;
     }
 
@@ -546,7 +535,6 @@ export class WebGPUEngine extends Engine {
         byteLength = Math.min(byteLength, dataBuffer.capacity - dstByteOffset);
 
         // After Migration to Canary
-        // This would do from PR #261
         let chunkStart = src.byteOffset + srcByteOffset;
         let chunkEnd = chunkStart + byteLength;
 
@@ -565,36 +553,14 @@ export class WebGPUEngine extends Engine {
         }
 
         // Chunk
-        const commandEncoder = this._device.createCommandEncoder();
-        if (byteLength - srcByteOffset < 1) {
-            throw new Error("Cannot create zero-sized buffer"); // 0 size buffer would kill the tab in chrome
+        const maxChunk = 1024 * 1024 * 15;
+        let offset = 0;
+        while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
+            this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, maxChunk);
+            offset += maxChunk;
         }
-        const uploadBuffer = this._device.createBuffer({
-            usage: WebGPUConstants.GPUBufferUsage_COPY_SRC | WebGPUConstants.GPUBufferUsage_MAP_WRITE,
-            size: byteLength - srcByteOffset
-        });
 
-        (async() => {
-            try {
-                for (let offset = 0; offset < byteLength; offset += this._maxBufferChunk) {
-                    const uploadCount = Math.min(byteLength - offset, this._maxBufferChunk);
-                    await uploadBuffer.mapAsync(WebGPUConstants.GPUMapMode_WRITE, offset, uploadCount);
-                    const uploadMapping = uploadBuffer.getMappedRange();
-
-                    new Uint8Array(uploadMapping).set(new Uint8Array(src.buffer, srcByteOffset + offset, uploadCount));
-                    uploadBuffer.unmap();
-                }
-                commandEncoder.copyBufferToBuffer(
-                    uploadBuffer, 0,
-                    buffer, dstByteOffset,
-                    byteLength);
-                this._device.defaultQueue.submit([commandEncoder.finish()]);
-            } catch (e) {
-                Logger.Error(e);
-            } finally {
-                uploadBuffer.destroy();
-            }
-        })();
+        this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
     }
 
     //------------------------------------------------------------------------------
