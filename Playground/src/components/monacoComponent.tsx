@@ -31,7 +31,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
     
     componentDidMount() {        
         let hostElement = this.props.refObject.current!;  
-        this._monacoManager.setupMonacoAsync(hostElement);
+        this._monacoManager.setupMonacoAsync(hostElement, true);
     }
 
     public render() {

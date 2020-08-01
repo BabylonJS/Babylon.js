@@ -27,7 +27,20 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },      
+        },               
+        {
+            "name": "Launch Node Material Editor (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/nodeEditor/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },     
         {
             "name": "Launch Viewer (Chrome)",
             "type": "chrome",
@@ -63,6 +76,19 @@
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch sandbox (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
