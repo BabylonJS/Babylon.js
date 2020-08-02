@@ -66788,7 +66788,38 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         }
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
-        nodeB.refresh();
+        if (pointB.innerType === babylonjs_Materials_Node_Enums_nodeMaterialBlockConnectionPointTypes__WEBPACK_IMPORTED_MODULE_2__["NodeMaterialBlockConnectionPointTypes"].AutoDetect) {
+            // need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
+            var refreshNode_1 = function (node) {
+                node.refresh();
+                var links = node.links;
+                // refresh first the nodes so that the right types are assigned to the auto-detect ports
+                links.forEach(function (link) {
+                    var nodeA = link.nodeA, nodeB = link.nodeB;
+                    if (!visitedNodes_1.has(nodeA)) {
+                        visitedNodes_1.add(nodeA);
+                        refreshNode_1(nodeA);
+                    }
+                    if (nodeB && !visitedNodes_1.has(nodeB)) {
+                        visitedNodes_1.add(nodeB);
+                        refreshNode_1(nodeB);
+                    }
+                });
+                // then refresh the links to display the right color between ports
+                links.forEach(function (link) {
+                    if (!visitedLinks_1.has(link)) {
+                        visitedLinks_1.add(link);
+                        link.update();
+                    }
+                });
+            };
+            var visitedNodes_1 = new Set([nodeA]);
+            var visitedLinks_1 = new Set([nodeB.links[nodeB.links.length - 1]]);
+            refreshNode_1(nodeB);
+        }
+        else {
+            nodeB.refresh();
+        }
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     };
     GraphCanvasComponent.prototype.processEditorData = function (editorData) {
