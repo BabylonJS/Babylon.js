@@ -161,45 +161,6 @@ export class Timeline extends React.Component<
         });
     }
 
-    nextFrame(event: React.MouseEvent<HTMLDivElement>) {
-        event.preventDefault();
-        this.props.onCurrentFrameChange(this.props.currentFrame + 1);
-        (this._scrollable.current as HTMLDivElement).scrollLeft = this.props.currentFrame * 5;
-    }
-
-    previousFrame(event: React.MouseEvent<HTMLDivElement>) {
-        event.preventDefault();
-        if (this.props.currentFrame !== 0) {
-            this.props.onCurrentFrameChange(this.props.currentFrame - 1);
-            (this._scrollable.current as HTMLDivElement).scrollLeft = -(this.props.currentFrame * 5);
-        }
-    }
-
-    nextKeyframe(event: React.MouseEvent<HTMLDivElement>) {
-        event.preventDefault();
-        if (this.props.keyframes !== null) {
-            let first = this.props.keyframes.find((kf) => kf.frame > this.props.currentFrame);
-            if (first) {
-                this.props.onCurrentFrameChange(first.frame);
-                this.setState({ selected: first });
-                (this._scrollable.current as HTMLDivElement).scrollLeft = first.frame * 5;
-            }
-        }
-    }
-
-    previousKeyframe(event: React.MouseEvent<HTMLDivElement>) {
-        event.preventDefault();
-        if (this.props.keyframes !== null) {
-            let keyframes = [...this.props.keyframes];
-            let first = keyframes.reverse().find((kf) => kf.frame < this.props.currentFrame);
-            if (first) {
-                this.props.onCurrentFrameChange(first.frame);
-                this.setState({ selected: first });
-                (this._scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * 5);
-            }
-        }
-    }
-
     dragStart(e: React.TouchEvent<SVGSVGElement>): void;
     dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
     dragStart(e: any): void {
@@ -406,7 +367,16 @@ export class Timeline extends React.Component<
         return (
             <>
                 <div className="timeline">
-                    <Controls keyframes={this.props.keyframes} selected={this.props.selected} currentFrame={this.props.currentFrame} onCurrentFrameChange={this.props.onCurrentFrameChange} playPause={this.props.playPause} isPlaying={this.props.isPlaying} scrollable={this._scrollable} />
+                    <Controls
+                        keyframes={this.props.keyframes}
+                        selected={this.props.selected}
+                        currentFrame={this.props.currentFrame}
+                        onCurrentFrameChange={this.props.onCurrentFrameChange}
+                        repositionCanvas={this.props.repositionCanvas}
+                        playPause={this.props.playPause}
+                        isPlaying={this.props.isPlaying}
+                        scrollable={this._scrollable}
+                    />
                     <div className="timeline-wrapper">
                         <div ref={this._scrollable} className="display-line" onClick={(e) => this.setCurrentFrame(e)}>
                             <svg

@@ -147,6 +147,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._playheadDrag = 0;
         this._playheadSelected = false;
         this.movedX = 0;
+        this.movedY = 0;
     }
 
     getMousePosition(e: React.TouchEvent<SVGSVGElement>): Vector2 | undefined;
@@ -179,11 +180,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             directionX = 1; //right
         }
 
-        if (this.movedX < this._panStop.x) {
-            console.log(`${this.movedX - this._panStop.x}`);
-            // si la diferencia es mayor a 5 entonce mover si no, no...
-        }
-
         let directionY = 1;
         if (this.movedY < this._panStop.y) {
             directionY = -1; //top
@@ -191,11 +187,24 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             directionY = 1; //bottom
         }
 
+        const bufferX = Math.abs(this.movedX - this._panStop.x);
+        const bufferY = Math.abs(this.movedY - this._panStop.y);
+
+        let xMulti = 0;
+        if (bufferX > 4) {
+            xMulti = 3;
+        }
+
+        let yMulti = 0;
+        if (bufferY > 4) {
+            yMulti = 3;
+        }
+
         this.movedX = this._panStop.x;
         this.movedY = this._panStop.y;
 
-        let newX = this.state.panX + directionX * 3;
-        let newY = this.state.panY + directionY * 3;
+        let newX = this.state.panX + directionX * xMulti;
+        let newY = this.state.panY + directionY * yMulti;
 
         this.setState({
             panX: Math.round(newX),
@@ -204,21 +213,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
         this.props.panningY(Math.round(newY));
         this.props.panningX(Math.round(newX));
-    }
-
-    panTo(direction: string, value: number) {
-        switch (direction) {
-            case "left":
-                (this._draggableArea.current?.parentElement as HTMLDivElement).scrollLeft -= value * 1;
-                break;
-            case "right":
-                (this._draggableArea.current?.parentElement as HTMLDivElement).scrollLeft += value * 1;
-                break;
-            case "top":
-                break;
-            case "down":
-                break;
-        }
     }
 
     keyDown(e: KeyboardEvent) {

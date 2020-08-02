@@ -707,60 +707,60 @@ export class AnimationCurveEditorComponent extends React.Component<
 
             let keys = currentAnimation.getKeys();
             let x = this.state.currentFrame;
-            let y = this.state.actionableKeyframe.value ?? 1;
-            // check if value exists...
-            let arrayValue: any = [];
-            let emptyValue = this.returnZero(currentAnimation.dataType);
+
             let existValue = keys.find((k) => k.frame === x);
-            if (existValue !== undefined) {
-                arrayValue = this.getValueAsArray(currentAnimation.dataType, existValue.value);
-            } else {
-                // Set empty if doesn't exist
+
+            if (existValue === undefined) {
+                let y = this.state.actionableKeyframe.value ?? 1;
+                // check if value exists...
+                let arrayValue: any = [];
+                let emptyValue = this.returnZero(currentAnimation.dataType);
+
                 if (emptyValue) {
                     arrayValue = this.getValueAsArray(currentAnimation.dataType, emptyValue);
                 }
+
+                // calculate point between prevkeyframe and nextkeyframe.
+                const previousKFs = keys.filter((kf) => kf.frame < x);
+                const nextKFs = keys.filter((kf) => kf.frame > x);
+                const prev = previousKFs.slice(-1)[0];
+                const next = nextKFs[0];
+
+                if (prev === undefined && next) {
+                    y = next.value;
+                }
+
+                if (prev && next === undefined) {
+                    y = prev.value;
+                }
+
+                if (prev && next) {
+                    const value1 = new Vector2(prev.frame, prev.value);
+                    const tangent1 = new Vector2(prev.outTangent, prev.outTangent);
+                    const value2 = new Vector2(next.frame, next.value);
+                    const tangent2 = new Vector2(next.inTangent, next.inTangent);
+
+                    const amount = (x - prev.frame) / (next.frame - prev.frame);
+                    const newV = Vector2.Hermite(value1, tangent1, value2, tangent2, amount);
+                    y = newV.y;
+                }
+
+                arrayValue[this.state.selectedCoordinate] = y;
+
+                let actualValue = this.setValueAsType(currentAnimation.dataType, arrayValue);
+
+                keys.push({
+                    frame: x,
+                    value: actualValue,
+                    inTangent: emptyValue,
+                    outTangent: emptyValue,
+                });
+                keys.sort((a, b) => a.frame - b.frame);
+
+                currentAnimation.setKeys(keys);
+
+                this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
             }
-
-            // calculate point between prevkeyframe and nextkeyframe.
-            const previousKFs = keys.filter((kf) => kf.frame < x);
-            const nextKFs = keys.filter((kf) => kf.frame > x);
-            const prev = previousKFs.slice(-1)[0];
-            const next = nextKFs[0];
-
-            if (prev === undefined && next) {
-                y = next.value;
-            }
-
-            if (prev && next === undefined) {
-                y = prev.value;
-            }
-
-            if (prev && next) {
-                const value1 = new Vector2(prev.frame, prev.value);
-                const tangent1 = new Vector2(prev.outTangent, prev.outTangent);
-                const value2 = new Vector2(next.frame, next.value);
-                const tangent2 = new Vector2(next.inTangent, next.inTangent);
-
-                const amount = (x - prev.frame) / (next.frame - prev.frame);
-                const newV = Vector2.Hermite(value1, tangent1, value2, tangent2, amount);
-                y = newV.y;
-            }
-
-            arrayValue[this.state.selectedCoordinate] = y;
-
-            let actualValue = this.setValueAsType(currentAnimation.dataType, arrayValue);
-
-            keys.push({
-                frame: x,
-                value: actualValue,
-                inTangent: emptyValue,
-                outTangent: emptyValue,
-            });
-            keys.sort((a, b) => a.frame - b.frame);
-
-            currentAnimation.setKeys(keys);
-
-            this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
         }
     }
 
@@ -954,7 +954,7 @@ export class AnimationCurveEditorComponent extends React.Component<
 
         var keyframes = animation.getKeys();
 
-        if (keyframes === undefined) {
+        if (keyframes === undefined || keyframes.length === 0) {
             return undefined;
         } else {
             const { easingMode, easingType, usesTangents, valueType, highestFrame, name, targetProperty } = this.getAnimationData(animation);
@@ -1331,10 +1331,12 @@ export class AnimationCurveEditorComponent extends React.Component<
 
             if (this._mainAnimatable?.target !== target) {
                 const keys = this.state.selected.getKeys();
-                const firstFrame = keys[0].frame;
-                const LastFrame = this.state.selected.getHighestFrame();
-                this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, this.state.isLooping);
-                this._mainAnimatable.pause();
+                if (keys.length !== 0) {
+                    const firstFrame = keys[0].frame;
+                    const LastFrame = this.state.selected.getHighestFrame();
+                    this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, this.state.isLooping);
+                    this._mainAnimatable.pause();
+                }
             }
         }
     }
