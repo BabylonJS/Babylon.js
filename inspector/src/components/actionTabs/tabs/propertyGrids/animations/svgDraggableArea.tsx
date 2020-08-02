@@ -174,23 +174,28 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
     panDirection() {
         let directionX = 1;
         if (this.movedX < this._panStop.x) {
-            directionX = -1;
+            directionX = -1; //left
         } else {
-            directionX = 1;
+            directionX = 1; //right
+        }
+
+        if (this.movedX < this._panStop.x) {
+            console.log(`${this.movedX - this._panStop.x}`);
+            // si la diferencia es mayor a 5 entonce mover si no, no...
         }
 
         let directionY = 1;
         if (this.movedY < this._panStop.y) {
-            directionY = -1;
+            directionY = -1; //top
         } else {
-            directionY = 1;
+            directionY = 1; //bottom
         }
 
         this.movedX = this._panStop.x;
         this.movedY = this._panStop.y;
 
-        let newX = this.state.panX + directionX;
-        let newY = this.state.panY + directionY;
+        let newX = this.state.panX + directionX * 3;
+        let newY = this.state.panY + directionY * 3;
 
         this.setState({
             panX: Math.round(newX),
