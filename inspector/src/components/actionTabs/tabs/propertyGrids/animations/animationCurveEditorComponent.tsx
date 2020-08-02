@@ -89,6 +89,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         repositionCanvas: boolean;
         actionableKeyframe: IActionableKeyFrame;
         valueScale: CurveScale;
+        canvasLength: number;
     }
 > {
     private _snippetUrl = "https://snippet.babylonjs.com";
@@ -98,10 +99,11 @@ export class AnimationCurveEditorComponent extends React.Component<
     private _currentScale: number = 10;
     // Canvas Length *Review this functionality
     readonly _entityName: string;
-    readonly _canvasLength: number = 20;
+    //private _canvasLength: number;
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
     private _isPlaying: boolean = false;
     private _graphCanvas: React.RefObject<HTMLDivElement>;
+    private _editor: React.RefObject<HTMLDivElement>;
 
     //private _selectedCurve: React.RefObject<SVGPathElement>;
     private _svgCanvas: React.RefObject<SvgDraggableArea>;
@@ -115,6 +117,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         super(props);
         this._entityName = (this.props.entity as any).id;
 
+        this._editor = React.createRef();
         this._graphCanvas = React.createRef();
         this._svgCanvas = React.createRef();
 
@@ -139,7 +142,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             initialPathData = initialPathData === null || initialPathData === undefined ? undefined : initialPathData;
         }
 
-        this._canvasLength = 240;
+        const _canvasLength = 240;
 
         this.stopAnimation();
 
@@ -155,8 +158,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             isTangentMode: false,
             isBrokenMode: false,
             lerpMode: initialLerpMode,
-            playheadOffset: this._graphCanvas.current ? this._graphCanvas.current.children[0].clientWidth / (this._canvasLength * 10) : 0,
-            frameAxisLength: this.setFrameAxis(this._canvasLength),
+            playheadOffset: this._graphCanvas.current ? this._graphCanvas.current.children[0].clientWidth / (_canvasLength * 10) : 0,
+            frameAxisLength: this.setFrameAxis(_canvasLength),
             valueAxisLength: new Array(10).fill(0).map((s, i) => {
                 return { value: i * 10, label: valueInd[i] };
             }),
@@ -167,7 +170,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             isPlaying: false,
             selectedPathData: initialPathData,
             selectedCoordinate: 0,
-            animationLimit: this._canvasLength / 2,
+            animationLimit: _canvasLength / 2,
+            canvasLength: _canvasLength,
             fps: 60,
             isLooping: true,
             panningY: 0,
@@ -205,11 +209,11 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     setFrameAxis(currentLength: number) {
-        let halfNegative = new Array(currentLength / 2).fill(0).map((s, i) => {
+        let halfNegative = new Array(currentLength).fill(0).map((s, i) => {
             return { value: -i * 10, label: -i };
         });
 
-        let halfPositive = new Array(currentLength / 2).fill(0).map((s, i) => {
+        let halfPositive = new Array(currentLength).fill(0).map((s, i) => {
             return { value: i * 10, label: i };
         });
 
@@ -284,7 +288,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     resetPlayheadOffset() {
         if (this._graphCanvas && this._graphCanvas.current) {
             this.setState({
-                playheadOffset: this._graphCanvas.current.children[0].clientWidth / (this._canvasLength * 10 * this.state.scale),
+                playheadOffset: this._graphCanvas.current.children[0].clientWidth / (this.state.canvasLength * 10 * this.state.scale),
             });
         }
     }
@@ -1385,6 +1389,8 @@ export class AnimationCurveEditorComponent extends React.Component<
     changeAnimationLimit(limit: number) {
         this.setState({
             animationLimit: limit,
+            canvasLength: limit * 2,
+            frameAxisLength: this.setFrameAxis(limit * 2),
         });
     }
 
@@ -1426,6 +1432,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                 if (direction === -1) {
                     this._mainAnimatable = this.props.scene.beginAnimation(target, LastFrame, firstFrame, this.state.isLooping);
                 }
+
                 this._isPlaying = true;
                 this.setState({ isPlaying: true });
                 this.forceUpdate();
@@ -1469,7 +1476,7 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     render() {
         return (
-            <div id="animation-curve-editor">
+            <div ref={this._editor} id="animation-curve-editor">
                 <Notification message={this.state.notification} open={this.state.notification !== "" ? true : false} close={() => this.clearNotification()} />
                 <GraphActionsBar
                     setKeyframeValue={() => this.setKeyframeValue()}
@@ -1575,9 +1582,16 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                                     {this.state.frameAxisLength.map((f, i) => (
                                         <svg key={i} x="0" y={96 + this.state.panningY + "%"} className="frame-contain">
-                                            <text x={f.value} y="0" dx="2px" style={{ fontSize: `${0.17 * this.state.scale}em` }}>
-                                                {f.label}
-                                            </text>
+                                            {f.label < 10 && f.label > -10 ? (
+                                                <text x={f.value} y="-1.5px" dx="-0.5px" style={{ fontSize: `${0.17 * this.state.scale}em` }}>
+                                                    {f.label}
+                                                </text>
+                                            ) : (
+                                                <text x={f.value} y="-1.5px" dx="-1px" style={{ fontSize: `${0.17 * this.state.scale}em` }}>
+                                                    {f.label}
+                                                </text>
+                                            )}
+
                                             <line x1={f.value} y1="0" x2={f.value} y2="5%"></line>
 
                                             {f.value % this.state.fps === 0 && f.value !== 0 ? <line x1={f.value} y1="-100%" x2={f.value} y2="5%"></line> : null}
