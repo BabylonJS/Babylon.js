@@ -36,6 +36,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                     <SliderLineComponent label="Alpha" useEuler={this.props.globalState.onlyUseEulers} target={camera} propertyName="alpha" minimum={camera.lowerAlphaLimit || 0} maximum={camera.upperAlphaLimit || 2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <SliderLineComponent label="Beta" useEuler={this.props.globalState.onlyUseEulers} target={camera} propertyName="beta" minimum={camera.lowerAlphaLimit || 0} maximum={camera.upperBetaLimit || 2 * Math.PI} step={0.01} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <FloatLineComponent lockObject={this.props.lockObject} label="Radius" target={camera} propertyName="radius" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent label="Position" target={camera} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="CONTROLS" closed={true}>
                     <FloatLineComponent lockObject={this.props.lockObject} label="Angular sensitivity X" target={camera} propertyName="angularSensibilityX" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
