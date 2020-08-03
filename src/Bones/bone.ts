@@ -223,7 +223,11 @@ export class Bone extends Node {
      * Sets the local matrix to rest pose matrix
      */
     public returnToRest(): void {
-        this.updateMatrix(this._restPose.clone(), false, false);
+        if (this._skeleton._numBonesWithLinkedTransformNode > 0) {
+            this.updateMatrix(this._restPose.clone(), false, false);
+        } else {
+            this.updateMatrix(this._restPose.clone());
+        }
     }
 
     /**
