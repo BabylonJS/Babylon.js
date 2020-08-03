@@ -164,6 +164,7 @@
 - All camera view matrices are now calculated by Babylon to support left and right handed systems ([RaananW](https://github.com/RaananW))
 - WebXR Features Manager now has the ability to check if a feature can be enabled, and set native features optional or required ([RaananW](https://github.com/RaananW))
 - Optional camera gaze mode added to the pointer selection feature ([RaananW](https://github.com/RaananW))
+- Exposing feature points when running on top of BabylonNative ([Alex-MSFT](https://github.com/Alex-MSFT))
 
 ### Collisions
 

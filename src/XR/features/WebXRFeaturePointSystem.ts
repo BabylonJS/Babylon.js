@@ -30,6 +30,8 @@ export interface IWebXRFeaturePoint {
  */
 export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     private _enabled: boolean = false;
+    private _featurePointCloud: Array<IWebXRFeaturePoint> = [];
+
     /**
      * The module's name
      */
@@ -48,7 +50,6 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     /**
      * The currrent feature point cloud maintained across frames.
      */
-    private _featurePointCloud: Array<IWebXRFeaturePoint> = [];
     public readonly featurePointCloud: Array<IWebXRFeaturePoint> = this._featurePointCloud;
 
     /**
