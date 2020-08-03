@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComponent';
 
 interface IGradientStepComponentProps {
     globalState: GlobalState;
@@ -49,7 +50,13 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                 <div className="step">
                     {`#${this.props.lineIndex}`}
                 </div>
-                <input type="color" value={step.color.toHexString()} onChange={(evt) => this.updateColor(evt.target.value)} />
+                <div className="color">
+                    <ColorPickerLineComponent value={step.color} disableAlpha={true} globalState={this.props.globalState} 
+                            onColorChanged={color => {
+                                    this.updateColor(color);
+                            }} 
+                    />  
+                </div>
                 <div className="step-value">
                     {step.step.toFixed(2)}
                 </div>

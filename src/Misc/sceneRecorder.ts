@@ -10,6 +10,7 @@ import { MultiMaterial } from '../Materials/multiMaterial';
 import { TransformNode } from '../Meshes/transformNode';
 import { ParticleSystem } from '../Particles/particleSystem';
 import { MorphTargetManager } from '../Morph/morphTargetManager';
+import { ShadowGenerator } from '../Lights/Shadows/shadowGenerator';
 
 /**
  * Class used to record delta files between 2 scene states
@@ -41,7 +42,6 @@ export class SceneRecorder {
         let deltaJSON: any = {};
 
         for (var node in newJSON) {
-            console.log("Processing " + node);
             this._compareCollections(node, this._savedJSON[node], newJSON[node], deltaJSON);
         }
 
@@ -149,9 +149,6 @@ export class SceneRecorder {
     }
 
     private _compareCollections(key: string, original: any[], current: any[], deltaJSON: any) {
-        console.log(original, typeof original);
-        console.log(current, typeof current);
-
         // Same ?
         if (original === current) {
             return;
@@ -173,6 +170,18 @@ export class SceneRecorder {
         }
     }
 
+    private static GetShadowGeneratorById(scene: Scene, id: string) {
+        var generators = scene.lights.map((l) => l.getShadowGenerator());
+
+        for (var generator of generators) {
+            if (generator && generator.id === id) {
+                return generator;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Apply a given delta to a given scene
      * @param deltaJSON defines the JSON containing the delta
@@ -180,7 +189,7 @@ export class SceneRecorder {
      */
     public static ApplyDelta(deltaJSON: any | string, scene: Scene) {
 
-        if (deltaJSON.toString) {
+        if (typeof deltaJSON === 'string') {
             deltaJSON = JSON.parse(deltaJSON);
         }
 
@@ -190,13 +199,16 @@ export class SceneRecorder {
             var source = deltaJSON[prop];
             var property = anyScene[prop];
 
-            if (Array.isArray(property)) { // Restore array
+            if (Array.isArray(property) || prop === "shadowGenerators") { // Restore array
                 switch (prop) {
                     case "cameras":
                         this._ApplyDeltaForEntity(source, scene, scene.getCameraByID.bind(scene), (data) => Camera.Parse(data, scene));
                         break;
                     case "lights":
                         this._ApplyDeltaForEntity(source, scene, scene.getLightByID.bind(scene), (data) => Light.Parse(data, scene));
+                        break;
+                    case "shadowGenerators":
+                        this._ApplyDeltaForEntity(source, scene, (id) => this.GetShadowGeneratorById(scene, id), (data) => ShadowGenerator.Parse(data, scene));
                         break;
                     case "meshes":
                         this._ApplyDeltaForEntity(source, scene, scene.getMeshByID.bind(scene), (data) => Mesh.Parse(data, scene, ""));

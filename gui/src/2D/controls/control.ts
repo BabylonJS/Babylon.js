@@ -451,6 +451,16 @@ export class Control {
     }
 
     /**
+     * Gets or sets a fixed ratio for this control.
+     * When different from 0, the ratio is used to compute the "second" dimension.
+     * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
+     * second dimension is computed as first dimension * fixedRatio
+     */
+    public fixedRatio = 0;
+
+    private _fixedRatioMasterIsWidth = true;
+
+    /**
      * Gets or sets control width
      * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
@@ -459,6 +469,8 @@ export class Control {
     }
 
     public set width(value: string | number) {
+        this._fixedRatioMasterIsWidth = true;
+
         if (this._width.toString(this._host) === value) {
             return;
         }
@@ -480,6 +492,7 @@ export class Control {
         if (isNaN(value)) {
             return;
         }
+        this._fixedRatioMasterIsWidth = true;
         this.width = value + "px";
     }
 
@@ -492,6 +505,8 @@ export class Control {
     }
 
     public set height(value: string | number) {
+        this._fixedRatioMasterIsWidth = false;
+
         if (this._height.toString(this._host) === value) {
             return;
         }
@@ -513,6 +528,7 @@ export class Control {
         if (isNaN(value)) {
             return;
         }
+        this._fixedRatioMasterIsWidth = false;
         this.height = value + "px";
     }
 
@@ -1479,6 +1495,14 @@ export class Control {
             this._currentMeasure.height = this._height.getValue(this._host);
         } else {
             this._currentMeasure.height *= this._height.getValue(this._host);
+        }
+
+        if (this.fixedRatio !== 0) {
+            if (this._fixedRatioMasterIsWidth) {
+                this._currentMeasure.height = this._currentMeasure.width * this.fixedRatio;
+            } else {
+                this._currentMeasure.width = this._currentMeasure.height * this.fixedRatio;
+            }
         }
     }
 
