@@ -36,6 +36,7 @@ export class Timeline extends React.Component<
     private _scrolling: boolean;
     private _shiftX: number;
     private _active: string = "";
+    readonly _marginScrollbar: number;
 
     constructor(props: ITimelineProps) {
         super(props);
@@ -47,6 +48,7 @@ export class Timeline extends React.Component<
         this._direction = 0;
         this._scrolling = false;
         this._shiftX = 0;
+        this._marginScrollbar = 3;
 
         const limit = Math.round(this.props.animationLimit / 2);
 
@@ -102,7 +104,7 @@ export class Timeline extends React.Component<
                     scrollWidth: this.calculateScrollWidth(0, newEnd),
                 });
                 if (this._scrollbarHandle.current && this._scrollContainer.current) {
-                    this._scrollbarHandle.current.style.left = `${this._scrollContainer.current.getBoundingClientRect().left + 3}px`;
+                    this._scrollbarHandle.current.style.left = `${this._scrollContainer.current.getBoundingClientRect().left + this._marginScrollbar}px`;
                 }
             }
         );
@@ -110,7 +112,7 @@ export class Timeline extends React.Component<
 
     calculateScrollWidth(start: number, end: number) {
         if (this._scrollContainer.current && this.props.animationLimit !== 0) {
-            const containerMarginLeftRight = 6;
+            const containerMarginLeftRight = this._marginScrollbar * 2;
             const containerWidth = this._scrollContainer.current.clientWidth - containerMarginLeftRight;
             const scrollFrameLimit = this.props.animationLimit;
             const scrollFrameLength = end - start;
@@ -265,7 +267,7 @@ export class Timeline extends React.Component<
             const moved = pageX - this._shiftX;
             const scrollContainerWith = this._scrollContainer.current.clientWidth;
             const startPixel = moved - this._scrollContainer.current.getBoundingClientRect().left;
-            const limitRight = scrollContainerWith - (this.state.scrollWidth || 0) - 3;
+            const limitRight = scrollContainerWith - (this.state.scrollWidth || 0) - this._marginScrollbar;
 
             if (moved > 233 && startPixel < limitRight) {
                 this._scrollbarHandle.current.style.left = moved + "px";
@@ -330,7 +332,7 @@ export class Timeline extends React.Component<
             }
 
             if (!(framesTo >= this.state.end - 20)) {
-                let toleft = framesTo * unit + this._scrollContainer.current.getBoundingClientRect().left + 6;
+                let toleft = framesTo * unit + this._scrollContainer.current.getBoundingClientRect().left + this._marginScrollbar * 2;
                 if (this._scrollbarHandle.current) {
                     this._scrollbarHandle.current.style.left = toleft + "px";
                 }
