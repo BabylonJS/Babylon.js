@@ -1424,10 +1424,11 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     changeAnimationLimit(limit: number) {
+        const doubleLimit = limit * 2;
         this.setState({
             animationLimit: limit,
-            canvasLength: limit * 2,
-            frameAxisLength: this.setFrameAxis(limit * 2),
+            canvasLength: doubleLimit,
+            frameAxisLength: this.setFrameAxis(doubleLimit),
         });
     }
 

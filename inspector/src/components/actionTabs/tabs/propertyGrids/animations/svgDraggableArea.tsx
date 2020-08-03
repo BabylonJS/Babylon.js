@@ -29,6 +29,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
     private _panStop: Vector2;
     private _playheadDrag: number;
     private _playheadSelected: boolean;
+    private _movedX: number;
+    private _movedY: number;
+    readonly _dragBuffer: number;
+    readonly _draggingMultiplier: number;
 
     constructor(props: ISvgDraggableAreaProps) {
         super(props);
@@ -39,6 +43,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._panStop = new Vector2(0, 0);
         this._playheadDrag = 0;
         this._playheadSelected = false;
+        this._movedX = 0;
+        this._movedY = 0;
+        this._dragBuffer = 4;
+        this._draggingMultiplier = 3;
 
         this.state = { panX: 0, panY: 0 };
     }
@@ -146,8 +154,8 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._panStop.set(0, 0);
         this._playheadDrag = 0;
         this._playheadSelected = false;
-        this.movedX = 0;
-        this.movedY = 0;
+        this._movedX = 0;
+        this._movedY = 0;
     }
 
     getMousePosition(e: React.TouchEvent<SVGSVGElement>): Vector2 | undefined;
@@ -170,38 +178,36 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         }
     }
 
-    private movedX = 0;
-    private movedY = 0;
     panDirection() {
         let directionX = 1;
-        if (this.movedX < this._panStop.x) {
+        if (this._movedX < this._panStop.x) {
             directionX = -1; //left
         } else {
             directionX = 1; //right
         }
 
         let directionY = 1;
-        if (this.movedY < this._panStop.y) {
+        if (this._movedY < this._panStop.y) {
             directionY = -1; //top
         } else {
             directionY = 1; //bottom
         }
 
-        const bufferX = Math.abs(this.movedX - this._panStop.x);
-        const bufferY = Math.abs(this.movedY - this._panStop.y);
+        const bufferX = Math.abs(this._movedX - this._panStop.x);
+        const bufferY = Math.abs(this._movedY - this._panStop.y);
 
         let xMulti = 0;
-        if (bufferX > 4) {
-            xMulti = 3;
+        if (bufferX > this._dragBuffer) {
+            xMulti = this._draggingMultiplier;
         }
 
         let yMulti = 0;
-        if (bufferY > 4) {
-            yMulti = 3;
+        if (bufferY > this._dragBuffer) {
+            yMulti = this._draggingMultiplier;
         }
 
-        this.movedX = this._panStop.x;
-        this.movedY = this._panStop.y;
+        this._movedX = this._panStop.x;
+        this._movedY = this._panStop.y;
 
         let newX = this.state.panX + directionX * xMulti;
         let newY = this.state.panY + directionY * yMulti;

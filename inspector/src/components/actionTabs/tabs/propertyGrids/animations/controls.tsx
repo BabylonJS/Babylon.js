@@ -14,6 +14,7 @@ interface IControlsProps {
 }
 
 export class Controls extends React.Component<IControlsProps, { selected: IAnimationKey; playingType: string }> {
+    readonly _sizeOfKeyframe: number = 5;
     constructor(props: IControlsProps) {
         super(props);
         if (this.props.selected !== null) {
@@ -61,7 +62,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
                 this.props.onCurrentFrameChange(first.frame);
                 this.props.repositionCanvas(first.frame);
                 this.setState({ selected: first });
-                (this.props.scrollable.current as HTMLDivElement).scrollLeft = first.frame * 5;
+                (this.props.scrollable.current as HTMLDivElement).scrollLeft = first.frame * this._sizeOfKeyframe;
             }
         }
     }
@@ -74,7 +75,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
                 this.props.onCurrentFrameChange(first.frame);
                 this.props.repositionCanvas(first.frame);
                 this.setState({ selected: first });
-                (this.props.scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * 5);
+                (this.props.scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * this._sizeOfKeyframe);
             }
         }
     }
