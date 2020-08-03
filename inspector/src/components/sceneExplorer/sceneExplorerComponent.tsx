@@ -453,7 +453,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     render() {
         if (this.props.popupMode) {
             return (
-                <div id="sceneExplorer">
+                <div id="sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
                     {
                         !this.props.noHeader &&
                         <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
