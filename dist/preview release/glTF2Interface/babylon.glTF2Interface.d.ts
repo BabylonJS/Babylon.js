@@ -1082,6 +1082,15 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the EXT_texture_webp extension
+     */
+
+    /** @hidden */
+    interface IEXTTextureWebP {
+        source: number;
+    }
+
+    /**
      * Interfaces from the KHR_texture_transform extension
      */
 
