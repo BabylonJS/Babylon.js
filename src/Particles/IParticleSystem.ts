@@ -1,7 +1,6 @@
 import { Nullable } from "../types";
 import { Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import { Color3, Color4 } from '../Maths/math.color';
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Scene } from "../scene";
@@ -10,6 +9,8 @@ import { Effect } from "../Materials/effect";
 import { Observable } from "../Misc/observable";
 
 declare type Animation = import("../Animations/animation").Animation;
+
+import { AbstractMesh } from '../Meshes/abstractMesh';
 
 /**
  * Interface representing a particle system in Babylon.js.

@@ -5,12 +5,10 @@ import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
-import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import { EngineStore } from "../Engines/engineStore";
 import { IDisposable } from "../scene";
 import { BoxParticleEmitter, IParticleEmitterType, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, ConeParticleEmitter, PointParticleEmitter, MeshParticleEmitter, CylinderDirectedParticleEmitter } from "../Particles/EmitterTypes/index";
@@ -30,6 +28,8 @@ import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { ISize } from '../Maths/math.size';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { ThinEngine } from '../Engines/thinEngine';
+import { AbstractMesh } from '../Meshes/abstractMesh';
+import { ProceduralTexture } from '../Materials/Textures/Procedurals/proceduralTexture';
 
 declare type Scene = import("../scene").Scene;
 

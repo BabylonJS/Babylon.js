@@ -6,7 +6,6 @@ import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
 import { ParticleSystem } from "./particleSystem";
@@ -25,6 +24,7 @@ import { ThinEngine } from '../Engines/ThinEngine';
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
+import { AbstractMesh } from '../Meshes/abstractMesh';
 
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";
