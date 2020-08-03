@@ -1,6 +1,11 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
-    "tests": [     
+    "tests": [    
+        {
+            "title": "EXT_texture_webp",
+            "playgroundId": "#LSAUH2#2",            
+            "referenceImage": "webp.png"
+        }, 
         {
             "title": "CSGVertColor",
             "playgroundId": "#R0H1IX#0",            
