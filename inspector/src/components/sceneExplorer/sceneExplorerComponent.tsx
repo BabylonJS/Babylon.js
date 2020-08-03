@@ -215,7 +215,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             }
             keyEvent.preventDefault();
             return;
-        } else if(keyEvent.keyCode === 46) { // delete
+        } else if (keyEvent.keyCode === 46) { // delete
             this.state.selectedEntity.dispose();
         }
 
