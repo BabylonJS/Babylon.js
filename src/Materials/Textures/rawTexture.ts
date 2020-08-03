@@ -35,7 +35,7 @@ export class RawTexture extends Texture {
         super(null, sceneOrEngine, !generateMipMaps, invertY);
 
         if (!this._engine) {
-            return;        
+            return;
         }
 
         this._texture = this._engine.createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type);

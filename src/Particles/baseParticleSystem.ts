@@ -9,7 +9,7 @@ import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, Hemisph
 import { Constants } from "../Engines/constants";
 import { Texture } from '../Materials/Textures/texture';
 import { Color4 } from '../Maths/math.color';
-import { ThinEngine } from '../Engines';
+import { ThinEngine } from '../Engines/thinEngine';
 
 declare type Animation = import("../Animations/animation").Animation;
 declare type Scene = import("../scene").Scene;
@@ -569,7 +569,7 @@ export class BaseParticleSystem {
      * The scene the particle system belongs to.
      */
     protected _scene: Nullable<Scene>;
-    
+
     /**
      * The engine the particle system belongs to.
      */

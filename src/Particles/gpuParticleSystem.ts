@@ -21,7 +21,6 @@ import { IAnimatable } from '../Animations/animatable.interface';
 import { CustomParticleEmitter } from './EmitterTypes/customParticleEmitter';
 import { ThinEngine } from '../Engines/ThinEngine';
 
-
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
 import { AbstractMesh } from '../Meshes/abstractMesh';
@@ -123,7 +122,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Specifies if the particles are updated in emitter local space or world space.
      */
     public isLocal = false;
-    
+
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
 
@@ -718,7 +717,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         } else {
             this._engine = (sceneOrEngine as ThinEngine);
             this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100);
-        }        
+        }
 
         this._customEffect = { 0: customEffect };
 
@@ -1416,7 +1415,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (!engine.setState) {
             throw new Error("GPU particles cannot work with a full Engine. ThinEngine is not supported");
         }
-            
+
         this._updateEffect.setFloat("currentCount", this._currentActiveCount);
         this._updateEffect.setFloat("timeDelta", this._timeDelta);
         this._updateEffect.setFloat("stopFactor", this._stopped ? 0 : 1);

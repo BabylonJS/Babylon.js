@@ -2463,7 +2463,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /** @hidden */
     public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, sceneOrEngine: Scene | ThinEngine, rootUrl: string) {
-        let scene: Nullable<Scene>;        
+        let scene: Nullable<Scene>;
 
         if (sceneOrEngine instanceof ThinEngine) {
             scene = null;
@@ -2472,7 +2472,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         const internalClass = _TypeStore.GetClass("BABYLON.Texture");
-        if (internalClass && scene) {               
+        if (internalClass && scene) {
             // Texture
             if (parsedParticleSystem.texture) {
                 particleSystem.particleTexture = internalClass.Parse(parsedParticleSystem.texture, scene, rootUrl) as BaseTexture;
@@ -2699,14 +2699,14 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     /**
      * Parses a JSON object to create a particle system.
      * @param parsedParticleSystem The JSON object to parse
-     * @param sceneOrEngine The scene or the engine to create the particle system in 
+     * @param sceneOrEngine The scene or the engine to create the particle system in
      * @param rootUrl The root url to use to load external dependencies like texture
      * @param doNotStart Ignore the preventAutoStart attribute and does not start
      * @returns the Parsed particle system
      */
     public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
         var name = parsedParticleSystem.name;
-        var custom: Nullable<Effect> = null;        
+        var custom: Nullable<Effect> = null;
         var program: any = null;
         let engine: ThinEngine;
         let scene: Nullable<Scene>;

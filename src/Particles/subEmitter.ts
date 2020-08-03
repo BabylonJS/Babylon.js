@@ -49,7 +49,7 @@ export class SubEmitter {
         public particleSystem: ParticleSystem
     ) {
         // Create mesh as emitter to support rotation
-        if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {            
+        if (!particleSystem.emitter || !(<AbstractMesh>particleSystem.emitter).dispose) {
             const internalClass = _TypeStore.GetClass("BABYLON.AbstractMesh");
             particleSystem.emitter = new internalClass("SubemitterSystemEmitter", particleSystem.getScene());
         }
