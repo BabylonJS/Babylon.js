@@ -19,7 +19,7 @@ import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
 import { IAnimatable } from '../Animations/animatable.interface';
 import { CustomParticleEmitter } from './EmitterTypes/customParticleEmitter';
-import { ThinEngine } from '../Engines/ThinEngine';
+import { ThinEngine } from '../Engines/thinEngine';
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
