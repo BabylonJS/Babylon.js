@@ -194,7 +194,7 @@ export class Gizmo implements IDisposable {
             }
 
             camera.position.copyFrom(this._tempVector);
-        } else if (this._attachedNode.getClassName() === "Mesh" || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
+        } else if ((<Mesh>this._attachedNode)._isMesh || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
             var transform = this._attachedNode as TransformNode;
             if (transform.parent) {
                 var parentInv = new Matrix();
