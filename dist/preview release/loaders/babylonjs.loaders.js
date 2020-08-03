@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -4341,6 +4341,53 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 
 /***/ }),
 
+/***/ "./glTF/2.0/Extensions/EXT_texture_webp.ts":
+/*!*************************************************!*\
+  !*** ./glTF/2.0/Extensions/EXT_texture_webp.ts ***!
+  \*************************************************/
+/*! exports provided: EXT_texture_webp */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EXT_texture_webp", function() { return EXT_texture_webp; });
+/* harmony import */ var _glTFLoader__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTFLoader */ "./glTF/2.0/glTFLoader.ts");
+
+var NAME = "EXT_texture_webp";
+/**
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_texture_webp/)
+ */
+var EXT_texture_webp = /** @class */ (function () {
+    /** @hidden */
+    function EXT_texture_webp(loader) {
+        /** The name of this extension. */
+        this.name = NAME;
+        this._loader = loader;
+        this.enabled = loader.isExtensionUsed(NAME);
+    }
+    /** @hidden */
+    EXT_texture_webp.prototype.dispose = function () {
+        delete this._loader;
+    };
+    /** @hidden */
+    EXT_texture_webp.prototype._loadTextureAsync = function (context, texture, assign) {
+        var _this = this;
+        return _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].LoadExtensionAsync(context, texture, this.name, function (extensionContext, extension) {
+            var sampler = (texture.sampler == undefined ? _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].DefaultSampler : _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(context + "/sampler", _this._loader.gltf.samplers, texture.sampler));
+            var image = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/source", _this._loader.gltf.images, extension.source);
+            return _this._loader._createTextureAsync(context, sampler, image, function (babylonTexture) {
+                assign(babylonTexture);
+            });
+        });
+    };
+    return EXT_texture_webp;
+}());
+
+_glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].RegisterExtension(NAME, function (loader) { return new EXT_texture_webp(loader); });
+
+
+/***/ }),
+
 /***/ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts":
 /*!*************************************************!*\
   !*** ./glTF/2.0/Extensions/ExtrasAsMetadata.ts ***!
@@ -6289,7 +6336,7 @@ _glTFLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFLoader"].RegisterExtension(NAME, f
 /*!**************************************!*\
   !*** ./glTF/2.0/Extensions/index.ts ***!
   \**************************************/
-/*! exports provided: EXT_lights_image_based, EXT_mesh_gpu_instancing, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_materials_ior, KHR_materials_variants, KHR_materials_transmission, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, KHR_xmp, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
+/*! exports provided: EXT_lights_image_based, EXT_mesh_gpu_instancing, EXT_texture_webp, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_materials_ior, KHR_materials_variants, KHR_materials_transmission, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, KHR_xmp, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6300,62 +6347,66 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _EXT_mesh_gpu_instancing__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./EXT_mesh_gpu_instancing */ "./glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_mesh_gpu_instancing", function() { return _EXT_mesh_gpu_instancing__WEBPACK_IMPORTED_MODULE_1__["EXT_mesh_gpu_instancing"]; });
 
-/* harmony import */ var _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./KHR_draco_mesh_compression */ "./glTF/2.0/Extensions/KHR_draco_mesh_compression.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_2__["KHR_draco_mesh_compression"]; });
+/* harmony import */ var _EXT_texture_webp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./EXT_texture_webp */ "./glTF/2.0/Extensions/EXT_texture_webp.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_texture_webp", function() { return _EXT_texture_webp__WEBPACK_IMPORTED_MODULE_2__["EXT_texture_webp"]; });
 
-/* harmony import */ var _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./KHR_lights_punctual */ "./glTF/2.0/Extensions/KHR_lights_punctual.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights", function() { return _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_3__["KHR_lights"]; });
+/* harmony import */ var _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./KHR_draco_mesh_compression */ "./glTF/2.0/Extensions/KHR_draco_mesh_compression.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _KHR_draco_mesh_compression__WEBPACK_IMPORTED_MODULE_3__["KHR_draco_mesh_compression"]; });
 
-/* harmony import */ var _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KHR_materials_pbrSpecularGlossiness */ "./glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_pbrSpecularGlossiness", function() { return _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_4__["KHR_materials_pbrSpecularGlossiness"]; });
+/* harmony import */ var _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./KHR_lights_punctual */ "./glTF/2.0/Extensions/KHR_lights_punctual.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_lights", function() { return _KHR_lights_punctual__WEBPACK_IMPORTED_MODULE_4__["KHR_lights"]; });
 
-/* harmony import */ var _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./KHR_materials_unlit */ "./glTF/2.0/Extensions/KHR_materials_unlit.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_unlit", function() { return _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_unlit"]; });
+/* harmony import */ var _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./KHR_materials_pbrSpecularGlossiness */ "./glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_pbrSpecularGlossiness", function() { return _KHR_materials_pbrSpecularGlossiness__WEBPACK_IMPORTED_MODULE_5__["KHR_materials_pbrSpecularGlossiness"]; });
 
-/* harmony import */ var _KHR_materials_clearcoat__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./KHR_materials_clearcoat */ "./glTF/2.0/Extensions/KHR_materials_clearcoat.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_clearcoat", function() { return _KHR_materials_clearcoat__WEBPACK_IMPORTED_MODULE_6__["KHR_materials_clearcoat"]; });
+/* harmony import */ var _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./KHR_materials_unlit */ "./glTF/2.0/Extensions/KHR_materials_unlit.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_unlit", function() { return _KHR_materials_unlit__WEBPACK_IMPORTED_MODULE_6__["KHR_materials_unlit"]; });
 
-/* harmony import */ var _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./KHR_materials_sheen */ "./glTF/2.0/Extensions/KHR_materials_sheen.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_7__["KHR_materials_sheen"]; });
+/* harmony import */ var _KHR_materials_clearcoat__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./KHR_materials_clearcoat */ "./glTF/2.0/Extensions/KHR_materials_clearcoat.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_clearcoat", function() { return _KHR_materials_clearcoat__WEBPACK_IMPORTED_MODULE_7__["KHR_materials_clearcoat"]; });
 
-/* harmony import */ var _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./KHR_materials_specular */ "./glTF/2.0/Extensions/KHR_materials_specular.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_specular", function() { return _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_8__["KHR_materials_specular"]; });
+/* harmony import */ var _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./KHR_materials_sheen */ "./glTF/2.0/Extensions/KHR_materials_sheen.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_sheen", function() { return _KHR_materials_sheen__WEBPACK_IMPORTED_MODULE_8__["KHR_materials_sheen"]; });
 
-/* harmony import */ var _KHR_materials_ior__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./KHR_materials_ior */ "./glTF/2.0/Extensions/KHR_materials_ior.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_ior", function() { return _KHR_materials_ior__WEBPACK_IMPORTED_MODULE_9__["KHR_materials_ior"]; });
+/* harmony import */ var _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./KHR_materials_specular */ "./glTF/2.0/Extensions/KHR_materials_specular.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_specular", function() { return _KHR_materials_specular__WEBPACK_IMPORTED_MODULE_9__["KHR_materials_specular"]; });
 
-/* harmony import */ var _KHR_materials_variants__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./KHR_materials_variants */ "./glTF/2.0/Extensions/KHR_materials_variants.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_variants", function() { return _KHR_materials_variants__WEBPACK_IMPORTED_MODULE_10__["KHR_materials_variants"]; });
+/* harmony import */ var _KHR_materials_ior__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./KHR_materials_ior */ "./glTF/2.0/Extensions/KHR_materials_ior.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_ior", function() { return _KHR_materials_ior__WEBPACK_IMPORTED_MODULE_10__["KHR_materials_ior"]; });
 
-/* harmony import */ var _KHR_materials_transmission__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./KHR_materials_transmission */ "./glTF/2.0/Extensions/KHR_materials_transmission.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_transmission", function() { return _KHR_materials_transmission__WEBPACK_IMPORTED_MODULE_11__["KHR_materials_transmission"]; });
+/* harmony import */ var _KHR_materials_variants__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./KHR_materials_variants */ "./glTF/2.0/Extensions/KHR_materials_variants.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_variants", function() { return _KHR_materials_variants__WEBPACK_IMPORTED_MODULE_11__["KHR_materials_variants"]; });
 
-/* harmony import */ var _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./KHR_mesh_quantization */ "./glTF/2.0/Extensions/KHR_mesh_quantization.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_quantization", function() { return _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_12__["KHR_mesh_quantization"]; });
+/* harmony import */ var _KHR_materials_transmission__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./KHR_materials_transmission */ "./glTF/2.0/Extensions/KHR_materials_transmission.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_materials_transmission", function() { return _KHR_materials_transmission__WEBPACK_IMPORTED_MODULE_12__["KHR_materials_transmission"]; });
 
-/* harmony import */ var _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./KHR_texture_basisu */ "./glTF/2.0/Extensions/KHR_texture_basisu.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_basisu", function() { return _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_13__["KHR_texture_basisu"]; });
+/* harmony import */ var _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./KHR_mesh_quantization */ "./glTF/2.0/Extensions/KHR_mesh_quantization.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_mesh_quantization", function() { return _KHR_mesh_quantization__WEBPACK_IMPORTED_MODULE_13__["KHR_mesh_quantization"]; });
 
-/* harmony import */ var _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./KHR_texture_transform */ "./glTF/2.0/Extensions/KHR_texture_transform.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_14__["KHR_texture_transform"]; });
+/* harmony import */ var _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./KHR_texture_basisu */ "./glTF/2.0/Extensions/KHR_texture_basisu.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_basisu", function() { return _KHR_texture_basisu__WEBPACK_IMPORTED_MODULE_14__["KHR_texture_basisu"]; });
 
-/* harmony import */ var _KHR_xmp__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./KHR_xmp */ "./glTF/2.0/Extensions/KHR_xmp.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_xmp", function() { return _KHR_xmp__WEBPACK_IMPORTED_MODULE_15__["KHR_xmp"]; });
+/* harmony import */ var _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./KHR_texture_transform */ "./glTF/2.0/Extensions/KHR_texture_transform.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_texture_transform", function() { return _KHR_texture_transform__WEBPACK_IMPORTED_MODULE_15__["KHR_texture_transform"]; });
 
-/* harmony import */ var _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./MSFT_audio_emitter */ "./glTF/2.0/Extensions/MSFT_audio_emitter.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_16__["MSFT_audio_emitter"]; });
+/* harmony import */ var _KHR_xmp__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./KHR_xmp */ "./glTF/2.0/Extensions/KHR_xmp.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_xmp", function() { return _KHR_xmp__WEBPACK_IMPORTED_MODULE_16__["KHR_xmp"]; });
 
-/* harmony import */ var _MSFT_lod__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./MSFT_lod */ "./glTF/2.0/Extensions/MSFT_lod.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_lod", function() { return _MSFT_lod__WEBPACK_IMPORTED_MODULE_17__["MSFT_lod"]; });
+/* harmony import */ var _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./MSFT_audio_emitter */ "./glTF/2.0/Extensions/MSFT_audio_emitter.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_audio_emitter", function() { return _MSFT_audio_emitter__WEBPACK_IMPORTED_MODULE_17__["MSFT_audio_emitter"]; });
 
-/* harmony import */ var _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./MSFT_minecraftMesh */ "./glTF/2.0/Extensions/MSFT_minecraftMesh.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_18__["MSFT_minecraftMesh"]; });
+/* harmony import */ var _MSFT_lod__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./MSFT_lod */ "./glTF/2.0/Extensions/MSFT_lod.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_lod", function() { return _MSFT_lod__WEBPACK_IMPORTED_MODULE_18__["MSFT_lod"]; });
 
-/* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_19__["MSFT_sRGBFactors"]; });
+/* harmony import */ var _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./MSFT_minecraftMesh */ "./glTF/2.0/Extensions/MSFT_minecraftMesh.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_minecraftMesh", function() { return _MSFT_minecraftMesh__WEBPACK_IMPORTED_MODULE_19__["MSFT_minecraftMesh"]; });
 
-/* harmony import */ var _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./ExtrasAsMetadata */ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_20__["ExtrasAsMetadata"]; });
+/* harmony import */ var _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./MSFT_sRGBFactors */ "./glTF/2.0/Extensions/MSFT_sRGBFactors.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MSFT_sRGBFactors", function() { return _MSFT_sRGBFactors__WEBPACK_IMPORTED_MODULE_20__["MSFT_sRGBFactors"]; });
+
+/* harmony import */ var _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./ExtrasAsMetadata */ "./glTF/2.0/Extensions/ExtrasAsMetadata.ts");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ExtrasAsMetadata", function() { return _ExtrasAsMetadata__WEBPACK_IMPORTED_MODULE_21__["ExtrasAsMetadata"]; });
+
 
 
 
@@ -8545,6 +8596,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_lights_image_based", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_3__["EXT_lights_image_based"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_mesh_gpu_instancing", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_3__["EXT_mesh_gpu_instancing"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_texture_webp", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_3__["EXT_texture_webp"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "KHR_draco_mesh_compression", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_3__["KHR_draco_mesh_compression"]; });
 

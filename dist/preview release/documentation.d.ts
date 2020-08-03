@@ -76264,6 +76264,14 @@ declare module BABYLON.GUI {
         get verticalAlignment(): number;
         set verticalAlignment(value: number);
         /**
+         * Gets or sets a fixed ratio for this control.
+         * When different from 0, the ratio is used to compute the "second" dimension.
+         * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
+         * second dimension is computed as first dimension * fixedRatio
+         */
+        fixedRatio: number;
+        private _fixedRatioMasterIsWidth;
+        /**
          * Gets or sets control width
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
@@ -81169,6 +81177,24 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_texture_webp/)
+     */
+    export class EXT_texture_webp implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
      */
     export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
@@ -84319,6 +84345,15 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IKHRTextureBasisU {
+        source: number;
+    }
+
+    /**
+     * Interfaces from the EXT_texture_webp extension
+     */
+
+    /** @hidden */
+    interface IEXTTextureWebP {
         source: number;
     }
 
