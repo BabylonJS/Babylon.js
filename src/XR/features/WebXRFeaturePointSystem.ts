@@ -26,7 +26,7 @@ export interface IWebXRFeaturePoint {
 /**
  * The feature point system is used to detect feature points from real world geometry.
  * This feature is currently experimental and only supported on BabylonNative, and should not be used in the browser.
- * The newly introduced API can be seen in webxr.nativeextensions.d.ts.
+ * The newly introduced API can be seen in webxr.nativeextensions.d.ts and described in FeaturePoints.md.
  */
 export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     private _enabled: boolean = false;
@@ -48,7 +48,8 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     /**
      * The currrent feature point cloud maintained across frames.
      */
-    public featurePointCloud: Array<IWebXRFeaturePoint> = [];
+    private _featurePointCloud: Array<IWebXRFeaturePoint> = [];
+    public readonly featurePointCloud: Array<IWebXRFeaturePoint> = this._featurePointCloud;
 
     /**
      * construct the feature point system
@@ -86,7 +87,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     public dispose(): void {
         super.dispose();
 
-        this.featurePointCloud.length = 0;
+        this._featurePointCloud.length = 0;
         this.onFeaturePointsUpdatedObservable.clear();
     }
 
@@ -109,8 +110,8 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
                 updatedFeaturePoints[i] = id;
 
                 // IDs should be durable across frames and strictly increasing from 0 up, so use them as indexing into the feature point array.
-                if (id == this.featurePointCloud.length) {
-                    this.featurePointCloud.push({
+                if (id == this._featurePointCloud.length) {
+                    this._featurePointCloud.push({
                         position: new Vector3(
                              featurePointRawData[rawIndex],
                              featurePointRawData[rawIndex + 1],
@@ -119,16 +120,16 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
                         id: id
                         });
                 } else {
-                    this.featurePointCloud[id].position.x = featurePointRawData[rawIndex];
-                    this.featurePointCloud[id].position.y = featurePointRawData[rawIndex + 1];
-                    this.featurePointCloud[id].position.z = featurePointRawData[rawIndex + 2];
-                    this.featurePointCloud[id].confidenceValue = featurePointRawData[rawIndex + 3];
+                    this._featurePointCloud[id].position.x = featurePointRawData[rawIndex];
+                    this._featurePointCloud[id].position.y = featurePointRawData[rawIndex + 1];
+                    this._featurePointCloud[id].position.z = featurePointRawData[rawIndex + 2];
+                    this._featurePointCloud[id].confidenceValue = featurePointRawData[rawIndex + 3];
                 }
             }
 
+            // Return the list of updating feature point IDs for the current frame.
             this.onFeaturePointsUpdatedObservable.notifyObservers(updatedFeaturePoints);
         }
-
     }
 
     /**
@@ -144,7 +145,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     }
 }
 
-//register the plugin
+// register the plugin
 WebXRFeaturesManager.AddWebXRFeature(
     WebXRFeaturePointSystem.Name,
     (xrSessionManager) => {
