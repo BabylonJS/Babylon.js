@@ -273,9 +273,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._epsilon = epsilon;
         this._isAnimationSheetEnabled = isAnimationSheetEnabled;
 
-        if (sceneOrEngine.getClassName() === "Scene") {
+        if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
-            this._engine = this._engine;
+            this._engine = this._scene.getEngine();
             this.uniqueId = this._scene.getUniqueId();
             this._scene.particleSystems.push(this);
         } else {
