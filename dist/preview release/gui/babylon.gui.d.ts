@@ -1554,6 +1554,7 @@ declare module BABYLON.GUI {
         private _sliceTop;
         private _sliceBottom;
         private _detectPointerOnOpaqueOnly;
+        private _imageDataCache;
         /**
          * BABYLON.Observable notified when the content is loaded
          */

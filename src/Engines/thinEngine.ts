@@ -683,6 +683,15 @@ export class ThinEngine {
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
+        // Starting with iOS 14, we can trust the browser
+        let matches = navigator.userAgent.match(/Version\/(\d+)/);
+
+        if (matches && matches.length === 2) {
+            if (parseInt(matches[1]) >= 14) {
+                this._badOS = false;
+            }
+        }
+
         // Detect if we are running on a faulty buggy desktop OS.
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 

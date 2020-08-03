@@ -50126,7 +50126,9 @@ declare module BABYLON {
         protected _interactionsEnabled: boolean;
         protected _attachedNodeChanged(value: Nullable<Node>): void;
         private _beforeRenderObserver;
+        private _tempQuaternion;
         private _tempVector;
+        private _tempVector2;
         /**
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -52419,6 +52421,9 @@ declare module BABYLON {
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer;
         createVertexBuffer(data: DataArray, updateable?: boolean): NativeDataBuffer;
+        bindBuffers(vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
         recordVertexArrayObject(vertexBuffers: {
             [key: string]: VertexBuffer;
         }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject;
@@ -76927,6 +76932,7 @@ declare module BABYLON.GUI {
         private _sliceTop;
         private _sliceBottom;
         private _detectPointerOnOpaqueOnly;
+        private _imageDataCache;
         /**
          * BABYLON.Observable notified when the content is loaded
          */
