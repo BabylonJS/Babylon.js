@@ -375,8 +375,8 @@ export class BaseTexture implements IAnimatable {
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
-    private _scene: Nullable<Scene> = null;
-    private _engine: Nullable<ThinEngine> = null;
+    protected _scene: Nullable<Scene> = null;
+    protected _engine: Nullable<ThinEngine> = null;
 
     /** @hidden */
     public _texture: Nullable<InternalTexture> = null;
