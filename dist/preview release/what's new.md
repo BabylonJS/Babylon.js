@@ -203,6 +203,7 @@
 ### GUI
 
 - Added support for custom word splitting function for `TextBlock` ([Popov72](https://github.com/Popov72))
+- Added the `fixedRatio` property to the `Control` class ([Popov72](https://github.com/Popov72))
 
 ### Post Processes
 
