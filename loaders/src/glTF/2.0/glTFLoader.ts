@@ -309,6 +309,39 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
             }
 
+            if (this.parent.loadAllMaterials && this._gltf.materials) {
+                for (let m = 0; m < this._gltf.materials.length; ++m) {
+                    const material = this._gltf.materials[m];
+                    const context = "/materials/" + m;
+                    const babylonDrawMode = Material.TriangleFillMode;
+                    let babylonData = material._data ? material._data[babylonDrawMode] : null;
+
+                    if (babylonData) {
+                        continue;
+                    }
+
+                    this.logOpen(`${context} ${material.name || ""}`);
+
+                    const babylonMaterial = this.createMaterial(context, material, babylonDrawMode);
+
+                    babylonData = {
+                        babylonMaterial: babylonMaterial,
+                        babylonMeshes: [],
+                        promise: this.loadMaterialPropertiesAsync(context, material, babylonMaterial)
+                    };
+
+                    promises.push(babylonData.promise);
+
+                    material._data = material._data ?? {};
+                    material._data[babylonDrawMode] = babylonData;
+
+                    GLTFLoader.AddPointerMetadata(babylonMaterial, context);
+                    this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
+
+                    this.logClose();
+                }
+            }
+
             // Restore the blocking of material dirty.
             this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
 

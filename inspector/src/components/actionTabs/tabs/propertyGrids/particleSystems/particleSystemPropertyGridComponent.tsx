@@ -83,7 +83,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             case "MeshParticleEmitter":
                 return (
                     <MeshEmitterGridComponent  
-                    lockObject={this.props.lockObject} scene={system.getScene()} globalState={this.props.globalState} emitter={system.particleEmitterType as MeshParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    lockObject={this.props.lockObject} scene={system.getScene()!} globalState={this.props.globalState} emitter={system.particleEmitterType as MeshParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );                 
             case "PointParticleEmitter":
                 return (
@@ -165,6 +165,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         const system = this.props.system;
         const scene = system.getScene();
 
+        if (!scene) {
+            return;
+        }
+
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
             let jsonObject = JSON.parse(decoder.decode(data));
@@ -173,19 +177,19 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             system.dispose();            
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-            let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene, "") : ParticleSystem.Parse(jsonObject, scene, "");
+            let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene!, "") : ParticleSystem.Parse(jsonObject, scene!, "");
             this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }, undefined, true);
     }
 
     loadFromSnippet() {
         const system = this.props.system;
-        const scene = system.getScene();
+        const scene = system.getScene()!;
         let isGpu = system instanceof GPUParticleSystem;
 
         let snippedID = window.prompt("Please enter the snippet ID to use");
 
-        if (!snippedID) {
+        if (!snippedID || !scene) {
             return;
         }
         
@@ -272,7 +276,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         ];
 
 
-        var meshEmitters = this.props.system.getScene().meshes.filter(m => !!m.name);
+        var meshEmitters = this.props.system.getScene()!.meshes.filter(m => !!m.name);
 
         var emitterOptions = [
             { label: "None", value: -1 },
