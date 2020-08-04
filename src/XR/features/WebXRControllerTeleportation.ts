@@ -743,9 +743,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // do the movement forward here
         if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
             const height = this._options.xrInput.xrCamera.realWorldHeight;
+            this._options.xrInput.xrCamera.onBeforeCameraTeleport.notifyObservers(this._options.xrInput.xrCamera.position);
             this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
             this._options.xrInput.xrCamera.position.y += height;
             this._options.xrInput.xrCamera.rotationQuaternion.multiplyInPlace(Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation - (this._xrSessionManager.scene.useRightHandedSystem ? Math.PI : 0), 0));
+            this._options.xrInput.xrCamera.onAfterCameraTeleport.notifyObservers(this._options.xrInput.xrCamera.position);
         }
     }
 }
