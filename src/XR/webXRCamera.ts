@@ -26,7 +26,7 @@ export class WebXRCamera extends FreeCamera {
     /**
      *  Observable raised after camera teleportation
      */
-    public onAfterCameraTeleport = new Observable<Vector3>();    
+    public onAfterCameraTeleport = new Observable<Vector3>();
 
     /**
      * Should position compensation execute on first frame.
