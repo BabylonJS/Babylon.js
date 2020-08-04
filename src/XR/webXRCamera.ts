@@ -5,6 +5,7 @@ import { FreeCamera } from "../Cameras/freeCamera";
 import { TargetCamera } from "../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
+import { Observable } from '../Misc/observable';
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -16,6 +17,16 @@ export class WebXRCamera extends FreeCamera {
     private _referencedPosition: Vector3 = new Vector3();
     private _xrInvPositionCache: Vector3 = new Vector3();
     private _xrInvQuaternionCache = Quaternion.Identity();
+
+    /**
+     * Observable raised before camera teleportation
+     */
+    public onBeforeCameraTeleport = new Observable<Vector3>();
+
+    /**
+     *  Observable raised after camera teleportation
+     */
+    public onAfterCameraTeleport = new Observable<Vector3>();    
 
     /**
      * Should position compensation execute on first frame.
