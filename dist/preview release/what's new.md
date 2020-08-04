@@ -118,6 +118,7 @@
 - Added missing "pluginExtension" parameter to SceneLoader.ImportAnimations. ([phenry20](https://github.com/phenry20))
 - Added support for .glb file loading through a base64 encoded filename ([Popov72](https://github.com/Popov72))
 - Fixed issue with loading screen hiding too early when loading multiple assets concurrently. ([bghgary](https://github.com/bghgary))
+- Added the `loadAllMaterials` property to the gLTF loader to load materials even if not used by any mesh ([Popov72](https://github.com/Popov72))
 
 ### Serializers
 
