@@ -4365,3 +4365,5 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.Mesh"] = Mesh;
