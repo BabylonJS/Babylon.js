@@ -10,13 +10,11 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 const NAME = "KHR_materials_volume";
 
 interface IMaterialsTransmission {
-    thinWalled?: boolean;
-    attenuationCoefficient?: number[];
-    volumeAlbedo?: number[];
-    subsurfaceAnisotropy?: number;
+    attenuationColor?: number[];
+    attenuationDistance?: number;
+    subsurfaceColor?: number[];
     thicknessTexture?: ITextureInfo;
-    minThickness?: number;
-    maxThickness?: number;
+    thicknessFactor?: number;
 }
 
 /**
@@ -72,28 +70,19 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
 
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_translucency extensions.
-        if (!pbrMaterial.subSurface.isRefractionEnabled) {
+        if (!pbrMaterial.subSurface.isRefractionEnabled || !extension.thicknessFactor) {
             return Promise.resolve();
         }
         
         // Since this extension models thin-surface transmission only, we must make IOR = 1.0
         pbrMaterial.subSurface.volumeIndexOfRefraction = pbrMaterial.indexOfRefraction;
-        pbrMaterial.subSurface.tintColorAtDistance = 1.0;
-        if (extension.attenuationCoefficient !== undefined && extension.attenuationCoefficient.length == 3) {
-            let tintColor = new Color3(1.0, 1.0, 1.0);
-            tintColor.r = -Math.pow(Math.E, extension.attenuationCoefficient[0]);
-            tintColor.g = -Math.pow(Math.E, extension.attenuationCoefficient[1]);
-            tintColor.b = -Math.pow(Math.E, extension.attenuationCoefficient[2]);
+        pbrMaterial.subSurface.tintColorAtDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
+        if (extension.attenuationColor !== undefined && extension.attenuationColor.length == 3) {
+            pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
+            pbrMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2])
         } else {
-            pbrMaterial.subSurface.tintColorAtDistance = 1.0;
             pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
         }
-
-        // if (extension.transmissionFactor !== undefined) {
-        //     pbrMaterial.subSurface.refractionIntensity = extension.transmissionFactor;
-        // } else {
-        //     pbrMaterial.subSurface.refractionIntensity = 1.0;
-        // }
 
         if (extension.thicknessTexture) {
             return this._loader.loadTextureInfoAsync(context, extension.thicknessTexture)
@@ -101,8 +90,8 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
                     pbrMaterial.subSurface.thicknessTexture = texture;
                     pbrMaterial.subSurface.useMaskFromThicknessTextureGltf = true;
                     pbrMaterial.subSurface.useMaskFromThicknessTexture = false;
-                    pbrMaterial.subSurface.minimumThickness = extension.minThickness !== undefined ? extension.minThickness : 0;
-                    pbrMaterial.subSurface.maximumThickness = extension.maxThickness !== undefined ? extension.maxThickness : 1;
+                    pbrMaterial.subSurface.minimumThickness = 0.0;
+                    pbrMaterial.subSurface.maximumThickness = extension.thicknessFactor !== undefined ? extension.thicknessFactor : 1;
                 });
         } else {
             return Promise.resolve();
