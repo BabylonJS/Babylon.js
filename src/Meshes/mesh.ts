@@ -97,6 +97,7 @@ class _ThinInstanceDataStorage {
     public matrixBufferSize = 32 * 16; // let's start with a maximum of 32 thin instances
     public matrixData: Nullable<Float32Array>;
     public boundingVectors: Array<Vector3> = [];
+    public worldMatrices: Nullable<Matrix[]> = null;
 }
 
 /**
@@ -225,6 +226,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Internal data
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
+
+    public get computeBonesUsingShaders(): boolean {
+        return this._internalAbstractMeshDataInfo._computeBonesUsingShaders;
+    }
+    public set computeBonesUsingShaders(value: boolean) {
+        if (this._internalAbstractMeshDataInfo._computeBonesUsingShaders === value) {
+            return;
+        }
+
+        if (value && this._internalMeshDataInfo._sourcePositions && this._internalMeshDataInfo._sourceNormals) {
+            // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
+            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions);
+            this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals);
+        }
+
+        this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
+        this._markSubMeshesAsAttributesDirty();
+    }
 
     /**
      * An event triggered before rendering the mesh
@@ -2977,6 +2996,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public serialize(serializationObject: any): void {
         serializationObject.name = this.name;
         serializationObject.id = this.id;
+        serializationObject.uniqueId = this.uniqueId;
         serializationObject.type = this.getClassName();
 
         if (Tags && Tags.HasTags(this)) {
@@ -4345,3 +4365,5 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.Mesh"] = Mesh;

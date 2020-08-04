@@ -59,41 +59,40 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
     renderEmitter() {
         const system = this.props.system;
-        const replaySource = "particlesystem.particleEmitterType";
         switch(system.particleEmitterType?.getClassName()) {
             case "BoxParticleEmitter":
                 return (
-                    <BoxEmitterGridComponent replaySourceReplacement={replaySource}
+                    <BoxEmitterGridComponent 
                         globalState={this.props.globalState} emitter={system.particleEmitterType as BoxParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );
             case "ConeParticleEmitter":
                 return (
-                    <ConeEmitterGridComponent replaySourceReplacement={replaySource}
+                    <ConeEmitterGridComponent 
                         globalState={this.props.globalState} emitter={system.particleEmitterType as ConeParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );
             case "CylinderParticleEmitter":
                 return (
-                    <CylinderEmitterGridComponent replaySourceReplacement={replaySource}
+                    <CylinderEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as CylinderParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );        
             case "HemisphericParticleEmitter":
                 return (
-                    <HemisphericEmitterGridComponent replaySourceReplacement={replaySource}
+                    <HemisphericEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as HemisphericParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );  
             case "MeshParticleEmitter":
                 return (
-                    <MeshEmitterGridComponent replaySourceReplacement={replaySource} 
-                    lockObject={this.props.lockObject} scene={system.getScene()} globalState={this.props.globalState} emitter={system.particleEmitterType as MeshParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <MeshEmitterGridComponent  
+                    lockObject={this.props.lockObject} scene={system.getScene()!} globalState={this.props.globalState} emitter={system.particleEmitterType as MeshParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );                 
             case "PointParticleEmitter":
                 return (
-                    <PointEmitterGridComponent replaySourceReplacement={replaySource}
+                    <PointEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as PointParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );  
             case "SphereParticleEmitter":
                 return (
-                    <SphereEmitterGridComponent replaySourceReplacement={replaySource}
+                    <SphereEmitterGridComponent 
                         lockObject={this.props.lockObject} globalState={this.props.globalState} emitter={system.particleEmitterType as SphereParticleEmitter} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 );                                                                                                       
         }
@@ -166,6 +165,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         const system = this.props.system;
         const scene = system.getScene();
 
+        if (!scene) {
+            return;
+        }
+
         Tools.ReadFile(file, (data) => {
             let decoder = new TextDecoder("utf-8");
             let jsonObject = JSON.parse(decoder.decode(data));
@@ -174,19 +177,19 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             system.dispose();            
             this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
 
-            let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene, "") : ParticleSystem.Parse(jsonObject, scene, "");
+            let newSystem = isGpu ? GPUParticleSystem.Parse(jsonObject, scene!, "") : ParticleSystem.Parse(jsonObject, scene!, "");
             this.props.globalState.onSelectionChangedObservable.notifyObservers(newSystem);
         }, undefined, true);
     }
 
     loadFromSnippet() {
         const system = this.props.system;
-        const scene = system.getScene();
+        const scene = system.getScene()!;
         let isGpu = system instanceof GPUParticleSystem;
 
         let snippedID = window.prompt("Please enter the snippet ID to use");
 
-        if (!snippedID) {
+        if (!snippedID || !scene) {
             return;
         }
         
@@ -209,7 +212,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
             if (xmlHttp.readyState == 4) {
                 if (xmlHttp.status == 200) {
                     var snippet = JSON.parse(xmlHttp.responseText);
-                    const oldId = system.snippetId ;
+                    const oldId = system.snippetId || "_BLANK";
                     system.snippetId = snippet.id;
                     if (snippet.version && snippet.version != "0") {
                         system.snippetId += "#" + snippet.version;
@@ -223,8 +226,8 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
 
                     if (windowAsAny.Playground && oldId) {
                         windowAsAny.Playground.onRequestCodeChangeObservable.notifyObservers({
-                            regex: new RegExp(oldId, "g"),
-                            replace: system.snippetId
+                            regex: new RegExp(`ParticleHelper.CreateFromSnippetAsync\\("${oldId}`, "g"),
+                            replace: `ParticleHelper.CreateFromSnippetAsync("${system.snippetId}`
                         });
                     }
 
@@ -273,7 +276,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         ];
 
 
-        var meshEmitters = this.props.system.getScene().meshes.filter(m => !!m.name);
+        var meshEmitters = this.props.system.getScene()!.meshes.filter(m => !!m.name);
 
         var emitterOptions = [
             { label: "None", value: -1 },
@@ -450,10 +453,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             docLink="https://doc.babylonjs.com/babylon101/particles#emit-rate-over-time"
                             onCreateRequired={() => {
                                 system.addEmitRateGradient(0, 50, 50);
-                                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: `TARGET.addEmitRateGradient(0, 50, 50);`
-                                });
                             }}
                             mode={GradientGridMode.Factor}
                             host={system}    
@@ -467,10 +466,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/babylon101/particles#velocity-over-time"
                         onCreateRequired={() => {
                             system.addVelocityGradient(0, 0.1, 0.1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addVelocityGradient(0, 0.1, 0.1);`
-                            });                            
                         }}                        
                         mode={GradientGridMode.Factor}
                         host={system}    
@@ -481,10 +476,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time"
                         onCreateRequired={() => {
                             system.addLimitVelocityGradient(0, 0.1, 0.1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addLimitVelocityGradient(0, 0.1, 0.1);`
-                            });                             
                         }}           
                         mode={GradientGridMode.Factor}
                         host={system}    
@@ -495,10 +486,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/babylon101/particles#drag-factor"
                         onCreateRequired={() => {
                             system.addDragGradient(0, 0.1, 0.1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addDragGradient(0, 0.1, 0.1);`
-                            });                                
                         }}
                         host={system}    
                         codeRecorderPropertyName="getDragGradients()"                         
@@ -524,10 +511,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             docLink="https://doc.babylonjs.com/babylon101/particles#start-size-over-time"
                             onCreateRequired={() => {
                                 system.addStartSizeGradient(0, 1, 1);
-                                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: `TARGET.addStartSizeGradient(0, 1, 1);`
-                                });                                
                             }}       
                             host={system}    
                             codeRecorderPropertyName="getStartSizeGradients()"
@@ -539,10 +522,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="https://doc.babylonjs.com/babylon101/particles#size"
                         onCreateRequired={() => {
                             system.addSizeGradient(0, 1, 1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addSizeGradient(0, 1, 1);`
-                            });                             
                         }}
                         host={system}    
                         codeRecorderPropertyName="getSizeGradients()"                            
@@ -560,10 +539,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             docLink="https://doc.babylonjs.com/babylon101/particles#lifetime"
                             onCreateRequired={() => {
                                 system.addLifeTimeGradient(0, 1, 1);
-                                this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                    object: system,
-                                    code: `TARGET.addLifeTimeGradient(0, 1, 1);`
-                                });                               
                             }}
                             host={system}    
                             codeRecorderPropertyName="getLifeTimeGradients()"                          
@@ -589,14 +564,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onCreateRequired={() => {
                             system.addColorGradient(0, new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1));
                             system.addColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addColorGradient(0, new BABYLON.Color4(0, 0, 0, 1), new BABYLON.Color4(0, 0, 0, 1));`
-                            });     
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addColorGradient(1, new BABYLON.Color4(1, 1, 1, 1), new BABYLON.Color4(1, 1, 1, 1));`
-                            });                            
                         }}
                         host={system}    
                         codeRecorderPropertyName="getColorGradients()"                              
@@ -615,14 +582,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                     onCreateRequired={() => {
                                         system.addRampGradient(0, Color3.White());
                                         system.addRampGradient(1, Color3.Black());
-                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                            object: system,
-                                            code: `TARGET.addRampGradient(0, BABYLON.Color3.White());`
-                                        });          
-                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                            object: system,
-                                            code: `TARGET.addRampGradient(1, BABYLON.Color3.Black());`
-                                        });                          
                                     }}
                                     mode={GradientGridMode.Color3}      
                                     host={system}    
@@ -634,10 +593,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                     docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
                                     onCreateRequired={() => {
                                         system.addColorRemapGradient(0, 1, 1);
-                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                            object: system,
-                                            code: `TARGET.addColorRemapGradient(0, 1, 1);`
-                                        });
                                     }}
                                     host={system}    
                                     codeRecorderPropertyName="getColorRemapGradients()"      
@@ -648,10 +603,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                     docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
                                     onCreateRequired={() => {
                                         system.addAlphaRemapGradient(0, 1, 1);
-                                        this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                            object: system,
-                                            code: `TARGET.addAlphaRemapGradient(0, 1, 1);`
-                                        });                            
                                     }}
                                     host={system}    
                                     codeRecorderPropertyName="getAlphaRemapGradients()"                             
@@ -672,10 +623,6 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         docLink="hhttps://doc.babylonjs.com/babylon101/particles#rotation"
                         onCreateRequired={() => {
                             system.addAngularSpeedGradient(0, 0.1, 0.1);
-                            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                                object: system,
-                                code: `TARGET.addAngularSpeedGradient(0, 0.1, 0.1);`
-                            });                               
                         }}                        
                         host={system}    
                         codeRecorderPropertyName="getAngularSpeedGradients()"    

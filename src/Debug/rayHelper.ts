@@ -173,6 +173,9 @@ export class RayHelper {
             this._attachedToMesh.getScene().registerBeforeRender(this._updateToMeshFunction);
         }
 
+        // force world matrix computation before the first ray helper computation
+        this._attachedToMesh.computeWorldMatrix(true);
+
         this._updateToMesh();
     }
 

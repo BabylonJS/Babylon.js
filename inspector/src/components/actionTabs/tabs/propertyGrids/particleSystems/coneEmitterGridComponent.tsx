@@ -11,7 +11,6 @@ interface IConeEmitterGridComponentProps {
     globalState: GlobalState;
     emitter: ConeParticleEmitter,
     onSelectionChangedObservable?: Observable<any>,
-    replaySourceReplacement?: string,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
@@ -25,13 +24,13 @@ export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridCo
         let emitter = this.props.emitter;
         return (
             <>
-                <SliderLineComponent replaySourceReplacement={this.props.replaySourceReplacement} label="Radius range" target={emitter} propertyName="radiusRange" minimum={0} maximum={1} step={0.01} 
+                <SliderLineComponent label="Radius range" target={emitter} propertyName="radiusRange" minimum={0} maximum={1} step={0.01} 
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <SliderLineComponent replaySourceReplacement={this.props.replaySourceReplacement} label="Height range" target={emitter} propertyName="heightRange" minimum={0} maximum={1} step={0.01} 
+                <SliderLineComponent label="Height range" target={emitter} propertyName="heightRange" minimum={0} maximum={1} step={0.01} 
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <CheckBoxLineComponent replaySourceReplacement={this.props.replaySourceReplacement} label="Emit from spawn point only" target={emitter} propertyName="emitFromSpawnPointOnly" 
+                <CheckBoxLineComponent label="Emit from spawn point only" target={emitter} propertyName="emitFromSpawnPointOnly" 
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />                    
-                <SliderLineComponent replaySourceReplacement={this.props.replaySourceReplacement} label="Direction randomizer" target={emitter} propertyName="directionRandomizer" minimum={0} maximum={1} step={0.01} 
+                <SliderLineComponent label="Direction randomizer" target={emitter} propertyName="directionRandomizer" minimum={0} maximum={1} step={0.01} 
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
             </>
         );

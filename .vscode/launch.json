@@ -27,7 +27,20 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },      
+        },               
+        {
+            "name": "Launch Node Material Editor (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/nodeEditor/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },     
         {
             "name": "Launch Viewer (Chrome)",
             "type": "chrome",
@@ -69,6 +82,19 @@
             ]
         },
         {
+            "name": "Launch sandbox (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/sandbox/public/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
             "name": "Launch playground (Chrome)",
             "type": "chrome",
             "request": "launch",
@@ -86,10 +112,23 @@
             "type": "edge",
             "version": "dev",
             "request": "launch",
-            "url": "http://localhost:1338/Playground/public/index-local.html",
+            "url": "http://localhost:1338/Playground/index-local.html",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },        
+        {
+            "name": "Launch playground (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/Playground/index-local.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
@@ -261,6 +300,19 @@
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },
+        {
+            "name": "Launch Build Validation (Edge) - Direct",
+            "type": "edge",
+            "version": "dev",
+            "request": "launch",
+            "url": "http://localhost:1338/tests/validation/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"

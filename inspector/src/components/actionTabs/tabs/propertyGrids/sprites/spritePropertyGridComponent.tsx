@@ -15,7 +15,7 @@ import { Color4LineComponent } from '../../../lines/color4LineComponent';
 import { FloatLineComponent } from '../../../lines/floatLineComponent';
 import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
-import { TextureHelper, TextureChannelToDisplay } from '../../../../../textureHelper';
+import { TextureHelper } from '../../../../../textureHelper';
 import { Nullable } from 'babylonjs/types';
 
 interface ISpritePropertyGridComponentProps {
@@ -63,11 +63,6 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         const sprite = this.props.sprite;
         sprite.dispose();
 
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: sprite,
-            code: `TARGET.dispose();`
-        });
-
         this.props.onSelectionChangedObservable?.notifyObservers(null);
     }
 
@@ -94,7 +89,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         var size = texture.getSize();
 
         if (!this.imageData) {
-            TextureHelper.GetTextureDataAsync(texture, size.width, size.height, 0, TextureChannelToDisplay.All, this.props.globalState).then(data => {
+            TextureHelper.GetTextureDataAsync(texture, size.width, size.height, 0, {R: true, G:true, B:true, A:true}, this.props.globalState).then(data => {
                 this.imageData = data;
                 this.forceUpdate();
             });
