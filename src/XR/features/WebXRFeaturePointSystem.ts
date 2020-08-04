@@ -46,7 +46,8 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
      * Observers registered here will be executed whenever new feature points are available (on XRFrame while the session is tracking).
      * Will notify the observers about which feature points have been updated.
      */
-    public onFeaturePointsUpdatedObservable: Observable<number[]> = new Observable();
+    public readonly onFeaturePointsUpdatedObservable: Observable<number[]> = new Observable();
+
     /**
      * The currrent feature point cloud maintained across frames.
      */
@@ -99,15 +100,19 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
         if (!this.attached || !this._enabled || !frame) {
             return;
         }
-        let featurePointRawData : number[] | undefined = frame.featurePointCloud;
+        const featurePointRawData: Nullable<number[]> = frame.featurePointCloud;
+
         if (!featurePointRawData || featurePointRawData.length == 0) {
             return;
         } else {
-            let numberOfFeaturePoints : number = featurePointRawData.length / 5;
+            const numberOfFeaturePoints : number = featurePointRawData.length / 5;
+
             let updatedFeaturePoints = new Array(numberOfFeaturePoints);
             for (var i = 0; i < numberOfFeaturePoints; i++) {
-                let rawIndex : number = i * 5;
-                let id = featurePointRawData[rawIndex + 4];
+                const rawIndex: number = i * 5;
+
+                const id = featurePointRawData[rawIndex + 4];
+
                 updatedFeaturePoints[i] = id;
 
                 // IDs should be durable across frames and strictly increasing from 0 up, so use them as indexing into the feature point array.

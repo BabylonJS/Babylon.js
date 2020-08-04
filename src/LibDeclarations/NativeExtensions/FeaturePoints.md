@@ -3,7 +3,8 @@
 This document proposes an API for exposing Feature Point Clouds for WebXR.
 
 ## Overview
-The API is synchronous, and on demand.  When served a new XRFrame the consuming app may query for the current feature point cloud for a given frame. As feature points comprise a large set of raw data it is best not to expose this to the JS application unless needed for app processing, so feature points must be requested handled in an on-demand fashion in order to reduce the amount of data presented to the consuming app, which must set its own frequency for updating its world understanding.
+The API is synchronous, and on demand.  When served a new XRFrame the consuming app may query for the current feature point cloud for a given frame. As feature points comprise a large set of raw data it is best not to expose this to the JS application unless needed for app processing, so feature points must be requested in an on-demand fashion in order to reduce the amount of data presented to the consuming app, which must set its own frequency for updating its world understanding.
+
 
 The returned array will contain the feature point cloud tracked in the current frame, including points that may not be currently visible.  Feature points will be presented in a flat array of numbers where each point is presented as a set of 5 entries representing the X, Y, Z position in world space, the confidence value, and an ID that is durable across frames.
 
@@ -25,9 +26,11 @@ interface XRFrame {
 ## BabylonJS Integration proposal
 As a native extension of for Babylon.js that is not yet available or proposed for browsers this will be exposed through a new webxr.nativeextensions.d.ts file that will extend the interface to include the new attribute to separate the non-normative WebXR features from experimental native features.
 
-A new WebXRFeaturePointSystem class extending WebXRAbstractFeature will be added to the list of available features.
+A new `WebXRFeaturePointSystem` class extending `WebXRAbstractFeature` will be added to the list of available features.
 
-The WebXRFeaturePoints class exposes the feature:
+
+The `WebXRFeaturePoints` class exposes the feature:
+
 ```typescript
 class WebXRFeaturePointSystem extends WebXRAbstractFeature {
   public static readonly Name = WebXRFeatureName.FEATURE_POINTS;
@@ -50,7 +53,8 @@ class WebXRFeaturePointSystem extends WebXRAbstractFeature {
 }
 ```
 
-The IWebXRFeaturePoint interface describes a given feature point.
+The `IWebXRFeaturePoint` interface describes a given feature point.
+
 ```typescript
  interface IWebXRFeaturePoint {
   point : Vector3;
