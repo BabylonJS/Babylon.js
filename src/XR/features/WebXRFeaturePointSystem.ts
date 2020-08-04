@@ -42,12 +42,16 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
      * This number does not correspond to the WebXR specs version
      */
     public static readonly Version = 1;
+     /**
+     * Observers registered here will be executed whenever new feature points are added (on XRFrame while the session is tracking).
+     * Will notify the observers about which feature points have been added.
+     */
+    public readonly onFeaturePointsAddedObservable: Observable<number[]> = new Observable();
     /**
-     * Observers registered here will be executed whenever new feature points are available (on XRFrame while the session is tracking).
+     * Observers registered here will be executed whenever a feature point has been updated (on XRFrame while the session is tracking).
      * Will notify the observers about which feature points have been updated.
      */
     public readonly onFeaturePointsUpdatedObservable: Observable<number[]> = new Observable();
-
     /**
      * The currrent feature point cloud maintained across frames.
      */
@@ -100,21 +104,22 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
         if (!this.attached || !this._enabled || !frame) {
             return;
         }
-        const featurePointRawData: Nullable<number[]> = frame.featurePointCloud;
 
+        const featurePointRawData: number[] | undefined = frame.featurePointCloud;
         if (!featurePointRawData || featurePointRawData.length == 0) {
             return;
         } else {
-            const numberOfFeaturePoints : number = featurePointRawData.length / 5;
+            if (featurePointRawData.length % 5 != 0) {
+                throw new Error("Received malformed feature point cloud of length: " + featurePointRawData.length);
+            }
 
-            let updatedFeaturePoints = new Array(numberOfFeaturePoints);
+            const numberOfFeaturePoints : number = featurePointRawData.length / 5;
+            let updatedFeaturePoints = new Array();
+            let addedFeaturePoints = new Array();
             for (var i = 0; i < numberOfFeaturePoints; i++) {
                 const rawIndex: number = i * 5;
 
                 const id = featurePointRawData[rawIndex + 4];
-
-                updatedFeaturePoints[i] = id;
-
                 // IDs should be durable across frames and strictly increasing from 0 up, so use them as indexing into the feature point array.
                 if (id == this._featurePointCloud.length) {
                     this._featurePointCloud.push({
@@ -125,16 +130,26 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
                         confidenceValue: featurePointRawData[rawIndex + 3],
                         id: id
                         });
+
+                        addedFeaturePoints.push(id);
                 } else {
                     this._featurePointCloud[id].position.x = featurePointRawData[rawIndex];
                     this._featurePointCloud[id].position.y = featurePointRawData[rawIndex + 1];
                     this._featurePointCloud[id].position.z = featurePointRawData[rawIndex + 2];
                     this._featurePointCloud[id].confidenceValue = featurePointRawData[rawIndex + 3];
+                    updatedFeaturePoints.push(id);
                 }
             }
 
-            // Return the list of updating feature point IDs for the current frame.
-            this.onFeaturePointsUpdatedObservable.notifyObservers(updatedFeaturePoints);
+            // Signal observers that feature points have been added if necessary.
+            if (addedFeaturePoints.length > 0) {
+                this.onFeaturePointsAddedObservable.notifyObservers(addedFeaturePoints);
+            }
+
+            // Signal observers that feature points have been updated if necessary.
+            if (updatedFeaturePoints.length > 0) {
+                this.onFeaturePointsUpdatedObservable.notifyObservers(updatedFeaturePoints);
+            }
         }
     }
 
