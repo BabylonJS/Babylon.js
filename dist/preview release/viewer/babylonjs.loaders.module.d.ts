@@ -213,6 +213,10 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          */
         alwaysComputeBoundingBox: boolean;
         /**
+         * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+         */
+        loadAllMaterials: boolean;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         preprocessUrlAsync: (url: string) => Promise<string>;
@@ -1802,6 +1806,29 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_mesh_gpu_instancing" {
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/EXT_texture_webp" {
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    import { ITexture } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
+    import { Nullable } from "babylonjs/types";
+    /**
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_texture_webp/)
+     */
+    export class EXT_texture_webp implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression" {
     import { DracoCompression } from "babylonjs/Meshes/Compression/dracoCompression";
     import { Nullable } from "babylonjs/types";
@@ -2093,25 +2120,25 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
         /** @hidden */
         dispose(): void;
         /**
-         * Gets the list of available variant tag names for this asset.
+         * Gets the list of available variant names for this asset.
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Gets the list of available variant tag names for this asset.
+         * Gets the list of available variant names for this asset.
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
          */
         getAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Select a variant given a variant tag name or a list of variant tag names.
+         * Select a variant given a variant name or a list of variant names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
         /**
-         * Select a variant given a variant tag name or a list of variant tag names.
+         * Select a variant given a variant name or a list of variant names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
@@ -2127,15 +2154,15 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants" {
          */
         reset(rootMesh: Mesh): void;
         /**
-         * Gets the last selected variant tag name(s) or null if original.
+         * Gets the last selected variant name(s) or null if original.
          * @param rootMesh The glTF root mesh
-         * @returns The selected variant tag name(s).
+         * @returns The selected variant name(s).
          */
         static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         /**
-         * Gets the last selected variant tag name(s) or null if original.
+         * Gets the last selected variant name(s) or null if original.
          * @param rootMesh The glTF root mesh
-         * @returns The selected variant tag name(s).
+         * @returns The selected variant name(s).
          */
         getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         private static _GetExtensionMetadata;
@@ -2465,6 +2492,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/ExtrasAsMetadata" {
 declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/EXT_lights_image_based";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/EXT_mesh_gpu_instancing";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/EXT_texture_webp";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_lights_punctual";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness";
@@ -3057,6 +3085,10 @@ declare module BABYLON {
          * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
          */
         alwaysComputeBoundingBox: boolean;
+        /**
+         * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+         */
+        loadAllMaterials: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */
@@ -4567,6 +4599,24 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_texture_webp/)
+     */
+    export class EXT_texture_webp implements IGLTFLoaderExtension {
+        /** The name of this extension. */
+        readonly name: string;
+        /** Defines whether this extension is enabled. */
+        enabled: boolean;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
      */
     export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
@@ -4808,25 +4858,25 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /**
-         * Gets the list of available variant tag names for this asset.
+         * Gets the list of available variant names for this asset.
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
          */
         static GetAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Gets the list of available variant tag names for this asset.
+         * Gets the list of available variant names for this asset.
          * @param rootMesh The glTF root mesh
          * @returns the list of all the variant names for this model
          */
         getAvailableVariants(rootMesh: Mesh): string[];
         /**
-         * Select a variant given a variant tag name or a list of variant tag names.
+         * Select a variant given a variant name or a list of variant names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
         static SelectVariant(rootMesh: Mesh, variantName: string | string[]): void;
         /**
-         * Select a variant given a variant tag name or a list of variant tag names.
+         * Select a variant given a variant name or a list of variant names.
          * @param rootMesh The glTF root mesh
          * @param variantName The variant name(s) to select.
          */
@@ -4842,15 +4892,15 @@ declare module BABYLON.GLTF2.Loader.Extensions {
          */
         reset(rootMesh: Mesh): void;
         /**
-         * Gets the last selected variant tag name(s) or null if original.
+         * Gets the last selected variant name(s) or null if original.
          * @param rootMesh The glTF root mesh
-         * @returns The selected variant tag name(s).
+         * @returns The selected variant name(s).
          */
         static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         /**
-         * Gets the last selected variant tag name(s) or null if original.
+         * Gets the last selected variant name(s) or null if original.
          * @param rootMesh The glTF root mesh
-         * @returns The selected variant tag name(s).
+         * @returns The selected variant name(s).
          */
         getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]>;
         private static _GetExtensionMetadata;

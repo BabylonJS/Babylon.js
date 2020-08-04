@@ -1,11 +1,11 @@
-import { WebXRFeatureName, WebXRFeaturesManager } from '../webXRFeaturesManager';
-import { WebXRSessionManager } from '../webXRSessionManager';
-import { Observable } from '../../Misc/observable';
-import { Matrix, Vector3, Quaternion } from '../../Maths/math.vector';
-import { TransformNode } from '../../Meshes/transformNode';
-import { WebXRAbstractFeature } from './WebXRAbstractFeature';
-import { IWebXRHitResult } from './WebXRHitTest';
-import { Tools } from '../../Misc/tools';
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
+import { WebXRSessionManager } from "../webXRSessionManager";
+import { Observable } from "../../Misc/observable";
+import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
+import { TransformNode } from "../../Meshes/transformNode";
+import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
+import { IWebXRHitResult } from "./WebXRHitTest";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Configuration options of the anchor system
@@ -119,6 +119,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      */
     constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRAnchorSystemOptions = {}) {
         super(_xrSessionManager);
+        this.xrNativeFeatureName = "anchors";
     }
 
     private _tmpVector = new Vector3();
@@ -134,7 +135,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         }
         return {
             position: this._tmpVector,
-            rotationQuaternion: this._tmpQuaternion
+            rotationQuaternion: this._tmpQuaternion,
         };
     }
 
@@ -152,15 +153,14 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         // convert to XR space (right handed) if needed
         this._populateTmpTransformation(position, rotationQuaternion);
         // the matrix that we'll use
-        const m = new XRRigidTransform({x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z},
-                                       {x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w});
+        const m = new XRRigidTransform({ x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z }, { x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w });
         if (!hitTestResult.xrHitResult.createAnchor) {
-            throw new Error('Anchors not enabled in this browsed. Add "anchors" to optional features');
+            this.detach();
+            throw new Error('Anchors not enabled in this environment/browser');
         } else {
             try {
                 return hitTestResult.xrHitResult.createAnchor(m);
-            }
-            catch (error) {
+            } catch (error) {
                 throw new Error(error);
             }
         }
@@ -182,8 +182,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         // convert to XR space (right handed) if needed
         this._populateTmpTransformation(position, rotationQuaternion);
         // the matrix that we'll use
-        const xrTransformation = new XRRigidTransform({x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z},
-                                                      {x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w});
+        const xrTransformation = new XRRigidTransform({ x: this._tmpVector.x, y: this._tmpVector.y, z: this._tmpVector.z }, { x: this._tmpQuaternion.x, y: this._tmpQuaternion.y, z: this._tmpQuaternion.z, w: this._tmpQuaternion.w });
         if (forceCreateInCurrentFrame && this.attached && this._xrSessionManager.currentFrame) {
             return this._createAnchorAtTransformation(xrTransformation, this._xrSessionManager.currentFrame);
         } else {
@@ -192,7 +191,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 this._futureAnchors.push({
                     xrTransformation,
                     resolve,
-                    reject
+                    reject,
                 });
             });
         }
@@ -232,14 +231,18 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(frame: XRFrame) {
-        if (!this.attached || !frame) { return; }
+        if (!this.attached || !frame) {
+            return;
+        }
 
         const trackedAnchors = frame.trackedAnchors;
         if (trackedAnchors) {
-            const toRemove = this._trackedAnchors.filter((anchor) => !trackedAnchors.has(anchor.xrAnchor)).map((anchor) => {
-                const index = this._trackedAnchors.indexOf(anchor);
-                return index;
-            });
+            const toRemove = this._trackedAnchors
+                .filter((anchor) => !trackedAnchors.has(anchor.xrAnchor))
+                .map((anchor) => {
+                    const index = this._trackedAnchors.indexOf(anchor);
+                    return index;
+                });
             let idxTracker = 0;
             toRemove.forEach((index) => {
                 const anchor = this._trackedAnchors.splice(index - idxTracker, 1)[0];
@@ -251,7 +254,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 if (!this._lastFrameDetected.has(xrAnchor)) {
                     const newAnchor: Partial<IWebXRAnchor> = {
                         id: anchorIdProvider++,
-                        xrAnchor: xrAnchor
+                        xrAnchor: xrAnchor,
                     };
                     const anchor = this._updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
                     this._trackedAnchors.push(anchor);
@@ -282,7 +285,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                 return;
             }
             if (!frame.createAnchor) {
-                futureAnchor.reject('Anchors not enabled in this browser');
+                futureAnchor.reject("Anchors not enabled in this browser");
             }
             this._createAnchorAtTransformation(futureAnchor.xrTransformation, frame).then(futureAnchor.resolve, futureAnchor.reject);
         }
@@ -321,21 +324,25 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         return <IWebXRAnchor>anchor;
     }
 
-    private async _createAnchorAtTransformation(xrTransformation: XRRigidTransform, xrFrame: XRFrame) {
+    private async _createAnchorAtTransformation(xrTransformation: XRRigidTransform, xrFrame: XRFrame): Promise<XRAnchor> {
         if (xrFrame.createAnchor) {
             try {
                 return xrFrame.createAnchor(xrTransformation, this._referenceSpaceForFrameAnchors ?? this._xrSessionManager.referenceSpace);
-            }
-            catch (error) {
+            } catch (error) {
                 throw new Error(error);
             }
         } else {
-            throw new Error('Anchors are not enabled in your browser');
+            this.detach();
+            throw new Error("Anchors are not enabled in your browser");
         }
     }
 }
 
 // register the plugin
-WebXRFeaturesManager.AddWebXRFeature(WebXRAnchorSystem.Name, (xrSessionManager, options) => {
-    return () => new WebXRAnchorSystem(xrSessionManager, options);
-}, WebXRAnchorSystem.Version);
+WebXRFeaturesManager.AddWebXRFeature(
+    WebXRAnchorSystem.Name,
+    (xrSessionManager, options) => {
+        return () => new WebXRAnchorSystem(xrSessionManager, options);
+    },
+    WebXRAnchorSystem.Version
+);

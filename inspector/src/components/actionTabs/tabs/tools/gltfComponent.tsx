@@ -46,6 +46,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         extensionStates["KHR_texture_transform"] = extensionStates["KHR_texture_transform"] || { enabled: true };
         extensionStates["EXT_lights_image_based"] = extensionStates["EXT_lights_image_based"] || { enabled: true };
         extensionStates["EXT_mesh_gpu_instancing"] = extensionStates["EXT_mesh_gpu_instancing"] || { enabled: true };
+        extensionStates["EXT_texture_webp"] = extensionStates["EXT_texture_webp"] || { enabled: true };
 
         const loaderState = this.props.globalState.glTFLoaderDefaults;
 
@@ -178,6 +179,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                     <CheckBoxLineComponent label="KHR_texture_transform" isSelected={() => extensionStates["KHR_texture_transform"].enabled} onSelect={(value) => extensionStates["KHR_texture_transform"].enabled = value} />
                     <CheckBoxLineComponent label="EXT_lights_image_based" isSelected={() => extensionStates["EXT_lights_image_based"].enabled} onSelect={(value) => extensionStates["EXT_lights_image_based"].enabled = value} />
                     <CheckBoxLineComponent label="EXT_mesh_gpu_instancing" isSelected={() => extensionStates["EXT_mesh_gpu_instancing"].enabled} onSelect={(value) => extensionStates["EXT_mesh_gpu_instancing"].enabled = value} />
+                    <CheckBoxLineComponent label="EXT_texture_webp" isSelected={() => extensionStates["EXT_texture_webp"].enabled} onSelect={(value) => extensionStates["EXT_texture_webp"].enabled = value} />
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
                 {

@@ -5,6 +5,8 @@ import { Scene, IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
+import { Camera } from "../Cameras/camera";
+import { TargetCamera } from "../Cameras/targetCamera";
 import { Node } from "../node";
 import { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
@@ -88,7 +90,9 @@ export class Gizmo implements IDisposable {
     }
 
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
+    private _tempQuaternion = new Quaternion(0, 0, 0, 1);
     private _tempVector = new Vector3();
+    private _tempVector2 = new Vector3();
 
     /**
      * Creates a gizmo
@@ -161,21 +165,50 @@ export class Gizmo implements IDisposable {
         if (!this._attachedNode) {
             return;
         }
-        if (this._attachedNode.getClassName() === "Mesh" || this._attachedNode.getClassName() === "TransformNode") {
+
+        if  ((<Camera>this._attachedNode)._isCamera) {
+            var camera = this._attachedNode as Camera;
+            if (camera.parent) {
+                var parentInv = new Matrix();
+                var localMat = new Matrix();
+                camera.parent.getWorldMatrix().invertToRef(parentInv);
+                this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
+                localMat.decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
+            } else {
+                this._attachedNode.getWorldMatrix().decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
+            }
+
+            var inheritsTargetCamera = this._attachedNode.getClassName() === "FreeCamera"
+            || this._attachedNode.getClassName() === "FlyCamera"
+            || this._attachedNode.getClassName() === "ArcFollowCamera"
+            || this._attachedNode.getClassName() === "TargetCamera"
+            || this._attachedNode.getClassName() === "TouchCamera"
+            || this._attachedNode.getClassName() === "UniversalCamera";
+
+            if (inheritsTargetCamera) {
+                var targetCamera = this._attachedNode as TargetCamera;
+                targetCamera.rotation = this._tempQuaternion.toEulerAngles();
+                if (targetCamera.rotationQuaternion) {
+                    targetCamera.rotationQuaternion.copyFrom(this._tempQuaternion);
+                }
+            }
+
+            camera.position.copyFrom(this._tempVector);
+        } else if ((<Mesh>this._attachedNode)._isMesh || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
             var transform = this._attachedNode as TransformNode;
-            var transformQuaternion = new Quaternion(0, 0, 0, 1);
             if (transform.parent) {
                 var parentInv = new Matrix();
                 var localMat = new Matrix();
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode._worldMatrix.multiplyToRef(parentInv, localMat);
-                localMat.decompose(transform.scaling, transformQuaternion, transform.position);
+                localMat.decompose(transform.scaling, this._tempQuaternion, transform.position);
             } else {
-                this._attachedNode._worldMatrix.decompose(transform.scaling, transformQuaternion, transform.position);
+                this._attachedNode._worldMatrix.decompose(transform.scaling, this._tempQuaternion, transform.position);
             }
-            transform.rotation = transformQuaternion.toEulerAngles();
             if (transform.rotationQuaternion) {
-                transform.rotationQuaternion = transformQuaternion;
+                transform.rotationQuaternion.copyFrom(this._tempQuaternion);
+            } else {
+                transform.rotation = this._tempQuaternion.toEulerAngles();
             }
         } else if (this._attachedNode.getClassName() === "Bone") {
             var bone = this._attachedNode as Bone;

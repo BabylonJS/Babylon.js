@@ -886,6 +886,14 @@ declare module BABYLON.GUI {
         get verticalAlignment(): number;
         set verticalAlignment(value: number);
         /**
+         * Gets or sets a fixed ratio for this control.
+         * When different from 0, the ratio is used to compute the "second" dimension.
+         * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
+         * second dimension is computed as first dimension * fixedRatio
+         */
+        fixedRatio: number;
+        private _fixedRatioMasterIsWidth;
+        /**
          * Gets or sets control width
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
          */
@@ -1554,6 +1562,7 @@ declare module BABYLON.GUI {
         private _sliceTop;
         private _sliceBottom;
         private _detectPointerOnOpaqueOnly;
+        private _imageDataCache;
         /**
          * BABYLON.Observable notified when the content is loaded
          */
