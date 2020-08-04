@@ -2,7 +2,7 @@ import { ToolParameters, ToolData } from '../textureEditorComponent';
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 
 export const Eyedropper : ToolData = {
-    name: "Eyedropper",
+    name: 'Eyedropper',
     type: class {
         getParameters: () => ToolParameters;
         pointerObservable: any;
@@ -15,11 +15,10 @@ export const Eyedropper : ToolData = {
         pick(pointerInfo : PointerInfo) {
             const p = this.getParameters();
             const ctx = p.canvas2D.getContext('2d');
-            const x = pointerInfo.pickInfo!.getTextureCoordinates()!.x * p.size.width;
-            const y = (1 - pointerInfo.pickInfo!.getTextureCoordinates()!.y) * p.size.height;
+            const {x, y} = p.getMouseCoordinates(pointerInfo);
             const pixel = ctx!.getImageData(x, y, 1, 1).data;
             p.setMetadata({
-                color: "#" + ("000000" + this.rgbToHex(pixel[0], pixel[1], pixel[2])).slice(-6),
+                color: '#' + ('000000' + this.rgbToHex(pixel[0], pixel[1], pixel[2])).slice(-6),
                 opacity: pixel[3] / 255
             });
         }

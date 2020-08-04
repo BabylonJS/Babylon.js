@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { SketchPicker } from 'react-color';
+import { ToolData } from './textureEditorComponent';
 
-export interface Tool {
-    type: any,
-    name: string,
-    instance: any,
-    icon: string
+export interface Tool extends ToolData {
+    instance: any;
 }
 
 interface ToolBarProps {

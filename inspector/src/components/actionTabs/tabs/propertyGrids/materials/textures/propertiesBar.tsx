@@ -78,13 +78,18 @@ export class PropertiesBar extends React.Component<PropertiesBarProps,Properties
                     <img className='icon' src={babylonLogo}/>
                 </div>
                 <div className='tab' id='dimensions-tab'>
-                    <label className='dimensions'>
-                        W: <input type='text' value={this.state.width} onChange={(evt) => this.setState({width: getNewDimension(this.state.width, evt.target.value)})}/>
-                        </label>
-                    <label className='dimensions'>
-                        H: <input type='text' value={this.state.height} onChange={(evt) => this.setState({height: getNewDimension(this.state.height, evt.target.value)})}/>
-                        </label>
-                    <img id='resize' className='icon button' title='Resize' alt='Resize' src={resizeButton} onClick={() => this.props.resizeTexture(this.state.width, this.state.height)}/>
+                    <form onSubmit={evt => {
+                        this.props.resizeTexture(this.state.width, this.state.height);
+                        evt.preventDefault();
+                    }}>
+                        <label className='dimensions'>
+                            W: <input type='text' value={this.state.width} onChange={(evt) => this.setState({width: getNewDimension(this.state.width, evt.target.value)})}/>
+                            </label>
+                        <label className='dimensions'>
+                            H: <input type='text' value={this.state.height} onChange={(evt) => this.setState({height: getNewDimension(this.state.height, evt.target.value)})}/>
+                            </label>
+                        <img id='resize' className='icon button' title='Resize' alt='Resize' src={resizeButton} onClick={() => this.props.resizeTexture(this.state.width, this.state.height)}/> 
+                    </form>
                 </div>
                 <div className='tab' id='pixel-coords-tab'>
                     <PixelData name='X' data={this.props.pixelData.x}/>

@@ -2,7 +2,7 @@ import { ToolParameters, ToolData } from '../textureEditorComponent';
 import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 
 export const Floodfill : ToolData = {
-    name: "Floodfill",
+    name: 'Floodfill',
     type: class {
         getParameters: () => ToolParameters;
         pointerObservable: any;
@@ -14,8 +14,8 @@ export const Floodfill : ToolData = {
         fill() {
             const p = this.getParameters();
             const ctx = p.canvas2D.getContext('2d')!;
-            ctx.fillStyle = p.getMetadata().color;
-            ctx.globalAlpha = p.getMetadata().opacity;
+            ctx.fillStyle = p.metadata.color;
+            ctx.globalAlpha = p.metadata.opacity;
             ctx.globalCompositeOperation = 'source-over';
             ctx.fillRect(0,0, p.size.width, p.size.height);
             p.updateTexture();

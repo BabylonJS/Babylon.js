@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { GlobalState } from '../../../../../globalState';
-import { TextureCanvasManager, PixelData } from './textureCanvasManager';
+import { TextureCanvasManager, PixelData, ToolGUI } from './textureCanvasManager';
 import { Tool, ToolBar } from './toolBar';
 import { PropertiesBar } from './propertiesBar';
 import { Channel, ChannelsBar } from './channelsBar';
@@ -12,6 +12,8 @@ import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Tools } from 'babylonjs/Misc/tools';
 import { Scene } from 'babylonjs/scene';
 import { ISize } from 'babylonjs/Maths/math.size';
+import { PointerInfo, Vector2 } from 'babylonjs';
+import { PopupComponent } from '../../../../../popupComponent';
 
 require('./textureEditor.scss');
 
@@ -19,6 +21,7 @@ interface TextureEditorComponentProps {
     globalState: GlobalState;
     texture: BaseTexture;
     url: string;
+    window: React.RefObject<PopupComponent>;
 }
 
 interface TextureEditorComponentState {
@@ -33,16 +36,23 @@ interface TextureEditorComponentState {
 export interface ToolParameters {
     scene: Scene;
     canvas2D: HTMLCanvasElement;
+    scene3D: Scene;
     size: ISize;
     updateTexture: () => void;
-    getMetadata: () => any;
+    metadata: any;
     setMetadata: (data : any) => void;
+    getMouseCoordinates: (pointerInfo : PointerInfo) => Vector2;
+    GUI : ToolGUI;
+    BABYLON : any;
+    texture : BaseTexture;
 }
 
 export interface ToolData {
     name: string;
     type: any;
     icon: string;
+    usesWindow? : boolean;
+    is3D? : boolean;
 }
 
 declare global {
@@ -51,9 +61,9 @@ declare global {
 
 export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
     private _textureCanvasManager: TextureCanvasManager;
-    private canvasUI = React.createRef<HTMLCanvasElement>();
-    private canvas2D = React.createRef<HTMLCanvasElement>();
-    private canvasDisplay = React.createRef<HTMLCanvasElement>();
+    private _UICanvas = React.createRef<HTMLCanvasElement>();
+    private _2DCanvas = React.createRef<HTMLCanvasElement>();
+    private _3DCanvas = React.createRef<HTMLCanvasElement>();
 
     constructor(props : TextureEditorComponentProps) {
         super(props);
@@ -92,9 +102,10 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
     componentDidMount() {
         this._textureCanvasManager = new TextureCanvasManager(
             this.props.texture,
-            this.canvasUI.current!,
-            this.canvas2D.current!,
-            this.canvasDisplay.current!,
+            this.props.window.current!.getWindow()!,
+            this._UICanvas.current!,
+            this._2DCanvas.current!,
+            this._3DCanvas.current!,
             (data : PixelData) => {this.setState({pixelData: data})}
         );
         this.addTools(defaultTools);
@@ -135,10 +146,15 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         return {
             scene: this._textureCanvasManager.scene,
             canvas2D: this._textureCanvasManager.canvas2D,
+            scene3D: this._textureCanvasManager._3DScene,
             size: this._textureCanvasManager.size,
             updateTexture: () => this._textureCanvasManager.updateTexture(),
-            getMetadata: () => this.state.metadata,
-            setMetadata: (data : any) => this.setMetadata(data)
+            metadata: this.state.metadata,
+            setMetadata: (data : any) => this.setMetadata(data),
+            getMouseCoordinates: (pointerInfo : PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
+            GUI: this._textureCanvasManager._GUI,
+            BABYLON: BABYLON,
+            texture: this.props.texture
         };
     }
 
@@ -164,7 +180,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
     }
 
     saveTexture() {
-        Tools.ToBlob(this.canvas2D.current!, (blob) => {
+        Tools.ToBlob(this._2DCanvas.current!, (blob) => {
             Tools.Download(blob!, this.props.url);
         });
     }
@@ -202,7 +218,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
                 setMetadata={this.setMetadata}
             />
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
-            <TextureCanvasComponent canvas2D={this.canvas2D} canvasDisplay={this.canvasDisplay} canvasUI={this.canvasUI} texture={this.props.texture}/>
+            <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
             <BottomBar name={this.props.url}/>
         </div>
     }
