@@ -193,6 +193,10 @@ declare module BABYLON {
          */
         alwaysComputeBoundingBox: boolean;
         /**
+         * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+         */
+        loadAllMaterials: boolean;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         preprocessUrlAsync: (url: string) => Promise<string>;

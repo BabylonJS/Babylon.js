@@ -213,6 +213,10 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
          */
         alwaysComputeBoundingBox: boolean;
         /**
+         * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+         */
+        loadAllMaterials: boolean;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         preprocessUrlAsync: (url: string) => Promise<string>;
@@ -3081,6 +3085,10 @@ declare module BABYLON {
          * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
          */
         alwaysComputeBoundingBox: boolean;
+        /**
+         * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+         */
+        loadAllMaterials: boolean;
         /**
          * Function called before loading a url referenced by the asset.
          */

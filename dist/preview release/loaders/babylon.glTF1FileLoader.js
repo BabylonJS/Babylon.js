@@ -2871,6 +2871,10 @@ var GLTFFileLoader = /** @class */ (function () {
          */
         this.alwaysComputeBoundingBox = false;
         /**
+         * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+         */
+        this.loadAllMaterials = false;
+        /**
          * Function called before loading a url referenced by the asset.
          */
         this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };

@@ -6682,6 +6682,7 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype._loadAsync = function (nodes, resultFunc) {
         var _this = this;
         return Promise.resolve().then(function () {
+            var _a;
             _this._uniqueRootUrl = (_this._rootUrl.indexOf("file:") === -1 && _this._fileName) ? _this._rootUrl : "" + _this._rootUrl + Date.now() + "/";
             _this._loadExtensions();
             _this._checkExtensions();
@@ -6701,6 +6702,30 @@ var GLTFLoader = /** @class */ (function () {
             else if (_this._gltf.scene != undefined || (_this._gltf.scenes && _this._gltf.scenes[0])) {
                 var scene = ArrayItem.Get("/scene", _this._gltf.scenes, _this._gltf.scene || 0);
                 promises.push(_this.loadSceneAsync("/scenes/" + scene.index, scene));
+            }
+            if (_this.parent.loadAllMaterials && _this._gltf.materials) {
+                for (var m = 0; m < _this._gltf.materials.length; ++m) {
+                    var material = _this._gltf.materials[m];
+                    var context_1 = "/materials/" + m;
+                    var babylonDrawMode = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFillMode;
+                    var babylonData = material._data ? material._data[babylonDrawMode] : null;
+                    if (babylonData) {
+                        continue;
+                    }
+                    _this.logOpen(context_1 + " " + (material.name || ""));
+                    var babylonMaterial = _this.createMaterial(context_1, material, babylonDrawMode);
+                    babylonData = {
+                        babylonMaterial: babylonMaterial,
+                        babylonMeshes: [],
+                        promise: _this.loadMaterialPropertiesAsync(context_1, material, babylonMaterial)
+                    };
+                    promises.push(babylonData.promise);
+                    material._data = (_a = material._data) !== null && _a !== void 0 ? _a : {};
+                    material._data[babylonDrawMode] = babylonData;
+                    GLTFLoader.AddPointerMetadata(babylonMaterial, context_1);
+                    _this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
+                    _this.logClose();
+                }
             }
             // Restore the blocking of material dirty.
             _this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
@@ -8774,6 +8799,10 @@ var GLTFFileLoader = /** @class */ (function () {
          * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
          */
         this.alwaysComputeBoundingBox = false;
+        /**
+         * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+         */
+        this.loadAllMaterials = false;
         /**
          * Function called before loading a url referenced by the asset.
          */

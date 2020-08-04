@@ -18332,6 +18332,12 @@ declare module BABYLON {
          */
         setTarget(target: Vector3): void;
         /**
+         * Defines the target point of the camera.
+         * The camera looks towards it form the radius distance.
+         */
+        get target(): Vector3;
+        set target(value: Vector3);
+        /**
          * Return the current target position of the camera. This value is expressed in local space.
          * @returns the target position
          */
@@ -44526,9 +44532,9 @@ declare module BABYLON {
         beta: number;
         /** The radius of the camera from its target */
         radius: number;
-        /** Define the camera target (the mesh it should follow) */
-        target: Nullable<AbstractMesh>;
         private _cartesianCoordinates;
+        /** Define the camera target (the mesh it should follow) */
+        private _meshTarget;
         /**
          * Instantiates a new ArcFollowCamera
          * @see https://doc.babylonjs.com/features/cameras#follow-camera

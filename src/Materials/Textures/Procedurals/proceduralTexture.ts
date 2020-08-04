@@ -18,6 +18,7 @@ import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Meshes/dataBuffer';
+import { _TypeStore } from '../../../Misc/typeStore';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -634,3 +635,5 @@ export class ProceduralTexture extends Texture {
         super.dispose();
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ProceduralTexture"] = ProceduralTexture;
