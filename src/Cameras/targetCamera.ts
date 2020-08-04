@@ -280,6 +280,17 @@ export class TargetCamera extends Camera {
     }
 
     /**
+     * Defines the target point of the camera.
+     * The camera looks towards it form the radius distance.
+     */
+    public get target(): Vector3 {
+        return this.getTarget();
+    }
+    public set target(value: Vector3) {
+        this.setTarget(value);
+    }
+
+    /**
      * Return the current target position of the camera. This value is expressed in local space.
      * @returns the target position
      */
