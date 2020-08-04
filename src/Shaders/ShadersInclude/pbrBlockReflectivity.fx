@@ -73,8 +73,10 @@ void reflectivityBlock(
         #endif
 
         #ifdef DETAIL
-            float detailRoughness = 2.0 * mix(0.5, detailColor.b, vDetailInfos.w);
-            metallicRoughness.g = saturate(metallicRoughness.g * detailRoughness);
+            float detailRoughness = mix(0.5, detailColor.b, vDetailInfos.w);
+            float loLerp = mix(0., metallicRoughness.g, detailRoughness * 2.);
+            float hiLerp = mix(metallicRoughness.g, 1., (detailRoughness - 0.5) * 2.);
+            metallicRoughness.g = mix(loLerp, hiLerp, step(detailRoughness, 0.5));
         #endif
 
         #ifdef MICROSURFACEMAP
