@@ -28,8 +28,9 @@ import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { ISize } from '../Maths/math.size';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { ThinEngine } from '../Engines/thinEngine';
-import { AbstractMesh } from '../Meshes/abstractMesh';
-import { ProceduralTexture } from '../Materials/Textures/Procedurals/proceduralTexture';
+
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
 
 declare type Scene = import("../scene").Scene;
 
@@ -1149,8 +1150,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this.preWarmCycles) {
-            if (this.emitter instanceof AbstractMesh) {
-                this.emitter.computeWorldMatrix(true);
+            if (this.emitter?.getClassName().indexOf("Mesh") !== -1) {
+                (this.emitter as any).computeWorldMatrix(true);
             }
 
             let noiseTextureAsProcedural = this.noiseTexture as ProceduralTexture;
@@ -2641,7 +2642,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (parsedParticleSystem.noiseTexture && scene) {
-            particleSystem.noiseTexture = ProceduralTexture.Parse(parsedParticleSystem.noiseTexture, scene, rootUrl);
+            const internalClass = _TypeStore.GetClass("BABYLON.ProceduralTexture");
+            particleSystem.noiseTexture = internalClass.Parse(parsedParticleSystem.noiseTexture, scene, rootUrl);
         }
 
         // Emitter

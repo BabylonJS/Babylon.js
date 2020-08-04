@@ -9,8 +9,7 @@ import { Effect } from "../Materials/effect";
 import { Observable } from "../Misc/observable";
 
 declare type Animation = import("../Animations/animation").Animation;
-
-import { AbstractMesh } from '../Meshes/abstractMesh';
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 /**
  * Interface representing a particle system in Babylon.js.

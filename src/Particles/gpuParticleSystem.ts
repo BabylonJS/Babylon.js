@@ -23,7 +23,7 @@ import { ThinEngine } from '../Engines/thinEngine';
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
-import { AbstractMesh } from '../Meshes/abstractMesh';
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";
