@@ -61,7 +61,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         this._scene.debugLayer.hide();
                     }
                 }
-            }, null, null);
+            }, null, (file, scene, message) => {
+                this.props.globalState.onError.notifyObservers({ message : message});
+            });
 
         filesInput.onProcessFileCallback = (file, name, extension) => {
             if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
