@@ -450,6 +450,8 @@ export class SkeletonViewer {
 
                 this.debugMesh = Mesh.MergeMeshes(spheres.concat(spurs), true, true);
                 if (this.debugMesh) {
+                    this.debugMesh.name = this.skeleton.name + ":DebugMesh";
+                    this.debugMesh.id = this.debugMesh.name;
                     this.debugMesh.renderingGroupId = this.renderingGroupId;
                     this.debugMesh.skeleton = this.skeleton;
                     this.debugMesh.parent = this.mesh;
@@ -503,13 +505,13 @@ export class SkeletonViewer {
             this._debugMesh.color = this.color;
         }
     }
+
     /** Changes the displayMode of the skeleton viewer
      * @param mode The displayMode numerical value
      */
     public changeDisplayMode(mode: number): void {
         let wasEnabled = (this.isEnabled) ? true : false;
         if (this.displayMode !== mode) {
-            console.log("Change Display Mode!", mode, wasEnabled);
             this.isEnabled = false;
             if (this._debugMesh) {
                 this._debugMesh.dispose();
@@ -521,8 +523,25 @@ export class SkeletonViewer {
             this.update();
             this._bindObs();
             this.isEnabled = wasEnabled;
-            console.log(this._utilityLayer, this._debugMesh);
         }
+    }
+
+    /** Changes the displayMode of the skeleton viewer
+     * @param option String of the option name
+     * @param value The numerical option value
+     */
+    public changeDisplayOptions(option: string, value: number): void {
+        let wasEnabled = (this.isEnabled) ? true : false;
+        (this.options.displayOptions as any)[option] = value;
+        this.isEnabled = false;
+        if (this._debugMesh) {
+            this._debugMesh.dispose();
+            this._debugMesh = null;
+            this.ready = false;
+        }
+        this.update();
+        this._bindObs();
+        this.isEnabled = wasEnabled;
     }
 
     /** Release associated resources */

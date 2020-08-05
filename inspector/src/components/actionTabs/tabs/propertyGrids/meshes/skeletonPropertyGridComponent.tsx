@@ -13,6 +13,7 @@ import { AnimationGridComponent } from '../animations/animationPropertyGridCompo
 import { SkeletonViewer } from 'babylonjs/Debug/skeletonViewer';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { FloatLineComponent } from "../../../lines/floatLineComponent";
 
 interface ISkeletonPropertyGridComponentProps {
     globalState: GlobalState;
@@ -23,7 +24,15 @@ interface ISkeletonPropertyGridComponentProps {
 
 export class SkeletonPropertyGridComponent extends React.Component<ISkeletonPropertyGridComponentProps> {
     private _skeletonViewersEnabled = false;
-    private _skeletonViewerDisplayOptions = { displayMode : SkeletonViewer.DISPLAY_LINES }
+    private _skeletonViewerDisplayOptions = { 
+        displayMode : SkeletonViewer.DISPLAY_LINES,
+        sphereBaseSize : 0.15,
+        sphereScaleUnit : 2,
+        sphereFactor : 0.865,
+        midStep : 0.235,
+        midStepFactor : 0.155
+
+    }
     private _skeletonViewers = new Array<SkeletonViewer>();
 
     constructor(props: ISkeletonPropertyGridComponentProps) {
@@ -49,7 +58,16 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     if (found) {
                         continue;
                     }
-                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, false, 3, { displayMode: this._skeletonViewerDisplayOptions.displayMode });
+                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, false, 3, { 
+                        displayMode: this._skeletonViewerDisplayOptions.displayMode,
+                        displayOptions : {
+                            sphereBaseSize : this._skeletonViewerDisplayOptions.sphereBaseSize,
+                            sphereScaleUnit : this._skeletonViewerDisplayOptions.sphereScaleUnit,
+                            sphereFactor : this._skeletonViewerDisplayOptions.sphereFactor,
+                            midStep : this._skeletonViewerDisplayOptions.midStep,
+                            midStepFactor : this._skeletonViewerDisplayOptions.midStepFactor
+                        }
+                    });
                     viewer.isEnabled = true;
                     this._skeletonViewers.push(viewer);
                     if (!mesh.reservedDataStore) {
@@ -93,6 +111,17 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         }
     }
 
+    changeDisplayOptions(option: string, value: number){
+        if (this._skeletonViewersEnabled){              
+            for (var index = 0; index < this._skeletonViewers.length; index++) {
+                this._skeletonViewers[index].changeDisplayOptions( option, value );
+            } 
+            if((this._skeletonViewerDisplayOptions as any)[option] !== undefined ){
+                (this._skeletonViewerDisplayOptions as any)[option] = value;
+            }            
+        }
+    }
+
     shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps) {
         if (nextProps.skeleton !== this.props.skeleton) {
             this.checkSkeletonViewerState(nextProps);
@@ -119,6 +148,19 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
             { label: "Sphere and Spurs", value: SkeletonViewer.DISPLAY_SPHERE_AND_SPURS }
         ];
 
+        let displayOptions;
+        if(this._skeletonViewerDisplayOptions.displayMode > SkeletonViewer.DISPLAY_LINES){
+            displayOptions = 
+            (<LineContainerComponent globalState={this.props.globalState} title="DISPLAY OPTIONS">
+                <FloatLineComponent label="sphereBaseSize" target={this._skeletonViewerDisplayOptions} propertyName='sphereBaseSize' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereBaseSize', value)}}/>
+                <FloatLineComponent label="sphereScaleUnit" target={this._skeletonViewerDisplayOptions} propertyName='sphereScaleUnit' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereScaleUnit', value)}}/>
+                <FloatLineComponent label="sphereFactor" target={this._skeletonViewerDisplayOptions} propertyName='sphereFactor' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('sphereFactor', value)}}/>
+                <FloatLineComponent label="midStep" target={this._skeletonViewerDisplayOptions} propertyName='midStep' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('midStep', value)}}/>
+                <FloatLineComponent label="midStepFactor" target={this._skeletonViewerDisplayOptions} propertyName='midStepFactor' onPropertyChangedObservable={this.props.onPropertyChangedObservable} onChange={(value)=>{this.changeDisplayOptions('midStepFactor', value)}}/>
+            </LineContainerComponent>)
+        }else{
+             displayOptions = (null)
+        }
 
         return (
             <div className="pane">
@@ -137,6 +179,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     <LineContainerComponent globalState={this.props.globalState} title="DEBUG">                        
                         <CheckBoxLineComponent label="Enabled" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
                         <OptionsLineComponent label="displayMode" options={debugModeOptions} target={this._skeletonViewerDisplayOptions} propertyName="displayMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={() => this.changeDisplayMode()} />
+                        {displayOptions}                   
                     </LineContainerComponent>                    
                 </LineContainerComponent>
                 <AnimationGridComponent globalState={this.props.globalState} animatable={skeleton} scene={skeleton.getScene()} lockObject={this.props.lockObject} />
