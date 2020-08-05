@@ -42,6 +42,7 @@ interface INativeEngine {
     createVertexBuffer(data: ArrayBufferView, dynamic: boolean): any;
     deleteVertexBuffer(buffer: any): void;
     recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+    bindBuffer(buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
     updateDynamicVertexBuffer(buffer: any, data: ArrayBufferView, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
@@ -343,9 +344,13 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
-        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
-            throw new Error("Could not create a native index buffer.");
+        if (data.length) {
+            buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
+            if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
+                throw new Error("Could not create a native index buffer.");
+            }
+        } else {
+            buffer.nativeVertexBuffer = this.INVALID_HANDLE;
         }
         return buffer;
     }
@@ -360,6 +365,23 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+        // TODO : support index buffer
+        const attributes = effect.getAttributesNames();
+        for (let index = 0; index < attributes.length; index++) {
+            const location = effect.getAttributeLocation(index);
+            if (location >= 0) {
+                const kind = attributes[index];
+                const vertexBuffer = vertexBuffers[kind];
+                if (vertexBuffer) {
+                    const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
+                    if (buffer) {
+                        this._native.bindBuffer(buffer.nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized);
+                    }
+                }
+            }
+        }
+    }
     public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
         const vertexArray = this._native.createVertexArray();
 
@@ -1181,6 +1203,10 @@ export class NativeEngine extends Engine {
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_NEAREST:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+                return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
             default:
                 throw new Error("Unexpected sampling mode: " + samplingMode + ".");
         }

@@ -60,6 +60,9 @@ export class InputManager {
     /** If you need to check double click without raising a single click at first click, enable this flag */
     public static ExclusiveDoubleClickMode = false;
 
+    /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
+    private _alreadyAttached = false;
+
     // Pointers
     private _wheelEventName = "";
     private _onPointerMove: (evt: PointerEvent) => void;
@@ -458,6 +461,9 @@ export class InputManager {
             return;
         }
 
+        if (this._alreadyAttached) {
+            this.detachControl();
+        }
         let engine = scene.getEngine();
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
@@ -601,6 +607,10 @@ export class InputManager {
         };
 
         this._onPointerMove = (evt: PointerEvent) => {
+            // preserve compatibility with Safari when pointerId is not present
+            if (evt.pointerId === undefined) {
+                (evt as any).pointerId = 0;
+            }
 
             this._updatePointerPosition(evt);
 
@@ -627,6 +637,11 @@ export class InputManager {
             this._totalPointersPressed++;
             this._pickedDownMesh = null;
             this._meshPickProceed = false;
+
+            // preserve compatibility with Safari when pointerId is not present
+            if (evt.pointerId === undefined) {
+                (evt as any).pointerId = 0;
+            }
 
             this._updatePointerPosition(evt);
 
@@ -671,6 +686,11 @@ export class InputManager {
             this._totalPointersPressed--;
             this._pickedUpMesh = null;
             this._meshPickProceed = false;
+
+            // preserve compatibility with Safari when pointerId is not present
+            if (evt.pointerId === undefined) {
+                (evt as any).pointerId = 0;
+            }
 
             this._updatePointerPosition(evt);
 
@@ -817,6 +837,7 @@ export class InputManager {
                 hostWindow.addEventListener(eventPrefix + "up", <any>this._onPointerUp, false);
             }
         }
+        this._alreadyAttached = true;
     }
 
     /**
@@ -828,6 +849,10 @@ export class InputManager {
         const eventPrefix = Tools.GetPointerPrefix(engine);
 
         if (!canvas) {
+            return;
+        }
+
+        if (!this._alreadyAttached) {
             return;
         }
 
@@ -854,6 +879,8 @@ export class InputManager {
         if (!this._scene.doNotHandleCursors) {
             canvas.style.cursor = this._scene.defaultCursor;
         }
+
+        this._alreadyAttached = false;
     }
 
     /**

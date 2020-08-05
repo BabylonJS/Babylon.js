@@ -61,7 +61,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         this._scene.debugLayer.hide();
                     }
                 }
-            }, null, null);
+            }, null, (file, scene, message) => {
+                this.props.globalState.onError.notifyObservers({ message : message});
+            });
 
         filesInput.onProcessFileCallback = (file, name, extension) => {
             if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
@@ -78,6 +80,18 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         filesInput.monitorElementForDragNDrop(this._canvas);
 
         this.props.globalState.filesInput = filesInput;
+
+        window.addEventListener("keydown", (event) => {
+            // Press R to reload
+            if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene) {
+                if (this.props.assetUrl) {
+                    this.loadAssetFromUrl();
+                }
+                else {
+                    filesInput.reload();
+                }
+            }
+        });
     }
 
     prepareCamera() {

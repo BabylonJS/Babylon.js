@@ -12,6 +12,7 @@ import { Skeleton } from 'babylonjs/Bones/skeleton';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 import { SkeletonViewer } from 'babylonjs/Debug/skeletonViewer';
 import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
+import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 
 interface ISkeletonPropertyGridComponentProps {
     globalState: GlobalState;
@@ -22,6 +23,7 @@ interface ISkeletonPropertyGridComponentProps {
 
 export class SkeletonPropertyGridComponent extends React.Component<ISkeletonPropertyGridComponentProps> {
     private _skeletonViewersEnabled = false;
+    private _skeletonViewerDisplayOptions = { displayMode : SkeletonViewer.DISPLAY_LINES }
     private _skeletonViewers = new Array<SkeletonViewer>();
 
     constructor(props: ISkeletonPropertyGridComponentProps) {
@@ -47,13 +49,13 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     if (found) {
                         continue;
                     }
-                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, true, 0);
+                    var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, false, 3, { displayMode: this._skeletonViewerDisplayOptions.displayMode });
                     viewer.isEnabled = true;
                     this._skeletonViewers.push(viewer);
                     if (!mesh.reservedDataStore) {
                         mesh.reservedDataStore = {};
                     }
-                    mesh.reservedDataStore.skeletonViewer = viewer;
+                    mesh.reservedDataStore.skeletonViewer = viewer;                   
                 }
             }
         } else {
@@ -83,6 +85,14 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         this._skeletonViewersEnabled = (this._skeletonViewers.length > 0);
     }
 
+    changeDisplayMode(){
+        if (this._skeletonViewersEnabled){              
+            for (var index = 0; index < this._skeletonViewers.length; index++) {
+                this._skeletonViewers[index].changeDisplayMode( this._skeletonViewerDisplayOptions.displayMode || 0 );
+            }                   
+        }
+    }
+
     shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps) {
         if (nextProps.skeleton !== this.props.skeleton) {
             this.checkSkeletonViewerState(nextProps);
@@ -103,6 +113,13 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
     render() {
         const skeleton = this.props.skeleton;
 
+        const debugModeOptions = [
+            { label: "Lines", value: SkeletonViewer.DISPLAY_LINES },
+            { label: "Spheres", value: SkeletonViewer.DISPLAY_SPHERES },
+            { label: "Sphere and Spurs", value: SkeletonViewer.DISPLAY_SPHERE_AND_SPURS }
+        ];
+
+
         return (
             <div className="pane">
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={skeleton}
@@ -116,7 +133,11 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                         <TextLineComponent label="Override mesh" value={skeleton.overrideMesh.name} onLink={() => this.onOverrideMeshLink()}/>
                     }                        
                     <CheckBoxLineComponent label="Use texture to store matrices" target={skeleton} propertyName="useTextureToStoreBoneMatrices" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <CheckBoxLineComponent label="Debug mode" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
+                    
+                    <LineContainerComponent globalState={this.props.globalState} title="DEBUG">                        
+                        <CheckBoxLineComponent label="Enabled" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
+                        <OptionsLineComponent label="displayMode" options={debugModeOptions} target={this._skeletonViewerDisplayOptions} propertyName="displayMode" onPropertyChangedObservable={this.props.onPropertyChangedObservable} onSelect={() => this.changeDisplayMode()} />
+                    </LineContainerComponent>                    
                 </LineContainerComponent>
                 <AnimationGridComponent globalState={this.props.globalState} animatable={skeleton} scene={skeleton.getScene()} lockObject={this.props.lockObject} />
             </div>

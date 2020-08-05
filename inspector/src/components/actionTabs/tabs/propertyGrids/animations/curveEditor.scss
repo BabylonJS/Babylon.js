@@ -508,14 +508,15 @@ body {
     align-items: flex-start;
     justify-content: flex-start;
     flex-direction: column;
-    height: 465px;
+    height: calc(100vh - 40px);
 
     .row {
-      width: 1024px;
-      height: 427px;
+      width: auto;
+      height: auto;
       display: flex;
       flex-flow: row;
       background-color: #333333;
+      margin-bottom: auto;
     }
 
     .row-bottom {
@@ -660,7 +661,7 @@ body {
         }
 
         .timeline-wrapper {
-          margin-top: -45px;
+          margin-top: -31px;
           margin-left: -2px;
         }
 
@@ -671,6 +672,7 @@ body {
           padding-left: 46px;
           padding-right: 46px;
           margin-left: 10px;
+          margin-top: -10px;
 
           .stop-container {
             width: 40px;
@@ -930,7 +932,7 @@ body {
         display: block;
         position: absolute;
         background-color: #111111;
-        height: 377px;
+        height: calc(100vh - 120px);
         z-index: 10;
 
         .sub-header {

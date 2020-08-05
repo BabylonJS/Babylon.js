@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3908,6 +3908,14 @@ var Control = /** @class */ (function () {
         * An event triggered when the control has been disposed
         */
         this.onDisposeObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
+        /**
+         * Gets or sets a fixed ratio for this control.
+         * When different from 0, the ratio is used to compute the "second" dimension.
+         * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
+         * second dimension is computed as first dimension * fixedRatio
+         */
+        this.fixedRatio = 0;
+        this._fixedRatioMasterIsWidth = true;
         this._tmpMeasureA = new _measure__WEBPACK_IMPORTED_MODULE_2__["Measure"](0, 0, 0, 0);
     }
     Object.defineProperty(Control.prototype, "shadowOffsetX", {
@@ -4175,6 +4183,7 @@ var Control = /** @class */ (function () {
             return this._width.toString(this._host);
         },
         set: function (value) {
+            this._fixedRatioMasterIsWidth = true;
             if (this._width.toString(this._host) === value) {
                 return;
             }
@@ -4197,6 +4206,7 @@ var Control = /** @class */ (function () {
             if (isNaN(value)) {
                 return;
             }
+            this._fixedRatioMasterIsWidth = true;
             this.width = value + "px";
         },
         enumerable: false,
@@ -4211,6 +4221,7 @@ var Control = /** @class */ (function () {
             return this._height.toString(this._host);
         },
         set: function (value) {
+            this._fixedRatioMasterIsWidth = false;
             if (this._height.toString(this._host) === value) {
                 return;
             }
@@ -4233,6 +4244,7 @@ var Control = /** @class */ (function () {
             if (isNaN(value)) {
                 return;
             }
+            this._fixedRatioMasterIsWidth = false;
             this.height = value + "px";
         },
         enumerable: false,
@@ -5154,6 +5166,14 @@ var Control = /** @class */ (function () {
         }
         else {
             this._currentMeasure.height *= this._height.getValue(this._host);
+        }
+        if (this.fixedRatio !== 0) {
+            if (this._fixedRatioMasterIsWidth) {
+                this._currentMeasure.height = this._currentMeasure.width * this.fixedRatio;
+            }
+            else {
+                this._currentMeasure.width = this._currentMeasure.height * this.fixedRatio;
+            }
         }
     };
     /** @hidden */
@@ -6484,6 +6504,7 @@ var Image = /** @class */ (function (_super) {
         _this._cellHeight = 0;
         _this._cellId = -1;
         _this._populateNinePatchSlicesFromImage = false;
+        _this._imageDataCache = { data: null, key: "" };
         /**
          * Observable notified when the content is loaded
          */
@@ -6750,6 +6771,7 @@ var Image = /** @class */ (function (_super) {
             rotatedImage._cellHeight = n % 1 ? this._cellWidth : this._cellHeight;
         }
         this._handleRotationForSVGImage(this, rotatedImage, n);
+        this._imageDataCache.data = null;
         return rotatedImage;
     };
     Image.prototype._handleRotationForSVGImage = function (srcImage, dstImage, n) {
@@ -6806,6 +6828,7 @@ var Image = /** @class */ (function (_super) {
             var _this = this;
             this._domImage = value;
             this._loaded = false;
+            this._imageDataCache.data = null;
             if (this._domImage.width) {
                 this._onImageLoaded();
             }
@@ -6883,6 +6906,7 @@ var Image = /** @class */ (function (_super) {
             }
             this._loaded = false;
             this._source = value;
+            this._imageDataCache.data = null;
             if (value) {
                 value = this._svgCheck(value);
             }
@@ -7053,14 +7077,18 @@ var Image = /** @class */ (function (_super) {
         if (!this._detectPointerOnOpaqueOnly || !this._workingCanvas) {
             return true;
         }
-        var canvas = this._workingCanvas;
-        var context = canvas.getContext("2d");
         var width = this._currentMeasure.width | 0;
         var height = this._currentMeasure.height | 0;
-        var imageData = context.getImageData(0, 0, width, height).data;
+        var key = width + "_" + height;
+        var imageData = this._imageDataCache.data;
+        if (!imageData || this._imageDataCache.key !== key) {
+            var canvas = this._workingCanvas;
+            var context_1 = canvas.getContext("2d");
+            this._imageDataCache.data = imageData = context_1.getImageData(0, 0, width, height).data;
+        }
         x = (x - this._currentMeasure.left) | 0;
         y = (y - this._currentMeasure.top) | 0;
-        var pickedPixel = imageData[(x + y * this._currentMeasure.width) * 4 + 3];
+        var pickedPixel = imageData[(x + y * width) * 4 + 3];
         return pickedPixel > 0;
     };
     Image.prototype._getTypeName = function () {

@@ -613,13 +613,11 @@ export class TextureCanvasManager {
         }
         if (this._tool) {
             this._tool.instance.cleanup();
-        }
-        
+        }        
         this._3DPlane.dispose();
         this._3DCanvasTexture.dispose();
         this._3DScene.dispose();
         this._3DEngine.dispose();
-
         this._plane.dispose();
         this._channelsTexture.dispose();
         this._planeMaterial.dispose();
