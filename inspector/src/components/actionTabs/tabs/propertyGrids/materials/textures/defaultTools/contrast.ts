@@ -86,6 +86,10 @@ export const Contrast : ToolData = {
         cleanup() {
             Object.entries(this.GUI).forEach(([key, value]) => value.dispose());
         }
+        onReset() {
+            this.GUI.contrastSlider.value = 0;
+            this.GUI.exposureSlider.value = 0;
+        }
     },
     usesWindow: true,
     is3D: true,

@@ -15,6 +15,8 @@ import { InternalTexture } from 'babylonjs/Materials/Textures/internalTexture';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { RawCubeTexture } from 'babylonjs/Materials/Textures/rawCubeTexture';
 import { CubeTexture } from 'babylonjs/Materials/Textures/cubeTexture';
+import { ShaderMaterial } from 'babylonjs/Materials/shaderMaterial';
+import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 
 import { ISize } from 'babylonjs/Maths/math.size';
 import { Tools } from 'babylonjs/Misc/tools';
@@ -26,8 +28,13 @@ import { TextureHelper } from '../../../../../../textureHelper';
 
 import { Tool } from './toolBar';
 import { Channel } from './channelsBar';
-import { AdvancedDynamicTexture, Rectangle, Control, StackPanel, TextBlock, Style } from 'babylonjs-gui';
-import { ShaderMaterial, StandardMaterial } from 'babylonjs';
+import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
+import { Rectangle } from 'babylonjs-gui/2D/controls/rectangle';
+import { StackPanel } from 'babylonjs-gui/2D/controls/stackPanel';
+import { Control } from 'babylonjs-gui/2D/controls/control';
+import { Style } from 'babylonjs-gui/2D/style';
+import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
+
 
 export interface PixelData {
     x? : number;
@@ -530,6 +537,9 @@ export class TextureCanvasManager {
     }
 
     public reset() : void {
+        if (this._tool && this._tool.instance.onReset) {
+            this._tool.instance.onReset();
+        }
         this._originalTexture._texture = this._originalInternalTexture;
         this.grabOriginalTexture();
         this.makePlane();
@@ -594,6 +604,9 @@ export class TextureCanvasManager {
                         () => {
                             TextureHelper.GetTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, {R: true, G: true, B: true, A: true})
                                 .then((pixels) => {
+                                    if (this._tool && this._tool.instance.onReset) {
+                                        this._tool.instance.onReset();
+                                    }
                                     this.setSize(texture.getSize());
                                     TextureCanvasManager.paintPixelsOnCanvas(pixels, this._2DCanvas);
                                     this.updateTexture();

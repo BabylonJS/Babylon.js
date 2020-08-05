@@ -12,7 +12,9 @@ import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Tools } from 'babylonjs/Misc/tools';
 import { Scene } from 'babylonjs/scene';
 import { ISize } from 'babylonjs/Maths/math.size';
-import { PointerInfo, Vector2 } from 'babylonjs';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { PointerInfo } from 'babylonjs/Events/pointerEvents';
+
 import { PopupComponent } from '../../../../../popupComponent';
 
 require('./textureEditor.scss');

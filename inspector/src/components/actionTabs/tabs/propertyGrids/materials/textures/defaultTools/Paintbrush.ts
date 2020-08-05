@@ -1,6 +1,7 @@
 import { ToolParameters, ToolData } from '../textureEditorComponent';
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
-import { TextBlock, Slider } from 'babylonjs-gui';
+import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
+import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
 
 export const Paintbrush : ToolData = {
     name: 'Paintbrush',
