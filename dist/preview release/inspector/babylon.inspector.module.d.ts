@@ -413,6 +413,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/vector3LineCompo
         onChange?: (newvalue: Vector3) => void;
         useEuler?: boolean;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+        noSlider?: boolean;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -4369,6 +4370,7 @@ declare module INSPECTOR {
         onChange?: (newvalue: BABYLON.Vector3) => void;
         useEuler?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        noSlider?: boolean;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
