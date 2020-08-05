@@ -483,13 +483,13 @@ export class Engine extends ThinEngine {
     constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
+        Engine.Instances.push(this);
+
         if (!canvasOrContext) {
             return;
         }
 
         options = this._creationOptions;
-
-        Engine.Instances.push(this);
 
         if ((<any>canvasOrContext).getContext) {
             let canvas = <HTMLCanvasElement>canvasOrContext;
