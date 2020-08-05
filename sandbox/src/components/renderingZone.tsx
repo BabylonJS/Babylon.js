@@ -78,6 +78,18 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         filesInput.monitorElementForDragNDrop(this._canvas);
 
         this.props.globalState.filesInput = filesInput;
+
+        window.addEventListener("keydown", (event) => {
+            // Press R to reload
+            if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene) {
+                if (this.props.assetUrl) {
+                    this.loadAssetFromUrl();
+                }
+                else {
+                    filesInput.reload();
+                }
+            }
+        });
     }
 
     prepareCamera() {
