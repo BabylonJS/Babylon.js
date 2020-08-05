@@ -1,8 +1,6 @@
 import { ToolData, ToolParameters } from '../textureEditorComponent';
 import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
-import { BaseSlider } from 'babylonjs-gui/2D/controls/sliders/baseSlider';
-import { Button } from 'babylonjs-gui/2D/controls/button';
-import { Slider } from 'babylonjs-gui';
+import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
 
 export const Contrast : ToolData = {
     name: 'Contrast/Exposure',
@@ -12,10 +10,9 @@ export const Contrast : ToolData = {
         exposure : number = 1.0;
         GUI: {
             contrastLabel : TextBlock;
-            contrastSlider : BaseSlider;
+            contrastSlider : Slider;
             exposureLabel : TextBlock;
-            exposureSlider : BaseSlider;
-            applyButton : Button;
+            exposureSlider : Slider;
         }
         constructor(getParameters: () => ToolParameters) {
             this.getParameters = getParameters;
@@ -24,58 +21,67 @@ export const Contrast : ToolData = {
             this.exposure = exposure;
             this.GUI.exposureLabel.text = `Exposure: ${this.exposure}`;
             const {scene3D, updateTexture} = this.getParameters();
-            scene3D.imageProcessingConfiguration.exposure = this.exposure;
-            scene3D.render();
+            scene3D.imageProcessingConfiguration.isEnabled = true;
+            scene3D.imageProcessingConfiguration.exposure = this.computeExposure(this.exposure);
+            console.log(this.computeExposure(this.exposure));
             updateTexture();
         }
         setContrast(contrast : number) {
             this.contrast = contrast;
             this.GUI.contrastLabel.text = `Contrast: ${this.contrast}`;
             const {scene3D, updateTexture} = this.getParameters();
-            scene3D.imageProcessingConfiguration.contrast = this.contrast;
-            scene3D.render();
+            scene3D.imageProcessingConfiguration.isEnabled = true;
+            scene3D.imageProcessingConfiguration.contrast = this.computeContrast(contrast);
             updateTexture();
         }
+        /**
+         * Maps slider values to post processing values using an exponential regression
+         */
+        computeExposure(sliderValue : number) {
+            return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
+        }
+        computeContrast(sliderValue : number) {
+            return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
+        }
         setup() {
+            this.contrast = 0;
+            this.exposure = 0;
             const {GUI} = this.getParameters();
-
             const contrastLabel = new TextBlock();
-            contrastLabel.text = `Contrast: ${this.contrast}`;
             contrastLabel.style = GUI.style;
             contrastLabel.height = '20px';
             contrastLabel.color = '#ffffff';
             const contrastSlider = new Slider();
-            contrastSlider.minimum = 0;
-            contrastSlider.maximum = 20;
-            contrastSlider.step = 0.01;
             contrastSlider.value = this.contrast;
+            contrastSlider.minimum = -100;
+            contrastSlider.maximum = 100;
             contrastSlider.height = '20px';
+            contrastSlider.isThumbCircle = true;
+            contrastSlider.background = '#a3a3a3';
+            contrastSlider.color = '#33648f';
+            contrastSlider.borderColor = '#33648f';
             contrastSlider.onValueChangedObservable.add(evt => this.setContrast(evt.valueOf()));
             const exposureLabel = new TextBlock();
-            exposureLabel.text = `Exposure: ${this.exposure}`;
             exposureLabel.style = GUI.style;
             exposureLabel.height = '20px';
             exposureLabel.color = '#ffffff';
             const exposureSlider = new Slider();
-            exposureSlider.minimum = 0;
-            exposureSlider.maximum = 20;
-            exposureSlider.step = 0.01;
             exposureSlider.value = this.exposure;
+            exposureSlider.minimum = -100;
+            exposureSlider.maximum = 100;
             exposureSlider.height = '20px';
+            exposureSlider.isThumbCircle = true;
+            exposureSlider.background = '#a3a3a3';
+            exposureSlider.color = '#33648f';
+            exposureSlider.borderColor = '#33648f';
             exposureSlider.onValueChangedObservable.add(evt => this.setExposure(evt.valueOf()));
-            const applyButton = Button.CreateSimpleButton('apply', 'Apply');
-            applyButton.style = GUI.style;
-            applyButton.height = '20px';
-            applyButton.width = '50%';
-            applyButton.thickness = 0;
-            applyButton.background = '#666666';
-            applyButton.color = '#ffffff';
             GUI.toolWindow.addControl(contrastLabel);
             GUI.toolWindow.addControl(contrastSlider);
             GUI.toolWindow.addControl(exposureLabel);
             GUI.toolWindow.addControl(exposureSlider);
-            GUI.toolWindow.addControl(applyButton);
-            this.GUI = {contrastLabel, contrastSlider, exposureLabel, exposureSlider, applyButton};
+            this.GUI = {contrastLabel, contrastSlider, exposureLabel, exposureSlider};
+            this.setExposure(this.exposure);
+            this.setContrast(this.contrast);
         }
         cleanup() {
             Object.entries(this.GUI).forEach(([key, value]) => value.dispose());

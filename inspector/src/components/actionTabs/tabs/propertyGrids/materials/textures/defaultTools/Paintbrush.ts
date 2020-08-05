@@ -29,8 +29,6 @@ export const Paintbrush : ToolData = {
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.lineTo(x, y);
-            //ctx.ellipse(x, y, this.radius, this.radius, 0, 0, Math.PI * 2);
-            //ctx.fill();
             ctx.stroke();
             updateTexture();
         }
@@ -49,6 +47,10 @@ export const Paintbrush : ToolData = {
             this.GUI.radiusSlider.minimum = 1;
             this.GUI.radiusSlider.maximum = 100;
             this.GUI.radiusSlider.step = 1;
+            this.GUI.radiusSlider.isThumbCircle = true;
+            this.GUI.radiusSlider.background = '#a3a3a3';
+            this.GUI.radiusSlider.color = '#33648f';
+            this.GUI.radiusSlider.borderColor = '#33648f';
             this.GUI.radiusSlider.onValueChangedObservable.add(value => {
                 this.radius = value;
                 this.GUI.radiusLabel!.text = `Brush Width: ${this.radius}`;

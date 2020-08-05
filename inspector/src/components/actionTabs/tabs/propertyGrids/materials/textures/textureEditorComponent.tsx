@@ -41,17 +41,40 @@ export interface ToolParameters {
     updateTexture: () => void;
     metadata: any;
     setMetadata: (data : any) => void;
+    /**
+     * Returns the texture coordinates under the cursor
+     */
     getMouseCoordinates: (pointerInfo : PointerInfo) => Vector2;
-    GUI : ToolGUI;
-    BABYLON : any;
-    texture : BaseTexture;
+    GUI: ToolGUI;
+    /**
+     * Provides access to the BABYLON namespace
+     */
+    BABYLON: any;
 }
 
+/**
+ * An interface representing the definition of a tool
+ */
 export interface ToolData {
+    /**
+    * Name to display on the toolbar
+    */
     name: string;
+    /**
+     * A class definition for the tool including setup and cleanup methods
+     */
     type: any;
+    /**
+     * An SVG icon encoded in Base64
+     */
     icon: string;
+    /**
+     * Whether the tool uses the draggable GUI window
+     */
     usesWindow? : boolean;
+    /**
+     * Whether the tool uses postprocesses
+     */
     is3D? : boolean;
 }
 
@@ -154,7 +177,6 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
             getMouseCoordinates: (pointerInfo : PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
             GUI: this._textureCanvasManager._GUI,
             BABYLON: BABYLON,
-            texture: this.props.texture
         };
     }
 
@@ -209,14 +231,14 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
                 resizeTexture={this.resizeTexture}
                 uploadTexture={this.uploadTexture}
             />
-            <ToolBar
+            {!this.props.texture.isCube && <ToolBar
                 tools={this.state.tools}
                 activeToolIndex={this.state.activeToolIndex}
                 addTool={this.loadToolFromURL}
                 changeTool={this.changeTool}
                 metadata={this.state.metadata}
                 setMetadata={this.setMetadata}
-            />
+            />}
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
             <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
             <BottomBar name={this.props.url}/>

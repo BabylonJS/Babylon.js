@@ -1,7 +1,7 @@
 import { Engine } from 'babylonjs/Engines/engine';
 import { Scene } from 'babylonjs/scene';
 import { Vector3, Vector2 } from 'babylonjs/Maths/math.vector';
-import { Color4 } from 'babylonjs/Maths/math.color';
+import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { Nullable } from 'babylonjs/types'
 
@@ -154,13 +154,10 @@ export class TextureCanvasManager {
         this._3DPlane = PlaneBuilder.CreatePlane('texture', {width: 1, height: 1}, this._3DScene);
         const mat = new StandardMaterial('material', this._3DScene);
         mat.diffuseTexture = this._3DCanvasTexture;
+        mat.disableLighting = true;
+        mat.emissiveColor = Color3.White();
         this._3DPlane.material = mat;
-        this._3DScene.createDefaultLight();
-
-        this._3DEngine.runRenderLoop(() =>{
-            if (this._editing3D)
-                this._3DScene.render();
-        });
+        
 
         this.grabOriginalTexture();
 
@@ -499,16 +496,7 @@ export class TextureCanvasManager {
             }
             if (this._editing3D && !this._tool.is3D) {
                 this._editing3D = false;
-                TextureHelper.GetTextureDataAsync(
-                    this._target,
-                    this._size.width,
-                    this._size.height,
-                    this._face,
-                    {R:true, G:true ,B:true, A:true}
-                ).then(data => {
-                    TextureCanvasManager.paintPixelsOnCanvas(data, this._2DCanvas);
-                })
-                
+                this._2DCanvas.getContext('2d')?.drawImage(this._3DCanvas, 0, 0);
             }
             else if (!this._editing3D && this._tool.is3D) {
                 this._editing3D = true;
