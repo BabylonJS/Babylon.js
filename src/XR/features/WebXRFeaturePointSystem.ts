@@ -157,7 +157,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
      * Initializes the feature. If the feature point feature is not available for this environment do not mark the feature as enabled.
      */
     private _init() {
-        if (!this._xrSessionManager.session.setFeaturePointCloudEnabled || !this._xrSessionManager.session.setFeaturePointCloudEnabled(true)) {
+        if (!this._xrSessionManager.session.trySetFeaturePointCloudEnabled || !this._xrSessionManager.session.trySetFeaturePointCloudEnabled(true)) {
             // fail silently
             return;
         }
