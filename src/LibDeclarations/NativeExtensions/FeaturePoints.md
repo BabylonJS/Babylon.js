@@ -14,7 +14,7 @@ XRFrame will expose a new attribute featurePointCloud which returns a set that i
 ```typescript
 interface XRSession {
   ...
-  setFeaturePointCloudEnabled(enabled: boolean): boolean;
+  trySetFeaturePointCloudEnabled(enabled: boolean): boolean;
 }
 
 interface XRFrame {

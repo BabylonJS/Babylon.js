@@ -3,7 +3,7 @@
 // Babylon React Native: https://github.com/BabylonJS/BabylonReactNative
 
 interface XRSession {
-    setFeaturePointCloudEnabled(enabled: boolean): boolean;
+    trySetFeaturePointCloudEnabled(enabled: boolean): boolean;
 }
 
 interface XRFrame {
