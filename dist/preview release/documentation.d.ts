@@ -42679,6 +42679,7 @@ declare module BABYLON {
         /**
          * Defines the target point of the camera.
          * The camera looks towards it form the radius distance.
+         * Please note that you can set the target to a mesh and thus the target will be copied from mesh.position
          */
         get target(): Vector3;
         set target(value: Vector3);
@@ -50982,6 +50983,10 @@ declare module BABYLON.Debug {
         get material(): StandardMaterial;
         /** Sets the material */
         set material(value: StandardMaterial);
+        /** Gets the material */
+        get displayMode(): number;
+        /** Sets the material */
+        set displayMode(value: number);
         /**
          * Creates a new SkeletonViewer
          * @param skeleton defines the skeleton to render
@@ -51020,6 +51025,10 @@ declare module BABYLON.Debug {
         private _buildSpheresAndSpurs;
         /** Update the viewer to sync with current skeleton state, only used for the line display. */
         private _displayLinesUpdate;
+        /** Changes the displayMode of the skeleton viewer
+         * @param mode The displayMode numerical value
+         */
+        changeDisplayMode(mode: number): void;
         /** Release associated resources */
         dispose(): void;
     }
