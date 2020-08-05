@@ -46,7 +46,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._movedX = 0;
         this._movedY = 0;
         this._dragBuffer = 4;
-        this._draggingMultiplier = 3;
+        this._draggingMultiplier = 10;
 
         this.state = { panX: 0, panY: 0 };
     }
@@ -192,18 +192,18 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         } else {
             directionY = 1; //bottom
         }
-
+        console.log(this._panStop.x - this._panStart.x);
         const bufferX = Math.abs(this._movedX - this._panStop.x);
         const bufferY = Math.abs(this._movedY - this._panStop.y);
 
         let xMulti = 0;
         if (bufferX > this._dragBuffer) {
-            xMulti = this._draggingMultiplier;
+            xMulti = Math.abs(this._panStop.x - this._panStart.x) / this._draggingMultiplier;
         }
 
         let yMulti = 0;
         if (bufferY > this._dragBuffer) {
-            yMulti = this._draggingMultiplier;
+            yMulti = Math.abs(this._panStop.y - this._panStart.y) / this._draggingMultiplier;
         }
 
         this._movedX = this._panStop.x;
