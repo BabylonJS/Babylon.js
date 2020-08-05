@@ -115,7 +115,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             this._UICanvas.current!,
             this._2DCanvas.current!,
             this._3DCanvas.current!,
-            (data : PixelData) => {this.setState({pixelData: data})}
+            (data : IPixelData) => {this.setState({pixelData: data})}
         );
         this.addTools(defaultTools);
     }
@@ -155,13 +155,13 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         return {
             scene: this._textureCanvasManager.scene,
             canvas2D: this._textureCanvasManager.canvas2D,
-            scene3D: this._textureCanvasManager._3DScene,
+            scene3D: this._textureCanvasManager.scene3D,
             size: this._textureCanvasManager.size,
             updateTexture: () => this._textureCanvasManager.updateTexture(),
             metadata: this.state.metadata,
             setMetadata: (data : any) => this.setMetadata(data),
             getMouseCoordinates: (pointerInfo : PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
-            GUI: this._textureCanvasManager._GUI,
+            GUI: this._textureCanvasManager.GUI,
             BABYLON: BABYLON,
         };
     }
