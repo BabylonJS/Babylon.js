@@ -86,6 +86,17 @@ export class SkeletonViewer {
     set material(value: StandardMaterial) {
          this.material = value;
     }
+    /** Gets the material */
+    get displayMode(): number {
+        return this.options.displayMode || SkeletonViewer.DISPLAY_LINES;
+    }
+    /** Sets the material */
+    set displayMode(value: number) {
+        if (value > SkeletonViewer.DISPLAY_SPHERE_AND_SPURS) {
+            value = SkeletonViewer.DISPLAY_LINES;
+        }
+        this.options.displayMode = value;
+    }
 
     /**
      * Creates a new SkeletonViewer
@@ -135,7 +146,7 @@ export class SkeletonViewer {
         if (displayMode > SkeletonViewer.DISPLAY_SPHERE_AND_SPURS) {
             displayMode = SkeletonViewer.DISPLAY_LINES;
         }
-        this.options.displayMode = displayMode;
+        this.displayMode = displayMode;
         //Prep the Systems
         this.update();
         this._bindObs();
@@ -143,7 +154,7 @@ export class SkeletonViewer {
 
     /** The Dynamic bindings for the update functions */
     private _bindObs(): void {
-        switch (this.options.displayMode){
+        switch (this.displayMode){
             case SkeletonViewer.DISPLAY_LINES: {
                     this._obs = this.scene.onBeforeRenderObservable.add(() => {
                         this._displayLinesUpdate();
@@ -155,7 +166,7 @@ export class SkeletonViewer {
 
     /** Update the viewer to sync with current skeleton state, only used to manually update. */
     public update(): void {
-        switch (this.options.displayMode){
+        switch (this.displayMode){
             case SkeletonViewer.DISPLAY_LINES: {
                 this._displayLinesUpdate();
                 break;
@@ -271,7 +282,12 @@ export class SkeletonViewer {
 
     /** function to build and bind sphere joint points and spur bone representations. */
     private _buildSpheresAndSpurs(spheresOnly = true): Promise<void> {
-        this.dispose();
+
+        if (this._debugMesh) {
+            this._debugMesh.dispose();
+            this._debugMesh = null;
+            this.ready = false;
+        }
 
         this._ready = false;
         let scene = this.scene;
@@ -456,10 +472,11 @@ export class SkeletonViewer {
     }
 
     /** Update the viewer to sync with current skeleton state, only used for the line display. */
-    private  _displayLinesUpdate() {
+    private  _displayLinesUpdate(): void {
         if (!this._utilityLayer) {
             return;
         }
+        console.log("dlup");
 
         if (this.autoUpdateBonesMatrices) {
             this.skeleton.computeAbsoluteTransforms();
@@ -486,9 +503,30 @@ export class SkeletonViewer {
             this._debugMesh.color = this.color;
         }
     }
+    /** Changes the displayMode of the skeleton viewer
+     * @param mode The displayMode numerical value
+     */
+    public changeDisplayMode(mode: number): void {
+        let wasEnabled = (this.isEnabled) ? true : false;
+        if (this.displayMode !== mode) {
+            console.log("Change Display Mode!", mode, wasEnabled);
+            this.isEnabled = false;
+            if (this._debugMesh) {
+                this._debugMesh.dispose();
+                this._debugMesh = null;
+                this.ready = false;
+            }
+            this.displayMode = mode;
+
+            this.update();
+            this._bindObs();
+            this.isEnabled = wasEnabled;
+            console.log(this._utilityLayer, this._debugMesh);
+        }
+    }
 
     /** Release associated resources */
-    public dispose() {
+    public dispose(): void {
         this.isEnabled = false;
         if (this._debugMesh) {
             this._debugMesh.dispose();
@@ -499,5 +537,7 @@ export class SkeletonViewer {
             this._utilityLayer.dispose();
             this._utilityLayer = null;
         }
+
+        this.ready = false;
     }
 }
