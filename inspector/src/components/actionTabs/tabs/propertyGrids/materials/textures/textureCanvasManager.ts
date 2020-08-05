@@ -26,8 +26,8 @@ import { KeyboardEventTypes } from 'babylonjs/Events/keyboardEvents';
 
 import { TextureHelper } from '../../../../../../textureHelper';
 
-import { Tool } from './toolBar';
-import { Channel } from './channelsBar';
+import { ITool } from './toolBar';
+import { IChannel } from './channelsBar';
 import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
 import { Rectangle } from 'babylonjs-gui/2D/controls/rectangle';
 import { StackPanel } from 'babylonjs-gui/2D/controls/stackPanel';
@@ -36,7 +36,7 @@ import { Style } from 'babylonjs-gui/2D/style';
 import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
 
 
-export interface PixelData {
+export interface IPixelData {
     x? : number;
     y? : number;
     r? : number;
@@ -45,7 +45,7 @@ export interface PixelData {
     a? : number;
 }
 
-export interface ToolGUI {
+export interface IToolGUI {
     adt: AdvancedDynamicTexture;
     toolWindow: StackPanel;
     isDragging: boolean;
@@ -77,9 +77,9 @@ export class TextureCanvasManager {
     private _3DEngine : Engine;
     private _3DPlane : Mesh;
     private _3DCanvasTexture : HtmlElementTexture;
-    public _3DScene : Scene;
+    private _3DScene : Scene;
 
-    private _channels : Channel[] = [];
+    private _channels : IChannel[] = [];
     private _face : number = 0;
 
     /* The texture from the original engine that we invoked the editor on */
@@ -108,18 +108,15 @@ export class TextureCanvasManager {
     private static MIN_SCALE : number = 0.01;
     private static MAX_SCALE : number = 10;
 
-    private _tool : Nullable<Tool>;
+    private _tool : Nullable<ITool>;
 
-    private _setPixelData : (pixelData : PixelData) => void;
+    private _setPixelData : (pixelData : IPixelData) => void;
 
-    public _GUI : ToolGUI;
+    private _GUI : IToolGUI;
 
     private _window : Window;
 
-    public metadata : any = {
-        color: '#ffffff',
-        opacity: 1.0
-    };
+    public metadata : any = {};
 
     private _editing3D : boolean = false;
 
@@ -129,7 +126,7 @@ export class TextureCanvasManager {
         canvasUI: HTMLCanvasElement,
         canvas2D: HTMLCanvasElement,
         canvas3D: HTMLCanvasElement,
-        setPixelData: (pixelData : PixelData) => void
+        setPixelData: (pixelData : IPixelData) => void
     ) {
         this._window = window;
 
@@ -422,7 +419,7 @@ export class TextureCanvasManager {
         this._channelsTexture.update();
     }
 
-    public set channels(channels: Channel[]) {
+    public set channels(channels: IChannel[]) {
         // Determine if we need to re-render the texture. This is an expensive operation, so we should only do it if channel visibility has changed.
         let needsRender = false;
         if (channels.length !== this._channels.length) {
@@ -489,7 +486,7 @@ export class TextureCanvasManager {
         return this._size;
     }
 
-    public set tool(tool: Nullable<Tool>) {
+    public set tool(tool: Nullable<ITool>) {
         if (this._tool) {
             this._tool.instance.cleanup();
         }
@@ -523,6 +520,16 @@ export class TextureCanvasManager {
             this.grabOriginalTexture(false);
             this.updateDisplay();
         }
+    }
+
+    /** Returns the tool GUI object, allowing tools to access the GUI */
+    public get GUI() {
+        return this._GUI;
+    }
+
+    /** Returns the 3D scene used for postprocesses */
+    public get scene3D() {
+        return this._3DScene;
     }
 
     private makePlane() {

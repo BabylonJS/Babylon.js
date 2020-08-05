@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 
-interface TextureCanvasComponentProps {
+interface ITextureCanvasComponentProps {
     canvasUI : React.RefObject<HTMLCanvasElement>;
     canvas2D : React.RefObject<HTMLCanvasElement>;
     canvas3D : React.RefObject<HTMLCanvasElement>;
     texture : BaseTexture;
 }
 
-export class TextureCanvasComponent extends React.Component<TextureCanvasComponentProps> {
-    shouldComponentUpdate(nextProps : TextureCanvasComponentProps) {
+export class TextureCanvasComponent extends React.Component<ITextureCanvasComponentProps> {
+    shouldComponentUpdate(nextProps : ITextureCanvasComponentProps) {
         return (nextProps.texture !== this.props.texture);
     }
 

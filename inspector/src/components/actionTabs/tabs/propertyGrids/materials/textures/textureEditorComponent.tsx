@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { GlobalState } from '../../../../../globalState';
-import { TextureCanvasManager, PixelData, ToolGUI } from './textureCanvasManager';
-import { Tool, ToolBar } from './toolBar';
+import { TextureCanvasManager, IPixelData, IToolGUI } from './textureCanvasManager';
+import { ITool, ToolBar } from './toolBar';
 import { PropertiesBar } from './propertiesBar';
-import { Channel, ChannelsBar } from './channelsBar';
+import { IChannel, ChannelsBar } from './channelsBar';
 import { BottomBar } from './bottomBar';
 import { TextureCanvasComponent } from './textureCanvasComponent';
 import defaultTools from './defaultTools/defaultTools';
@@ -19,23 +19,23 @@ import { PopupComponent } from '../../../../../popupComponent';
 
 require('./textureEditor.scss');
 
-interface TextureEditorComponentProps {
+interface ITextureEditorComponentProps {
     globalState: GlobalState;
     texture: BaseTexture;
     url: string;
     window: React.RefObject<PopupComponent>;
 }
 
-interface TextureEditorComponentState {
-    tools: Tool[];
+interface ITextureEditorComponentState {
+    tools: ITool[];
     activeToolIndex: number;
     metadata: any;
-    channels: Channel[];
-    pixelData : PixelData;
+    channels: IChannel[];
+    pixelData : IPixelData;
     face: number;
 }
 
-export interface ToolParameters {
+export interface IToolParameters {
     scene: Scene;
     canvas2D: HTMLCanvasElement;
     scene3D: Scene;
@@ -43,56 +43,40 @@ export interface ToolParameters {
     updateTexture: () => void;
     metadata: any;
     setMetadata: (data : any) => void;
-    /**
-     * Returns the texture coordinates under the cursor
-     */
+    /** Returns the texture coordinates under the cursor */
     getMouseCoordinates: (pointerInfo : PointerInfo) => Vector2;
-    GUI: ToolGUI;
-    /**
-     * Provides access to the BABYLON namespace
-     */
+    GUI: IToolGUI;
+    /** Provides access to the BABYLON namespace */
     BABYLON: any;
 }
 
-/**
- * An interface representing the definition of a tool
- */
-export interface ToolData {
-    /**
-    * Name to display on the toolbar
-    */
+/** An interface representing the definition of a tool */
+export interface IToolData {
+    /** Name to display on the toolbar */
     name: string;
-    /**
-     * A class definition for the tool including setup and cleanup methods
-     */
+    /** A class definition for the tool including setup and cleanup methods */
     type: any;
-    /**
-     * An SVG icon encoded in Base64
-     */
+    /**  An SVG icon encoded in Base64 */
     icon: string;
-    /**
-     * Whether the tool uses the draggable GUI window
-     */
+    /** Whether the tool uses the draggable GUI window */
     usesWindow? : boolean;
-    /**
-     * Whether the tool uses postprocesses
-     */
+    /** Whether the tool uses postprocesses */
     is3D? : boolean;
 }
 
 declare global {
-    var _TOOL_DATA_ : ToolData;
+    var _TOOL_DATA_ : IToolData;
 }
 
-export class TextureEditorComponent extends React.Component<TextureEditorComponentProps, TextureEditorComponentState> {
+export class TextureEditorComponent extends React.Component<ITextureEditorComponentProps, ITextureEditorComponentState> {
     private _textureCanvasManager: TextureCanvasManager;
     private _UICanvas = React.createRef<HTMLCanvasElement>();
     private _2DCanvas = React.createRef<HTMLCanvasElement>();
     private _3DCanvas = React.createRef<HTMLCanvasElement>();
 
-    constructor(props : TextureEditorComponentProps) {
+    constructor(props : ITextureEditorComponentProps) {
         super(props);
-        let channels : Channel[] = [
+        let channels : IChannel[] = [
             {name: 'Red', visible: true, editable: true, id: 'R', icon: require('./assets/channelR.svg')},
             {name: 'Green', visible: true, editable: true, id: 'G', icon: require('./assets/channelG.svg')},
             {name: 'Blue', visible: true, editable: true, id: 'B', icon: require('./assets/channelB.svg')},
@@ -137,7 +121,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
     }
 
     componentDidUpdate() {
-        let channelsClone : Channel[] = [];
+        let channelsClone : IChannel[] = [];
         this.state.channels.forEach(channel => channelsClone.push({...channel}));
         this._textureCanvasManager.channels = channelsClone;
         this._textureCanvasManager.metadata = {...this.state.metadata};
@@ -154,10 +138,10 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         });
     }
     
-    addTools(tools : ToolData[]) {
-        let newTools : Tool[] = [];
+    addTools(tools : IToolData[]) {
+        let newTools : ITool[] = [];
         tools.forEach(toolData => {
-            const tool : Tool = {
+            const tool : ITool = {
                 ...toolData,
                 instance: new toolData.type(() => this.getToolParameters())};
             newTools = newTools.concat(tool);
@@ -167,7 +151,7 @@ export class TextureEditorComponent extends React.Component<TextureEditorCompone
         console.log(newTools);
     }
 
-    getToolParameters() : ToolParameters {
+    getToolParameters() : IToolParameters {
         return {
             scene: this._textureCanvasManager.scene,
             canvas2D: this._textureCanvasManager.canvas2D,

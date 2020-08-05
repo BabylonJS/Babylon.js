@@ -1,6 +1,6 @@
-import { ToolData } from '../textureEditorComponent';
+import { IToolData } from '../textureEditorComponent';
 
-export const RectangleSelect : ToolData = {
+export const RectangleSelect : IToolData = {
     name: 'Rectangle Select',
     type: class {
         setup() {}

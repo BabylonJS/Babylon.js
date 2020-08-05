@@ -1,21 +1,21 @@
-import { ToolParameters, ToolData } from '../textureEditorComponent';
+import { IToolParameters, IToolData } from '../textureEditorComponent';
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
 import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
 
-export const Paintbrush : ToolData = {
+export const Paintbrush : IToolData = {
     name: 'Paintbrush',
     type: class {
-        getParameters: () => ToolParameters;
+        getParameters: () => IToolParameters;
         pointerObservable: any;
         isPainting: boolean;
         GUI: {
-            radiusLabel? : TextBlock;
-            radiusSlider? : Slider;
-        } = {};
+            radiusLabel : TextBlock;
+            radiusSlider : Slider;
+        };
         radius = 15;
 
-        constructor(getParameters: () => ToolParameters) {
+        constructor(getParameters: () => IToolParameters) {
             this.getParameters = getParameters;
         }
 
@@ -36,27 +36,28 @@ export const Paintbrush : ToolData = {
         
         setup () {
             const {scene, getMouseCoordinates, GUI, canvas2D} = this.getParameters();
-            this.GUI.radiusLabel = new TextBlock();
-            this.GUI.radiusLabel.text = `Brush Width: ${this.radius}`;
-            this.GUI.radiusLabel.color = 'white';
-            this.GUI.radiusLabel.height = '20px';
-            this.GUI.radiusLabel.style = GUI.style;
-            GUI.toolWindow.addControl(this.GUI.radiusLabel);
-            this.GUI.radiusSlider = new Slider();
-            this.GUI.radiusSlider.height = '20px';
-            this.GUI.radiusSlider.value = this.radius;
-            this.GUI.radiusSlider.minimum = 1;
-            this.GUI.radiusSlider.maximum = 100;
-            this.GUI.radiusSlider.step = 1;
-            this.GUI.radiusSlider.isThumbCircle = true;
-            this.GUI.radiusSlider.background = '#a3a3a3';
-            this.GUI.radiusSlider.color = '#33648f';
-            this.GUI.radiusSlider.borderColor = '#33648f';
-            this.GUI.radiusSlider.onValueChangedObservable.add(value => {
+            const radiusLabel = new TextBlock();
+            radiusLabel.text = `Brush Width: ${this.radius}`;
+            radiusLabel.color = 'white';
+            radiusLabel.height = '20px';
+            radiusLabel.style = GUI.style;
+            GUI.toolWindow.addControl(radiusLabel);
+            const radiusSlider = new Slider();
+            radiusSlider.height = '20px';
+            radiusSlider.value = this.radius;
+            radiusSlider.minimum = 1;
+            radiusSlider.maximum = 100;
+            radiusSlider.step = 1;
+            radiusSlider.isThumbCircle = true;
+            radiusSlider.background = '#a3a3a3';
+            radiusSlider.color = '#33648f';
+            radiusSlider.borderColor = '#33648f';
+            radiusSlider.onValueChangedObservable.add(value => {
                 this.radius = value;
-                this.GUI.radiusLabel!.text = `Brush Width: ${this.radius}`;
+                this.GUI.radiusLabel.text = `Brush Width: ${this.radius}`;
             });
-            GUI.toolWindow.addControl(this.GUI.radiusSlider);
+            GUI.toolWindow.addControl(radiusSlider);
+            this.GUI = {radiusLabel, radiusSlider};
 
             this.pointerObservable = scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
@@ -82,8 +83,7 @@ export const Paintbrush : ToolData = {
             this.isPainting = false;
         }
         cleanup () {
-            this.GUI.radiusLabel?.dispose();
-            this.GUI.radiusSlider?.dispose();
+            Object.entries(this.GUI).forEach(([key, value]) => value.dispose());
             this.isPainting = false;
             if (this.pointerObservable) {
                 this.getParameters().scene.onPointerObservable.remove(this.pointerObservable);

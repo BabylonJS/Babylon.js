@@ -1,14 +1,14 @@
-import { ToolParameters, ToolData } from '../textureEditorComponent';
+import { IToolParameters, IToolData } from '../textureEditorComponent';
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 
-export const Eyedropper : ToolData = {
+export const Eyedropper : IToolData = {
     name: 'Eyedropper',
     type: class {
-        getParameters: () => ToolParameters;
+        getParameters: () => IToolParameters;
         pointerObservable: any;
         isPicking: boolean;
 
-        constructor(getParameters: () => ToolParameters) {
+        constructor(getParameters: () => IToolParameters) {
             this.getParameters = getParameters;
         }
 

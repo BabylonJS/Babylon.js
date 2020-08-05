@@ -1,11 +1,11 @@
-import { ToolData, ToolParameters } from '../textureEditorComponent';
+import { IToolData, IToolParameters } from '../textureEditorComponent';
 import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
 import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
 
-export const Contrast : ToolData = {
+export const Contrast : IToolData = {
     name: 'Contrast/Exposure',
     type: class {
-        getParameters: () => ToolParameters;
+        getParameters: () => IToolParameters;
         contrast : number = 1.0;
         exposure : number = 1.0;
         GUI: {
@@ -14,7 +14,7 @@ export const Contrast : ToolData = {
             exposureLabel : TextBlock;
             exposureSlider : Slider;
         }
-        constructor(getParameters: () => ToolParameters) {
+        constructor(getParameters: () => IToolParameters) {
             this.getParameters = getParameters;
         }
         setExposure(exposure : number) {
