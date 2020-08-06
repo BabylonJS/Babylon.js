@@ -15,6 +15,7 @@ import { CustomPropertyGridComponent } from '../customPropertyGridComponent';
 import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 
+
 interface ISkeletonPropertyGridComponentProps {
     globalState: GlobalState;
     skeleton: Skeleton,
@@ -24,6 +25,7 @@ interface ISkeletonPropertyGridComponentProps {
 
 export class SkeletonPropertyGridComponent extends React.Component<ISkeletonPropertyGridComponentProps> {
     private _skeletonViewersEnabled = false;
+
     private _skeletonViewerDisplayOptions = { 
         displayMode : SkeletonViewer.DISPLAY_LINES,
         sphereBaseSize : 0.15,
@@ -33,6 +35,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         midStepFactor : 0.155
 
     }
+
     private _skeletonViewers = new Array<SkeletonViewer>();
 
     constructor(props: ISkeletonPropertyGridComponentProps) {
@@ -58,6 +61,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     if (found) {
                         continue;
                     }
+
                     var viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, false, 3, { 
                         displayMode: this._skeletonViewerDisplayOptions.displayMode,
                         displayOptions : {
@@ -68,6 +72,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                             midStepFactor : this._skeletonViewerDisplayOptions.midStepFactor
                         }
                     });
+
                     viewer.isEnabled = true;
                     this._skeletonViewers.push(viewer);
                     if (!mesh.reservedDataStore) {

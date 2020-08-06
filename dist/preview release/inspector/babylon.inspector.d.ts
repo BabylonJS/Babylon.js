@@ -365,6 +365,7 @@ declare module INSPECTOR {
         onChange?: (newvalue: BABYLON.Vector3) => void;
         useEuler?: boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+        noSlider?: boolean;
     }
     export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, {
         isExpanded: boolean;
@@ -2223,10 +2224,12 @@ declare module INSPECTOR {
     }
     export class SkeletonPropertyGridComponent extends React.Component<ISkeletonPropertyGridComponentProps> {
         private _skeletonViewersEnabled;
+        private _skeletonViewerDisplayOptions;
         private _skeletonViewers;
         constructor(props: ISkeletonPropertyGridComponentProps);
         switchSkeletonViewers(): void;
         checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps): void;
+        changeDisplayMode(): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
         onOverrideMeshLink(): void;
         render(): JSX.Element;

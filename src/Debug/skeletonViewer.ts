@@ -505,6 +505,27 @@ export class SkeletonViewer {
             this._debugMesh.color = this.color;
         }
     }
+    /** Changes the displayMode of the skeleton viewer
+     * @param mode The displayMode numerical value
+     */
+    public changeDisplayMode(mode: number): void {
+        let wasEnabled = (this.isEnabled) ? true : false;
+        if (this.displayMode !== mode) {
+            console.log("Change Display Mode!", mode, wasEnabled);
+            this.isEnabled = false;
+            if (this._debugMesh) {
+                this._debugMesh.dispose();
+                this._debugMesh = null;
+                this.ready = false;
+            }
+            this.displayMode = mode;
+
+            this.update();
+            this._bindObs();
+            this.isEnabled = wasEnabled;
+            console.log(this._utilityLayer, this._debugMesh);
+        }
+    }
 
     /** Changes the displayMode of the skeleton viewer
      * @param mode The displayMode numerical value
