@@ -70,6 +70,10 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         }
     }
 
+    getWindow() {
+        return this._window;
+    }
+
     render() {
         if (!this.state.isComponentMounted || this._container === null) {
             return null;
