@@ -339,7 +339,7 @@ export class SkeletonViewer {
                     return;
                 }
                 getAbsoluteRestPose(bone.getParent(), matrix);
-                bone.getTPose().multiplyToRef(matrix, matrix);
+                bone.getBindPose().multiplyToRef(matrix, matrix);
                 return;
             };
 
