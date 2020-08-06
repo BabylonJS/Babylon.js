@@ -194,6 +194,11 @@ export class TextureCanvasManager {
                     uniform bool g;
                     uniform bool b;
                     uniform bool a;
+
+                    uniform float x1;
+                    uniform float y1;
+                    uniform float x2;
+                    uniform float y2;
             
                     varying vec2 vUV;
             
@@ -244,13 +249,12 @@ export class TextureCanvasManager {
                                 col.a = 1.0;
                             }
                         }
-                        gl_FragColor = col;
                         gl_FragColor = col * (col.a) + bg * (1.0 - col.a);
                     }`
             },
         {
             attributes: ['position', 'uv'],
-            uniforms: ['worldViewProjection', 'textureSampler', 'r', 'g', 'b', 'a']
+            uniforms: ['worldViewProjection', 'textureSampler', 'r', 'g', 'b', 'a', 'x1', 'y1', 'x2', 'y2']
         });
 
         this._planeMaterial.setTexture('textureSampler', this._channelsTexture);
@@ -258,6 +262,10 @@ export class TextureCanvasManager {
         this._planeMaterial.setFloat('g', 1.0);
         this._planeMaterial.setFloat('b', 1.0);
         this._planeMaterial.setFloat('a', 1.0);
+        this._planeMaterial.setFloat('x1', -1.0);
+        this._planeMaterial.setFloat('y1', -1.0);
+        this._planeMaterial.setFloat('x2', -1.0);
+        this._planeMaterial.setFloat('y2', -1.0);
         this._plane.material = this._planeMaterial;
         
         const adt = AdvancedDynamicTexture.CreateFullscreenUI('gui', true, this._scene);

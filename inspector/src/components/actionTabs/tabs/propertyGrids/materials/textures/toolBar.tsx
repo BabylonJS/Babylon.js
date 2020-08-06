@@ -79,7 +79,9 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
                 </div>
             </div>
             <div id='color' onClick={() => this.setState({pickerOpen: !this.state.pickerOpen})} title='Color' className={`icon button${this.state.pickerOpen ? ` active` : ``}`}>
-                <div id='activeColor' style={{backgroundColor: this.props.metadata.color}}></div>
+                <div id='active-color-bg'>
+                    <div id='active-color' style={{backgroundColor: this.props.metadata.color, opacity: this.props.metadata.opacity}}></div>
+                </div>
             </div>
             {
                 this.state.pickerOpen &&

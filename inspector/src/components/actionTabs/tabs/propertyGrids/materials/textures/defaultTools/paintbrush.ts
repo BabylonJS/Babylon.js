@@ -2,12 +2,13 @@ import { IToolParameters, IToolData, IToolType } from '../textureEditorComponent
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
 import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
+import { Observer, Nullable } from 'babylonjs';
 
 export const Paintbrush : IToolData = {
     name: 'Paintbrush',
     type: class implements IToolType {
         getParameters: () => IToolParameters;
-        pointerObservable: any;
+        pointerObserver: Nullable<Observer<PointerInfo>>;
         isPainting: boolean;
         GUI: {
             radiusLabel : TextBlock;
@@ -59,7 +60,7 @@ export const Paintbrush : IToolData = {
             GUI.toolWindow.addControl(radiusSlider);
             this.GUI = {radiusLabel, radiusSlider};
 
-            this.pointerObservable = scene.onPointerObservable.add((pointerInfo) => {
+            this.pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         if (pointerInfo.event.button == 0) {
@@ -85,8 +86,8 @@ export const Paintbrush : IToolData = {
         cleanup () {
             Object.entries(this.GUI).forEach(([key, value]) => value.dispose());
             this.isPainting = false;
-            if (this.pointerObservable) {
-                this.getParameters().scene.onPointerObservable.remove(this.pointerObservable);
+            if (this.pointerObserver) {
+                this.getParameters().scene.onPointerObservable.remove(this.pointerObserver);
             }
         }
     },

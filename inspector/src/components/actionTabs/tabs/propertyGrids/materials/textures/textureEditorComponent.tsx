@@ -114,7 +114,13 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             activeToolIndex: -1,
             metadata: {
                 color: '#ffffff',
-                opacity: 1
+                opacity: 1,
+                select: {
+                    x1: -1,
+                    y1: -1,
+                    x2: -1,
+                    y2: -1
+                }
             },
             channels,
             pixelData: {},
