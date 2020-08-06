@@ -255,7 +255,7 @@ export class SkeletonViewer {
         for (var i = 0; i < len; i++) {
             var bone = bones[i];
             var points = this._debugLines[idx];
-            if (bone._index === -1) {
+            if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())) {
                 continue;
             }
             if (!points) {
@@ -279,7 +279,7 @@ export class SkeletonViewer {
         for (var i = len - 1; i >= 0; i--) {
             var childBone = bones[i];
             var parentBone = childBone.getParent();
-            if (!parentBone) {
+            if (!parentBone || !this._boneIndices.has(childBone.getIndex())) {
                 continue;
             }
             var points = this._debugLines[boneNum];
