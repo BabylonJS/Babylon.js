@@ -89,9 +89,15 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.props.globalState.enableLightGizmo(this._selectedEntity, true);
                         this.forceUpdate();
                     }
-                    manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                    manager.attachToNode(this._selectedEntity.reservedDataStore.lightGizmo.attachedNode);
+                } else if (className.indexOf("Camera") !== -1) {
+                    if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.cameraGizmo) {
+                        this.props.globalState.enableCameraGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
+                    manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
                 } else {
-                    manager.attachToMesh(null);
+                    manager.attachToNode(null);
                 }
             }
         });
@@ -158,7 +164,23 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     var gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
                     let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
                         for (var g of (this.props.globalState.lightGizmos as any)) {
-                            if (g.attachedMesh == m) {
+                            if (g.attachedNode == m) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                    if (pickInfo && pickInfo.hit && this.props.onSelectionChangedObservable) {
+                        this.props.onSelectionChangedObservable.notifyObservers(pickInfo.pickedMesh);
+                        return;
+                    }
+                }
+                // Pick camera gizmos
+                if (this.props.globalState.cameraGizmos.length > 0) {
+                    var gizmoScene = this.props.globalState.cameraGizmos[0].gizmoLayer.utilityLayerScene;
+                    let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
+                        for (var g of (this.props.globalState.cameraGizmos as any)) {
+                            if (g.attachedNode == m) {
                                 return true;
                             }
                         }
@@ -207,7 +229,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     }
                     for (var gizmo of this.props.globalState.lightGizmos) {
                         if (gizmo._rootMesh == node) {
-                            manager.attachToMesh(gizmo.attachedMesh);
+                            manager.attachToNode(gizmo.attachedNode);
                         }
                     }
                 }
@@ -318,7 +340,13 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.props.globalState.enableLightGizmo(this._selectedEntity, true);
                         this.forceUpdate();
                     }
-                    manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                    manager.attachToNode(this._selectedEntity.reservedDataStore.lightGizmo.attachedNode);
+                } else if (className.indexOf("Camera") !== -1) {
+                    if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.cameraGizmo) {
+                        this.props.globalState.enableCameraGizmo(this._selectedEntity, true);
+                        this.forceUpdate();
+                    }
+                    manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
                 }
             }
         }

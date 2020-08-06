@@ -8,7 +8,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { Scene } from '../scene';
 import { TransformNode } from '../Meshes/transformNode';
-import { Camera } from '../Cameras';
+import { Camera } from '../Cameras/camera';
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
 import { Matrix } from '../Maths/math';
@@ -69,6 +69,11 @@ export class CameraGizmo extends Gizmo {
 
             this._cameraLinesMesh.parent = this._rootMesh;
 
+            if (!this.attachedMesh!.reservedDataStore) {
+                this.attachedMesh!.reservedDataStore = {};
+            }
+            this.attachedMesh!.reservedDataStore.cameraGizmo = this;
+
             // Add lighting to the camera gizmo
             var gizmoLight = this.gizmoLayer._getSharedGizmoLight();
             gizmoLight.includedOnlyMeshes = gizmoLight.includedOnlyMeshes.concat(this._cameraMesh.getChildMeshes(false));
@@ -103,18 +108,17 @@ export class CameraGizmo extends Gizmo {
         }
 
         // frustum matrix
-        var invProjection = new Matrix;
-        this._camera.getProjectionMatrix().invertToRef(invProjection);
-        this._cameraLinesMesh.setPivotMatrix(invProjection, false);
+        this._camera.getProjectionMatrix().invertToRef(this._invProjection);
+        this._cameraLinesMesh.setPivotMatrix(this._invProjection, false);
 
-        this._cameraLinesMesh.scaling.x = 1/this._rootMesh.scaling.x;
-        this._cameraLinesMesh.scaling.y = 1/this._rootMesh.scaling.y;
-        this._cameraLinesMesh.scaling.z = 1/this._rootMesh.scaling.z;
+        this._cameraLinesMesh.scaling.x = 1 / this._rootMesh.scaling.x;
+        this._cameraLinesMesh.scaling.y = 1 / this._rootMesh.scaling.y;
+        this._cameraLinesMesh.scaling.z = 1 / this._rootMesh.scaling.z;
     }
 
     // Static helper methods
-    private static _Scale = 0.007;
-
+    private static _Scale = 0.05;
+    private _invProjection = new Matrix();
     /**
      * Disposes of the camera gizmo
      */
@@ -133,19 +137,19 @@ export class CameraGizmo extends Gizmo {
         var box = BoxBuilder.CreateBox(root.name, {width: 1.0, height: 0.8, depth: 0.5 }, scene);
         box.parent = mesh;
 
-        var cyl1 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop:0.8, diameterBottom:0.8}, scene);
+        var cyl1 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop: 0.8, diameterBottom: 0.8}, scene);
         cyl1.parent = mesh;
         cyl1.position.y = 0.3;
         cyl1.position.x = -0.6;
         cyl1.rotation.x = Math.PI * 0.5;
 
-        var cyl2 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop:0.6, diameterBottom:0.6}, scene);
+        var cyl2 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop: 0.6, diameterBottom: 0.6}, scene);
         cyl2.parent = mesh;
         cyl2.position.y = 0.5;
         cyl2.position.x = 0.4;
         cyl2.rotation.x = Math.PI * 0.5;
 
-        var cyl3 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop:0.5, diameterBottom:0.5}, scene);
+        var cyl3 = CylinderBuilder.CreateCylinder(root.name, {height: 0.5, diameterTop: 0.5, diameterBottom: 0.5}, scene);
         cyl3.parent = mesh;
         cyl3.position.y = 0.0;
         cyl3.position.x = 0.6;
@@ -169,7 +173,7 @@ export class CameraGizmo extends Gizmo {
             {
                 var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
                 line.parent = mesh;
-                var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3( 1, -1 + x, -1 + y)] }, scene);
+                var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)] }, scene);
                 line.parent = mesh;
                 var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x,  1, -1 + y)] }, scene);
                 line.parent = mesh;
