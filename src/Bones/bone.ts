@@ -216,6 +216,7 @@ export class Bone extends Node {
 
     /**
      * Gets the bind pose matrix
+     * @returns the bind pose matrix
      */
     public getBindPose(): Matrix {
         return this._bindPose;
