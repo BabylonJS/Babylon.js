@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { SketchPicker } from 'react-color';
-import { IToolData } from './textureEditorComponent';
+import { IToolData, IToolType } from './textureEditorComponent';
 
 export interface ITool extends IToolData {
-    instance: any;
+    instance: IToolType;
 }
 
 interface IToolBarProps {

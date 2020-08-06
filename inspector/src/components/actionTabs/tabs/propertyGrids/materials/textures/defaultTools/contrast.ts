@@ -1,10 +1,10 @@
-import { IToolData, IToolParameters } from '../textureEditorComponent';
+import { IToolData, IToolParameters, IToolType } from '../textureEditorComponent';
 import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
 import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
 
 export const Contrast : IToolData = {
     name: 'Contrast/Exposure',
-    type: class {
+    type: class implements IToolType {
         getParameters: () => IToolParameters;
         contrast : number = 1.0;
         exposure : number = 1.0;
@@ -23,7 +23,6 @@ export const Contrast : IToolData = {
             const {scene3D, updateTexture} = this.getParameters();
             scene3D.imageProcessingConfiguration.isEnabled = true;
             scene3D.imageProcessingConfiguration.exposure = this.computeExposure(this.exposure);
-            console.log(this.computeExposure(this.exposure));
             updateTexture();
         }
         setContrast(contrast : number) {
@@ -34,12 +33,11 @@ export const Contrast : IToolData = {
             scene3D.imageProcessingConfiguration.contrast = this.computeContrast(contrast);
             updateTexture();
         }
-        /**
-         * Maps slider values to post processing values using an exponential regression
-         */
+        /** Maps slider values to post processing values using an exponential regression */
         computeExposure(sliderValue : number) {
             return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
         }
+        /** Maps slider values to post processing values using an exponential regression */
         computeContrast(sliderValue : number) {
             return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
         }
@@ -94,9 +92,9 @@ export const Contrast : IToolData = {
     usesWindow: true,
     is3D: true,
     icon: `PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0i
-    NDAiIGhlaWdodD0iNDAiIHN0eWxlPSJmaWxsOm5vbmUiLz48cGF0aCBkPSJNMjkuMjUsMjVhLjc2Ljc2LDAsMCwxLC43NS43NS43NS43NSwwLDAsMS0uNjUuNzRIMjYu
-    NXYyLjc1YS43Ni43NiwwLDAsMS0uNzUuNzUuNzUuNzUsMCwwLDEtLjc0LS42NVYyNi41SDE2Ljc1YTMuMjUsMy4yNSwwLDAsMS0zLjI0LTMuMDdWMTVIMTAuNzVhLjc2
-    Ljc2LDAsMCwxLS43NS0uNzUuNzUuNzUsMCwwLDEsLjY1LS43NEgxMy41VjEwLjc1YS43Ni43NiwwLDAsMSwuNzUtLjc1Ljc1Ljc1LDAsMCwxLC43NC42NVYxMy41aDBW
-    MTVoMHY4LjI1QTEuNzUsMS43NSwwLDAsMCwxNi42MSwyNUgyOS4yNVpNMTYsMTMuNWg3LjI1YTMuMjUsMy4yNSwwLDAsMSwzLjI0LDMuMDdWMjRIMjVWMTYuNzVBMS43
-    NSwxLjc1LDAsMCwwLDIzLjM5LDE1SDE2WiIgc3R5bGU9ImZpbGw6I2ZmZiIvPjwvc3ZnPg==`
+    NDAiIGhlaWdodD0iNDAiIHN0eWxlPSJmaWxsOm5vbmUiLz48cGF0aCBkPSJNMTcuNTUsMjYuNTVsOC41OS0zLjIxQTYuODYsNi44NiwwLDAsMSwyNCwyNS43NWwtMy4x
+    OSwxLjE5QTcsNywwLDAsMSwxNy41NSwyNi41NVpNMjAsMTEuNUE4LjUsOC41LDAsMSwwLDI4LjUsMjAsOC41MSw4LjUxLDAsMCwwLDIwLDExLjVNMjAsMTBBMTAsMTAs
+    MCwxLDEsMTAsMjAsMTAsMTAsMCwwLDEsMjAsMTBabS0yLjQ1LDUuMzQsNS0xLjg2QTcsNywwLDAsMCwxOS40NCwxM2wtMS44OS43MVptMCwzLjIsNy44OC0yLjk0YTYu
+    ODgsNi44OCwwLDAsMC0xLjE5LTEuMTZsLTYuNjksMi41Wm0wLDMuMiw5LjIzLTMuNDRhNy42OCw3LjY4LDAsMCwwLS41Mi0xLjQxbC04LjcxLDMuMjVabTAsMS42djEu
+    Nmw5LjI4LTMuNDZBNi42Nyw2LjY3LDAsMCwwLDI3LDE5LjgyWiIgc3R5bGU9ImZpbGw6I2ZmZiIvPjwvc3ZnPg==`
 }

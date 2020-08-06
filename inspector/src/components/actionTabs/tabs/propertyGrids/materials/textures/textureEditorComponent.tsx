@@ -36,32 +36,55 @@ interface ITextureEditorComponentState {
 }
 
 export interface IToolParameters {
+    /** The visible scene in the editor. Useful for adding pointer and keyboard events. */
     scene: Scene;
+    /** The 2D canvas which tools can paint on using the canvas API. */
     canvas2D: HTMLCanvasElement;
+    /** The 3D scene which tools can add post processes to. */
     scene3D: Scene;
+    /** The size of the texture. */
     size: ISize;
+    /** Pushes the editor texture back to the original scene. This should be called every time a tool makes any modification to a texture. */
     updateTexture: () => void;
+    /** The metadata object which is shared between all tools. Feel free to store any information here. Do not set this directly: instead call setMetadata. */
     metadata: any;
+    /** Call this when you want to mutate the metadata. */
     setMetadata: (data : any) => void;
     /** Returns the texture coordinates under the cursor */
     getMouseCoordinates: (pointerInfo : PointerInfo) => Vector2;
+    /** An object which holds the GUI's ADT as well as the tool window. */
     GUI: IToolGUI;
     /** Provides access to the BABYLON namespace */
     BABYLON: any;
 }
+
 
 /** An interface representing the definition of a tool */
 export interface IToolData {
     /** Name to display on the toolbar */
     name: string;
     /** A class definition for the tool including setup and cleanup methods */
-    type: any;
+    type: IToolConstructable;
     /**  An SVG icon encoded in Base64 */
     icon: string;
     /** Whether the tool uses the draggable GUI window */
     usesWindow? : boolean;
     /** Whether the tool uses postprocesses */
     is3D? : boolean;
+}
+
+export interface IToolType {
+    /** Called when the tool is selected. */
+    setup: () => void;
+    /** Called when the tool is deselected. */
+    cleanup: () => void;
+    /** Optional. Called when the user resets the texture or uploads a new texture. Tools may want to reset their state when this happens. */
+    onReset?: () => void;
+}
+
+/** For constructable types, TS requires that you define a seperate interface which constructs your actual interface */
+interface IToolConstructable {
+    new (getParameters: () => IToolParameters) : IToolType;
 }
 
 declare global {
@@ -143,7 +166,8 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         tools.forEach(toolData => {
             const tool : ITool = {
                 ...toolData,
-                instance: new toolData.type(() => this.getToolParameters())};
+                instance: new toolData.type(() => this.getToolParameters())
+            };
             newTools = newTools.concat(tool);
         });
         newTools = this.state.tools.concat(newTools);

@@ -1,11 +1,11 @@
-import { IToolParameters, IToolData } from '../textureEditorComponent';
+import { IToolParameters, IToolData, IToolType } from '../textureEditorComponent';
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
 import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
 
 export const Paintbrush : IToolData = {
     name: 'Paintbrush',
-    type: class {
+    type: class implements IToolType {
         getParameters: () => IToolParameters;
         pointerObservable: any;
         isPainting: boolean;
