@@ -251,17 +251,22 @@ export class SkeletonViewer {
 
         let mesh = this.mesh._effectiveMesh;
         var meshPos = mesh.position;
+        let idx = 0;
         for (var i = 0; i < len; i++) {
             var bone = bones[i];
-            var points = this._debugLines[i];
+            var points = this._debugLines[idx];
+            if (bone._index === -1) {
+                continue;
+            }
             if (!points) {
                 points = [Vector3.Zero(), Vector3.Zero()];
-                this._debugLines[i] = points;
+                this._debugLines[idx] = points;
             }
             this._getBonePosition(points[0], bone, meshMat);
             this._getBonePosition(points[1], bone, meshMat, 0, bone.length, 0);
             points[0].subtractInPlace(meshPos);
             points[1].subtractInPlace(meshPos);
+            idx++;
         }
     }
 
