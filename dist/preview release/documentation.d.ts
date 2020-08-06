@@ -15026,6 +15026,7 @@ declare module BABYLON {
         private _skeleton;
         private _localMatrix;
         private _restPose;
+        private _bindPose;
         private _baseMatrix;
         private _absoluteTransform;
         private _invertedAbsoluteTransform;
@@ -15111,6 +15112,16 @@ declare module BABYLON {
          * @param matrix the local-space rest pose to set for this bone
          */
         setRestPose(matrix: Matrix): void;
+        /**
+         * Gets the bind pose matrix
+         * @returns the bind pose matrix
+         */
+        getBindPose(): Matrix;
+        /**
+         * Sets the bind pose matrix
+         * @param matrix the local-space bind pose to set for this bone
+         */
+        setBindPose(matrix: Matrix): void;
         /**
          * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
          */
@@ -50967,6 +50978,7 @@ declare module BABYLON.Debug {
         private _obs;
         /** The Utility Layer to render the gizmos in. */
         private _utilityLayer;
+        private _boneIndices;
         /** Gets the Scene. */
         get scene(): Scene;
         /** Gets the utilityLayer. */
