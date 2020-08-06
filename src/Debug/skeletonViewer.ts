@@ -490,7 +490,6 @@ export class SkeletonViewer {
         if (!this._utilityLayer) {
             return;
         }
-        console.log("dlup");
 
         if (this.autoUpdateBonesMatrices) {
             this.skeleton.computeAbsoluteTransforms();
@@ -523,7 +522,6 @@ export class SkeletonViewer {
     public changeDisplayMode(mode: number): void {
         let wasEnabled = (this.isEnabled) ? true : false;
         if (this.displayMode !== mode) {
-            console.log("Change Display Mode!", mode, wasEnabled);
             this.isEnabled = false;
             if (this._debugMesh) {
                 this._debugMesh.dispose();
@@ -535,7 +533,6 @@ export class SkeletonViewer {
             this.update();
             this._bindObs();
             this.isEnabled = wasEnabled;
-            console.log(this._utilityLayer, this._debugMesh);
         }
     }
 
