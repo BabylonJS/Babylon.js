@@ -60,9 +60,7 @@ export class CameraGizmo extends Gizmo {
                 this._cameraLinesMesh.dispose();
             }
             this._cameraMesh = CameraGizmo._CreateCameraMesh(this.gizmoLayer.utilityLayerScene);
-            var invProjection = new Matrix;
-            camera.getProjectionMatrix().invertToRef(invProjection);
-            this._cameraLinesMesh = CameraGizmo._CreateCameraLines(this.gizmoLayer.utilityLayerScene, invProjection);
+            this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene);
 
             this._cameraMesh.getChildMeshes(false).forEach((m) => {
                 m.material = this._material;
@@ -103,6 +101,11 @@ export class CameraGizmo extends Gizmo {
         if (this._camera.parent) {
             this._attachedMeshParent.freezeWorldMatrix(this._camera.parent.getWorldMatrix());
         }
+
+        // frustum matrix
+        var invProjection = new Matrix;
+        this._camera.getProjectionMatrix().invertToRef(invProjection);
+        this._cameraLinesMesh.setPivotMatrix(invProjection, false);
 
         this._cameraLinesMesh.scaling.x = 1/this._rootMesh.scaling.x;
         this._cameraLinesMesh.scaling.y = 1/this._rootMesh.scaling.y;
@@ -155,46 +158,24 @@ export class CameraGizmo extends Gizmo {
         return root;
     }
 
-    private static _CreateCameraLines(scene: Scene, invProjection:Matrix) {
+    private static _CreateCameraFrustum(scene: Scene) {
         var root = new Mesh("rootCameraGizmo", scene);
         var mesh = new Mesh(root.name, scene);
         mesh.parent = root;
 
-        var v0Res = new Vector3(0,0,0);
-        var v1Res = new Vector3(0,0,0);
-
         for (var y = 0; y < 4; y += 2)
         {
             for (var x = 0; x < 4; x += 2)
             {
-                Vector3.TransformCoordinatesToRef(new Vector3(-1 + x, -1 + y, -1), invProjection, v0Res);
-                Vector3.TransformCoordinatesToRef(new Vector3(-1 + x, -1 + y, 1), invProjection, v1Res);
-                var line = LinesBuilder.CreateLines("lines", { points: [v0Res, v1Res] }, scene);
+                var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
+                line.parent = mesh;
+                var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3( 1, -1 + x, -1 + y)] }, scene);
+                line.parent = mesh;
+                var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x,  1, -1 + y)] }, scene);
                 line.parent = mesh;
             }
         }
 
-        for (var y = 0; y < 4; y += 2)
-        {
-            for (var x = 0; x < 4; x += 2)
-            {
-                Vector3.TransformCoordinatesToRef(new Vector3(-1, -1 + x, -1 + y), invProjection, v0Res);
-                Vector3.TransformCoordinatesToRef(new Vector3( 1, -1 + x, -1 + y), invProjection, v1Res);
-                var line = LinesBuilder.CreateLines("lines", { points: [v0Res, v1Res] }, scene);
-                line.parent = mesh;
-            }
-        }
-
-        for (var y = 0; y < 4; y += 2)
-        {
-            for (var x = 0; x < 4; x += 2)
-            {
-                Vector3.TransformCoordinatesToRef(new Vector3(-1 + x, -1, -1 + y), invProjection, v0Res);
-                Vector3.TransformCoordinatesToRef(new Vector3(-1 + x,  1, -1 + y), invProjection, v1Res);
-                var line = LinesBuilder.CreateLines("lines", { points: [v0Res, v1Res] }, scene);
-                line.parent = mesh;
-            }
-        }
         return root;
     }
 }
