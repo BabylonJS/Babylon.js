@@ -303,7 +303,7 @@ export class SkeletonViewer {
     }
 
     /** function to build and bind sphere joint points and spur bone representations. */
-    private _buildSpheresAndSpurs(spheresOnly = true): Promise<void> {
+    private _buildSpheresAndSpurs(spheresOnly = true): void {
 
         if (this._debugMesh) {
             this._debugMesh.dispose();
@@ -314,22 +314,25 @@ export class SkeletonViewer {
         this._ready = false;
         let scene = this.scene;
         let bones: Bone[] = this.skeleton.bones;
-        let spheres: Mesh[] = [];
+        let spheres: Array<[Mesh, Bone]> = [];
         let spurs: Mesh[] = [];
 
         const animationState = scene.animationsEnabled;
 
+        try {
+            if (this.options.pauseAnimations) {
+                scene.animationsEnabled = false;
+            }
 
-                if (this.options.returnToRest) {
-                    this.skeleton.returnToRest();
-                }
+            if (this.options.returnToRest) {
+                this.skeleton.returnToRest();
+            }
 
-                if (this.autoUpdateBonesMatrices) {
-                    this.skeleton.computeAbsoluteTransforms();
-                }
+            if (this.autoUpdateBonesMatrices) {
+                this.skeleton.computeAbsoluteTransforms();
+            }
 
-                let longestBoneLength = Number.NEGATIVE_INFINITY;
-                let getAbsoluteRestPose = function(bone: Nullable<Bone>, matrix: Matrix) {
+            let longestBoneLength = Number.NEGATIVE_INFINITY;
                     if (bone == null) {
                         matrix.copyFrom(Matrix.Identity());
                         return;
@@ -339,150 +342,141 @@ export class SkeletonViewer {
                     return;
                 };
 
-                let displayOptions = this.options.displayOptions || {};
+            let displayOptions = this.options.displayOptions || {};
 
-                for (let i = 0; i < bones.length; i++) {
-                    let bone: Bone = bones[i];
+            for (let i = 0; i < bones.length; i++) {
+                let bone = bones[i];
 
                 if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())) {
                     continue;
                 }
 
-                    let boneAbsoluteRestTransform = new Matrix();
-                    getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
+                let boneAbsoluteRestTransform = new Matrix();
+                getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
 
-                    let anchorPoint = new Vector3();
-                    boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
+                let anchorPoint = new Vector3();
+                boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
 
-                    bone.children.forEach((bc, i) => {
-                        let childAbsoluteRestTransform : Matrix = new Matrix();
-                        bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
-                        let childPoint = new Vector3();
-                        childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);
+                bone.children.forEach((bc, i) => {
+                    let childAbsoluteRestTransform : Matrix = new Matrix();
+                    bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
+                    let childPoint = new Vector3();
+                    childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);
 
-                        let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
+                    let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
 
-                        if (distanceFromParent > longestBoneLength) {
-                            longestBoneLength = distanceFromParent;
-                        }
-                        if (spheresOnly) {
-                            return;
-                        }
+                    if (distanceFromParent > longestBoneLength) {
+                        longestBoneLength = distanceFromParent;
+                    }
+                    if (spheresOnly) {
+                        return;
+                    }
 
-                        let dir = childPoint.clone().subtract(anchorPoint.clone());
-                        let h = dir.length();
-                        let up = dir.normalize().scale(h);
+                    let dir = childPoint.clone().subtract(anchorPoint.clone());
+                    let h = dir.length();
+                    let up = dir.normalize().scale(h);
 
-                        let midStep = displayOptions.midStep || 0.165;
-                        let midStepFactor = displayOptions.midStepFactor || 0.215;
+                    let midStep = displayOptions.midStep || 0.165;
+                    let midStepFactor = displayOptions.midStepFactor || 0.215;
 
-                        let up0 = up.scale(midStep);
+                    let up0 = up.scale(midStep);
 
-                        let spur = ShapeBuilder.ExtrudeShapeCustom(bc.name + ':spur',
-                        {
-                            shape:  [
-                                        new Vector3(1, -1,  0),
-                                        new Vector3(1,  1,  0),
-                                        new Vector3(-1,  1,  0),
-                                        new Vector3(-1, -1,  0),
-                                        new Vector3(1, -1,  0)
-                                    ],
-                            path:   [ Vector3.Zero(), up0, up ],
-                            scaleFunction:
-                                    (i: number) => {
-                                        switch (i){
-                                            case 0:
-                                            case 2:
-                                            return 0;
-                                            case 1:
-                                            return h * midStepFactor;
-                                        }
+                    let spur = ShapeBuilder.ExtrudeShapeCustom(bc.name + ':spur',
+                    {
+                        shape:  [
+                                    new Vector3(1, -1,  0),
+                                    new Vector3(1,  1,  0),
+                                    new Vector3(-1,  1,  0),
+                                    new Vector3(-1, -1,  0),
+                                    new Vector3(1, -1,  0)
+                                ],
+                        path:   [ Vector3.Zero(), up0, up ],
+                        scaleFunction:
+                                (i: number) => {
+                                    switch (i){
+                                        case 0:
+                                        case 2:
                                         return 0;
-                                    },
-                            sideOrientation: Mesh.DEFAULTSIDE,
-                            updatable: true
-                        },  scene);
+                                        case 1:
+                                        return h * midStepFactor;
+                                    }
+                                    return 0;
+                                },
+                        sideOrientation: Mesh.DEFAULTSIDE,
+                        updatable: false
+                    },  scene);
 
-                        let ind = spur.getIndices() || [];
-                        let mwk: number[] = [], mik: number[] = [];
-
-                        for (let i = 0; i < ind.length; i++) {
-                            mwk.push(1, 0, 0, 0);
-                            mik.push(bone.getIndex(), 0, 0, 0);
-                        }
-                        spur.convertToFlatShadedMesh();
-                        spur.position = anchorPoint.clone();
-
-                        spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
-                        spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
-                        spurs.push(spur);
-
-                    });
-
-                    let sphereBaseSize = displayOptions.sphereBaseSize || 0.2;
-
-                    let sphere = SphereBuilder.CreateSphere(bone.name + ':sphere', {
-                        segments: 6,
-                        diameter: sphereBaseSize,
-                        updatable: true
-                    }, scene);
-
-                    let ind = sphere.getIndices() || [];
                     let mwk: number[] = [], mik: number[] = [];
 
-                    for (let i = 0; i < ind.length; i++) {
+                    for (let i = 0; i < numVertices; i++) {
                         mwk.push(1, 0, 0, 0);
                         mik.push(bone.getIndex(), 0, 0, 0);
                     }
+                    spur.position = anchorPoint.clone();
 
-                    sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
-                    sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
-                    sphere.position = anchorPoint.clone();
-                    spheres.push(sphere);
+                    spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
+                    spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
+
+                    spurs.push(spur);
+                });
+
+                let sphereBaseSize = displayOptions.sphereBaseSize || 0.2;
+
+                let sphere = SphereBuilder.CreateSphere(bone.name + ':sphere', {
+                    segments: 6,
+                    diameter: sphereBaseSize,
+                    updatable: false
+                }, scene);
+
+
+                let mwk: number[] = [], mik: number[] = [];
+
+                    mwk.push(1, 0, 0, 0);
+                    mik.push(bone.getIndex(), 0, 0, 0);
                 }
 
-                let skip = 0;
-                let sphereScaleUnit = displayOptions.sphereScaleUnit || 2;
-                let sphereFactor = displayOptions.sphereFactor || 0.85;
+                sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
+                sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
 
-                for (let i = 0; i < bones.length; i++) {
-                    let bone: Nullable<Bone> = bones[i];
-                    if (bone.getIndex() === -1) {
-                        skip++;
-                        continue;
-                    }
-                    let sphere = spheres[i - skip];
-                    let scale = 1 / (sphereScaleUnit / longestBoneLength);
+                sphere.position = anchorPoint.clone();
+                spheres.push([sphere, bone]);
+            }
 
-                    let _stepsOut = 0;
-                    let _b: Bone = (bone as Bone) || {};
+            let sphereScaleUnit = displayOptions.sphereScaleUnit || 2;
+            let sphereFactor = displayOptions.sphereFactor || 0.85;
 
-                    while ((_b.getParent()) && (_b.getParent() as Bone).getIndex() !== -1) {
-                        _stepsOut++;
-                        _b = (_b.getParent() as Bone);
-                    }
-                    sphere.scaling.scaleInPlace(scale * Math.pow(sphereFactor, _stepsOut));
+            const meshes = [];
+            for (let i = 0; i < spheres.length; i++) {
+                let [sphere, bone] = spheres[i];
+                let scale = 1 / (sphereScaleUnit / longestBoneLength);
+
+                let _stepsOut = 0;
+                let _b = bone;
+
+                while ((_b.getParent()) && (_b.getParent() as Bone).getIndex() !== -1) {
+                    _stepsOut++;
+                    _b = (_b.getParent() as Bone);
                 }
+                sphere.scaling.scaleInPlace(scale * Math.pow(sphereFactor, _stepsOut));
+                meshes.push(sphere);
+            }
 
-                this.debugMesh = Mesh.MergeMeshes(spheres.concat(spurs), true, true);
-                if (this.debugMesh) {
-                    this.debugMesh.renderingGroupId = this.renderingGroupId;
-                    this.debugMesh.skeleton = this.skeleton;
-                    this.debugMesh.parent = this.mesh;
-                    this.debugMesh.computeBonesUsingShaders = this.options.computeBonesUsingShaders ?? true;
-                }
+            this.debugMesh = Mesh.MergeMeshes(meshes.concat(spurs), true, true);
+            if (this.debugMesh) {
+                this.debugMesh.renderingGroupId = this.renderingGroupId;
+                this.debugMesh.skeleton = this.skeleton;
+                this.debugMesh.parent = this.mesh;
+                this.debugMesh.computeBonesUsingShaders = this.options.computeBonesUsingShaders ?? true;
+                this.debugMesh.alwaysSelectAsActiveMesh = true;
+            }
 
             this._revert(animationState);
             this.ready = true;
+        } catch (err) {
+            console.error(err);
             this._revert(animationState);
             this.dispose();
-        }).then(() => {
-            this._revert();
-            this.ready = true;
-        }).catch((err) => {
-            console.log(err);
-            this.dispose();
-        });
+        }
     }
 
     /** Update the viewer to sync with current skeleton state, only used for the line display. */
