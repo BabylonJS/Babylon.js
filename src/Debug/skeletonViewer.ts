@@ -407,6 +407,9 @@ export class SkeletonViewer {
                         updatable: false
                     },  scene);
 
+                    spur.convertToFlatShadedMesh();
+
+                    let numVertices = spur.getTotalVertices();
                     let mwk: number[] = [], mik: number[] = [];
 
                     for (let i = 0; i < numVertices; i++) {
@@ -429,9 +432,11 @@ export class SkeletonViewer {
                     updatable: false
                 }, scene);
 
+                const numVertices = sphere.getTotalVertices();
 
                 let mwk: number[] = [], mik: number[] = [];
 
+                for (let i = 0; i < numVertices; i++) {
                     mwk.push(1, 0, 0, 0);
                     mik.push(bone.getIndex(), 0, 0, 0);
                 }
