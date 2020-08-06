@@ -333,14 +333,15 @@ export class SkeletonViewer {
             }
 
             let longestBoneLength = Number.NEGATIVE_INFINITY;
-                    if (bone == null) {
-                        matrix.copyFrom(Matrix.Identity());
-                        return;
-                    }
-                    getAbsoluteRestPose(bone.getParent(), matrix);
-                    bone.getRestPose().multiplyToRef(matrix, matrix);
+            let getAbsoluteRestPose = function(bone: Nullable<Bone>, matrix: Matrix) {
+                if (bone === null || bone._index === -1) {
+                    matrix.copyFrom(Matrix.Identity());
                     return;
-                };
+                }
+                getAbsoluteRestPose(bone.getParent(), matrix);
+                bone.getTPose().multiplyToRef(matrix, matrix);
+                return;
+            };
 
             let displayOptions = this.options.displayOptions || {};
 
