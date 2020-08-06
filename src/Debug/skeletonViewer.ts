@@ -54,6 +54,8 @@ export class SkeletonViewer {
      /** The Utility Layer to render the gizmos in. */
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
+    private _boneIndices: Set<number>;
+
     /** Gets the Scene. */
     get scene(): Scene {
         return this._scene;
@@ -136,6 +138,21 @@ export class SkeletonViewer {
         options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit ?? 2;
         options.displayOptions.sphereFactor = options.displayOptions.sphereFactor ?? 0.865;
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
+
+        const boneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+        const boneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
+
+        this._boneIndices = new Set();
+
+        if (boneIndices && boneWeights) {
+            for (let i = 0; i < boneIndices.length; ++i) {
+                const index = boneIndices[i], weight = boneWeights[i];
+
+                if (weight !== 0) {
+                    this._boneIndices.add(index);
+                }
+            }
+        }
 
         /* Create Utility Layer */
         this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
@@ -325,12 +342,9 @@ export class SkeletonViewer {
                 for (let i = 0; i < bones.length; i++) {
                     let bone: Bone = bones[i];
 
-                    if (bone._index === null) {
-                        bone._index = i;
-                    }
-                    if (bone._index === -1) {
-                        continue;
-                    }
+                if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())) {
+                    continue;
+                }
 
                     let boneAbsoluteRestTransform = new Matrix();
                     getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
