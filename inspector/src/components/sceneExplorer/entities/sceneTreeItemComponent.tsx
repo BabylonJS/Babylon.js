@@ -14,6 +14,7 @@ import { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from '../../../components/propertyChangedEvent';
 import { LightGizmo } from 'babylonjs/Gizmos/lightGizmo';
+import { CameraGizmo } from 'babylonjs/Gizmos/cameraGizmo';
 import { TmpVectors, Vector3 } from 'babylonjs/Maths/math';
 
 interface ISceneTreeItemComponentProps {
@@ -252,16 +253,28 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     if (!this._posDragEnd) {
                         // Record movement for generating replay code
                         this._posDragEnd = manager.gizmos.positionGizmo!.onDragEndObservable.add(() => {
-                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore ? manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
-                                var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
+                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedNode) {
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.lightGizmo : null;
+                                var objLight: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedNode;
 
-                                if (obj.position) {
+                                if (objLight.position) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = obj
+                                    e.object = objLight
                                     e.property = "position"
-                                    e.value = obj.position;
+                                    e.value = objLight.position;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e)
+                                } else {
+                                    var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.cameraGizmo : null;
+                                    var objCamera: any = (cameraGizmo && cameraGizmo.camera) ? cameraGizmo.camera : manager.gizmos.positionGizmo.attachedNode;
+    
+                                    if (objCamera.position) {
+                                        var e = new PropertyChangedEvent();
+                                        e.object = objCamera
+                                        e.property = "position"
+                                        e.value = objCamera.position;
+                                        this.props.globalState.onPropertyChangedObservable.notifyObservers(e)
+                                    }
+
                                 }
                             }
                         })

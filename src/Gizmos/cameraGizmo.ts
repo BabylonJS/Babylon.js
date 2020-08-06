@@ -1,13 +1,11 @@
 import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { Scene } from '../scene';
-import { TransformNode } from '../Meshes/transformNode';
 import { Camera } from '../Cameras/camera';
 import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
@@ -21,7 +19,6 @@ export class CameraGizmo extends Gizmo {
     private _cameraMesh: Mesh;
     private _cameraLinesMesh: Mesh;
     private _material: StandardMaterial;
-    private _attachedMeshParent: TransformNode;
 
     /**
      * Creates a CameraGizmo
@@ -29,10 +26,7 @@ export class CameraGizmo extends Gizmo {
      */
     constructor(gizmoLayer?: UtilityLayerRenderer) {
         super(gizmoLayer);
-        this.attachedMesh = new AbstractMesh("", this.gizmoLayer.utilityLayerScene);
-        this._attachedMeshParent = new TransformNode("parent", this.gizmoLayer.utilityLayerScene);
 
-        this.attachedMesh.parent = this._attachedMeshParent;
         this._material = new StandardMaterial("cameraGizmoMaterial", this.gizmoLayer.utilityLayerScene);
         this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
@@ -51,6 +45,7 @@ export class CameraGizmo extends Gizmo {
      */
     public set camera(camera: Nullable<Camera>) {
         this._camera = camera;
+        this.attachedNode = camera;
         if (camera) {
             // Create the mesh for the given camera
             if (this._cameraMesh) {
@@ -69,10 +64,10 @@ export class CameraGizmo extends Gizmo {
 
             this._cameraLinesMesh.parent = this._rootMesh;
 
-            if (!this.attachedMesh!.reservedDataStore) {
-                this.attachedMesh!.reservedDataStore = {};
+            if (!this.attachedNode!.reservedDataStore) {
+                this.attachedNode!.reservedDataStore = {};
             }
-            this.attachedMesh!.reservedDataStore.cameraGizmo = this;
+            this.attachedNode!.reservedDataStore.cameraGizmo = this;
 
             // Add lighting to the camera gizmo
             var gizmoLight = this.gizmoLayer._getSharedGizmoLight();
@@ -103,10 +98,6 @@ export class CameraGizmo extends Gizmo {
             return;
         }
 
-        if (this._camera.parent) {
-            this._attachedMeshParent.freezeWorldMatrix(this._camera.parent.getWorldMatrix());
-        }
-
         // frustum matrix
         this._camera.getProjectionMatrix().invertToRef(this._invProjection);
         this._cameraLinesMesh.setPivotMatrix(this._invProjection, false);
@@ -125,7 +116,6 @@ export class CameraGizmo extends Gizmo {
     public dispose() {
         this._material.dispose();
         super.dispose();
-        this._attachedMeshParent.dispose();
     }
 
     private static _CreateCameraMesh(scene: Scene) {
