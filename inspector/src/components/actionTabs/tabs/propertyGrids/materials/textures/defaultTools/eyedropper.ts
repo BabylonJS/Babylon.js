@@ -5,7 +5,7 @@ export const Eyedropper : IToolData = {
     name: 'Eyedropper',
     type: class {
         getParameters: () => IToolParameters;
-        pointerObservable: any;
+        pointerObserver: any;
         isPicking: boolean;
 
         constructor(getParameters: () => IToolParameters) {
@@ -13,18 +13,18 @@ export const Eyedropper : IToolData = {
         }
 
         pick(pointerInfo : PointerInfo) {
-            const p = this.getParameters();
-            const ctx = p.canvas2D.getContext('2d');
-            const {x, y} = p.getMouseCoordinates(pointerInfo);
+            const {canvas2D, setMetadata, getMouseCoordinates} = this.getParameters();
+            const ctx = canvas2D.getContext('2d');
+            const {x, y} = getMouseCoordinates(pointerInfo);
             const pixel = ctx!.getImageData(x, y, 1, 1).data;
-            p.setMetadata({
+            setMetadata({
                 color: '#' + ('000000' + this.rgbToHex(pixel[0], pixel[1], pixel[2])).slice(-6),
                 opacity: pixel[3] / 255
             });
         }
         
         setup () {
-            this.pointerObservable = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
+            this.pointerObserver = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         this.isPicking = true;
@@ -41,8 +41,8 @@ export const Eyedropper : IToolData = {
             this.isPicking = false;
         }
         cleanup () {
-            if (this.pointerObservable) {
-                this.getParameters().scene.onPointerObservable.remove(this.pointerObservable);
+            if (this.pointerObserver) {
+                this.getParameters().scene.onPointerObservable.remove(this.pointerObserver);
             }
         }
         rgbToHex(r: number, g:number, b: number) {
