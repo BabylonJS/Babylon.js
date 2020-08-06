@@ -1158,6 +1158,8 @@ export class GLTFLoader implements IGLTFLoader {
                 baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
             }
 
+            babylonBone.setTPose(baseMatrix);
+
             babylonBone.updateMatrix(baseMatrix, false, false);
             babylonBone._updateDifferenceMatrix(undefined, false);
         }
