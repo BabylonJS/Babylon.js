@@ -291,9 +291,9 @@ export class SkeletonViewer {
     }
 
     /** function to revert the mesh and scene back to the initial state. */
-    private _revert(): void {
+    private _revert(animationState: boolean): void {
         if (this.options.pauseAnimations) {
-            this.scene.animationsEnabled = true;
+            this.scene.animationsEnabled = animationState;
         }
     }
 
@@ -312,11 +312,8 @@ export class SkeletonViewer {
         let spheres: Mesh[] = [];
         let spurs: Mesh[] = [];
 
-        return new Promise((resolve, reject) => {
-            try {
-                if (this.options.pauseAnimations) {
-                    scene.animationsEnabled = false;
-                }
+        const animationState = scene.animationsEnabled;
+
 
                 if (this.options.returnToRest) {
                     this.skeleton.returnToRest();
@@ -470,12 +467,10 @@ export class SkeletonViewer {
                     this.debugMesh.computeBonesUsingShaders = this.options.computeBonesUsingShaders ?? true;
                 }
 
-                resolve();
-            } catch (err) {
-                console.log(err);
-                this._revert();
-                this.dispose();
-            }
+            this._revert(animationState);
+            this.ready = true;
+            this._revert(animationState);
+            this.dispose();
         }).then(() => {
             this._revert();
             this.ready = true;
