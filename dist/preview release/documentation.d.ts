@@ -51041,6 +51041,11 @@ declare module BABYLON.Debug {
          * @param mode The displayMode numerical value
          */
         changeDisplayMode(mode: number): void;
+        /** Changes the displayMode of the skeleton viewer
+         * @param option String of the option name
+         * @param value The numerical option value
+         */
+        changeDisplayOptions(option: string, value: number): void;
         /** Release associated resources */
         dispose(): void;
     }
@@ -52440,6 +52445,7 @@ declare module BABYLON {
         private readonly _native;
         /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
         private readonly INVALID_HANDLE;
+        private _boundBuffersVertexArray;
         getHardwareScalingLevel(): number;
         constructor();
         dispose(): void;
@@ -52464,6 +52470,9 @@ declare module BABYLON {
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer;
         createVertexBuffer(data: DataArray, updateable?: boolean): NativeDataBuffer;
+        protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
         bindBuffers(vertexBuffers: {
             [key: string]: VertexBuffer;
         }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
@@ -80755,7 +80764,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
          */
-        _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+        _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /**
          * Define this method to modify the default behavior when creating materials.
          * @param context The context when loading the asset
@@ -81019,7 +81028,7 @@ declare module BABYLON.GLTF2 {
         private _loadVertexAccessorAsync;
         private _loadMaterialMetallicRoughnessPropertiesAsync;
         /** @hidden */
-        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign?: (babylonMaterial: Material) => void): Promise<Material>;
+        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign?: (babylonMaterial: Material) => void): Promise<Material>;
         private _createDefaultMaterial;
         /**
          * Creates a Babylon material from a glTF material.
@@ -81739,7 +81748,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */
-        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */
         _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */

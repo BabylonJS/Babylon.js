@@ -51041,6 +51041,11 @@ declare module BABYLON.Debug {
          * @param mode The displayMode numerical value
          */
         changeDisplayMode(mode: number): void;
+        /** Changes the displayMode of the skeleton viewer
+         * @param option String of the option name
+         * @param value The numerical option value
+         */
+        changeDisplayOptions(option: string, value: number): void;
         /** Release associated resources */
         dispose(): void;
     }
