@@ -14,7 +14,7 @@ interface ISvgDraggableAreaProps {
     panningY: (panningY: number) => void;
     panningX: (panningX: number) => void;
     setCurrentFrame: (direction: number) => void;
-    positionCanvas?: number;
+    positionCanvas?: Vector2;
     repositionCanvas?: boolean;
     canvasPositionEnded: () => void;
     resetActionableKeyframe: () => void;
@@ -61,7 +61,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
     componentWillReceiveProps(newProps: ISvgDraggableAreaProps) {
         if (newProps.positionCanvas !== this.props.positionCanvas && newProps.positionCanvas !== undefined && newProps.repositionCanvas) {
-            this.setState({ panX: newProps.positionCanvas }, () => {
+            this.setState({ panX: newProps.positionCanvas.x, panY: newProps.positionCanvas.y }, () => {
                 this.props.canvasPositionEnded();
             });
         }
