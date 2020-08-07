@@ -2289,6 +2289,7 @@ declare module INSPECTOR {
         switchSkeletonViewers(): void;
         checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps): void;
         changeDisplayMode(): void;
+        changeDisplayOptions(option: string, value: number): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
         onOverrideMeshLink(): void;
         render(): JSX.Element;
