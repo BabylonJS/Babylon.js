@@ -17,6 +17,7 @@ interface IVector3LineComponentProps {
     onChange?: (newvalue: Vector3) => void;
     useEuler?: boolean,
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    noSlider?: boolean;
 }
 
 export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean, value: Vector3 }> {
@@ -131,11 +132,19 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                     </div>
                 }
                 {
-                    this.state.isExpanded && this.props.useEuler &&
+                    this.state.isExpanded && this.props.useEuler && !this.props.noSlider &&
                     <div className="secondLine">
                         <SliderLineComponent label="x" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.x)} onChange={value => this.updateStateX(Tools.ToRadians(value))} />
                         <SliderLineComponent label="y" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.y)} onChange={value => this.updateStateY(Tools.ToRadians(value))} />
                         <SliderLineComponent label="z" minimum={0} maximum={360} step={0.1} directValue={Tools.ToDegrees(this.state.value.z)} onChange={value => this.updateStateZ(Tools.ToRadians(value))} />
+                    </div>
+                }
+                {
+                    this.state.isExpanded && this.props.useEuler && this.props.noSlider &&
+                    <div className="secondLine">
+                        <NumericInputComponent label="x" step={this.props.step} value={Tools.ToDegrees(this.state.value.x)} onChange={value => this.updateStateX(Tools.ToRadians(value))} />
+                        <NumericInputComponent label="y" step={this.props.step} value={Tools.ToDegrees(this.state.value.y)} onChange={value => this.updateStateY(Tools.ToRadians(value))} />
+                        <NumericInputComponent label="z" step={this.props.step} value={Tools.ToDegrees(this.state.value.z)} onChange={value => this.updateStateZ(Tools.ToRadians(value))} />
                     </div>
                 }
             </div>

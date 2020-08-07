@@ -1,15 +1,13 @@
 import * as React from 'react';
 import { SketchPicker } from 'react-color';
+import { IToolData, IToolType } from './textureEditorComponent';
 
-export interface Tool {
-    type: any,
-    name: string,
-    instance: any,
-    icon: string
+export interface ITool extends IToolData {
+    instance: IToolType;
 }
 
-interface ToolBarProps {
-    tools: Tool[];
+interface IToolBarProps {
+    tools: ITool[];
     addTool(url: string): void;
     changeTool(toolIndex : number): void;
     activeToolIndex : number;
@@ -17,24 +15,25 @@ interface ToolBarProps {
     setMetadata(data : any): void;
 }
 
-interface ToolBarState {
+interface IToolBarState {
     toolURL : string;
     pickerOpen : boolean;
     addOpen : boolean;
 }
 
-const addTool = require('./assets/addTool.svg');
 
-export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
-    private pickerRef : React.RefObject<HTMLDivElement>;
-    constructor(props : ToolBarProps) {
+export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
+    private _addTool = require('./assets/addTool.svg');
+
+    private _pickerRef : React.RefObject<HTMLDivElement>;
+    constructor(props : IToolBarProps) {
         super(props);
         this.state = {
             toolURL: "",
             pickerOpen: false,
             addOpen: false
         };
-        this.pickerRef = React.createRef();
+        this._pickerRef = React.createRef();
     }
 
     computeRGBAColor() {
@@ -63,7 +62,7 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
                     }
                 )}
                 <div id='add-tool'>
-                    <img src={addTool} className='icon button' title='Add Tool' alt='Add Tool' onClick={() => this.setState({addOpen: !this.state.addOpen})}/>
+                    <img src={this._addTool} className='icon button' title='Add Tool' alt='Add Tool' onClick={() => this.setState({addOpen: !this.state.addOpen})}/>
                     { this.state.addOpen && 
                     <div id='add-tool-popup'>
                         <form onSubmit={event => {
@@ -86,13 +85,13 @@ export class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
                 this.state.pickerOpen &&
                 <>
                     <div className='color-picker-cover' onClick={evt => {
-                        if (evt.target !== this.pickerRef.current?.ownerDocument.querySelector('.color-picker-cover')) {
+                        if (evt.target !== this._pickerRef.current?.ownerDocument.querySelector('.color-picker-cover')) {
                             return;
                         }
                         this.setState({pickerOpen: false});
                     }}>
                     </div>
-                    <div className='color-picker' ref={this.pickerRef}>
+                    <div className='color-picker' ref={this._pickerRef}>
                             <SketchPicker color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, opacity: color.rgb.a})}/>
                     </div>
                 </>
