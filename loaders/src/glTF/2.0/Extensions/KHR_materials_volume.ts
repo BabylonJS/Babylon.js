@@ -73,7 +73,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         if (!pbrMaterial.subSurface.isRefractionEnabled || !extension.thicknessFactor) {
             return Promise.resolve();
         }
-        
+
         // Since this extension models thin-surface transmission only, we must make IOR = 1.0
         pbrMaterial.subSurface.volumeIndexOfRefraction = pbrMaterial.indexOfRefraction;
         pbrMaterial.subSurface.tintColorAtDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
