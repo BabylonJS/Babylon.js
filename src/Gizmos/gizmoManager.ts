@@ -26,6 +26,7 @@ export class GizmoManager implements IDisposable {
     public clearGizmoOnEmptyPointerEvent = false;
     /** Fires an event when the manager is attached to a mesh */
     public onAttachedToMeshObservable = new Observable<Nullable<AbstractMesh>>();
+    /** Fires an event when the manager is attached to a node */
     public onAttachedToNodeObservable = new Observable<Nullable<Node>>();
     private _gizmosEnabled = { positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false };
     private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
