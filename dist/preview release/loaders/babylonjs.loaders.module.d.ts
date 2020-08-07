@@ -2203,6 +2203,39 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_transmission
         private _loadTransparentPropertiesAsync;
     }
 }
+declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_volume" {
+    import { Nullable } from "babylonjs/types";
+    import { Material } from "babylonjs/Materials/material";
+    import { IMaterial } from "babylonjs-loaders/glTF/2.0/glTFLoaderInterfaces";
+    import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
+    import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
+    /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1726)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_volume implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadTransparentPropertiesAsync;
+    }
+}
 declare module "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_quantization" {
     import { IGLTFLoaderExtension } from "babylonjs-loaders/glTF/2.0/glTFLoaderExtension";
     import { GLTFLoader } from "babylonjs-loaders/glTF/2.0/glTFLoader";
@@ -2503,6 +2536,7 @@ declare module "babylonjs-loaders/glTF/2.0/Extensions/index" {
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_ior";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_transmission";
+    export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_volume";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_mesh_quantization";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_basisu";
     export * from "babylonjs-loaders/glTF/2.0/Extensions/KHR_texture_transform";
@@ -2888,6 +2922,7 @@ declare module "babylonjs-loaders/legacy/legacy" {
     export * from "babylonjs-loaders/legacy/legacy-objFileLoader";
     export * from "babylonjs-loaders/legacy/legacy-stlFileLoader";
 }
+
 declare module "babylonjs-loaders" {
     export * from "babylonjs-loaders/legacy/legacy";
 }
@@ -4938,6 +4973,34 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
+     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1726)
+     * !!! Experimental Extension Subject to Changes !!!
+     */
+    export class KHR_materials_volume implements IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Defines whether this extension is enabled.
+         */
+        enabled: boolean;
+        /**
+         * Defines a number that determines the order the extensions are applied.
+         */
+        order: number;
+        private _loader;
+        /** @hidden */
+        constructor(loader: GLTFLoader);
+        /** @hidden */
+        dispose(): void;
+        /** @hidden */
+        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
+        private _loadTransparentPropertiesAsync;
+    }
+}
+declare module BABYLON.GLTF2.Loader.Extensions {
+    /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
      */
     export class KHR_mesh_quantization implements IGLTFLoaderExtension {
@@ -5469,4 +5532,4 @@ declare module BABYLON {
         private _parseBinary;
         private _parseASCII;
     }
-}
+}

@@ -1564,6 +1564,7 @@ declare module "babylonjs-materials/legacy/legacy-water" {
 declare module "babylonjs-materials/legacy/legacy" {
     export * from "babylonjs-materials/index";
 }
+
 declare module "babylonjs-materials" {
     export * from "babylonjs-materials/legacy/legacy";
 }
@@ -2566,4 +2567,4 @@ declare module BABYLON {
         static Parse(source: any, scene: BABYLON.Scene, rootUrl: string): WaterMaterial;
         static CreateDefaultMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
     }
-}
+}

@@ -241,6 +241,7 @@ declare module "babylonjs-post-process/legacy/legacy-digitalRain" {
 declare module "babylonjs-post-process/legacy/legacy" {
     export * from "babylonjs-post-process/index";
 }
+
 declare module "babylonjs-post-process" {
     export * from "babylonjs-post-process/legacy/legacy";
 }
@@ -455,4 +456,4 @@ declare module BABYLON {
          */
         constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
     }
-}
+}

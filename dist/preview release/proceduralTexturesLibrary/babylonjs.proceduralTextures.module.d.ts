@@ -490,6 +490,7 @@ declare module "babylonjs-procedural-textures/legacy/legacy-wood" {
 declare module "babylonjs-procedural-textures/legacy/legacy" {
     export * from "babylonjs-procedural-textures/index";
 }
+
 declare module "babylonjs-procedural-textures" {
     export * from "babylonjs-procedural-textures/legacy/legacy";
 }
@@ -861,4 +862,4 @@ declare module BABYLON {
          */
         static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): WoodProceduralTexture;
     }
-}
+}
