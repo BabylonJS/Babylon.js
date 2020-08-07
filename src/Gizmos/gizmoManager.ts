@@ -22,12 +22,16 @@ export class GizmoManager implements IDisposable {
      * Gizmo's created by the gizmo manager, gizmo will be null until gizmo has been enabled for the first time
      */
     public gizmos: { positionGizmo: Nullable<PositionGizmo>, rotationGizmo: Nullable<RotationGizmo>, scaleGizmo: Nullable<ScaleGizmo>, boundingBoxGizmo: Nullable<BoundingBoxGizmo> };
+
     /** When true, the gizmo will be detached from the current object when a pointer down occurs with an empty picked mesh */
     public clearGizmoOnEmptyPointerEvent = false;
+
     /** Fires an event when the manager is attached to a mesh */
     public onAttachedToMeshObservable = new Observable<Nullable<AbstractMesh>>();
+
     /** Fires an event when the manager is attached to a node */
     public onAttachedToNodeObservable = new Observable<Nullable<Node>>();
+
     private _gizmosEnabled = { positionGizmo: false, rotationGizmo: false, scaleGizmo: false, boundingBoxGizmo: false };
     private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     private _attachedMesh: Nullable<AbstractMesh> = null;
