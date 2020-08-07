@@ -1413,8 +1413,22 @@ export class AnimationCurveEditorComponent extends React.Component<
         }
     }
 
-    setCanvasPosition(frame: number) {
-        this.setState({ panningX: (frame - 10) * 10, repositionCanvas: true });
+    setCanvasPosition(keyframe: IAnimationKey) {
+        if (this.state.selected) {
+            const positionX = (keyframe.frame - 10) * 10;
+
+            let value = 0;
+            if (keyframe.value === null) {
+                value = this.state.panningY;
+            } else {
+                value = this.getValueAsArray(this.state.selected.dataType, keyframe.value)[this.state.selectedCoordinate];
+            }
+
+            const centerCanvas = this._heightScale / 2;
+            const positionY = centerCanvas - value * centerCanvas;
+
+            this.setState({ panningX: positionX, panningY: positionY, repositionCanvas: true });
+        }
     }
 
     setCurrentFrame(direction: number) {
@@ -1571,7 +1585,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                         this.setState({ panningX: panningX });
                                     }}
                                     setCurrentFrame={(direction: number) => this.setCurrentFrame(direction)}
-                                    positionCanvas={this.state.panningX}
+                                    positionCanvas={new Vector2(this.state.panningX, this.state.panningY)}
                                     repositionCanvas={this.state.repositionCanvas}
                                     canvasPositionEnded={() => this.setState({ repositionCanvas: false })}
                                     resetActionableKeyframe={() => this.resetActionableKeyframe()}
@@ -1682,7 +1696,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                             keyframes={this.state.selected && this.state.selected.getKeys()}
                             selected={this.state.selected && this.state.selected.getKeys()[0]}
                             fps={this.state.fps}
-                            repositionCanvas={(frame: number) => this.setCanvasPosition(frame)}
+                            repositionCanvas={(keyframe: IAnimationKey) => this.setCanvasPosition(keyframe)}
                         ></Timeline>
                     </div>
                 </div>
