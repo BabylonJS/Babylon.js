@@ -44,6 +44,7 @@ export class Bone extends Node {
     private _skeleton: Skeleton;
     private _localMatrix: Matrix;
     private _restPose: Matrix;
+    private _bindPose: Matrix;
     private _baseMatrix: Matrix;
     private _absoluteTransform = new Matrix();
     private _invertedAbsoluteTransform = new Matrix();
@@ -95,6 +96,7 @@ export class Bone extends Node {
         this._skeleton = skeleton;
         this._localMatrix = localMatrix ? localMatrix.clone() : Matrix.Identity();
         this._restPose = restPose ? restPose : this._localMatrix.clone();
+        this._bindPose = this._localMatrix.clone();
         this._baseMatrix = baseMatrix ? baseMatrix : this._localMatrix.clone();
         this._index = index;
 
@@ -210,6 +212,22 @@ export class Bone extends Node {
      */
     public setRestPose(matrix: Matrix): void {
         this._restPose.copyFrom(matrix);
+    }
+
+    /**
+     * Gets the bind pose matrix
+     * @returns the bind pose matrix
+     */
+    public getBindPose(): Matrix {
+        return this._bindPose;
+    }
+
+    /**
+     * Sets the bind pose matrix
+     * @param matrix the local-space bind pose to set for this bone
+     */
+    public setBindPose(matrix: Matrix): void {
+        this._bindPose.copyFrom(matrix);
     }
 
     /**

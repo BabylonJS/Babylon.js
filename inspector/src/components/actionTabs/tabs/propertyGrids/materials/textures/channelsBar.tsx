@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export interface Channel {
+export interface IChannel {
     visible: boolean;
     editable: boolean;
     name: string;
@@ -8,15 +8,15 @@ export interface Channel {
     icon: any;
 }
 
-interface ChannelsBarProps {
-    channels: Channel[];
-    setChannels(channelState : Channel[]) : void;
+interface IChannelsBarProps {
+    channels: IChannel[];
+    setChannels(channelState : IChannel[]) : void;
 }
 
 const eyeOpen = require('./assets/eyeOpen.svg');
 const eyeClosed = require('./assets/eyeClosed.svg');
 
-export class ChannelsBar extends React.Component<ChannelsBarProps> {
+export class ChannelsBar extends React.Component<IChannelsBarProps> {
     render() {
         return <div id='channels-bar'>
             {this.props.channels.map(

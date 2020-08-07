@@ -97,6 +97,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.forceUpdate();
                     }
                     manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
+                }else if(className.indexOf("Bone") !== -1){
+                    manager.attachToMesh((this._selectedEntity._linkedTransformNode)?this._selectedEntity._linkedTransformNode:this._selectedEntity);
                 } else {
                     manager.attachToNode(null);
                 }
@@ -374,6 +376,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.forceUpdate();
                     }
                     manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
+                } else if(className.indexOf("Bone") !== -1){
+                    manager.attachToMesh((this._selectedEntity._linkedTransformNode)?this._selectedEntity._linkedTransformNode:this._selectedEntity);
                 }
             }
         }

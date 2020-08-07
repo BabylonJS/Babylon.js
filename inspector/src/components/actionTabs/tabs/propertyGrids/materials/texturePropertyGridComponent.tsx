@@ -45,6 +45,7 @@ interface ITexturePropertyGridComponentState {
 export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps,ITexturePropertyGridComponentState> {
 
     private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
+    private popoutWindowRef : React.RefObject<PopupComponent>;
     private textureLineRef: React.RefObject<TextureLineComponent>;
 
 
@@ -58,6 +59,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         const texture = this.props.texture;
 
         this.textureLineRef = React.createRef();
+        this.popoutWindowRef = React.createRef();
 
         if (!texture || !(texture as any).rootContainer) {
             return;
@@ -120,9 +122,6 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             isTextureEditorOpen: false,
             textureEditing: null
         }, callback);
-        if (window !== null) {
-            window.close();
-        }
     }
 
     forceRefresh() {
@@ -185,11 +184,13 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                   onClose={(window: Window) =>
                     this.onCloseTextureEditor(window)
                   }
+                  ref={this.popoutWindowRef}
                 >
                     <TextureEditorComponent
                         globalState={this.props.globalState}
                         texture={this.props.texture}
                         url={textureUrl}
+                        window={this.popoutWindowRef}
                     />
                 </PopupComponent>)}
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}

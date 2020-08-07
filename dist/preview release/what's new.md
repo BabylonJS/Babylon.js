@@ -80,7 +80,7 @@
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
-- View & edit textures in pop out inspector with zoom & pan and individual channels, and save to local machine. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- View & edit textures in pop out inspector using canvas and postprocesses. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Cameras
 
