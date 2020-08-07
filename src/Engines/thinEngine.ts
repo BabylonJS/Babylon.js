@@ -1563,6 +1563,9 @@ export class ThinEngine {
 
     private _vertexAttribPointer(buffer: DataBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
         var pointer = this._currentBufferPointers[indx];
+        if (!pointer) {
+            return;
+        }
 
         var changed = false;
         if (!pointer.active) {
