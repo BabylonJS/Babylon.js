@@ -166,19 +166,9 @@
 
         #color-picker-button {
             grid-column: 4;
-            display: grid;
-            grid-template-columns: 100%;
-            grid-template-rows: 100%;
-            
-            #color-picker-image {                
-                grid-column: 1;
-                grid-row: 1;
-            }
 
             #color-picker {
-                transform: scale(0);
-                grid-column: 1;
-                grid-row: 1;
+                display: none;
             }
 
             #color-picker-label {

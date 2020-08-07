@@ -42,6 +42,7 @@ interface INativeEngine {
     createVertexBuffer(data: ArrayBufferView, dynamic: boolean): any;
     deleteVertexBuffer(buffer: any): void;
     recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
+    bindBuffer(buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
     updateDynamicVertexBuffer(buffer: any, data: ArrayBufferView, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
@@ -204,7 +205,6 @@ export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
-    private _boundBuffersVertexArray: any = null;
 
     public getHardwareScalingLevel(): number {
         return 1.0;
@@ -276,9 +276,6 @@ export class NativeEngine extends Engine {
 
     public dispose(): void {
         super.dispose();
-        if (this._boundBuffersVertexArray) {
-            this._native.deleteVertexArray(this._boundBuffersVertexArray);
-        }
         this._native.dispose();
     }
 
@@ -368,7 +365,26 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
-    protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+        // TODO : support index buffer
+        const attributes = effect.getAttributesNames();
+        for (let index = 0; index < attributes.length; index++) {
+            const location = effect.getAttributeLocation(index);
+            if (location >= 0) {
+                const kind = attributes[index];
+                const vertexBuffer = vertexBuffers[kind];
+                if (vertexBuffer) {
+                    const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
+                    if (buffer) {
+                        this._native.bindBuffer(buffer.nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized);
+                    }
+                }
+            }
+        }
+    }
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
+        const vertexArray = this._native.createVertexArray();
+
         if (indexBuffer) {
             this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
         }
@@ -395,20 +411,7 @@ export class NativeEngine extends Engine {
                 }
             }
         }
-    }
 
-    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
-        if (this._boundBuffersVertexArray) {
-            this._native.deleteVertexArray(this._boundBuffersVertexArray);
-        }
-        this._boundBuffersVertexArray = this._native.createVertexArray();
-        this._recordVertexArrayObject(this._boundBuffersVertexArray, vertexBuffers, indexBuffer, effect);
-        this._native.bindVertexArray(this._boundBuffersVertexArray);
-    }
-
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
-        const vertexArray = this._native.createVertexArray();
-        this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect);
         return vertexArray;
     }
 
