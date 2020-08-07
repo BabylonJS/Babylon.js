@@ -72,6 +72,7 @@ export class RayHelper {
             this._scene = scene;
             this._renderPoints = [ray.origin, ray.origin.add(ray.direction.scale(ray.length))];
             this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
+            this._renderLine.isPickable = false;
 
             if (this._renderFunction) {
                 this._scene.registerBeforeRender(this._renderFunction);
@@ -171,6 +172,7 @@ export class RayHelper {
         if (!this._updateToMeshFunction) {
             this._updateToMeshFunction = (<() => void>this._updateToMesh.bind(this));
             this._attachedToMesh.getScene().registerBeforeRender(this._updateToMeshFunction);
+            this._attachedToMesh.getScene().onAfterStepObservable.add(this._updateToMeshFunction);
         }
 
         // force world matrix computation before the first ray helper computation
