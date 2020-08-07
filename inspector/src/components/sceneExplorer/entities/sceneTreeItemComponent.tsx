@@ -286,27 +286,41 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     if (!this._rotateDragEnd) {
                         // Record movement for generating replay code
                         this._rotateDragEnd = manager.gizmos.rotationGizmo!.onDragEndObservable.add(() => {
-                            if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedMesh) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore ? manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
-                                var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedMesh;
+                            if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedNode) {
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.lightGizmo : null;
+                                var objLight: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedNode;
+                                var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.cameraGizmo : null;
+                                var objCamera: any = (cameraGizmo && cameraGizmo.camera) ? cameraGizmo.camera : manager.gizmos.rotationGizmo.attachedNode;
 
-                                if (obj.rotationQuaternion) {
+                                if (objLight.rotationQuaternion) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = obj;
+                                    e.object = objLight;
                                     e.property = "rotationQuaternion";
-                                    e.value = obj.rotationQuaternion;
+                                    e.value = objLight.rotationQuaternion;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
-                                } else if (obj.rotation) {
+                                } else if (objLight.rotation) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = obj;
+                                    e.object = objLight;
                                     e.property = "rotation";
-                                    e.value = obj.rotation;
+                                    e.value = objLight.rotation;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
-                                } else if (obj.direction) {
+                                } else if (objLight.direction) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = obj;
+                                    e.object = objLight;
                                     e.property = "direction";
-                                    e.value = obj.direction;
+                                    e.value = objLight.direction;
+                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                } else if (objCamera.rotationQuaternion) {
+                                    var e = new PropertyChangedEvent();
+                                    e.object = objCamera;
+                                    e.property = "rotationQuaternion";
+                                    e.value = objCamera.rotationQuaternion;
+                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
+                                } else if (objCamera.rotation) {
+                                    var e = new PropertyChangedEvent();
+                                    e.object = objCamera;
+                                    e.property = "rotation";
+                                    e.value = objCamera.rotation;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 }
                             }
