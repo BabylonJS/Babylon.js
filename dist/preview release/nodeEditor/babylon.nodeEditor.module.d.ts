@@ -1859,7 +1859,6 @@ declare module "babylonjs-node-editor/index" {
 declare module "babylonjs-node-editor/legacy/legacy" {
     export * from "babylonjs-node-editor/index";
 }
-
 declare module "babylonjs-node-editor" {
     export * from "babylonjs-node-editor/legacy/legacy";
 }
@@ -3400,4 +3399,4 @@ declare module NODEEDITOR {
          */
         static Show(options: INodeEditorOptions): void;
     }
-}
+}

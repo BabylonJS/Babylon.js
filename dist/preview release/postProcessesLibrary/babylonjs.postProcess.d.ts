@@ -209,4 +209,4 @@ declare module BABYLON {
          */
         constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
     }
-}
+}

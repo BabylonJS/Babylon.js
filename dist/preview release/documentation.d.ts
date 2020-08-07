@@ -11481,7 +11481,7 @@ declare module BABYLON {
          * @param width define the width of the texture
          * @param height define the height of the texture
          * @param format define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
-         * @param sceneOrEngine defines the scene or engine the texture will belong to
+         * @param scene  define the scene the texture belongs to
          * @param generateMipMaps define whether mip maps should be generated or not
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
@@ -11491,7 +11491,7 @@ declare module BABYLON {
         /**
          * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
          */
-        format: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number);
+        format: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number);
         /**
          * Updates the texture underlying data.
          * @param data Define the new data of the texture
@@ -11502,76 +11502,76 @@ declare module BABYLON {
          * @param data Define the texture data
          * @param width Define the width of the texture
          * @param height Define the height of the texture
-         * @param sceneOrEngine defines the scene or engine the texture will belong to
+         * @param scene Define the scene the texture belongs to
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
          * @returns the luminance texture
          */
-        static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
         /**
          * Creates a luminance alpha texture from some data.
          * @param data Define the texture data
          * @param width Define the width of the texture
          * @param height Define the height of the texture
-         * @param sceneOrEngine defines the scene or engine the texture will belong to
+         * @param scene Define the scene the texture belongs to
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
          * @returns the luminance alpha texture
          */
-        static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
         /**
          * Creates an alpha texture from some data.
          * @param data Define the texture data
          * @param width Define the width of the texture
          * @param height Define the height of the texture
-         * @param sceneOrEngine defines the scene or engine the texture will belong to
+         * @param scene Define the scene the texture belongs to
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
          * @returns the alpha texture
          */
-        static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
+        static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number): RawTexture;
         /**
          * Creates a RGB texture from some data.
          * @param data Define the texture data
          * @param width Define the width of the texture
          * @param height Define the height of the texture
-         * @param sceneOrEngine defines the scene or engine the texture will belong to
+         * @param scene Define the scene the texture belongs to
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
          * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          * @returns the RGB alpha texture
          */
-        static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
+        static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
         /**
          * Creates a RGBA texture from some data.
          * @param data Define the texture data
          * @param width Define the width of the texture
          * @param height Define the height of the texture
-         * @param sceneOrEngine defines the scene or engine the texture will belong to
+         * @param scene Define the scene the texture belongs to
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
          * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          * @returns the RGBA texture
          */
-        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
+        static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
         /**
          * Creates a R texture from some data.
          * @param data Define the texture data
          * @param width Define the width of the texture
          * @param height Define the height of the texture
-         * @param sceneOrEngine defines the scene or engine the texture will belong to
+         * @param scene Define the scene the texture belongs to
          * @param generateMipMaps Define whether or not to create mip maps for the texture
          * @param invertY define if the data should be flipped on Y when uploaded to the GPU
          * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
          * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
          * @returns the R texture
          */
-        static CreateRTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
+        static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps?: boolean, invertY?: boolean, samplingMode?: number, type?: number): RawTexture;
     }
 }
 declare module BABYLON {
@@ -12069,7 +12069,7 @@ declare module BABYLON {
          * Get hosting scene
          * @returns the scene
          */
-        getScene(): Nullable<Scene>;
+        getScene(): Scene;
         /**
          * You can use gravity if you want to give an orientation to your particles.
          */
@@ -12220,11 +12220,7 @@ declare module BABYLON {
         /**
          * The scene the particle system belongs to.
          */
-        protected _scene: Nullable<Scene>;
-        /**
-         * The engine the particle system belongs to.
-         */
-        protected _engine: ThinEngine;
+        protected _scene: Scene;
         /**
          * Local cache of defines for image processing.
          */
@@ -12232,17 +12228,17 @@ declare module BABYLON {
         /**
          * Default configuration related to image processing available in the standard Material.
          */
-        protected _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
          * Gets the image processing configuration used either in this material.
          */
-        get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration>;
+        get imageProcessingConfiguration(): ImageProcessingConfiguration;
         /**
          * Sets the Default image processing configuration used either in the this material.
          *
          * If sets to null, the scene one is in use.
          */
-        set imageProcessingConfiguration(value: Nullable<ImageProcessingConfiguration>);
+        set imageProcessingConfiguration(value: ImageProcessingConfiguration);
         /**
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration
@@ -12379,15 +12375,15 @@ declare module BABYLON {
          */
         serialize(): any;
         /** @hidden */
-        static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string): ParticleSystem;
+        static _ParseParticleSystem(system: any, scene: Scene, rootUrl: string): ParticleSystem;
         /**
          * Creates a new SubEmitter from a serialized JSON version
          * @param serializationObject defines the JSON object to read from
-         * @param sceneOrEngine defines the hosting scene or the hosting engine
+         * @param scene defines the hosting scene
          * @param rootUrl defines the rootUrl for data loading
          * @returns a new SubEmitter
          */
-        static Parse(serializationObject: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string): SubEmitter;
+        static Parse(serializationObject: any, scene: Scene, rootUrl: string): SubEmitter;
         /** Release associated resources */
         dispose(): void;
     }
@@ -12510,8 +12506,6 @@ declare module BABYLON {
         private readonly _rawTextureWidth;
         private _rampGradientsTexture;
         private _useRampGradients;
-        /** Gets or sets a matrix to use to compute projection */
-        defaultProjectionMatrix: Matrix;
         /** Gets or sets a boolean indicating that ramp gradients must be used
          * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
          */
@@ -12583,12 +12577,12 @@ declare module BABYLON {
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
          * @param name The name of the particle system
          * @param capacity The max number of particles alive at the same time
-         * @param sceneOrEngine The scene the particle system belongs to or the engine to use if no scene
+         * @param scene The scene the particle system belongs to
          * @param customEffect a custom effect used to change the way particles are rendered by default
          * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          * @param epsilon Offset used to render the particles
          */
-        constructor(name: string, capacity: number, sceneOrEngine: Scene | ThinEngine, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean, epsilon?: number);
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean, epsilon?: number);
         private _addFactorGradient;
         private _removeFactorGradient;
         /**
@@ -12878,16 +12872,16 @@ declare module BABYLON {
         /** @hidden */
         static _Serialize(serializationObject: any, particleSystem: IParticleSystem, serializeTexture: boolean): void;
         /** @hidden */
-        static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, sceneOrEngine: Scene | ThinEngine, rootUrl: string): void;
+        static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, scene: Scene, rootUrl: string): void;
         /**
          * Parses a JSON object to create a particle system.
          * @param parsedParticleSystem The JSON object to parse
-         * @param sceneOrEngine The scene or the engine to create the particle system in
+         * @param scene The scene to create the particle system in
          * @param rootUrl The root url to use to load external dependencies like texture
          * @param doNotStart Ignore the preventAutoStart attribute and does not start
          * @returns the Parsed particle system
          */
-        static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): ParticleSystem;
+        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string, doNotStart?: boolean): ParticleSystem;
     }
 }
 declare module BABYLON {
@@ -13084,7 +13078,7 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          * @param scene defines the hosting scene
          */
-        parse(serializationObject: any, scene: Nullable<Scene>): void;
+        parse(serializationObject: any, scene: Scene): void;
     }
 }
 declare module BABYLON {
@@ -13861,7 +13855,7 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          * @param scene defines the hosting scene
          */
-        parse(serializationObject: any, scene: Nullable<Scene>): void;
+        parse(serializationObject: any, scene: Scene): void;
     }
 }
 declare module BABYLON {
@@ -13910,7 +13904,7 @@ declare module BABYLON {
         /**
          * The texture used to render each particle. (this can be a spritesheet)
          */
-        particleTexture: Nullable<BaseTexture>;
+        particleTexture: Nullable<Texture>;
         /**
          * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE, ParticleSystem.BLENDMODE_STANDARD or ParticleSystem.BLENDMODE_ADD.
          */
@@ -14077,8 +14071,6 @@ declare module BABYLON {
         isLocal: boolean;
         /** Snippet ID if the particle system was created from the snippet server */
         snippetId: string;
-        /** Gets or sets a matrix to use to compute projection */
-        defaultProjectionMatrix: Matrix;
         /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
@@ -14491,7 +14483,7 @@ declare module BABYLON {
          * Get hosting scene
          * @returns the scene
          */
-        getScene(): Nullable<Scene>;
+        getScene(): Scene;
     }
 }
 declare module BABYLON {
@@ -33852,8 +33844,8 @@ declare module BABYLON {
          * Define the current state of the loading sequence when in delayed load mode.
          */
         delayLoadState: number;
-        protected _scene: Nullable<Scene>;
-        protected _engine: Nullable<ThinEngine>;
+        private _scene;
+        private _engine;
         /** @hidden */
         _texture: Nullable<InternalTexture>;
         private _uid;
@@ -46850,14 +46842,6 @@ declare module BABYLON {
         private _xrInvPositionCache;
         private _xrInvQuaternionCache;
         /**
-         * Observable raised before camera teleportation
-         */
-        onBeforeCameraTeleport: Observable<Vector3>;
-        /**
-         *  Observable raised after camera teleportation
-         */
-        onAfterCameraTeleport: Observable<Vector3>;
-        /**
          * Should position compensation execute on first frame.
          * This is used when copying the position from a native (non XR) camera
          */
@@ -55357,7 +55341,6 @@ declare module BABYLON {
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -55481,15 +55464,6 @@ declare module BABYLON {
          */
         useMaskFromThicknessTexture: boolean;
         private _scene;
-        private _useMaskFromThicknessTextureGltf;
-        /**
-         * Stores the intensity of the different subsurface effects in the thickness texture. This variation
-         * matches the channel-packing that is used by glTF.
-         * * the red channel is the transmission intensity.
-         * * the green channel is the translucency intensity.
-         * * the blue channel is the thickness.
-         */
-        useMaskFromThicknessTextureGltf: boolean;
         /** @hidden */
         private _internalMarkAllSubMeshesAsTexturesDirty;
         private _internalMarkScenePrePassDirty;
@@ -56053,7 +56027,6 @@ declare module BABYLON {
         SS_LINKREFRACTIONTOTRANSPARENCY: boolean;
         SS_ALBEDOFORREFRACTIONTINT: boolean;
         SS_MASK_FROM_THICKNESS_TEXTURE: boolean;
-        SS_MASK_FROM_THICKNESS_TEXTURE_GLTF: boolean;
         UNLIT: boolean;
         DEBUGMODE: number;
         /**
@@ -64299,14 +64272,6 @@ declare module BABYLON {
          */
         useMaskFromThicknessTexture: boolean;
         /**
-         * Stores the intensity of the different subsurface effects in the thickness texture. This variation
-         * matches the channel-packing that is used by glTF.
-         * * the red channel is the transmission intensity.
-         * * the green channel is the translucency intensity.
-         * * the blue channel is the thickness.
-         */
-        useMaskFromThicknessTextureGltf: boolean;
-        /**
          * Initialize the block and prepare the context for build
          * @param state defines the state that will be used for the build
          */
@@ -67099,6 +67064,7 @@ declare module BABYLON {
         private _targetIndex;
         private _sourceBuffer;
         private _targetBuffer;
+        private _engine;
         private _currentRenderId;
         private _started;
         private _stopped;
@@ -67139,8 +67105,6 @@ declare module BABYLON {
          * Specifies if the particles are updated in emitter local space or world space.
          */
         isLocal: boolean;
-        /** Gets or sets a matrix to use to compute projection */
-        defaultProjectionMatrix: Matrix;
         /**
          * Is this system ready to be used/rendered
          * @return true if the system is ready
@@ -67397,14 +67361,14 @@ declare module BABYLON {
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
          * @param name The name of the particle system
          * @param options The options used to create the system
-         * @param sceneOrEngine The scene the particle system belongs to or the engine to use if no scene
+         * @param scene The scene the particle system belongs to
          * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
          * @param customEffect a custom effect used to change the way particles are rendered by default
          */
         constructor(name: string, options: Partial<{
             capacity: number;
             randomTextureSize: number;
-        }>, sceneOrEngine: Scene | ThinEngine, isAnimationSheetEnabled?: boolean, customEffect?: Nullable<Effect>);
+        }>, scene: Scene, isAnimationSheetEnabled?: boolean, customEffect?: Nullable<Effect>);
         protected _reset(): void;
         private _createUpdateVAO;
         private _createRenderVAO;
@@ -67472,12 +67436,12 @@ declare module BABYLON {
         /**
          * Parses a JSON object to create a GPU particle system.
          * @param parsedParticleSystem The JSON object to parse
-         * @param sceneOrEngine The scene or the engine to create the particle system in
+         * @param scene The scene to create the particle system in
          * @param rootUrl The root url to use to load external dependencies like texture
          * @param doNotStart Ignore the preventAutoStart attribute and does not start
          * @returns the parsed GPU particle system
          */
-        static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart?: boolean): GPUParticleSystem;
+        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string, doNotStart?: boolean): GPUParticleSystem;
     }
 }
 declare module BABYLON {
@@ -74673,7 +74637,6 @@ declare module BABYLON {
         shader: string;
     };
 }
-
 // Mixins
 interface Window {
     mozIndexedDB: IDBFactory;
@@ -79516,7 +79479,6 @@ declare module BABYLON.GUI {
         protected _arrangeChildren(): void;
     }
 }
-
 declare module BABYLON {
     /**
      * Configuration for glTF validation
@@ -81564,34 +81526,6 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1726)
-     * !!! Experimental Extension Subject to Changes !!!
-     */
-    export class KHR_materials_volume implements IGLTFLoaderExtension {
-        /**
-         * The name of this extension.
-         */
-        readonly name: string;
-        /**
-         * Defines whether this extension is enabled.
-         */
-        enabled: boolean;
-        /**
-         * Defines a number that determines the order the extensions are applied.
-         */
-        order: number;
-        private _loader;
-        /** @hidden */
-        constructor(loader: GLTFLoader);
-        /** @hidden */
-        dispose(): void;
-        /** @hidden */
-        loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>>;
-        private _loadTransparentPropertiesAsync;
-    }
-}
-declare module BABYLON.GLTF2.Loader.Extensions {
-    /**
      * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mesh_quantization)
      */
     export class KHR_mesh_quantization implements IGLTFLoaderExtension {
@@ -82124,7 +82058,6 @@ declare module BABYLON {
         private _parseASCII;
     }
 }
-
 declare module BABYLON {
     /**
      * Class for generating OBJ data from a Babylon scene.
@@ -83342,7 +83275,6 @@ declare module BABYLON {
         static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
     }
 }
-
 declare module "babylonjs-gltf2interface" {
     export = BABYLON.GLTF2;
 }
@@ -85543,7 +85475,6 @@ declare module BABYLON {
         static CreateDefaultMesh(name: string, scene: BABYLON.Scene): BABYLON.Mesh;
     }
 }
-
 declare module BABYLON {
     /** @hidden */
     export var asciiartPixelShader: {
@@ -85756,7 +85687,6 @@ declare module BABYLON {
         constructor(name: string, camera: BABYLON.Camera, options?: string | IDigitalRainPostProcessOptions);
     }
 }
-
 declare module BABYLON {
     /** @hidden */
     export var brickProceduralTexturePixelShader: {
@@ -86125,4 +86055,4 @@ declare module BABYLON {
          */
         static Parse(parsedTexture: any, scene: BABYLON.Scene, rootUrl: string): WoodProceduralTexture;
     }
-}
+}

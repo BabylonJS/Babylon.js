@@ -1214,4 +1214,4 @@ declare module BABYLON {
         */
         static CreateSTL(meshes: Mesh[], download?: boolean, fileName?: string, binary?: boolean, isLittleEndian?: boolean): any;
     }
-}
+}
