@@ -314,31 +314,8 @@ export class GLTFLoader implements IGLTFLoader {
                     const material = this._gltf.materials[m];
                     const context = "/materials/" + m;
                     const babylonDrawMode = Material.TriangleFillMode;
-                    let babylonData = material._data ? material._data[babylonDrawMode] : null;
 
-                    if (babylonData) {
-                        continue;
-                    }
-
-                    this.logOpen(`${context} ${material.name || ""}`);
-
-                    const babylonMaterial = this.createMaterial(context, material, babylonDrawMode);
-
-                    babylonData = {
-                        babylonMaterial: babylonMaterial,
-                        babylonMeshes: [],
-                        promise: this.loadMaterialPropertiesAsync(context, material, babylonMaterial)
-                    };
-
-                    promises.push(babylonData.promise);
-
-                    material._data = material._data ?? {};
-                    material._data[babylonDrawMode] = babylonData;
-
-                    GLTFLoader.AddPointerMetadata(babylonMaterial, context);
-                    this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-
-                    this.logClose();
+                    promises.push(this._loadMaterialAsync(context, material, null, babylonDrawMode, (material) => { }));
                 }
             }
 
@@ -1727,7 +1704,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void = () => { }): Promise<Material> {
+    public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void = () => { }): Promise<Material> {
         const extensionPromise = this._extensionsLoadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign);
         if (extensionPromise) {
             return extensionPromise;
@@ -1754,14 +1731,16 @@ export class GLTFLoader implements IGLTFLoader {
             this.logClose();
         }
 
-        babylonData.babylonMeshes.push(babylonMesh);
+        if (babylonMesh) {
+            babylonData.babylonMeshes.push(babylonMesh);
 
-        babylonMesh.onDisposeObservable.addOnce(() => {
-            const index = babylonData.babylonMeshes.indexOf(babylonMesh);
-            if (index !== -1) {
-                babylonData.babylonMeshes.splice(index, 1);
-            }
-        });
+            babylonMesh.onDisposeObservable.addOnce(() => {
+                const index = babylonData.babylonMeshes.indexOf(babylonMesh);
+                if (index !== -1) {
+                    babylonData.babylonMeshes.splice(index, 1);
+                }
+            });
+        }
 
         assign(babylonData.babylonMaterial);
 
@@ -2326,7 +2305,7 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(primitive, "loadMeshPrimitive", (extension) => extension._loadMeshPrimitiveAsync && extension._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assign));
     }
 
-    private _extensionsLoadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
+    private _extensionsLoadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
         return this._applyExtensions(material, "loadMaterial", (extension) => extension._loadMaterialAsync && extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign));
     }
 
