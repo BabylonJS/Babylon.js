@@ -90,6 +90,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         actionableKeyframe: IActionableKeyFrame;
         valueScale: CurveScale;
         canvasLength: number;
+        lastKeyframeCreated: Nullable<string>;
     }
 > {
     private _snippetUrl = "https://snippet.babylonjs.com";
@@ -179,6 +180,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             repositionCanvas: false,
             actionableKeyframe: { frame: undefined, value: undefined },
             valueScale: CurveScale.default,
+            lastKeyframeCreated: null,
         };
     }
 
@@ -631,7 +633,16 @@ export class AnimationCurveEditorComponent extends React.Component<
         }
     }
 
-    setKeyframeValue() {
+    setKeyframeValueFromInput = (actionableKeyframe: IActionableKeyFrame) => {
+        this.setState(
+            {
+                actionableKeyframe,
+            },
+            this.setKeyframeValue
+        );
+    };
+
+    setKeyframeValue = () => {
         if (this.state.actionableKeyframe.frame !== "" && this.state.actionableKeyframe.frame !== undefined && this.state.actionableKeyframe.value !== "" && this.state.actionableKeyframe.value !== undefined) {
             if (this.state.selected !== null) {
                 let currentSelected = this.state.svgKeyframes?.find((kf) => kf.selected);
@@ -658,7 +669,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                 }
             }
         }
-    }
+    };
 
     setFlatTangent() {
         const keyframes = this.state.svgKeyframes?.filter((kf) => kf.selected).map((k) => this.decodeCurveId(k.id));
@@ -749,13 +760,19 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                 let actualValue = this.setValueAsType(currentAnimation.dataType, arrayValue);
 
-                keys.push({
+                const recentlyCreated = {
                     frame: x,
                     value: actualValue,
                     inTangent: emptyValue,
                     outTangent: emptyValue,
-                });
+                };
+
+                keys.push(recentlyCreated);
                 keys.sort((a, b) => a.frame - b.frame);
+                const newIndex = keys.findIndex((kf) => kf.frame === x);
+                const id = `${currentAnimation.name}_${currentAnimation.targetProperty}_${this.state.selectedCoordinate}`;
+                const curvedId = this.encodeCurveId(id, newIndex);
+                this.setState({ lastKeyframeCreated: curvedId });
 
                 currentAnimation.setKeys(keys);
 
@@ -1316,12 +1333,21 @@ export class AnimationCurveEditorComponent extends React.Component<
                 selectedCoordinate: selectedCurve,
                 fps: animation.framePerSecond,
             },
-            () => this.setMainAnimatable()
+            this.postSelectionEvents
         );
     }
 
+    postSelectionEvents = () => {
+        if (this.state.lastKeyframeCreated !== null) {
+            this.deselectKeyframes();
+            this.selectKeyframe(this.state.lastKeyframeCreated, false);
+        }
+
+        this.setMainAnimatable();
+    };
+
     setMainAnimatable() {
-        if (this.state.selected) {
+        if (this.state.selected !== null) {
             let target = this.props.entity;
             if (this.props.entity instanceof TargetedAnimation) {
                 target = this.props.entity.target;
@@ -1531,7 +1557,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             <div ref={this._editor} id="animation-curve-editor">
                 <Notification message={this.state.notification} open={this.state.notification !== "" ? true : false} close={() => this.clearNotification()} />
                 <GraphActionsBar
-                    setKeyframeValue={() => this.setKeyframeValue()}
+                    setKeyframeValue={this.setKeyframeValueFromInput}
                     enabled={this.state.selected === null || this.state.selected === undefined ? false : true}
                     title={this._entityName}
                     close={this.props.close}
