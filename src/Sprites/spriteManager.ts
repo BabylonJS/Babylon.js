@@ -129,6 +129,8 @@ export class SpriteManager implements ISpriteManager {
 
     private _textureContent: Nullable<Uint8Array>;
 
+    private _useInstancing = false;
+
     /**
     * An event triggered when the manager is disposed.
     */
@@ -156,9 +158,12 @@ export class SpriteManager implements ISpriteManager {
     private _vertexData: Float32Array;
     private _buffer: Buffer;
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+    private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: DataBuffer;
     private _effectBase: Effect;
     private _effectFog: Effect;
+
+    private _vertexBufferSize: number;
 
     /**
      * Gets or sets the unique id of the sprite
@@ -261,49 +266,68 @@ export class SpriteManager implements ISpriteManager {
         }
 
         this._epsilon = epsilon;
-        this._scene = scene || Engine.LastCreatedScene;
+        this._scene = scene;
         this._scene.spriteManagers.push(this);
         this.uniqueId = this.scene.getUniqueId();
+        const engine = this._scene.getEngine();
+       // this._useInstancing = engine.getCaps().instancedArrays;
 
-        var indices = [];
-        var index = 0;
-        for (var count = 0; count < capacity; count++) {
-            indices.push(index);
-            indices.push(index + 1);
-            indices.push(index + 2);
-            indices.push(index);
-            indices.push(index + 2);
-            indices.push(index + 3);
-            index += 4;
+        if (!this._useInstancing) {
+            var indices = [];
+            var index = 0;
+            for (var count = 0; count < capacity; count++) {
+                indices.push(index);
+                indices.push(index + 1);
+                indices.push(index + 2);
+                indices.push(index);
+                indices.push(index + 2);
+                indices.push(index + 3);
+                index += 4;
+            }
+
+            this._indexBuffer = engine.createIndexBuffer(indices);
         }
-
-        this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
         // VBO
         // 18 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellLeft, cellTop, cellWidth, cellHeight, color r, color g, color b, color a)
-        this._vertexData = new Float32Array(capacity * 18 * 4);
-        this._buffer = new Buffer(scene.getEngine(), this._vertexData, true, 18);
+        this._vertexBufferSize = this._useInstancing ? 16 : 18;
+        this._vertexData = new Float32Array(capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
+        this._buffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
 
-        var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4);
-        var options = this._buffer.createVertexBuffer("options", 4, 4);
-        var inverts = this._buffer.createVertexBuffer("inverts", 8, 2);
-        var cellInfo = this._buffer.createVertexBuffer("cellInfo", 10, 4);
-        var colors = this._buffer.createVertexBuffer(VertexBuffer.ColorKind, 14, 4);
+        var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4, this._vertexBufferSize, this._useInstancing);
+        var options = this._buffer.createVertexBuffer("options", 4, 2, this._vertexBufferSize, this._useInstancing);
+
+        let offset = 6;
+        var offsets: VertexBuffer;
+
+        if (this._useInstancing) {
+            var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
+            this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
+            offsets = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
+        } else {
+            offsets = this._buffer.createVertexBuffer("offsets", offset, 2, this._vertexBufferSize, this._useInstancing);
+            offset += 2;
+        }
+
+        var inverts = this._buffer.createVertexBuffer("inverts", offset, 2, this._vertexBufferSize, this._useInstancing);
+        var cellInfo = this._buffer.createVertexBuffer("cellInfo", offset + 2, 4, this._vertexBufferSize, this._useInstancing);
+        var colors = this._buffer.createVertexBuffer(VertexBuffer.ColorKind, offset + 6, 4, this._vertexBufferSize, this._useInstancing);
 
         this._vertexBuffers[VertexBuffer.PositionKind] = positions;
         this._vertexBuffers["options"] = options;
+        this._vertexBuffers["offsets"] = offsets;
         this._vertexBuffers["inverts"] = inverts;
         this._vertexBuffers["cellInfo"] = cellInfo;
         this._vertexBuffers[VertexBuffer.ColorKind] = colors;
 
         // Effects
         this._effectBase = this._scene.getEngine().createEffect("sprites",
-            [VertexBuffer.PositionKind, "options", "inverts", "cellInfo", VertexBuffer.ColorKind],
+            [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest"],
             ["diffuseSampler"], "");
 
         this._effectFog = this._scene.getEngine().createEffect("sprites",
-            [VertexBuffer.PositionKind, "options", "inverts", "cellInfo", VertexBuffer.ColorKind],
+            [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
             ["diffuseSampler"], "#define FOG");
 
@@ -391,7 +415,7 @@ export class SpriteManager implements ISpriteManager {
     }
 
     private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, baseSize: any): void {
-        var arrayOffset = index * 18;
+        var arrayOffset = index * this._vertexBufferSize;
 
         if (offsetX === 0) {
             offsetX = this._epsilon;
@@ -415,8 +439,13 @@ export class SpriteManager implements ISpriteManager {
         // Options
         this._vertexData[arrayOffset + 4] = sprite.width;
         this._vertexData[arrayOffset + 5] = sprite.height;
-        this._vertexData[arrayOffset + 6] = offsetX;
-        this._vertexData[arrayOffset + 7] = offsetY;
+
+        if (!this._useInstancing) {
+            this._vertexData[arrayOffset + 6] = offsetX;
+            this._vertexData[arrayOffset + 7] = offsetY;
+        } else {
+            arrayOffset -= 2;
+        }
 
         // Inverts according to Right Handed
         if (this._scene.useRightHandedSystem) {
@@ -680,9 +709,11 @@ export class SpriteManager implements ISpriteManager {
             sprite._animate(deltaTime);
 
             this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize);
-            this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize);
-            this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize);
-            this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize);
+            if (!this._useInstancing) {
+                this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize);
+                this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize);
+                this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize);
+            }
         }
 
         if (noSprite) {
@@ -726,13 +757,21 @@ export class SpriteManager implements ISpriteManager {
         if (!this.disableDepthWrite) {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+            if (this._useInstancing) {
+                engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, (offset / 4));
+            } else {
+                engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+            }
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
         }
 
         engine.setAlphaMode(this._blendMode);
-        engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+        if (this._useInstancing) {
+            engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, (offset / 4));
+        } else {
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+        }
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
         // Restore Right Handed
@@ -748,6 +787,11 @@ export class SpriteManager implements ISpriteManager {
         if (this._buffer) {
             this._buffer.dispose();
             (<any>this._buffer) = null;
+        }
+
+        if (this._spriteBuffer) {
+            this._spriteBuffer.dispose();
+            (<any>this._spriteBuffer) = null;
         }
 
         if (this._indexBuffer) {
