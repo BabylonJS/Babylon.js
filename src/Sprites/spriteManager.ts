@@ -270,7 +270,7 @@ export class SpriteManager implements ISpriteManager {
         this._scene.spriteManagers.push(this);
         this.uniqueId = this.scene.getUniqueId();
         const engine = this._scene.getEngine();
-       // this._useInstancing = engine.getCaps().instancedArrays;
+        this._useInstancing = engine.getCaps().instancedArrays;
 
         if (!this._useInstancing) {
             var indices = [];

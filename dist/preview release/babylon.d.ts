@@ -50783,6 +50783,7 @@ declare module BABYLON {
         private _renderFunction;
         private _scene;
         private _updateToMeshFunction;
+        private _onAfterStepObserver;
         private _attachedToMesh;
         private _meshSpaceDirection;
         private _meshSpaceOrigin;
