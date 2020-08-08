@@ -27,7 +27,7 @@ export class RayHelper {
     private _renderFunction: Nullable<() => void>;
     private _scene: Nullable<Scene>;
 
-    private _updateToMeshFunction: Nullable<() => void>;
+    private _onAfterRenderObserver: Nullable<Observer<Scene>>;
     private _onAfterStepObserver: Nullable<Observer<Scene>>;
     private _attachedToMesh: Nullable<AbstractMesh>;
     private _meshSpaceDirection: Vector3;
@@ -94,7 +94,6 @@ export class RayHelper {
 
         if (this._renderFunction && this._scene) {
             this._scene.unregisterBeforeRender(this._renderFunction);
-            this._scene.onAfterStepObservable.remove(this._onAfterStepObserver);
             this._scene = null;
             this._renderFunction = null;
             if (this._renderLine) {
@@ -176,10 +175,9 @@ export class RayHelper {
             this._meshSpaceOrigin.copyFrom(meshSpaceOrigin);
         }
 
-        if (!this._updateToMeshFunction) {
-            this._updateToMeshFunction = (<() => void>this._updateToMesh.bind(this));
-            this._scene.registerBeforeRender(this._updateToMeshFunction);
-            this._onAfterStepObserver = this._scene.onAfterStepObservable.add(this._updateToMeshFunction);
+        if (!this._onAfterRenderObserver) {
+            this._onAfterRenderObserver = this._scene.onBeforeRenderObservable.add(() => this._updateToMesh());
+            this._onAfterStepObserver = this._scene.onAfterStepObservable.add(() => this._updateToMesh());
         }
 
         // force world matrix computation before the first ray helper computation
@@ -193,12 +191,13 @@ export class RayHelper {
      */
     public detachFromMesh(): void {
         if (this._attachedToMesh && this._scene) {
-            if (this._updateToMeshFunction) {
-                this._scene.unregisterBeforeRender(this._updateToMeshFunction);
+            if (this._onAfterRenderObserver) {
+                this._scene.onBeforeRenderObservable.remove(this._onAfterRenderObserver);
                 this._scene.onAfterStepObservable.remove(this._onAfterStepObserver);
             }
             this._attachedToMesh = null;
-            this._updateToMeshFunction = null;
+            this._onAfterRenderObserver = null;
+            this._onAfterStepObserver = null;
             this._scene = null;
         }
     }
