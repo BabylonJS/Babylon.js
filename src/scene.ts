@@ -55,6 +55,7 @@ import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
+import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -102,7 +103,7 @@ export interface SceneOptions {
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/scene
  */
-export class Scene extends AbstractScene implements IAnimatable {
+export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
