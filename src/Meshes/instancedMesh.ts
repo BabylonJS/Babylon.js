@@ -409,6 +409,19 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh._generatePointsArray();
     }
 
+    /** @hidden */
+    public _updateBoundingInfo(): AbstractMesh {
+        const effectiveMesh = this as AbstractMesh;
+        if (this._boundingInfo) {
+            this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
+        }
+        else {
+            this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
+        }
+        this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
+        return this;
+    }
+
     /**
      * Creates a new InstancedMesh from the current mesh.
      * - name (string) : the cloned mesh name
