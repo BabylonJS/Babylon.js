@@ -128,7 +128,7 @@ export class SpriteManager implements ISpriteManager {
     private _packedAndReady: boolean = false;
 
     private _textureContent: Nullable<Uint8Array>;
-    
+
     private _useInstancing = false;
 
     /**
@@ -248,7 +248,7 @@ export class SpriteManager implements ISpriteManager {
         }
         this._capacity = capacity;
         this._fromPacked = fromPacked;
-        
+
         if (imgUrl) {
             this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
             this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -296,10 +296,10 @@ export class SpriteManager implements ISpriteManager {
 
         var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4, this._vertexBufferSize, this._useInstancing);
         var options = this._buffer.createVertexBuffer("options", 4, 2, this._vertexBufferSize, this._useInstancing);
-        
+
         let offset = 6;
         var offsets: VertexBuffer;
-        
+
         if (this._useInstancing) {
             var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
             this._spriteBuffer = new Buffer(engine, spriteData, false, 2);

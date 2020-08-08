@@ -11023,6 +11023,7 @@ declare module BABYLON {
         /** True when packed cell data from JSON file is ready*/
         private _packedAndReady;
         private _textureContent;
+        private _useInstancing;
         /**
         * An event triggered when the manager is disposed.
         */
@@ -11040,9 +11041,11 @@ declare module BABYLON {
         private _vertexData;
         private _buffer;
         private _vertexBuffers;
+        private _spriteBuffer;
         private _indexBuffer;
         private _effectBase;
         private _effectFog;
+        private _vertexBufferSize;
         /**
          * Gets or sets the unique id of the sprite
          */
