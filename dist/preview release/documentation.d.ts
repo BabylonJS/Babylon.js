@@ -12425,6 +12425,54 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Interface used to define entities containing multiple clip planes
+     */
+    export interface IClipPlanesHolder {
+        /**
+         * Gets or sets the active clipplane 1
+         */
+        clipPlane: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 2
+         */
+        clipPlane2: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 3
+         */
+        clipPlane3: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 4
+         */
+        clipPlane4: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 5
+         */
+        clipPlane5: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 6
+         */
+        clipPlane6: Nullable<Plane>;
+    }
+}
+declare module BABYLON {
+    /**
+     * "Static Class" containing a few commonly used helper while dealing with material for rendering purpose.
+     *
+     * It is complementary with MaterialHelper but provides completely independent functions (for tree shaking sake)
+     *
+     * This works by convention in BabylonJS but is meant to be use only with shader following the in place naming rules and conventions.
+     */
+    export class ThinMaterialHelper {
+        /**
+         * Binds the clip plane information from the holder to the effect.
+         * @param effect The effect we are binding the data to
+         * @param holder The entity containing the clip plane information
+         */
+        static BindClipPlane(effect: Effect, holder: IClipPlanesHolder): void;
+    }
+}
+declare module BABYLON {
+    /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
      * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
@@ -20052,8 +20100,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * "Static Class" containing the most commonly used helper while dealing with material for
-     * rendering purpose.
+     * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
      *
      * It contains the basic tools to help defining defines, binding uniform for the common part of the materials.
      *
@@ -39185,7 +39232,7 @@ declare module BABYLON {
      * Represents a scene to be rendered by the engine.
      * @see https://doc.babylonjs.com/features/scene
      */
-    export class Scene extends AbstractScene implements IAnimatable {
+    export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
         /** The fog is deactivated */
         static readonly FOGMODE_NONE: number;
         /** The fog density is following an exponential function */
