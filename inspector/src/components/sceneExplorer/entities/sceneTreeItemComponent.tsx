@@ -90,6 +90,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.forceUpdate();
                     }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                }else if(className.indexOf("Bone") !== -1){
+                    manager.attachToMesh((this._selectedEntity._linkedTransformNode)?this._selectedEntity._linkedTransformNode:this._selectedEntity);
                 } else {
                     manager.attachToMesh(null);
                 }
@@ -319,6 +321,8 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.forceUpdate();
                     }
                     manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
+                } else if(className.indexOf("Bone") !== -1){
+                    manager.attachToMesh((this._selectedEntity._linkedTransformNode)?this._selectedEntity._linkedTransformNode:this._selectedEntity);
                 }
             }
         }
