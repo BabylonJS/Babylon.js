@@ -536,6 +536,24 @@ export class SkeletonViewer {
         }
     }
 
+    /** Changes the displayMode of the skeleton viewer
+     * @param option String of the option name
+     * @param value The numerical option value
+     */
+    public changeDisplayOptions(option: string, value: number): void {
+        let wasEnabled = (this.isEnabled) ? true : false;
+        (this.options.displayOptions as any)[option] = value;
+        this.isEnabled = false;
+        if (this._debugMesh) {
+            this._debugMesh.dispose();
+            this._debugMesh = null;
+            this.ready = false;
+        }
+        this.update();
+        this._bindObs();
+        this.isEnabled = wasEnabled;
+    }
+
     /** Release associated resources */
     public dispose(): void {
         this.isEnabled = false;

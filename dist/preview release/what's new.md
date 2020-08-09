@@ -93,6 +93,7 @@
 ### Sprites
 
 - Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh))
+- Improved rendering engine by using instancing when available ([Deltakosh](https://github.com/deltakosh))
 
 ### Physics
 

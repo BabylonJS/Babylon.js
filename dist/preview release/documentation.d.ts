@@ -11023,6 +11023,7 @@ declare module BABYLON {
         /** True when packed cell data from JSON file is ready*/
         private _packedAndReady;
         private _textureContent;
+        private _useInstancing;
         /**
         * An event triggered when the manager is disposed.
         */
@@ -11040,9 +11041,11 @@ declare module BABYLON {
         private _vertexData;
         private _buffer;
         private _vertexBuffers;
+        private _spriteBuffer;
         private _indexBuffer;
         private _effectBase;
         private _effectFog;
+        private _vertexBufferSize;
         /**
          * Gets or sets the unique id of the sprite
          */
@@ -12419,6 +12422,54 @@ declare module BABYLON {
         name: string;
         shader: string;
     };
+}
+declare module BABYLON {
+    /**
+     * Interface used to define entities containing multiple clip planes
+     */
+    export interface IClipPlanesHolder {
+        /**
+         * Gets or sets the active clipplane 1
+         */
+        clipPlane: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 2
+         */
+        clipPlane2: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 3
+         */
+        clipPlane3: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 4
+         */
+        clipPlane4: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 5
+         */
+        clipPlane5: Nullable<Plane>;
+        /**
+         * Gets or sets the active clipplane 6
+         */
+        clipPlane6: Nullable<Plane>;
+    }
+}
+declare module BABYLON {
+    /**
+     * "Static Class" containing a few commonly used helper while dealing with material for rendering purpose.
+     *
+     * It is complementary with MaterialHelper but provides completely independent functions (for tree shaking sake)
+     *
+     * This works by convention in BabylonJS but is meant to be use only with shader following the in place naming rules and conventions.
+     */
+    export class ThinMaterialHelper {
+        /**
+         * Binds the clip plane information from the holder to the effect.
+         * @param effect The effect we are binding the data to
+         * @param holder The entity containing the clip plane information
+         */
+        static BindClipPlane(effect: Effect, holder: IClipPlanesHolder): void;
+    }
 }
 declare module BABYLON {
     /**
@@ -20049,8 +20100,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * "Static Class" containing the most commonly used helper while dealing with material for
-     * rendering purpose.
+     * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
      *
      * It contains the basic tools to help defining defines, binding uniform for the common part of the materials.
      *
@@ -39182,7 +39232,7 @@ declare module BABYLON {
      * Represents a scene to be rendered by the engine.
      * @see https://doc.babylonjs.com/features/scene
      */
-    export class Scene extends AbstractScene implements IAnimatable {
+    export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
         /** The fog is deactivated */
         static readonly FOGMODE_NONE: number;
         /** The fog density is following an exponential function */
@@ -50733,6 +50783,7 @@ declare module BABYLON {
         private _renderFunction;
         private _scene;
         private _updateToMeshFunction;
+        private _onAfterStepObserver;
         private _attachedToMesh;
         private _meshSpaceDirection;
         private _meshSpaceOrigin;
@@ -51041,6 +51092,11 @@ declare module BABYLON.Debug {
          * @param mode The displayMode numerical value
          */
         changeDisplayMode(mode: number): void;
+        /** Changes the displayMode of the skeleton viewer
+         * @param option String of the option name
+         * @param value The numerical option value
+         */
+        changeDisplayOptions(option: string, value: number): void;
         /** Release associated resources */
         dispose(): void;
     }
@@ -52440,6 +52496,7 @@ declare module BABYLON {
         private readonly _native;
         /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
         private readonly INVALID_HANDLE;
+        private _boundBuffersVertexArray;
         getHardwareScalingLevel(): number;
         constructor();
         dispose(): void;
@@ -52464,6 +52521,9 @@ declare module BABYLON {
         clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
         createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer;
         createVertexBuffer(data: DataArray, updateable?: boolean): NativeDataBuffer;
+        protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
         bindBuffers(vertexBuffers: {
             [key: string]: VertexBuffer;
         }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void;
@@ -80755,7 +80815,7 @@ declare module BABYLON.GLTF2 {
          * @param assign A function called synchronously after parsing the glTF properties
          * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
          */
-        _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+        _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /**
          * Define this method to modify the default behavior when creating materials.
          * @param context The context when loading the asset
@@ -81019,7 +81079,7 @@ declare module BABYLON.GLTF2 {
         private _loadVertexAccessorAsync;
         private _loadMaterialMetallicRoughnessPropertiesAsync;
         /** @hidden */
-        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign?: (babylonMaterial: Material) => void): Promise<Material>;
+        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign?: (babylonMaterial: Material) => void): Promise<Material>;
         private _createDefaultMaterial;
         /**
          * Creates a Babylon material from a glTF material.
@@ -81739,7 +81799,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>>;
         /** @hidden */
-        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+        _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
         /** @hidden */
         _loadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** @hidden */
