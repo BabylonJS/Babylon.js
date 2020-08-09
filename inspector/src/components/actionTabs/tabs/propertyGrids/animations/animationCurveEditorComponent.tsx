@@ -91,6 +91,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         valueScale: CurveScale;
         canvasLength: number;
         lastKeyframeCreated: Nullable<string>;
+        canvasWidthScale: number;
     }
 > {
     private _snippetUrl = "https://snippet.babylonjs.com";
@@ -181,6 +182,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             actionableKeyframe: { frame: undefined, value: undefined },
             valueScale: CurveScale.default,
             lastKeyframeCreated: null,
+            canvasWidthScale: 200,
         };
     }
 
@@ -1078,8 +1080,10 @@ export class AnimationCurveEditorComponent extends React.Component<
             let svgKeyframe;
             let outTangent;
             let inTangent;
-            let defaultWeight = 5;
+            let defaultWeight = this.state.canvasWidthScale / 4;
 
+            // if curve doesnt have tangents then must be null to have linear
+            // right now has 0 then the linear will show a slight curve as flat tangents...
             let defaultTangent: number | null = null;
             if (i !== 0 || i !== keyframes.length - 1) {
                 defaultTangent = 0;
