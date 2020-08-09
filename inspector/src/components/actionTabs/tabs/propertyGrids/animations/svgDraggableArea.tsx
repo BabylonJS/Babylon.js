@@ -192,7 +192,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         } else {
             directionY = 1; //bottom
         }
-        console.log(this._panStop.x - this._panStart.x);
+
         const bufferX = Math.abs(this._movedX - this._panStop.x);
         const bufferY = Math.abs(this._movedY - this._panStop.y);
 
