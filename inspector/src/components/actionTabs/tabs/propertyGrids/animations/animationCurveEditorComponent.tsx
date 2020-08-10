@@ -555,11 +555,17 @@ export class AnimationCurveEditorComponent extends React.Component<
         if (updatedSvgKeyFrame.isLeftActive) {
             if (updatedSvgKeyFrame.leftControlPoint !== null) {
                 // Rotate
-                let newValue = ((this._heightScale - updatedSvgKeyFrame.leftControlPoint.y) / this._heightScale) * 2;
 
-                let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+                // Get the previous svgKeyframe and measure distance between these two points
+                // Get a quarter of that value for amplitude
 
-                let updatedValue = keyframeValue - newValue;
+                let distanceAmplitudeOfX = updatedSvgKeyFrame.keyframePoint.x - this.state.canvasWidthScale / 8;
+
+                let slope = (updatedSvgKeyFrame.leftControlPoint.y - updatedSvgKeyFrame.keyframePoint.y) / (updatedSvgKeyFrame.leftControlPoint.x - updatedSvgKeyFrame.keyframePoint.x);
+
+                let newValueOfY = (distanceAmplitudeOfX - updatedSvgKeyFrame.leftControlPoint.x) * slope + updatedSvgKeyFrame.keyframePoint.y;
+
+                let updatedValue = ((newValueOfY - updatedSvgKeyFrame.keyframePoint.y) * this._scaleFactor) / this._heightScale;
 
                 key.inTangent = this.updateValuePerCoordinate(dataType, key.inTangent, updatedValue, coordinate);
 
@@ -578,11 +584,17 @@ export class AnimationCurveEditorComponent extends React.Component<
         if (updatedSvgKeyFrame.isRightActive) {
             if (updatedSvgKeyFrame.rightControlPoint !== null) {
                 // Rotate
-                let newValue = ((this._heightScale - updatedSvgKeyFrame.rightControlPoint.y) / this._heightScale) * 2;
 
-                let keyframeValue = ((this._heightScale - updatedSvgKeyFrame.keyframePoint.y) / this._heightScale) * 2;
+                // Get the next svgKeyframe and measure distance between these two points
+                // Get a quarter of that value for amplitude
 
-                let updatedValue = keyframeValue - newValue;
+                let distanceAmplitudeOfX = updatedSvgKeyFrame.keyframePoint.x + this.state.canvasWidthScale / 8;
+
+                let slope = (updatedSvgKeyFrame.rightControlPoint.y - updatedSvgKeyFrame.keyframePoint.y) / (updatedSvgKeyFrame.rightControlPoint.x - updatedSvgKeyFrame.keyframePoint.x);
+
+                let newValueOfY = (distanceAmplitudeOfX - updatedSvgKeyFrame.rightControlPoint.x) * slope + updatedSvgKeyFrame.keyframePoint.y;
+
+                let updatedValue = ((newValueOfY - updatedSvgKeyFrame.keyframePoint.y) * this._scaleFactor) / this._heightScale;
 
                 key.outTangent = this.updateValuePerCoordinate(dataType, key.outTangent, updatedValue, coordinate);
 
@@ -1345,6 +1357,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         if (this.state.lastKeyframeCreated !== null) {
             this.deselectKeyframes();
             this.selectKeyframe(this.state.lastKeyframeCreated, false);
+            this.setState({ lastKeyframeCreated: null });
         }
 
         this.setMainAnimatable();
@@ -1664,16 +1677,9 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                                     {this.state.frameAxisLength.map((f, i) => (
                                         <svg key={i} x="0" y={96 + this.state.panningY + "%"} className="frame-contain">
-                                            {f.label < 10 && f.label > -10 ? (
-                                                <text x={f.value} y="-1.5px" dx="-0.5px" style={{ fontSize: `${0.17 * this.state.scale}em` }}>
-                                                    {f.label}
-                                                </text>
-                                            ) : (
-                                                <text x={f.value} y="-1.5px" dx="-1px" style={{ fontSize: `${0.17 * this.state.scale}em` }}>
-                                                    {f.label}
-                                                </text>
-                                            )}
-
+                                            <text x={f.value} y="1px" dx="2px" style={{ fontSize: `${0.2 * this.state.scale}em` }}>
+                                                {f.label}
+                                            </text>
                                             <line x1={f.value} y1="0" x2={f.value} y2="5%"></line>
 
                                             {f.value % this.state.fps === 0 && f.value !== 0 ? <line x1={f.value} y1="-100%" x2={f.value} y2="5%"></line> : null}
