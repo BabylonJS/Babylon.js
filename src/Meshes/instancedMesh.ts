@@ -11,6 +11,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
 import { Light } from '../Lights/light';
 import { VertexBuffer } from './buffer';
+import { BoundingInfo } from '../Culling/boundingInfo';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     let instance = new InstancedMesh(name, mesh);
