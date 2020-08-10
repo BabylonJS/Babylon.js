@@ -56,7 +56,7 @@ export class CameraGizmo extends Gizmo {
                 this._cameraLinesMesh.dispose();
             }
             this._cameraMesh = CameraGizmo._CreateCameraMesh(this.gizmoLayer.utilityLayerScene);
-            this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene);           
+            this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene);
 
             this._cameraMesh.getChildMeshes(false).forEach((m) => {
                 m.material = this._material;
@@ -115,7 +115,7 @@ export class CameraGizmo extends Gizmo {
     // Static helper methods
     private static _Scale = 0.05;
     private _invProjection = new Matrix();
-    
+
     /**
      * Disposes of the camera gizmo
      */
