@@ -6,7 +6,9 @@ import { Observable, Observer } from "babylonjs/Misc/observable";
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
 import { Light } from "babylonjs/Lights/light";
+import { Camera } from "babylonjs/Cameras/camera";
 import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
+import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from './replayRecorder';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
@@ -128,6 +130,25 @@ export class GlobalState {
             this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo), 1);
             light.reservedDataStore.lightGizmo.dispose();
             light.reservedDataStore.lightGizmo = null;
+        }
+    }
+    // Camera gizmos
+    public cameraGizmos: Array<CameraGizmo> = [];
+    public enableCameraGizmo(camera: Camera, enable = true) {
+        if (enable) {
+            if (!camera.reservedDataStore) {
+                camera.reservedDataStore = {}
+            }
+            if (!camera.reservedDataStore.cameraGizmo) {
+                camera.reservedDataStore.cameraGizmo = new CameraGizmo();
+                this.cameraGizmos.push(camera.reservedDataStore.cameraGizmo)
+                camera.reservedDataStore.cameraGizmo.camera = camera;
+                camera.reservedDataStore.cameraGizmo.material.reservedDataStore = {hidden: true};
+            }
+        } else if (camera.reservedDataStore && camera.reservedDataStore.cameraGizmo) {
+            this.cameraGizmos.splice(this.cameraGizmos.indexOf(camera.reservedDataStore.cameraGizmo), 1);
+            camera.reservedDataStore.cameraGizmo.dispose();
+            camera.reservedDataStore.cameraGizmo = null;
         }
     }
 }
