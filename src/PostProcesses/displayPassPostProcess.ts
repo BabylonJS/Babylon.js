@@ -5,6 +5,9 @@ import { Engine } from "../Engines/engine";
 
 import "../Shaders/displayPass.fragment";
 import { _TypeStore } from '../Misc/typeStore';
+import { SerializationHelper } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * DisplayPassPostProcess which produces an output the same as it's input
@@ -30,6 +33,17 @@ export class DisplayPassPostProcess extends PostProcess {
     constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean) {
         super(name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable);
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<DisplayPassPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new DisplayPassPostProcess(
+                parsedPostProcess.name, 
+                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }        
 }
 
 _TypeStore.RegisteredTypes["BABYLON.DisplayPassPostProcess"] = DisplayPassPostProcess;

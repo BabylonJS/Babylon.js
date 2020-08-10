@@ -6,7 +6,6 @@ import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
-import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 
 import "../Animations/animatable";
@@ -16,6 +15,7 @@ import { serialize, SerializationHelper } from '../Misc/decorators';
 import { _TypeStore } from '../Misc/typeStore';
 
 declare type Engine = import("../Engines/engine").Engine;
+declare type Scene = import("../scene").Scene;
 
 /**
  * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.
@@ -145,6 +145,7 @@ export class MotionBlurPostProcess extends PostProcess {
         super.dispose(camera);
     }
 
+    /** @hidden */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess> {
         return SerializationHelper.Parse(() => {
             return new MotionBlurPostProcess(

@@ -7,7 +7,9 @@ import { Engine } from "../Engines/engine";
 
 import "../Shaders/filter.fragment";
 import { _TypeStore } from '../Misc/typeStore';
-import { serializeAsMatrix } from '../Misc/decorators';
+import { serializeAsMatrix, SerializationHelper } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * Applies a kernel filter to the image
@@ -50,6 +52,17 @@ export class FilterPostProcess extends PostProcess {
             effect.setMatrix("kernelMatrix", this.kernelMatrix);
         };
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<FilterPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new FilterPostProcess(
+                parsedPostProcess.name, parsedPostProcess.kernelMatrix,
+                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }        
 }
 
 _TypeStore.RegisteredTypes["BABYLON.FilterPostProcess"] = FilterPostProcess;

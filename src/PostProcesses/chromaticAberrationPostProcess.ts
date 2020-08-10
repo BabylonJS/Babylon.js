@@ -8,7 +8,9 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/chromaticAberration.fragment";
 import { _TypeStore } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { serialize, SerializationHelper } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen
@@ -38,6 +40,14 @@ export class ChromaticAberrationPostProcess extends PostProcess {
     @serialize()
     centerPosition = new Vector2(0.5, 0.5);
 
+    /** The width of the screen to apply the effect on */
+    @serialize()
+    screenWidth: number;
+
+    /** The height of the screen to apply the effect on */
+    @serialize()
+    screenHeight: number;
+
     /**
      * Gets a string identifying the name of the class
      * @returns "ChromaticAberrationPostProcess" string
@@ -61,6 +71,10 @@ export class ChromaticAberrationPostProcess extends PostProcess {
      */
     constructor(name: string, screenWidth: number, screenHeight: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
         super(name, "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity", "centerPosition"], [], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
+
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+
         this.onApplyObservable.add((effect: Effect) => {
             effect.setFloat('chromatic_aberration', this.aberrationAmount);
             effect.setFloat('screen_width', screenWidth);
@@ -70,6 +84,19 @@ export class ChromaticAberrationPostProcess extends PostProcess {
             effect.setFloat2('centerPosition', this.centerPosition.x, this.centerPosition.y);
         });
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ChromaticAberrationPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new ChromaticAberrationPostProcess(
+                parsedPostProcess.name, 
+                parsedPostProcess.screenWidth, parsedPostProcess.screenHeight, 
+                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable,
+                parsedPostProcess.textureType, false);
+        }, parsedPostProcess, scene, rootUrl);
+    }    
 }
 
 _TypeStore.RegisteredTypes["BABYLON.ChromaticAberrationPostProcess"] = ChromaticAberrationPostProcess;

@@ -5,7 +5,10 @@ import { Engine } from "../Engines/engine";
 
 import "../Shaders/blackAndWhite.fragment";
 import { _TypeStore } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { serialize, SerializationHelper } from '../Misc/decorators';
+import { Nullable } from '../types';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * Post process used to render in black and white
@@ -42,6 +45,16 @@ export class BlackAndWhitePostProcess extends PostProcess {
             effect.setFloat("degree", this.degree);
         });
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlackAndWhitePostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new BlackAndWhitePostProcess(
+                parsedPostProcess.name, parsedPostProcess.options, 
+                targetCamera, parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }    
 }
 
 _TypeStore.RegisteredTypes["BABYLON.BlackAndWhitePostProcess"] = BlackAndWhitePostProcess;

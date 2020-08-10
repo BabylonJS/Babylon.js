@@ -7,7 +7,10 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/convolution.fragment";
 import { _TypeStore } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { serialize, SerializationHelper } from '../Misc/decorators';
+
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
@@ -46,8 +49,19 @@ export class ConvolutionPostProcess extends PostProcess {
         this.onApply = (effect: Effect) => {
             effect.setFloat2("screenSize", this.width, this.height);
             effect.setArray("kernel", this.kernel);
-        };
+        };        
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ConvolutionPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new ConvolutionPostProcess(
+                parsedPostProcess.name, parsedPostProcess.kernel,
+                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable, parsedPostProcess.textureType);
+        }, parsedPostProcess, scene, rootUrl);
+    }        
 
     // Statics
     /**

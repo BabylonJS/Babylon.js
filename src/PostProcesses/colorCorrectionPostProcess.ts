@@ -6,6 +6,10 @@ import { Camera } from "../Cameras/camera";
 
 import "../Shaders/colorCorrection.fragment";
 import { _TypeStore } from '../Misc/typeStore';
+import { SerializationHelper, serialize } from '../Misc/decorators';
+import { Nullable } from '../types';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  *
@@ -25,6 +29,10 @@ import { _TypeStore } from '../Misc/typeStore';
 export class ColorCorrectionPostProcess extends PostProcess {
 
     private _colorTableTexture: Texture;
+    
+    //** Gets the color table url used to create the LUT texture */
+    @serialize()
+    public colorTableUrl: string;
 
     /**
      * Gets a string identifying the name of the class
@@ -42,10 +50,23 @@ export class ColorCorrectionPostProcess extends PostProcess {
         this._colorTableTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._colorTableTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
+        this.colorTableUrl = colorTableUrl;
+
         this.onApply = (effect: Effect) => {
             effect.setTexture("colorTable", this._colorTableTexture);
         };
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ColorCorrectionPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new ColorCorrectionPostProcess(
+                parsedPostProcess.name, parsedPostProcess.colorTableUrl,
+                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }    
 }
 
 _TypeStore.RegisteredTypes["BABYLON.ColorCorrectionPostProcess"] = ColorCorrectionPostProcess;

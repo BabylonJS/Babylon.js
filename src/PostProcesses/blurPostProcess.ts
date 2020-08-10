@@ -10,7 +10,9 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/kernelBlur.fragment";
 import "../Shaders/kernelBlur.vertex";
 import { _TypeStore } from '../Misc/typeStore';
-import { serialize, serializeAsVector2 } from '../Misc/decorators';
+import { serialize, serializeAsVector2, SerializationHelper } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
@@ -271,6 +273,16 @@ export class BlurPostProcess extends PostProcess {
     protected _glslFloat(x: number, decimalFigures = 8) {
         return x.toFixed(decimalFigures).replace(/0+$/, '');
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlurPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new BlurPostProcess(
+                parsedPostProcess.name, parsedPostProcess.direction, parsedPostProcess.kernel,
+                parsedPostProcess.options, targetCamera, parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable, parsedPostProcess.textureType, undefined, false);
+        }, parsedPostProcess, scene, rootUrl);
+    }        
 }
 
 _TypeStore.RegisteredTypes["BABYLON.BlurPostProcess"] = BlurPostProcess;
