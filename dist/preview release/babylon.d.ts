@@ -16332,6 +16332,8 @@ declare module BABYLON {
         _syncSubMeshes(): InstancedMesh;
         /** @hidden */
         _generatePointsArray(): boolean;
+        /** @hidden */
+        _updateBoundingInfo(): AbstractMesh;
         /**
          * Creates a new InstancedMesh from the current mesh.
          * - name (string) : the cloned mesh name
@@ -19692,6 +19694,11 @@ declare module BABYLON {
      */
     export class VRMultiviewToSingleviewPostProcess extends PostProcess {
         /**
+         * Gets a string identifying the name of the class
+         * @returns "VRMultiviewToSingleviewPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Initializes a VRMultiviewToSingleview
          * @param name name of the post process
          * @param camera camera to be applied to
@@ -22527,12 +22534,12 @@ declare module BABYLON {
      * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
      */
     export class PostProcess {
-        /** Name of the PostProcess. */
-        name: string;
         /**
          * Gets or sets the unique id of the post process
          */
         uniqueId: number;
+        /** Name of the PostProcess. */
+        name: string;
         /**
         * Width of the texture to apply the post process on
         */
@@ -22731,11 +22738,9 @@ declare module BABYLON {
          * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
          * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
          */
-        constructor(
-        /** Name of the PostProcess. */
-        name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean, textureFormat?: number);
+        constructor(name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean, textureFormat?: number);
         /**
-         * Gets a string idenfifying the name of the class
+         * Gets a string identifying the name of the class
          * @returns "PostProcess" string
          */
         getClassName(): string;
@@ -22812,6 +22817,19 @@ declare module BABYLON {
          * @param camera The camera to dispose the post process on.
          */
         dispose(camera?: Camera): void;
+        /**
+         * Serializes the particle system to a JSON object
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Creates a material from parsed material data
+         * @param parsedPostProcess defines parsed post process data
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root URL to use to load textures
+         * @returns a new post process
+         */
+        static Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess>;
     }
 }
 declare module BABYLON {
@@ -22862,13 +22880,13 @@ declare module BABYLON {
      * Can be used twice in x and y directions to perform a guassian blur in two passes.
      */
     export class BlurPostProcess extends PostProcess {
-        /** The direction in which to blur the image. */
-        direction: Vector2;
         private blockCompilation;
         protected _kernel: number;
         protected _idealKernel: number;
         protected _packedFloat: boolean;
         private _staticDefines;
+        /** The direction in which to blur the image. */
+        direction: Vector2;
         /**
          * Sets the length in pixels of the blur sample region
          */
@@ -22886,6 +22904,11 @@ declare module BABYLON {
          */
         get packedFloat(): boolean;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "BlurPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates a new instance BlurPostProcess
          * @param name The name of the effect.
          * @param direction The direction in which to blur the image.
@@ -22898,9 +22921,7 @@ declare module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, 
-        /** The direction in which to blur the image. */
-        direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, defines?: string, blockCompilation?: boolean);
+        constructor(name: string, direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, defines?: string, blockCompilation?: boolean);
         /**
          * Updates the effect with the current post process compile time values and recompiles the shader.
          * @param defines Define statements that should be added at the beginning of the shader. (default: null)
@@ -22935,6 +22956,8 @@ declare module BABYLON {
           * @return GLSL float string.
           */
         protected _glslFloat(x: number, decimalFigures?: number): string;
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlurPostProcess>;
     }
 }
 declare module BABYLON {
@@ -24186,10 +24209,11 @@ declare module BABYLON {
      * Sub surface scattering post process
      */
     export class SubSurfaceScatteringPostProcess extends PostProcess {
-        /** @hidden */
-        texelWidth: number;
-        /** @hidden */
-        texelHeight: number;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "SubSurfaceScatteringPostProcess" string
+         */
+        getClassName(): string;
         constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
     }
 }
@@ -32979,7 +33003,7 @@ declare module BABYLON {
         get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride>;
         set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>);
         /**
-         * Gets a string idenfifying the name of the class
+         * Gets a string identifying the name of the class
          * @returns "Node" string
          */
         getClassName(): string;
@@ -35390,7 +35414,7 @@ declare module BABYLON {
          */
         get webGLVersion(): number;
         /**
-         * Gets a string idenfifying the name of the class
+         * Gets a string identifying the name of the class
          * @returns "Engine" string
          */
         getClassName(): string;
@@ -39839,10 +39863,6 @@ declare module BABYLON {
         */
         postProcessesEnabled: boolean;
         /**
-         * The list of postprocesses added to the scene
-         */
-        postProcesses: PostProcess[];
-        /**
          * Gets the current postprocess manager
          */
         postProcessManager: PostProcessManager;
@@ -40111,7 +40131,7 @@ declare module BABYLON {
          */
         constructor(engine: Engine, options?: SceneOptions);
         /**
-         * Gets a string idenfifying the name of the class
+         * Gets a string identifying the name of the class
          * @returns "Scene" string
          */
         getClassName(): string;
@@ -40789,6 +40809,12 @@ declare module BABYLON {
          */
         getMorphTargetByName(name: string): Nullable<MorphTarget>;
         /**
+         * Gets a post process using a given name (if many are found, this function will pick the first one)
+         * @param name defines the name to search for
+         * @return the found post process or null if not found at all.
+         */
+        getPostProcessByName(name: string): Nullable<PostProcess>;
+        /**
          * Gets a boolean indicating if the given mesh is active
          * @param mesh defines the mesh to look for
          * @returns true if the mesh is in the active list
@@ -41335,6 +41361,10 @@ declare module BABYLON {
          * Environment texture for the scene
          */
         environmentTexture: Nullable<BaseTexture>;
+        /**
+         * The list of postprocesses added to the scene
+         */
+        postProcesses: PostProcess[];
         /**
          * @returns all meshes, lights, cameras, transformNodes and bones
          */
@@ -45939,6 +45969,11 @@ declare module BABYLON {
      */
     export class PassPostProcess extends PostProcess {
         /**
+         * Gets a string identifying the name of the class
+         * @returns "PassPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates the PassPostProcess
          * @param name The name of the effect.
          * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -45950,6 +45985,8 @@ declare module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): PassPostProcess;
     }
     /**
      * PassCubePostProcess which produces an output the same as it's input (which must be a cube texture)
@@ -45968,6 +46005,11 @@ declare module BABYLON {
         get face(): number;
         set face(value: number);
         /**
+         * Gets a string identifying the name of the class
+         * @returns "PassCubePostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates the PassCubePostProcess
          * @param name The name of the effect.
          * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -45979,6 +46021,8 @@ declare module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): PassCubePostProcess;
     }
 }
 declare module BABYLON {
@@ -45994,6 +46038,11 @@ declare module BABYLON {
      */
     export class AnaglyphPostProcess extends PostProcess {
         private _passedProcess;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "AnaglyphPostProcess" string
+         */
+        getClassName(): string;
         /**
          * Creates a new AnaglyphPostProcess
          * @param name defines postprocess name
@@ -46323,6 +46372,11 @@ declare module BABYLON {
         private _scaleIn;
         private _scaleFactor;
         private _lensCenter;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "VRDistortionCorrectionPostProcess" string
+         */
+        getClassName(): string;
         /**
          * Initializes the VRDistortionCorrectionPostProcess
          * @param name The name of the effect.
@@ -50782,7 +50836,7 @@ declare module BABYLON {
         private _renderLine;
         private _renderFunction;
         private _scene;
-        private _updateToMeshFunction;
+        private _onAfterRenderObserver;
         private _onAfterStepObserver;
         private _attachedToMesh;
         private _meshSpaceDirection;
@@ -53612,7 +53666,7 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Helps setup gizmo's in the scene to rotate/scale/position meshes
+     * Helps setup gizmo's in the scene to rotate/scale/position nodes
      */
     export class GizmoManager implements IDisposable {
         private scene;
@@ -53629,9 +53683,12 @@ declare module BABYLON {
         clearGizmoOnEmptyPointerEvent: boolean;
         /** Fires an event when the manager is attached to a mesh */
         onAttachedToMeshObservable: Observable<Nullable<AbstractMesh>>;
+        /** Fires an event when the manager is attached to a node */
+        onAttachedToNodeObservable: Observable<Nullable<Node>>;
         private _gizmosEnabled;
         private _pointerObserver;
         private _attachedMesh;
+        private _attachedNode;
         private _boundingBoxColor;
         private _defaultUtilityLayer;
         private _defaultKeepDepthUtilityLayer;
@@ -53645,7 +53702,11 @@ declare module BABYLON {
          */
         attachableMeshes: Nullable<Array<AbstractMesh>>;
         /**
-         * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh. (Default: true)
+         * Array of nodes which will have the gizmo attached when a pointer selected them. If null, all nodes are attachable. (Default: null)
+         */
+        attachableNodes: Nullable<Array<Node>>;
+        /**
+         * If pointer events should perform attaching/detaching a gizmo, if false this can be done manually via attachToMesh/attachToNode. (Default: true)
          */
         usePointerToAttachGizmos: boolean;
         /**
@@ -53667,6 +53728,11 @@ declare module BABYLON {
          * @param mesh The mesh the gizmo's should be attached to
          */
         attachToMesh(mesh: Nullable<AbstractMesh>): void;
+        /**
+         * Attaches a set of gizmos to the specified node
+         * @param node The node the gizmo's should be attached to
+         */
+        attachToNode(node: Nullable<Node>): void;
         /**
          * If the position gizmo is enabled
          */
@@ -54034,6 +54100,47 @@ declare module BABYLON {
         private static _CreatePointLightMesh;
         private static _CreateSpotLightMesh;
         private static _CreateDirectionalLightMesh;
+    }
+}
+declare module BABYLON {
+    /**
+     * Gizmo that enables viewing a camera
+     */
+    export class CameraGizmo extends Gizmo {
+        private _cameraMesh;
+        private _cameraLinesMesh;
+        private _material;
+        /**
+         * Creates a CameraGizmo
+         * @param gizmoLayer The utility layer the gizmo will be added to
+         */
+        constructor(gizmoLayer?: UtilityLayerRenderer);
+        private _camera;
+        /** Gets or sets a boolean indicating if frustum lines must be rendered (true by default)) */
+        get displayFrustum(): boolean;
+        set displayFrustum(value: boolean);
+        /**
+         * The camera that the gizmo is attached to
+         */
+        set camera(camera: Nullable<Camera>);
+        get camera(): Nullable<Camera>;
+        /**
+         * Gets the material used to render the camera gizmo
+         */
+        get material(): StandardMaterial;
+        /**
+         * @hidden
+         * Updates the gizmo to match the attached mesh's position/rotation
+         */
+        protected _update(): void;
+        private static _Scale;
+        private _invProjection;
+        /**
+         * Disposes of the camera gizmo
+         */
+        dispose(): void;
+        private static _CreateCameraMesh;
+        private static _CreateCameraFrustum;
     }
 }
 declare module BABYLON {
@@ -68631,6 +68738,11 @@ declare module BABYLON {
          */
         degree: number;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "BlackAndWhitePostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates a black and white post process
          * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#black-and-white
          * @param name The name of the effect.
@@ -68641,6 +68753,8 @@ declare module BABYLON {
          * @param reusable If the post process can be reused on the same frame. (default: false)
          */
         constructor(name: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlackAndWhitePostProcess>;
     }
 }
 declare module BABYLON {
@@ -68757,6 +68871,11 @@ declare module BABYLON {
          * @hidden
          */
         _inputPostProcess: Nullable<PostProcess>;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "ExtractHighlightsPostProcess" string
+         */
+        getClassName(): string;
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
     }
 }
@@ -68774,6 +68893,11 @@ declare module BABYLON {
     export class BloomMergePostProcess extends PostProcess {
         /** Weight of the bloom to be added to the original input. */
         weight: number;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "BloomMergePostProcess" string
+         */
+        getClassName(): string;
         /**
          * Creates a new instance of @see BloomMergePostProcess
          * @param name The name of the effect.
@@ -68880,6 +69004,15 @@ declare module BABYLON {
          * The center position where the radialIntensity should be around. [0.5,0.5 is center of screen, 1,1 is top right corder] (default: Vector2(0.5 ,0.5))
          */
         centerPosition: Vector2;
+        /** The width of the screen to apply the effect on */
+        screenWidth: number;
+        /** The height of the screen to apply the effect on */
+        screenHeight: number;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "ChromaticAberrationPostProcess" string
+         */
+        getClassName(): string;
         /**
          * Creates a new instance ChromaticAberrationPostProcess
          * @param name The name of the effect.
@@ -68894,6 +69027,8 @@ declare module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, screenWidth: number, screenHeight: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ChromaticAberrationPostProcess>;
     }
 }
 declare module BABYLON {
@@ -68924,6 +69059,11 @@ declare module BABYLON {
          * Focal length of the effect's camera in scene units/1000 (eg. millimeter). (default: 50)
          */
         focalLength: number;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "CircleOfConfusionPostProcess" string
+         */
+        getClassName(): string;
         private _depthTexture;
         /**
          * Creates a new instance CircleOfConfusionPostProcess
@@ -68969,7 +69109,18 @@ declare module BABYLON {
      */
     export class ColorCorrectionPostProcess extends PostProcess {
         private _colorTableTexture;
+        /**
+         * Gets the color table url used to create the LUT texture
+         */
+        colorTableUrl: string;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "ColorCorrectionPostProcess" string
+         */
+        getClassName(): string;
         constructor(name: string, colorTableUrl: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ColorCorrectionPostProcess>;
     }
 }
 declare module BABYLON {
@@ -68989,6 +69140,11 @@ declare module BABYLON {
         /** Array of 9 values corresponding to the 3x3 kernel to be applied */
         kernel: number[];
         /**
+         * Gets a string identifying the name of the class
+         * @returns "ConvolutionPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates a new instance ConvolutionPostProcess
          * @param name The name of the effect.
          * @param kernel Array of 9 values corresponding to the 3x3 kernel to be applied
@@ -68999,9 +69155,9 @@ declare module BABYLON {
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
          */
-        constructor(name: string, 
-        /** Array of 9 values corresponding to the 3x3 kernel to be applied */
-        kernel: number[], options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
+        constructor(name: string, kernel: number[], options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ConvolutionPostProcess>;
         /**
          * Edge detection 0 see https://en.wikipedia.org/wiki/Kernel_(image_processing)
          */
@@ -69036,7 +69192,15 @@ declare module BABYLON {
      * See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
      */
     export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
+        /**
+         * The direction the blur should be applied
+         */
         direction: Vector2;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "DepthOfFieldBlurPostProcess" string
+         */
+        getClassName(): string;
         /**
          * Creates a new instance CircleOfConfusionPostProcess
          * @param name The name of the effect.
@@ -69092,6 +69256,11 @@ declare module BABYLON {
      */
     export class DepthOfFieldMergePostProcess extends PostProcess {
         private blurSteps;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "DepthOfFieldMergePostProcess" string
+         */
+        getClassName(): string;
         /**
          * Creates a new instance of DepthOfFieldMergePostProcess
          * @param name The name of the effect.
@@ -69219,6 +69388,11 @@ declare module BABYLON {
      */
     export class DisplayPassPostProcess extends PostProcess {
         /**
+         * Gets a string identifying the name of the class
+         * @returns "DisplayPassPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates the DisplayPassPostProcess
          * @param name The name of the effect.
          * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -69228,6 +69402,8 @@ declare module BABYLON {
          * @param reusable If the post process can be reused on the same frame. (default: false)
          */
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<DisplayPassPostProcess>;
     }
 }
 declare module BABYLON {
@@ -69245,6 +69421,11 @@ declare module BABYLON {
         /** The matrix to be applied to the image */
         kernelMatrix: Matrix;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "FilterPostProcess" string
+         */
+        getClassName(): string;
+        /**
          *
          * @param name The name of the effect.
          * @param kernelMatrix The matrix to be applied to the image
@@ -69254,9 +69435,9 @@ declare module BABYLON {
          * @param engine The engine which the post process will be applied. (default: current engine)
          * @param reusable If the post process can be reused on the same frame. (default: false)
          */
-        constructor(name: string, 
-        /** The matrix to be applied to the image */
-        kernelMatrix: Matrix, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        constructor(name: string, kernelMatrix: Matrix, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<FilterPostProcess>;
     }
 }
 declare module BABYLON {
@@ -69279,12 +69460,15 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#fxaa
      */
     export class FxaaPostProcess extends PostProcess {
-        /** @hidden */
-        texelWidth: number;
-        /** @hidden */
-        texelHeight: number;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "FxaaPostProcess" string
+         */
+        getClassName(): string;
         constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
         private _getDefines;
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): FxaaPostProcess;
     }
 }
 declare module BABYLON {
@@ -69308,6 +69492,11 @@ declare module BABYLON {
          */
         animated: boolean;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "GrainPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates a new instance of @see GrainPostProcess
          * @param name The name of the effect.
          * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -69319,6 +69508,8 @@ declare module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): GrainPostProcess;
     }
 }
 declare module BABYLON {
@@ -69334,6 +69525,11 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses
      */
     export class HighlightsPostProcess extends PostProcess {
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "HighlightsPostProcess" string
+         */
+        getClassName(): string;
         /**
          * Extracts highlights from the image
          * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses
@@ -69602,6 +69798,11 @@ declare module BABYLON {
         private _motionBlurSamples;
         private _geometryBufferRenderer;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "MotionBlurPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates a new instance MotionBlurPostProcess
          * @param name The name of the effect.
          * @param scene The scene containing the objects to blur according to their velocity.
@@ -69631,6 +69832,8 @@ declare module BABYLON {
          * @param camera The camera to dispose the post process on.
          */
         dispose(camera?: Camera): void;
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess>;
     }
 }
 declare module BABYLON {
@@ -69646,20 +69849,27 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
      */
     export class RefractionPostProcess extends PostProcess {
+        private _refTexture;
+        private _ownRefractionTexture;
         /** the base color of the refraction (used to taint the rendering) */
         color: Color3;
         /** simulated refraction depth */
         depth: number;
         /** the coefficient of the base color (0 to remove base color tainting) */
         colorLevel: number;
-        private _refTexture;
-        private _ownRefractionTexture;
+        /** Gets the url used to load the refraction texture */
+        refractionTextureUrl: string;
         /**
          * Gets or sets the refraction texture
          * Please note that you are responsible for disposing the texture if you set it manually
          */
         get refractionTexture(): Texture;
         set refractionTexture(value: Texture);
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "RefractionPostProcess" string
+         */
+        getClassName(): string;
         /**
          * Initializes the RefractionPostProcess
          * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
@@ -69674,18 +69884,14 @@ declare module BABYLON {
          * @param engine The engine which the post process will be applied. (default: current engine)
          * @param reusable If the post process can be reused on the same frame. (default: false)
          */
-        constructor(name: string, refractionTextureUrl: string, 
-        /** the base color of the refraction (used to taint the rendering) */
-        color: Color3, 
-        /** simulated refraction depth */
-        depth: number, 
-        /** the coefficient of the base color (0 to remove base color tainting) */
-        colorLevel: number, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean);
+        constructor(name: string, refractionTextureUrl: string, color: Color3, depth: number, colorLevel: number, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean);
         /**
          * Disposes of the post process
          * @param camera Camera to dispose post process on
          */
         dispose(camera: Camera): void;
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): RefractionPostProcess;
     }
 }
 declare module BABYLON {
@@ -69710,6 +69916,11 @@ declare module BABYLON {
          */
         edgeAmount: number;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "SharpenPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates a new instance ConvolutionPostProcess
          * @param name The name of the effect.
          * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -69721,6 +69932,8 @@ declare module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): SharpenPostProcess;
     }
 }
 declare module BABYLON {
@@ -70678,6 +70891,11 @@ declare module BABYLON {
         private _reflectionSamples;
         private _smoothSteps;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "ScreenSpaceReflectionPostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates a new instance of ScreenSpaceReflectionPostProcess.
          * @param name The name of the effect.
          * @param scene The scene containing the objects to calculate reflections.
@@ -70718,6 +70936,8 @@ declare module BABYLON {
         get smoothSteps(): number;
         set smoothSteps(steps: number);
         private _updateEffectDefines;
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): ScreenSpaceReflectionPostProcess;
     }
 }
 declare module BABYLON {
@@ -71106,6 +71326,11 @@ declare module BABYLON {
         private _stepSize;
         private _passedProcess;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "StereoscopicInterlacePostProcessI" string
+         */
+        getClassName(): string;
+        /**
          * Initializes a StereoscopicInterlacePostProcessI
          * @param name The name of the effect.
          * @param rigCameras The rig cameras to be appled to the post process
@@ -71123,6 +71348,11 @@ declare module BABYLON {
     export class StereoscopicInterlacePostProcess extends PostProcess {
         private _stepSize;
         private _passedProcess;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "StereoscopicInterlacePostProcess" string
+         */
+        getClassName(): string;
         /**
          * Initializes a StereoscopicInterlacePostProcess
          * @param name The name of the effect.
@@ -71161,6 +71391,11 @@ declare module BABYLON {
         private _operator;
         /** Defines the required exposure adjustement */
         exposureAdjustment: number;
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "TonemapPostProcess" string
+         */
+        getClassName(): string;
         /**
          * Creates a new TonemapPostProcess
          * @param name defines the name of the postprocess
@@ -71327,6 +71562,11 @@ declare module BABYLON {
         valley: number;
         private _geometryBufferRenderer;
         /**
+         * Gets a string identifying the name of the class
+         * @returns "ScreenSpaceCurvaturePostProcess" string
+         */
+        getClassName(): string;
+        /**
          * Creates a new instance ScreenSpaceCurvaturePostProcess
          * @param name The name of the effect.
          * @param scene The scene containing the objects to blur according to their velocity.
@@ -71343,6 +71583,8 @@ declare module BABYLON {
          * Support test.
          */
         static get IsSupported(): boolean;
+        /** @hidden */
+        static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): ScreenSpaceCurvaturePostProcess;
     }
 }
 declare module BABYLON {
