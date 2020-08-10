@@ -42,10 +42,10 @@ export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visi
                 <svg x={this.state.visiblePoint.x} y={this.state.visiblePoint.y} style={{ overflow: "visible" }} onClick={() => this.select()}>
                     <circle type={this.props.type} data-id={this.props.index} className={`draggable control-point ${this.props.active ? "active" : ""}`} cx="0" cy="0" r="0.7%" stroke="white" strokeWidth={this.props.selected ? 0 : 0} fill={"red"} />
                 </svg>
-                <svg x={this.props.control.x} y={this.props.control.y} style={{ overflow: "visible" }} onClick={() => this.select()}>
-                    <circle type={this.props.type} data-id={this.props.index} className={`draggable control-point ${this.props.active ? "active" : ""}`} cx="0" cy="0" r="0.7%" stroke="white" strokeWidth={this.props.selected ? 0 : 0} fill={this.props.active ? "#e9db1e" : "white"} />
+                <svg x={this.props.control.x} y={this.props.control.y} style={{ overflow: "visible", display: "none" }} onClick={() => this.select()}>
+                    <circle type={this.props.type} data-id={this.props.index} className={`control-point ${this.props.active ? "active" : ""}`} cx="0" cy="0" r="0.7%" stroke="white" strokeWidth={this.props.selected ? 0 : 0} fill={this.props.active ? "#e9db1e" : "white"} />
                 </svg>
-                <line className={`control-point ${this.props.active ? "active" : ""}`} x1={this.props.anchor.x} y1={this.props.anchor.y} x2={this.props.control.x} y2={this.props.control.y} strokeWidth="0.8%" />
+                <line className={`control-point ${this.props.active ? "active" : ""}`} x1={this.props.anchor.x} y1={this.props.anchor.y} x2={this.state.visiblePoint.x} y2={this.state.visiblePoint.y} strokeWidth="0.8%" />
             </>
         );
     }

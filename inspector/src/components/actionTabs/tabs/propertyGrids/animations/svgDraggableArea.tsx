@@ -274,7 +274,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                         pointerEvents: "none",
                     }}
                 >
-                    <rect x="0" y="0" width="38px" height="100%" fill="#ffffff1c"></rect>
+                    <rect x="0" y="0" width="38px" height="100%" fill="rgb(188 188 188 / 11%)"></rect>
                 </svg>
                 <svg
                     className="linear pannable"
