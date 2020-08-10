@@ -56,7 +56,7 @@ export class CameraGizmo extends Gizmo {
                 this._cameraLinesMesh.dispose();
             }
             this._cameraMesh = CameraGizmo._CreateCameraMesh(this.gizmoLayer.utilityLayerScene);
-            this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene);
+            this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene);           
 
             this._cameraMesh.getChildMeshes(false).forEach((m) => {
                 m.material = this._material;
@@ -64,6 +64,10 @@ export class CameraGizmo extends Gizmo {
             this._cameraMesh.parent = this._rootMesh;
 
             this._cameraLinesMesh.parent = this._rootMesh;
+
+            if (this.gizmoLayer.utilityLayerScene.activeCamera && this.gizmoLayer.utilityLayerScene.activeCamera.maxZ < camera.maxZ * 1.5) {
+                this.gizmoLayer.utilityLayerScene.activeCamera.maxZ = camera.maxZ * 1.5;
+            }
 
             if (!this.attachedNode!.reservedDataStore) {
                 this.attachedNode!.reservedDataStore = {};
@@ -111,10 +115,17 @@ export class CameraGizmo extends Gizmo {
     // Static helper methods
     private static _Scale = 0.05;
     private _invProjection = new Matrix();
+    
     /**
      * Disposes of the camera gizmo
      */
     public dispose() {
+        if (this._cameraMesh) {
+            this._cameraMesh.dispose();
+        }
+        if (this._cameraLinesMesh) {
+            this._cameraLinesMesh.dispose();
+        }
         this._material.dispose();
         super.dispose();
     }
@@ -164,10 +175,13 @@ export class CameraGizmo extends Gizmo {
             {
                 var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
                 line.parent = mesh;
+                line.alwaysSelectAsActiveMesh = true;
                 var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)] }, scene);
                 line.parent = mesh;
+                line.alwaysSelectAsActiveMesh = true;
                 var line = LinesBuilder.CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x,  1, -1 + y)] }, scene);
                 line.parent = mesh;
+                line.alwaysSelectAsActiveMesh = true;
             }
         }
 
