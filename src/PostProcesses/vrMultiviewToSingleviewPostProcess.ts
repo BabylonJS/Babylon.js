@@ -17,7 +17,7 @@ export class VRMultiviewToSingleviewPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "VRMultiviewToSingleviewPostProcess";
-    }    
+    }
 
     /**
      * Initializes a VRMultiviewToSingleview

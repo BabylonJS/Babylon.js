@@ -53,7 +53,7 @@ export class MotionBlurPostProcess extends PostProcess {
             this.updateEffect("#define GEOMETRY_SUPPORTED\n#define SAMPLES " + samples.toFixed(1));
         }
     }
-    
+
     @serialize("motionBlurSamples")
     private _motionBlurSamples: number = 32;
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
@@ -64,7 +64,7 @@ export class MotionBlurPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "MotionBlurPostProcess";
-    }     
+    }
 
     /**
      * Creates a new instance MotionBlurPostProcess
@@ -149,7 +149,7 @@ export class MotionBlurPostProcess extends PostProcess {
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess> {
         return SerializationHelper.Parse(() => {
             return new MotionBlurPostProcess(
-                parsedPostProcess.name, scene, parsedPostProcess.options, 
+                parsedPostProcess.name, scene, parsedPostProcess.options,
                 targetCamera, parsedPostProcess.renderTargetSamplingMode,
                 scene.getEngine(), parsedPostProcess.reusable,
                 parsedPostProcess.textureType, false);

@@ -6,9 +6,11 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/sharpen.fragment";
 import { _TypeStore } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { serialize, SerializationHelper } from '../Misc/decorators';
 
 declare type Engine = import("../Engines/engine").Engine;
+declare type Scene = import("../scene").Scene;
+
 /**
  * The SharpenPostProcess applies a sharpen kernel to every pixel
  * See http://en.wikipedia.org/wiki/Kernel_(image_processing)
@@ -31,7 +33,7 @@ export class SharpenPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "SharpenPostProcess";
-    }     
+    }
 
     /**
      * Creates a new instance ConvolutionPostProcess
@@ -52,8 +54,17 @@ export class SharpenPostProcess extends PostProcess {
             effect.setFloat2("sharpnessAmounts", this.edgeAmount, this.colorAmount);
         };
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+        return SerializationHelper.Parse(() => {
+            return new SharpenPostProcess(
+                parsedPostProcess.name,
+                parsedPostProcess.options, targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.textureType, parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.SharpenPostProcess"] = SharpenPostProcess;
-
-

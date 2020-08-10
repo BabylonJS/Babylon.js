@@ -19,7 +19,7 @@ export class DisplayPassPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "DisplayPassPostProcess";
-    }   
+    }
 
     /**
      * Creates the DisplayPassPostProcess
@@ -38,13 +38,12 @@ export class DisplayPassPostProcess extends PostProcess {
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<DisplayPassPostProcess> {
         return SerializationHelper.Parse(() => {
             return new DisplayPassPostProcess(
-                parsedPostProcess.name, 
-                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.name,
+                parsedPostProcess.options, targetCamera,
                 parsedPostProcess.renderTargetSamplingMode,
                 scene.getEngine(), parsedPostProcess.reusable);
         }, parsedPostProcess, scene, rootUrl);
-    }        
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.DisplayPassPostProcess"] = DisplayPassPostProcess;
-

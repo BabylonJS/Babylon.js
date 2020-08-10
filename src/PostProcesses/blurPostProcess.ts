@@ -29,7 +29,7 @@ export class BlurPostProcess extends PostProcess {
     /** The direction in which to blur the image. */
     @serializeAsVector2()
     public direction: Vector2;
-    
+
     /**
      * Sets the length in pixels of the blur sample region
      */
@@ -79,7 +79,7 @@ export class BlurPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "BlurPostProcess";
-    }    
+    }
 
     /**
      * Creates a new instance BlurPostProcess
@@ -94,7 +94,7 @@ export class BlurPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string,        
+    constructor(name: string,
         direction: Vector2,
         kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, defines = "", private blockCompilation = false) {
         super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["circleOfConfusionSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", { varyingCount: 0, depCount: 0 }, true);
@@ -282,7 +282,7 @@ export class BlurPostProcess extends PostProcess {
                 parsedPostProcess.options, targetCamera, parsedPostProcess.renderTargetSamplingMode,
                 scene.getEngine(), parsedPostProcess.reusable, parsedPostProcess.textureType, undefined, false);
         }, parsedPostProcess, scene, rootUrl);
-    }        
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.BlurPostProcess"] = BlurPostProcess;

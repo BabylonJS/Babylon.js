@@ -30,8 +30,8 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      */
     public getClassName(): string {
         return "DepthOfFieldBlurPostProcess";
-    }      
-    
+    }
+
     /**
      * Creates a new instance CircleOfConfusionPostProcess
      * @param name The name of the effect.
@@ -66,4 +66,3 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
 }
 
 _TypeStore.RegisteredTypes["BABYLON.DepthOfFieldBlurPostProcess"] = DepthOfFieldBlurPostProcess;
-

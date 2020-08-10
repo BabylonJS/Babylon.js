@@ -23,7 +23,7 @@ export class BloomMergePostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "BloomMergePostProcess";
-    }        
+    }
 
     /**
      * Creates a new instance of @see BloomMergePostProcess

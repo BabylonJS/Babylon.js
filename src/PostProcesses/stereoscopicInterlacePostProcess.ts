@@ -20,7 +20,7 @@ export class StereoscopicInterlacePostProcessI extends PostProcess {
      */
     public getClassName(): string {
         return "StereoscopicInterlacePostProcessI";
-    }      
+    }
 
     /**
      * Initializes a StereoscopicInterlacePostProcessI
@@ -60,7 +60,7 @@ export class StereoscopicInterlacePostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "StereoscopicInterlacePostProcess";
-    }       
+    }
 
     /**
      * Initializes a StereoscopicInterlacePostProcess

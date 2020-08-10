@@ -199,7 +199,7 @@ export abstract class AbstractScene {
      * Environment texture for the scene
      */
     public environmentTexture: Nullable<BaseTexture> = null;
-    
+
     /**
      * The list of postprocesses added to the scene
      */

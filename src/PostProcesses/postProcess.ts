@@ -35,7 +35,7 @@ export class PostProcess {
      */
     @serialize()
     public uniqueId: number;
-   
+
     /** Name of the PostProcess. */
     @serialize()
     public name: string;
@@ -82,7 +82,7 @@ export class PostProcess {
     /**
     * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
     */
-    @serialize()   
+    @serialize()
     public alphaMode = Constants.ALPHA_DISABLE;
     /**
     * Sets the setAlphaBlendConstants of the babylon engine
@@ -345,7 +345,7 @@ export class PostProcess {
         fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
         indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
-        
+
                 this.name = name;
             if (camera != null) {
                 this._camera = camera;
@@ -744,7 +744,7 @@ export class PostProcess {
      */
     public static Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess> {
         var postProcessType = _TypeStore.GetClass(parsedPostProcess.customType);
-        
+
         if (!postProcessType || !postProcessType._Parse) {
             return null;
         }

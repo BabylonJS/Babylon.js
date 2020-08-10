@@ -41,7 +41,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "DepthOfFieldMergePostProcess";
-    }   
+    }
 
     /**
      * Creates a new instance of DepthOfFieldMergePostProcess

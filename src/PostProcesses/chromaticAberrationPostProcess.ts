@@ -54,7 +54,7 @@ export class ChromaticAberrationPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "ChromaticAberrationPostProcess";
-    }      
+    }
 
     /**
      * Creates a new instance ChromaticAberrationPostProcess
@@ -89,14 +89,14 @@ export class ChromaticAberrationPostProcess extends PostProcess {
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ChromaticAberrationPostProcess> {
         return SerializationHelper.Parse(() => {
             return new ChromaticAberrationPostProcess(
-                parsedPostProcess.name, 
-                parsedPostProcess.screenWidth, parsedPostProcess.screenHeight, 
-                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.name,
+                parsedPostProcess.screenWidth, parsedPostProcess.screenHeight,
+                parsedPostProcess.options, targetCamera,
                 parsedPostProcess.renderTargetSamplingMode,
                 scene.getEngine(), parsedPostProcess.reusable,
                 parsedPostProcess.textureType, false);
         }, parsedPostProcess, scene, rootUrl);
-    }    
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.ChromaticAberrationPostProcess"] = ChromaticAberrationPostProcess;

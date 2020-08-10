@@ -35,14 +35,14 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      */
     @serialize()
     public focalLength = 50;
-    
+
     /**
      * Gets a string identifying the name of the class
      * @returns "CircleOfConfusionPostProcess" string
      */
     public getClassName(): string {
         return "CircleOfConfusionPostProcess";
-    }        
+    }
 
     private _depthTexture: Nullable<RenderTargetTexture> = null;
     /**
@@ -86,4 +86,3 @@ export class CircleOfConfusionPostProcess extends PostProcess {
 }
 
 _TypeStore.RegisteredTypes["BABYLON.CircleOfConfusionPostProcess"] = CircleOfConfusionPostProcess;
-

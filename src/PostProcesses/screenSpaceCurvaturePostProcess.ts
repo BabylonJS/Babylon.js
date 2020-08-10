@@ -5,15 +5,15 @@ import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
-import { Scene } from "../scene";
 
 import '../Rendering/geometryBufferRendererSceneComponent';
 import "../Shaders/screenSpaceCurvature.fragment";
 import { EngineStore } from '../Engines/engineStore';
 import { _TypeStore } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { serialize, SerializationHelper } from '../Misc/decorators';
 
 declare type Engine = import("../Engines/engine").Engine;
+declare type Scene = import("../scene").Scene;
 
 /**
  * The Screen Space curvature effect can help highlighting ridge and valley of a model.
@@ -39,7 +39,7 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "ScreenSpaceCurvaturePostProcess";
-    }     
+    }
 
     /**
      * Creates a new instance ScreenSpaceCurvaturePostProcess
@@ -83,6 +83,17 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
         }
 
         return engine.webGLVersion > 1 || engine.getCaps().drawBuffersExtension;
+    }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+        return SerializationHelper.Parse(() => {
+            return new ScreenSpaceCurvaturePostProcess(
+                parsedPostProcess.name, scene,
+                parsedPostProcess.options, targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.textureType, parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
     }
 }
 

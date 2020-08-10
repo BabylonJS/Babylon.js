@@ -9,7 +9,6 @@ import "../Shaders/convolution.fragment";
 import { _TypeStore } from '../Misc/typeStore';
 import { serialize, SerializationHelper } from '../Misc/decorators';
 
-
 declare type Scene = import("../scene").Scene;
 
 /**
@@ -28,7 +27,7 @@ export class ConvolutionPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "ConvolutionPostProcess";
-    }      
+    }
 
     /**
      * Creates a new instance ConvolutionPostProcess
@@ -49,7 +48,7 @@ export class ConvolutionPostProcess extends PostProcess {
         this.onApply = (effect: Effect) => {
             effect.setFloat2("screenSize", this.width, this.height);
             effect.setArray("kernel", this.kernel);
-        };        
+        };
     }
 
     /** @hidden */
@@ -57,11 +56,11 @@ export class ConvolutionPostProcess extends PostProcess {
         return SerializationHelper.Parse(() => {
             return new ConvolutionPostProcess(
                 parsedPostProcess.name, parsedPostProcess.kernel,
-                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.options, targetCamera,
                 parsedPostProcess.renderTargetSamplingMode,
                 scene.getEngine(), parsedPostProcess.reusable, parsedPostProcess.textureType);
         }, parsedPostProcess, scene, rootUrl);
-    }        
+    }
 
     // Statics
     /**
@@ -91,4 +90,3 @@ export class ConvolutionPostProcess extends PostProcess {
 }
 
 _TypeStore.RegisteredTypes["BABYLON.ConvolutionPostProcess"] = ConvolutionPostProcess;
-

@@ -61,7 +61,7 @@ export class AssetContainer extends AbstractScene {
         this["layers"] = [];
         this["lensFlareSystems"] = [];
         this["proceduralTextures"] = [];
-        this["reflectionProbes"] = [];  
+        this["reflectionProbes"] = [];
 
         scene.onDisposeObservable.add(() => {
             if (!this._wasAddedToScene) {

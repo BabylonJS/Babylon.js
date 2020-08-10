@@ -29,8 +29,10 @@ declare type Scene = import("../scene").Scene;
 export class ColorCorrectionPostProcess extends PostProcess {
 
     private _colorTableTexture: Texture;
-    
-    //** Gets the color table url used to create the LUT texture */
+
+    /**
+     * Gets the color table url used to create the LUT texture
+     */
     @serialize()
     public colorTableUrl: string;
 
@@ -40,7 +42,7 @@ export class ColorCorrectionPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "ColorCorrectionPostProcess";
-    }           
+    }
 
     constructor(name: string, colorTableUrl: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
         super(name, 'colorCorrection', null, ['colorTable'], options, camera, samplingMode, engine, reusable);
@@ -62,11 +64,11 @@ export class ColorCorrectionPostProcess extends PostProcess {
         return SerializationHelper.Parse(() => {
             return new ColorCorrectionPostProcess(
                 parsedPostProcess.name, parsedPostProcess.colorTableUrl,
-                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.options, targetCamera,
                 parsedPostProcess.renderTargetSamplingMode,
                 scene.getEngine(), parsedPostProcess.reusable);
         }, parsedPostProcess, scene, rootUrl);
-    }    
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.ColorCorrectionPostProcess"] = ColorCorrectionPostProcess;

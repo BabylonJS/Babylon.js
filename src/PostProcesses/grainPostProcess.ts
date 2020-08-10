@@ -7,7 +7,9 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/grain.fragment";
 import { _TypeStore } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
+import { serialize, SerializationHelper } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * The GrainPostProcess adds noise to the image at mid luminance levels
@@ -30,7 +32,7 @@ export class GrainPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "GrainPostProcess";
-    }      
+    }
 
     /**
      * Creates a new instance of @see GrainPostProcess
@@ -50,7 +52,17 @@ export class GrainPostProcess extends PostProcess {
             effect.setFloat('animatedSeed', this.animated ? Math.random() + 1 : 1);
         });
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+        return SerializationHelper.Parse(() => {
+            return new GrainPostProcess(
+                parsedPostProcess.name,
+                parsedPostProcess.options, targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.GrainPostProcess"] = GrainPostProcess;
-

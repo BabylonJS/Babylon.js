@@ -25,7 +25,7 @@ export class FilterPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "FilterPostProcess";
-    }      
+    }
 
     /**
      *
@@ -47,7 +47,7 @@ export class FilterPostProcess extends PostProcess {
     ) {
         super(name, "filter", ["kernelMatrix"], null, options, camera, samplingMode, engine, reusable);
         this.kernelMatrix = kernelMatrix;
-        
+
         this.onApply = (effect: Effect) => {
             effect.setMatrix("kernelMatrix", this.kernelMatrix);
         };
@@ -58,11 +58,11 @@ export class FilterPostProcess extends PostProcess {
         return SerializationHelper.Parse(() => {
             return new FilterPostProcess(
                 parsedPostProcess.name, parsedPostProcess.kernelMatrix,
-                parsedPostProcess.options, targetCamera, 
+                parsedPostProcess.options, targetCamera,
                 parsedPostProcess.renderTargetSamplingMode,
                 scene.getEngine(), parsedPostProcess.reusable);
         }, parsedPostProcess, scene, rootUrl);
-    }        
+    }
 }
 
 _TypeStore.RegisteredTypes["BABYLON.FilterPostProcess"] = FilterPostProcess;

@@ -25,7 +25,7 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "VRDistortionCorrectionPostProcess";
-    }    
+    }
 
     /**
      * Initializes the VRDistortionCorrectionPostProcess

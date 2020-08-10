@@ -17,7 +17,7 @@ export class HighlightsPostProcess extends PostProcess {
      */
     public getClassName(): string {
         return "HighlightsPostProcess";
-    }  
+    }
 
     /**
      * Extracts highlights from the image
