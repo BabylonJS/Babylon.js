@@ -5,6 +5,8 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/sharpen.fragment";
+import { _TypeStore } from '../Misc/typeStore';
+import { serialize } from '../Misc/decorators';
 
 declare type Engine = import("../Engines/engine").Engine;
 /**
@@ -15,11 +17,22 @@ export class SharpenPostProcess extends PostProcess {
     /**
      * How much of the original color should be applied. Setting this to 0 will display edge detection. (default: 1)
      */
+    @serialize()
     public colorAmount: number = 1.0;
     /**
      * How much sharpness should be applied (default: 0.3)
      */
+    @serialize()
     public edgeAmount: number = 0.3;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "SharpenPostProcess" string
+     */
+    public getClassName(): string {
+        return "SharpenPostProcess";
+    }     
+
     /**
      * Creates a new instance ConvolutionPostProcess
      * @param name The name of the effect.
@@ -40,3 +53,7 @@ export class SharpenPostProcess extends PostProcess {
         };
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.SharpenPostProcess"] = SharpenPostProcess;
+
+

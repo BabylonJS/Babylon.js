@@ -6,11 +6,20 @@ import { Engine } from "../Engines/engine";
 
 import "../Shaders/pass.fragment";
 import "../Shaders/passCube.fragment";
+import { _TypeStore } from '../Misc/typeStore';
 
 /**
  * PassPostProcess which produces an output the same as it's input
  */
 export class PassPostProcess extends PostProcess {
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "PassPostProcess" string
+     */
+    public getClassName(): string {
+        return "PassPostProcess";
+    }     
+
     /**
      * Creates the PassPostProcess
      * @param name The name of the effect.
@@ -26,6 +35,8 @@ export class PassPostProcess extends PostProcess {
         super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.PassPostProcess"] = PassPostProcess;
 
 /**
  * PassCubePostProcess which produces an output the same as it's input (which must be a cube texture)
@@ -73,6 +84,14 @@ export class PassCubePostProcess extends PostProcess {
                 break;
         }
     }
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "PassCubePostProcess" string
+     */
+    public getClassName(): string {
+        return "PassCubePostProcess";
+    }     
 
     /**
      * Creates the PassCubePostProcess

@@ -6,6 +6,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/refraction.fragment";
+import { _TypeStore } from '../Misc/typeStore';
 
 /**
  * Post process which applies a refractin texture
@@ -31,6 +32,14 @@ export class RefractionPostProcess extends PostProcess {
         this._refTexture = value;
         this._ownRefractionTexture = false;
     }
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "RefractionPostProcess" string
+     */
+    public getClassName(): string {
+        return "RefractionPostProcess";
+    }      
 
     /**
      * Initializes the RefractionPostProcess
@@ -90,3 +99,5 @@ export class RefractionPostProcess extends PostProcess {
         super.dispose(camera);
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.RefractionPostProcess"] = RefractionPostProcess;

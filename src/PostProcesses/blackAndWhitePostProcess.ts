@@ -4,6 +4,8 @@ import { Effect } from "../Materials/effect";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/blackAndWhite.fragment";
+import { _TypeStore } from '../Misc/typeStore';
+import { serialize } from '../Misc/decorators';
 
 /**
  * Post process used to render in black and white
@@ -12,7 +14,16 @@ export class BlackAndWhitePostProcess extends PostProcess {
     /**
      * Linear about to convert he result to black and white (default: 1)
      */
+    @serialize()
     public degree = 1;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "BlackAndWhitePostProcess" string
+     */
+    public getClassName(): string {
+        return "BlackAndWhitePostProcess";
+    }    
 
     /**
      * Creates a black and white post process
@@ -32,3 +43,5 @@ export class BlackAndWhitePostProcess extends PostProcess {
         });
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.BlackAndWhitePostProcess"] = BlackAndWhitePostProcess;

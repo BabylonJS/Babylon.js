@@ -4,11 +4,20 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/displayPass.fragment";
+import { _TypeStore } from '../Misc/typeStore';
 
 /**
  * DisplayPassPostProcess which produces an output the same as it's input
  */
 export class DisplayPassPostProcess extends PostProcess {
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "DisplayPassPostProcess" string
+     */
+    public getClassName(): string {
+        return "DisplayPassPostProcess";
+    }   
+
     /**
      * Creates the DisplayPassPostProcess
      * @param name The name of the effect.
@@ -22,3 +31,6 @@ export class DisplayPassPostProcess extends PostProcess {
         super(name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable);
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.DisplayPassPostProcess"] = DisplayPassPostProcess;
+

@@ -8,6 +8,7 @@ import { GeometryBufferRenderer } from '../Rendering/geometryBufferRenderer';
 import { serialize } from '../Misc/decorators';
 
 import "../Shaders/screenSpaceReflection.fragment";
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Engine = import("../Engines/engine").Engine;
 /**
@@ -45,6 +46,14 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     private _enableSmoothReflections: boolean = false;
     private _reflectionSamples: number = 64;
     private _smoothSteps: number = 5;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "ScreenSpaceReflectionPostProcess" string
+     */
+    public getClassName(): string {
+        return "ScreenSpaceReflectionPostProcess";
+    }       
 
     /**
      * Creates a new instance of ScreenSpaceReflectionPostProcess.
@@ -195,3 +204,6 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         this.updateEffect(defines.join("\n"));
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ScreenSpaceReflectionPostProcess"] = ScreenSpaceReflectionPostProcess;
+

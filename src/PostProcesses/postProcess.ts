@@ -12,6 +12,8 @@ import { Color4 } from '../Maths/math.color';
 
 import "../Engines/Extensions/engine.renderTarget";
 import { NodeMaterial } from '../Materials/Node/nodeMaterial';
+import { serialize, serializeAsColor4, SerializationHelper } from '../Misc/decorators';
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -31,16 +33,23 @@ export class PostProcess {
     /**
      * Gets or sets the unique id of the post process
      */
+    @serialize()
     public uniqueId: number;
+   
+    /** Name of the PostProcess. */
+    @serialize()
+    public name: string;
 
     /**
     * Width of the texture to apply the post process on
     */
+    @serialize()
     public width = -1;
 
     /**
     * Height of the texture to apply the post process on
     */
+    @serialize()
     public height = -1;
 
     /**
@@ -57,23 +66,28 @@ export class PostProcess {
     * Sampling mode used by the shader
     * See https://doc.babylonjs.com/classes/3.1/texture
     */
+    @serialize()
     public renderTargetSamplingMode: number;
     /**
     * Clear color to use when screen clearing
     */
+    @serializeAsColor4()
     public clearColor: Color4;
     /**
     * If the buffer needs to be cleared before applying the post process. (default: true)
     * Should be set to false if shader will overwrite all previous pixels.
     */
+    @serialize()
     public autoClear = true;
     /**
     * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
     */
+    @serialize()   
     public alphaMode = Constants.ALPHA_DISABLE;
     /**
     * Sets the setAlphaBlendConstants of the babylon engine
     */
+    @serialize()
     public alphaConstants: Color4;
     /**
     * Animations to be used for the post processing
@@ -84,11 +98,13 @@ export class PostProcess {
      * Enable Pixel Perfect mode where texture is not scaled to be power of 2.
      * Can only be used on a single postprocess or on the last one of a chain. (default: false)
      */
+    @serialize()
     public enablePixelPerfectMode = false;
 
     /**
      * Force the postprocess to be applied without taking in account viewport
      */
+    @serialize()
     public forceFullscreenViewport = true;
 
     /**
@@ -107,13 +123,17 @@ export class PostProcess {
      * | 3     | SCALEMODE_CEILING                   | [engine.scalemode_ceiling](https://doc.babylonjs.com/api/classes/babylon.engine#scalemode_ceiling) |
      *
      */
+    @serialize()
     public scaleMode = Constants.SCALEMODE_FLOOR;
     /**
     * Force textures to be a power of two (default: false)
     */
+    @serialize()
     public alwaysForcePOT = false;
 
+    @serialize("samples")
     private _samples = 1;
+
     /**
     * Number of sample textures (default: 1)
     */
@@ -134,6 +154,7 @@ export class PostProcess {
     /**
     * Modify the scale of the post process to be the same as the viewport (default: false)
     */
+    @serialize()
     public adaptScaleToCurrentViewport = false;
 
     private _camera: Camera;
@@ -320,48 +341,49 @@ export class PostProcess {
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
-        /** Name of the PostProcess. */
-        public name: string,
+        name: string,
         fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess",
         indexParameters?: any, blockCompilation = false, textureFormat = Constants.TEXTUREFORMAT_RGBA) {
-        if (camera != null) {
-            this._camera = camera;
-            this._scene = camera.getScene();
-            camera.attachPostProcess(this);
-            this._engine = this._scene.getEngine();
+        
+                this.name = name;
+            if (camera != null) {
+                this._camera = camera;
+                this._scene = camera.getScene();
+                camera.attachPostProcess(this);
+                this._engine = this._scene.getEngine();
 
-            this._scene.postProcesses.push(this);
-            this.uniqueId = this._scene.getUniqueId();
-        }
-        else if (engine) {
-            this._engine = engine;
-            this._engine.postProcesses.push(this);
-        }
-        this._options = options;
-        this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        this._reusable = reusable || false;
-        this._textureType = textureType;
-        this._textureFormat = textureFormat;
+                this._scene.postProcesses.push(this);
+                this.uniqueId = this._scene.getUniqueId();
+            }
+            else if (engine) {
+                this._engine = engine;
+                this._engine.postProcesses.push(this);
+            }
+            this._options = options;
+            this.renderTargetSamplingMode = samplingMode ? samplingMode : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            this._reusable = reusable || false;
+            this._textureType = textureType;
+            this._textureFormat = textureFormat;
 
-        this._samplers = samplers || [];
-        this._samplers.push("textureSampler");
+            this._samplers = samplers || [];
+            this._samplers.push("textureSampler");
 
-        this._fragmentUrl = fragmentUrl;
-        this._vertexUrl = vertexUrl;
-        this._parameters = parameters || [];
+            this._fragmentUrl = fragmentUrl;
+            this._vertexUrl = vertexUrl;
+            this._parameters = parameters || [];
 
-        this._parameters.push("scale");
+            this._parameters.push("scale");
 
-        this._indexParameters = indexParameters;
+            this._indexParameters = indexParameters;
 
-        if (!blockCompilation) {
-            this.updateEffect(defines);
-        }
+            if (!blockCompilation) {
+                this.updateEffect(defines);
+            }
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "PostProcess" string
      */
     public getClassName(): string {
@@ -697,4 +719,44 @@ export class PostProcess {
         this.onBeforeRenderObservable.clear();
         this.onSizeChangedObservable.clear();
     }
+
+    /**
+     * Serializes the particle system to a JSON object
+     * @returns the JSON object
+     */
+    public serialize(): any {
+        var serializationObject = SerializationHelper.Serialize(this);
+        serializationObject.customType = "BABYLON." + this.getClassName();
+        serializationObject.cameraId = this.getCamera().id;
+        serializationObject.reusable = this._reusable;
+        serializationObject.options = this._options;
+        serializationObject.textureType = this._textureType;
+
+        return serializationObject;
+    }
+
+    /**
+     * Creates a material from parsed material data
+     * @param parsedPostProcess defines parsed post process data
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures
+     * @returns a new post process
+     */
+    public static Parse(parsedPostProcess: any, scene: Scene, rootUrl: string): Nullable<PostProcess> {
+        var postProcessType = _TypeStore.GetClass(parsedPostProcess.customType);
+        
+        if (!postProcessType || !postProcessType._Parse) {
+            return null;
+        }
+
+        var camera = scene.getCameraByID(parsedPostProcess.cameraId);
+
+        if (!camera) {
+            return null;
+        }
+
+        return postProcessType._Parse(parsedPostProcess, camera, scene, rootUrl);
+    }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.PostProcess"] = PostProcess;
