@@ -33,18 +33,8 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
     updateColor1(color: string) {
         if (this.props.gradient instanceof ColorGradient) {
             this.props.gradient.color1 = Color4.FromHexString(color);
-            
-            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                object: this.props.host,
-                code: `TARGET.${this.props.codeRecorderPropertyName}.color1 = BABYLON.Color4.FromHexString(${color});`
-            });              
         } else {
             this.props.gradient.color = Color3.FromHexString(color);
-
-            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                object: this.props.host,
-                code: `TARGET.${this.props.codeRecorderPropertyName}.color = BABYLON.Color3.FromHexString(${color});`
-            });              
         }
 
         this.props.onUpdateGradient();
@@ -54,11 +44,6 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
     updateColor2(color: string) {
         if (this.props.gradient instanceof ColorGradient) {
             this.props.gradient.color2 = Color4.FromHexString(color);
-
-            this.props.globalState.onCodeChangedObservable.notifyObservers({
-                object: this.props.host,
-                code: `TARGET.${this.props.codeRecorderPropertyName}.color2 = BABYLON.Color4.FromHexString(${color});`
-            });              
         }
 
         this.props.onUpdateGradient();
@@ -69,11 +54,6 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
         this.props.gradient.gradient = gradient;
 
         this.setState({gradient: gradient});
-
-        this.props.globalState.onCodeChangedObservable.notifyObservers({
-            object: this.props.host,
-            code: `TARGET.${this.props.codeRecorderPropertyName}.gradient = ${gradient};`
-        });         
 
         this.props.onUpdateGradient();
     }

@@ -74,6 +74,17 @@ export class Color3 {
     }
 
     /**
+     * Update the current color with values stored in an array from the starting index of the given array
+     * @param array defines the source array
+     * @param offset defines an offset in the source array
+     * @returns the current Color3 object
+     */
+    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color3 {
+        Color3.FromArrayToRef(array, offset, this);
+        return this;
+    }
+
+    /**
      * Returns a new Color4 object from the current Color3 and the given alpha
      * @param alpha defines the alpha component on the new Color4 object (default is 1)
      * @returns a new Color4 object
@@ -458,6 +469,18 @@ export class Color3 {
     }
 
     /**
+     * Creates a new Color3 from the starting index element of the given array
+     * @param array defines the source array to read from
+     * @param offset defines the offset in the source array
+     * @param result defines the target Color3 object
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number = 0, result: Color3) {
+        result.r = array[offset];
+        result.g = array[offset + 1];
+        result.b = array[offset + 2];
+    }
+
+    /**
      * Creates a new Color3 from integer values (< 256)
      * @param r defines the red component to read from (value between 0 and 255)
      * @param g defines the green component to read from (value between 0 and 255)
@@ -625,6 +648,17 @@ export class Color4 {
         array[index + 1] = this.g;
         array[index + 2] = this.b;
         array[index + 3] = this.a;
+        return this;
+    }
+
+    /**
+     * Update the current color with values stored in an array from the starting index of the given array
+     * @param array defines the source array
+     * @param offset defines an offset in the source array
+     * @returns the current Color4 object
+     */
+    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color4 {
+        Color4.FromArrayToRef(array, offset, this);
         return this;
     }
 
@@ -950,6 +984,19 @@ export class Color4 {
      */
     public static FromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color4 {
         return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+    }
+
+    /**
+     * Creates a new Color4 from the starting index element of the given array
+     * @param array defines the source array to read from
+     * @param offset defines the offset in the source array
+     * @param result defines the target Color4 object
+     */
+    public static FromArrayToRef(array: DeepImmutable<ArrayLike<number>>, offset: number = 0, result: Color4) {
+        result.r = array[offset];
+        result.g = array[offset + 1];
+        result.b = array[offset + 2];
+        result.a = array[offset + 3];
     }
 
     /**

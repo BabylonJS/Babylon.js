@@ -142,14 +142,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.26";
+        return "babylonjs@4.2.0-alpha.31";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.26";
+        return "4.2.0-alpha.31";
     }
 
     /**
@@ -683,6 +683,15 @@ export class ThinEngine {
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
+        // Starting with iOS 14, we can trust the browser
+        let matches = navigator.userAgent.match(/Version\/(\d+)/);
+
+        if (matches && matches.length === 2) {
+            if (parseInt(matches[1]) >= 14) {
+                this._badOS = false;
+            }
+        }
+
         // Detect if we are running on a faulty buggy desktop OS.
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
@@ -932,7 +941,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "Engine" string
      */
     public getClassName(): string {
@@ -1554,6 +1563,9 @@ export class ThinEngine {
 
     private _vertexAttribPointer(buffer: DataBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
         var pointer = this._currentBufferPointers[indx];
+        if (!pointer) {
+            return;
+        }
 
         var changed = false;
         if (!pointer.active) {
@@ -2809,8 +2821,15 @@ export class ThinEngine {
 
         // establish the file extension, if possible
         const lastDot = url.lastIndexOf('.');
-        const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
+        let extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
         let loader: Nullable<IInternalTextureLoader> = null;
+
+        // Remove query string
+        let queryStringIndex = extension.indexOf("?");
+
+        if (queryStringIndex > -1) {
+            extension = extension.split("?")[0];
+        }
 
         for (const availableLoader of ThinEngine._TextureLoaders) {
             if (availableLoader.canLoad(extension, mimeType)) {

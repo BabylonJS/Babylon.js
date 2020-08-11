@@ -836,7 +836,45 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         pointA.connectTo(pointB);
         this.connectPorts(pointA, pointB);
 
-        nodeB.refresh();
+        if (pointB.innerType === NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+            // need to potentially propagate the type of pointA to other ports of blocks connected to owner of pointB
+
+            const refreshNode = (node: GraphNode) => {
+                node.refresh();
+
+                const links = node.links;
+
+                // refresh first the nodes so that the right types are assigned to the auto-detect ports
+                links.forEach((link) => {
+                    const nodeA = link.nodeA, nodeB = link.nodeB;
+
+                    if (!visitedNodes.has(nodeA)) {
+                        visitedNodes.add(nodeA);
+                        refreshNode(nodeA);
+                    }
+
+                    if (nodeB && !visitedNodes.has(nodeB)) {
+                        visitedNodes.add(nodeB);
+                        refreshNode(nodeB);
+                    }
+                });
+
+                // then refresh the links to display the right color between ports
+                links.forEach((link) => {
+                    if (!visitedLinks.has(link)) {
+                        visitedLinks.add(link);
+                        link.update();
+                    }
+                });
+            };
+
+            const visitedNodes = new Set<GraphNode>([nodeA]);
+            const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
+
+            refreshNode(nodeB);
+        } else {
+            nodeB.refresh();
+        }
 
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     }
