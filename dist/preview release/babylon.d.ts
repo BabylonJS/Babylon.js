@@ -11578,6 +11578,25 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Update a dynamic index buffer
+             * @param indexBuffer defines the target index buffer
+             * @param indices defines the data to update
+             * @param offset defines the offset in the target index buffer where update should start
+             */
+            updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
+            /**
+             * Updates a dynamic vertex buffer.
+             * @param vertexBuffer the vertex buffer to update
+             * @param data the data used to update the vertex buffer
+             * @param byteOffset the byte offset of the data
+             * @param byteLength the byte length of the data
+             */
+            updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
+        }
+}
+declare module BABYLON {
         interface AbstractScene {
             /**
              * The list of procedural textures added to the scene
@@ -11975,7 +11994,7 @@ declare module BABYLON {
         /**
          * The texture used to render each particle. (this can be a spritesheet)
          */
-        particleTexture: Nullable<Texture>;
+        particleTexture: Nullable<BaseTexture>;
         /**
          * The layer mask we are rendering the particles through.
          */
@@ -12472,6 +12491,41 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Sets alpha constants used by some alpha blending modes
+             * @param r defines the red component
+             * @param g defines the green component
+             * @param b defines the blue component
+             * @param a defines the alpha component
+             */
+            setAlphaConstants(r: number, g: number, b: number, a: number): void;
+            /**
+             * Sets the current alpha mode
+             * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
+             * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+             * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+             */
+            setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+            /**
+             * Gets the current alpha mode
+             * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+             * @returns the current alpha mode
+             */
+            getAlphaMode(): number;
+            /**
+             * Sets the current alpha equation
+             * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+             */
+            setAlphaEquation(equation: number): void;
+            /**
+             * Gets the current alpha equation.
+             * @returns the current alpha equation
+             */
+            getAlphaEquation(): number;
+        }
+}
+declare module BABYLON {
     /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -12563,6 +12617,8 @@ declare module BABYLON {
         private _useRampGradients;
         /** Gets or sets a matrix to use to compute projection */
         defaultProjectionMatrix: Matrix;
+        /** Gets or sets a matrix to use to compute view */
+        defaultViewMatrix: Matrix;
         /** Gets or sets a boolean indicating that ramp gradients must be used
          * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
          */
@@ -37185,41 +37241,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
         interface ThinEngine {
-            /**
-             * Sets alpha constants used by some alpha blending modes
-             * @param r defines the red component
-             * @param g defines the green component
-             * @param b defines the blue component
-             * @param a defines the alpha component
-             */
-            setAlphaConstants(r: number, g: number, b: number, a: number): void;
-            /**
-             * Sets the current alpha mode
-             * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
-             * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-             * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-             */
-            setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-            /**
-             * Gets the current alpha mode
-             * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
-             * @returns the current alpha mode
-             */
-            getAlphaMode(): number;
-            /**
-             * Sets the current alpha equation
-             * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
-             */
-            setAlphaEquation(equation: number): void;
-            /**
-             * Gets the current alpha equation.
-             * @returns the current alpha equation
-             */
-            getAlphaEquation(): number;
-        }
-}
-declare module BABYLON {
-        interface ThinEngine {
             /** @hidden */
             _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number, level?: number, buffer?: Nullable<ArrayBufferView>): ArrayBufferView;
         }
@@ -37932,14 +37953,6 @@ declare module BABYLON {
          * @returns true if the size was changed
          */
         setSize(width: number, height: number): boolean;
-        /**
-         * Updates a dynamic vertex buffer.
-         * @param vertexBuffer the vertex buffer to update
-         * @param data the data used to update the vertex buffer
-         * @param byteOffset the byte offset of the data
-         * @param byteLength the byte length of the data
-         */
-        updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
         _deletePipelineContext(pipelineContext: IPipelineContext): void;
         createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
         protected _createShaderProgram(pipelineContext: WebGLPipelineContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, context: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
@@ -37967,13 +37980,6 @@ declare module BABYLON {
         private _measureFps;
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex?: number, lod?: number): void;
-        /**
-         * Update a dynamic index buffer
-         * @param indexBuffer defines the target index buffer
-         * @param indices defines the data to update
-         * @param offset defines the offset in the target index buffer where update should start
-         */
-        updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
         /**
          * Updates the sample count of a render target texture
          * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
