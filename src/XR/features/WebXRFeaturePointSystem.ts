@@ -121,7 +121,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
                 const id = featurePointRawData[rawIndex + 4];
 
                 // IDs should be durable across frames and strictly increasing from 0 up, so use them as indexing into the feature point array.
-                if (id >= this._featurePointCloud.length) {
+                if (!this._featurePointCloud[id]) {
                     this._featurePointCloud[id] = { position: new Vector3(), confidenceValue: 0 };
                     addedFeaturePoints.push(id);
                 } else {
