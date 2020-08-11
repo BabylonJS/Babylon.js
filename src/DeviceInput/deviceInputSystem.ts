@@ -29,7 +29,7 @@ export class DeviceInputSystem implements IDisposable {
     public onInputChanged: (deviceType: DeviceType, deviceSlot: number, inputIndex: number, previousState: Nullable<number>, currentState: Nullable<number>) => void;
 
     // Private Members
-    private _inputs: Array<Array<Array<Nullable<number>>>> = [];
+    private _inputs: Array<Array<Array<number>>> = [];
     private _gamepads: Array<DeviceType>;
     private _keyboardActive: boolean = false;
     private _pointerActive: boolean = false;
@@ -81,13 +81,13 @@ export class DeviceInputSystem implements IDisposable {
      */
 
     /**
-     * Checks for current device input value, given an id and input index
+     * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
      * @param deviceType Enum specifiying device type
      * @param deviceSlot "Slot" or index that device is referenced in
      * @param inputIndex Id of input to be checked
      * @returns Current value of input
      */
-    public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): Nullable<number> {
+    public pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number {
         const device = this._inputs[deviceType][deviceSlot];
 
         if (!device) {
@@ -138,10 +138,10 @@ export class DeviceInputSystem implements IDisposable {
         }
 
         if (!this._inputs[deviceType][deviceSlot]) {
-            const device = new Array<Nullable<number>>(numberOfInputs);
+            const device = new Array<number>(numberOfInputs);
 
             for (let i = 0; i < numberOfInputs; i++) {
-                device[i] = null;
+                device[i] = 0; /* set device input as unpressed */
             }
 
             this._inputs[deviceType][deviceSlot] = device;
