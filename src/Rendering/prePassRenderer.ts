@@ -7,7 +7,7 @@ import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
-import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
+import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 
 /**
  * Renders a pre pass of the scene
@@ -56,7 +56,7 @@ export class PrePassRenderer {
     /**
      * Configuration for sub surface scattering post process
      */
-    public subSurfaceConfiguration: SubSurfaceConfiguration;
+    private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
     /**
      * Should materials render their geometry on the MRT
@@ -101,8 +101,6 @@ export class PrePassRenderer {
         this._engine = scene.getEngine();
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
-
-        this.subSurfaceConfiguration = new SubSurfaceConfiguration(this._scene);
     }
 
     private _initializeAttachments() {
@@ -230,15 +228,31 @@ export class PrePassRenderer {
         }
     }
 
+    /**
+     * Adds an effect configuration
+     */
+    public addEffectConfiguration(cfg: PrePassEffectConfiguration) {
+        // Do not add twice
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].name === cfg.name) {
+                return;
+            }
+        }
+
+        this._effectConfigurations.push(cfg);
+    }
+
     private _enable() {
         this._resetPostProcessChain();
 
-        if (this.subSurfaceConfiguration.enabled) {
-            if (!this.subSurfaceConfiguration.postProcess) {
-                this.subSurfaceConfiguration.createPostProcess();
-            }
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].enabled) {
+                if (!this._effectConfigurations[i].postProcess) {
+                    this._effectConfigurations[i].createPostProcess();
+                }
 
-            this._postProcesses.push(this.subSurfaceConfiguration.postProcess);
+                this._postProcesses.push(this._effectConfigurations[i].postProcess);
+            }
         }
 
         if (!this.imageProcessingPostProcess) {
@@ -252,7 +266,11 @@ export class PrePassRenderer {
 
     private _disable() {
         this._setState(false);
-        this.subSurfaceConfiguration.enabled = false;
+
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            this._effectConfigurations[i].enabled = false;
+        }
+
         this.materialsShouldRenderGeometry = false;
         this.materialsShouldRenderIrradiance = false;
     }
@@ -263,8 +281,10 @@ export class PrePassRenderer {
             this.imageProcessingPostProcess.restoreDefaultInputTexture();
         }
 
-        if (this.subSurfaceConfiguration.postProcess) {
-            this.subSurfaceConfiguration.postProcess.restoreDefaultInputTexture();
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].postProcess) {
+                this._effectConfigurations[i].postProcess.restoreDefaultInputTexture();
+            }
         }
     }
 
@@ -283,7 +303,6 @@ export class PrePassRenderer {
         this._disable();
         let enablePrePass = false;
 
-        // Subsurface scattering
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
                 enablePrePass = true;
@@ -312,8 +331,11 @@ export class PrePassRenderer {
      * Disposes the prepass renderer.
      */
     public dispose() {
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            this._effectConfigurations[i].dispose();
+        }
+
         this.imageProcessingPostProcess.dispose();
-        this.subSurfaceConfiguration.dispose();
         this.prePassRT.dispose();
     }
 

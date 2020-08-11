@@ -2,12 +2,20 @@ import { Logger } from "../Misc/logger";
 import { Scene } from "../scene";
 import { Color3 } from "../Maths/math.color";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
+import { SceneComponentConstants } from "../sceneComponent";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import { _DevTools } from '../Misc/devTools';
+
 /**
  * Contains all parameters needed for the prepass to perform
  * screen space subsurface scattering
  */
 export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
+    /** @hidden */
+    public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+        throw _DevTools.WarnImport("PrePassRendererSceneComponent");
+    }
+
     private _ssDiffusionS: number[] = [];
     private _ssFilterRadii: number[] = [];
     private _ssDiffusionD: number[] = [];
@@ -44,6 +52,11 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
     public enabled = false;
 
     /**
+     * Name of the configuration
+     */
+    public name = SceneComponentConstants.NAME_SUBSURFACE;
+
+    /**
      * Diffusion profile colors for subsurface scattering
      * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
      * See ...
@@ -67,6 +80,8 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
         // Adding default diffusion profile
         this.addDiffusionProfile(new Color3(1, 1, 1));
         this._scene = scene;
+
+        SubSurfaceConfiguration._SceneComponentInitialization(this._scene);
     }
 
     /**

@@ -2232,11 +2232,16 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         if (this.subSurface.isScatteringEnabled) {
-            prePassRenderer.subSurfaceConfiguration.enabled = true;
+            let subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
+            if (subSurfaceConfiguration) {
+                subSurfaceConfiguration.enabled = true;
+            }
             prePassRenderer.materialsShouldRenderIrradiance = true;
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**
