@@ -1,3 +1,6 @@
+import { Skeleton } from "../Bones/skeleton";
+import { Color3 } from '../Maths/math.color';
+
 /**
  * Defines the options associated with the creation of a SkeletonViewer.
  */
@@ -36,4 +39,44 @@ export interface ISkeletonViewerDisplayOptions{
 
    /** Ratio for the Sphere Size */
    sphereFactor? : number;
+}
+
+/**
+ * Defines the constructor options for the BoneWeight Shader.
+ */
+export interface IBoneWeightShaderOptions{
+   /** Skeleton to Map */
+   skeleton: Skeleton;
+
+   /** Colors for Uninfluenced bones */
+   colorBase? : Color3;
+
+   /** Color for 0.0 Weight Influence */
+   colorZero? : Color3;
+
+   /** Color for 0.5 Weight Influence */
+   colorHalf? : Color3;
+
+   /** Color for 1.0 Weight Influence */
+   colorFull? : Color3;
+
+   /** Color for Zero Weight Influence */
+   targetBoneIndex? : number;
+}
+
+/**
+ * Simple structure of the gradient steps for the Color Map.
+ */
+export interface ISkeletonMapShaderColorMapKnot{
+   color : Color3;
+   location : number;
+}
+
+/**
+ * Defines the constructor options for the SkeletonMap Shader.
+ */
+export interface ISkeletonMapShaderOptions{
+   /** Skeleton to Map */
+   skeleton: Skeleton;
+   colorMap? : ISkeletonMapShaderColorMapKnot[];
 }
