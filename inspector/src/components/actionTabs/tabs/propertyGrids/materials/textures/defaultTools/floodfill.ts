@@ -11,13 +11,13 @@ export const Floodfill : IToolData = {
         }
 
         fill() {
-            const {canvas2D, metadata, size, updateTexture} = this.getParameters();
-            const ctx = canvas2D.getContext('2d')!;
+            const {metadata, startPainting, stopPainting} = this.getParameters();
+            const ctx = startPainting();
             ctx.fillStyle = metadata.color;
-            ctx.globalAlpha = metadata.opacity;
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillRect(0,0, size.width, size.height);
-            updateTexture();
+            ctx.globalAlpha = metadata.alpha;
+            ctx.globalCompositeOperation = 'copy';
+            ctx.fillRect(0,0, ctx.canvas.width, ctx.canvas.height);
+            stopPainting(ctx);
         }
         
         setup () {

@@ -24,15 +24,17 @@ interface ITextureEditorComponentProps {
     texture: BaseTexture;
     url: string;
     window: React.RefObject<PopupComponent>;
+    onUpdate: () => void;
 }
 
 interface ITextureEditorComponentState {
     tools: ITool[];
     activeToolIndex: number;
-    metadata: any;
+    metadata: IMetadata;
     channels: IChannel[];
     pixelData : IPixelData;
     face: number;
+    mipLevel: number;
 }
 
 export interface IToolParameters {
@@ -47,7 +49,7 @@ export interface IToolParameters {
     /** Pushes the editor texture back to the original scene. This should be called every time a tool makes any modification to a texture. */
     updateTexture: () => void;
     /** The metadata object which is shared between all tools. Feel free to store any information here. Do not set this directly: instead call setMetadata. */
-    metadata: any;
+    metadata: IMetadata;
     /** Call this when you want to mutate the metadata. */
     setMetadata: (data : any) => void;
     /** Returns the texture coordinates under the cursor */
@@ -56,6 +58,8 @@ export interface IToolParameters {
     GUI: IToolGUI;
     /** Provides access to the BABYLON namespace */
     BABYLON: any;
+    startPainting: () => CanvasRenderingContext2D;
+    stopPainting: (ctx: CanvasRenderingContext2D) => void;
 }
 
 
@@ -87,6 +91,18 @@ interface IToolConstructable {
     new (getParameters: () => IToolParameters) : IToolType;
 }
 
+export interface IMetadata {
+    color: string;
+    alpha: number;
+    select: {
+        x1: number,
+        y1: number,
+        x2: number,
+        y2: number
+    }
+    [key: string] : any;
+}
+
 declare global {
     var _TOOL_DATA_ : IToolData;
 }
@@ -96,6 +112,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
     private _UICanvas = React.createRef<HTMLCanvasElement>();
     private _2DCanvas = React.createRef<HTMLCanvasElement>();
     private _3DCanvas = React.createRef<HTMLCanvasElement>();
+    private _timer : number | null;
 
     constructor(props : ITextureEditorComponentProps) {
         super(props);
@@ -114,7 +131,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             activeToolIndex: -1,
             metadata: {
                 color: '#ffffff',
-                opacity: 1,
+                alpha: 1,
                 select: {
                     x1: -1,
                     y1: -1,
@@ -124,13 +141,13 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             },
             channels,
             pixelData: {},
-            face: 0
+            face: 0,
+            mipLevel: 1
         }
         this.loadToolFromURL = this.loadToolFromURL.bind(this);
         this.changeTool = this.changeTool.bind(this);
         this.setMetadata = this.setMetadata.bind(this);
         this.saveTexture = this.saveTexture.bind(this);
-        this.setFace = this.setFace.bind(this);
         this.resetTexture = this.resetTexture.bind(this);
         this.resizeTexture = this.resizeTexture.bind(this);
         this.uploadTexture = this.uploadTexture.bind(this);
@@ -144,7 +161,10 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             this._UICanvas.current!,
             this._2DCanvas.current!,
             this._3DCanvas.current!,
-            (data : IPixelData) => {this.setState({pixelData: data})}
+            (data : IPixelData) => {this.setState({pixelData: data})},
+            this.state.metadata,
+            () => this.textureDidUpdate(),
+            data => this.setMetadata(data)
         );
         this.addTools(defaultTools);
     }
@@ -153,12 +173,22 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         let channelsClone : IChannel[] = [];
         this.state.channels.forEach(channel => channelsClone.push({...channel}));
         this._textureCanvasManager.channels = channelsClone;
-        this._textureCanvasManager.metadata = {...this.state.metadata};
         this._textureCanvasManager.face = this.state.face;
+        this._textureCanvasManager.mipLevel = this.state.mipLevel;
     }
 
     componentWillUnmount() {
         this._textureCanvasManager.dispose();
+    }
+
+    textureDidUpdate() {
+        if (this._timer != null) {
+            clearTimeout(this._timer);
+        }
+        this._timer = window.setTimeout(() => {
+            this.props.onUpdate();
+            this._timer = null;
+        }, 300);
     }
 
     loadToolFromURL(url : string) {
@@ -188,6 +218,8 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             scene3D: this._textureCanvasManager.scene3D,
             size: this._textureCanvasManager.size,
             updateTexture: () => this._textureCanvasManager.updateTexture(),
+            startPainting: () => this._textureCanvasManager.startPainting(),
+            stopPainting: (ctx : CanvasRenderingContext2D) => this._textureCanvasManager.stopPainting(ctx),
             metadata: this.state.metadata,
             setMetadata: (data : any) => this.setMetadata(data),
             getMouseCoordinates: (pointerInfo : PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
@@ -211,10 +243,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             ...newMetadata
         }
         this.setState({metadata: data});
-    }
-
-    setFace(face: number) {
-        this.setState({face});
+        this._textureCanvasManager.metadata = data;
     }
 
     saveTexture() {
@@ -242,10 +271,12 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
                 saveTexture={this.saveTexture}
                 pixelData={this.state.pixelData}
                 face={this.state.face}
-                setFace={this.setFace}
+                setFace={face => this.setState({face})}
                 resetTexture={this.resetTexture}
                 resizeTexture={this.resizeTexture}
                 uploadTexture={this.uploadTexture}
+                mipLevel={this.state.mipLevel}
+                setMipLevel={mipLevel => this.setState({mipLevel})}
             />
             {!this.props.texture.isCube && <ToolBar
                 tools={this.state.tools}
@@ -257,7 +288,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             />}
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
             <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
-            <BottomBar name={this.props.url}/>
+            <BottomBar name={this.props.url} mipLevel={this.state.mipLevel} hasMips={!this.props.texture.noMipmap}/>
         </div>
     }
 }

@@ -21,18 +21,27 @@ export const Paintbrush : IToolData = {
         }
 
         paint(pointerInfo : PointerInfo) {
-            const {canvas2D, getMouseCoordinates, metadata, updateTexture } = this.getParameters();
-            const ctx = canvas2D.getContext('2d')!;
-            const {x, y} = getMouseCoordinates(pointerInfo);
+            const {canvas2D, getMouseCoordinates, metadata, updateTexture, startPainting, stopPainting } = this.getParameters();
+            const ctx = startPainting();//canvas2D.getContext('2d')!;
+            let {x, y} = getMouseCoordinates(pointerInfo);
+            if (metadata.select.x1 != -1) {
+                x -= metadata.select.x1;
+                y -= metadata.select.y1;
+            }
             ctx.globalCompositeOperation = 'source-over';
-            ctx.strokeStyle = metadata.color;
-            ctx.globalAlpha = metadata.opacity;
-            ctx.lineWidth = this.radius;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            updateTexture();
+            // ctx.strokeStyle = metadata.color;
+            ctx.globalAlpha = metadata.alpha;
+            // ctx.lineWidth = this.radius;
+            // ctx.lineCap = 'round';
+            // ctx.lineJoin = 'round';
+            // ctx.lineTo(x, y);
+            // ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x, y, this.radius, 0, 360);
+            ctx.fillStyle = metadata.color;
+            ctx.fill();
+            stopPainting(ctx);
+            // updateTexture();
         }
         
         setup () {
@@ -65,10 +74,6 @@ export const Paintbrush : IToolData = {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         if (pointerInfo.event.button == 0) {
                             this.isPainting = true;
-                            const {x, y} = getMouseCoordinates(pointerInfo);
-                            const ctx = canvas2D.getContext('2d')!;
-                            ctx.beginPath();
-                            ctx.moveTo(x, y);
                           }
                     }
                     if (pointerInfo.type === PointerEventTypes.POINTERMOVE && this.isPainting) {
