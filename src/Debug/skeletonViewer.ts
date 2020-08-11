@@ -40,8 +40,9 @@ export class SkeletonViewer {
     static CreateBoneWeightShader(options: IBoneWeightShaderOptions, scene: Scene): ShaderMaterial {
 
         let skeleton: Skeleton = options.skeleton;
-        let colorBase: Color3 = options.colorBase ?? Color3.Blue();
-        let colorZero: Color3 = options.colorZero ?? Color3.Green();
+        let colorBase: Color3 = options.colorBase ?? Color3.Black();
+        let colorZero: Color3 = options.colorZero ?? Color3.Blue();
+        let colorQuarter: Color3 = options.colorQuarter ?? Color3.Green();
         let colorHalf: Color3 = options.colorHalf ?? Color3.Yellow();
         let colorFull: Color3 = options.colorFull ?? Color3.Red();
         let targetBoneIndex: number = options.targetBoneIndex ?? 0;
@@ -65,6 +66,7 @@ export class SkeletonViewer {
 
             uniform vec3 colorBase;
             uniform vec3 colorZero;
+            uniform vec3 colorQuarter;
             uniform vec3 colorHalf;
             uniform vec3 colorFull;
 
@@ -79,19 +81,25 @@ export class SkeletonViewer {
                 vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 
                 vec3 color = colorBase;
-
-                for (int i = 0; i < 4; ++i) {
-                    if (matricesIndices[i] == targetBoneIndex && matricesWeights[i] > 0.) {
-                        if (matricesWeights[i] < 0.5) {
-                            color = mix(colorZero, colorHalf, matricesWeights[i] * 2.);
-                        } else {
-                            color = mix(colorHalf, colorFull, (matricesWeights[i] - 0.5) * 2.);
-                        }
-                        break;
-                    }
+                float totalWeight = 0.;
+                if(matricesIndices[0] == targetBoneIndex && matricesWeights[0] > 0.){
+                    totalWeight += matricesWeights[0];
+                }
+                if(matricesIndices[1] == targetBoneIndex && matricesWeights[1] > 0.){
+                    totalWeight += matricesWeights[1];
+                }
+                if(matricesIndices[2] == targetBoneIndex && matricesWeights[2] > 0.){
+                    totalWeight += matricesWeights[2];
+                }
+                if(matricesIndices[3] == targetBoneIndex && matricesWeights[3] > 0.){
+                    totalWeight += matricesWeights[3];
                 }
 
-                vColor = color;
+                color = mix(color, colorZero, smoothstep(0., 0.25, totalWeight));
+                color = mix(color, colorQuarter, smoothstep(0.25, 0.5, totalWeight));
+                color = mix(color, colorHalf, smoothstep(0.5, 0.75, totalWeight));
+                color = mix(color, colorFull, smoothstep(0.75, 1.0, totalWeight));
+
 
                 gl_Position = projection * view * worldPos;
             }`,
@@ -112,12 +120,13 @@ export class SkeletonViewer {
             attributes: ['position', 'normal'],
             uniforms: [
                 'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
-                'colorBase', 'colorZero', 'colorHalf', 'colorFull', 'targetBoneIndex'
+                'colorBase', 'colorZero', 'colorQuarter', 'colorHalf', 'colorFull', 'targetBoneIndex'
             ]
         });
 
         shader.setColor3('colorBase', colorBase);
         shader.setColor3('colorZero', colorZero);
+        shader.setColor3('colorQuarter', colorQuarter);
         shader.setColor3('colorHalf', colorHalf);
         shader.setColor3('colorFull', colorFull);
         shader.setFloat('targetBoneIndex', targetBoneIndex);
