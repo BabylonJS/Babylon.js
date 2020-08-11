@@ -522,7 +522,7 @@ export class TextureCanvasManager {
         return ctx;
     }
 
-    public stopPainting(ctx: CanvasRenderingContext2D) : void {
+    public stopPainting(ctx: CanvasRenderingContext2D, x1?: number, y1?: number, x2?: number, y2?: number) : void {
         if (this._metadata.select.x1 == -1) {
             
         } else {
