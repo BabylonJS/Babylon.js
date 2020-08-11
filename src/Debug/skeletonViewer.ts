@@ -9,6 +9,7 @@ import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import { Material } from '../Materials/material';
 import { StandardMaterial } from '../Materials/standardMaterial';
 import { ShaderMaterial } from '../Materials/shaderMaterial';
 import { DynamicTexture } from '../Materials/Textures/dynamicTexture';
@@ -32,7 +33,7 @@ export class SkeletonViewer {
     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
     public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
 
-    /** public Static Method to create a BoneWeight Shader
+    /** public static method to create a BoneWeight Shader
      * @param options The constructor options
      * @param scene The scene that the shader is scoped to
      * @returns The created ShaderMaterial
@@ -130,11 +131,12 @@ export class SkeletonViewer {
         shader.setColor3('colorHalf', colorHalf);
         shader.setColor3('colorFull', colorFull);
         shader.setFloat('targetBoneIndex', targetBoneIndex);
+        shader.transparencyMode = Material.MATERIAL_OPAQUE;
 
         return shader;
     }
 
-    /** public Static Method to create a BoneWeight Shader
+    /** public static method to create a BoneWeight Shader
      * @param options The constructor options
      * @param scene The scene that the shader is scoped to
      * @returns The created ShaderMaterial
@@ -170,7 +172,7 @@ export class SkeletonViewer {
         ];
 
         let bufferWidth: number = skeleton.bones.length + 1;
-        let colorMapBuffer: number[] = SkeletonViewer.CreateBoneMapColorBuffer(bufferWidth, colorMap, scene);
+        let colorMapBuffer: number[] = SkeletonViewer._CreateBoneMapColorBuffer(bufferWidth, colorMap, scene);
         colorMapBuffer.forEach((v, idx) => colorMapBuffer[idx] = v / 255);
 
         let shader = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
@@ -245,16 +247,18 @@ export class SkeletonViewer {
             shader.setFloats('colorMap', colorMapBuffer);
         });
 
+        shader.transparencyMode = Material.MATERIAL_OPAQUE;
+
         return shader;
     }
 
-    /** public Static Method to create a BoneWeight Shader
+    /** private static method to create a BoneWeight Shader
      * @param size The size of the buffer to create (usually the bone count)
      * @param colorMap The gradient data to generate
      * @param scene The scene that the shader is scoped to
      * @returns an Array of floats from the color gradient values
      */
-    static CreateBoneMapColorBuffer(size: number, colorMap: ISkeletonMapShaderColorMapKnot[], scene: Scene) {
+    private static _CreateBoneMapColorBuffer(size: number, colorMap: ISkeletonMapShaderColorMapKnot[], scene: Scene) {
         let tempGrad = new DynamicTexture('temp', {width: size, height: 1}, scene, false);
         let ctx = tempGrad.getContext();
         let grad = ctx.createLinearGradient(0, 0, size, 0);
