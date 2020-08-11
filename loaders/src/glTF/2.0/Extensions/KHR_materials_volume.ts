@@ -79,7 +79,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.tintColorAtDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
         if (extension.attenuationColor !== undefined && extension.attenuationColor.length == 3) {
             pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
-            pbrMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2])
+            pbrMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
         } else {
             pbrMaterial.subSurface.tintColor = new Color3(1.0, 1.0, 1.0);
         }
