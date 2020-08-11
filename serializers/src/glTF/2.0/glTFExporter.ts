@@ -10,8 +10,7 @@ import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
-import { MorphTarget } from "babylonjs/Morph/morphTarget"
-import { MorphTargetManager } from "babylonjs/Morph/morphTargetManager"
+import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { LinesMesh } from "babylonjs/Meshes/linesMesh";
 import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
@@ -29,7 +28,8 @@ import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Epsilon } from 'babylonjs/Maths/math.constants';
-import { ColorGradingTexture } from 'babylonjs';
+import { maxHeaderSize } from 'http';
+import { extractMinAndMaxIndexed } from 'babylonjs/Maths/math.functions';
 
 /**
  * Utility interface for storing vertex attribute data
@@ -804,11 +804,11 @@ export class _Exporter {
      * @param binaryWriter The buffer to write the binary data to
      * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    public writeMorphTargetAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshPrimitive: SubMesh, morphTarget: MorphTarget, meshAttributeArray: FloatArray, morphTargetAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean) {
+    public writeMorphTargetAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshPrimitive: SubMesh, morphTarget: MorphTarget, meshAttributeArray: FloatArray, morphTargetAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, minMax: any) {
         let vertexAttributes: number[][] = [];
         let index: number;
         let difference: Vector3 = new Vector3();
-        let difference4: Vector4 = new Vector4(0,0,0,0);
+        let difference4: Vector4 = new Vector4(0, 0, 0, 0);
 
         switch (vertexBufferKind) {
             case VertexBuffer.PositionKind: {
@@ -820,6 +820,7 @@ export class _Exporter {
                     if (convertToRightHandedSystem) {
                         _GLTFUtilities._GetRightHandedPositionVector3FromRef(difference);
                     }
+                    if (difference.x > minMax.min.x)
                     vertexAttributes.push(difference.asArray());
                 }
                 break;
@@ -1216,10 +1217,9 @@ export class _Exporter {
      */
     private setMorphTargetAttributes(babylonSubMesh: SubMesh, meshPrimitive: IMeshPrimitive, babylonMorphTarget: MorphTarget, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean) {
         if (babylonMorphTarget) {
-            if (!meshPrimitive.targets){
+            if (!meshPrimitive.targets) {
                 meshPrimitive.targets = [];
             }
-            const target = meshPrimitive.targets[length-1] = {};
             if (babylonMorphTarget.hasNormals) {
                 const vertexNormals = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.NormalKind)!;
                 const morphNormals = babylonMorphTarget.getNormals()!;
@@ -1232,7 +1232,7 @@ export class _Exporter {
                 let bufferViewIndex =  this._bufferViews.length - 1;
                 const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, babylonMorphTarget.name + " - " + "NORMAL", AccessorType.VEC3, AccessorComponentType.FLOAT, count, 0, null, null);
                 this._accessors.push(accessor);
-                meshPrimitive.targets.push({["NORMAL"]:this._accessors.length - 1});
+                meshPrimitive.targets.push({["NORMAL"]: this._accessors.length - 1});
 
                 this.writeMorphTargetAttributeData(
                     VertexBuffer.NormalKind,
@@ -1259,7 +1259,7 @@ export class _Exporter {
                 let minMax = { min: null, max: null };
                 const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, babylonMorphTarget.name + " - " + "POSITION", AccessorType.VEC3, AccessorComponentType.FLOAT, count, 0, null, null);
                 this._accessors.push(accessor);
-                meshPrimitive.targets.push({["POSITION"]:this._accessors.length - 1});
+                meshPrimitive.targets.push({["POSITION"]: this._accessors.length - 1});
 
                 this.writeMorphTargetAttributeData(
                     VertexBuffer.NormalKind,
@@ -1288,7 +1288,7 @@ export class _Exporter {
                 let bufferViewIndex =  this._bufferViews.length - 1;
                 const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, babylonMorphTarget.name + " - " + "TANGENT", AccessorType.VEC3, AccessorComponentType.FLOAT, count, 0, null, null);
                 this._accessors.push(accessor);
-                meshPrimitive.targets.push({["TANGENT"]:this._accessors.length - 1});
+                meshPrimitive.targets.push({["TANGENT"]: this._accessors.length - 1});
 
                 this.writeMorphTargetAttributeData(
                     VertexBuffer.NormalKind,
@@ -1531,7 +1531,7 @@ export class _Exporter {
                                 const stride = vertexBuffer.getSize();
                                 const bufferViewIndex = attribute.bufferViewIndex;
                                 if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
-                                    minMax = { min: null, max: null };
+                                    minMax = { min: [0, 0, 0], max: [0, 0, 0] };
                                     if (attributeKind == VertexBuffer.PositionKind) {
                                         minMax = _GLTFUtilities._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, convertToRightHandedSystem);
                                     }
@@ -1579,7 +1579,7 @@ export class _Exporter {
                         meshPrimitive.material = materialIndex;
 
                     }
-                    if (morphTargetManager){
+                    if (morphTargetManager) {
                         let target;
                         for (let i = 0; i < morphTargetManager.numTargets; ++i) {
                             target = morphTargetManager.getTarget(i);
