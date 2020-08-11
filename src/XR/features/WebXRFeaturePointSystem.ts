@@ -17,10 +17,6 @@ export interface IWebXRFeaturePoint {
      * Represents the confidence value of the feature point in world space. 0 being least confident, and 1 being most confident.
      */
     confidenceValue : number;
-    /**
-     * The ID of the feature point, stable across frames.
-     */
-    id : number;
 }
 
 /**
@@ -53,9 +49,11 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
      */
     public readonly onFeaturePointsUpdatedObservable: Observable<number[]> = new Observable();
     /**
-     * The currrent feature point cloud maintained across frames.
+     * The current feature point cloud maintained across frames.
      */
-    public readonly featurePointCloud: Array<IWebXRFeaturePoint> = this._featurePointCloud;
+    public get featurePointCloud() : Array<IWebXRFeaturePoint> {
+        return this._featurePointCloud;
+    }
 
     /**
      * construct the feature point system
@@ -63,6 +61,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
      */
     constructor(_xrSessionManager: WebXRSessionManager) {
         super(_xrSessionManager);
+        this.xrNativeFeatureName = "bjsfeature-points";
         if (this._xrSessionManager.session) {
             this._init();
         } else {
@@ -95,6 +94,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
 
         this._featurePointCloud.length = 0;
         this.onFeaturePointsUpdatedObservable.clear();
+        this.onFeaturePointsAddedObservable.clear();
     }
 
     /**
@@ -106,10 +106,10 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
         }
 
         const featurePointRawData: number[] | undefined = frame.featurePointCloud;
-        if (!featurePointRawData || featurePointRawData.length == 0) {
+        if (!featurePointRawData || featurePointRawData.length === 0) {
             return;
         } else {
-            if (featurePointRawData.length % 5 != 0) {
+            if (featurePointRawData.length % 5 !== 0) {
                 throw new Error("Received malformed feature point cloud of length: " + featurePointRawData.length);
             }
 
@@ -118,27 +118,21 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
             let addedFeaturePoints = new Array();
             for (var i = 0; i < numberOfFeaturePoints; i++) {
                 const rawIndex: number = i * 5;
-
                 const id = featurePointRawData[rawIndex + 4];
-                // IDs should be durable across frames and strictly increasing from 0 up, so use them as indexing into the feature point array.
-                if (id == this._featurePointCloud.length) {
-                    this._featurePointCloud.push({
-                        position: new Vector3(
-                             featurePointRawData[rawIndex],
-                             featurePointRawData[rawIndex + 1],
-                             featurePointRawData[rawIndex + 2]),
-                        confidenceValue: featurePointRawData[rawIndex + 3],
-                        id: id
-                        });
 
-                        addedFeaturePoints.push(id);
+                // IDs should be durable across frames and strictly increasing from 0 up, so use them as indexing into the feature point array.
+                if (id >= this._featurePointCloud.length) {
+                    this._featurePointCloud[id] = { position: new Vector3(), confidenceValue: 0 };
+                    addedFeaturePoints.push(id);
                 } else {
-                    this._featurePointCloud[id].position.x = featurePointRawData[rawIndex];
-                    this._featurePointCloud[id].position.y = featurePointRawData[rawIndex + 1];
-                    this._featurePointCloud[id].position.z = featurePointRawData[rawIndex + 2];
-                    this._featurePointCloud[id].confidenceValue = featurePointRawData[rawIndex + 3];
                     updatedFeaturePoints.push(id);
                 }
+
+                // Set the feature point values.
+                this._featurePointCloud[id].position.x = featurePointRawData[rawIndex];
+                this._featurePointCloud[id].position.y = featurePointRawData[rawIndex + 1];
+                this._featurePointCloud[id].position.z = featurePointRawData[rawIndex + 2];
+                this._featurePointCloud[id].confidenceValue = featurePointRawData[rawIndex + 3];
             }
 
             // Signal observers that feature points have been added if necessary.

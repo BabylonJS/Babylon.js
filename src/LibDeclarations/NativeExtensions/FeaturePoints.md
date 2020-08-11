@@ -63,7 +63,5 @@ The `IWebXRFeaturePoint` interface describes a given feature point.
  interface IWebXRFeaturePoint {
   point : Vector3;
   confidenceValue : number;
-  // IDs are static across frames, and are maintained in order without skipping starting at 0.
-  id : number
 }
 ```
