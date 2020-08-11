@@ -29,6 +29,8 @@ import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { ThinEngine } from '../Engines/thinEngine';
 import { ThinMaterialHelper } from '../Materials/thinMaterialHelper';
 
+import "../Engines/Extensions/engine.alpha";
+
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
 declare type Scene = import("../scene").Scene;
