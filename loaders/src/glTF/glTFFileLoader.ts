@@ -240,6 +240,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public alwaysComputeBoundingBox = false;
 
     /**
+     * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+     */
+    public loadAllMaterials = false;
+
+    /**
      * Function called before loading a url referenced by the asset.
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);

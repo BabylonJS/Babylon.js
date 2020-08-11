@@ -17,9 +17,11 @@
 
 ### General
 
-- Added support for querystrings on KTX file URLs ([abogartz](https://github.com/abogartz/Babylon.js)
+- Added support for postproces serialization ([Deltakosh](https://github.com/deltakosh))
+- Added support for querystrings on KTX file URLs ([abogartz](https://github.com/abogartz)
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
+- Camera gizmo ([cedricguillemet](https://github.com/cedricguillemet))
 - Node support (Transform, Bone) for gizmos ([cedricguillemet](https://github.com/cedricguillemet))
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
@@ -79,7 +81,7 @@
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
-- View & edit textures in pop out inspector with zoom & pan and individual channels, and save to local machine. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- View & edit textures in pop out inspector using canvas and postprocesses. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Cameras
 
@@ -93,6 +95,7 @@
 ### Sprites
 
 - Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh))
+- Improved rendering engine by using instancing when available ([Deltakosh](https://github.com/deltakosh))
 
 ### Physics
 
@@ -118,6 +121,7 @@
 - Added missing "pluginExtension" parameter to SceneLoader.ImportAnimations. ([phenry20](https://github.com/phenry20))
 - Added support for .glb file loading through a base64 encoded filename ([Popov72](https://github.com/Popov72))
 - Fixed issue with loading screen hiding too early when loading multiple assets concurrently. ([bghgary](https://github.com/bghgary))
+- Added the `loadAllMaterials` property to the gLTF loader to load materials even if not used by any mesh ([Popov72](https://github.com/Popov72))
 
 ### Serializers
 
@@ -276,9 +280,10 @@
 - Fix an issue causing views to render blank when scene rendering is skipped for a given iteration of the render loop ([elInfidel](https://github.com/elInfidel))
 - Fix docs Matrix.RotationYawPitchRoll and Matrix.RotationYawPitchRollToRef ([VSerain](https://github.com/VSerain))
 - Fix issue in `GLTFLoader._updateBoneMatrices()` where bone rest position was not set. ([drigax](https://github.com/drigax))
+- Fix the bounding box of instances that does not match the instance position / rotation / scaling ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
-
+- `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))
 - `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
 - Sound's `updateOptions` takes `options.length` and `options.offset` as seconds and not milliseconds ([RaananW](https://github.com/RaananW))
 - HDRCubeTexture default rotation is now similar to the industry one. You might need to add a rotation on y of 90 degrees if you scene changes ([Sebavan](https://github.com/sebavan/))

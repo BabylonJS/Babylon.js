@@ -2708,6 +2708,14 @@ var GLTFLoader = /** @class */ (function () {
                 var scene = ArrayItem.Get("/scene", _this._gltf.scenes, _this._gltf.scene || 0);
                 promises.push(_this.loadSceneAsync("/scenes/" + scene.index, scene));
             }
+            if (_this.parent.loadAllMaterials && _this._gltf.materials) {
+                for (var m = 0; m < _this._gltf.materials.length; ++m) {
+                    var material = _this._gltf.materials[m];
+                    var context_1 = "/materials/" + m;
+                    var babylonDrawMode = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFillMode;
+                    promises.push(_this._loadMaterialAsync(context_1, material, null, babylonDrawMode, function (material) { }));
+                }
+            }
             // Restore the blocking of material dirty.
             _this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
             if (_this._parent.compileMaterials) {
@@ -3415,6 +3423,7 @@ var GLTFLoader = /** @class */ (function () {
             if (babylonParentBone) {
                 baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
             }
+            babylonBone.setBindPose(baseMatrix);
             babylonBone.updateMatrix(baseMatrix, false, false);
             babylonBone._updateDifferenceMatrix(undefined, false);
         }
@@ -3938,13 +3947,15 @@ var GLTFLoader = /** @class */ (function () {
             this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
             this.logClose();
         }
-        babylonData.babylonMeshes.push(babylonMesh);
-        babylonMesh.onDisposeObservable.addOnce(function () {
-            var index = babylonData.babylonMeshes.indexOf(babylonMesh);
-            if (index !== -1) {
-                babylonData.babylonMeshes.splice(index, 1);
-            }
-        });
+        if (babylonMesh) {
+            babylonData.babylonMeshes.push(babylonMesh);
+            babylonMesh.onDisposeObservable.addOnce(function () {
+                var index = babylonData.babylonMeshes.indexOf(babylonMesh);
+                if (index !== -1) {
+                    babylonData.babylonMeshes.splice(index, 1);
+                }
+            });
+        }
         assign(babylonData.babylonMaterial);
         return babylonData.promise.then(function () {
             return babylonData.babylonMaterial;
@@ -4780,6 +4791,10 @@ var GLTFFileLoader = /** @class */ (function () {
          * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
          */
         this.alwaysComputeBoundingBox = false;
+        /**
+         * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+         */
+        this.loadAllMaterials = false;
         /**
          * Function called before loading a url referenced by the asset.
          */

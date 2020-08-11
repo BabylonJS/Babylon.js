@@ -796,4 +796,5 @@ export class Texture extends BaseTexture {
 }
 
 // References the dependencies.
+_TypeStore.RegisteredTypes["BABYLON.Texture"] = Texture;
 SerializationHelper._TextureParser = Texture.Parse;

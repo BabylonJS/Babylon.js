@@ -6,6 +6,10 @@ import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/convolution.fragment";
+import { _TypeStore } from '../Misc/typeStore';
+import { serialize, SerializationHelper } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the
@@ -13,6 +17,18 @@ import "../Shaders/convolution.fragment";
  * See http://en.wikipedia.org/wiki/Kernel_(image_processing)
  */
 export class ConvolutionPostProcess extends PostProcess {
+    /** Array of 9 values corresponding to the 3x3 kernel to be applied */
+    @serialize()
+    public kernel: number[];
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "ConvolutionPostProcess" string
+     */
+    public getClassName(): string {
+        return "ConvolutionPostProcess";
+    }
+
     /**
      * Creates a new instance ConvolutionPostProcess
      * @param name The name of the effect.
@@ -25,15 +41,25 @@ export class ConvolutionPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      */
     constructor(name: string,
-        /** Array of 9 values corresponding to the 3x3 kernel to be applied */
-        public kernel: number[],
+        kernel: number[],
         options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
-
+            this.kernel = kernel;
         this.onApply = (effect: Effect) => {
             effect.setFloat2("screenSize", this.width, this.height);
             effect.setArray("kernel", this.kernel);
         };
+    }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ConvolutionPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new ConvolutionPostProcess(
+                parsedPostProcess.name, parsedPostProcess.kernel,
+                parsedPostProcess.options, targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable, parsedPostProcess.textureType);
+        }, parsedPostProcess, scene, rootUrl);
     }
 
     // Statics
@@ -62,3 +88,5 @@ export class ConvolutionPostProcess extends PostProcess {
      */
     public static GaussianKernel = [0, 1, 0, 1, 1, 1, 0, 1, 0];
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ConvolutionPostProcess"] = ConvolutionPostProcess;
