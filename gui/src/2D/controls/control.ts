@@ -1854,14 +1854,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _onCanvasBlur(): void {
-        if (!this._isEnabled) {
-            return;
-        }
-        this._downCount = 0;
-
-        this._downPointerIds = {};
-    }
+    public _onCanvasBlur(): void {}
 
     /** @hidden */
     public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {

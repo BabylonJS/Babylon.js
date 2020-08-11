@@ -884,7 +884,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     private _attachToOnBlur(scene: Scene): void {
         this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add((pointerEvent) => {
-            this._lastPickedControl._onCanvasBlur();
+            Object.entries(this._lastControlDown).forEach(([key, value]) => {
+                value._onCanvasBlur();
+            });
+            this._lastControlDown = {};
         });
     }
     // Statics

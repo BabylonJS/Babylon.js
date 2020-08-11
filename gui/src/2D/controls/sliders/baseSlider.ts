@@ -328,8 +328,7 @@ export class BaseSlider extends Control {
     }
 
     public _onCanvasBlur(): void {
-        this._pointerIsDown = false;
-        this._host._capturingControl = {};
+        this._forcePointerUp();
         super._onCanvasBlur();
     }
 
