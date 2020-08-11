@@ -65,6 +65,17 @@ export class Vector2 {
     }
 
     /**
+     * Update the current vector from an array
+     * @param array defines the destination array
+     * @param index defines the offset in the destination array
+     * @returns the current Vector3
+     */
+    public fromArray(array: FloatArray, index: number = 0): Vector2 {
+        Vector2.FromArrayToRef(array, index, this);
+        return this;
+    }
+
+    /**
      * Copy the current vector to an array
      * @returns a new array with 2 elements: the Vector2 coordinates.
      */
@@ -781,6 +792,17 @@ export class Vector3 {
         array[index] = this._x;
         array[index + 1] = this._y;
         array[index + 2] = this._z;
+        return this;
+    }
+
+    /**
+     * Update the current vector from an array
+     * @param array defines the destination array
+     * @param index defines the offset in the destination array
+     * @returns the current Vector3
+     */
+    public fromArray(array: FloatArray, index: number = 0): Vector3 {
+        Vector3.FromArrayToRef(array, index, this);
         return this;
     }
 
@@ -2088,6 +2110,17 @@ export class Vector4 {
         array[index + 1] = this.y;
         array[index + 2] = this.z;
         array[index + 3] = this.w;
+        return this;
+    }
+
+    /**
+     * Update the current vector from an array
+     * @param array defines the destination array
+     * @param index defines the offset in the destination array
+     * @returns the current Vector3
+     */
+    public fromArray(array: FloatArray, index: number = 0): Vector4 {
+        Vector4.FromArrayToRef(array, index, this);
         return this;
     }
 

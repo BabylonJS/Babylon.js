@@ -3,6 +3,7 @@
     width: 100%;
     color: white;
     background-color: #1e1e1e;
+    font-family: 'acumin-pro-condensed';
 
     .icon {
         width: 40px;
@@ -13,11 +14,13 @@
                 background-color: #4a4a4a;
                 cursor: pointer;
             }
+            // When the button is selected - className='active'
             &.active {
                 background-color: #666666;
             }
+            // When the button is clicked
             &:active {
-                background-color: #888888;
+                background-color: #837c7c;
             }
         }
     }
@@ -66,6 +69,9 @@
             background-color: #333333;
         }
         #dimensions-tab {
+            form {
+                display: flex;
+            }
             label {
                 margin-left: 15px;
                 color: #afafaf;
@@ -83,6 +89,19 @@
                     margin-right: 8px;
                 }
             }
+            @media only screen and (max-width: 334px) {
+                display: none;
+            }
+        }
+        #pixel-coords-tab {
+            @media only screen and (max-width: 440px) {
+                display: none;
+            }
+        }
+        #pixel-color-tab {
+            @media only screen and (max-width: 640px) {
+                display: none;
+            }
         }
         #right-tab {
             flex-grow: 1;
@@ -91,6 +110,10 @@
             .content {
                 position: absolute;
                 right: 0px;
+            }
+            
+            input[type="file"] {
+                display: none;
             }
         }
     
@@ -124,7 +147,36 @@
             flex-direction: column;
             
         }
-    
+
+        #add-tool {
+            position: relative;
+            #add-tool-popup {
+                background-color: #333333;
+                width: 348px;
+                margin-left: 40px;
+                position: absolute;
+                top: 0px;
+                height: 40px;
+                padding-left: 4px;
+                line-height: 40px;
+                user-select: none;
+                button {
+                    background: #222222;
+                    border: 1px solid rgb(51, 122, 183);
+                    margin: 5px 10px 5px 10px;
+                    color:white;
+                    padding: 4px 5px;
+                    opacity: 0.9;
+                    cursor: pointer;
+                }
+            }
+        }
+
+        #color-picker {
+            position: absolute;
+            margin-left: 40px;
+        }
+
         #color {
             margin-top: 8px;
             #activeColor {
@@ -133,6 +185,17 @@
                 height: 20px;
                 border-radius: 50%;
             }
+        }
+        .color-picker-cover {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        .color-picker {
+            position: absolute;
+            margin-left: 40px;
         }
     }
     

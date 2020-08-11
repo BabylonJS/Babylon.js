@@ -1,5 +1,6 @@
 export * from "./EXT_lights_image_based";
 export * from "./EXT_mesh_gpu_instancing";
+export * from "./EXT_texture_webp";
 export * from "./KHR_draco_mesh_compression";
 export * from "./KHR_lights_punctual";
 export * from "./KHR_materials_pbrSpecularGlossiness";

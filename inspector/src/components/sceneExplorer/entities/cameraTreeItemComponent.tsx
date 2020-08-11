@@ -5,18 +5,20 @@ import { Camera } from "babylonjs/Cameras/camera";
 import { Scene } from "babylonjs/scene";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faVideo, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faVideo, faCamera, faEye } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
+import { GlobalState } from "../../globalState";
 
 interface ICameraTreeItemComponentProps {
     camera: Camera,
     extensibilityGroups?: IExplorerExtensibilityGroup[],
-    onClick: () => void
+    onClick: () => void,
+    globalState: GlobalState
 }
 
-export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, { isActive: boolean }> {
+export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, { isActive: boolean, isGizmoEnabled:boolean }> {
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
 
     constructor(props: ICameraTreeItemComponentProps) {
@@ -25,7 +27,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         const camera = this.props.camera;
         const scene = camera.getScene();
 
-        this.state = { isActive: scene.activeCamera === camera };
+        this.state = { isActive: scene.activeCamera === camera, isGizmoEnabled: (camera.reservedDataStore && camera.reservedDataStore.cameraGizmo) };
     }
 
     setActive(): void {
@@ -65,10 +67,24 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         }
     }
 
+    toggleGizmo(): void {
+        const camera = this.props.camera;
+        if(camera.reservedDataStore && camera.reservedDataStore.cameraGizmo){
+            if (camera.getScene().reservedDataStore && camera.getScene().reservedDataStore.gizmoManager) {
+                camera.getScene().reservedDataStore.gizmoManager.attachToMesh(null);
+            }
+            this.props.globalState.enableCameraGizmo(camera, false);
+            this.setState({ isGizmoEnabled: false });
+        }else{
+            this.props.globalState.enableCameraGizmo(camera, true);
+            this.setState({ isGizmoEnabled: true });
+        }
+    }
+
     render() {
         const isActiveElement = this.state.isActive ? <FontAwesomeIcon icon={faVideo} /> : <FontAwesomeIcon icon={faVideo} className="isNotActive" />;
         const scene = this.props.camera.getScene()!;
-
+        const isGizmoEnabled = (this.state.isGizmoEnabled || (this.props.camera && this.props.camera.reservedDataStore && this.props.camera.reservedDataStore.cameraGizmo)) ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEye} className="isNotActive" />;
         return (
             <div className="cameraTools">
                 <TreeItemLabelComponent label={this.props.camera.name} onClick={() => this.props.onClick()} icon={faCamera} color="green" />
@@ -78,6 +94,9 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
                         {isActiveElement}
                     </div>
                 }
+                <div className="enableGizmo icon" onClick={() => this.toggleGizmo()} title="Turn on/off the camera's gizmo">
+                    {isGizmoEnabled}
+                </div>
                 <ExtensionsComponent target={this.props.camera} extensibilityGroups={this.props.extensibilityGroups} />
             </div>
         )

@@ -29,6 +29,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
     private _panStop: Vector2;
     private _playheadDrag: number;
     private _playheadSelected: boolean;
+    private _movedX: number;
+    private _movedY: number;
+    readonly _dragBuffer: number;
+    readonly _draggingMultiplier: number;
 
     constructor(props: ISvgDraggableAreaProps) {
         super(props);
@@ -39,6 +43,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._panStop = new Vector2(0, 0);
         this._playheadDrag = 0;
         this._playheadSelected = false;
+        this._movedX = 0;
+        this._movedY = 0;
+        this._dragBuffer = 4;
+        this._draggingMultiplier = 3;
 
         this.state = { panX: 0, panY: 0 };
     }
@@ -80,7 +88,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
         if (e.target.classList.contains("pannable")) {
             this._active = true;
-            this._panStart.set(e.clientX, e.clientY);
+            this._panStart.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
         }
     }
 
@@ -95,7 +103,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             if (coord !== undefined) {
                 if (e.target.classList.contains("pannable")) {
                     if (this._panStart.x !== 0 && this._panStart.y !== 0) {
-                        this._panStop.set(e.clientX, e.clientY);
+                        this._panStop.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
                         this.panDirection();
                     }
                 }
@@ -146,6 +154,8 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._panStop.set(0, 0);
         this._playheadDrag = 0;
         this._playheadSelected = false;
+        this._movedX = 0;
+        this._movedY = 0;
     }
 
     getMousePosition(e: React.TouchEvent<SVGSVGElement>): Vector2 | undefined;
@@ -169,33 +179,46 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
     }
 
     panDirection() {
-        let movementX = this._panStart.x - this._panStop.x;
-        let movementY = this._panStart.y - this._panStop.y;
+        let directionX = 1;
+        if (this._movedX < this._panStop.x) {
+            directionX = -1; //left
+        } else {
+            directionX = 1; //right
+        }
 
-        let newX = this.state.panX + movementX / 20;
-        let newY = this.state.panY + movementY / 20;
+        let directionY = 1;
+        if (this._movedY < this._panStop.y) {
+            directionY = -1; //top
+        } else {
+            directionY = 1; //bottom
+        }
+
+        const bufferX = Math.abs(this._movedX - this._panStop.x);
+        const bufferY = Math.abs(this._movedY - this._panStop.y);
+
+        let xMulti = 0;
+        if (bufferX > this._dragBuffer) {
+            xMulti = this._draggingMultiplier;
+        }
+
+        let yMulti = 0;
+        if (bufferY > this._dragBuffer) {
+            yMulti = this._draggingMultiplier;
+        }
+
+        this._movedX = this._panStop.x;
+        this._movedY = this._panStop.y;
+
+        let newX = this.state.panX + directionX * xMulti;
+        let newY = this.state.panY + directionY * yMulti;
 
         this.setState({
             panX: Math.round(newX),
             panY: Math.round(newY),
         });
+
         this.props.panningY(Math.round(newY));
         this.props.panningX(Math.round(newX));
-    }
-
-    panTo(direction: string, value: number) {
-        switch (direction) {
-            case "left":
-                (this._draggableArea.current?.parentElement as HTMLDivElement).scrollLeft -= value * 1;
-                break;
-            case "right":
-                (this._draggableArea.current?.parentElement as HTMLDivElement).scrollLeft += value * 1;
-                break;
-            case "top":
-                break;
-            case "down":
-                break;
-        }
     }
 
     keyDown(e: KeyboardEvent) {
@@ -211,7 +234,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             this._draggableArea.current?.style.setProperty("cursor", "initial");
         }
 
-        if (e.keyCode === 8) {
+        if (e.keyCode === 8 || e.keyCode === 46) {
             const pointsToDelete = this.props.keyframeSvgPoints.filter((kf) => kf.selected);
             this.props.removeSelectedKeyframes(pointsToDelete);
         }
