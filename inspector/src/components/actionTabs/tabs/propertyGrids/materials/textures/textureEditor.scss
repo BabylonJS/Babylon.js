@@ -47,7 +47,6 @@
     }
     
     #properties {
-        position: absolute;
         width: 100%;
         height: 40px;
         
@@ -239,12 +238,11 @@
     
     #canvas-ui {
         width: 100%;
-        height: 100%;
+        height: calc(100% - 70px);
+        outline: none;
     }
     
     #bottom-bar {
-        position: absolute;
-        bottom: 0;
         height: 30px;
         width: 100%;
         background-color: #333333;

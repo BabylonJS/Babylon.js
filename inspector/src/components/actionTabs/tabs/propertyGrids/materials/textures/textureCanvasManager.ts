@@ -358,12 +358,8 @@ export class TextureCanvasManager {
                 this._GUI.dragCoords = new Vector2(evt.x, evt.y);
                 return;
             }
-            let x = parseInt(this._GUI.toolWindow.left.toString().replace('px', ''));
-            let y = parseInt(this._GUI.toolWindow.top.toString().replace('px', ''));
-            x += evt.x - this._GUI.dragCoords.x;
-            y += evt.y - this._GUI.dragCoords.y;
-            this._GUI.toolWindow.left = `${x}px`;
-            this._GUI.toolWindow.top = `${y}px`;
+            this._GUI.toolWindow.leftInPixels += evt.x - this._GUI.dragCoords.x;
+            this._GUI.toolWindow.topInPixels += evt.y - this._GUI.dragCoords.y;
             this._GUI.dragCoords.x = evt.x;
             this._GUI.dragCoords.y = evt.y;
         });
@@ -399,6 +395,8 @@ export class TextureCanvasManager {
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
+            this.GUI.toolWindow.left = Math.min(Math.max(this._GUI.toolWindow.leftInPixels, -this._UICanvas.width + this._GUI.toolWindow.widthInPixels), 0);
+            this.GUI.toolWindow.top = Math.min(Math.max(this._GUI.toolWindow.topInPixels, -this._UICanvas.height + this._GUI.toolWindow.heightInPixels), 0);
             this._scene.render();
             let cursor = 'initial';
             if (this._tool) {
