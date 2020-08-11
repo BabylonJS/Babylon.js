@@ -194,7 +194,7 @@ export class Gizmo implements IDisposable {
             }
 
             camera.position.copyFrom(this._tempVector);
-        } else if (this._attachedNode.getClassName() === "Mesh" || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
+        } else if ((<Mesh>this._attachedNode)._isMesh || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
             var transform = this._attachedNode as TransformNode;
             if (transform.parent) {
                 var parentInv = new Matrix();
@@ -205,9 +205,10 @@ export class Gizmo implements IDisposable {
             } else {
                 this._attachedNode._worldMatrix.decompose(transform.scaling, this._tempQuaternion, transform.position);
             }
-            transform.rotation = this._tempQuaternion.toEulerAngles();
             if (transform.rotationQuaternion) {
                 transform.rotationQuaternion.copyFrom(this._tempQuaternion);
+            } else {
+                transform.rotation = this._tempQuaternion.toEulerAngles();
             }
         } else if (this._attachedNode.getClassName() === "Bone") {
             var bone = this._attachedNode as Bone;

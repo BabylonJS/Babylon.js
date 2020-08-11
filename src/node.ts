@@ -254,7 +254,7 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "Node" string
      */
     public getClassName(): string {
