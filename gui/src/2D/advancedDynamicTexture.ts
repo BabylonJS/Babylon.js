@@ -56,6 +56,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
+    private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _background: string;
     /** @hidden */
     public _rootContainer = new Container("root");
@@ -480,6 +481,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this._canvasPointerOutObserver) {
             scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
         }
+        if (this._canvasBlurObserver) {
+            scene.getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+        }
         if (this._layerToDispose) {
             this._layerToDispose.texture = null;
             this._layerToDispose.dispose();
@@ -741,6 +745,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         });
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     }
     /** @hidden */
     private onClipboardCopy = (rawEvt: Event) => {
@@ -838,6 +843,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         });
         mesh.enablePointerMoveEvents = supportPointerMove;
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     }
     /**
     * Move the focus to a specific control
@@ -875,6 +881,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 delete this._lastControlDown[pointerEvent.pointerId];
             }
         });
+    }
+    private _attachToOnBlur(scene: Scene): void {
+        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add((pointerEvent) => {
+            this._lastPickedControl._onCanvasBlur();
+        })
     }
     // Statics
     /**

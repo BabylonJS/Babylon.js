@@ -326,4 +326,11 @@ export class BaseSlider extends Control {
         delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
+
+    public _onCanvasBlur(): void {
+        this._pointerIsDown = false;
+        this._host._capturingControl = {};
+        super._onCanvasBlur();
+    }
+
 }
