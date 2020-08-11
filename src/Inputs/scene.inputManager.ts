@@ -607,6 +607,10 @@ export class InputManager {
         };
 
         this._onPointerMove = (evt: PointerEvent) => {
+            // preserve compatibility with Safari when pointerId is not present
+            if (evt.pointerId === undefined) {
+                (evt as any).pointerId = 0;
+            }
 
             this._updatePointerPosition(evt);
 
@@ -633,6 +637,11 @@ export class InputManager {
             this._totalPointersPressed++;
             this._pickedDownMesh = null;
             this._meshPickProceed = false;
+
+            // preserve compatibility with Safari when pointerId is not present
+            if (evt.pointerId === undefined) {
+                (evt as any).pointerId = 0;
+            }
 
             this._updatePointerPosition(evt);
 
@@ -677,6 +686,11 @@ export class InputManager {
             this._totalPointersPressed--;
             this._pickedUpMesh = null;
             this._meshPickProceed = false;
+
+            // preserve compatibility with Safari when pointerId is not present
+            if (evt.pointerId === undefined) {
+                (evt as any).pointerId = 0;
+            }
 
             this._updatePointerPosition(evt);
 

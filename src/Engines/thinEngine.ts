@@ -142,14 +142,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.27";
+        return "babylonjs@4.2.0-alpha.31";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.27";
+        return "4.2.0-alpha.31";
     }
 
     /**
@@ -941,7 +941,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "Engine" string
      */
     public getClassName(): string {
@@ -1563,6 +1563,9 @@ export class ThinEngine {
 
     private _vertexAttribPointer(buffer: DataBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
         var pointer = this._currentBufferPointers[indx];
+        if (!pointer) {
+            return;
+        }
 
         var changed = false;
         if (!pointer.active) {

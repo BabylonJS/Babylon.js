@@ -237,8 +237,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (value && this._internalMeshDataInfo._sourcePositions && this._internalMeshDataInfo._sourceNormals) {
             // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
-            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions);
-            this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals);
+            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions.slice(), true);
+            this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals.slice(), true);
         }
 
         this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
@@ -4365,3 +4365,5 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.Mesh"] = Mesh;

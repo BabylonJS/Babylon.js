@@ -3,6 +3,7 @@
     width: 100%;
     color: white;
     background-color: #1e1e1e;
+    font-family: 'acumin-pro-condensed';
 
     .icon {
         width: 40px;
@@ -13,11 +14,13 @@
                 background-color: #4a4a4a;
                 cursor: pointer;
             }
+            // When the button is selected - className='active'
             &.active {
                 background-color: #666666;
             }
+            // When the button is clicked
             &:active {
-                background-color: #888888;
+                background-color: #837c7c;
             }
         }
     }
@@ -66,6 +69,9 @@
             background-color: #333333;
         }
         #dimensions-tab {
+            form {
+                display: flex;
+            }
             label {
                 margin-left: 15px;
                 color: #afafaf;
@@ -146,7 +152,7 @@
             position: relative;
             #add-tool-popup {
                 background-color: #333333;
-                width: 340px;
+                width: 348px;
                 margin-left: 40px;
                 position: absolute;
                 top: 0px;
