@@ -28,12 +28,12 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         this.updateEffect();
 
         this.onApplyObservable.add((effect: Effect) => {
-            if (!scene.prePassRenderer) {
-                Logger.Error("PrePass needs to be enabled for subsurface scattering.");
+            if (!scene.prePassRenderer || !scene.subSurfaceConfiguration) {
+                Logger.Error("PrePass and subsurface configuration needs to be enabled for subsurface scattering.");
                 return;
             }
             var texelSize = this.texelSize;
-            effect.setFloat("metersPerUnit", scene.prePassRenderer.subSurfaceConfiguration.metersPerUnit);
+            effect.setFloat("metersPerUnit", scene.subSurfaceConfiguration.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
             effect.setTexture("irradianceSampler", scene.prePassRenderer.prePassRT.textures[1]);
             effect.setTexture("depthSampler", scene.prePassRenderer.prePassRT.textures[2]);
@@ -41,9 +41,9 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             effect.setFloat2("viewportSize",
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
                 Math.tan(scene.activeCamera!.fov / 2));
-            effect.setArray3("diffusionS", scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionS);
-            effect.setArray("diffusionD", scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionD);
-            effect.setArray("filterRadii", scene.prePassRenderer.subSurfaceConfiguration.ssFilterRadii);
+            effect.setArray3("diffusionS", scene.subSurfaceConfiguration.ssDiffusionS);
+            effect.setArray("diffusionD", scene.subSurfaceConfiguration.ssDiffusionD);
+            effect.setArray("filterRadii", scene.subSurfaceConfiguration.ssFilterRadii);
         });
 
     }

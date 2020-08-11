@@ -5,6 +5,11 @@ import { PostProcess } from "../PostProcesses/postProcess";
  */
 export interface PrePassEffectConfiguration {
     /**
+     * Name of the effect
+     */
+    name: string;
+
+    /**
      * Post process to attach for this effect
      */
     postProcess: PostProcess;
