@@ -265,24 +265,21 @@ export class SpriteManager implements ISpriteManager {
         this._scene.spriteManagers.push(this);
         this.uniqueId = this.scene.getUniqueId();
 
-        var indices = [];
-        var index = 0;
-        for (var count = 0; count < capacity; count++) {
-            indices.push(index);
-            indices.push(index + 1);
-            indices.push(index + 2);
-            indices.push(index);
-            indices.push(index + 2);
-            indices.push(index + 3);
-            index += 4;
+            this._indexBuffer = engine.createIndexBuffer(indices);
+        } else {
         }
 
         this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
         // VBO
         // 18 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellLeft, cellTop, cellWidth, cellHeight, color r, color g, color b, color a)
-        this._vertexData = new Float32Array(capacity * 18 * 4);
-        this._buffer = new Buffer(scene.getEngine(), this._vertexData, true, 18);
+        // 16 when using instances
+        this._vertexBufferSize = this._useInstancing ? 16 : 18;
+        this._vertexData = new Float32Array(capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
+        this._buffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
+
+        var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4, this._vertexBufferSize, this._useInstancing);
+        var options = this._buffer.createVertexBuffer("options", 4, 2, this._vertexBufferSize, this._useInstancing);
 
         var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4);
         var options = this._buffer.createVertexBuffer("options", 4, 4);
@@ -726,13 +723,21 @@ export class SpriteManager implements ISpriteManager {
         if (!this.disableDepthWrite) {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+            if (this._useInstancing) {
+                engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, offset);
+            } else {
+                engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+            }
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
         }
 
         engine.setAlphaMode(this._blendMode);
-        engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+        if (this._useInstancing) {
+            engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, offset);
+        } else {
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+        }
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
         // Restore Right Handed
