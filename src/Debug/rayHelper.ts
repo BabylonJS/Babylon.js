@@ -8,7 +8,6 @@ import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 
 import "../Meshes/Builders/linesBuilder";
-import { Observer } from '../Misc/observable';
 
 /**
  * As raycast might be hard to debug, the RayHelper can help rendering the different rays
@@ -27,8 +26,7 @@ export class RayHelper {
     private _renderFunction: Nullable<() => void>;
     private _scene: Nullable<Scene>;
 
-    private _onAfterRenderObserver: Nullable<Observer<Scene>>;
-    private _onAfterStepObserver: Nullable<Observer<Scene>>;
+    private _updateToMeshFunction: Nullable<() => void>;
     private _attachedToMesh: Nullable<AbstractMesh>;
     private _meshSpaceDirection: Vector3;
     private _meshSpaceOrigin: Vector3;
@@ -74,7 +72,6 @@ export class RayHelper {
             this._scene = scene;
             this._renderPoints = [ray.origin, ray.origin.add(ray.direction.scale(ray.length))];
             this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
-            this._renderLine.isPickable = false;
 
             if (this._renderFunction) {
                 this._scene.registerBeforeRender(this._renderFunction);
@@ -163,10 +160,6 @@ export class RayHelper {
             meshSpaceDirection = new Vector3(0, 0, -1);
         }
 
-        if (!this._scene) {
-            this._scene = mesh.getScene();
-        }
-
         if (!this._meshSpaceDirection) {
             this._meshSpaceDirection = meshSpaceDirection.clone();
             this._meshSpaceOrigin = meshSpaceOrigin.clone();
@@ -175,9 +168,9 @@ export class RayHelper {
             this._meshSpaceOrigin.copyFrom(meshSpaceOrigin);
         }
 
-        if (!this._onAfterRenderObserver) {
-            this._onAfterRenderObserver = this._scene.onBeforeRenderObservable.add(() => this._updateToMesh());
-            this._onAfterStepObserver = this._scene.onAfterStepObservable.add(() => this._updateToMesh());
+        if (!this._updateToMeshFunction) {
+            this._updateToMeshFunction = (<() => void>this._updateToMesh.bind(this));
+            this._attachedToMesh.getScene().registerBeforeRender(this._updateToMeshFunction);
         }
 
         // force world matrix computation before the first ray helper computation
@@ -190,19 +183,19 @@ export class RayHelper {
      * Detach the ray helper from the mesh it has previously been attached to.
      */
     public detachFromMesh(): void {
-        if (this._attachedToMesh && this._scene) {
-            if (this._onAfterRenderObserver) {
-                this._scene.onBeforeRenderObservable.remove(this._onAfterRenderObserver);
-                this._scene.onAfterStepObservable.remove(this._onAfterStepObserver);
+
+        if (this._attachedToMesh) {
+            if (this._updateToMeshFunction) {
+                this._attachedToMesh.getScene().unregisterBeforeRender(this._updateToMeshFunction);
             }
             this._attachedToMesh = null;
-            this._onAfterRenderObserver = null;
-            this._onAfterStepObserver = null;
-            this._scene = null;
+            this._updateToMeshFunction = null;
         }
+
     }
 
     private _updateToMesh(): void {
+
         var ray = this.ray;
 
         if (!this._attachedToMesh || !ray) {
@@ -222,6 +215,7 @@ export class RayHelper {
      * Dispose the helper and release its associated resources.
      */
     public dispose(): void {
+
         this.hide();
         this.detachFromMesh();
         this.ray = null;

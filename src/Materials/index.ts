@@ -7,7 +7,6 @@ export * from "./fresnelParameters";
 export * from "./imageProcessingConfiguration";
 export * from "./material";
 export * from "./materialDefines";
-export * from "./thinMaterialHelper";
 export * from "./materialHelper";
 export * from "./multiMaterial";
 export * from "./PBR/index";

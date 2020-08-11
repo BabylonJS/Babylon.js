@@ -402,20 +402,16 @@
         .cameraTools {
             grid-column: 2;
             display: grid;
-            grid-template-columns: 1fr 20px 20px auto 5px;
+            grid-template-columns: 1fr 20px auto 5px;
             align-items: center;
 
             .activeCamera {
                 grid-column: 2;
             }
 
-            .enableGizmo {
-                grid-column: 3;          
-            } 
-
             .extensions {
                 width: 20px;
-                grid-column: 4;
+                grid-column: 3;
             }
         }
 

@@ -29,7 +29,6 @@ import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
 import { StringTools } from '../../Misc/stringTools';
-import { PostProcess } from '../../PostProcesses/postProcess';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
@@ -313,19 +312,6 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 container.cameras.push(camera);
                 log += (index === 0 ? "\n\tCameras:" : "");
                 log += "\n\t\t" + camera.toString(fullDetails);
-            }
-        }
-
-        // Postprocesses
-        if (parsedData.postProcesses !== undefined && parsedData.postProcesses !== null) {
-            for (index = 0, cache = parsedData.postProcesses.length; index < cache; index++) {
-                var parsedPostProcess = parsedData.postProcesses[index];
-                var postProcess = PostProcess.Parse(parsedPostProcess, scene, rootUrl);
-                if (postProcess) {
-                    container.postProcesses.push(postProcess);
-                    log += (index === 0 ? "\n\Postprocesses:" : "");
-                    log += "\n\t\t" + postProcess.toString();
-                }
             }
         }
 

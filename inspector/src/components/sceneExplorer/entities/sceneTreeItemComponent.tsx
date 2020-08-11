@@ -14,7 +14,6 @@ import { GlobalState } from "../../globalState";
 import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from '../../../components/propertyChangedEvent';
 import { LightGizmo } from 'babylonjs/Gizmos/lightGizmo';
-import { CameraGizmo } from 'babylonjs/Gizmos/cameraGizmo';
 import { TmpVectors, Vector3 } from 'babylonjs/Maths/math';
 
 interface ISceneTreeItemComponentProps {
@@ -90,17 +89,11 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.props.globalState.enableLightGizmo(this._selectedEntity, true);
                         this.forceUpdate();
                     }
-                    manager.attachToNode(this._selectedEntity.reservedDataStore.lightGizmo.attachedNode);
-                } else if (className.indexOf("Camera") !== -1) {
-                    if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.cameraGizmo) {
-                        this.props.globalState.enableCameraGizmo(this._selectedEntity, true);
-                        this.forceUpdate();
-                    }
-                    manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
+                    manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 }else if(className.indexOf("Bone") !== -1){
                     manager.attachToMesh((this._selectedEntity._linkedTransformNode)?this._selectedEntity._linkedTransformNode:this._selectedEntity);
                 } else {
-                    manager.attachToNode(null);
+                    manager.attachToMesh(null);
                 }
             }
         });
@@ -167,23 +160,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     var gizmoScene = this.props.globalState.lightGizmos[0].gizmoLayer.utilityLayerScene;
                     let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
                         for (var g of (this.props.globalState.lightGizmos as any)) {
-                            if (g.attachedNode == m) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    });
-                    if (pickInfo && pickInfo.hit && this.props.onSelectionChangedObservable) {
-                        this.props.onSelectionChangedObservable.notifyObservers(pickInfo.pickedMesh);
-                        return;
-                    }
-                }
-                // Pick camera gizmos
-                if (this.props.globalState.cameraGizmos.length > 0) {
-                    var gizmoScene = this.props.globalState.cameraGizmos[0].gizmoLayer.utilityLayerScene;
-                    let pickInfo = gizmoScene.pick(pickPosition.x, pickPosition.y, (m: any) => {
-                        for (var g of (this.props.globalState.cameraGizmos as any)) {
-                            if (g.attachedNode == m) {
+                            if (g.attachedMesh == m) {
                                 return true;
                             }
                         }
@@ -232,7 +209,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     }
                     for (var gizmo of this.props.globalState.lightGizmos) {
                         if (gizmo._rootMesh == node) {
-                            manager.attachToNode(gizmo.attachedNode);
+                            manager.attachToMesh(gizmo.attachedMesh);
                         }
                     }
                 }
@@ -255,28 +232,16 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     if (!this._posDragEnd) {
                         // Record movement for generating replay code
                         this._posDragEnd = manager.gizmos.positionGizmo!.onDragEndObservable.add(() => {
-                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedNode) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.lightGizmo : null;
-                                var objLight: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedNode;
+                            if (manager.gizmos.positionGizmo && manager.gizmos.positionGizmo.attachedMesh) {
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.positionGizmo.attachedMesh.reservedDataStore ? manager.gizmos.positionGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
+                                var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.positionGizmo.attachedMesh;
 
-                                if (objLight.position) {
+                                if (obj.position) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = objLight
+                                    e.object = obj
                                     e.property = "position"
-                                    e.value = objLight.position;
+                                    e.value = obj.position;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e)
-                                } else {
-                                    var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.positionGizmo.attachedNode.reservedDataStore ? manager.gizmos.positionGizmo.attachedNode.reservedDataStore.cameraGizmo : null;
-                                    var objCamera: any = (cameraGizmo && cameraGizmo.camera) ? cameraGizmo.camera : manager.gizmos.positionGizmo.attachedNode;
-    
-                                    if (objCamera.position) {
-                                        var e = new PropertyChangedEvent();
-                                        e.object = objCamera
-                                        e.property = "position"
-                                        e.value = objCamera.position;
-                                        this.props.globalState.onPropertyChangedObservable.notifyObservers(e)
-                                    }
-
                                 }
                             }
                         })
@@ -288,41 +253,27 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                     if (!this._rotateDragEnd) {
                         // Record movement for generating replay code
                         this._rotateDragEnd = manager.gizmos.rotationGizmo!.onDragEndObservable.add(() => {
-                            if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedNode) {
-                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.lightGizmo : null;
-                                var objLight: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedNode;
-                                var cameraGizmo: Nullable<CameraGizmo> = manager.gizmos.rotationGizmo.attachedNode.reservedDataStore ? manager.gizmos.rotationGizmo.attachedNode.reservedDataStore.cameraGizmo : null;
-                                var objCamera: any = (cameraGizmo && cameraGizmo.camera) ? cameraGizmo.camera : manager.gizmos.rotationGizmo.attachedNode;
+                            if (manager.gizmos.rotationGizmo && manager.gizmos.rotationGizmo.attachedMesh) {
+                                var lightGizmo: Nullable<LightGizmo> = manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore ? manager.gizmos.rotationGizmo.attachedMesh.reservedDataStore.lightGizmo : null;
+                                var obj: any = (lightGizmo && lightGizmo.light) ? lightGizmo.light : manager.gizmos.rotationGizmo.attachedMesh;
 
-                                if (objLight.rotationQuaternion) {
+                                if (obj.rotationQuaternion) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = objLight;
+                                    e.object = obj;
                                     e.property = "rotationQuaternion";
-                                    e.value = objLight.rotationQuaternion;
+                                    e.value = obj.rotationQuaternion;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
-                                } else if (objLight.rotation) {
+                                } else if (obj.rotation) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = objLight;
+                                    e.object = obj;
                                     e.property = "rotation";
-                                    e.value = objLight.rotation;
+                                    e.value = obj.rotation;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
-                                } else if (objLight.direction) {
+                                } else if (obj.direction) {
                                     var e = new PropertyChangedEvent();
-                                    e.object = objLight;
+                                    e.object = obj;
                                     e.property = "direction";
-                                    e.value = objLight.direction;
-                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
-                                } else if (objCamera.rotationQuaternion) {
-                                    var e = new PropertyChangedEvent();
-                                    e.object = objCamera;
-                                    e.property = "rotationQuaternion";
-                                    e.value = objCamera.rotationQuaternion;
-                                    this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
-                                } else if (objCamera.rotation) {
-                                    var e = new PropertyChangedEvent();
-                                    e.object = objCamera;
-                                    e.property = "rotation";
-                                    e.value = objCamera.rotation;
+                                    e.value = obj.direction;
                                     this.props.globalState.onPropertyChangedObservable.notifyObservers(e);
                                 }
                             }
@@ -369,13 +320,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         this.props.globalState.enableLightGizmo(this._selectedEntity, true);
                         this.forceUpdate();
                     }
-                    manager.attachToNode(this._selectedEntity.reservedDataStore.lightGizmo.attachedNode);
-                } else if (className.indexOf("Camera") !== -1) {
-                    if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.cameraGizmo) {
-                        this.props.globalState.enableCameraGizmo(this._selectedEntity, true);
-                        this.forceUpdate();
-                    }
-                    manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
+                    manager.attachToMesh(this._selectedEntity.reservedDataStore.lightGizmo.attachedMesh);
                 } else if(className.indexOf("Bone") !== -1){
                     manager.attachToMesh((this._selectedEntity._linkedTransformNode)?this._selectedEntity._linkedTransformNode:this._selectedEntity);
                 }

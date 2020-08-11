@@ -36,14 +36,6 @@ export class DepthOfFieldMergePostProcessOptions {
  */
 export class DepthOfFieldMergePostProcess extends PostProcess {
     /**
-     * Gets a string identifying the name of the class
-     * @returns "DepthOfFieldMergePostProcess" string
-     */
-    public getClassName(): string {
-        return "DepthOfFieldMergePostProcess";
-    }
-
-    /**
      * Creates a new instance of DepthOfFieldMergePostProcess
      * @param name The name of the effect.
      * @param originalFromInput Post process which's input will be used for the merge.

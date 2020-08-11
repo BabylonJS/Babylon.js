@@ -8,8 +8,6 @@ import { BlurPostProcess } from "./blurPostProcess";
 import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
-import { _TypeStore } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
 
 /**
  * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
@@ -18,20 +16,6 @@ import { serialize } from '../Misc/decorators';
  * See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
  */
 export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
-    /**
-     * The direction the blur should be applied
-     */
-    @serialize()
-    public direction: Vector2;
-
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "DepthOfFieldBlurPostProcess" string
-     */
-    public getClassName(): string {
-        return "DepthOfFieldBlurPostProcess";
-    }
-
     /**
      * Creates a new instance CircleOfConfusionPostProcess
      * @param name The name of the effect.
@@ -48,10 +32,8 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, scene: Scene, direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+    constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion: PostProcess, imageToBlur: Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
         super(name, direction, kernel, options, camera, samplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Constants.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
-
-        this.direction = direction;
 
         this.onApplyObservable.add((effect: Effect) => {
             if (imageToBlur != null) {
@@ -64,5 +46,3 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         });
     }
 }
-
-_TypeStore.RegisteredTypes["BABYLON.DepthOfFieldBlurPostProcess"] = DepthOfFieldBlurPostProcess;

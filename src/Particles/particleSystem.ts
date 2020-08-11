@@ -5,6 +5,7 @@ import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
+import { MaterialHelper } from "../Materials/materialHelper";
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
@@ -27,10 +28,10 @@ import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { ISize } from '../Maths/math.size';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { ThinEngine } from '../Engines/thinEngine';
-import { ThinMaterialHelper } from '../Materials/thinMaterialHelper';
 
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
+
 declare type Scene = import("../scene").Scene;
 
 /**
@@ -1917,7 +1918,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this._scene) {
             if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
-                ThinMaterialHelper.BindClipPlane(effect, this._scene);
+                MaterialHelper.BindClipPlane(effect, this._scene);
             }
         }
 

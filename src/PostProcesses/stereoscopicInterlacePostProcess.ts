@@ -15,14 +15,6 @@ export class StereoscopicInterlacePostProcessI extends PostProcess {
     private _passedProcess: Nullable<PostProcess>;
 
     /**
-     * Gets a string identifying the name of the class
-     * @returns "StereoscopicInterlacePostProcessI" string
-     */
-    public getClassName(): string {
-        return "StereoscopicInterlacePostProcessI";
-    }
-
-    /**
      * Initializes a StereoscopicInterlacePostProcessI
      * @param name The name of the effect.
      * @param rigCameras The rig cameras to be appled to the post process
@@ -53,14 +45,6 @@ export class StereoscopicInterlacePostProcessI extends PostProcess {
 export class StereoscopicInterlacePostProcess extends PostProcess {
     private _stepSize: Vector2;
     private _passedProcess: Nullable<PostProcess>;
-
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "StereoscopicInterlacePostProcess" string
-     */
-    public getClassName(): string {
-        return "StereoscopicInterlacePostProcess";
-    }
 
     /**
      * Initializes a StereoscopicInterlacePostProcess

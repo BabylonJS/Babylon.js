@@ -20,14 +20,6 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
     private _lensCenter: Vector2;
 
     /**
-     * Gets a string identifying the name of the class
-     * @returns "VRDistortionCorrectionPostProcess" string
-     */
-    public getClassName(): string {
-        return "VRDistortionCorrectionPostProcess";
-    }
-
-    /**
      * Initializes the VRDistortionCorrectionPostProcess
      * @param name The name of the effect.
      * @param camera The camera to apply the render pass to.

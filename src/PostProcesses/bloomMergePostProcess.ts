@@ -6,25 +6,11 @@ import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/bloomMerge.fragment";
-import { _TypeStore } from '../Misc/typeStore';
-import { serialize } from '../Misc/decorators';
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
  */
 export class BloomMergePostProcess extends PostProcess {
-    /** Weight of the bloom to be added to the original input. */
-    @serialize()
-    public weight = 1;
-
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "BloomMergePostProcess" string
-     */
-    public getClassName(): string {
-        return "BloomMergePostProcess";
-    }
-
     /**
      * Creates a new instance of @see BloomMergePostProcess
      * @param name The name of the effect.
@@ -41,11 +27,10 @@ export class BloomMergePostProcess extends PostProcess {
      */
     constructor(name: string, originalFromInput: PostProcess, blurred: PostProcess,
         /** Weight of the bloom to be added to the original input. */
-        weight: number,
+        public weight: number,
         options: number | PostProcessOptions,
         camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
         super(name, "bloomMerge", ["bloomWeight"], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2", "bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
-        this.weight = weight;
         this.onApplyObservable.add((effect: Effect) => {
             effect.setTextureFromPostProcess("textureSampler", originalFromInput);
             effect.setTextureFromPostProcessOutput("bloomBlur", blurred);
@@ -57,5 +42,3 @@ export class BloomMergePostProcess extends PostProcess {
         }
     }
 }
-
-_TypeStore.RegisteredTypes["BABYLON.BloomMergePostProcess"] = BloomMergePostProcess;

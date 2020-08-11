@@ -6,23 +6,11 @@ import { Engine } from "../Engines/engine";
 
 import "../Shaders/pass.fragment";
 import "../Shaders/passCube.fragment";
-import { _TypeStore } from '../Misc/typeStore';
-import { SerializationHelper } from '../Misc/decorators';
-
-declare type Scene = import("../scene").Scene;
 
 /**
  * PassPostProcess which produces an output the same as it's input
  */
 export class PassPostProcess extends PostProcess {
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "PassPostProcess" string
-     */
-    public getClassName(): string {
-        return "PassPostProcess";
-    }
-
     /**
      * Creates the PassPostProcess
      * @param name The name of the effect.
@@ -37,20 +25,7 @@ export class PassPostProcess extends PostProcess {
     constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
         super(name, "pass", null, null, options, camera, samplingMode, engine, reusable, undefined, textureType, undefined, null, blockCompilation);
     }
-
-    /** @hidden */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new PassPostProcess(
-                parsedPostProcess.name,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
-    }
 }
-
-_TypeStore.RegisteredTypes["BABYLON.PassPostProcess"] = PassPostProcess;
 
 /**
  * PassCubePostProcess which produces an output the same as it's input (which must be a cube texture)
@@ -100,14 +75,6 @@ export class PassCubePostProcess extends PostProcess {
     }
 
     /**
-     * Gets a string identifying the name of the class
-     * @returns "PassCubePostProcess" string
-     */
-    public getClassName(): string {
-        return "PassCubePostProcess";
-    }
-
-    /**
      * Creates the PassCubePostProcess
      * @param name The name of the effect.
      * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -120,17 +87,6 @@ export class PassCubePostProcess extends PostProcess {
      */
     constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
         super(name, "passCube", null, null, options, camera, samplingMode, engine, reusable, "#define POSITIVEX", textureType, undefined, null, blockCompilation);
-    }
-
-    /** @hidden */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(() => {
-            return new PassCubePostProcess(
-                parsedPostProcess.name,
-                parsedPostProcess.options, targetCamera,
-                parsedPostProcess.renderTargetSamplingMode,
-                scene.getEngine(), parsedPostProcess.reusable);
-        }, parsedPostProcess, scene, rootUrl);
     }
 }
 

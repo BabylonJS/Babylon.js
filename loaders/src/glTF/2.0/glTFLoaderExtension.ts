@@ -82,7 +82,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param assign A function called synchronously after parsing the glTF properties
      * @returns A promise that resolves with the loaded Babylon material when the load is complete or null if not handled
      */
-    _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
+    _loadMaterialAsync?(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>>;
 
     /**
      * Define this method to modify the default behavior when creating materials.

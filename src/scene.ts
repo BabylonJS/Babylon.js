@@ -32,6 +32,7 @@ import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
 import { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
+import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
@@ -54,7 +55,6 @@ import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
-import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -63,7 +63,6 @@ declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Collider = import("./Collisions/collider").Collider;
-declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -103,7 +102,7 @@ export interface SceneOptions {
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/scene
  */
-export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
+export class Scene extends AbstractScene implements IAnimatable {
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
@@ -1046,6 +1045,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     */
     public postProcessesEnabled = true;
     /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses = new Array<PostProcess>();
+    /**
      * Gets the current postprocess manager
      */
     public postProcessManager: PostProcessManager;
@@ -1432,7 +1435,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets a string identifying the name of the class
+     * Gets a string idenfifying the name of the class
      * @returns "Scene" string
      */
     public getClassName(): string {
@@ -2868,12 +2871,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         if (index !== this.geometries.length - 1) {
             const lastGeometry = this.geometries[this.geometries.length - 1];
-            if (lastGeometry) {
-                this.geometries[index] = lastGeometry;
-                if (this.geometriesByUniqueId) {
-                    this.geometriesByUniqueId[lastGeometry.uniqueId] = index;
-                    this.geometriesByUniqueId[geometry.uniqueId] = undefined;
-                }
+            this.geometries[index] = lastGeometry;
+            if (this.geometriesByUniqueId) {
+                this.geometriesByUniqueId[lastGeometry.uniqueId] = index;
+                this.geometriesByUniqueId[geometry.uniqueId] = undefined;
             }
         }
 
@@ -3226,21 +3227,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 if (target.name === name) {
                     return target;
                 }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Gets a post process using a given name (if many are found, this function will pick the first one)
-     * @param name defines the name to search for
-     * @return the found post process or null if not found at all.
-     */
-    public getPostProcessByName(name: string): Nullable<PostProcess> {
-        for (let postProcessIndex = 0; postProcessIndex < this.postProcesses.length; ++postProcessIndex) {
-            const postProcess = this.postProcesses[postProcessIndex];
-            if (postProcess.name === name) {
-                return postProcess;
             }
         }
         return null;

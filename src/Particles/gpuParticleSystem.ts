@@ -709,9 +709,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     }>, sceneOrEngine: Scene | ThinEngine, isAnimationSheetEnabled: boolean = false, customEffect: Nullable<Effect> = null) {
         super(name);
 
-        if (!sceneOrEngine || sceneOrEngine.getClassName() === "Scene") {
+        if (sceneOrEngine.getClassName() === "Scene") {
             this._scene = (sceneOrEngine as Scene) || EngineStore.LastCreatedScene;
-            this._engine = this._scene.getEngine();
+            this._engine = this._engine;
             this.uniqueId = this._scene.getUniqueId();
             this._scene.particleSystems.push(this);
         } else {

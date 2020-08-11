@@ -25,7 +25,6 @@ import "../Shaders/volumetricLightScatteringPass.vertex";
 import "../Shaders/volumetricLightScatteringPass.fragment";
 import { Color4, Color3 } from '../Maths/math.color';
 import { Viewport } from '../Maths/math.viewport';
-import { _TypeStore } from '../Misc/typeStore';
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -485,5 +484,3 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         return mesh;
     }
 }
-
-_TypeStore.RegisteredTypes["BABYLON.VolumetricLightScatteringPostProcess"] = VolumetricLightScatteringPostProcess;
