@@ -1,9 +1,10 @@
-import { Scene } from "../../scene";
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import { Nullable } from '../../types';
 import { ThinEngine } from '../../Engines/thinEngine';
+
+declare type Scene = import("../../scene").Scene;
 
 /**
  * Raw texture can help creating a texture directly from an array of data.
