@@ -32,6 +32,11 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
      * Instead of using viewer space for hit tests, use the reference space defined in the session manager
      */
     useReferenceSpace?: boolean;
+
+    /**
+     * Override the default entity type(s) of the hit-test result
+     */
+    entityTypes?: XRHitTestTrackableType[];
 }
 
 /**
@@ -80,15 +85,18 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             return;
         }
         const offsetRay = new XRRay(this.options.offsetRay || {});
-        const options: XRHitTestOptionsInit = {
+        const hitTestOptions: XRHitTestOptionsInit = {
             space: this.options.useReferenceSpace ? referenceSpace : this._xrSessionManager.viewerReferenceSpace,
             offsetRay: offsetRay,
         };
-        if (!options.space) {
+        if (this.options.entityTypes) {
+            hitTestOptions.entityTypes = this.options.entityTypes;
+        }
+        if (!hitTestOptions.space) {
             Tools.Warn("waiting for viewer reference space to initialize");
             return;
         }
-        this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
+        this._xrSessionManager.session.requestHitTestSource(hitTestOptions).then((hitTestSource) => {
             if (this._xrHitTestSource) {
                 this._xrHitTestSource.cancel();
             }
@@ -167,6 +175,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
                 .requestHitTestSourceForTransientInput({
                     profile: "generic-touchscreen",
                     offsetRay,
+                    entityTypes: this.options.entityTypes
                 })
                 .then((hitSource) => {
                     this._transientXrHitTestSource = hitSource;
