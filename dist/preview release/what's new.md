@@ -39,6 +39,7 @@
 - Force compute world matrix of the newly-attached mesh of a ray helper ([RaananW](https://github.com/RaananW))
 - Allow 180 monoscopic videos on top of the video dome ([#8575](https://github.com/BabylonJS/Babylon.js/issues/8575)) ([RaananW](https://github.com/RaananW))
 - Added `AssetContainerTask` support to `AssetsManager` class ([MackeyK24](https://github.com/MackeyK24))
+- Changed DeviceSourceManager getInput contract to no longer return nullable values ([Drigax](https://github.com/drigax))
 
 ### Engine
 
