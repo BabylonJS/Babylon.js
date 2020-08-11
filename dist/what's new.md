@@ -236,7 +236,7 @@
 - Added `ScrollViewer.freezeControls` property to speed up rendering ([Popov72](https://github.com/Popov72))
 - Added `ImageScrollBar.num90RotationInVerticalMode` property to let the user rotate the pictures when in vertical mode ([Popov72](https://github.com/Popov72))
 - Modified isPointerBlocker to block mouse wheel scroll events. ScrollViewer mouse scroll no longer dependent on scene. ([lockphase](https://github.com/lockphase/))
-- Added `_onCanvasBlur` event for controls to detect when the canvas loses focus. Fixes bug where sliders would become stuck when canvas lost focus. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- Added `_onCanvasBlur` event for controls to detect when the canvas loses focus. Fixes bug where sliders and color pickers would become stuck when canvas lost focus. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Particles
 
