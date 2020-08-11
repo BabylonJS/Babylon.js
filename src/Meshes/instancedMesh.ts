@@ -11,6 +11,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from './transformNode';
 import { Light } from '../Lights/light';
 import { VertexBuffer } from './buffer';
+import { BoundingInfo } from '../Culling/boundingInfo';
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     let instance = new InstancedMesh(name, mesh);
@@ -407,6 +408,19 @@ export class InstancedMesh extends AbstractMesh {
     /** @hidden */
     public _generatePointsArray(): boolean {
         return this._sourceMesh._generatePointsArray();
+    }
+
+    /** @hidden */
+    public _updateBoundingInfo(): AbstractMesh {
+        const effectiveMesh = this as AbstractMesh;
+        if (this._boundingInfo) {
+            this._boundingInfo.update(effectiveMesh.worldMatrixFromCache);
+        }
+        else {
+            this._boundingInfo = new BoundingInfo(this.absolutePosition, this.absolutePosition, effectiveMesh.worldMatrixFromCache);
+        }
+        this._updateSubMeshesBoundingInfo(effectiveMesh.worldMatrixFromCache);
+        return this;
     }
 
     /**

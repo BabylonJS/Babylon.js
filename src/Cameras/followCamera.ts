@@ -246,6 +246,9 @@ export class ArcFollowCamera extends TargetCamera {
 
     private _cartesianCoordinates: Vector3 = Vector3.Zero();
 
+        /** Define the camera target (the mesh it should follow) */
+    private _meshTarget: Nullable<AbstractMesh>;
+
     /**
      * Instantiates a new ArcFollowCamera
      * @see https://doc.babylonjs.com/features/cameras#follow-camera
@@ -264,21 +267,22 @@ export class ArcFollowCamera extends TargetCamera {
         /** The radius of the camera from its target */
         public radius: number,
         /** Define the camera target (the mesh it should follow) */
-        public target: Nullable<AbstractMesh>,
+        target: Nullable<AbstractMesh>,
         scene: Scene) {
         super(name, Vector3.Zero(), scene);
+        this._meshTarget = target;
         this._follow();
     }
 
     private _follow(): void {
-        if (!this.target) {
+        if (!this._meshTarget) {
             return;
         }
         this._cartesianCoordinates.x = this.radius * Math.cos(this.alpha) * Math.cos(this.beta);
         this._cartesianCoordinates.y = this.radius * Math.sin(this.beta);
         this._cartesianCoordinates.z = this.radius * Math.sin(this.alpha) * Math.cos(this.beta);
 
-        var targetPosition = this.target.getAbsolutePosition();
+        var targetPosition = this._meshTarget.getAbsolutePosition();
         this.position = targetPosition.add(this._cartesianCoordinates);
         this.setTarget(targetPosition);
     }

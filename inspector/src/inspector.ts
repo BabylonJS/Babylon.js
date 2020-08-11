@@ -492,6 +492,11 @@ export class Inspector {
                 this._GlobalState.enableLightGizmo(g.light, false);
             }
         });
+        this._GlobalState.cameraGizmos.forEach((g) => {
+            if (g.camera) {
+                this._GlobalState.enableCameraGizmo(g.camera, false);
+            }
+        });
         if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
             this._Scene.reservedDataStore.gizmoManager.dispose();
             this._Scene.reservedDataStore.gizmoManager = null;
