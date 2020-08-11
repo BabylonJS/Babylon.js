@@ -10,9 +10,11 @@ import { LinesMesh } from "../Meshes/linesMesh";
 import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from '../Materials/standardMaterial';
+import { ShaderMaterial } from '../Materials/shaderMaterial';
+import { DynamicTexture } from '../Materials/Textures/dynamicTexture';
 import { VertexBuffer } from '../Meshes/buffer';
 
-import { ISkeletonViewerOptions } from './ISkeletonViewer';
+import { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot } from './ISkeletonViewer';
 import { Observer } from '../Misc/observable';
 
 import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
@@ -29,6 +31,241 @@ export class SkeletonViewer {
     public static readonly DISPLAY_SPHERES = 1;
     /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
     public static readonly DISPLAY_SPHERE_AND_SPURS = 2;
+
+    /** public Static Method to create a BoneWeight Shader
+     * @param options The constructor options
+     * @param scene The scene that the shader is scoped to
+     * @returns The created ShaderMaterial
+     */
+    static CreateBoneWeightShader(options: IBoneWeightShaderOptions, scene: Scene): ShaderMaterial {
+
+        let skeleton: Skeleton = options.skeleton;
+        let colorBase: Color3 = options.colorBase ?? Color3.Blue();
+        let colorZero: Color3 = options.colorZero ?? Color3.Green();
+        let colorHalf: Color3 = options.colorHalf ?? Color3.Yellow();
+        let colorFull: Color3 = options.colorFull ?? Color3.Red();
+        let targetBoneIndex: number = options.targetBoneIndex ?? 0;
+
+        let shader: ShaderMaterial = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
+        {
+            vertexSource:
+            `precision highp float;
+
+            attribute vec3 position;
+            attribute vec2 uv;
+
+            uniform mat4 view;
+            uniform mat4 projection;
+            uniform mat4 worldViewProjection;
+
+            #include<bonesDeclaration>
+            #include<instancesDeclaration>
+
+            varying vec3 vColor;
+
+            uniform vec3 colorBase;
+            uniform vec3 colorZero;
+            uniform vec3 colorHalf;
+            uniform vec3 colorFull;
+
+            uniform float targetBoneIndex;
+
+            void main() {
+                vec3 positionUpdated = position;
+
+                #include<instancesVertex>
+                #include<bonesVertex>
+
+                vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+
+                vec3 color = colorBase;
+
+                for (int i = 0; i < 4; ++i) {
+                    if (matricesIndices[i] == targetBoneIndex && matricesWeights[i] > 0.) {
+                        if (matricesWeights[i] < 0.5) {
+                            color = mix(colorZero, colorHalf, matricesWeights[i] * 2.);
+                        } else {
+                            color = mix(colorHalf, colorFull, (matricesWeights[i] - 0.5) * 2.);
+                        }
+                        break;
+                    }
+                }
+
+                vColor = color;
+
+                gl_Position = projection * view * worldPos;
+            }`,
+            fragmentSource:
+            `
+            precision highp float;
+            varying vec3 vPosition;
+
+            varying vec3 vColor;
+
+            void main() {
+                vec4 color = vec4(vColor, 1.0);
+                gl_FragColor = color;
+            }
+            `
+        },
+        {
+            attributes: ['position', 'normal'],
+            uniforms: [
+                'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
+                'colorBase', 'colorZero', 'colorHalf', 'colorFull', 'targetBoneIndex'
+            ]
+        });
+
+        shader.setColor3('colorBase', colorBase);
+        shader.setColor3('colorZero', colorZero);
+        shader.setColor3('colorHalf', colorHalf);
+        shader.setColor3('colorFull', colorFull);
+        shader.setFloat('targetBoneIndex', targetBoneIndex);
+
+        return shader;
+    }
+
+    /** public Static Method to create a BoneWeight Shader
+     * @param options The constructor options
+     * @param scene The scene that the shader is scoped to
+     * @returns The created ShaderMaterial
+     */
+    static CreateSkeletonMapShader(options: ISkeletonMapShaderOptions, scene: Scene) {
+
+        let skeleton: Skeleton = options.skeleton;
+        let colorMap: ISkeletonMapShaderColorMapKnot[] = options.colorMap ?? [
+            {
+                color: new Color3(1, 0.38, 0.18),
+                location : 0
+            },
+            {
+                color: new Color3(.59, 0.18, 1.00),
+                location : 0.2
+            },
+            {
+                color: new Color3(0.59, 1, 0.18),
+                location : 0.4
+            },
+            {
+               color: new Color3(1, 0.87, 0.17),
+                location : 0.6
+            },
+            {
+                color: new Color3(1, 0.17, 0.42),
+                location : 0.8
+            },
+            {
+                color: new Color3(0.17, 0.68, 1.0),
+                location : 1.0
+            }
+        ];
+
+        let bufferWidth: number = skeleton.bones.length + 1;
+        let colorMapBuffer: number[] = SkeletonViewer.CreateBoneMapColorBuffer(bufferWidth, colorMap, scene);
+        colorMapBuffer.forEach((v, idx) => colorMapBuffer[idx] = v / 255);
+
+        let shader = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
+        {
+            vertexSource:
+            `precision highp float;
+
+            attribute vec3 position;
+            attribute vec2 uv;
+
+            uniform mat4 view;
+            uniform mat4 projection;
+            uniform mat4 worldViewProjection;
+            uniform float colorMap[` + ((skeleton.bones.length) * 4) + `];
+
+            #include<bonesDeclaration>
+            #include<instancesDeclaration>
+
+            varying vec3 vColor;
+
+            void main() {
+                vec3 positionUpdated = position;
+
+                #include<instancesVertex>
+                #include<bonesVertex>
+
+                vec3 color = vec3(0.);
+                bool first = true;
+
+                for (int i = 0; i < 4; i++) {
+                    int boneIdx = int(matricesIndices[i]);
+                    float boneWgt = matricesWeights[i];
+
+                    vec3 c = vec3(colorMap[boneIdx * 4 + 0], colorMap[boneIdx * 4 + 1], colorMap[boneIdx * 4 + 2]);
+
+                    if (boneWgt > 0.) {
+                        if (first) {
+                            first = false;
+                            color = c;
+                        } else {
+                            color = mix(color, c, boneWgt);
+                        }
+                    }
+                }
+
+                vColor = color;
+
+                vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+
+                gl_Position = projection * view * worldPos;
+            }`,
+            fragmentSource:
+            `
+            precision highp float;
+            varying vec3 vColor;
+
+            void main() {
+                vec4 color = vec4( vColor, 1.0 );
+                gl_FragColor = color;
+            }
+            `
+        },
+        {
+            attributes: ['position', 'normal'],
+            uniforms: [
+                'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
+                'colorMap'
+            ]
+        });
+
+        shader.onBindObservable.add(() => {
+            shader.setFloats('colorMap', colorMapBuffer);
+        });
+
+        return shader;
+    }
+
+    /** public Static Method to create a BoneWeight Shader
+     * @param size The size of the buffer to create (usually the bone count)
+     * @param colorMap The gradient data to generate
+     * @param scene The scene that the shader is scoped to
+     * @returns an Array of floats from the color gradient values
+     */
+    static CreateBoneMapColorBuffer(size: number, colorMap: ISkeletonMapShaderColorMapKnot[], scene: Scene) {
+        let tempGrad = new DynamicTexture('temp', {width: size, height: 1}, scene, false);
+        let ctx = tempGrad.getContext();
+        let grad = ctx.createLinearGradient(0, 0, size, 0);
+
+        colorMap.forEach((stop) => {
+            grad.addColorStop(stop.location, stop.color.toHexString());
+        });
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, 1);
+        tempGrad.update();
+        let buffer: number[] = [];
+        let data: Uint8ClampedArray = ctx.getImageData(0, 0, size, 1).data;
+        let rUnit = 1 / 255;
+        for (let i = 0; i < data.length; i++) {
+            buffer.push(data[i] * rUnit);
+        }
+        tempGrad.dispose();
+        return buffer;
+    }
 
     /** If SkeletonViewer scene scope. */
     private _scene : Scene;
