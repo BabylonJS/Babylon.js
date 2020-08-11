@@ -209,6 +209,9 @@ export class DeviceInputSystem implements IDisposable {
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._pointerActive = true;
                 this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
+                const pointer = this._inputs[deviceType][deviceSlot]; /* initalize our pointer position immediately after registration */
+                pointer[0] = evt.clientX;
+                pointer[1] = evt.clientY;
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
@@ -233,6 +236,9 @@ export class DeviceInputSystem implements IDisposable {
             if (!this._inputs[deviceType][deviceSlot]) {
                 this._pointerActive = true;
                 this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
+                const pointer = this._inputs[deviceType][deviceSlot]; /* initalize our pointer position immediately after registration */
+                pointer[0] = evt.clientX;
+                pointer[1] = evt.clientY;
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
