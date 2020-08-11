@@ -286,10 +286,12 @@ export class SpriteManager implements ISpriteManager {
             }
 
             this._indexBuffer = engine.createIndexBuffer(indices);
+        } else {
         }
 
         // VBO
         // 18 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellLeft, cellTop, cellWidth, cellHeight, color r, color g, color b, color a)
+        // 16 when using instances
         this._vertexBufferSize = this._useInstancing ? 16 : 18;
         this._vertexData = new Float32Array(capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
         this._buffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
@@ -758,7 +760,7 @@ export class SpriteManager implements ISpriteManager {
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
             if (this._useInstancing) {
-                engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, (offset / 4));
+                engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, offset);
             } else {
                 engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
             }
@@ -768,7 +770,7 @@ export class SpriteManager implements ISpriteManager {
 
         engine.setAlphaMode(this._blendMode);
         if (this._useInstancing) {
-            engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, (offset / 4));
+            engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, offset);
         } else {
             engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
         }
