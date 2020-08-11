@@ -74181,6 +74181,10 @@ declare module BABYLON {
          * Instead of using viewer space for hit tests, use the reference space defined in the session manager
          */
         useReferenceSpace?: boolean;
+        /**
+         * Override the default entity type(s) of the hit-test result
+         */
+        entityTypes?: XRHitTestTrackableType[];
     }
     /**
      * Interface defining the babylon result of hit-test
@@ -75661,7 +75665,8 @@ declare class XRRay {
 
 declare enum XRHitTestTrackableType {
     "point",
-    "plane"
+    "plane",
+    "mesh"
 }
 
 interface XRHitResult {
