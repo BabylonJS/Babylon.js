@@ -52,35 +52,35 @@ export class WebXRFeatureName {
     /**
      * The name of the anchor system feature
      */
-    public static ANCHOR_SYSTEM = "xr-anchor-system";
+    public static readonly ANCHOR_SYSTEM = "xr-anchor-system";
     /**
      * The name of the background remover feature
      */
-    public static BACKGROUND_REMOVER = "xr-background-remover";
+    public static readonly BACKGROUND_REMOVER = "xr-background-remover";
     /**
      * The name of the hit test feature
      */
-    public static HIT_TEST = "xr-hit-test";
+    public static readonly HIT_TEST = "xr-hit-test";
     /**
      * physics impostors for xr controllers feature
      */
-    public static PHYSICS_CONTROLLERS = "xr-physics-controller";
+    public static readonly PHYSICS_CONTROLLERS = "xr-physics-controller";
     /**
      * The name of the plane detection feature
      */
-    public static PLANE_DETECTION = "xr-plane-detection";
+    public static readonly PLANE_DETECTION = "xr-plane-detection";
     /**
      * The name of the pointer selection feature
      */
-    public static POINTER_SELECTION = "xr-controller-pointer-selection";
+    public static readonly POINTER_SELECTION = "xr-controller-pointer-selection";
     /**
      * The name of the teleportation feature
      */
-    public static TELEPORTATION = "xr-controller-teleportation";
+    public static readonly TELEPORTATION = "xr-controller-teleportation";
     /**
      * The name of the feature points feature.
      */
-    public static FEATURE_POINTS = "xr-feature-points";
+    public static readonly FEATURE_POINTS = "xr-feature-points";
 }
 
 /**
