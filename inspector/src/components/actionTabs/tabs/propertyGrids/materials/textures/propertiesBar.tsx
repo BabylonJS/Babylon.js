@@ -11,6 +11,8 @@ interface IPropertiesBarProps {
     resetTexture() : void;
     resizeTexture(width: number, height: number) : void;
     uploadTexture(file : File) : void;
+    mipLevel: number;
+    setMipLevel: (mipLevel : number) => void;
 }
 
 interface IPropertiesBarState {
@@ -68,6 +70,7 @@ export class PropertiesBar extends React.Component<IPropertiesBarProps,IProperti
     }
 
     render() {
+        const {mipLevel, setMipLevel, pixelData, resizeTexture, texture, face, setFace, saveTexture, resetTexture, uploadTexture} = this.props;
         return <div id='properties'>
                 <div className='tab' id='logo-tab'>
                     <img className='icon' src={this._babylonLogo}/>
@@ -83,38 +86,39 @@ export class PropertiesBar extends React.Component<IPropertiesBarProps,IProperti
                         <label className='dimensions'>
                             H: <input type='text' value={this.state.height} onChange={(evt) => this.setState({height: this.getNewDimension(this.state.height, evt.target.value)})}/>
                             </label>
-                        <img id='resize' className='icon button' title='Resize' alt='Resize' src={this._resizeButton} onClick={() => this.props.resizeTexture(this.state.width, this.state.height)}/> 
+                        <img id='resize' className='icon button' title='Resize' alt='Resize' src={this._resizeButton} onClick={() => resizeTexture(this.state.width, this.state.height)}/> 
                     </form>
                 </div>
                 <div className='tab' id='pixel-coords-tab'>
-                    <this.pixelData name='X' data={this.props.pixelData.x}/>
-                    <this.pixelData name='Y' data={this.props.pixelData.y}/>
+                    <this.pixelData name='X' data={pixelData.x}/>
+                    <this.pixelData name='Y' data={pixelData.y}/>
                 </div>
                 <div className='tab' id='pixel-color-tab'>
-                    <this.pixelData name='R' data={this.props.pixelData.r}/>
-                    <this.pixelData name='G' data={this.props.pixelData.g}/>
-                    <this.pixelData name='B' data={this.props.pixelData.b}/>
-                    <this.pixelData name='A' data={this.props.pixelData.a}/>
+                    <this.pixelData name='R' data={pixelData.r}/>
+                    <this.pixelData name='G' data={pixelData.g}/>
+                    <this.pixelData name='B' data={pixelData.b}/>
+                    <this.pixelData name='A' data={pixelData.a}/>
                 </div>
-                {this.props.texture.isCube &&
-                <>
+                {texture.isCube &&
                     <div className='tab' id='face-tab'>
-                        {this._faces.map((face, index) =>
+                        {this._faces.map((value, index) =>
                         <img
                             key={index}
-                            className={this.props.face == index ? 'icon face button active' : 'icon face button'}
-                            src={face}
-                            onClick={() => this.props.setFace(index)}
+                            className={face == index ? 'icon face button active' : 'icon face button'}
+                            src={value}
+                            onClick={() => setFace(index)}
                         />)}
                     </div>
+                }
+                {!texture.noMipmap &&
                     <div className='tab' id='mip-tab'>
-                        <img title='Mip Preview Up' className='icon button' src={this._mipUp} />
-                        <img title='Mip Preview Down' className='icon button' src={this._mipDown} />
+                        <img title='Mip Preview Up' className='icon button' src={this._mipUp} onClick={() => mipLevel > 1 && setMipLevel(mipLevel - 1)} />
+                        <img title='Mip Preview Down' className='icon button' src={this._mipDown} onClick={() => mipLevel < 12 && setMipLevel(mipLevel + 1)} />
                     </div>
-                </>}
+                }
                 <div className='tab' id='right-tab'>
                     <div className='content'>
-                        <img title='Reset' className='icon button' src={this._resetButton} onClick={() => this.props.resetTexture()}/>
+                        <img title='Reset' className='icon button' src={this._resetButton} onClick={() => resetTexture()}/>
                         <label>
                             <input
                                 accept='.jpg, .png, .tga, .dds, .env'
@@ -123,7 +127,7 @@ export class PropertiesBar extends React.Component<IPropertiesBarProps,IProperti
                                     (evt : React.ChangeEvent<HTMLInputElement>) => {
                                         const files = evt.target.files;
                                         if (files && files.length) {
-                                            this.props.uploadTexture(files[0]);
+                                            uploadTexture(files[0]);
                                         }
                                 
                                         evt.target.value = "";
@@ -136,7 +140,7 @@ export class PropertiesBar extends React.Component<IPropertiesBarProps,IProperti
                                 src={this._uploadButton}
                             />
                         </label>
-                        <img title='Save' className='icon button' src={this._saveButton} onClick={() => this.props.saveTexture()}/>
+                        <img title='Save' className='icon button' src={this._saveButton} onClick={() => saveTexture()}/>
                     </div>
                 </div>
         </div>;

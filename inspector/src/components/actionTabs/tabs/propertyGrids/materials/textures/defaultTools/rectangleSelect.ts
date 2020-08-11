@@ -14,19 +14,18 @@ export const RectangleSelect : IToolData = {
         setup() {
             const {scene} = this.getParameters();
             this.pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
-                const {getMouseCoordinates, setMetadata, metadata, canvas2D} = this.getParameters();
+                const {getMouseCoordinates, setMetadata, metadata} = this.getParameters();
                 if (pointerInfo.pickInfo?.hit) {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         if (pointerInfo.event.button == 0) {
                             this.isSelecting = true;
                             const {x, y} = getMouseCoordinates(pointerInfo);
-                            const {select} = metadata;
                             setMetadata({
                                 select: {
                                     x1: x,
                                     y1: y,
-                                    x2: select.x2,
-                                    y2: select.y2
+                                    x2: x,
+                                    y2: y
                                 }
                             })
                           }
@@ -36,10 +35,10 @@ export const RectangleSelect : IToolData = {
                         const {select} = metadata;
                         setMetadata({
                             select: {
-                                x1: select.x1,
-                                y1: select.y1,
-                                x2: x,
-                                y2: y
+                                x1: Math.min(x, select.x1),
+                                y1: Math.min(y, select.y1),
+                                x2: Math.max(x, select.x1),
+                                y2: Math.max(y, select.y1)
                             }
                         })
                     }
@@ -47,7 +46,14 @@ export const RectangleSelect : IToolData = {
                 if (pointerInfo.type === PointerEventTypes.POINTERUP) {
                     if (pointerInfo.event.button == 0) {
                         this.isSelecting = false;
-                      }
+                        if (metadata.select.x1 === metadata.select.x2 || metadata.select.y1 === metadata.select.y2) {
+                            setMetadata({
+                                select: {
+                                    x1: -1, y1: -1, x2: -1, y2: -1
+                                }
+                            })
+                        }
+                    }
                 }
             });
         }

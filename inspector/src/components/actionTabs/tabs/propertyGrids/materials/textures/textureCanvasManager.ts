@@ -34,6 +34,7 @@ import { StackPanel } from 'babylonjs-gui/2D/controls/stackPanel';
 import { Control } from 'babylonjs-gui/2D/controls/control';
 import { Style } from 'babylonjs-gui/2D/style';
 import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
+import { IMetadata } from './textureEditorComponent';
 
 
 export interface IPixelData {
@@ -57,6 +58,7 @@ export class TextureCanvasManager {
     private _engine: Engine;
     private _scene: Scene;
     private _camera: FreeCamera;
+    private _cameraPos: Vector2;
 
     private _scale : number;
     private _isPanning : boolean = false;
@@ -81,6 +83,7 @@ export class TextureCanvasManager {
 
     private _channels : IChannel[] = [];
     private _face : number = 0;
+    private _mipLevel : number = 1;
 
     /* The texture from the original engine that we invoked the editor on */
     private _originalTexture: BaseTexture;
@@ -108,6 +111,9 @@ export class TextureCanvasManager {
     private static MIN_SCALE : number = 0.01;
     private static MAX_SCALE : number = 10;
 
+    private static SELECT_ALL_KEY = 'KeyA';
+    private static DESELECT_KEY = 'Escape'
+
     private _tool : Nullable<ITool>;
 
     private _setPixelData : (pixelData : IPixelData) => void;
@@ -116,9 +122,12 @@ export class TextureCanvasManager {
 
     private _window : Window;
 
-    public metadata : any = {};
+    private _metadata : IMetadata;
 
     private _editing3D : boolean = false;
+
+    private _onUpdate : () => void;
+    private _setMetadata : (metadata: any) => void;
 
     public constructor(
         texture: BaseTexture,
@@ -126,7 +135,10 @@ export class TextureCanvasManager {
         canvasUI: HTMLCanvasElement,
         canvas2D: HTMLCanvasElement,
         canvas3D: HTMLCanvasElement,
-        setPixelData: (pixelData : IPixelData) => void
+        setPixelData: (pixelData : IPixelData) => void,
+        metadata: IMetadata,
+        onUpdate: () => void,
+        setMetadata: (metadata: any) => void
     ) {
         this._window = window;
 
@@ -134,6 +146,9 @@ export class TextureCanvasManager {
         this._2DCanvas = canvas2D;
         this._3DCanvas = canvas3D;
         this._setPixelData = setPixelData;
+        this._metadata = metadata;
+        this._onUpdate = onUpdate;
+        this._setMetadata = setMetadata;
 
         this._size = texture.getSize();
         this._originalTexture = texture;
@@ -144,6 +159,7 @@ export class TextureCanvasManager {
 
         this._camera = new FreeCamera('camera', new Vector3(0, 0, -1), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+        this._cameraPos = new Vector2();
 
         this._channelsTexture = new HtmlElementTexture('ct', this._2DCanvas, {engine: this._engine, scene: null, samplingMode: Engine.TEXTURE_NEAREST_LINEAR});
 
@@ -195,10 +211,15 @@ export class TextureCanvasManager {
                     uniform bool b;
                     uniform bool a;
 
-                    uniform float x1;
-                    uniform float y1;
-                    uniform float x2;
-                    uniform float y2;
+                    uniform int x1;
+                    uniform int y1;
+                    uniform int x2;
+                    uniform int y2;
+                    uniform int w;
+                    uniform int h;
+
+                    uniform int time;
+                    uniform int mipLevel;
             
                     varying vec2 vUV;
             
@@ -211,7 +232,7 @@ export class TextureCanvasManager {
                             pattern = 0.7;
                         }
                         vec4 bg = vec4(pattern, pattern, pattern, 1.0);
-                        vec4 col = texture(textureSampler, vUV);
+                        vec4 col = textureLod(textureSampler, vUV, 6.0);
                         if (!r && !g && !b) {
                             if (a) {
                                 col = vec4(col.a, col.a, col.a, 1.0);
@@ -250,11 +271,35 @@ export class TextureCanvasManager {
                             }
                         }
                         gl_FragColor = col * (col.a) + bg * (1.0 - col.a);
+                        float wF = float(w);
+                        float hF = float(h);
+                        int xPixel = int(floor(vUV.x * wF));
+                        int yPixel = int(floor((1.0 - vUV.y) * hF));
+                        int xPixe= int(gl_FragCoord.y);
+                        int xDis = min(abs(xPixel - x1), abs(xPixel - x2));
+                        int yDis = min(abs(yPixel - y1), abs(yPixel - y2));
+                        if (xPixel >= x1 && yPixel >= y1 && xPixel <= x2 && yPixel <= y2) {
+                            if (xDis <= 4 || yDis <= 4) {
+                                // float t = mod(float(time), 500.0);
+                                // float amt = mod(floor((gl_FragCoord.x - gl_FragCoord.y + t) * 0.1), 2.0);
+                                gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+                            }
+                        }
+                        // if (xPixel >= x1 && yPixel >= y1 && xPixel <= x2 && yPixel <= y2) {
+                        //     if (xPixel == x1 || yPixel == y1 || xPixel == x2 || yPixel == y2) {
+                        //         float dots = mod(gl_FragCoord.x + gl_FragCoord.y, 2.0); 
+                        //         if (dots == 0.0) {
+                        //             gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+                        //         }
+                        //     } else {
+                        //         gl_FragColor = gl_FragColor * 0.8 + vec4(0.0,0.0,1.0,1.0) * 0.2;
+                        //     }
+                        // }
                     }`
             },
         {
             attributes: ['position', 'uv'],
-            uniforms: ['worldViewProjection', 'textureSampler', 'r', 'g', 'b', 'a', 'x1', 'y1', 'x2', 'y2']
+            uniforms: ['worldViewProjection', 'textureSampler', 'r', 'g', 'b', 'a', 'x1', 'y1', 'x2', 'y2', 'w', 'h', 'time']
         });
 
         this._planeMaterial.setTexture('textureSampler', this._channelsTexture);
@@ -262,10 +307,14 @@ export class TextureCanvasManager {
         this._planeMaterial.setFloat('g', 1.0);
         this._planeMaterial.setFloat('b', 1.0);
         this._planeMaterial.setFloat('a', 1.0);
-        this._planeMaterial.setFloat('x1', -1.0);
-        this._planeMaterial.setFloat('y1', -1.0);
-        this._planeMaterial.setFloat('x2', -1.0);
-        this._planeMaterial.setFloat('y2', -1.0);
+        this._planeMaterial.setInt('x1', -1);
+        this._planeMaterial.setInt('y1', -1);
+        this._planeMaterial.setInt('x2', -1);
+        this._planeMaterial.setInt('y2', -1);
+        this._planeMaterial.setInt('w', this._size.width);
+        this._planeMaterial.setInt('h', this._size.height);
+        this._planeMaterial.setInt('time', 0);
+        this._planeMaterial.setInt('mipLevel', 1);
         this._plane.material = this._planeMaterial;
         
         const adt = AdvancedDynamicTexture.CreateFullscreenUI('gui', true, this._scene);
@@ -303,7 +352,7 @@ export class TextureCanvasManager {
         topBar.addControl(title);
         this._GUI.toolWindow.addControl(topBar);
 
-        this._window.addEventListener('pointermove',  (evt : PointerEvent) => {
+        this._window.addEventListener('pointermove', evt => {
             if (!this._GUI.isDragging) return;
             if (!this._GUI.dragCoords) {
                 this._GUI.dragCoords = new Vector2(evt.x, evt.y);
@@ -319,9 +368,44 @@ export class TextureCanvasManager {
             this._GUI.dragCoords.y = evt.y;
         });
 
+        this._window.addEventListener('keydown', evt => {
+            this._keyMap[evt.code] = true;
+            if (evt.code === TextureCanvasManager.SELECT_ALL_KEY && evt.ctrlKey) {
+                this._setMetadata({
+                    select: {
+                        x1: 0,
+                        y1: 0,
+                        x2: this._size.width,
+                        y2: this._size.height
+                    }
+                });
+                evt.preventDefault();
+            }
+            if (evt.code === TextureCanvasManager.DESELECT_KEY) {
+                this._setMetadata({
+                    select: {
+                        x1: -1,
+                        y1: -1,
+                        x2: -1,
+                        y2: -1
+                    }
+                })
+            }
+        });
+        
+        this._window.addEventListener('keyup', evt => {
+            this._keyMap[evt.code] = false;
+        });
+
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
+            let cursor = 'initial';
+            if (this._tool) {
+                cursor = `url(data:image/svg+xml;base64,${this._tool.icon})`;
+            }
+            this._UICanvas.parentElement!.style.cursor = cursor;
+            this._planeMaterial.setInt('time', new Date().getTime());
         });
 
         this._scale = 1.5;
@@ -330,10 +414,11 @@ export class TextureCanvasManager {
         this._scene.onBeforeRenderObservable.add(() => {
             this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE), TextureCanvasManager.MAX_SCALE);
             const ratio = this._UICanvas?.width / this._UICanvas?.height;
-            this._camera.orthoBottom = -1 / this._scale;
-            this._camera.orthoTop = 1 / this._scale;
-            this._camera.orthoLeft =  ratio / -this._scale;
-            this._camera.orthoRight = ratio / this._scale;
+            const {x,y} = this._cameraPos;
+            this._camera.orthoBottom = y - 1 / this._scale;
+            this._camera.orthoTop = y + 1 / this._scale;
+            this._camera.orthoLeft =  x - ratio / this._scale;
+            this._camera.orthoRight = x + ratio / this._scale;
         })
 
         this._scene.onPointerObservable.add((pointerInfo) => {
@@ -357,8 +442,8 @@ export class TextureCanvasManager {
                     break;
                 case PointerEventTypes.POINTERMOVE:
                     if (this._isPanning) {
-                        this._camera.position.x -= (pointerInfo.event.x - this._mouseX) / this._scale * TextureCanvasManager.PAN_SPEED;
-                        this._camera.position.y += (pointerInfo.event.y - this._mouseY) / this._scale * TextureCanvasManager.PAN_SPEED;
+                        this._cameraPos.x -= (pointerInfo.event.x - this._mouseX) / this._scale * TextureCanvasManager.PAN_SPEED;
+                        this._cameraPos.y += (pointerInfo.event.y - this._mouseY) / this._scale * TextureCanvasManager.PAN_SPEED;
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
                     }
@@ -378,11 +463,13 @@ export class TextureCanvasManager {
             switch(kbInfo.type) {
                 case KeyboardEventTypes.KEYDOWN:
                     this._keyMap[kbInfo.event.key] = true;
-                    if (kbInfo.event.key === TextureCanvasManager.ZOOM_IN_KEY) {
-                        this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
-                    }
-                    if (kbInfo.event.key === TextureCanvasManager.ZOOM_OUT_KEY) {
-                        this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                    switch (kbInfo.event.key) {
+                        case TextureCanvasManager.ZOOM_IN_KEY:
+                            this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                            break;
+                        case TextureCanvasManager.ZOOM_OUT_KEY:
+                            this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                            break;
                     }
                     break;
                 case KeyboardEventTypes.KEYUP:
@@ -420,10 +507,56 @@ export class TextureCanvasManager {
         this._originalTexture._texture = this._target._texture;
         this._channelsTexture.element = element;
         this.updateDisplay();
+        this._onUpdate();
+    }
+
+    public startPainting() : CanvasRenderingContext2D {
+        if (this._metadata.select.x1 == -1) {
+            return this._2DCanvas.getContext('2d')!;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = this._metadata.select.x2 - this._metadata.select.x1;
+        canvas.height = this._metadata.select.y2 - this._metadata.select.y1;
+        const ctx = canvas.getContext('2d')!;
+        ctx.putImageData(this._2DCanvas.getContext('2d')!.getImageData(this._metadata.select.x1, this._metadata.select.y1, canvas.width, canvas.height), 0, 0);
+        return ctx;
+    }
+
+    public stopPainting(ctx: CanvasRenderingContext2D) : void {
+        if (this._metadata.select.x1 == -1) {
+            
+        } else {
+            
+            const pixelData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+            let editingAllChannels = true;
+            this._channels.forEach(channel => {
+                if (!channel.editable) editingAllChannels = false;
+            })
+            if (!editingAllChannels) {
+                const xStart = this._metadata.select.x1;
+                const yStart = this._metadata.select.y1;
+                const oldData = this._2DCanvas.getContext('2d')!.getImageData(xStart, yStart, ctx.canvas.width, ctx.canvas.height);
+                for(let x = 0; x < pixelData.width; x += 1) {
+                    for(let y = 0; y < pixelData.height; y += 1) {
+                        const i = (x + y * pixelData.width) * 4;
+                        this._channels.forEach((channel, index) => {
+                            if (!channel.editable) {
+                                pixelData.data[i + index] = oldData.data[i + index];
+                            }
+                        })
+                    }
+                }
+            }
+            ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = 'source-over';
+            this.canvas2D.getContext('2d')?.putImageData(pixelData, this._metadata.select.x1, this._metadata.select.y1);
+            ctx.canvas.parentNode?.removeChild(ctx.canvas);
+        }
+        this.updateTexture();
     }
 
     private updateDisplay() {
-        this._3DScene.render()
+        this._3DScene.render();
         this._channelsTexture.update();
     }
 
@@ -521,13 +654,17 @@ export class TextureCanvasManager {
         return this._tool;
     }
 
-    // BROKEN : FIX THIS
     public set face(face: number) {
         if (this._face !== face) {
             this._face = face;
             this.grabOriginalTexture(false);
             this.updateDisplay();
         }
+    }
+
+    public set mipLevel(mipLevel : number) {
+        this._mipLevel = mipLevel;
+        this._planeMaterial.setInt('mipLevel', mipLevel);
     }
 
     /** Returns the tool GUI object, allowing tools to access the GUI */
@@ -538,6 +675,21 @@ export class TextureCanvasManager {
     /** Returns the 3D scene used for postprocesses */
     public get scene3D() {
         return this._3DScene;
+    }
+
+    public set metadata(metadata: IMetadata) {
+        this._metadata = metadata;
+        const {x1,y1,x2,y2} = metadata.select;
+        // x1 = x1/this._size.width * this._UICanvas.width;
+        // y1 = 1-(y1/this._size.height) * this._UICanvas.height;
+        // x2 = x2/this._size.width * this._UICanvas.width;
+        // y2 = (1-y2/this._size.height) * this._UICanvas.height;
+
+        this._planeMaterial.setInt('x1', x1);
+        this._planeMaterial.setInt('y1', y1);
+        this._planeMaterial.setInt('x2', x2);
+        this._planeMaterial.setInt('y2', y2);
+        console.log(this._planeMaterial.getEffect()?.getUniformNames());
     }
 
     private makePlane() {
@@ -559,6 +711,7 @@ export class TextureCanvasManager {
         this.grabOriginalTexture();
         this.makePlane();
         this._didEdit = false;
+        this._onUpdate();
     }
 
     public async resize(newSize : ISize) {
@@ -576,8 +729,8 @@ export class TextureCanvasManager {
         this._3DCanvas.width = this._size.width;
         this._3DCanvas.height = this._size.height;
         if (adjustZoom) {
-            this._camera.position.x = 0;
-            this._camera.position.y = 0;
+            this._cameraPos.x = 0;
+            this._cameraPos.y = 0;
             this._scale = 1.5 / (this._size.width/this._size.height);
         }
         this.makePlane();
