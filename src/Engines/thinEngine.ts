@@ -142,14 +142,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.31";
+        return "babylonjs@4.2.0-alpha.32";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.31";
+        return "4.2.0-alpha.32";
     }
 
     /**
@@ -941,7 +941,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "Engine" string
      */
     public getClassName(): string {

@@ -17,6 +17,7 @@ import { Light } from "./Lights/light";
 import { Node } from "./node";
 
 declare type Animation = import("./Animations/animation").Animation;
+declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 
 /**
  * Defines how the parser contract is defined.
@@ -198,6 +199,11 @@ export abstract class AbstractScene {
      * Environment texture for the scene
      */
     public environmentTexture: Nullable<BaseTexture> = null;
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses = new Array<PostProcess>();
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones

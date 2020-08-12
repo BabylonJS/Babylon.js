@@ -274,7 +274,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new Default Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, [scene.activeCamera!]);
+                        let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
@@ -284,7 +284,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new SSAO Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
@@ -294,7 +294,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
