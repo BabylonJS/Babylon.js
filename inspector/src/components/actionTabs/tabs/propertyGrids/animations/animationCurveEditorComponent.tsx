@@ -340,10 +340,17 @@ export class AnimationCurveEditorComponent extends React.Component<
      * This section handles events from SvgDraggableArea.
      */
     selectKeyframe(id: string, multiselect: boolean) {
-        const frameValue = this.getKeyframeValueFromAnimation(id);
+        let frameValue: IActionableKeyFrame | undefined;
         const selectedKeyFrame = this.state.svgKeyframes?.find((kf) => kf.id === id)?.selected;
         if (!multiselect) {
+            frameValue = this.getKeyframeValueFromAnimation(id);
             this.deselectKeyframes();
+        } else {
+            frameValue = { frame: undefined, value: undefined };
+        }
+
+        if (selectedKeyFrame) {
+            frameValue = { frame: undefined, value: undefined };
         }
 
         const updatedKeyframes = this.state.svgKeyframes?.map((kf) => {
