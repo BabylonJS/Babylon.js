@@ -84,7 +84,7 @@ export class TouchCamera extends FreeCamera {
         var touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
         var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
         if (mouse) {
-            mouse.touchEnabled = false;            
+            mouse.touchEnabled = false;
         } else {
             touch.allowMouse = true;
         }
