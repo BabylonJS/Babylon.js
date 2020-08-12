@@ -1400,7 +1400,7 @@ export class Control {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             this.host._numLayoutCalls++;
 
-            this._currentMeasure.addAndTransformToRef(this._transformMatrix, 
+            this._currentMeasure.addAndTransformToRef(this._transformMatrix,
                 -this.paddingLeftInPixels | 0,
                 -this.paddingTopInPixels | 0,
                 this.paddingRightInPixels | 0,
