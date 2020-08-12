@@ -434,6 +434,11 @@ export class ColorPicker extends Control {
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
 
+    public _onCanvasBlur() {
+        this._forcePointerUp();
+        super._onCanvasBlur();
+    }
+
     /**
      * This function expands the color picker by creating a color picker dialog with manual
      * color value input and the ability to save colors into an array to be used later in
