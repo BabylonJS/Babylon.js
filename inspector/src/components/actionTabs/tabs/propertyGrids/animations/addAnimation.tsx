@@ -15,7 +15,7 @@ interface IAddAnimationProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     setNotificationMessage: (message: string) => void;
     finishedUpdate: () => void;
-    addedNewAnimation: () => void;
+    addedNewAnimation: (animation: Animation) => void;
     fps: number;
     selectedToUpdate?: Animation | undefined;
 }
@@ -47,11 +47,11 @@ export class AddAnimation extends React.Component<
         };
     }
 
-    componentWillReceiveProps(nextProps: IAddAnimationProps) {
-        if (nextProps.selectedToUpdate !== undefined && nextProps.selectedToUpdate !== this.props.selectedToUpdate) {
-            this.setState(this.setInitialState(nextProps.selectedToUpdate));
+    componentDidUpdate(prevProps: IAddAnimationProps, prevState: any) {
+        if (this.props.selectedToUpdate !== undefined && this.props.selectedToUpdate !== prevProps.selectedToUpdate) {
+            this.setState(this.setInitialState(this.props.selectedToUpdate));
         } else {
-            if (nextProps.isOpen === true && nextProps.isOpen !== this.props.isOpen) {
+            if (this.props.isOpen === true && this.props.isOpen !== prevProps.isOpen) {
                 this.setState(this.setInitialState());
             }
         }
@@ -162,7 +162,7 @@ export class AddAnimation extends React.Component<
                         const updatedCollection = [...this.props.entity.animations, animation];
                         this.raiseOnPropertyChanged(updatedCollection, store);
                         this.props.entity.animations = updatedCollection;
-                        this.props.addedNewAnimation();
+                        this.props.addedNewAnimation(animation);
                         //Cleaning form fields
                         this.setState({
                             animationName: "",
