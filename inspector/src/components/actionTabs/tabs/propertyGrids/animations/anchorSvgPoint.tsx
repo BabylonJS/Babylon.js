@@ -28,7 +28,7 @@ export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visi
     }
 
     setVisiblePoint = () => {
-        const quarterDistance = 0.25;
+        const quarterDistance = 0.5;
         const distanceOnFlat = Math.abs(this.props.anchor.x - this.props.control.x);
         const currentDistance = Vector2.Distance(this.props.anchor, this.props.control);
         const percentageChange = ((currentDistance - distanceOnFlat) * 100) / currentDistance;
@@ -40,7 +40,7 @@ export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visi
         return (
             <>
                 <svg x={this.state.visiblePoint.x} y={this.state.visiblePoint.y} style={{ overflow: "visible" }} onClick={() => this.select()}>
-                    <circle type={this.props.type} data-id={this.props.index} className={`draggable control-point ${this.props.active ? "active" : ""}`} cx="0" cy="0" r="0.7%" stroke="white" strokeWidth={this.props.selected ? 0 : 0} fill={"red"} />
+                    <circle type={this.props.type} data-id={this.props.index} className={`draggable control-point ${this.props.active ? "active" : ""}`} cx="0" cy="0" r="0.75%" stroke="white" strokeWidth={this.props.selected ? 0 : 0} fill={this.props.active ? "#e9db1e" : "white"} />
                 </svg>
                 <svg x={this.props.control.x} y={this.props.control.y} style={{ overflow: "visible", display: "none" }} onClick={() => this.select()}>
                     <circle type={this.props.type} data-id={this.props.index} className={`control-point ${this.props.active ? "active" : ""}`} cx="0" cy="0" r="0.7%" stroke="white" strokeWidth={this.props.selected ? 0 : 0} fill={this.props.active ? "#e9db1e" : "white"} />

@@ -554,12 +554,13 @@ export class AnimationCurveEditorComponent extends React.Component<
     updateLeftControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: IAnimationKey, dataType: number, coordinate: number) {
         if (updatedSvgKeyFrame.isLeftActive) {
             if (updatedSvgKeyFrame.leftControlPoint !== null) {
-                // Rotate
-
+                // Rotate Control Points
                 // Get the previous svgKeyframe and measure distance between these two points
+                let distanceWithPreviousKeyframe = this.getControlPointWeight(updatedSvgKeyFrame);
+
                 // Get a quarter of that value for amplitude
 
-                let distanceAmplitudeOfX = updatedSvgKeyFrame.keyframePoint.x - this.state.canvasWidthScale / 8;
+                let distanceAmplitudeOfX = updatedSvgKeyFrame.leftControlPoint.x - distanceWithPreviousKeyframe;
 
                 let slope = (updatedSvgKeyFrame.leftControlPoint.y - updatedSvgKeyFrame.keyframePoint.y) / (updatedSvgKeyFrame.leftControlPoint.x - updatedSvgKeyFrame.keyframePoint.x);
 
@@ -583,12 +584,11 @@ export class AnimationCurveEditorComponent extends React.Component<
     updateRightControlPoint(updatedSvgKeyFrame: IKeyframeSvgPoint, key: IAnimationKey, dataType: number, coordinate: number) {
         if (updatedSvgKeyFrame.isRightActive) {
             if (updatedSvgKeyFrame.rightControlPoint !== null) {
-                // Rotate
-
+                // Rotate Control Points
                 // Get the next svgKeyframe and measure distance between these two points
-                // Get a quarter of that value for amplitude
+                let distanceWithNextKeyframe = this.getControlPointWeight(updatedSvgKeyFrame);
 
-                let distanceAmplitudeOfX = updatedSvgKeyFrame.keyframePoint.x + this.state.canvasWidthScale / 8;
+                let distanceAmplitudeOfX = updatedSvgKeyFrame.rightControlPoint.x + distanceWithNextKeyframe;
 
                 let slope = (updatedSvgKeyFrame.rightControlPoint.y - updatedSvgKeyFrame.keyframePoint.y) / (updatedSvgKeyFrame.rightControlPoint.x - updatedSvgKeyFrame.keyframePoint.x);
 
@@ -605,6 +605,32 @@ export class AnimationCurveEditorComponent extends React.Component<
                     }
                 }
             }
+        }
+    }
+
+    getControlPointWeight(updatedSvgKeyFrame: IKeyframeSvgPoint) {
+        let distanceWithPreviousKeyframe = this.state.canvasWidthScale / 4;
+        if (this.state.svgKeyframes) {
+            let indexOfKeyframe = this.state.svgKeyframes.indexOf(updatedSvgKeyFrame);
+            let previousKeyframe = this.state.svgKeyframes[indexOfKeyframe - 1];
+            if (previousKeyframe?.keyframePoint) {
+                distanceWithPreviousKeyframe = Vector2.Distance(updatedSvgKeyFrame.keyframePoint, previousKeyframe.keyframePoint) / 2;
+            }
+        }
+
+        let distanceWithNextKeyframe = this.state.canvasWidthScale / 4;
+        if (this.state.svgKeyframes) {
+            let indexOfKeyframe = this.state.svgKeyframes.indexOf(updatedSvgKeyFrame);
+            let nextKeyframe = this.state.svgKeyframes[indexOfKeyframe + 1];
+            if (nextKeyframe?.keyframePoint) {
+                distanceWithNextKeyframe = Vector2.Distance(nextKeyframe.keyframePoint, updatedSvgKeyFrame.keyframePoint) / 2;
+            }
+        }
+
+        if (distanceWithPreviousKeyframe < distanceWithNextKeyframe) {
+            return distanceWithPreviousKeyframe;
+        } else {
+            return distanceWithNextKeyframe;
         }
     }
 
@@ -1092,7 +1118,41 @@ export class AnimationCurveEditorComponent extends React.Component<
             let svgKeyframe;
             let outTangent;
             let inTangent;
-            let defaultWeight = this.state.canvasWidthScale / 4;
+            let defaultWeight = this.state.canvasWidthScale / 2; // Get weight depending on prev and next frame distance
+            //distanceWithPreviousKeyframe = Vector2.Distance(updatedSvgKeyFrame.keyframePoint, previousKeyframe.keyframePoint) / 4;
+            // For inTangent
+            // has prev frame?
+            let weightIn = 0;
+            if (keyframes[i - 1] !== undefined) {
+                let prevIn = new Vector2(keyframes[i - 1].frame, keyframes[i - 1].value);
+                let currIn = new Vector2(key.frame, key.value);
+                weightIn = (Vector2.Distance(prevIn, currIn) / 2) * this._pixelFrameUnit;
+            }
+
+            // For outTangent
+            // has next frame?
+            let weightOut = 0;
+            if (keyframes[i + 1] !== undefined) {
+                let prevOut = new Vector2(keyframes[i + 1].frame, keyframes[i + 1].value);
+                let currOut = new Vector2(key.frame, key.value);
+                weightOut = (Vector2.Distance(prevOut, currOut) / 2) * this._pixelFrameUnit;
+            }
+
+            if (weightIn !== 0 && weightOut !== 0) {
+                if (weightIn < weightOut) {
+                    defaultWeight = weightIn > defaultWeight ? defaultWeight : weightIn;
+                } else {
+                    defaultWeight = weightOut > defaultWeight ? defaultWeight : weightOut;
+                }
+            }
+
+            if (weightIn === 0 && weightOut !== 0) {
+                defaultWeight = weightOut > defaultWeight ? defaultWeight : weightOut;
+            }
+
+            if (weightIn !== 0 && weightOut === 0) {
+                defaultWeight = weightIn > defaultWeight ? defaultWeight : weightIn;
+            }
 
             // if curve doesnt have tangents then must be null to have linear
             // right now has 0 then the linear will show a slight curve as flat tangents...
