@@ -780,6 +780,8 @@ export class SpriteManager implements ISpriteManager {
         if (this._scene.useRightHandedSystem) {
             engine.setState(culling, zOffset, false, true);
         }
+        
+        engine.unbindInstanceAttributes();
     }
 
     /**
