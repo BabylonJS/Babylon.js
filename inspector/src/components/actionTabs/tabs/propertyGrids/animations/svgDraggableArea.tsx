@@ -59,9 +59,9 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         }, 500);
     }
 
-    componentWillReceiveProps(newProps: ISvgDraggableAreaProps) {
-        if (newProps.positionCanvas !== this.props.positionCanvas && newProps.positionCanvas !== undefined && newProps.repositionCanvas) {
-            this.setState({ panX: newProps.positionCanvas.x, panY: newProps.positionCanvas.y }, () => {
+    componentDidUpdate(prevProps: ISvgDraggableAreaProps) {
+        if (this.props.positionCanvas !== prevProps.positionCanvas && this.props.positionCanvas !== undefined && this.props.repositionCanvas) {
+            this.setState({ panX: this.props.positionCanvas.x, panY: this.props.positionCanvas.y }, () => {
                 this.props.canvasPositionEnded();
             });
         }
