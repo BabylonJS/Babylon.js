@@ -256,13 +256,13 @@ export class TextBlock extends Control {
 
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                let newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
+                let newWidth = (this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth) | 0;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
             }
-            let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
+            let newHeight = (this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
 
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 let lineSpacing = 0;
