@@ -1599,13 +1599,15 @@ export class AnimationCurveEditorComponent extends React.Component<
                     this.props.scene.stopAnimation(target);
                 }
                 let keys = this.state.selected.getKeys();
-                let firstFrame = keys[0].frame;
-                let LastFrame = this.state.selected.getHighestFrame();
-                if (direction === 1) {
-                    this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, this.state.isLooping);
-                }
-                if (direction === -1) {
-                    this._mainAnimatable = this.props.scene.beginAnimation(target, LastFrame, firstFrame, this.state.isLooping);
+                if (keys.length !== 0) {
+                    let firstFrame = keys[0].frame;
+                    let LastFrame = this.state.selected.getHighestFrame();
+                    if (direction === 1) {
+                        this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, this.state.isLooping);
+                    }
+                    if (direction === -1) {
+                        this._mainAnimatable = this.props.scene.beginAnimation(target, LastFrame, firstFrame, this.state.isLooping);
+                    }
                 }
 
                 this._isPlaying = true;
