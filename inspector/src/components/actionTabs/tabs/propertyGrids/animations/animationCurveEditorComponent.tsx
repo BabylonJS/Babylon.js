@@ -1490,31 +1490,44 @@ export class AnimationCurveEditorComponent extends React.Component<
      * This section controls the timeline.
      */
     changeCurrentFrame(frame: number) {
-        let currentValue;
         this.stopAnimation();
-        if (this.state.selectedPathData) {
-            let selectedCurve = this.state.selectedPathData[this.state.selectedCoordinate].domCurve.current;
-            if (selectedCurve) {
-                var curveLength = selectedCurve.getTotalLength();
+        const currentValue = this.calculateCurrentPointInCurve(frame);
+        const value = currentValue ?? 0;
+        const keyframe: IAnimationKey = { frame, value };
+        this.setState(
+            {
+                currentFrame: frame,
+                isPlaying: false,
+            },
+            () => this.setCanvasPosition(keyframe)
+        );
+    }
 
-                let frameValue = (frame * curveLength) / 100;
-                let currentP = selectedCurve.getPointAtLength(frameValue);
-                let middle = this._heightScale / 2;
+    calculateCurrentPointInCurve = (frame: number): number | undefined => {
+        if (this.state.selectedPathData !== undefined) {
+            const selectedCurve = this.state.selectedPathData[this.state.selectedCoordinate].domCurve.current;
+            if (selectedCurve !== null) {
+                const curveLength = selectedCurve.getTotalLength();
 
-                let offset = (currentP?.y * this._heightScale - this._heightScale ** 2 / 2) / middle / this._heightScale;
+                const frameValue = (frame * curveLength) / 100;
+                const currentPointInCurve = selectedCurve.getPointAtLength(frameValue);
+                const middle = this._heightScale / 2;
 
-                let unit = Math.sign(offset);
-                currentValue = unit === -1 ? Math.abs(offset + unit) : unit - offset;
+                const offset = (currentPointInCurve?.y * this._heightScale - this._heightScale ** 2 / 2) / middle / this._heightScale;
 
+                const unit = Math.sign(offset);
+                const currentValue = unit === -1 ? Math.abs(offset + unit) : unit - offset;
                 this.setState({
-                    currentFrame: frame,
                     currentValue: currentValue,
-                    currentPoint: currentP,
-                    isPlaying: false,
+                    currentPoint: currentPointInCurve,
                 });
+
+                return currentValue;
             }
         }
-    }
+
+        return undefined;
+    };
 
     setCanvasPosition(keyframe: IAnimationKey) {
         if (this.state.selected) {
@@ -1619,6 +1632,9 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     componentWillUnmount() {
+        this.stopAnimation();
+        this.props.scene.stopAllAnimations();
+        this.playPause(0);
         if (this._onBeforeRenderObserver) {
             this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
