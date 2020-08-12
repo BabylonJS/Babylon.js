@@ -5,7 +5,6 @@ import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Buffer } from "../Meshes/buffer";
-import { MaterialHelper } from "../Materials/materialHelper";
 import { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
@@ -28,10 +27,12 @@ import { Color4, Color3, TmpColors } from '../Maths/math.color';
 import { ISize } from '../Maths/math.size';
 import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { ThinEngine } from '../Engines/thinEngine';
+import { ThinMaterialHelper } from '../Materials/thinMaterialHelper';
+
+import "../Engines/Extensions/engine.alpha";
 
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
-
 declare type Scene = import("../scene").Scene;
 
 /**
@@ -142,6 +143,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
+
+    /** Gets or sets a matrix to use to compute view */
+    public defaultViewMatrix: Matrix;
 
     /** Gets or sets a boolean indicating that ramp gradients must be used
      * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
@@ -1888,7 +1892,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Render
         engine.enableEffect(effect);
 
-        var viewMatrix = this._scene?.getViewMatrix() || Matrix.IdentityReadOnly;
+        var viewMatrix = this.defaultViewMatrix ?? this._scene!.getViewMatrix();
         effect.setTexture("diffuseSampler", this.particleTexture);
         effect.setMatrix("view", viewMatrix);
         effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
@@ -1918,14 +1922,13 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this._scene) {
             if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
-                MaterialHelper.BindClipPlane(effect, this._scene);
+                ThinMaterialHelper.BindClipPlane(effect, this._scene);
             }
         }
 
         if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
-            var invView = viewMatrix.clone();
-            invView.invert();
-            effect.setMatrix("invView", invView);
+            viewMatrix.invertToRef(TmpVectors.Matrix[0]);
+            effect.setMatrix("invView", TmpVectors.Matrix[0]);
         }
 
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);

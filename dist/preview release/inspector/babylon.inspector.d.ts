@@ -59,6 +59,8 @@ declare module INSPECTOR {
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
+        cameraGizmos: Array<BABYLON.CameraGizmo>;
+        enableCameraGizmo(camera: BABYLON.Camera, enable?: boolean): void;
     }
 }
 declare module INSPECTOR {
@@ -2289,6 +2291,7 @@ declare module INSPECTOR {
         switchSkeletonViewers(): void;
         checkSkeletonViewerState(props: ISkeletonPropertyGridComponentProps): void;
         changeDisplayMode(): void;
+        changeDisplayOptions(option: string, value: number): void;
         shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps): boolean;
         onOverrideMeshLink(): void;
         render(): JSX.Element;
@@ -2914,15 +2917,18 @@ declare module INSPECTOR {
         camera: BABYLON.Camera;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, {
         isActive: boolean;
+        isGizmoEnabled: boolean;
     }> {
         private _onBeforeRenderObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        toggleGizmo(): void;
         render(): JSX.Element;
     }
 }

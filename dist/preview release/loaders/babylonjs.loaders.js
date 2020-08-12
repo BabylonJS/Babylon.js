@@ -6682,7 +6682,6 @@ var GLTFLoader = /** @class */ (function () {
     GLTFLoader.prototype._loadAsync = function (nodes, resultFunc) {
         var _this = this;
         return Promise.resolve().then(function () {
-            var _a;
             _this._uniqueRootUrl = (_this._rootUrl.indexOf("file:") === -1 && _this._fileName) ? _this._rootUrl : "" + _this._rootUrl + Date.now() + "/";
             _this._loadExtensions();
             _this._checkExtensions();
@@ -6708,23 +6707,7 @@ var GLTFLoader = /** @class */ (function () {
                     var material = _this._gltf.materials[m];
                     var context_1 = "/materials/" + m;
                     var babylonDrawMode = babylonjs_Misc_deferred__WEBPACK_IMPORTED_MODULE_0__["Material"].TriangleFillMode;
-                    var babylonData = material._data ? material._data[babylonDrawMode] : null;
-                    if (babylonData) {
-                        continue;
-                    }
-                    _this.logOpen(context_1 + " " + (material.name || ""));
-                    var babylonMaterial = _this.createMaterial(context_1, material, babylonDrawMode);
-                    babylonData = {
-                        babylonMaterial: babylonMaterial,
-                        babylonMeshes: [],
-                        promise: _this.loadMaterialPropertiesAsync(context_1, material, babylonMaterial)
-                    };
-                    promises.push(babylonData.promise);
-                    material._data = (_a = material._data) !== null && _a !== void 0 ? _a : {};
-                    material._data[babylonDrawMode] = babylonData;
-                    GLTFLoader.AddPointerMetadata(babylonMaterial, context_1);
-                    _this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-                    _this.logClose();
+                    promises.push(_this._loadMaterialAsync(context_1, material, null, babylonDrawMode, function (material) { }));
                 }
             }
             // Restore the blocking of material dirty.
@@ -7958,13 +7941,15 @@ var GLTFLoader = /** @class */ (function () {
             this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
             this.logClose();
         }
-        babylonData.babylonMeshes.push(babylonMesh);
-        babylonMesh.onDisposeObservable.addOnce(function () {
-            var index = babylonData.babylonMeshes.indexOf(babylonMesh);
-            if (index !== -1) {
-                babylonData.babylonMeshes.splice(index, 1);
-            }
-        });
+        if (babylonMesh) {
+            babylonData.babylonMeshes.push(babylonMesh);
+            babylonMesh.onDisposeObservable.addOnce(function () {
+                var index = babylonData.babylonMeshes.indexOf(babylonMesh);
+                if (index !== -1) {
+                    babylonData.babylonMeshes.splice(index, 1);
+                }
+            });
+        }
         assign(babylonData.babylonMaterial);
         return babylonData.promise.then(function () {
             return babylonData.babylonMaterial;
