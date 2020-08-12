@@ -18861,6 +18861,10 @@ declare module BABYLON {
      */
     export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         /**
+         * Define if mouse events can be treated as touch events
+         */
+        allowMouse: boolean;
+        /**
          * Defines the camera the input is attached to.
          */
         camera: FreeCamera;
@@ -18880,6 +18884,16 @@ declare module BABYLON {
         private _pointerInput;
         private _observer;
         private _onLostFocus;
+        /**
+         * Manage the touch inputs to control the movement of a free camera.
+         * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+         * @param allowMouse Defines if mouse events can be treated as touch events
+         */
+        constructor(
+        /**
+         * Define if mouse events can be treated as touch events
+         */
+        allowMouse?: boolean);
         /**
          * Attach the input controls to a specific dom element to get the input from.
          * @param element Defines the element the controls should be listened from
@@ -51394,13 +51408,13 @@ declare module BABYLON {
          * @returns Current value of input
          */
         /**
-         * Checks for current device input value, given an id and input index
+         * Checks for current device input value, given an id and input index. Throws exception if requested device not initialized.
          * @param deviceType Enum specifiying device type
          * @param deviceSlot "Slot" or index that device is referenced in
          * @param inputIndex Id of input to be checked
          * @returns Current value of input
          */
-        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): Nullable<number>;
+        pollInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number): number;
         /**
          * Dispose of all the eventlisteners
          */
