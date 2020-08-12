@@ -47,7 +47,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
          * Define if mouse events can be treated as touch events
          */
         public allowMouse = false) {
-    }    
+    }
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
