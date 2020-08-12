@@ -5,10 +5,12 @@ import { Constants } from "../Engines/constants";
 import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
+import { Logger } from '../Misc/logger';
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 
+export type PrePassLayout = number[];
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -20,6 +22,54 @@ export class PrePassRenderer {
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _DevTools.WarnImport("PrePassRendererSceneComponent");
     }
+
+    /**
+     * Constant used to retrieve the irradiance texture index in the textures array
+     * using getIndex(PrePassRenderer.IRRADIANCE_TEXTURE_TYPE)
+     */
+    public static readonly IRRADIANCE_TEXTURE_TYPE = 0;
+    /**
+     * Constant used to retrieve the position texture index in the textures array
+     * using getIndex(PrePassRenderer.POSITION_TEXTURE_INDEX)
+     */
+    public static readonly POSITION_TEXTURE_TYPE = 1;
+    /**
+     * Constant used to retrieve the velocity texture index in the textures array
+     * using getIndex(PrePassRenderer.VELOCITY_TEXTURE_INDEX)
+     */
+    public static readonly VELOCITY_TEXTURE_TYPE = 2;
+    /**
+     * Constant used to retrieve the reflectivity texture index in the textures array
+     * using the getIndex(PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE)
+     */
+    public static readonly REFLECTIVITY_TEXTURE_TYPE = 3;
+    /**
+     * Constant used to retrieve the lit color texture index in the textures array
+     * using the getIndex(PrePassRenderer.COLOR_TEXTURE_TYPE)
+     */
+    public static readonly COLOR_TEXTURE_TYPE = 4;
+    /**
+     * Constant used to retrieve depth + normal index in the textures array
+     * using the getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE)
+     */
+    public static readonly DEPTHNORMAL_TEXTURE_TYPE = 5;
+    /**
+     * Constant used to retrieve albedo index in the textures array
+     * using the getIndex(PrePassRenderer.ALBEDO_TEXTURE_TYPE)
+     */
+    public static readonly ALBEDO_TEXTURE_TYPE = 6;
+
+    private _textureTypes = [
+        PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
+        PrePassRenderer.POSITION_TEXTURE_TYPE,
+        PrePassRenderer.VELOCITY_TEXTURE_TYPE,
+        PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE,
+        PrePassRenderer.COLOR_TEXTURE_TYPE,
+        PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+        PrePassRenderer.ALBEDO_TEXTURE_TYPE,
+    ];
+
+    private _textureIndices: number[] = [];
 
     private _scene: Scene;
     private _engine: Engine;
@@ -54,7 +104,7 @@ export class PrePassRenderer {
     public imageProcessingPostProcess: ImageProcessingPostProcess;
 
     /**
-     * Configuration for sub surface scattering post process
+     * Configuration for prepass effects
      */
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
@@ -67,6 +117,8 @@ export class PrePassRenderer {
      * Should materials render the irradiance information on the MRT
      */
     public materialsShouldRenderIrradiance: boolean = false;
+
+    private _mrtLayout: number[];
 
     private _enabled: boolean = false;
 
@@ -242,6 +294,20 @@ export class PrePassRenderer {
         this._effectConfigurations.push(cfg);
     }
 
+    /**
+     * Returns the index of a texture in the multi render target texture array.
+     * @param type Texture type
+     * @return The index
+     */
+    public getIndex(type: number) : number {
+        if (this._textureTypes.indexOf(type) === -1) {
+            Logger.Error("PrePassRenderer : Unknown texture type");
+            return -1;
+        }
+
+        return this._textureIndices[type];
+    }
+
     private _enable() {
         this._resetPostProcessChain();
 
@@ -266,6 +332,7 @@ export class PrePassRenderer {
 
     private _disable() {
         this._setState(false);
+        this._resetLayout();
 
         for (let i = 0; i < this._effectConfigurations.length; i++) {
             this._effectConfigurations[i].enabled = false;
@@ -273,6 +340,15 @@ export class PrePassRenderer {
 
         this.materialsShouldRenderGeometry = false;
         this.materialsShouldRenderIrradiance = false;
+    }
+
+    private _resetLayout() {
+        for (let i = 0 ; i < this._textureTypes.length; i++) {
+            this._textureIndices[this._textureTypes[i]] = -1;
+        }
+
+        this._textureIndices[PrePassRenderer.COLOR_TEXTURE_TYPE] = 0;
+        this._mrtLayout = [PrePassRenderer.COLOR_TEXTURE_TYPE];
     }
 
     private _resetPostProcessChain() {
@@ -297,6 +373,21 @@ export class PrePassRenderer {
      */
     public markAsDirty() {
         this._isDirty = true;
+    }
+
+    /**
+     * Enables a texture on the MultiRenderTarget for prepass
+     */
+    public enableTexture(type: number) {
+        if (this._textureTypes.indexOf(type) === -1) {
+            Logger.Error("PrePassRenderer : Unknown texture type");
+            return;
+        }
+
+        if (this._textureIndices[type] === -1) {
+            this._textureIndices[type] = this._mrtLayout.length;
+            this._mrtLayout.push(type);
+        }
     }
 
     private _update() {

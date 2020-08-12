@@ -8,6 +8,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
+import { PrePassRenderer } from "../Rendering/prePassRenderer";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
@@ -307,6 +308,13 @@ export class MaterialHelper {
         if (scene.prePassRenderer && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
+
+            // TODO : the rest of textures
+            const irradianceIndex = scene.prePassRenderer.getIndex(PrePassRenderer.IRRADIANCE_TEXTURE_TYPE);
+            if (irradianceIndex !== -1) {
+                defines.PREPASS_IRRADIANCE_INDEX = irradianceIndex;
+            }
+
         } else {
             defines.PREPASS = false;
         }
