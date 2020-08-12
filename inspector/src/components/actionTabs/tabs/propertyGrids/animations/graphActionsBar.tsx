@@ -125,7 +125,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
                     <IconButtonLineComponent tooltip={"Frame selected keyframes"} icon="frame" onClick={this.props.removeKeyframe} />
                     <IconButtonLineComponent tooltip={"Flat Tangents"} icon="flat-tangent" onClick={this.props.flatTangent} />
                     <IconButtonLineComponent tooltip={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off"} icon={this.props.brokenMode ? "break-tangent" : "unify-tangent"} onClick={this.props.brokeTangents} />
-                    <IconButtonLineComponent tooltip={this.props.lerpMode ? "Lerp On" : "lerp Off"} icon="linear-tangent" onClick={this.props.setLerpMode} />
+                    <IconButtonLineComponent tooltip={this.props.lerpMode ? "Linear" : "Linear"} icon="linear-tangent" onClick={this.props.setLerpMode} />
                 </div>
             </div>
         );
