@@ -400,11 +400,14 @@ export class Timeline extends React.Component<
                                         <svg key={`tl_${frame}`}>
                                             {
                                                 <>
-                                                    <text x={(i * 100) / this.state.selectionLength.length + "%"} y="18" style={{ fontSize: 10, fill: "#555555" }}>
-                                                        {frame}
-                                                    </text>
-                                                    <line x1={(i * 100) / this.state.selectionLength.length + "%"} y1="22" x2={(i * 100) / this.state.selectionLength.length + "%"} y2="40" style={{ stroke: "#555555", strokeWidth: 0.5 }} />
-
+                                                    {frame % Math.round(this.state.selectionLength.length / 20) === 0 ? (
+                                                        <>
+                                                            <text x={(i * 100) / this.state.selectionLength.length + "%"} y="18" style={{ fontSize: 10, fill: "#555555" }}>
+                                                                {frame}
+                                                            </text>
+                                                            <line x1={(i * 100) / this.state.selectionLength.length + "%"} y1="22" x2={(i * 100) / this.state.selectionLength.length + "%"} y2="40" style={{ stroke: "#555555", strokeWidth: 0.5 }} />
+                                                        </>
+                                                    ) : null}
                                                     {this.getCurrentFrame(frame) ? (
                                                         <svg x={this._scrollable.current ? this._scrollable.current.clientWidth / this.state.selectionLength.length / 2 : 1}>
                                                             <line
