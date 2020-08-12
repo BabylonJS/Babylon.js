@@ -148,8 +148,6 @@ export class Timeline extends React.Component<
             const unit = Math.round(containerWidth / this.state.selectionLength.length);
             const frame = Math.round((event.clientX - 233) / unit) + this.state.start;
             this.props.onCurrentFrameChange(frame);
-            //const possibleEmptyKeyframe: IAnimationKey = { frame: frame, value: null };
-            // this.props.repositionCanvas(possibleEmptyKeyframe);
         }
     }
 
