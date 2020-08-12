@@ -185,7 +185,8 @@ declare class XRRay {
 
 declare enum XRHitTestTrackableType {
     "point",
-    "plane"
+    "plane",
+    "mesh"
 }
 
 interface XRHitResult {

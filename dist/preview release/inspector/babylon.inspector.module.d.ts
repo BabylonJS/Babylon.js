@@ -28,7 +28,9 @@ declare module "babylonjs-inspector/components/globalState" {
     import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
     import { Scene } from "babylonjs/scene";
     import { Light } from "babylonjs/Lights/light";
+    import { Camera } from "babylonjs/Cameras/camera";
     import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
+    import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     import { ReplayRecorder } from "babylonjs-inspector/components/replayRecorder";
     export class GlobalState {
@@ -70,6 +72,8 @@ declare module "babylonjs-inspector/components/globalState" {
         prepareGLTFPlugin(loader: GLTFFileLoader): void;
         lightGizmos: Array<LightGizmo>;
         enableLightGizmo(light: Light, enable?: boolean): void;
+        cameraGizmos: Array<CameraGizmo>;
+        enableCameraGizmo(camera: Camera, enable?: boolean): void;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/paneComponent" {
@@ -3547,19 +3551,23 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/cameraTree
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Camera } from "babylonjs/Cameras/camera";
     import * as React from "react";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
     interface ICameraTreeItemComponentProps {
         camera: Camera;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, {
         isActive: boolean;
+        isGizmoEnabled: boolean;
     }> {
         private _onBeforeRenderObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        toggleGizmo(): void;
         render(): JSX.Element;
     }
 }
@@ -4136,6 +4144,8 @@ declare module INSPECTOR {
         prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
+        cameraGizmos: Array<BABYLON.CameraGizmo>;
+        enableCameraGizmo(camera: BABYLON.Camera, enable?: boolean): void;
     }
 }
 declare module INSPECTOR {
@@ -6992,15 +7002,18 @@ declare module INSPECTOR {
         camera: BABYLON.Camera;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
+        globalState: GlobalState;
     }
     export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, {
         isActive: boolean;
+        isGizmoEnabled: boolean;
     }> {
         private _onBeforeRenderObserver;
         constructor(props: ICameraTreeItemComponentProps);
         setActive(): void;
         componentDidMount(): void;
         componentWillUnmount(): void;
+        toggleGizmo(): void;
         render(): JSX.Element;
     }
 }
