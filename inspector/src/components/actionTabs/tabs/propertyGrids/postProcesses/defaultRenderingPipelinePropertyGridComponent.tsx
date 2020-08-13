@@ -14,6 +14,8 @@ import { OptionsLineComponent } from '../../../lines/optionsLineComponent';
 import { ImageProcessingConfiguration } from 'babylonjs/Materials/imageProcessingConfiguration';
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { GlobalState } from '../../../../globalState';
+import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
+import { ToGammaSpace } from 'babylonjs';
 
 interface IDefaultRenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;
@@ -118,7 +120,9 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         propertyName="imageProcessingEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {
                         renderPipeline.imageProcessing &&
-                        <div>
+                        <div>                                                        
+                            <ButtonLineComponent label="Convert clear color to linear" onClick={() => renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toLinearSpace()} />
+                            <ButtonLineComponent label="Convert clear color to gamma" onClick={() => renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toGammaSpace()} />
                             <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Contrast" target={renderPipeline.imageProcessing} propertyName="contrast" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <SliderLineComponent minimum={0} maximum={4} step={0.1} label="Exposure" target={renderPipeline.imageProcessing} propertyName="exposure" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                             <CheckBoxLineComponent label="Tone mapping" target={renderPipeline.imageProcessing} propertyName="toneMappingEnabled" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
