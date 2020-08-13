@@ -8,11 +8,14 @@ export interface PrePassEffectConfiguration {
      * Name of the effect
      */
     name: string;
-
     /**
      * Post process to attach for this effect
      */
     postProcess: PostProcess;
+    /**
+     * Textures required in the MRT
+     */
+    texturesRequired: number[];
     /**
      * Is the effect enabled
      */
@@ -22,7 +25,7 @@ export interface PrePassEffectConfiguration {
      */
     dispose(): void;
     /**
-     * Disposes the effect configuration
+     * Creates the associated post process
      */
     createPostProcess: () => PostProcess;
 }

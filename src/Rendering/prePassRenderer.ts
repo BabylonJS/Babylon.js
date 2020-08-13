@@ -59,15 +59,36 @@ export class PrePassRenderer {
      */
     public static readonly ALBEDO_TEXTURE_TYPE = 6;
 
-    private _textureTypes = [
-        PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
-        PrePassRenderer.POSITION_TEXTURE_TYPE,
-        PrePassRenderer.VELOCITY_TEXTURE_TYPE,
-        PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE,
-        PrePassRenderer.COLOR_TEXTURE_TYPE,
-        PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE,
-        PrePassRenderer.ALBEDO_TEXTURE_TYPE,
-    ];
+    private _textureFormats = [
+        {
+            type: PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: PrePassRenderer.POSITION_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: PrePassRenderer.VELOCITY_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_UNSIGNED_INT,
+        },
+        {
+            type: PrePassRenderer.COLOR_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: PrePassRenderer.ALBEDO_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_UNSIGNED_INT,
+        },
+];
 
     private _textureIndices: number[] = [];
 
@@ -78,18 +99,13 @@ export class PrePassRenderer {
     /**
      * Number of textures in the multi render target texture where the scene is directly rendered
      */
-    public readonly mrtCount: number = 4;
+    public mrtCount: number = 0;
 
     /**
      * The render target where the scene is directly rendered
      */
     public prePassRT: MultiRenderTarget;
-    private _mrtTypes = [
-        Constants.TEXTURETYPE_HALF_FLOAT, // Original color
-        Constants.TEXTURETYPE_HALF_FLOAT, // Irradiance
-        Constants.TEXTURETYPE_HALF_FLOAT, // Depth (world units)
-        Constants.TEXTURETYPE_UNSIGNED_INT // Albedo
-    ];
+
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
@@ -118,6 +134,7 @@ export class PrePassRenderer {
      */
     public materialsShouldRenderIrradiance: boolean = false;
 
+    private _mrtFormats: number[] = [];
     private _mrtLayout: number[];
 
     private _enabled: boolean = false;
@@ -174,7 +191,7 @@ export class PrePassRenderer {
 
     private _createCompositionEffect() {
         this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtTypes });
+            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtFormats });
         this.prePassRT.samples = 1;
 
         this._initializeAttachments();
@@ -280,6 +297,16 @@ export class PrePassRenderer {
         }
     }
 
+    private _checkTextureType(type: number) : boolean {
+        if (type < 0 || type >= this._textureFormats.length) {
+            Logger.Error("PrePassRenderer : Unknown texture type");
+            return false;
+        }
+
+        return true;
+
+    }
+
     /**
      * Adds an effect configuration
      */
@@ -300,8 +327,7 @@ export class PrePassRenderer {
      * @return The index
      */
     public getIndex(type: number) : number {
-        if (this._textureTypes.indexOf(type) === -1) {
-            Logger.Error("PrePassRenderer : Unknown texture type");
+        if (!this._checkTextureType(type)) {
             return -1;
         }
 
@@ -315,6 +341,7 @@ export class PrePassRenderer {
             if (this._effectConfigurations[i].enabled) {
                 if (!this._effectConfigurations[i].postProcess) {
                     this._effectConfigurations[i].createPostProcess();
+                    this._enableTextures(this._effectConfigurations[i].texturesRequired);
                 }
 
                 this._postProcesses.push(this._effectConfigurations[i].postProcess);
@@ -343,12 +370,14 @@ export class PrePassRenderer {
     }
 
     private _resetLayout() {
-        for (let i = 0 ; i < this._textureTypes.length; i++) {
-            this._textureIndices[this._textureTypes[i]] = -1;
+        for (let i = 0 ; i < this._textureFormats.length; i++) {
+            this._textureIndices[this._textureFormats[i].type] = -1;
         }
 
         this._textureIndices[PrePassRenderer.COLOR_TEXTURE_TYPE] = 0;
         this._mrtLayout = [PrePassRenderer.COLOR_TEXTURE_TYPE];
+        this._mrtFormats = [Constants.TEXTURETYPE_HALF_FLOAT];
+        this.mrtCount = 1;
     }
 
     private _resetPostProcessChain() {
@@ -378,15 +407,20 @@ export class PrePassRenderer {
     /**
      * Enables a texture on the MultiRenderTarget for prepass
      */
-    public enableTexture(type: number) {
-        if (this._textureTypes.indexOf(type) === -1) {
-            Logger.Error("PrePassRenderer : Unknown texture type");
-            return;
-        }
+    private _enableTextures(types: number[]) {
+        for (let i = 0; i < types.length; i++) {
+            let type = types[i];
+            if (!this._checkTextureType(type)) {
+                return;
+            }
 
-        if (this._textureIndices[type] === -1) {
-            this._textureIndices[type] = this._mrtLayout.length;
-            this._mrtLayout.push(type);
+            if (this._textureIndices[type] === -1) {
+                this._textureIndices[type] = this._mrtLayout.length;
+                this._mrtLayout.push(type);
+
+                this._mrtFormats.push(this._textureFormats[type].format);
+                this.mrtCount++;
+            }
         }
     }
 

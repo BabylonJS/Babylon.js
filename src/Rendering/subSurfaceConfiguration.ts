@@ -2,6 +2,7 @@ import { Logger } from "../Misc/logger";
 import { Scene } from "../scene";
 import { Color3 } from "../Maths/math.color";
 import { SubSurfaceScatteringPostProcess } from "../PostProcesses/subSurfaceScatteringPostProcess";
+import { PrePassRenderer } from "./prePassRenderer";
 import { SceneComponentConstants } from "../sceneComponent";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { _DevTools } from '../Misc/devTools';
@@ -69,6 +70,16 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * Used for subsurface scattering
      */
     public metersPerUnit: number = 1;
+
+    /**
+     * Textures that should be present in the MRT for this effect to work
+     */
+    public readonly texturesRequired: number[] = [
+        PrePassRenderer.COLOR_TEXTURE_TYPE,
+        PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
+        PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+        PrePassRenderer.ALBEDO_TEXTURE_TYPE,
+    ];
 
     private _scene: Scene;
 
