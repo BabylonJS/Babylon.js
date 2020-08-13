@@ -31,6 +31,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
     private _playheadSelected: boolean;
     private _movedX: number;
     private _movedY: number;
+    private _isControlKeyPress: boolean;
     readonly _dragBuffer: number;
     readonly _draggingMultiplier: number;
 
@@ -47,6 +48,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._movedY = 0;
         this._dragBuffer = 4;
         this._draggingMultiplier = 10;
+        this._isControlKeyPress = false;
 
         this.state = { panX: 0, panY: 0 };
     }
@@ -87,8 +89,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         }
 
         if (e.target.classList.contains("pannable")) {
-            this._active = true;
-            this._panStart.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
+            if (this._isControlKeyPress) {
+                this._active = true;
+                this._panStart.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
+            }
         }
     }
 
@@ -102,9 +106,11 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
             if (coord !== undefined) {
                 if (e.target.classList.contains("pannable")) {
-                    if (this._panStart.x !== 0 && this._panStart.y !== 0) {
-                        this._panStop.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
-                        this.panDirection();
+                    if (this._isControlKeyPress) {
+                        if (this._panStart.x !== 0 && this._panStart.y !== 0) {
+                            this._panStop.set(e.clientX - e.currentTarget.getBoundingClientRect().left, e.clientY - e.currentTarget.getBoundingClientRect().top);
+                            this.panDirection();
+                        }
                     }
                 }
                 if (e.currentTarget.classList.contains("linear") && this._playheadDrag !== 0 && this._playheadSelected) {
@@ -225,6 +231,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         e.preventDefault();
         if (e.keyCode === 17) {
             this._draggableArea.current?.style.setProperty("cursor", "grab");
+            this._isControlKeyPress = true;
         }
     }
 
@@ -232,6 +239,12 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         e.preventDefault();
         if (e.keyCode === 17) {
             this._draggableArea.current?.style.setProperty("cursor", "initial");
+            this._isControlKeyPress = false;
+            this._active = false;
+            this._panStart.set(0, 0);
+            this._panStop.set(0, 0);
+            this._movedX = 0;
+            this._movedY = 0;
         }
 
         if (e.keyCode === 8 || e.keyCode === 46) {

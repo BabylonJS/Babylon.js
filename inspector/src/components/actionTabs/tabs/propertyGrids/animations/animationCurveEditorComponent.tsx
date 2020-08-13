@@ -25,7 +25,6 @@ import { ScaleLabel } from "./scale-label";
 require("./curveEditor.scss");
 
 interface IAnimationCurveEditorComponentProps {
-    close: (event: any) => void;
     playOrPause?: () => void;
     scene: Scene;
     entity: IAnimatable | TargetedAnimation;
@@ -374,7 +373,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     selectedControlPoint(type: string, id: string) {
         let updatedKeyframes = this.state.svgKeyframes?.map((kf) => {
             if (kf.id === id) {
-                this.setState({ isFlatTangentMode: false });
+                //this.setState({ isFlatTangentMode: false });
                 if (type === "left") {
                     kf.isLeftActive = !kf.isLeftActive;
                     kf.isRightActive = false;
@@ -1023,7 +1022,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         } else {
             const { easingMode, easingType, usesTangents, valueType, highestFrame, name, targetProperty } = this.getAnimationData(animation);
 
-            keyframes = this.flatTangents(keyframes, valueType);
+            //keyframes = this.flatTangents(keyframes, valueType); // This will break because we are using setState before mounted...
             const startKey = keyframes[0];
             let middle = this._heightScale / this._scaleFactor; //?
             let collection: ICurveData[] = [];
@@ -1445,7 +1444,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     const firstFrame = keys[0].frame;
                     const LastFrame = this.state.selected.getHighestFrame();
                     this._mainAnimatable = this.props.scene.beginAnimation(target, firstFrame, LastFrame, this.state.isLooping);
-                    this._mainAnimatable.pause();
+                    this._mainAnimatable.stop();
                 }
             }
         }
@@ -1662,7 +1661,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                     setKeyframeValue={this.setKeyframeValueFromInput}
                     enabled={this.state.selected === null || this.state.selected === undefined ? false : true}
                     title={this._entityName}
-                    close={this.props.close}
                     actionableKeyframe={this.state.actionableKeyframe}
                     handleFrameChange={(e) => this.handleFrameChange(e)}
                     handleValueChange={(e) => this.handleValueChange(e)}
