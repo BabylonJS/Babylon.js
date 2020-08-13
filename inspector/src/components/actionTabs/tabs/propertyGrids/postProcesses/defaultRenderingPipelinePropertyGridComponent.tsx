@@ -15,7 +15,6 @@ import { ImageProcessingConfiguration } from 'babylonjs/Materials/imageProcessin
 import { Color3LineComponent } from '../../../lines/color3LineComponent';
 import { GlobalState } from '../../../../globalState';
 import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
-import { ToGammaSpace } from 'babylonjs';
 
 interface IDefaultRenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;
