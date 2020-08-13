@@ -185,7 +185,6 @@ export class OutlineRenderer implements ISceneComponent {
         this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
         this._effect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
-
         // Bones
         if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
             this._effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
