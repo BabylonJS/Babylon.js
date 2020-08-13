@@ -14,7 +14,6 @@ interface IGraphActionsBarProps {
     lerpMode: boolean;
     actionableKeyframe: IActionableKeyFrame;
     title: string;
-    close: (event: any) => void;
     enabled: boolean;
     setKeyframeValue: (actionableKeyframe: IActionableKeyFrame) => void;
 }
