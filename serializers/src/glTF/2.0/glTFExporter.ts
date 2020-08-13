@@ -28,8 +28,6 @@ import { GLTFData } from "./glTFData";
 import { _GLTFAnimation } from "./glTFAnimation";
 import { Viewport } from 'babylonjs/Maths/math.viewport';
 import { Epsilon } from 'babylonjs/Maths/math.constants';
-import { maxHeaderSize } from 'http';
-import { extractMinAndMaxIndexed } from 'babylonjs/Maths/math.functions';
 
 /**
  * Utility interface for storing vertex attribute data
@@ -804,7 +802,7 @@ export class _Exporter {
      * @param binaryWriter The buffer to write the binary data to
      * @param convertToRightHandedSystem Converts the values to right-handed
      */
-    public writeMorphTargetAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshPrimitive: SubMesh, morphTarget: MorphTarget, meshAttributeArray: FloatArray, morphTargetAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, minMax: any) {
+    public writeMorphTargetAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshPrimitive: SubMesh, morphTarget: MorphTarget, meshAttributeArray: FloatArray, morphTargetAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, minMax?: any) {
         let vertexAttributes: number[][] = [];
         let index: number;
         let difference: Vector3 = new Vector3();
@@ -820,7 +818,10 @@ export class _Exporter {
                     if (convertToRightHandedSystem) {
                         _GLTFUtilities._GetRightHandedPositionVector3FromRef(difference);
                     }
-                    if (difference.x > minMax.min.x)
+                    if (minMax) {
+                        minMax.min.copyFromFloats(Math.min(difference.x , minMax.min.x), Math.min(difference.y, minMax.min.y), Math.min(difference.z, minMax.min.z));
+                        minMax.max.copyFromFloats(Math.max(difference.x , minMax.max.x), Math.max(difference.y, minMax.max.y), Math.max(difference.z, minMax.max.z));
+                    }
                     vertexAttributes.push(difference.asArray());
                 }
                 break;
@@ -1220,6 +1221,7 @@ export class _Exporter {
             if (!meshPrimitive.targets) {
                 meshPrimitive.targets = [];
             }
+            let target: {[attribute:string]: number} = {};
             if (babylonMorphTarget.hasNormals) {
                 const vertexNormals = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.NormalKind)!;
                 const morphNormals = babylonMorphTarget.getNormals()!;
@@ -1232,7 +1234,7 @@ export class _Exporter {
                 let bufferViewIndex =  this._bufferViews.length - 1;
                 const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, babylonMorphTarget.name + " - " + "NORMAL", AccessorType.VEC3, AccessorComponentType.FLOAT, count, 0, null, null);
                 this._accessors.push(accessor);
-                meshPrimitive.targets.push({["NORMAL"]: this._accessors.length - 1});
+                target.NORMAL = this._accessors.length - 1;
 
                 this.writeMorphTargetAttributeData(
                     VertexBuffer.NormalKind,
@@ -1256,13 +1258,13 @@ export class _Exporter {
                 this._bufferViews.push(bufferView);
 
                 let bufferViewIndex =  this._bufferViews.length - 1;
-                let minMax = { min: null, max: null };
+                let minMax = { min: new Vector3(Infinity, Infinity, Infinity), max: new Vector3(-Infinity, -Infinity, -Infinity) };
                 const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, babylonMorphTarget.name + " - " + "POSITION", AccessorType.VEC3, AccessorComponentType.FLOAT, count, 0, null, null);
                 this._accessors.push(accessor);
-                meshPrimitive.targets.push({["POSITION"]: this._accessors.length - 1});
+                target.POSITION = this._accessors.length - 1;
 
                 this.writeMorphTargetAttributeData(
-                    VertexBuffer.NormalKind,
+                    VertexBuffer.PositionKind,
                     AccessorComponentType.FLOAT,
                     babylonSubMesh,
                     babylonMorphTarget,
@@ -1273,12 +1275,12 @@ export class _Exporter {
                     convertToRightHandedSystem,
                     minMax
                 );
-                accessor.min = minMax.min!;
-                accessor.max = minMax.max!;
+                accessor.min = minMax.min!.asArray();
+                accessor.max = minMax.max!.asArray();
             }
             if (babylonMorphTarget.hasTangents) {
                 const vertexTangents = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.TangentKind)!;
-                const morphTangents = babylonMorphTarget.getNormals()!;
+                const morphTangents = babylonMorphTarget.getTangents()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
                 const byteLength = count * byteStride;
@@ -1288,10 +1290,10 @@ export class _Exporter {
                 let bufferViewIndex =  this._bufferViews.length - 1;
                 const accessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, babylonMorphTarget.name + " - " + "TANGENT", AccessorType.VEC3, AccessorComponentType.FLOAT, count, 0, null, null);
                 this._accessors.push(accessor);
-                meshPrimitive.targets.push({["TANGENT"]: this._accessors.length - 1});
+                target.TANGENT = this._accessors.length - 1;
 
                 this.writeMorphTargetAttributeData(
-                    VertexBuffer.NormalKind,
+                    VertexBuffer.TangentKind,
                     AccessorComponentType.FLOAT,
                     babylonSubMesh,
                     babylonMorphTarget,
@@ -1299,9 +1301,10 @@ export class _Exporter {
                     morphTangents,
                     byteStride / 4,
                     binaryWriter,
-                    convertToRightHandedSystem
+                    convertToRightHandedSystem,
                 );
             }
+            meshPrimitive.targets.push(target);
         }
     }
 
@@ -1531,7 +1534,7 @@ export class _Exporter {
                                 const stride = vertexBuffer.getSize();
                                 const bufferViewIndex = attribute.bufferViewIndex;
                                 if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
-                                    minMax = { min: [0, 0, 0], max: [0, 0, 0] };
+                                    minMax = { min: null, max: null };
                                     if (attributeKind == VertexBuffer.PositionKind) {
                                         minMax = _GLTFUtilities._CalculateMinMaxPositions(vertexData, 0, vertexData.length / stride, convertToRightHandedSystem);
                                     }
