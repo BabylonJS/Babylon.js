@@ -35168,6 +35168,15 @@ declare module BABYLON {
         _removePendingData(data: any): void;
         offlineProvider: IOfflineProvider;
     }
+    /**
+     * Information about the current host
+     */
+    export interface HostInformation {
+        /**
+         * Defines if the current host is a mobile
+         */
+        isMobile: boolean;
+    }
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
         /**
@@ -35423,6 +35432,10 @@ declare module BABYLON {
         private _activeRequests;
         /** @hidden */
         _transformTextureUrl: Nullable<(url: string) => string>;
+        /**
+         * Gets information about the current host
+         */
+        hostInformation: HostInformation;
         protected get _supportsHardwareTextureRescaling(): boolean;
         private _framebufferDimensionsObject;
         /**

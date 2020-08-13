@@ -2725,6 +2725,18 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IFollowCameraPropertyGridComponentProps {
+        globalState: GlobalState;
+        camera: BABYLON.FollowCamera;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class FollowCameraPropertyGridComponent extends React.Component<IFollowCameraPropertyGridComponentProps> {
+        constructor(props: IFollowCameraPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     export class PropertyGridTabComponent extends PaneComponent {
         private _timerIntervalId;
         private _lockObject;
