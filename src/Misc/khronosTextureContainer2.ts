@@ -4,6 +4,14 @@ import { EngineCapabilities } from '../Engines/engineCapabilities';
 import { Tools } from './tools';
 import { DataReader } from './dataReader';
 import { Constants } from '../Engines/constants';
+import { Nullable } from '../types';
+
+declare var MSC_TRANSCODER: any;
+
+const RGB_S3TC_DXT1_Format = 33776;
+const RGBA_S3TC_DXT5_Format = 33779;
+
+const COMPRESSED_RGBA_BPTC_UNORM_EXT = 36492;
 
 const enum supercompressionScheme {
     BasisLZ = 1,
@@ -135,6 +143,8 @@ export class KhronosTextureContainer2 {
     private _dfdBlock: IKTX2_DFD;
     private _sgd: IKTX2_SupercompressionGlobalData;
 
+    private _mscBasisTranscoder: Promise<any>;
+
     public constructor(engine: ThinEngine) {
         this._engine = engine;
 
@@ -147,6 +157,23 @@ export class KhronosTextureContainer2 {
         }
     }
 
+    private _mscBasisModule: any;
+
+    private _getMSCBasisTranscoder() {
+        if (this._mscBasisTranscoder) {
+            return this._mscBasisTranscoder;
+        }
+
+        this._mscBasisTranscoder = new Promise((resolve) => {
+            MSC_TRANSCODER().then((basisModule: any) => {
+                basisModule.initTranscoders();
+                this._mscBasisModule = basisModule;
+                resolve();
+            });
+        });
+
+        return this._mscBasisTranscoder;
+    }
     /**
      * Based on https://github.com/mrdoob/three.js/blob/dfb5c23ce126ec845e4aa240599915fef5375797/examples/jsm/loaders/KTX2Loader.js
      */
@@ -321,7 +348,7 @@ export class KhronosTextureContainer2 {
             sgd.extendedData = new Uint8Array(this._data.buffer, extendedByteOffset, sgd.extendedByteLength);
         }
 
-        console.log(sgd);
+        console.log("sgd", sgd);
 
     }
 
@@ -344,11 +371,15 @@ export class KhronosTextureContainer2 {
 
     private async _initMipmaps(internalTexture: InternalTexture) {
 
-        /*await this.zstd.init();
+        await this._getMSCBasisTranscoder();
 
-        var TranscodeTarget = this.basisModule.TranscodeTarget;
-        var TextureFormat = this.basisModule.TextureFormat;
-        var ImageInfo = this.basisModule.ImageInfo;*/
+        const basisModule = this._mscBasisModule;
+
+        const TranscodeTarget: any = basisModule.TranscodeTarget;
+        const TextureFormat: any = basisModule.TextureFormat;
+        const ImageInfo: any = basisModule.ImageInfo;
+
+        /*await this.zstd.init();*/
 
         var mipmaps = [];
         var width = this._header.pixelWidth;
@@ -357,95 +388,82 @@ export class KhronosTextureContainer2 {
         var hasAlpha = this.hasAlpha;
         var isVideo = false;
 
-        /*var targetFormat;
+        var BasisLzEtc1sImageTranscoder = basisModule.BasisLzEtc1sImageTranscoder;
+        var UastcImageTranscoder = basisModule.UastcImageTranscoder;
 
-        if (config.astcSupported) {
+        var transcoder = texFormat === textureFormat.UASTC4x4 ? new UastcImageTranscoder() : new BasisLzEtc1sImageTranscoder();
 
-            targetFormat = TranscodeTarget.ASTC_4x4_RGBA;
-            this.transcodedFormat = RGBA_ASTC_4x4_Format;
+        let targetFormat = hasAlpha ? TranscodeTarget.BC7_RGBA : TranscodeTarget.BC1_RGB;
+        //let transcodedFormat = hasAlpha ? RGBA_S3TC_DXT5_Format : RGB_S3TC_DXT1_Format;
+        let transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
 
-        } else if (config.bptcSupported && texFormat === TextureFormat.UASTC4x4) {
+        const useMSCTranscoder = false;
 
-            targetFormat = TranscodeTarget.BC7_M5_RGBA;
-            this.transcodedFormat = RGBA_BPTC_Format;
-
-        } else if (config.dxtSupported) {
-
-            targetFormat = hasAlpha ? TranscodeTarget.BC3_RGBA : TranscodeTarget.BC1_RGB;
-            this.transcodedFormat = hasAlpha ? RGBA_S3TC_DXT5_Format : RGB_S3TC_DXT1_Format;
-
-        } else if (config.pvrtcSupported && pvrtcTranscodable) {
-
-            targetFormat = hasAlpha ? TranscodeTarget.PVRTC1_4_RGBA : TranscodeTarget.PVRTC1_4_RGB;
-            this.transcodedFormat = hasAlpha ? RGBA_PVRTC_4BPPV1_Format : RGB_PVRTC_4BPPV1_Format;
-
-        } else if (config.etc2Supported) {
-
-            targetFormat = hasAlpha ? TranscodeTarget.ETC2_RGBA : TranscodeTarget.ETC1_RGB
-            this.transcodedFormat = hasAlpha ? RGBA_ETC2_EAC_Format : RGB_ETC2_Format;
-
-        } else if (config.etc1Supported) {
-
-            targetFormat = TranscodeTarget.ETC1_RGB;
-            this.transcodedFormat = RGB_ETC1_Format;
-
-        } else {
-
-            console.warn('THREE.KTX2Loader: No suitable compressed texture format found. Decoding to RGBA32.');
-
-            targetFormat = TranscodeTarget.RGBA32;
-            this.transcodedFormat = RGBAFormat;
-
-        }
-
-        if (! this.basisModule.isFormatSupported(targetFormat, texFormat)) {
-
-            throw new Error('THREE.KTX2Loader: Selected texture format not supported by current transcoder build.');
-
-        }
-*/
         for (var level = 0; level < this._header.levelCount; level ++) {
             var levelWidth = width / Math.pow(2, level);
             var levelHeight = height / Math.pow(2, level);
 
             var numImagesInLevel = 1; // TODO(donmccurdy): Support cubemaps, arrays and 3D.
             var imageOffsetInLevel = 0;
+            var imageInfo = new ImageInfo(texFormat, levelWidth, levelHeight, level);
             var levelByteLength = this._levels[level].byteLength;
+            var levelUncompressedByteLength = this._levels[level].uncompressedByteLength;
 
             for (var imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {
                 if (texFormat === textureFormat.UASTC4x4) {
                     // UASTC
-                    const nBlocks = ((levelWidth + 3) >> 2) * ((levelHeight + 3) >> 2);
+                    let textureData: Nullable<Uint8Array> = null;
+                    if (useMSCTranscoder) {
+                        imageInfo.flags = 0;
+                        imageInfo.rgbByteOffset = 0;
+                        imageInfo.rgbByteLength = levelUncompressedByteLength;
+                        imageInfo.alphaByteOffset = 0;
+                        imageInfo.alphaByteLength = 0;
 
-                    const texMemoryPages = (nBlocks * 16 + 65535) >> 16;
-                    const memory = new WebAssembly.Memory({ initial: texMemoryPages + 1 });
-                    const textureView = new Uint8Array(memory.buffer, 65536, nBlocks * 16);
+                        let encodedData = new Uint8Array(this._data.buffer, this._levels[level].byteOffset + imageOffsetInLevel, levelByteLength);
 
-                    const compressedData = new Uint8Array(this._data.buffer, this._levels[level].byteOffset + imageOffsetInLevel, levelByteLength);
+                        if (this._header.supercompressionScheme === supercompressionScheme.ZStandard) {
+                            //encodedData = this.zstd.decode( encodedData, levelUncompressedByteLength );
+                        }
 
-                    textureView.set(compressedData);
+                        const result: any = transcoder.transcodeImage(targetFormat, encodedData, imageInfo, 0, hasAlpha, isVideo);
 
-                    const transcoder = (
-                        await WebAssembly.instantiateStreaming(
-                            fetch(KhronosTextureContainer2.WasmModules.uastc_bc7),
-                            { env: { memory: memory } }
-                        )
-                    ).instance.exports;
+                        if (result) {
+                            textureData = result.transcodedImage.get_typed_memory_view().slice();
+                            result.transcodedImage.delete();
+                        }
+                    } else {
+                        const nBlocks = ((levelWidth + 3) >> 2) * ((levelHeight + 3) >> 2);
 
-                    if ((transcoder as any).transcode(nBlocks) === 0) {
+                        const texMemoryPages = (nBlocks * 16 + 65535) >> 16;
+                        const memory = new WebAssembly.Memory({ initial: texMemoryPages + 1 });
+                        const textureView = new Uint8Array(memory.buffer, 65536, nBlocks * 16);
+
+                        const encodedData = new Uint8Array(this._data.buffer, this._levels[level].byteOffset + imageOffsetInLevel, levelByteLength);
+
+                        textureView.set(encodedData);
+
+                        const transcoder = (
+                            await WebAssembly.instantiateStreaming(
+                                fetch(KhronosTextureContainer2.WasmModules.uastc_bc7),
+                                { env: { memory: memory } }
+                            )
+                        ).instance.exports;
+
+                        if ((transcoder as any).transcode(nBlocks) === 0) {
+                            textureData = textureView;
+                        }
+                    }
+                    if (textureData) {
                         console.log("yes!");
 
                         internalTexture.width = internalTexture.baseWidth = levelWidth;
                         internalTexture.height = internalTexture.baseHeight = levelHeight;
                         internalTexture.generateMipMaps = false;
-                        internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-                        internalTexture.format = 0x83F3;
                         internalTexture.invertY = false;
 
-(window as any).tt = internalTexture;
-
                         this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
-                        this._engine._uploadCompressedDataToTextureDirectly(internalTexture, 0x83F3, levelWidth, levelHeight, textureView, 0, 0);
+                        this._engine._uploadCompressedDataToTextureDirectly(internalTexture, transcodedFormat, levelWidth, levelHeight, textureData, 0, 0);
 
                         internalTexture.isReady = true;
                     } else {
