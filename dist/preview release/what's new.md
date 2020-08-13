@@ -73,6 +73,7 @@
 
 ### Inspector
 
+- Added support for follow cameras ([Deltakosh](https://github.com/deltakosh))
 - New delta tool used to apply delta changes to a scene ([Deltakosh](https://github.com/deltakosh))
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))

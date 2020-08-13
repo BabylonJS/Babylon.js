@@ -8,7 +8,7 @@ interface IExamplesComponentProps {
 }
 
 export class ExamplesComponent extends React.Component<IExamplesComponentProps, {filter: string}> {  
-    private _state = "";
+    private _state = "removed";
     private _rootRef: React.RefObject<HTMLDivElement>;
     private _scripts: {
         title: string;
@@ -29,12 +29,18 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         this._rootRef = React.createRef();
 
         this.props.globalState.onExamplesDisplayChangedObservable.add(() => {
-            if (this._state === "") {
-                this._rootRef.current!.classList.add("visible");
-                this._state = "visible";
+            if (this._state !== "visible") {
+                this._rootRef.current!.classList.remove("removed");
+                setTimeout(() => {
+                    this._rootRef.current!.classList.add("visible");
+                    this._state = "visible";
+                }, 16);
             } else {
                 this._rootRef.current!.classList.remove("visible");
                 this._state = "";
+                setTimeout(() => {
+                    this._rootRef.current!.classList.add("removed");
+                }, 200)
             }
         });
     }  
