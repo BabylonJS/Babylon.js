@@ -61,6 +61,16 @@ class BufferPointer {
     public buffer: WebGLBuffer;
 }
 
+/**
+ * Information about the current host
+ */
+export interface HostInformation {
+    /**
+     * Defines if the current host is a mobile
+     */
+    isMobile: boolean;
+}
+
 /** Interface defining initialization parameters for Engine class */
 export interface EngineOptions extends WebGLContextAttributes {
     /**
@@ -395,6 +405,13 @@ export class ThinEngine {
     /** @hidden */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
 
+    /**
+     * Gets information about the current host
+     */
+    public hostInformation: HostInformation = {
+        isMobile: false
+    };
+
     protected get _supportsHardwareTextureRescaling() {
         return false;
     }
@@ -537,6 +554,8 @@ export class ThinEngine {
             // Exceptions
             if (navigator && navigator.userAgent) {
                 let ua = navigator.userAgent;
+
+                this.hostInformation.isMobile = ua.indexOf("Mobile") !== -1;
 
                 for (var exception of ThinEngine.ExceptionList) {
                     let key = exception.key;

@@ -3337,6 +3337,24 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/cameras/followCameraPropertyGridComponent" {
+    import * as React from "react";
+    import { Observable } from "babylonjs/Misc/observable";
+    import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
+    import { LockObject } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/lockObject";
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { FollowCamera } from 'babylonjs/Cameras/followCamera';
+    interface IFollowCameraPropertyGridComponentProps {
+        globalState: GlobalState;
+        camera: FollowCamera;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    }
+    export class FollowCameraPropertyGridComponent extends React.Component<IFollowCameraPropertyGridComponentProps> {
+        constructor(props: IFollowCameraPropertyGridComponentProps);
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGridTabComponent" {
     import { PaneComponent, IPaneComponentProps } from "babylonjs-inspector/components/actionTabs/paneComponent";
     export class PropertyGridTabComponent extends PaneComponent {
@@ -6806,6 +6824,18 @@ declare module INSPECTOR {
         onCloseAnimationCurveEditor(window: Window | null): void;
         playOrPause(): void;
         deleteAnimation(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    interface IFollowCameraPropertyGridComponentProps {
+        globalState: GlobalState;
+        camera: BABYLON.FollowCamera;
+        lockObject: LockObject;
+        onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
+    }
+    export class FollowCameraPropertyGridComponent extends React.Component<IFollowCameraPropertyGridComponentProps> {
+        constructor(props: IFollowCameraPropertyGridComponentProps);
         render(): JSX.Element;
     }
 }
