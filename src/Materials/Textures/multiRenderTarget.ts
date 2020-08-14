@@ -176,9 +176,13 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     /** @hidden */
-    public _rebuild(): void {
+    public _rebuild(forceFullRebuild: boolean = false): void {
         this.releaseInternalTextures();
         this._createInternalTextures();
+
+        if (forceFullRebuild) {
+            this._createTextures();
+        }
 
         for (var i = 0; i < this._internalTextures.length; i++) {
             var texture = this._textures[i];
@@ -226,12 +230,23 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
     /**
      * Resize all the textures in the multi render target.
-     * Be carrefull as it will recreate all the data in the new texture.
+     * Be careful as it will recreate all the data in the new texture.
      * @param size Define the new size
      */
     public resize(size: any) {
         this._size = size;
         this._rebuild();
+    }
+
+    /**
+     * Changes the number of render targets in this MRT
+     * Be careful as it will recreate all the data in the new texture.
+     * @param size Defines
+     */
+    public updateCount(count: number) {
+        this._multiRenderTargetOptions.textureCount = count;
+        this._count = count;
+        this._rebuild(true);
     }
 
     protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {

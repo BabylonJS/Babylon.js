@@ -11,7 +11,7 @@ export interface PrePassEffectConfiguration {
     /**
      * Post process to attach for this effect
      */
-    postProcess: PostProcess;
+    postProcess?: PostProcess;
     /**
      * Textures required in the MRT
      */
@@ -27,5 +27,5 @@ export interface PrePassEffectConfiguration {
     /**
      * Creates the associated post process
      */
-    createPostProcess: () => PostProcess;
+    createPostProcess?: () => PostProcess;
 }

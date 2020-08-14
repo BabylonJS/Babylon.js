@@ -305,16 +305,33 @@ export class MaterialHelper {
     public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
         var previousPrePass = defines.PREPASS;
 
-        if (scene.prePassRenderer && canRenderToMRT) {
+        if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
 
-            // TODO : the rest of textures
             const irradianceIndex = scene.prePassRenderer.getIndex(PrePassRenderer.IRRADIANCE_TEXTURE_TYPE);
             if (irradianceIndex !== -1) {
+                defines.PREPASS_IRRADIANCE = true;
                 defines.PREPASS_IRRADIANCE_INDEX = irradianceIndex;
+            } else {
+                defines.PREPASS_IRRADIANCE = false;
             }
 
+            const albedoIndex = scene.prePassRenderer.getIndex(PrePassRenderer.ALBEDO_TEXTURE_TYPE);
+            if (albedoIndex !== -1) {
+                defines.PREPASS_ALBEDO = true;
+                defines.PREPASS_ALBEDO_INDEX = albedoIndex;
+            } else {
+                defines.PREPASS_ALBEDO = false;
+            }
+
+            const depthNormalIndex = scene.prePassRenderer.getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE);
+            if (depthNormalIndex !== -1) {
+                defines.PREPASS_DEPTHNORMAL = true;
+                defines.PREPASS_DEPTHNORMAL_INDEX = depthNormalIndex;
+            } else {
+                defines.PREPASS_DEPTHNORMAL = false;
+            }
         } else {
             defines.PREPASS = false;
         }
