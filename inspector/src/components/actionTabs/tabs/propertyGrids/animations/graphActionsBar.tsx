@@ -9,7 +9,7 @@ interface IGraphActionsBarProps {
     handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     flatTangent: () => void;
     brokeTangents: () => void;
-    setLerpMode: () => void;
+    setLerpToActiveControlPoint: () => void;
     brokenMode: boolean;
     lerpMode: boolean;
     actionableKeyframe: IActionableKeyFrame;
@@ -124,7 +124,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
                     <IconButtonLineComponent tooltip={"Frame selected keyframes"} icon="frame" onClick={this.props.removeKeyframe} />
                     <IconButtonLineComponent tooltip={"Flat Tangents"} icon="flat-tangent" onClick={this.props.flatTangent} />
                     <IconButtonLineComponent tooltip={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off"} icon={this.props.brokenMode ? "break-tangent" : "unify-tangent"} onClick={this.props.brokeTangents} />
-                    <IconButtonLineComponent tooltip={this.props.lerpMode ? "Linear" : "Linear"} icon="linear-tangent" onClick={this.props.setLerpMode} />
+                    <IconButtonLineComponent tooltip={"Linear"} icon="linear-tangent" onClick={this.props.setLerpToActiveControlPoint} />
                 </div>
             </div>
         );

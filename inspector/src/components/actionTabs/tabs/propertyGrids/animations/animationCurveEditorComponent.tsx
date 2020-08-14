@@ -21,6 +21,7 @@ import { GlobalState } from "../../../../globalState";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { ScaleLabel } from "./scale-label";
+import { runInThisContext } from "vm";
 
 require("./curveEditor.scss");
 
@@ -751,10 +752,21 @@ export class AnimationCurveEditorComponent extends React.Component<
         }
     }
 
-    setLerpMode() {
-        if (this.state.selected !== null) {
-            let animation = this.state.selected;
-            this.setState({ lerpMode: !this.state.lerpMode }, () => this.selectAnimation(animation));
+    setLerpToActiveControlPoint() {
+        const animation = this.state.selected;
+        if (this.state.svgKeyframes && animation) {
+            const keys = animation.getKeys();
+            const selectedControlPoint = this.state.svgKeyframes.find((keyframe: IKeyframeSvgPoint) => keyframe.selected && (keyframe.isLeftActive || keyframe.isRightActive));
+            if (selectedControlPoint !== null && selectedControlPoint) {
+                const { order, coordinate } = this.decodeCurveId(selectedControlPoint.id);
+                const key = keys[order];
+                if (selectedControlPoint.isLeftActive && selectedControlPoint.leftControlPoint !== null) {
+                    key.inTangent = undefined;
+                } else if (selectedControlPoint.isRightActive && selectedControlPoint.rightControlPoint !== null) {
+                    key.outTangent = undefined;
+                }
+                this.selectAnimation(animation, coordinate);
+            }
         }
     }
 
@@ -1045,18 +1057,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                             data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction);
                         } else {
                             if (this.state !== undefined) {
-                                let emptyTangents = keyframes.map((kf, i) => {
-                                    if (i === 0) {
-                                        kf.outTangent = this.returnZero(valueType);
-                                    } else if (i === keyframes.length - 1) {
-                                        kf.inTangent = this.returnZero(valueType);
-                                    } else {
-                                        kf.inTangent = this.returnZero(valueType);
-                                        kf.outTangent = this.returnZero(valueType);
-                                    }
-                                    return kf;
-                                });
-                                data = this.curvePathWithTangents(emptyTangents, data, middle, valueType, d, id);
+                                data = this.curvePathWithTangents(keyframes, data, middle, valueType, d, id);
                             }
                         }
                     }
@@ -1164,7 +1165,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             // right now has 0 then the linear will show a slight curve as flat tangents...
             let defaultTangent: number | null = null;
             if (i !== 0 || i !== keyframes.length - 1) {
-                defaultTangent = 0;
+                defaultTangent = null;
             }
 
             var inT = key.inTangent === undefined ? defaultTangent : this.getValueAsArray(type, key.inTangent)[coordinate];
@@ -1211,9 +1212,23 @@ export class AnimationCurveEditorComponent extends React.Component<
                 };
 
                 if (outTangent !== null && inTangent !== null) {
-                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${outTangent.x} ${outTangent.y} `;
+                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${outTangent.x} ${outTangent.y}`;
                 } else if (inTangent !== null) {
-                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} `;
+                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y}`;
+                }
+
+                if (outTangent === null && inTangent !== null) {
+                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y}`;
+                }
+
+                if (inTangent === null && outTangent !== null) {
+                    const prev = this._svgKeyframes[i - 1];
+                    data += ` ${prev.keyframePoint.x} ${prev.keyframePoint.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${outTangent.x} ${outTangent.y}`;
+                }
+
+                if (inTangent === null && outTangent === null) {
+                    const prev = this._svgKeyframes[i - 1];
+                    data += ` ${prev.keyframePoint.x} ${prev.keyframePoint.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y}`;
                 }
             }
 
@@ -1229,7 +1244,10 @@ export class AnimationCurveEditorComponent extends React.Component<
             this._svgKeyframes.push(svgKeyframe);
         }, this);
 
-        return data;
+        const lastCurveEnd = data.lastIndexOf("C");
+        const cleanedData = data.substring(0, lastCurveEnd);
+
+        return cleanedData;
     }
 
     curvePath(keyframes: IAnimationKey[], data: string, middle: number, easingFunction: EasingFunction) {
@@ -1597,6 +1615,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                 if (this.state.isPlaying) {
                     this.props.scene.stopAnimation(target);
                 }
+                this.props.scene.stopAllAnimations();
                 let keys = this.state.selected.getKeys();
                 if (keys.length !== 0) {
                     let firstFrame = keys[0].frame;
@@ -1606,6 +1625,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                     }
                     if (direction === -1) {
                         this._mainAnimatable = this.props.scene.beginAnimation(target, LastFrame, firstFrame, this.state.isLooping);
+                    }
+                    if (!this.state.isLooping && this._mainAnimatable) {
+                        this._mainAnimatable.onAnimationEnd = () => this.playPause(0);
                     }
                 }
 
@@ -1629,6 +1651,10 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     registerObs() {
+        if (this._onBeforeRenderObserver) {
+            this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
             if (!this._isPlaying || !this._mainAnimatable) {
                 return;
@@ -1640,8 +1666,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     componentWillUnmount() {
-        this.stopAnimation();
-        this.props.scene.stopAllAnimations();
         this.playPause(0);
         if (this._onBeforeRenderObserver) {
             this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -1669,7 +1693,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     brokenMode={this.state.isBrokenMode}
                     brokeTangents={() => this.setBrokenMode()}
                     lerpMode={this.state.lerpMode}
-                    setLerpMode={() => this.setLerpMode()}
+                    setLerpToActiveControlPoint={() => this.setLerpToActiveControlPoint()}
                     flatTangent={() => this.setFlatTangent()}
                 />
 
