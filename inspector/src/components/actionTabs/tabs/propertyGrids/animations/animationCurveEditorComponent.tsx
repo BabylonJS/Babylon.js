@@ -21,7 +21,6 @@ import { GlobalState } from "../../../../globalState";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { ScaleLabel } from "./scale-label";
-import { runInThisContext } from "vm";
 
 require("./curveEditor.scss");
 
