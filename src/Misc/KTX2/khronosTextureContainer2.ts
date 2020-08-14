@@ -1,0 +1,162 @@
+import { InternalTexture } from "../../Materials/Textures/internalTexture";
+import { ThinEngine } from "../../Engines/thinEngine";
+//import { EngineCapabilities } from '../../Engines/engineCapabilities';
+//import { Tools } from '../tools';
+import { Nullable } from '../../types';
+import { KTX2FileReader, supercompressionScheme, IKTX2_ImageDesc } from './KTX2FileReader';
+import { sourceTextureFormat, Transcoder, transcodeTarget } from './transcoder';
+import { WASMMemoryManager } from './wasmMemoryManager';
+
+import { LiteTranscoder_UASTC_BC7 } from "./LiteTranscoder_UASTC_BC7";
+import { LiteTranscoder_UASTC_ASTC } from "./LiteTranscoder_UASTC_ASTC";
+import { MSCTranscoder } from "./mscTranscoder";
+
+//const RGB_S3TC_DXT1_Format = 33776;
+//const RGBA_S3TC_DXT5_Format = 33779;
+
+const COMPRESSED_RGBA_BPTC_UNORM_EXT = 36492;
+
+/**
+ * Class for loading KTX2 files
+ * @hidden
+ */
+export class KhronosTextureContainer2 {
+
+    private static _Transcoders: Array<typeof Transcoder> = [];
+
+    public static registerTranscoder(transcoder: typeof Transcoder) {
+        KhronosTextureContainer2._Transcoders.push(transcoder);
+    }
+
+    private _engine: ThinEngine;
+    private _wasmMemoryManager: WASMMemoryManager;
+    private _transcoderInstances: { [key: string]: Transcoder };
+
+    public constructor(engine: ThinEngine) {
+        this._engine = engine;
+        this._transcoderInstances = {};
+    }
+
+    private _findTranscoder(src: sourceTextureFormat, dst: transcodeTarget): Nullable<Transcoder> {
+        let transcoder: Nullable<Transcoder> = null;
+
+        for (let i = 0; i < KhronosTextureContainer2._Transcoders.length; ++i) {
+            if (KhronosTextureContainer2._Transcoders[i].CanTranscode(src, dst)) {
+                const key = sourceTextureFormat[src] + "_" + transcodeTarget[dst];
+                transcoder = this._transcoderInstances[key];
+                if (!transcoder) {
+                    transcoder = new KhronosTextureContainer2._Transcoders[i]();
+                    transcoder!.initialize();
+                    if (transcoder!.needMemoryManager()) {
+                        if (!this._wasmMemoryManager) {
+                            this._wasmMemoryManager = new WASMMemoryManager();
+                        }
+                        transcoder!.setMemoryManager(this._wasmMemoryManager);
+                    }
+                    this._transcoderInstances[key] = transcoder;
+                }
+                break;
+            }
+        }
+
+        return transcoder;
+    }
+
+    private async _createTexture(kfr: KTX2FileReader, internalTexture: InternalTexture) {
+        /*await this.zstd.init();*/
+
+        //var mipmaps = [];
+        var width = kfr.header.pixelWidth;
+        var height = kfr.header.pixelHeight;
+        var srcTexFormat = kfr.textureFormat;
+        var hasAlpha = kfr.hasAlpha;
+
+        let targetFormat = transcodeTarget.BC7_M5_RGBA;
+        let transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
+
+        const transcoder = this._findTranscoder(srcTexFormat, targetFormat);
+
+        if (transcoder === null) {
+            throw new Error(`KTX2 container - no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[targetFormat]}"`);
+        }
+
+        const texturePromises: Array<Promise<Nullable<Uint8Array>>> = [];
+
+        var imageDescIndex = 0;
+
+        for (var level = 0; level < kfr.header.levelCount; level ++) {
+            var levelWidth = width / Math.pow(2, level);
+            var levelHeight = height / Math.pow(2, level);
+
+            var numImagesInLevel = 1; // TODO(donmccurdy): Support cubemaps, arrays and 3D.
+            var imageOffsetInLevel = 0;
+            var levelByteLength = kfr.levels[level].byteLength;
+            var levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
+
+            for (var imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {
+                let encodedData: Uint8Array;
+                let imageDesc: Nullable<IKTX2_ImageDesc> = null;
+
+                if (srcTexFormat === sourceTextureFormat.ETC1S) {
+                    imageDesc = kfr.supercompressionGlobalData.imageDescs![imageDescIndex++];
+
+                    encodedData = new Uint8Array(kfr.data.buffer, kfr.levels[level].byteOffset + imageDesc.rgbSliceByteOffset, imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength);
+                } else {
+                    encodedData = new Uint8Array(kfr.data.buffer, kfr.levels[level].byteOffset + imageOffsetInLevel, levelByteLength);
+
+                    if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
+                        //encodedData = this.zstd.decode( encodedData, levelUncompressedByteLength );
+                    }
+                }
+
+                texturePromises.push(transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, hasAlpha, kfr.supercompressionGlobalData, imageDesc, encodedData));
+
+                imageOffsetInLevel += levelByteLength;
+            }
+        }
+
+        Promise.all(texturePromises).then((textures) => {
+            for (let t = 0; t < textures.length; ++t) {
+                const textureData = textures[t];
+
+                if (textureData === null) {
+                    throw new Error("KTX2 container - could not transcode one of the image");
+                }
+
+                internalTexture.width = internalTexture.baseWidth = width;
+                internalTexture.height = internalTexture.baseHeight = height;
+                internalTexture.generateMipMaps = false;
+                internalTexture.invertY = false;
+
+                this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
+                this._engine._uploadCompressedDataToTextureDirectly(internalTexture, transcodedFormat, width, height, textureData, 0, 0);
+
+                internalTexture.isReady = true;
+                break;
+            }
+        });
+
+        //this.mipmaps = mipmaps;
+    }
+
+    public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void> {
+        const kfr = new KTX2FileReader(data);
+
+        return this._createTexture(kfr, internalTexture);
+
+    }
+
+    /**
+     * Checks if the given data starts with a KTX2 file identifier.
+     * @param data the data to check
+     * @returns true if the data is a KTX2 file or false otherwise
+     */
+    public static IsValid(data: ArrayBufferView): boolean {
+        return KTX2FileReader.IsValid(data);
+    }
+}
+
+// Put in the order you want the transcoders to be used in priority
+KhronosTextureContainer2.registerTranscoder(LiteTranscoder_UASTC_ASTC);
+KhronosTextureContainer2.registerTranscoder(LiteTranscoder_UASTC_BC7);
+KhronosTextureContainer2.registerTranscoder(MSCTranscoder);
