@@ -74,10 +74,6 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         return index;
                     }}
                 />
-                    <ButtonLineComponent label="Reset" onClick={() => {
-                        extension.reset(this.props.host);
-                        this.forceUpdate();
-                    }} />
                 </LineContainerComponent>
             </div>
         );
