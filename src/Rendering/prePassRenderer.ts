@@ -170,6 +170,8 @@ export class PrePassRenderer {
         this._engine = scene.getEngine();
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
+
+        this._resetLayout();
     }
 
     private _initializeAttachments() {
@@ -193,8 +195,6 @@ export class PrePassRenderer {
         this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtFormats });
         this.prePassRT.samples = 1;
-
-        this._initializeAttachments();
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
         this.imageProcessingPostProcess.autoClear = false;
@@ -310,15 +310,16 @@ export class PrePassRenderer {
     /**
      * Adds an effect configuration
      */
-    public addEffectConfiguration(cfg: PrePassEffectConfiguration) {
+    public addEffectConfiguration(cfg: PrePassEffectConfiguration) : PrePassEffectConfiguration {
         // Do not add twice
         for (let i = 0; i < this._effectConfigurations.length; i++) {
             if (this._effectConfigurations[i].name === cfg.name) {
-                return;
+                return this._effectConfigurations[i];
             }
         }
 
         this._effectConfigurations.push(cfg);
+        return cfg;
     }
 
     /**
@@ -335,18 +336,33 @@ export class PrePassRenderer {
     }
 
     private _enable() {
+        const previousMrtCount = this.mrtCount;
+
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].enabled) {
+                this._enableTextures(this._effectConfigurations[i].texturesRequired);
+            }
+        }
+
+        if (this.prePassRT && this.mrtCount !== previousMrtCount) {
+            this.prePassRT.updateCount(this.mrtCount);
+        }
+
         this._resetPostProcessChain();
 
         for (let i = 0; i < this._effectConfigurations.length; i++) {
             if (this._effectConfigurations[i].enabled) {
-                if (!this._effectConfigurations[i].postProcess) {
-                    this._effectConfigurations[i].createPostProcess();
-                    this._enableTextures(this._effectConfigurations[i].texturesRequired);
+                if (!this._effectConfigurations[i].postProcess && this._effectConfigurations[i].createPostProcess) {
+                    this._effectConfigurations[i].createPostProcess!();
                 }
 
-                this._postProcesses.push(this._effectConfigurations[i].postProcess);
+                if (this._effectConfigurations[i].postProcess) {
+                    this._postProcesses.push(this._effectConfigurations[i].postProcess!);
+                }
             }
         }
+
+        this._initializeAttachments();
 
         if (!this.imageProcessingPostProcess) {
             this._createCompositionEffect();
@@ -364,9 +380,6 @@ export class PrePassRenderer {
         for (let i = 0; i < this._effectConfigurations.length; i++) {
             this._effectConfigurations[i].enabled = false;
         }
-
-        this.materialsShouldRenderGeometry = false;
-        this.materialsShouldRenderIrradiance = false;
     }
 
     private _resetLayout() {
@@ -388,7 +401,7 @@ export class PrePassRenderer {
 
         for (let i = 0; i < this._effectConfigurations.length; i++) {
             if (this._effectConfigurations[i].postProcess) {
-                this._effectConfigurations[i].postProcess.restoreDefaultInputTexture();
+                this._effectConfigurations[i].postProcess!.restoreDefaultInputTexture();
             }
         }
     }
@@ -446,6 +459,8 @@ export class PrePassRenderer {
         if (enablePrePass) {
             this._enable();
         }
+
+
 
         if (!this.enabled) {
             this._engine.bindAttachments(this._defaultAttachments);

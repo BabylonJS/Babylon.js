@@ -75,10 +75,10 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * Textures that should be present in the MRT for this effect to work
      */
     public readonly texturesRequired: number[] = [
-        PrePassRenderer.COLOR_TEXTURE_TYPE,
-        PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
         PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE,
         PrePassRenderer.ALBEDO_TEXTURE_TYPE,
+        PrePassRenderer.COLOR_TEXTURE_TYPE,
+        PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
     ];
 
     private _scene: Scene;

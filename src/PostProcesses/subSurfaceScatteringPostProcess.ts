@@ -6,6 +6,7 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
+import { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { Logger } from "../Misc/logger";
 
 import "../Shaders/imageProcessing.fragment";
@@ -35,9 +36,9 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             var texelSize = this.texelSize;
             effect.setFloat("metersPerUnit", scene.subSurfaceConfiguration.metersPerUnit);
             effect.setFloat2("texelSize", texelSize.x, texelSize.y);
-            effect.setTexture("irradianceSampler", scene.prePassRenderer.prePassRT.textures[1]);
-            effect.setTexture("depthSampler", scene.prePassRenderer.prePassRT.textures[2]);
-            effect.setTexture("albedoSampler", scene.prePassRenderer.prePassRT.textures[3]);
+            effect.setTexture("irradianceSampler", scene.prePassRenderer.prePassRT.textures[scene.prePassRenderer.getIndex(PrePassRenderer.IRRADIANCE_TEXTURE_TYPE)]);
+            effect.setTexture("depthSampler", scene.prePassRenderer.prePassRT.textures[scene.prePassRenderer.getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE)]);
+            effect.setTexture("albedoSampler", scene.prePassRenderer.prePassRT.textures[scene.prePassRenderer.getIndex(PrePassRenderer.ALBEDO_TEXTURE_TYPE)]);
             effect.setFloat2("viewportSize",
                 Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
                 Math.tan(scene.activeCamera!.fov / 2));
