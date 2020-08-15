@@ -39,7 +39,7 @@ class TransmissionHelper {
      */
     private readonly _scene: Scene;
     private _options: ITransmissionHelperOptions;
-    
+
     private _opaqueRenderTarget: Nullable<RenderTargetTexture> = null;
     private _opaqueMeshesCache: Mesh[] = [];
     private _transparentMeshesCache: Mesh[] = [];
