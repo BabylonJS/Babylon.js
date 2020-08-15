@@ -141,7 +141,7 @@ export class Timeline extends React.Component<
         }
     }
 
-    setCurrentFrame(event: React.MouseEvent<HTMLDivElement>) {
+    setCurrentFrame = (event: React.MouseEvent<HTMLDivElement>) => {
         event.preventDefault();
         if (this._scrollable.current) {
             const containerWidth = this._scrollable.current?.clientWidth;
@@ -149,7 +149,7 @@ export class Timeline extends React.Component<
             const frame = Math.round((event.clientX - 233) / unit) + this.state.start;
             this.props.onCurrentFrameChange(frame);
         }
-    }
+    };
 
     handleLimitChange(event: React.ChangeEvent<HTMLInputElement>) {
         event.preventDefault();
@@ -162,20 +162,16 @@ export class Timeline extends React.Component<
         });
     }
 
-    dragStart(e: React.TouchEvent<SVGSVGElement>): void;
-    dragStart(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
-    dragStart(e: any): void {
+    dragStart = (e: React.MouseEvent<SVGSVGElement, MouseEvent>): void => {
         e.preventDefault();
-        this.setState({ activeKeyframe: parseInt(e.target.id.replace("kf_", "")) });
+        this.setState({ activeKeyframe: parseInt((e.target as SVGSVGElement).id.replace("kf_", "")) });
         this._direction = e.clientX;
-    }
+    };
 
-    drag(e: React.TouchEvent<SVGSVGElement>): void;
-    drag(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
-    drag(e: any): void {
+    drag = (e: React.MouseEvent<SVGSVGElement, MouseEvent>): void => {
         e.preventDefault();
         if (this.props.keyframes) {
-            if (this.state.activeKeyframe === parseInt(e.target.id.replace("kf_", ""))) {
+            if (this.state.activeKeyframe === parseInt((e.target as SVGSVGElement).id.replace("kf_", ""))) {
                 let updatedKeyframe = this.props.keyframes[this.state.activeKeyframe];
                 if (this._direction > e.clientX) {
                     let used = this.isFrameBeingUsed(updatedKeyframe.frame - 1, -1);
@@ -192,7 +188,7 @@ export class Timeline extends React.Component<
                 this.props.dragKeyframe(updatedKeyframe.frame, this.state.activeKeyframe);
             }
         }
-    }
+    };
 
     isFrameBeingUsed(frame: number, direction: number) {
         let used = this.props.keyframes?.find((kf) => kf.frame === frame);
@@ -204,42 +200,36 @@ export class Timeline extends React.Component<
         }
     }
 
-    dragEnd(e: React.TouchEvent<SVGSVGElement>): void;
-    dragEnd(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void;
-    dragEnd(e: any): void {
+    dragEnd = (e: React.MouseEvent<SVGSVGElement, MouseEvent>): void => {
         e.preventDefault();
         this._direction = 0;
         this.setState({ activeKeyframe: null });
-    }
+    };
 
-    scrollDragStart(e: React.TouchEvent<HTMLDivElement>): void;
-    scrollDragStart(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
-    scrollDragStart(e: any) {
+    scrollDragStart = (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         e.preventDefault();
-        if (e.target.className === "scrollbar") {
-            if ((e.target.class = "scrollbar") && this._scrollbarHandle.current) {
+        if ((e.target as HTMLDivElement).className === "scrollbar") {
+            if (this._scrollbarHandle.current) {
                 this._scrolling = true;
                 this._shiftX = e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
                 this._scrollbarHandle.current.style.left = e.pageX - this._shiftX + "px";
             }
         }
 
-        if (e.target.className === "left-draggable" && this._scrollbarHandle.current) {
+        if ((e.target as HTMLDivElement).className === "left-draggable" && this._scrollbarHandle.current) {
             this._active = "leftDraggable";
             this._shiftX = e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
         }
 
-        if (e.target.className === "right-draggable" && this._scrollbarHandle.current) {
+        if ((e.target as HTMLDivElement).className === "right-draggable" && this._scrollbarHandle.current) {
             this._active = "rightDraggable";
             this._shiftX = e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
         }
-    }
+    };
 
-    scrollDrag(e: React.TouchEvent<HTMLDivElement>): void;
-    scrollDrag(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
-    scrollDrag(e: any) {
+    scrollDrag = (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         e.preventDefault();
-        if (e.target.className === "scrollbar") {
+        if ((e.target as HTMLDivElement).className === "scrollbar") {
             this.moveScrollbar(e.pageX);
         }
 
@@ -250,16 +240,14 @@ export class Timeline extends React.Component<
         if (this._active === "rightDraggable") {
             this.resizeScrollbarRight(e.clientX);
         }
-    }
+    };
 
-    scrollDragEnd(e: React.TouchEvent<HTMLDivElement>): void;
-    scrollDragEnd(e: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
-    scrollDragEnd(e: any) {
+    scrollDragEnd = (e: React.MouseEvent<HTMLDivElement, MouseEvent>): void => {
         e.preventDefault();
         this._scrolling = false;
         this._active = "";
         this._shiftX = 0;
-    }
+    };
 
     moveScrollbar(pageX: number) {
         if (this._scrolling && this._scrollbarHandle.current && this._scrollContainer.current) {
@@ -364,6 +352,8 @@ export class Timeline extends React.Component<
         }
     }
 
+    dragDomFalse = () => false;
+
     render() {
         return (
             <>
@@ -379,21 +369,17 @@ export class Timeline extends React.Component<
                         scrollable={this._scrollable}
                     />
                     <div className="timeline-wrapper">
-                        <div ref={this._scrollable} className="display-line" onClick={(e) => this.setCurrentFrame(e)}>
+                        <div ref={this._scrollable} className="display-line" onClick={this.setCurrentFrame}>
                             <svg
                                 style={{
                                     width: "100%",
                                     height: 40,
                                     backgroundColor: "#222222",
                                 }}
-                                onMouseMove={(e) => this.drag(e)}
-                                onTouchMove={(e) => this.drag(e)}
-                                onTouchStart={(e) => this.dragStart(e)}
-                                onTouchEnd={(e) => this.dragEnd(e)}
-                                onMouseDown={(e) => this.dragStart(e)}
-                                onMouseUp={(e) => this.dragEnd(e)}
-                                onMouseLeave={(e) => this.dragEnd(e)}
-                                onDragStart={() => false}
+                                onMouseMove={this.drag}
+                                onMouseDown={this.dragStart}
+                                onMouseUp={this.dragEnd}
+                                onMouseLeave={this.dragEnd}
                             >
                                 {this.state.selectionLength.map((frame, i) => {
                                     return (
@@ -436,17 +422,7 @@ export class Timeline extends React.Component<
                             </svg>
                         </div>
 
-                        <div
-                            className="timeline-scroll-handle"
-                            onMouseMove={(e) => this.scrollDrag(e)}
-                            onTouchMove={(e) => this.scrollDrag(e)}
-                            onTouchStart={(e) => this.scrollDragStart(e)}
-                            onTouchEnd={(e) => this.scrollDragEnd(e)}
-                            onMouseDown={(e) => this.scrollDragStart(e)}
-                            onMouseUp={(e) => this.scrollDragEnd(e)}
-                            onMouseLeave={(e) => this.scrollDragEnd(e)}
-                            onDragStart={() => false}
-                        >
+                        <div className="timeline-scroll-handle" onMouseMove={this.scrollDrag} onMouseDown={this.scrollDragStart} onMouseUp={this.scrollDragEnd} onMouseLeave={this.scrollDragEnd} onDragStart={this.dragDomFalse}>
                             <div className="scroll-handle" ref={this._scrollContainer}>
                                 <div className="handle" ref={this._scrollbarHandle} style={{ width: this.state.scrollWidth }}>
                                     <div className="left-grabber">
