@@ -1,9 +1,7 @@
 import * as React from "react";
-
 import { Observable } from "babylonjs/Misc/observable";
 import { TargetedAnimation } from "babylonjs/Animations/animationGroup";
 import { Scene } from "babylonjs/scene";
-
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import { ButtonLineComponent } from "../../../lines/buttonLineComponent";
 import { LineContainerComponent } from "../../../lineContainerComponent";
@@ -35,18 +33,18 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
         });
     }
 
-    onOpenAnimationCurveEditor() {
+    onOpenAnimationCurveEditor = () => {
         this._isCurveEditorOpen = true;
-    }
+    };
 
-    onCloseAnimationCurveEditor(window: Window | null) {
+    onCloseAnimationCurveEditor = (window: Window | null) => {
         this._isCurveEditorOpen = false;
         if (window !== null) {
             window.close();
         }
-    }
+    };
 
-    playOrPause() {
+    playOrPause = () => {
         if (this._animationGroup) {
             if (this._animationGroup.isPlaying) {
                 this._animationGroup.stop();
@@ -55,9 +53,9 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
             }
             this.forceUpdate();
         }
-    }
+    };
 
-    deleteAnimation() {
+    deleteAnimation = () => {
         if (this._animationGroup) {
             let index = this._animationGroup.targetedAnimations.indexOf(this.props.targetedAnimation);
 
@@ -71,7 +69,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                 }
             }
         }
-    }
+    };
 
     render() {
         const targetedAnimation = this.props.targetedAnimation;
@@ -82,13 +80,13 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                     <TextLineComponent label="Class" value={targetedAnimation.getClassName()} />
                     <TextInputLineComponent lockObject={this.props.lockObject} label="Name" target={targetedAnimation.animation} propertyName="name" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {targetedAnimation.target.name && <TextLineComponent label="Target" value={targetedAnimation.target.name} onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation)} />}
-                    <ButtonLineComponent label="Edit animation" onClick={() => this.onOpenAnimationCurveEditor()} />
+                    <ButtonLineComponent label="Edit animation" onClick={this.onOpenAnimationCurveEditor} />
                     {this._isCurveEditorOpen && (
-                        <PopupComponent id="curve-editor" title="Curve Animation Editor" size={{ width: 1024, height: 512 }} onOpen={(window: Window) => {}} onClose={(window: Window) => this.onCloseAnimationCurveEditor(window)}>
-                            <AnimationCurveEditorComponent scene={this.props.scene} entity={targetedAnimation as any} playOrPause={() => this.playOrPause()} lockObject={this.props.lockObject} globalState={this.props.globalState} />
+                        <PopupComponent id="curve-editor" title="Curve Animation Editor" size={{ width: 1024, height: 512 }} onOpen={(window: Window) => {}} onClose={this.onCloseAnimationCurveEditor}>
+                            <AnimationCurveEditorComponent scene={this.props.scene} entity={targetedAnimation as any} playOrPause={this.playOrPause} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                         </PopupComponent>
                     )}
-                    <ButtonLineComponent label="Dispose" onClick={() => this.deleteAnimation()} />
+                    <ButtonLineComponent label="Dispose" onClick={this.deleteAnimation} />
                 </LineContainerComponent>
             </div>
         );

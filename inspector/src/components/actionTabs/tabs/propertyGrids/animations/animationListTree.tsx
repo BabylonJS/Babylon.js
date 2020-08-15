@@ -63,7 +63,7 @@ export class AnimationListTree extends React.Component<
         };
     }
 
-    deleteAnimation() {
+    deleteAnimation = () => {
         let currentSelected = this.props.selected;
         if (this.props.entity instanceof TargetedAnimation) {
             console.log("no animation remove allowed");
@@ -76,7 +76,7 @@ export class AnimationListTree extends React.Component<
                 this.setState({ animationList: this.generateList() });
             }
         }
-    }
+    };
 
     generateList() {
         let animationList =
@@ -113,36 +113,102 @@ export class AnimationListTree extends React.Component<
         this.props.selectAnimation(animation, coordinate);
     }
 
-    coordinateItem(i: number, animation: Animation, coordinate: string, color: string, selectedCoordinate: SelectedCoordinate) {
+    coordinateItem(
+        i: number,
+        animation: Animation,
+        coordinate: string,
+        color: string,
+        selectedCoordinate: SelectedCoordinate
+    ) {
+        const setSelectedCoordinate = () => this.setSelectedCoordinate(animation, selectedCoordinate, i);
+        const handleClass = `handle-indicator ${
+            this.state.selectedCoordinate === selectedCoordinate && this.state.selectedAnimation === i ? "show" : "hide"
+        }`;
         return (
-            <li key={`${i}_${coordinate}`} id={`${i}_${coordinate}`} className="property" style={{ color: color }} onClick={() => this.setSelectedCoordinate(animation, selectedCoordinate, i)}>
-                <div className={`handle-indicator ${this.state.selectedCoordinate === selectedCoordinate && this.state.selectedAnimation === i ? "show" : "hide"}`}></div>
+            <li
+                key={`${i}_${coordinate}`}
+                id={`${i}_${coordinate}`}
+                className="property"
+                style={{ color: color }}
+                onClick={setSelectedCoordinate}>
+                <div className={handleClass}></div>
                 {animation.targetProperty} {coordinate.toUpperCase()}
             </li>
         );
     }
 
     typeAnimationItem(animation: Animation, i: number, childrenElements: ItemCoordinate[]) {
+        const editAnimation = () => this.props.editAnimation(animation);
+        const selectAnimation = () => this.props.selectAnimation(animation);
+        const toggle = () => this.toggleProperty(i);
         return (
-            <li className={this.props.selected && this.props.selected.name === animation.name ? "property sub active" : "property sub"} key={i}>
-                <div className={`animation-arrow ${this.state.animationList && this.state.animationList[i].open ? "" : "flip"}`} onClick={() => this.toggleProperty(i)}></div>
-                <p onClick={() => this.props.selectAnimation(animation)}>{animation.targetProperty}</p>
-                <IconButtonLineComponent tooltip="Options" icon="small animation-options" onClick={() => this.props.editAnimation(animation)} />
-                {!(this.props.entity instanceof TargetedAnimation) ? this.props.selected && this.props.selected.name === animation.name ? <IconButtonLineComponent tooltip="Remove" icon="small animation-delete" onClick={() => this.deleteAnimation()} /> : <div className="spacer"></div> : null}
-                <ul className={`sub-list ${this.state.animationList && this.state.animationList[i].open ? "" : "hidden"}`}>{childrenElements.map((c) => this.coordinateItem(i, animation, c.id, c.color, c.coordinate))}</ul>
+            <li
+                className={
+                    this.props.selected && this.props.selected.name === animation.name
+                        ? "property sub active"
+                        : "property sub"
+                }
+                key={i}>
+                <div
+                    className={`animation-arrow ${
+                        this.state.animationList && this.state.animationList[i].open ? "" : "flip"
+                    }`}
+                    onClick={toggle}></div>
+                <p onClick={selectAnimation}>{animation.targetProperty}</p>
+                <IconButtonLineComponent tooltip="Options" icon="small animation-options" onClick={editAnimation} />
+                {!(this.props.entity instanceof TargetedAnimation) ? (
+                    this.props.selected && this.props.selected.name === animation.name ? (
+                        <IconButtonLineComponent
+                            tooltip="Remove"
+                            icon="small animation-delete"
+                            onClick={this.deleteAnimation}
+                        />
+                    ) : (
+                        <div className="spacer"></div>
+                    )
+                ) : null}
+                <ul
+                    className={`sub-list ${
+                        this.state.animationList && this.state.animationList[i].open ? "" : "hidden"
+                    }`}>
+                    {childrenElements.map((c) => this.coordinateItem(i, animation, c.id, c.color, c.coordinate))}
+                </ul>
             </li>
         );
     }
 
     setListItem(animation: Animation, i: number) {
+        const editAnimation = () => this.props.editAnimation(animation);
+        const selectAnimation = () => this.props.selectAnimation(animation, 0);
         switch (animation.dataType) {
             case Animation.ANIMATIONTYPE_FLOAT:
                 return (
-                    <li className={this.props.selected && this.props.selected.name === animation.name ? "property active" : "property"} key={i} onClick={() => this.props.selectAnimation(animation, 0)}>
+                    <li
+                        className={
+                            this.props.selected && this.props.selected.name === animation.name
+                                ? "property active"
+                                : "property"
+                        }
+                        key={i}
+                        onClick={selectAnimation}>
                         <div className={`animation-bullet`}></div>
                         <p>{animation.targetProperty}</p>
-                        <IconButtonLineComponent tooltip="Options" icon="small animation-options" onClick={() => this.props.editAnimation(animation)} />
-                        {!(this.props.entity instanceof TargetedAnimation) ? this.props.selected && this.props.selected.name === animation.name ? <IconButtonLineComponent tooltip="Remove" icon="small animation-delete" onClick={() => this.deleteAnimation()} /> : <div className="spacer"></div> : null}
+                        <IconButtonLineComponent
+                            tooltip="Options"
+                            icon="small animation-options"
+                            onClick={editAnimation}
+                        />
+                        {!(this.props.entity instanceof TargetedAnimation) ? (
+                            this.props.selected && this.props.selected.name === animation.name ? (
+                                <IconButtonLineComponent
+                                    tooltip="Remove"
+                                    icon="small animation-delete"
+                                    onClick={this.deleteAnimation}
+                                />
+                            ) : (
+                                <div className="spacer"></div>
+                            )
+                        ) : null}
                     </li>
                 );
             case Animation.ANIMATIONTYPE_VECTOR2:

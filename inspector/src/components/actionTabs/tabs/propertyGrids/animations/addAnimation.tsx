@@ -57,7 +57,7 @@ export class AddAnimation extends React.Component<
         }
     }
 
-    updateAnimation() {
+    updateAnimation = () => {
         if (this.props.selectedToUpdate !== undefined) {
             const oldNameValue = this.props.selectedToUpdate.name;
             this.props.selectedToUpdate.name = this.state.animationName;
@@ -73,7 +73,7 @@ export class AddAnimation extends React.Component<
 
             this.props.finishedUpdate();
         }
-    }
+    };
 
     getTypeAsString(type: number) {
         switch (type) {
@@ -96,7 +96,7 @@ export class AddAnimation extends React.Component<
         }
     }
 
-    addAnimation() {
+    addAnimation = () => {
         if (this.state.animationName != "" && this.state.animationTargetProperty != "") {
             let matchTypeTargetProperty = this.state.animationTargetProperty.split(".");
             let animationDataType = this.state.animationType;
@@ -179,7 +179,7 @@ export class AddAnimation extends React.Component<
         } else {
             this.props.setNotificationMessage(`You need to provide a name and target property.`);
         }
-    }
+    };
 
     raiseOnPropertyChanged(newValue: Animation[], previousValue: Animation[]) {
         if (!this.props.onPropertyChangedObservable) {
@@ -207,49 +207,51 @@ export class AddAnimation extends React.Component<
         });
     }
 
-    handleNameChange(event: React.ChangeEvent<HTMLInputElement>) {
-        event.preventDefault();
-        this.setState({ animationName: event.target.value.trim() });
-    }
-
-    handlePathChange(event: React.ChangeEvent<HTMLInputElement>) {
+    handlePathChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
         this.setState({ animationTargetPath: event.target.value.trim() });
-    }
+    };
 
-    handleTypeChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        event.preventDefault();
+        this.setState({ animationName: event.target.value.trim() });
+    };
+
+    handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         event.preventDefault();
         this.setState({ animationType: parseInt(event.target.value) });
-    }
+    };
 
-    handlePropertyChange(event: React.ChangeEvent<HTMLInputElement>) {
+    handlePropertyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
         this.setState({ animationTargetProperty: event.target.value });
-    }
+    };
 
-    handleLoopModeChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    handleLoopModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         event.preventDefault();
         this.setState({ loopMode: parseInt(event.target.value) });
-    }
+    };
 
     render() {
+        const confirmLabel = this.state.isUpdating ? "Update" : "Create";
+        const confirmHandleOnClick = this.state.isUpdating ? this.updateAnimation : this.addAnimation;
         return (
             <div className="new-animation" style={{ display: this.props.isOpen ? "block" : "none" }}>
                 <div className="sub-content">
                     <div className="label-input">
                         <label>Display Name</label>
-                        <input type="text" value={this.state.animationName} onChange={(e) => this.handleNameChange(e)}></input>
+                        <input type="text" value={this.state.animationName} onChange={this.handleNameChange}></input>
                     </div>
                     {this.state.isUpdating ? null : (
                         <div className="label-input">
                             <label>Property</label>
-                            <input type="text" value={this.state.animationTargetProperty} onChange={(e) => this.handlePropertyChange(e)}></input>
+                            <input type="text" value={this.state.animationTargetProperty} onChange={this.handlePropertyChange}></input>
                         </div>
                     )}
                     {this.state.isUpdating ? null : (
                         <div className="label-input">
                             <label>Type</label>
-                            <select onChange={(e) => this.handleTypeChange(e)} value={this.state.animationType}>
+                            <select onChange={this.handleTypeChange} value={this.state.animationType}>
                                 {/* <option value={Animation.ANIMATIONTYPE_COLOR3}>Color3</option>
                 <option value={Animation.ANIMATIONTYPE_COLOR4}>Color4</option> */}
                                 <option value={Animation.ANIMATIONTYPE_FLOAT}>Float</option>
@@ -263,14 +265,14 @@ export class AddAnimation extends React.Component<
                     )}
                     <div className="label-input">
                         <label>Loop Mode</label>
-                        <select onChange={(e) => this.handleLoopModeChange(e)} value={this.state.loopMode}>
+                        <select onChange={this.handleLoopModeChange} value={this.state.loopMode}>
                             <option value={Animation.ANIMATIONLOOPMODE_CYCLE}>Cycle</option>
                             <option value={Animation.ANIMATIONLOOPMODE_RELATIVE}>Relative</option>
                             <option value={Animation.ANIMATIONLOOPMODE_CONSTANT}>Constant</option>
                         </select>
                     </div>
                     <div className="confirm-buttons">
-                        <ButtonLineComponent label={this.state.isUpdating ? "Update" : "Create"} onClick={this.state.isUpdating ? () => this.updateAnimation() : () => this.addAnimation()} />
+                        <ButtonLineComponent label={confirmLabel} onClick={confirmHandleOnClick} />
                         {this.props.entity.animations?.length !== 0 ? <ButtonLineComponent label={"Cancel"} onClick={this.props.close} /> : null}
                     </div>
                 </div>

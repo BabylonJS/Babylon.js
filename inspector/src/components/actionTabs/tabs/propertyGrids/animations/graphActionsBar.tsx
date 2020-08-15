@@ -67,13 +67,13 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
         }
     }
 
-    onBlur(event: React.FocusEvent<HTMLInputElement>) {
+    onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
         event.preventDefault();
         if (event.target.value !== "") {
             const actionableKeyframe: IActionableKeyFrame = { frame: this.getFrame(), value: this.getValue() };
             this.props.setKeyframeValue(actionableKeyframe);
         }
-    }
+    };
 
     getFrame() {
         let frame;
@@ -115,16 +115,48 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
                 </div>
                 <div className="buttons-container" style={{ pointerEvents: this.props.enabled ? "all" : "none" }}>
                     <div className="action-input frame-input">
-                        <input ref={this._frameInput} type="number" onChange={this.handleFrameChange} value={this.state.frame} step="1" disabled={this.props.actionableKeyframe.frame === undefined} onBlur={(e) => this.onBlur(e)} />
+                        <input
+                            ref={this._frameInput}
+                            type="number"
+                            onChange={this.handleFrameChange}
+                            value={this.state.frame}
+                            step="1"
+                            disabled={this.props.actionableKeyframe.frame === undefined}
+                            onBlur={this.onBlur}
+                        />
                     </div>
                     <div className="action-input">
-                        <input ref={this._valueInput} type="number" value={this.state.value} onChange={this.handleValueChange} step="0.01" disabled={this.props.actionableKeyframe.value === undefined} onBlur={(e) => this.onBlur(e)} />
+                        <input
+                            ref={this._valueInput}
+                            type="number"
+                            value={this.state.value}
+                            onChange={this.handleValueChange}
+                            step="0.01"
+                            disabled={this.props.actionableKeyframe.value === undefined}
+                            onBlur={this.onBlur}
+                        />
                     </div>
                     <IconButtonLineComponent tooltip={"Add Keyframe"} icon="new-key" onClick={this.props.addKeyframe} />
-                    <IconButtonLineComponent tooltip={"Frame selected keyframes"} icon="frame" onClick={this.props.removeKeyframe} />
-                    <IconButtonLineComponent tooltip={"Flat Tangents"} icon="flat-tangent" onClick={this.props.flatTangent} />
-                    <IconButtonLineComponent tooltip={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off"} icon={this.props.brokenMode ? "break-tangent" : "unify-tangent"} onClick={this.props.brokeTangents} />
-                    <IconButtonLineComponent tooltip={"Linear"} icon="linear-tangent" onClick={this.props.setLerpToActiveControlPoint} />
+                    <IconButtonLineComponent
+                        tooltip={"Frame selected keyframes"}
+                        icon="frame"
+                        onClick={this.props.removeKeyframe}
+                    />
+                    <IconButtonLineComponent
+                        tooltip={"Flat Tangents"}
+                        icon="flat-tangent"
+                        onClick={this.props.flatTangent}
+                    />
+                    <IconButtonLineComponent
+                        tooltip={this.props.brokenMode ? "Broken Mode On" : "Broken Mode Off"}
+                        icon={this.props.brokenMode ? "break-tangent" : "unify-tangent"}
+                        onClick={this.props.brokeTangents}
+                    />
+                    <IconButtonLineComponent
+                        tooltip={"Linear"}
+                        icon="linear-tangent"
+                        onClick={this.props.setLerpToActiveControlPoint}
+                    />
                 </div>
             </div>
         );

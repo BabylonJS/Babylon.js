@@ -66,33 +66,46 @@ export class EditorControls extends React.Component<
         }
     }
 
-    animationAdded(animation: Animation) {
+    animationAdded = (animation: Animation) => {
         this.setState({
             animationsCount: this.recountAnimations(),
             isEditTabOpen: true,
             isAnimationTabOpen: false,
         });
         this.props.selectAnimation(animation, undefined);
-    }
+    };
 
-    finishedUpdate() {
+    finishedUpdate = () => {
         this.setState({
             isEditTabOpen: true,
             isAnimationTabOpen: false,
             selected: undefined,
         });
-    }
+    };
 
     recountAnimations() {
         return (this.props.entity as IAnimatable).animations?.length ?? 0;
     }
 
-    changeLoopBehavior() {
+    changeLoopBehavior = () => {
         this.setState({
             isLoopActive: !this.state.isLoopActive,
         });
         this.props.setIsLooping();
-    }
+    };
+
+    handleFirstTab = () => {
+        this.handleTabs(0);
+    };
+    handleSecondTab = () => {
+        this.handleTabs(1);
+    };
+    handleThirdTab = () => {
+        this.handleTabs(2);
+    };
+    handleFourthTab = () => {
+        this.handleTabs(3);
+    };
 
     handleTabs(tab: number) {
         let state = {
@@ -140,23 +153,23 @@ export class EditorControls extends React.Component<
         this.setState(state);
     }
 
-    handleChangeFps(fps: number) {
+    handleChangeFps = (fps: number) => {
         this.props.setFps(fps);
         this.setState({ framesPerSecond: fps });
         if (this.props.selected) {
             this.props.selected.framePerSecond = fps;
         }
-    }
+    };
 
-    emptiedList() {
+    emptiedList = () => {
         this.setState({
             animationsCount: this.recountAnimations(),
             isEditTabOpen: false,
             isAnimationTabOpen: true,
         });
-    }
+    };
 
-    animationsLoaded(numberOfAnimations: number) {
+    animationsLoaded = (numberOfAnimations: number) => {
         this.setState({
             animationsCount: numberOfAnimations,
             isEditTabOpen: true,
@@ -164,9 +177,9 @@ export class EditorControls extends React.Component<
             isLoadTabOpen: false,
             isSaveTabOpen: false,
         });
-    }
+    };
 
-    editAnimation(selected: Animation) {
+    editAnimation = (selected: Animation) => {
         this.setState({
             selected: selected,
             isEditTabOpen: false,
@@ -174,67 +187,111 @@ export class EditorControls extends React.Component<
             isLoadTabOpen: false,
             isSaveTabOpen: false,
         });
-    }
+    };
+
+    setSnippetId = (id: string) => {
+        this.setState({ snippetId: id });
+    };
+
+    closeAddAnimation = () => {
+        this.setState({ isAnimationTabOpen: false, isEditTabOpen: true });
+    };
 
     render() {
         return (
             <div className="animation-list">
                 <div className="controls-header">
-                    {this.props.isTargetedAnimation ? null : <IconButtonLineComponent active={this.state.isAnimationTabOpen} tooltip="Add Animation" icon="medium add-animation" onClick={() => this.handleTabs(0)}></IconButtonLineComponent>}
-                    <IconButtonLineComponent active={this.state.isLoadTabOpen} tooltip="Load Animation" icon="medium load" onClick={() => this.handleTabs(1)}></IconButtonLineComponent>
-                    {this.state.animationsCount === 0 ? null : <IconButtonLineComponent active={this.state.isSaveTabOpen} tooltip="Save Animation" icon="medium save" onClick={() => this.handleTabs(2)}></IconButtonLineComponent>}
-                    {this.state.animationsCount === 0 ? null : <IconButtonLineComponent active={this.state.isEditTabOpen} tooltip="Edit Animations" icon="medium animation-edit" onClick={() => this.handleTabs(3)}></IconButtonLineComponent>}
+                    {this.props.isTargetedAnimation ? null : (
+                        <IconButtonLineComponent
+                            active={this.state.isAnimationTabOpen}
+                            tooltip="Add Animation"
+                            icon="medium add-animation"
+                            onClick={this.handleFirstTab}></IconButtonLineComponent>
+                    )}
+                    <IconButtonLineComponent
+                        active={this.state.isLoadTabOpen}
+                        tooltip="Load Animation"
+                        icon="medium load"
+                        onClick={this.handleSecondTab}></IconButtonLineComponent>
+                    {this.state.animationsCount === 0 ? null : (
+                        <IconButtonLineComponent
+                            active={this.state.isSaveTabOpen}
+                            tooltip="Save Animation"
+                            icon="medium save"
+                            onClick={this.handleThirdTab}></IconButtonLineComponent>
+                    )}
+                    {this.state.animationsCount === 0 ? null : (
+                        <IconButtonLineComponent
+                            active={this.state.isEditTabOpen}
+                            tooltip="Edit Animations"
+                            icon="medium animation-edit"
+                            onClick={this.handleFourthTab}></IconButtonLineComponent>
+                    )}
                     {this.state.isEditTabOpen ? (
                         <div className="input-fps">
-                            <NumericInputComponent label={""} precision={0} value={this.state.framesPerSecond} onChange={(framesPerSecond: number) => this.handleChangeFps(framesPerSecond)} />
+                            <NumericInputComponent
+                                label={""}
+                                precision={0}
+                                value={this.state.framesPerSecond}
+                                onChange={this.handleChangeFps}
+                            />
                             <p>fps</p>
                         </div>
                     ) : null}
-                    {this.state.isEditTabOpen ? <IconButtonLineComponent tooltip="Loop/Unloop" icon={`medium ${this.state.isLoopActive ? "loop-active last" : "loop-inactive last"}`} onClick={() => this.changeLoopBehavior()}></IconButtonLineComponent> : null}
+                    {this.state.isEditTabOpen ? (
+                        <IconButtonLineComponent
+                            tooltip="Loop/Unloop"
+                            icon={`medium ${this.state.isLoopActive ? "loop-active last" : "loop-inactive last"}`}
+                            onClick={this.changeLoopBehavior}></IconButtonLineComponent>
+                    ) : null}
                 </div>
                 {this.props.isTargetedAnimation ? null : (
                     <AddAnimation
                         isOpen={this.state.isAnimationTabOpen}
-                        close={() => {
-                            this.setState({ isAnimationTabOpen: false, isEditTabOpen: true });
-                        }}
+                        close={this.closeAddAnimation}
                         entity={this.props.entity as IAnimatable}
-                        setNotificationMessage={(message: string) => {
-                            this.props.setNotificationMessage(message);
-                        }}
-                        addedNewAnimation={(animation: Animation) => this.animationAdded(animation)}
+                        setNotificationMessage={this.props.setNotificationMessage}
+                        addedNewAnimation={this.animationAdded}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         fps={this.state.framesPerSecond}
                         selectedToUpdate={this.state.selected}
-                        finishedUpdate={() => this.finishedUpdate()}
+                        finishedUpdate={this.finishedUpdate}
                     />
                 )}
 
                 {this.state.isLoadTabOpen ? (
                     <LoadSnippet
-                        animationsLoaded={(numberOfAnimations: number) => this.animationsLoaded(numberOfAnimations)}
+                        animationsLoaded={this.animationsLoaded}
                         lockObject={this.props.lockObject}
                         animations={[]}
                         snippetServer={this.props.snippetServer}
                         globalState={this.props.globalState}
-                        setSnippetId={(id: string) => this.setState({ snippetId: id })}
+                        setSnippetId={this.setSnippetId}
                         entity={this.props.entity}
                         setNotificationMessage={this.props.setNotificationMessage}
                     />
                 ) : null}
 
-                {this.state.isSaveTabOpen ? <SaveSnippet lockObject={this.props.lockObject} animations={(this.props.entity as IAnimatable).animations} snippetServer={this.props.snippetServer} globalState={this.props.globalState} snippetId={this.state.snippetId} /> : null}
+                {this.state.isSaveTabOpen ? (
+                    <SaveSnippet
+                        lockObject={this.props.lockObject}
+                        animations={(this.props.entity as IAnimatable).animations}
+                        snippetServer={this.props.snippetServer}
+                        globalState={this.props.globalState}
+                        snippetId={this.state.snippetId}
+                    />
+                ) : null}
 
                 {this.state.isEditTabOpen ? (
                     <AnimationListTree
-                        deselectAnimation={() => this.props.deselectAnimation()}
+                        deselectAnimation={this.props.deselectAnimation}
                         isTargetedAnimation={this.props.isTargetedAnimation}
                         entity={this.props.entity}
                         selected={this.props.selected}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        empty={() => this.emptiedList()}
+                        empty={this.emptiedList}
                         selectAnimation={this.props.selectAnimation}
-                        editAnimation={(selected: Animation) => this.editAnimation(selected)}
+                        editAnimation={this.editAnimation}
                     />
                 ) : null}
             </div>
