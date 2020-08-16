@@ -41,6 +41,7 @@
 - Force compute world matrix of the newly-attached mesh of a ray helper ([RaananW](https://github.com/RaananW))
 - Allow 180 monoscopic videos on top of the video dome ([#8575](https://github.com/BabylonJS/Babylon.js/issues/8575)) ([RaananW](https://github.com/RaananW))
 - Added `AssetContainerTask` support to `AssetsManager` class ([MackeyK24](https://github.com/MackeyK24))
+- Changed DeviceSourceManager getInput contract to no longer return nullable values ([Drigax](https://github.com/drigax))
 
 ### Engine
 
@@ -72,6 +73,7 @@
 
 ### Inspector
 
+- Added support for follow cameras ([Deltakosh](https://github.com/deltakosh))
 - New delta tool used to apply delta changes to a scene ([Deltakosh](https://github.com/deltakosh))
 - Handle PBR colors as colors in linear space ([Popov72](https://github.com/Popov72))
 - Allow removing textures ([Popov72](https://github.com/Popov72))
@@ -168,6 +170,7 @@
 - All camera view matrices are now calculated by Babylon to support left and right handed systems ([RaananW](https://github.com/RaananW))
 - WebXR Features Manager now has the ability to check if a feature can be enabled, and set native features optional or required ([RaananW](https://github.com/RaananW))
 - Optional camera gaze mode added to the pointer selection feature ([RaananW](https://github.com/RaananW))
+- Exposing feature points when running on top of BabylonNative ([Alex-MSFT](https://github.com/Alex-MSFT))
 - WebXR hit test can now define different entity type for the results ([#8687](https://github.com/BabylonJS/Babylon.js/issues/8687)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
