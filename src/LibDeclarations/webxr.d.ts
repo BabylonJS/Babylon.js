@@ -66,6 +66,7 @@ interface XRInputSource {
     gripSpace: XRSpace | undefined;
     gamepad: Gamepad | undefined;
     profiles: Array<string>;
+    hand: XRHand | undefined;
 }
 
 interface XRSessionInit {
@@ -119,6 +120,8 @@ interface XRFrame {
     worldInformation: {
         detectedPlanes?: XRPlaneSet;
     };
+    // Hand tracking
+    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose
 }
 
 interface XRViewerPose extends XRPose {
@@ -235,3 +238,44 @@ interface XRPlane {
     polygon: Array<DOMPointReadOnly>;
     lastChangedTime: number;
 }
+
+interface XRJointSpace extends XRSpace {};
+
+interface XRJointPose extends XRPose {
+    radius: number | undefined;
+};
+
+declare class XRHand implements Iterable<XRJointSpace> {
+    readonly const length: number;
+
+    readonly static const WRIST = 0;
+
+    readonly static const THUMB_METACARPAL = 1;
+    readonly static const THUMB_PHALANX_PROXIMAL = 2;
+    readonly static const THUMB_PHALANX_DISTAL = 3;
+    readonly static const THUMB_PHALANX_TIP = 4;
+
+    readonly static const INDEX_METACARPAL = 5;
+    readonly static const INDEX_PHALANX_PROXIMAL = 6;
+    readonly static const INDEX_PHALANX_INTERMEDIATE = 7;
+    readonly static const INDEX_PHALANX_DISTAL = 8;
+    readonly static const INDEX_PHALANX_TIP = 9;
+
+    readonly static const MIDDLE_METACARPAL = 10;
+    readonly static const MIDDLE_PHALANX_PROXIMAL = 11;
+    readonly static const MIDDLE_PHALANX_INTERMEDIATE = 12;
+    readonly static const MIDDLE_PHALANX_DISTAL = 13;
+    readonly static const MIDDLE_PHALANX_TIP = 14;
+
+    readonly static const RING_METACARPAL = 15;
+    readonly static const RING_PHALANX_PROXIMAL = 16;
+    readonly static const RING_PHALANX_INTERMEDIATE = 17;
+    readonly static const RING_PHALANX_DISTAL = 18;
+    readonly static const RING_PHALANX_TIP = 19;
+
+    readonly static const LITTLE_METACARPAL = 20;
+    readonly static const LITTLE_PHALANX_PROXIMAL = 21;
+    readonly static const LITTLE_PHALANX_INTERMEDIATE = 22;
+    readonly static const LITTLE_PHALANX_DISTAL = 23;
+    readonly static const LITTLE_PHALANX_TIP = 24;
+};
