@@ -484,7 +484,7 @@ export class Sound {
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
                     this._htmlAudioElement.playbackRate = this._playbackRate;
-                    if(this._htmlAudioElement.loop !== this.loop) {
+                    if (this._htmlAudioElement.loop !== this.loop) {
                         this._htmlAudioElement.loop = this.loop;
                     }
                 } else {
