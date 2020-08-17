@@ -65,7 +65,8 @@ interface IKTX2_Sample {
     sampleUpper: number;
 }
 
-interface IKTX2_DFD {
+/** @hidden */
+export interface IKTX2_DFD {
     vendorId: number;
     descriptorType: number;
     versionNumber: number;
@@ -144,6 +145,10 @@ export class KTX2FileReader {
         return this._levels;
     }
 
+    public get dfdBlock(): IKTX2_DFD {
+        return this._dfdBlock;
+    }
+
     public get supercompressionGlobalData(): IKTX2_SupercompressionGlobalData {
         return this._supercompressionGlobalData;
     }
@@ -184,7 +189,7 @@ export class KTX2FileReader {
         }
 
         if (header.faceCount > 1) {
-            throw new Error(`Failed to parse KTX2 file - Cube textures are not currently supported.`);
+            //throw new Error(`Failed to parse KTX2 file - Cube textures are not currently supported.`);
         }
 
         console.log(header);
@@ -335,6 +340,20 @@ export class KTX2FileReader {
     }
 
     public get hasAlpha(): boolean {
+        const tformat = this.textureFormat;
+
+        switch (tformat) {
+            case sourceTextureFormat.ETC1S:
+                return this._dfdBlock.numSamples === 2 && (this._dfdBlock.samples[0].channelType === dfdChannel_ETC1S.AAA || this._dfdBlock.samples[1].channelType === dfdChannel_ETC1S.AAA);
+
+            case sourceTextureFormat.UASTC4x4:
+                return this._dfdBlock.samples[0].channelType === dfdChannel_UASTC.RGBA;
+        }
+
+        return false;
+    }
+
+    public getHasAlpha(): boolean {
         const tformat = this.textureFormat;
 
         switch (tformat) {
