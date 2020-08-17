@@ -1635,7 +1635,10 @@ export class AnimationCurveEditorComponent extends React.Component<
     };
 
     calculateCurrentPointInCurve = (frame: number): number | undefined => {
-        if (this.state.selectedPathData !== undefined) {
+        if (
+            this.state.selectedPathData !== undefined &&
+            this.state.selectedPathData[this.state.selectedCoordinate] !== undefined
+        ) {
             const selectedCurve = this.state.selectedPathData[this.state.selectedCoordinate].domCurve.current;
             if (selectedCurve !== null) {
                 const curveLength = selectedCurve.getTotalLength();
