@@ -5,6 +5,7 @@ import { IActionableKeyFrame } from "./animationCurveEditorComponent";
 interface IGraphActionsBarProps {
     addKeyframe: () => void;
     removeKeyframe: () => void;
+    frameSelectedKeyframes: () => void;
     handleValueChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleFrameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     flatTangent: () => void;
@@ -140,7 +141,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
                     <IconButtonLineComponent
                         tooltip={"Frame selected keyframes"}
                         icon="frame"
-                        onClick={this.props.removeKeyframe}
+                        onClick={this.props.frameSelectedKeyframes}
                     />
                     <IconButtonLineComponent
                         tooltip={"Flat Tangents"}
