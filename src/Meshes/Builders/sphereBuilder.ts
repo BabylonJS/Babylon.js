@@ -48,12 +48,12 @@ VertexData.CreateSphere = function(options: { segments?: number, diameter?: numb
         if (zRotationStep > 0) {
             var verticesCount = positions.length / 3;
             for (var firstIndex = verticesCount - 2 * (totalYRotationSteps + 1); (firstIndex + totalYRotationSteps + 2) < verticesCount; firstIndex++) {
-                if(zRotationStep !== 1){
+                if(zRotationStep > 1) {
                     indices.push((firstIndex));
                     indices.push((firstIndex + 1));
                     indices.push(firstIndex + totalYRotationSteps + 1);
                 }
-                if(zRotationStep !== totalZRotationSteps){
+                if(zRotationStep < totalZRotationSteps) {
                     indices.push((firstIndex + totalYRotationSteps + 1));
                     indices.push((firstIndex + 1));
                     indices.push((firstIndex + totalYRotationSteps + 2));
