@@ -7,15 +7,15 @@ import { Engine } from "../Engines/engine";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { TransformNode } from "../Meshes/transformNode";
 import { Logger } from "../Misc/logger";
-import { _DevTools } from '../Misc/devTools';
+import { _DevTools } from "../Misc/devTools";
 
 /**
  * Interface used to define options for Sound class
  */
 export interface ISoundOptions {
     /**
-    * Does the sound autoplay once loaded.
-    */
+     * Does the sound autoplay once loaded.
+     */
     autoplay?: boolean;
     /**
      * Does the sound loop after it finishes playing once.
@@ -38,9 +38,9 @@ export interface ISoundOptions {
      */
     useCustomAttenuation?: boolean;
     /**
-    * Define the roll off factor of spatial sounds.
-    * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
-    */
+     * Define the roll off factor of spatial sounds.
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     */
     rolloffFactor?: number;
     /**
      * Define the reference distance the sound should be heard perfectly.
@@ -181,23 +181,23 @@ export class Sound {
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
     private _htmlAudioElement: HTMLAudioElement;
-    private _urlType: 'Unknown' | 'String' | 'Array' | 'ArrayBuffer' | 'MediaStream' = "Unknown";
+    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" = "Unknown";
     private _length?: number;
     private _offset?: number;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _DevTools.WarnImport("AudioSceneComponent");
-    }
+    };
 
     /**
-    * Create a sound and attach it to a scene
-    * @param name Name of your sound
-    * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
-    * @param scene defines the scene the sound belongs to
-    * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
-    * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
-    */
+     * Create a sound and attach it to a scene
+     * @param name Name of your sound
+     * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+     * @param scene defines the scene the sound belongs to
+     * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
+     * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
+     */
     constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
         this.name = name;
         this._scene = scene;
@@ -208,8 +208,7 @@ export class Sound {
         this._customAttenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => {
             if (currentDistance < maxDistance) {
                 return currentVolume * (1 - currentDistance / maxDistance);
-            }
-            else {
+            } else {
                 return 0;
             }
         };
@@ -246,7 +245,7 @@ export class Sound {
             // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
             if (urlOrArrayBuffer) {
                 try {
-                    if (typeof (urlOrArrayBuffer) === "string") {
+                    if (typeof urlOrArrayBuffer === "string") {
                         this._urlType = "String";
                     } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
                         this._urlType = "ArrayBuffer";
@@ -282,27 +281,37 @@ export class Sound {
                         case "String":
                             urls.push(urlOrArrayBuffer);
                         case "Array":
-                            if (urls.length === 0) { urls = urlOrArrayBuffer; }
+                            if (urls.length === 0) {
+                                urls = urlOrArrayBuffer;
+                            }
                             // If we found a supported format, we load it immediately and stop the loop
                             for (var i = 0; i < urls.length; i++) {
                                 var url = urls[i];
-                                codecSupportedFound = (options && options.skipCodecCheck) ||
+                                codecSupportedFound =
+                                    (options && options.skipCodecCheck) ||
                                     (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) ||
                                     (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) ||
-                                    (url.indexOf(".wav", url.length - 4) !== -1) ||
-                                    (url.indexOf("blob:") !== -1);
+                                    url.indexOf(".wav", url.length - 4) !== -1 ||
+                                    url.indexOf("blob:") !== -1;
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
-                                        this._scene._loadFile(url, (data) => {
-                                            this._soundLoaded(data as ArrayBuffer);
-                                        }, undefined, true, true, (exception) => {
-                                            if (exception) {
-                                                Logger.Error("XHR " + exception.status + " error on: " + url + ".");
+                                        this._scene._loadFile(
+                                            url,
+                                            (data) => {
+                                                this._soundLoaded(data as ArrayBuffer);
+                                            },
+                                            undefined,
+                                            true,
+                                            true,
+                                            (exception) => {
+                                                if (exception) {
+                                                    Logger.Error("XHR " + exception.status + " error on: " + url + ".");
+                                                }
+                                                Logger.Error("Sound creation aborted.");
+                                                this._scene.mainSoundTrack.RemoveSound(this);
                                             }
-                                            Logger.Error("Sound creation aborted.");
-                                            this._scene.mainSoundTrack.RemoveSound(this);
-                                        });
+                                        );
                                     }
                                     // Streaming sound using HTML5 Audio tag
                                     else {
@@ -334,8 +343,7 @@ export class Sound {
 
                     if (!validParameter) {
                         Logger.Error("Parameter must be a URL to the sound, an Array of URLs (.mp3 & .ogg) or an ArrayBuffer of the sound.");
-                    }
-                    else {
+                    } else {
                         if (!codecSupportedFound) {
                             this._isReadyToPlay = true;
                             // Simulating a ready to play event to avoid breaking code path
@@ -348,14 +356,12 @@ export class Sound {
                             }
                         }
                     }
-                }
-                catch (ex) {
+                } catch (ex) {
                     Logger.Error("Unexpected error. Sound creation aborted.");
                     this._scene.mainSoundTrack.RemoveSound(this);
                 }
             }
-        }
-        else {
+        } else {
             // Adding an empty sound to avoid breaking audio calls for non Web Audio browsers
             this._scene.mainSoundTrack.AddSound(this);
             if (!Engine.audioEngine.WarnedWebAudioUnsupported) {
@@ -384,8 +390,7 @@ export class Sound {
             this._isReadyToPlay = false;
             if (this.soundTrackId === -1) {
                 this._scene.mainSoundTrack.RemoveSound(this);
-            }
-            else if (this._scene.soundTracks) {
+            } else if (this._scene.soundTracks) {
                 this._scene.soundTracks[this.soundTrackId].RemoveSound(this);
             }
             if (this._soundGain) {
@@ -431,12 +436,22 @@ export class Sound {
         if (!Engine.audioEngine.audioContext) {
             return;
         }
-        Engine.audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
-            this._audioBuffer = buffer;
-            this._isReadyToPlay = true;
-            if (this.autoplay) { this.play(0, this._offset, this._length); }
-            if (this._readyToPlayCallback) { this._readyToPlayCallback(); }
-        }, (err: any) => { Logger.Error("Error while decoding audio data for: " + this.name + " / Error: " + err); });
+        Engine.audioEngine.audioContext.decodeAudioData(
+            audioData,
+            (buffer) => {
+                this._audioBuffer = buffer;
+                this._isReadyToPlay = true;
+                if (this.autoplay) {
+                    this.play(0, this._offset, this._length);
+                }
+                if (this._readyToPlayCallback) {
+                    this._readyToPlayCallback();
+                }
+            },
+            (err: any) => {
+                Logger.Error("Error while decoding audio data for: " + this.name + " / Error: " + err);
+            }
+        );
     }
 
     /**
@@ -469,10 +484,21 @@ export class Sound {
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
                     this._htmlAudioElement.playbackRate = this._playbackRate;
-                }
-                else {
+                    if(this._htmlAudioElement.loop !== this.loop) {
+                        this._htmlAudioElement.loop = this.loop;
+                    }
+                } else {
                     if (this._soundSource) {
                         this._soundSource.playbackRate.value = this._playbackRate;
+                        if (this._soundSource.loop !== this.loop) {
+                            this._soundSource.loop = this.loop;
+                        }
+                        if (this._offset !== undefined && this._soundSource.loopStart !== this._offset) {
+                            this._soundSource.loopStart = this._offset;
+                        }
+                        if (this._length !== undefined && this._length !== this._soundSource.loopEnd) {
+                            this._soundSource.loopEnd = (this._offset! | 0) + this._length!;
+                        }
                     }
                 }
             }
@@ -500,8 +526,7 @@ export class Sound {
                 this._soundPanner.refDistance = 1;
                 this._soundPanner.rolloffFactor = 1;
                 this._soundPanner.panningModel = this._panningModel as any;
-            }
-            else {
+            } else {
                 this._soundPanner.distanceModel = this.distanceModel as any;
                 this._soundPanner.maxDistance = this.maxDistance;
                 this._soundPanner.refDistance = this.refDistance;
@@ -552,11 +577,11 @@ export class Sound {
     }
 
     /**
-    * Transform this sound into a directional source
-    * @param coneInnerAngle Size of the inner cone in degree
-    * @param coneOuterAngle Size of the outer cone in degree
-    * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
-    */
+     * Transform this sound into a directional source
+     * @param coneInnerAngle Size of the inner cone in degree
+     * @param coneOuterAngle Size of the outer cone in degree
+     * @param coneOuterGain Volume of the sound outside the outer cone (between 0.0 and 1.0)
+     */
     public setDirectionalCone(coneInnerAngle: number, coneOuterAngle: number, coneOuterGain: number): void {
         if (coneOuterAngle < coneInnerAngle) {
             Logger.Error("setDirectionalCone(): outer angle of the cone must be superior or equal to the inner angle.");
@@ -674,11 +699,11 @@ export class Sound {
     }
 
     /**
-    * Play the sound
-    * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
-    * @param offset (optional) Start the sound at a specific time in seconds
-    * @param length (optional) Sound duration (in seconds)
-    */
+     * Play the sound
+     * @param time (optional) Start the sound after X seconds. Start immediately (0) by default.
+     * @param offset (optional) Start the sound at a specific time in seconds
+     * @param length (optional) Sound duration (in seconds)
+     */
     public play(time?: number, offset?: number, length?: number): void {
         if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine.audioContext) {
             try {
@@ -698,8 +723,7 @@ export class Sound {
                             this._soundPanner.coneOuterGain = this._coneOuterGain;
                             if (this._connectedTransformNode) {
                                 this._updateDirection();
-                            }
-                            else {
+                            } else {
                                 this._soundPanner.setOrientation(this._localDirection.x, this._localDirection.y, this._localDirection.z);
                             }
                         }
@@ -708,7 +732,9 @@ export class Sound {
                 if (this._streaming) {
                     if (!this._streamingSource) {
                         this._streamingSource = Engine.audioEngine.audioContext.createMediaElementSource(this._htmlAudioElement);
-                        this._htmlAudioElement.onended = () => { this._onended(); };
+                        this._htmlAudioElement.onended = () => {
+                            this._onended();
+                        };
                         this._htmlAudioElement.playbackRate = this._playbackRate;
                     }
                     this._streamingSource.disconnect();
@@ -730,21 +756,23 @@ export class Sound {
                                         // Waiting for the audio engine to be unlocked by user click on unmute
                                         Engine.audioEngine.lock();
                                         if (this.loop || this.autoplay) {
-                                            Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                            Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                                                tryToPlay();
+                                            });
                                         }
                                     });
                                 }
-                            }
-                            else {
+                            } else {
                                 if (this.loop || this.autoplay) {
-                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                                        tryToPlay();
+                                    });
                                 }
                             }
                         };
                         tryToPlay();
                     }
-                }
-                else {
+                } else {
                     var tryToPlay = () => {
                         if (Engine.audioEngine.audioContext) {
                             length = length || this._length;
@@ -767,7 +795,9 @@ export class Sound {
                                 this._soundSource.loopEnd = (offset! | 0) + length!;
                             }
                             this._soundSource.playbackRate.value = this._playbackRate;
-                            this._soundSource.onended = () => { this._onended(); };
+                            this._soundSource.onended = () => {
+                                this._onended();
+                            };
                             startTime = time ? Engine.audioEngine.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
                             const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
                             this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
@@ -782,23 +812,22 @@ export class Sound {
                                 // Waiting for the audio engine to be unlocked by user click on unmute
                                 Engine.audioEngine.lock();
                                 if (this.loop || this.autoplay) {
-                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => { tryToPlay(); });
+                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                                        tryToPlay();
+                                    });
                                 }
-                            }
-                            else {
+                            } else {
                                 tryToPlay();
                             }
                         }, 500);
-                    }
-                    else {
+                    } else {
                         tryToPlay();
                     }
                 }
                 this._startTime = startTime;
                 this.isPlaying = true;
                 this.isPaused = false;
-            }
-            catch (ex) {
+            } catch (ex) {
                 Logger.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
             }
         }
@@ -813,9 +842,9 @@ export class Sound {
     }
 
     /**
-    * Stop the sound
-    * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
-    */
+     * Stop the sound
+     * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
+     */
     public stop(time?: number): void {
         if (this.isPlaying) {
             if (this._streaming) {
@@ -829,11 +858,12 @@ export class Sound {
                     this._streamingSource.disconnect();
                 }
                 this.isPlaying = false;
-            }
-            else if (Engine.audioEngine.audioContext && this._soundSource) {
+            } else if (Engine.audioEngine.audioContext && this._soundSource) {
                 var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                 this._soundSource.stop(stopTime);
-                this._soundSource.onended = () => { this.isPlaying = false; };
+                this._soundSource.onended = () => {
+                    this.isPlaying = false;
+                };
                 if (!this.isPaused) {
                     this._startOffset = 0;
                 }
@@ -853,8 +883,7 @@ export class Sound {
                 } else {
                     this._streamingSource.disconnect();
                 }
-            }
-            else if (Engine.audioEngine.audioContext) {
+            } else if (Engine.audioEngine.audioContext) {
                 this.stop(0);
                 this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
@@ -872,8 +901,7 @@ export class Sound {
                 this._soundGain.gain.cancelScheduledValues(Engine.audioEngine.audioContext.currentTime);
                 this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, Engine.audioEngine.audioContext.currentTime);
                 this._soundGain.gain.linearRampToValueAtTime(newVolume, Engine.audioEngine.audioContext.currentTime + time);
-            }
-            else {
+            } else {
                 this._soundGain.gain.value = newVolume;
             }
         }
@@ -889,8 +917,7 @@ export class Sound {
         if (this.isPlaying) {
             if (this._streaming && this._htmlAudioElement) {
                 this._htmlAudioElement.playbackRate = this._playbackRate;
-            }
-            else if (this._soundSource) {
+            } else if (this._soundSource) {
                 this._soundSource.playbackRate.value = this._playbackRate;
             }
         }
@@ -944,8 +971,7 @@ export class Sound {
         if (this._positionInEmitterSpace) {
             node.worldMatrixFromCache.invertToRef(TmpVectors.Matrix[0]);
             this.setPosition(TmpVectors.Matrix[0].getTranslation());
-        }
-        else {
+        } else {
             if (!(<any>node).getBoundingInfo) {
                 this.setPosition(node.absolutePosition);
             } else {
@@ -969,18 +995,24 @@ export class Sound {
                 if (this._isReadyToPlay) {
                     clonedSound._audioBuffer = this.getAudioBuffer();
                     clonedSound._isReadyToPlay = true;
-                    if (clonedSound.autoplay) { clonedSound.play(0, this._offset, this._length); }
-                }
-                else {
+                    if (clonedSound.autoplay) {
+                        clonedSound.play(0, this._offset, this._length);
+                    }
+                } else {
                     window.setTimeout(setBufferAndRun, 300);
                 }
             };
 
             var currentOptions = {
-                autoplay: this.autoplay, loop: this.loop,
-                volume: this._volume, spatialSound: this.spatialSound, maxDistance: this.maxDistance,
-                useCustomAttenuation: this.useCustomAttenuation, rolloffFactor: this.rolloffFactor,
-                refDistance: this.refDistance, distanceModel: this.distanceModel
+                autoplay: this.autoplay,
+                loop: this.loop,
+                volume: this._volume,
+                spatialSound: this.spatialSound,
+                maxDistance: this.maxDistance,
+                useCustomAttenuation: this.useCustomAttenuation,
+                rolloffFactor: this.rolloffFactor,
+                refDistance: this.refDistance,
+                distanceModel: this.distanceModel,
             };
 
             var clonedSound = new Sound(this.name + "_cloned", new ArrayBuffer(0), this._scene, null, currentOptions);
@@ -1042,7 +1074,7 @@ export class Sound {
             playbackRate: this._playbackRate,
             panningModel: this._panningModel,
             soundTrackId: this.soundTrackId,
-            metadata: this.metadata
+            metadata: this.metadata,
         };
 
         if (this.spatialSound) {
@@ -1078,34 +1110,44 @@ export class Sound {
 
         if (parsedSound.url) {
             soundUrl = rootUrl + parsedSound.url;
-        }
-        else {
+        } else {
             soundUrl = rootUrl + soundName;
         }
 
         var options = {
-            autoplay: parsedSound.autoplay, loop: parsedSound.loop, volume: parsedSound.volume,
-            spatialSound: parsedSound.spatialSound, maxDistance: parsedSound.maxDistance,
+            autoplay: parsedSound.autoplay,
+            loop: parsedSound.loop,
+            volume: parsedSound.volume,
+            spatialSound: parsedSound.spatialSound,
+            maxDistance: parsedSound.maxDistance,
             rolloffFactor: parsedSound.rolloffFactor,
             refDistance: parsedSound.refDistance,
             distanceModel: parsedSound.distanceModel,
-            playbackRate: parsedSound.playbackRate
+            playbackRate: parsedSound.playbackRate,
         };
 
         var newSound: Sound;
 
         if (!sourceSound) {
-            newSound = new Sound(soundName, soundUrl, scene, () => { scene._removePendingData(newSound); }, options);
+            newSound = new Sound(
+                soundName,
+                soundUrl,
+                scene,
+                () => {
+                    scene._removePendingData(newSound);
+                },
+                options
+            );
             scene._addPendingData(newSound);
-        }
-        else {
+        } else {
             var setBufferAndRun = () => {
                 if (sourceSound._isReadyToPlay) {
                     newSound._audioBuffer = sourceSound.getAudioBuffer();
                     newSound._isReadyToPlay = true;
-                    if (newSound.autoplay) { newSound.play(0, newSound._offset, newSound._length); }
-                }
-                else {
+                    if (newSound.autoplay) {
+                        newSound.play(0, newSound._offset, newSound._length);
+                    }
+                } else {
                     window.setTimeout(setBufferAndRun, 300);
                 }
             };
