@@ -1,6 +1,6 @@
 import { Nullable } from '../../types';
 import { Transcoder, sourceTextureFormat, transcodeTarget } from './transcoder';
-import { IKTX2_SupercompressionGlobalData, IKTX2_ImageDesc } from './KTX2FileReader';
+import { KTX2FileReader, IKTX2_ImageDesc } from './KTX2FileReader';
 
 declare var MSC_TRANSCODER: any;
 
@@ -32,8 +32,9 @@ export class MSCTranscoder extends Transcoder {
         return true;
     }
 
-    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, levelUncompressedByteLength: number, hasAlpha: boolean, sgd: IKTX2_SupercompressionGlobalData, imageDesc: Nullable<IKTX2_ImageDesc>, encodedData: Uint8Array): Promise<Nullable<Uint8Array>> {
+    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, uncompressedByteLength: number, ktx2Reader: KTX2FileReader, imageDesc: Nullable<IKTX2_ImageDesc>, encodedData: Uint8Array): Promise<Nullable<Uint8Array>> {
         const isVideo = false;
+
         return this._getMSCBasisTranscoder().then(() => {
             const basisModule = this._mscBasisModule;
 
@@ -41,10 +42,10 @@ export class MSCTranscoder extends Transcoder {
             const TextureFormat: any = basisModule.TextureFormat;
             const ImageInfo: any = basisModule.ImageInfo;
 
-            var transcoder = src === sourceTextureFormat.UASTC4x4 ? new basisModule.UastcImageTranscoder() : new basisModule.BasisLzEtc1sImageTranscoder();
-            var texFormat = src === sourceTextureFormat.UASTC4x4 ? TextureFormat.UASTC4x4 : TextureFormat.ETC1S;
+            const transcoder = src === sourceTextureFormat.UASTC4x4 ? new basisModule.UastcImageTranscoder() : new basisModule.BasisLzEtc1sImageTranscoder();
+            const texFormat = src === sourceTextureFormat.UASTC4x4 ? TextureFormat.UASTC4x4 : TextureFormat.ETC1S;
 
-            var imageInfo = new ImageInfo(texFormat, width, height, level);
+            const imageInfo = new ImageInfo(texFormat, width, height, level);
 
             const targetFormat = TranscodeTarget[transcodeTarget[dst]]; // works because the labels of the sourceTextureFormat enum are the same than the property names used in TranscodeTarget!
 
@@ -55,14 +56,10 @@ export class MSCTranscoder extends Transcoder {
             let result: any;
 
             if (src === sourceTextureFormat.ETC1S) {
-                var numEndpoints = sgd.endpointCount;
-                var numSelectors = sgd.selectorCount;
-                var endpoints = sgd.endpointsData;
-                var selectors = sgd.selectorsData;
-                var tables = sgd.tablesData;
+                const sgd = ktx2Reader.supercompressionGlobalData;
 
-                transcoder.decodePalettes(numEndpoints, endpoints, numSelectors, selectors);
-                transcoder.decodeTables(tables);
+                transcoder.decodePalettes(sgd.endpointCount, sgd.endpointsData, sgd.selectorCount, sgd.selectorsData);
+                transcoder.decodeTables(sgd.tablesData);
 
                 imageInfo.flags = imageDesc!.imageFlags;
                 imageInfo.rgbByteOffset = 0;
@@ -74,11 +71,11 @@ export class MSCTranscoder extends Transcoder {
             } else {
                 imageInfo.flags = 0;
                 imageInfo.rgbByteOffset = 0;
-                imageInfo.rgbByteLength = levelUncompressedByteLength;
+                imageInfo.rgbByteLength = uncompressedByteLength;
                 imageInfo.alphaByteOffset = 0;
                 imageInfo.alphaByteLength = 0;
 
-                result = transcoder.transcodeImage(targetFormat, encodedData, imageInfo, 0, hasAlpha, isVideo);
+                result = transcoder.transcodeImage(targetFormat, encodedData, imageInfo, 0, ktx2Reader.hasAlpha, isVideo);
             }
 
             if (result && result.transcodedImage !== undefined) {

@@ -2,8 +2,11 @@ import { Nullable } from '../../types';
 import { Tools } from '../tools';
 import { Transcoder, sourceTextureFormat, transcodeTarget } from './transcoder';
 import { WASMMemoryManager } from './wasmMemoryManager';
-import { IKTX2_SupercompressionGlobalData, IKTX2_ImageDesc } from './KTX2FileReader';
+import { KTX2FileReader, IKTX2_ImageDesc } from './KTX2FileReader';
 
+/**
+ * @hidden
+ */
 export class LiteTranscoder extends Transcoder {
 
     private _modulePath: string;
@@ -42,7 +45,7 @@ export class LiteTranscoder extends Transcoder {
         this._memoryManager = memoryMgr;
     }
 
-    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, levelUncompressedByteLength: number, hasAlpha: boolean, sgd: IKTX2_SupercompressionGlobalData, imageDesc: Nullable<IKTX2_ImageDesc>, encodedData: Uint8Array): Promise<Nullable<Uint8Array>> {
+    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, uncompressedByteLength: number, ktx2Reader: KTX2FileReader, imageDesc: Nullable<IKTX2_ImageDesc>, encodedData: Uint8Array): Promise<Nullable<Uint8Array>> {
         return this._loadModule().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
 
