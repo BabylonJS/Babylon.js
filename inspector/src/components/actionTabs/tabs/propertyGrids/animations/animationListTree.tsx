@@ -63,6 +63,20 @@ export class AnimationListTree extends React.Component<
         };
     }
 
+    componentDidUpdate(prevProps: IAnimationListTreeProps) {
+        if (this.props.entity instanceof TargetedAnimation) {
+            if (
+                (this.props.entity as TargetedAnimation).animation !== (prevProps.entity as TargetedAnimation).animation
+            ) {
+                this.setState({ animationList: this.generateList() });
+            }
+        } else {
+            if ((this.props.entity as IAnimatable).animations !== (prevProps.entity as IAnimatable).animations) {
+                this.setState({ animationList: this.generateList() });
+            }
+        }
+    }
+
     deleteAnimation = () => {
         let currentSelected = this.props.selected;
         if (this.props.entity instanceof TargetedAnimation) {

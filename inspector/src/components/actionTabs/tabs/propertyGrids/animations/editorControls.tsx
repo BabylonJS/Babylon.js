@@ -177,6 +177,16 @@ export class EditorControls extends React.Component<
             isLoadTabOpen: false,
             isSaveTabOpen: false,
         });
+
+        if (this.props.entity instanceof TargetedAnimation) {
+            const animation = (this.props.entity as TargetedAnimation).animation;
+            this.props.selectAnimation(animation);
+        } else {
+            const animations = (this.props.entity as IAnimatable).animations;
+            if (animations !== null) {
+                this.props.selectAnimation(animations[0]);
+            }
+        }
     };
 
     editAnimation = (selected: Animation) => {
