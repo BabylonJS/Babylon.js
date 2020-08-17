@@ -35168,6 +35168,15 @@ declare module BABYLON {
         _removePendingData(data: any): void;
         offlineProvider: IOfflineProvider;
     }
+    /**
+     * Information about the current host
+     */
+    export interface HostInformation {
+        /**
+         * Defines if the current host is a mobile
+         */
+        isMobile: boolean;
+    }
     /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
         /**
@@ -35423,6 +35432,10 @@ declare module BABYLON {
         private _activeRequests;
         /** @hidden */
         _transformTextureUrl: Nullable<(url: string) => string>;
+        /**
+         * Gets information about the current host
+         */
+        hostInformation: HostInformation;
         protected get _supportsHardwareTextureRescaling(): boolean;
         private _framebufferDimensionsObject;
         /**
@@ -47077,31 +47090,35 @@ declare module BABYLON {
         /**
          * The name of the anchor system feature
          */
-        static ANCHOR_SYSTEM: string;
+        static readonly ANCHOR_SYSTEM: string;
         /**
          * The name of the background remover feature
          */
-        static BACKGROUND_REMOVER: string;
+        static readonly BACKGROUND_REMOVER: string;
         /**
          * The name of the hit test feature
          */
-        static HIT_TEST: string;
+        static readonly HIT_TEST: string;
         /**
          * physics impostors for xr controllers feature
          */
-        static PHYSICS_CONTROLLERS: string;
+        static readonly PHYSICS_CONTROLLERS: string;
         /**
          * The name of the plane detection feature
          */
-        static PLANE_DETECTION: string;
+        static readonly PLANE_DETECTION: string;
         /**
          * The name of the pointer selection feature
          */
-        static POINTER_SELECTION: string;
+        static readonly POINTER_SELECTION: string;
         /**
          * The name of the teleportation feature
          */
-        static TELEPORTATION: string;
+        static readonly TELEPORTATION: string;
+        /**
+         * The name of the feature points feature.
+         */
+        static readonly FEATURE_POINTS: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -74770,6 +74787,79 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * A babylon interface for a "WebXR" feature point.
+     * Represents the position and confidence value of a given feature point.
+     */
+    export interface IWebXRFeaturePoint {
+        /**
+         * Represents the position of the feature point in world space.
+         */
+        position: Vector3;
+        /**
+         * Represents the confidence value of the feature point in world space. 0 being least confident, and 1 being most confident.
+         */
+        confidenceValue: number;
+    }
+    /**
+     * The feature point system is used to detect feature points from real world geometry.
+     * This feature is currently experimental and only supported on BabylonNative, and should not be used in the browser.
+     * The newly introduced API can be seen in webxr.nativeextensions.d.ts and described in FeaturePoints.md.
+     */
+    export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
+        private _enabled;
+        private _featurePointCloud;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+        * Observers registered here will be executed whenever new feature points are added (on XRFrame while the session is tracking).
+        * Will notify the observers about which feature points have been added.
+        */
+        readonly onFeaturePointsAddedObservable: Observable<number[]>;
+        /**
+         * Observers registered here will be executed whenever a feature point has been updated (on XRFrame while the session is tracking).
+         * Will notify the observers about which feature points have been updated.
+         */
+        readonly onFeaturePointsUpdatedObservable: Observable<number[]>;
+        /**
+         * The current feature point cloud maintained across frames.
+         */
+        get featurePointCloud(): Array<IWebXRFeaturePoint>;
+        /**
+         * construct the feature point system
+         * @param _xrSessionManager an instance of xr Session manager
+         */
+        constructor(_xrSessionManager: WebXRSessionManager);
+        /**
+         * Detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        /**
+         * On receiving a new XR frame if this feature is attached notify observers new feature point data is available.
+         */
+        protected _onXRFrame(frame: XRFrame): void;
+        /**
+         * Initializes the feature. If the feature point feature is not available for this environment do not mark the feature as enabled.
+         */
+        private _init;
+    }
+}
+declare module BABYLON {
+    /**
      * The motion controller class for all microsoft mixed reality controllers
      */
     export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
@@ -75734,4 +75824,15 @@ interface XRPlane {
     planeSpace: XRSpace;
     polygon: Array<DOMPointReadOnly>;
     lastChangedTime: number;
+}
+// This file contains native only extensions for WebXR  These APIs are not supported in the browser yet.
+// They are intended for use with either Babylon Native https://github.com/BabylonJS/BabylonNative or
+// Babylon React Native: https://github.com/BabylonJS/BabylonReactNative
+
+interface XRSession {
+    trySetFeaturePointCloudEnabled(enabled: boolean): boolean;
+}
+
+interface XRFrame {
+    featurePointCloud? : Array<number>;
 }
