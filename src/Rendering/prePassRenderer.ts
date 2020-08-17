@@ -460,8 +460,6 @@ export class PrePassRenderer {
             this._enable();
         }
 
-
-
         if (!this.enabled) {
             this._engine.bindAttachments(this._defaultAttachments);
         }
