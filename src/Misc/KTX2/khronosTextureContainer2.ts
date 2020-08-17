@@ -62,14 +62,13 @@ export class KhronosTextureContainer2 {
         return transcoder;
     }
 
-    private async _createTexture(kfr: KTX2FileReader, internalTexture: InternalTexture) {
+    private async _createMipmaps(kfr: KTX2FileReader, internalTexture: InternalTexture) {
         /*await this.zstd.init();*/
 
         //var mipmaps = [];
-        var width = kfr.header.pixelWidth;
-        var height = kfr.header.pixelHeight;
-        var srcTexFormat = kfr.textureFormat;
-        var hasAlpha = kfr.hasAlpha;
+        const width = kfr.header.pixelWidth;
+        const height = kfr.header.pixelHeight;
+        const srcTexFormat = kfr.textureFormat;
 
         let targetFormat = transcodeTarget.BC7_M5_RGBA;
         let transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
@@ -84,21 +83,21 @@ export class KhronosTextureContainer2 {
 
         let firstImageDescIndex = 0;
 
-        for (var level = 0; level < kfr.header.levelCount; level ++) {
+        for (let level = 0; level < kfr.header.levelCount; level ++) {
             if (level > 0) {
                 firstImageDescIndex += Math.max(kfr.header.layerCount, 1) * kfr.header.faceCount * Math.max(kfr.header.pixelDepth >> (level - 1), 1);
             }
 
-            var levelWidth = width / Math.pow(2, level);
-            var levelHeight = height / Math.pow(2, level);
+            const levelWidth = width / Math.pow(2, level);
+            const levelHeight = height / Math.pow(2, level);
 
-            var numImagesInLevel = 1; // kfr.header.faceCount
-            var imageOffsetInLevel = 0;
-            var levelByteLength = kfr.levels[level].byteLength;
-            var levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
+            const numImagesInLevel = kfr.header.faceCount; // note that cubemap are not supported yet (see KTX2FileReader), so faceCount == 1
+            const levelByteLength = kfr.levels[level].byteLength;
+            const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
 
             let levelDataBuffer = kfr.data.buffer;
             let levelDataOffset = kfr.levels[level].byteOffset;
+            let imageOffsetInLevel = 0;
 
             if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
                 //levelDataBuffer = this.zstd.decode(new Uint8Array(levelDataBuffer, levelDataOffset, levelByteLength), levelUncompressedByteLength);
@@ -107,7 +106,7 @@ export class KhronosTextureContainer2 {
 
             //const levelImageByteLength = imageInfo.numBlocksX * imageInfo.numBlocksY * DFD bytesPlane0;
 
-            for (var imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {
+            for (let imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {
                 let encodedData: Uint8Array;
                 let imageDesc: Nullable<IKTX2_ImageDesc> = null;
 
@@ -121,7 +120,7 @@ export class KhronosTextureContainer2 {
                     imageOffsetInLevel += levelByteLength;
                 }
 
-                texturePromises.push(transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, hasAlpha, kfr.supercompressionGlobalData, imageDesc, encodedData));
+                texturePromises.push(transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData));
             }
         }
 
@@ -158,8 +157,7 @@ export class KhronosTextureContainer2 {
     public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void> {
         const kfr = new KTX2FileReader(data);
 
-        return this._createTexture(kfr, internalTexture);
-
+        return this._createMipmaps(kfr, internalTexture);
     }
 
     /**
