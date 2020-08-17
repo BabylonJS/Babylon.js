@@ -46,7 +46,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         this._playheadSelected = false;
         this._movedX = 0;
         this._movedY = 0;
-        this._dragBuffer = 4;
+        this._dragBuffer = 3;
         this._draggingMultiplier = 10;
         this._isControlKeyPress = false;
 
@@ -146,13 +146,14 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
                     let point = newPoints.find((kf) => kf.id === this._currentPointId);
                     if (point) {
-                        // Check for NaN values here.
                         if (this._isCurrentPointControl === "left") {
                             point.leftControlPoint = coord;
                             point.isLeftActive = true;
+                            point.isRightActive = false;
                         } else if (this._isCurrentPointControl === "right") {
                             point.rightControlPoint = coord;
                             point.isRightActive = true;
+                            point.isLeftActive = false;
                         } else {
                             point.keyframePoint = coord;
                             point.isRightActive = false;
@@ -207,17 +208,17 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             directionY = 1; //bottom
         }
 
-        const bufferX = Math.abs(this._movedX - this._panStop.x);
-        const bufferY = Math.abs(this._movedY - this._panStop.y);
+        const bufferX = this._movedX === 0 ? 1 : Math.abs(this._movedX - this._panStop.x);
+        const bufferY = this._movedY === 0 ? 1 : Math.abs(this._movedY - this._panStop.y);
 
         let xMulti = 0;
-        if (bufferX > this._dragBuffer) {
-            xMulti = Math.abs(this._panStop.x - this._panStart.x) / this._draggingMultiplier;
+        if (bufferX >= this._dragBuffer) {
+            xMulti = Math.round(Math.abs(bufferX - this._dragBuffer) / 2.5);
         }
 
         let yMulti = 0;
-        if (bufferY > this._dragBuffer) {
-            yMulti = Math.abs(this._panStop.y - this._panStart.y) / this._draggingMultiplier;
+        if (bufferY >= this._dragBuffer) {
+            yMulti = Math.round(Math.abs(bufferY - this._dragBuffer) / 2.5);
         }
 
         this._movedX = this._panStop.x;
@@ -284,7 +285,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
     }
 
     render() {
-        const viewBoxScaling = `${this.state.panX} ${this.state.panY} ${Math.round(
+        const viewBoxScaling = `${this.props.positionCanvas?.x} ${this.props.positionCanvas?.y} ${Math.round(
             this.props.scale * 200
         )} ${Math.round(this.props.scale * 100)}`;
         return (
