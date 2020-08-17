@@ -3,8 +3,10 @@ import { sourceTextureFormat } from './transcoder';
 
 /** @hidden */
 export enum supercompressionScheme {
+    None = 0,
     BasisLZ = 1,
-    ZStandard = 2
+    ZStandard = 2,
+    ZLib = 3
 }
 
 const enum dfdModel {
@@ -292,7 +294,9 @@ export class KTX2FileReader {
             sgd.extendedByteLength = sgdReader.readUint32();
             sgd.imageDescs = [];
 
-            for (let i = 0; i < header.levelCount; i ++) {
+            const imageCount = this._getImageCount();
+
+            for (let i = 0; i < imageCount; i ++) {
                 sgd.imageDescs.push({
                     imageFlags: sgdReader.readUint32(),
                     rgbSliceByteOffset: sgdReader.readUint32(),
@@ -315,6 +319,15 @@ export class KTX2FileReader {
 
         console.log("sgd", sgd);
 
+    }
+
+    private _getImageCount(): number {
+        let layerPixelDepth = Math.max(this._header.pixelDepth, 1);
+        for (let i = 1; i < this._header.levelCount; i++) {
+            layerPixelDepth += Math.max(this._header.pixelDepth >> i, 1);
+        }
+
+        return Math.max(this._header.layerCount, 1) * this._header.faceCount * layerPixelDepth;
     }
 
     public get textureFormat(): sourceTextureFormat {
