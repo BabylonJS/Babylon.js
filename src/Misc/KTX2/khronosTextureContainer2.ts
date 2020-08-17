@@ -82,46 +82,62 @@ export class KhronosTextureContainer2 {
 
         const texturePromises: Array<Promise<Nullable<Uint8Array>>> = [];
 
-        var imageDescIndex = 0;
+        let firstImageDescIndex = 0;
 
         for (var level = 0; level < kfr.header.levelCount; level ++) {
+            if (level > 0) {
+                firstImageDescIndex += Math.max(kfr.header.layerCount, 1) * kfr.header.faceCount * Math.max(kfr.header.pixelDepth >> (level - 1), 1);
+            }
+
             var levelWidth = width / Math.pow(2, level);
             var levelHeight = height / Math.pow(2, level);
 
-            var numImagesInLevel = 1; // TODO(donmccurdy): Support cubemaps, arrays and 3D.
+            var numImagesInLevel = 1; // kfr.header.faceCount
             var imageOffsetInLevel = 0;
             var levelByteLength = kfr.levels[level].byteLength;
             var levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
+
+            let levelDataBuffer = kfr.data.buffer;
+            let levelDataOffset = kfr.levels[level].byteOffset;
+
+            if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
+                //levelDataBuffer = this.zstd.decode(new Uint8Array(levelDataBuffer, levelDataOffset, levelByteLength), levelUncompressedByteLength);
+                levelDataOffset = 0;
+            }
+
+            //const levelImageByteLength = imageInfo.numBlocksX * imageInfo.numBlocksY * DFD bytesPlane0;
 
             for (var imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {
                 let encodedData: Uint8Array;
                 let imageDesc: Nullable<IKTX2_ImageDesc> = null;
 
-                if (srcTexFormat === sourceTextureFormat.ETC1S) {
-                    imageDesc = kfr.supercompressionGlobalData.imageDescs![imageDescIndex++];
+                if (kfr.header.supercompressionScheme === supercompressionScheme.BasisLZ) {
+                    imageDesc = kfr.supercompressionGlobalData.imageDescs![firstImageDescIndex + imageIndex];
 
-                    encodedData = new Uint8Array(kfr.data.buffer, kfr.levels[level].byteOffset + imageDesc.rgbSliceByteOffset, imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength);
+                    encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageDesc.rgbSliceByteOffset, imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength);
                 } else {
-                    encodedData = new Uint8Array(kfr.data.buffer, kfr.levels[level].byteOffset + imageOffsetInLevel, levelByteLength);
+                    encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageOffsetInLevel, levelByteLength);
 
-                    if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
-                        //encodedData = this.zstd.decode( encodedData, levelUncompressedByteLength );
-                    }
+                    imageOffsetInLevel += levelByteLength;
                 }
 
                 texturePromises.push(transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, hasAlpha, kfr.supercompressionGlobalData, imageDesc, encodedData));
-
-                imageOffsetInLevel += levelByteLength;
             }
         }
 
         Promise.all(texturePromises).then((textures) => {
             for (let t = 0; t < textures.length; ++t) {
-                const textureData = textures[t];
+                let textureData = textures[t];
 
                 if (textureData === null) {
                     throw new Error("KTX2 container - could not transcode one of the image");
                 }
+
+                console.log("texture byte length=", textureData.byteLength);
+
+                //textureData = new Uint8Array(textureData.buffer, 0, textureData.byteLength / 6);
+
+                //console.log("texture byte length=", textureData.byteLength);
 
                 internalTexture.width = internalTexture.baseWidth = width;
                 internalTexture.height = internalTexture.baseHeight = height;
