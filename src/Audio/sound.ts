@@ -469,10 +469,12 @@ export class Sound {
             if (this.isPlaying) {
                 if (this._streaming && this._htmlAudioElement) {
                     this._htmlAudioElement.playbackRate = this._playbackRate;
+                    this._htmlAudioElement.loop = this.loop;
                 }
                 else {
                     if (this._soundSource) {
                         this._soundSource.playbackRate.value = this._playbackRate;
+                        this._soundSource.loop = this.loop;
                     }
                 }
             }
