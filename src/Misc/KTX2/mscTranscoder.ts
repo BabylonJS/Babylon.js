@@ -4,6 +4,8 @@ import { KTX2FileReader, IKTX2_ImageDesc } from './KTX2FileReader';
 
 declare var MSC_TRANSCODER: any;
 
+declare function importScripts(...urls: string[]): void;
+
 /**
  * @hidden
  */
@@ -18,6 +20,7 @@ export class MSCTranscoder extends Transcoder {
         }
 
         this._mscBasisTranscoderPromise = new Promise((resolve) => {
+            importScripts();
             MSC_TRANSCODER().then((basisModule: any) => {
                 basisModule.initTranscoders();
                 this._mscBasisModule = basisModule;
