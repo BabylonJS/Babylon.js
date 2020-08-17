@@ -45,7 +45,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
             if (startKeyframe.frame !== undefined && typeof startKeyframe.frame === "number") {
                 this.props.onCurrentFrameChange(startKeyframe.frame);
             }
-            this.props.repositionCanvas(startKeyframe);
+            //this.props.repositionCanvas(startKeyframe);
         }
     };
 
@@ -54,7 +54,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         if (endKeyframe !== null) {
             if (endKeyframe.frame !== undefined && typeof endKeyframe.frame === "number") {
                 this.props.onCurrentFrameChange(endKeyframe.frame);
-                this.props.repositionCanvas(endKeyframe);
+                //this.props.repositionCanvas(endKeyframe);
             }
         }
     };
@@ -64,7 +64,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
             let first = this.props.keyframes.find((kf) => kf.frame > this.props.currentFrame);
             if (first) {
                 this.props.onCurrentFrameChange(first.frame);
-                this.props.repositionCanvas(first);
+                //this.props.repositionCanvas(first);
                 this.setState({ selected: first });
                 (this.props.scrollable.current as HTMLDivElement).scrollLeft = first.frame * this._sizeOfKeyframe;
             }
@@ -77,7 +77,7 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
             let first = keyframes.reverse().find((kf) => kf.frame < this.props.currentFrame);
             if (first) {
                 this.props.onCurrentFrameChange(first.frame);
-                this.props.repositionCanvas(first);
+                //this.props.repositionCanvas(first);
                 this.setState({ selected: first });
                 (this.props.scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * this._sizeOfKeyframe);
             }

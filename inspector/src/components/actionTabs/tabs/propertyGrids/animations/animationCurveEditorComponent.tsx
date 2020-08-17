@@ -509,6 +509,15 @@ export class AnimationCurveEditorComponent extends React.Component<
         return value;
     }
 
+    forceFrameZeroToExist(keys: IAnimationKey[]) {
+        const zeroFrame = keys.find((x) => Math.abs(x.frame) === 0);
+        if (zeroFrame === undefined) {
+            const frame: IAnimationKey = { frame: 0, value: keys[0].value };
+            keys.push(frame);
+            keys.sort((a, b) => a.frame - b.frame);
+        }
+    }
+
     renderPoints = (updatedSvgKeyFrame: IKeyframeSvgPoint, id: string) => {
         let animation = this.state.selected as Animation;
 
@@ -570,6 +579,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.updateLeftControlPoint(updatedSvgKeyFrame, keys[index], animation.dataType, coordinate);
         this.updateRightControlPoint(updatedSvgKeyFrame, keys[index], animation.dataType, coordinate);
 
+        this.forceFrameZeroToExist(keys);
         animation.setKeys(keys);
 
         this.setState({
@@ -762,6 +772,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                             }
                             return k;
                         });
+                        this.forceFrameZeroToExist(updatedKeys);
                         this.state.selected.setKeys(updatedKeys);
                         this.selectAnimation(animation);
                     }
@@ -1654,7 +1665,7 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     setCanvasPosition = (keyframe: IAnimationKey) => {
         if (this.state.selected) {
-            const positionX = (keyframe.frame - 10) * 10;
+            const positionX = (keyframe.frame - this._pixelFrameUnit) * this._pixelFrameUnit;
 
             let value = 0;
             if (keyframe.value === null) {
@@ -1666,7 +1677,10 @@ export class AnimationCurveEditorComponent extends React.Component<
             }
 
             const centerCanvas = this._heightScale / 2;
-            const positionY = centerCanvas - value * centerCanvas;
+            let positionY = centerCanvas - value * centerCanvas;
+            if (positionY === centerCanvas) {
+                positionY = 0;
+            }
 
             this.setState({ panningX: positionX, panningY: positionY, repositionCanvas: true });
         }
@@ -1742,6 +1756,12 @@ export class AnimationCurveEditorComponent extends React.Component<
                     }
                 }
 
+                const zeroFrames = keys.filter((x) => x.frame === 0);
+                if (zeroFrames.length > 1) {
+                    keys.shift();
+                }
+                keys.sort((a, b) => a.frame - b.frame);
+
                 this._isPlaying = true;
                 this.setState({ isPlaying: true });
                 this.forceUpdate();
@@ -1803,6 +1823,15 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.setState({ notification: message });
     };
 
+    frameSelectedKeyframes = () => {
+        // get selected keyframes
+        // get adjacent keyframes
+        // found canvas boundaries
+        // zoom to fit
+        // if not selected keyframes
+        // remove zoom
+    };
+
     render() {
         return (
             <div ref={this._editor} id="animation-curve-editor">
@@ -1820,6 +1849,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     handleValueChange={this.handleValueChange}
                     addKeyframe={this.addKeyframeClick}
                     removeKeyframe={this.removeKeyframeClick}
+                    frameSelectedKeyframes={this.frameSelectedKeyframes}
                     brokenMode={this.state.isBrokenMode}
                     brokeTangents={this.setBrokenMode}
                     lerpMode={this.state.lerpMode}
