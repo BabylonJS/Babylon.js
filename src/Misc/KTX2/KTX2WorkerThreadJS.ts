@@ -239,7 +239,7 @@ export function workerFunc() {
                 return this._mscBasisTranscoderPromise;
             }
             this._mscBasisTranscoderPromise = new Promise(function (resolve) {
-                importScripts("https://popov72.github.io/BabylonDev/resources/lib/msc_basis_transcoder.jss");
+                importScripts("http://localhost:1338/dist/preview release/msc_basis_transcoder.js");
                 MSC_TRANSCODER().then(function (basisModule) {
                     basisModule.initTranscoders();
                     _this._mscBasisModule = basisModule;
