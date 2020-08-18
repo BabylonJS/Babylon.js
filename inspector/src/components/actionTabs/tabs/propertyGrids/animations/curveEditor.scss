@@ -544,6 +544,9 @@ body {
                     padding-left: 10px;
                     padding-right: 10px;
                     width: 782px;
+                    &:focus {
+                        outline: none;
+                    }
 
                     &::-webkit-scrollbar {
                         height: 0.4em;
@@ -599,6 +602,9 @@ body {
                         align-items: center;
                         padding-left: 2px;
                         padding-right: 2px;
+                        &:focus {
+                            outline: none;
+                        }
                         .handle {
                             display: flex;
                             flex-direction: row;
