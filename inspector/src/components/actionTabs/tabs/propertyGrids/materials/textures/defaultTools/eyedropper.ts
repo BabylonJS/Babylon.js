@@ -1,5 +1,7 @@
 import { IToolParameters, IToolData } from '../textureEditorComponent';
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
+import { Nullable } from 'babylonjs/types'
+import { Observer } from 'babylonjs/Misc/observable';
 
 export const Eyedropper : IToolData = {
     name: 'Eyedropper',
