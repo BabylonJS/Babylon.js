@@ -172,6 +172,7 @@
 - Optional camera gaze mode added to the pointer selection feature ([RaananW](https://github.com/RaananW))
 - Exposing feature points when running on top of BabylonNative ([Alex-MSFT](https://github.com/Alex-MSFT))
 - WebXR hit test can now define different entity type for the results ([#8687](https://github.com/BabylonJS/Babylon.js/issues/8687)) ([RaananW](https://github.com/RaananW))
+- Fixed an issue with stencil not enabled per default ([#8720](https://github.com/BabylonJS/Babylon.js/issues/8720)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
