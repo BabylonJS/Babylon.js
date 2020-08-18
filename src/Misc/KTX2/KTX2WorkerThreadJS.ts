@@ -2,8 +2,17 @@
 // tslint:disable
 export function workerFunc() {
 
-    var COMPRESSED_RGBA_BPTC_UNORM_EXT = 36492;
-
+    var COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
+    var COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
+    var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;
+    var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
+    var COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
+    var COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
+    var COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
+    var COMPRESSED_RGB8_ETC2 = 0x9274;
+    var COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
+    var RGBAFormat = 0x3FF;
+    
     var __extends = (this && this.__extends) || (function () {
         var extendStatics = function (d, b) {
             extendStatics = Object.setPrototypeOf ||
@@ -150,7 +159,7 @@ export function workerFunc() {
                 return this._modulePromise;
             }
             this._modulePromise = new Promise(function (resolve) {
-                fetch/*Tools.LoadFileAsync*/("http://localhost:1338" + _this._modulePath).
+                fetch(_this._modulePath).
                 then(function (response) {
                     return response.arrayBuffer();
                 }).then(function (wasmBinary) {
@@ -203,7 +212,7 @@ export function workerFunc() {
             return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.BC7_M5_RGBA;
         };
         LiteTranscoder_UASTC_BC7.prototype.initialize = function () {
-            this.setModulePath("/dist/preview release/basisTranscoder/uastc_bc7.wasm");
+            this.setModulePath("https://cdn.babylonjs.com/ktx2Transcoders/uastc_bc7.wasm");
         };
         return LiteTranscoder_UASTC_BC7;
     }(LiteTranscoder));
@@ -220,7 +229,7 @@ export function workerFunc() {
             return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.ASTC_4x4_RGBA;
         };
         LiteTranscoder_UASTC_ASTC.prototype.initialize = function () {
-            this.setModulePath("/dist/preview release/basisTranscoder/uastc_astc.wasm");
+            this.setModulePath("https://cdn.babylonjs.com/ktx2Transcoders/uastc_astc.wasm");
         };
         return LiteTranscoder_UASTC_ASTC;
     }(LiteTranscoder));
@@ -239,7 +248,7 @@ export function workerFunc() {
                 return this._mscBasisTranscoderPromise;
             }
             this._mscBasisTranscoderPromise = new Promise(function (resolve) {
-                importScripts("http://localhost:1338/dist/preview release/msc_basis_transcoder.js");
+                importScripts("https://cdn.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js");
                 MSC_TRANSCODER().then(function (basisModule) {
                     basisModule.initTranscoders();
                     _this._mscBasisModule = basisModule;
@@ -747,14 +756,45 @@ export function workerFunc() {
             });
         }
     };
-    var _createMipmaps = function (kfr) {
-        /*await this.zstd.init();*/
-        //var mipmaps = [];
+    var _createMipmaps = function (kfr, caps) {
         var width = kfr.header.pixelWidth;
         var height = kfr.header.pixelHeight;
         var srcTexFormat = kfr.textureFormat;
+        var isPowerOfTwo = function (value) {
+            return (value & (value - 1)) === 0 && value !== 0;
+        };
+        // PVRTC1 transcoders (from both ETC1S and UASTC) only support power of 2 dimensions.
+        var pvrtcTranscodable = isPowerOfTwo(width) && isPowerOfTwo(height);
         var targetFormat = transcodeTarget.BC7_M5_RGBA;
         var transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
+        if (caps.astc) {
+            targetFormat = transcodeTarget.ASTC_4x4_RGBA;
+            transcodedFormat = COMPRESSED_RGBA_ASTC_4x4_KHR;
+        }
+        else if (caps.bptc && srcTexFormat === sourceTextureFormat.UASTC4x4) {
+            targetFormat = transcodeTarget.BC7_M5_RGBA;
+            transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
+        }
+        else if (caps.s3tc) {
+            targetFormat = kfr.hasAlpha ? transcodeTarget.BC3_RGBA : transcodeTarget.BC1_RGB;
+            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA_S3TC_DXT5_EXT : COMPRESSED_RGB_S3TC_DXT1_EXT;
+        }
+        else if (caps.pvrtc && pvrtcTranscodable) {
+            targetFormat = kfr.hasAlpha ? transcodeTarget.PVRTC1_4_RGBA : transcodeTarget.PVRTC1_4_RGB;
+            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA_PVRTC_4BPPV1_IMG : COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+        }
+        else if (caps.etc2) {
+            targetFormat = kfr.hasAlpha ? transcodeTarget.ETC2_RGBA : transcodeTarget.ETC1_RGB /* subset of ETC2 */;
+            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA8_ETC2_EAC : COMPRESSED_RGB8_ETC2;
+        }
+        else if (caps.etc1) {
+            targetFormat = transcodeTarget.ETC1_RGB;
+            transcodedFormat = COMPRESSED_RGB_ETC1_WEBGL;
+        }
+        else {
+            targetFormat = transcodeTarget.RGBA32;
+            transcodedFormat = RGBAFormat;
+        }
         var transcoder = transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
         if (transcoder === null) {
             throw new Error("KTX2 container - no transcoder found to transcode source texture format \"" + sourceTextureFormat[srcTexFormat] + "\" to format \"" + transcodeTarget[targetFormat] + "\"");
