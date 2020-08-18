@@ -207,7 +207,7 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
-declare class XRHand implements Iterable<XRJointSpace> {
+declare class XRHand implements Array<XRJointSpace> {
     readonly length: number;
 
     static readonly WRIST = 0;
