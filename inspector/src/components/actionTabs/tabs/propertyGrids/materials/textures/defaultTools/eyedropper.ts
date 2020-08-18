@@ -5,7 +5,7 @@ export const Eyedropper : IToolData = {
     name: 'Eyedropper',
     type: class {
         getParameters: () => IToolParameters;
-        pointerObserver: any;
+        pointerObserver: Nullable<Observer<PointerInfo>>;
         isPicking: boolean;
 
         constructor(getParameters: () => IToolParameters) {
