@@ -63,11 +63,29 @@ export interface IWebXRHandTrackingOptions {
  * Parts of the hands divided to writs and finger names
  */
 export const enum HandPart {
+    /**
+     * HandPart - Wrist
+     */
     WRIST = "wrist",
+    /**
+     * HandPart - The THumb
+     */
     THUMB = "thumb",
+    /**
+     * HandPart - Index finger
+     */
     INDEX = "index",
+    /**
+     * HandPart - Middle finger
+     */
     MIDDLE = "middle",
+    /**
+     * HandPart - Ring finger
+     */
     RING = "ring",
+    /**
+     * HandPart - Little finger
+     */
     LITTLE = "little",
 }
 
@@ -102,7 +120,11 @@ export class WebXRHand implements IDisposable {
      * @param xrController the controller to which the hand correlates
      * @param trackedMeshes the meshes to be used to track the hand joints
      */
-    constructor(public xrController: WebXRInputSource, public trackedMeshes: AbstractMesh[]) {}
+    constructor(
+        /** the controller to which the hand correlates */
+        public readonly xrController: WebXRInputSource,
+        /** the meshes to be used to track the hand joints */
+        public readonly trackedMeshes: AbstractMesh[]) {}
 
     /**
      * Update this hand from the latest xr frame
@@ -143,6 +165,7 @@ export class WebXRHand implements IDisposable {
     /**
      * Get meshes of part of the hand
      * @param part the part of hand to get
+     * @returns An array of meshes that correlate to the hand part requested
      */
     public getHandPartMeshes(part: HandPart): AbstractMesh[] {
         return WebXRHand.HandPartsDefinition[part].map((idx) => this.trackedMeshes[idx]);
@@ -159,6 +182,9 @@ export class WebXRHand implements IDisposable {
 // Populate the hand parts definition
 WebXRHand._PopulateHandPartsDefinition();
 
+/**
+ * WebXR Hand Joint tracking feature, available for selected browsers and devices
+ */
 export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _idCounter = 0;
     /**
@@ -261,14 +287,16 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Get the hand object according to the controller id
      * @param controllerId the controller id to which we want to get the hand
+     * @returns null if not found or the WebXRHand object if found
      */
     public getHandByControllerId(controllerId: string): Nullable<WebXRHand> {
         return this._hands[controllerId]?.handObject || null;
     }
 
     /**
-     * Get a hand object according to the required handedness
+     * Get a hand object according to the requested handedness
      * @param handedness the handedness to request
+     * @returns null if not found or the WebXRHand object if found
      */
     public getHandByHandedness(handedness: XRHandedness): Nullable<WebXRHand> {
         const handednesses = Object.keys(this._hands).map((key) => this._hands[key].handObject.xrController.inputSource.handedness);
