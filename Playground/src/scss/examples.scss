@@ -16,6 +16,10 @@
         opacity: 1;
     }
 
+    &.removed {
+        display: none;
+    }
+
     width: 380px;
     display: grid;
     grid-template-columns: 100%;
