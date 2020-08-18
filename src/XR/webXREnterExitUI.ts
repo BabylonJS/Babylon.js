@@ -69,6 +69,9 @@ export class WebXREnterExitUIOptions {
 export class WebXREnterExitUI implements IDisposable {
     private _activeButton: Nullable<WebXREnterExitUIButton> = null;
     private _buttons: Array<WebXREnterExitUIButton> = [];
+    /**
+     * The HTML Div Element to which buttons are added.
+     */
     public readonly overlay: HTMLDivElement;
 
     /**
