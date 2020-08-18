@@ -5,6 +5,7 @@ import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
 import { Nullable } from 'babylonjs/types'
 import { Observer } from 'babylonjs/Misc/observable';
 import { Vector2 } from 'babylonjs/Maths/math.vector';
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 export const Paintbrush : IToolData = {
     name: 'Paintbrush',
@@ -101,13 +102,16 @@ export const Paintbrush : IToolData = {
                             circleCtx.imageSmoothingEnabled = false;
                             let pixels = new Array(4 * this.width * this.width);
                             const dis = this.width * this.width / 4;
-                            const rgb = this.hexToRgb(metadata.color)!;
+                            const rgb = Color3.FromHexString(metadata.color)!;
+                            const r = Math.floor(rgb.r * 255);
+                            const g = Math.floor(rgb.g * 255);
+                            const b = Math.floor(rgb.b * 255);
                             let idx = 0;
                             for(let y = -Math.ceil(this.width / 2); y < Math.floor(this.width / 2); y++) {
                                 for (let x = -Math.ceil(this.width / 2); x < Math.floor(this.width / 2); x++) {
-                                    pixels[idx++] = rgb.r;
-                                    pixels[idx++] = rgb.g;
-                                    pixels[idx++] = rgb.b;
+                                    pixels[idx++] = r;
+                                    pixels[idx++] = g;
+                                    pixels[idx++] = b;
                                     pixels[idx++] = (x * x + y * y <= dis) ? 255 : 0;
                                 }
                             }
@@ -138,15 +142,7 @@ export const Paintbrush : IToolData = {
             if (this.pointerObserver) {
                 this.getParameters().scene.onPointerObservable.remove(this.pointerObserver);
             }
-        }
-        hexToRgb(hex : string) {
-            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }          
+        }       
     },
     usesWindow: true,
     icon: `PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHN0eWxlPSJmaWxsOm5vbmUiLz48cGF0aCBkPSJNMjksMTFhMy41NywzLjU3LDAsMCwxLDAsNS4wNkwxNywyOGEyLjM0LDIuMzQsMCwwLDEtMSwuNThMMTAuOTEsMzBhLjc1Ljc1LDAsMCwxLS45Mi0uOTJMMTEuMzgsMjRBMi4zNCwyLjM0LDAsMCwxLDEyLDIzbDEyLTEyQTMuNTcsMy41NywwLDAsMSwyOSwxMVpNMjMsMTQuMSwxMywyNGEuNjkuNjksMCwwLDAtLjE5LjMzbC0xLjA1LDMuODUsMy44NS0xQS42OS42OSwwLDAsMCwxNiwyN0wyNS45LDE3Wm0yLTItMSwxTDI3LDE2bDEtMUEyLjA4LDIuMDgsMCwxLDAsMjUsMTIuMDdaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+`
