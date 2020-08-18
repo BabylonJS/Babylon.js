@@ -8,7 +8,16 @@ import { MSCTranscoder } from './mscTranscoder';
 
 declare function postMessage(message: any, transfer?: any[]): void;
 
-const COMPRESSED_RGBA_BPTC_UNORM_EXT = 36492;
+const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
+const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
+const COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F0;
+const COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
+const COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
+const COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
+const COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
+const COMPRESSED_RGB8_ETC2 = 0x9274;
+const COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
+const RGBAFormat = 0x3FF;
 
 export interface IMipmap {
     data: Nullable<Uint8Array>;
@@ -28,26 +37,51 @@ export function workerFunc(): void {
         if (event.data.action === "init") {
             postMessage({action: "init"});
         } else if (event.data.action === "createMipmaps") {
-            _createMipmaps(event.data.kfr).then((mipmaps) => {
-                //if (!success) {
-                //    postMessage({action: "transcode", success: success, id: event.data.id});
-                //} else {
-                    postMessage({ action: "mipmapsCreated", success: true/*success*/, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
-                //}
+            _createMipmaps(event.data.kfr, event.data.caps).then((mipmaps) => {
+                postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
+            }).catch((reason) => {
+                postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: reason });
             });
         }
     };
 
-    const _createMipmaps = (kfr: KTX2FileReader): Promise<{ mipmaps: Array<IMipmap>, mipmapsData: Array<ArrayBuffer> }> => {
-        /*await this.zstd.init();*/
-
-        //var mipmaps = [];
+    const _createMipmaps = (kfr: KTX2FileReader, caps: { [name: string]: any }): Promise<{ mipmaps: Array<IMipmap>, mipmapsData: Array<ArrayBuffer> }> => {
         const width = kfr.header.pixelWidth;
         const height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;
 
+        const isPowerOfTwo = (value: number)  => {
+            return (value & (value - 1)) === 0 && value !== 0;
+        };
+
+        // PVRTC1 transcoders (from both ETC1S and UASTC) only support power of 2 dimensions.
+        const pvrtcTranscodable = isPowerOfTwo(width) && isPowerOfTwo(height);
+
         let targetFormat = transcodeTarget.BC7_M5_RGBA;
         let transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
+
+        if (caps.astc) {
+            targetFormat = transcodeTarget.ASTC_4x4_RGBA;
+            transcodedFormat = COMPRESSED_RGBA_ASTC_4x4_KHR;
+        } else if (caps.bptc && srcTexFormat === sourceTextureFormat.UASTC4x4) {
+            targetFormat = transcodeTarget.BC7_M5_RGBA;
+            transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
+        } else if (caps.s3tc) {
+            targetFormat = kfr.hasAlpha ? transcodeTarget.BC3_RGBA : transcodeTarget.BC1_RGB;
+            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA_S3TC_DXT5_EXT : COMPRESSED_RGB_S3TC_DXT1_EXT;
+        } else if (caps.pvrtc && pvrtcTranscodable) {
+            targetFormat = kfr.hasAlpha ? transcodeTarget.PVRTC1_4_RGBA : transcodeTarget.PVRTC1_4_RGB;
+            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA_PVRTC_4BPPV1_IMG : COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+        } else if (caps.etc2) {
+            targetFormat = kfr.hasAlpha ? transcodeTarget.ETC2_RGBA : transcodeTarget.ETC1_RGB /* subset of ETC2 */;
+            transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA8_ETC2_EAC : COMPRESSED_RGB8_ETC2;
+        } else if (caps.etc1) {
+            targetFormat = transcodeTarget.ETC1_RGB;
+            transcodedFormat = COMPRESSED_RGB_ETC1_WEBGL;
+        } else {
+            targetFormat = transcodeTarget.RGBA32;
+            transcodedFormat = RGBAFormat;
+        }
 
         const transcoder = transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
 

@@ -67,10 +67,22 @@ export class KhronosTextureContainer2 {
                 };
                 KhronosTextureContainer2._Worker!.addEventListener("message", messageHandler);
 
+                const caps = this._engine.getCaps();
+
+                const compressedTexturesCaps = {
+                    astc: !!caps.astc,
+                    bptc: !!caps.bptc,
+                    s3tc: !!caps.s3tc,
+                    pvrtc: !!caps.pvrtc,
+                    etc2: !!caps.etc2,
+                    etc1: !!caps.etc1,
+                };
+
                 KhronosTextureContainer2._Worker!.postMessage({
                     action: "createMipmaps",
                     id: actionId,
                     data: data,
+                    caps: compressedTexturesCaps,
                 }, [data.buffer]);
             });
         });
