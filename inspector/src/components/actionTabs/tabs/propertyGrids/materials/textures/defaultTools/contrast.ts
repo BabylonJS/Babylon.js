@@ -35,11 +35,19 @@ export const Contrast : IToolData = {
         }
         /** Maps slider values to post processing values using an exponential regression */
         computeExposure(sliderValue : number) {
-            return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
+            if (sliderValue <= 0) {
+                return 1 - (-sliderValue / 100);
+            } else {
+                return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
+            }
         }
         /** Maps slider values to post processing values using an exponential regression */
         computeContrast(sliderValue : number) {
-            return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
+            if (sliderValue <= 0) {
+                return 1 - (-sliderValue / 100);
+            } else {
+                return Math.pow(1.05698, sliderValue) + 0.0000392163 * sliderValue;
+            }
         }
         setup() {
             this.contrast = 0;
