@@ -24,6 +24,7 @@ export class WebXRManagedOutputCanvasOptions {
 
     /**
      * Get the default values of the configuration object
+     * @param engine defines the engine to use (can be null)
      * @returns default values of this configuration object
      */
     public static GetDefaults(engine?: ThinEngine): WebXRManagedOutputCanvasOptions {
