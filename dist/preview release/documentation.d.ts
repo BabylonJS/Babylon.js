@@ -46800,9 +46800,10 @@ declare module BABYLON {
         newCanvasCssStyle?: string;
         /**
          * Get the default values of the configuration object
+         * @param engine defines the engine to use (can be null)
          * @returns default values of this configuration object
          */
-        static GetDefaults(): WebXRManagedOutputCanvasOptions;
+        static GetDefaults(engine?: ThinEngine): WebXRManagedOutputCanvasOptions;
     }
     /**
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
