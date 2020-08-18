@@ -68,8 +68,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     return;
                 }
 
-                let isMouseEvent = evt instanceof MouseEvent;
-                if (!this.touchEnabled && evt.pointerType === "touch" && !isMouseEvent) {
+                if (!this.touchEnabled && evt.pointerType === "touch") {
                     return;
                 }
 
