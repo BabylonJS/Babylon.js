@@ -343,7 +343,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             }
             targetMesh.rotationQuaternion = targetMesh.rotationQuaternion || new Quaternion();
             const controllerData = this._controllers[this._currentTeleportationControllerId];
-            if (controllerData.teleportationState.forward) {
+            if (controllerData && controllerData.teleportationState.forward) {
                 // set the rotation
                 Quaternion.RotationYawPitchRollToRef(controllerData.teleportationState.currentRotation + controllerData.teleportationState.baseRotation, 0, 0, targetMesh.rotationQuaternion);
                 // set the ray and position
