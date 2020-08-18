@@ -13,7 +13,7 @@ export class LiteTranscoder extends Transcoder {
     private _modulePromise: Promise<{ module: any }>;
     private _memoryManager: WASMMemoryManager;
 
-    protected async _loadModule(): Promise<{ module: any }> {
+    protected _loadModule(): Promise<{ module: any }> {
         if (this._modulePromise) {
             return this._modulePromise;
         }
