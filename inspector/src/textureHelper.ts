@@ -5,8 +5,8 @@ import { RenderTargetTexture } from 'babylonjs/Materials/Textures/renderTargetTe
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Nullable } from 'babylonjs/types';
 
-import "./lod.fragment";
-import "./lodCube.fragment";
+import "./lod";
+import "./lodCube";
 
 
 export interface TextureChannelsToDisplay {
