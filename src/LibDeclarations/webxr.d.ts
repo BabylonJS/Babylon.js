@@ -1,56 +1,20 @@
-type XRSessionMode =
-    | "inline"
-    | "immersive-vr"
-    | "immersive-ar";
+type XRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
 
-type XRReferenceSpaceType =
-    | "viewer"
-    | "local"
-    | "local-floor"
-    | "bounded-floor"
-    | "unbounded";
+type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
 
-type XREnvironmentBlendMode =
-    | "opaque"
-    | "additive"
-    | "alpha-blend";
+type XREnvironmentBlendMode = "opaque" | "additive" | "alpha-blend";
 
-type XRVisibilityState =
-    | "visible"
-    | "visible-blurred"
-    | "hidden";
+type XRVisibilityState = "visible" | "visible-blurred" | "hidden";
 
-type XRHandedness =
-    | "none"
-    | "left"
-    | "right";
+type XRHandedness = "none" | "left" | "right";
 
-type XRTargetRayMode =
-    | "gaze"
-    | "tracked-pointer"
-    | "screen";
+type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
 
-type XREye =
-    | "none"
-    | "left"
-    | "right";
+type XREye = "none" | "left" | "right";
 
-type XREventType =
-    | "devicechange"
-    | "visibilitychange"
-    | "end"
-    | "inputsourceschange"
-    | "select"
-    | "selectstart"
-    | "selectend"
-    | "squeeze"
-    | "squeezestart"
-    | "squeezeend"
-    | "reset";
+type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
-interface XRSpace extends EventTarget {
-
-}
+interface XRSpace extends EventTarget {}
 
 interface XRRenderState {
     depthNear?: number;
@@ -92,9 +56,7 @@ interface XRSession {
     requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
     // legacy plane detection
-    updateWorldTrackingState(options: {
-        planeDetectionState?: { enabled: boolean; }
-    }): void;
+    updateWorldTrackingState(options: { planeDetectionState?: { enabled: boolean } }): void;
 }
 
 interface XRReferenceSpace extends XRSpace {
@@ -111,7 +73,7 @@ interface XRFrame {
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
 
     // AR
-    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult> ;
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
     getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
@@ -121,7 +83,7 @@ interface XRFrame {
         detectedPlanes?: XRPlaneSet;
     };
     // Hand tracking
-    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose
+    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
 }
 
 interface XRViewerPose extends XRPose {
@@ -144,7 +106,7 @@ interface XRWebGLLayerOptions {
 
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
-    new(session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
+    new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
 };
 interface XRWebGLLayer {
     framebuffer: WebGLFramebuffer;
@@ -189,7 +151,7 @@ declare class XRRay {
 declare enum XRHitTestTrackableType {
     "point",
     "plane",
-    "mesh"
+    "mesh",
 }
 
 interface XRHitResult {
@@ -239,43 +201,43 @@ interface XRPlane {
     lastChangedTime: number;
 }
 
-interface XRJointSpace extends XRSpace {};
+interface XRJointSpace extends XRSpace {}
 
 interface XRJointPose extends XRPose {
     radius: number | undefined;
-};
+}
 
 declare class XRHand implements Iterable<XRJointSpace> {
-    readonly const length: number;
+    readonly length: number;
 
-    readonly static const WRIST = 0;
+    static readonly WRIST = 0;
 
-    readonly static const THUMB_METACARPAL = 1;
-    readonly static const THUMB_PHALANX_PROXIMAL = 2;
-    readonly static const THUMB_PHALANX_DISTAL = 3;
-    readonly static const THUMB_PHALANX_TIP = 4;
+    static readonly THUMB_METACARPAL = 1;
+    static readonly THUMB_PHALANX_PROXIMAL = 2;
+    static readonly THUMB_PHALANX_DISTAL = 3;
+    static readonly THUMB_PHALANX_TIP = 4;
 
-    readonly static const INDEX_METACARPAL = 5;
-    readonly static const INDEX_PHALANX_PROXIMAL = 6;
-    readonly static const INDEX_PHALANX_INTERMEDIATE = 7;
-    readonly static const INDEX_PHALANX_DISTAL = 8;
-    readonly static const INDEX_PHALANX_TIP = 9;
+    static readonly INDEX_METACARPAL = 5;
+    static readonly INDEX_PHALANX_PROXIMAL = 6;
+    static readonly INDEX_PHALANX_INTERMEDIATE = 7;
+    static readonly INDEX_PHALANX_DISTAL = 8;
+    static readonly INDEX_PHALANX_TIP = 9;
 
-    readonly static const MIDDLE_METACARPAL = 10;
-    readonly static const MIDDLE_PHALANX_PROXIMAL = 11;
-    readonly static const MIDDLE_PHALANX_INTERMEDIATE = 12;
-    readonly static const MIDDLE_PHALANX_DISTAL = 13;
-    readonly static const MIDDLE_PHALANX_TIP = 14;
+    static readonly MIDDLE_METACARPAL = 10;
+    static readonly MIDDLE_PHALANX_PROXIMAL = 11;
+    static readonly MIDDLE_PHALANX_INTERMEDIATE = 12;
+    static readonly MIDDLE_PHALANX_DISTAL = 13;
+    static readonly MIDDLE_PHALANX_TIP = 14;
 
-    readonly static const RING_METACARPAL = 15;
-    readonly static const RING_PHALANX_PROXIMAL = 16;
-    readonly static const RING_PHALANX_INTERMEDIATE = 17;
-    readonly static const RING_PHALANX_DISTAL = 18;
-    readonly static const RING_PHALANX_TIP = 19;
+    static readonly RING_METACARPAL = 15;
+    static readonly RING_PHALANX_PROXIMAL = 16;
+    static readonly RING_PHALANX_INTERMEDIATE = 17;
+    static readonly RING_PHALANX_DISTAL = 18;
+    static readonly RING_PHALANX_TIP = 19;
 
-    readonly static const LITTLE_METACARPAL = 20;
-    readonly static const LITTLE_PHALANX_PROXIMAL = 21;
-    readonly static const LITTLE_PHALANX_INTERMEDIATE = 22;
-    readonly static const LITTLE_PHALANX_DISTAL = 23;
-    readonly static const LITTLE_PHALANX_TIP = 24;
-};
+    static readonly LITTLE_METACARPAL = 20;
+    static readonly LITTLE_PHALANX_PROXIMAL = 21;
+    static readonly LITTLE_PHALANX_INTERMEDIATE = 22;
+    static readonly LITTLE_PHALANX_DISTAL = 23;
+    static readonly LITTLE_PHALANX_TIP = 24;
+}
