@@ -6,13 +6,13 @@ import { Mesh } from "../../Meshes/mesh";
 import { SphereBuilder } from "../../Meshes/Builders/sphereBuilder";
 import { WebXRInput } from "../webXRInput";
 import { WebXRInputSource } from "../webXRInputSource";
-import { Ray } from "../../Culling/ray";
-import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { Quaternion } from "../../Maths/math.vector";
 import { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/physicsImpostor";
 import { WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection";
 import { IDisposable } from "../../scene";
+import { Observable } from "../../Misc/observable";
 
 export interface IWebXRHandTrackingOptions {
     xrInput: WebXRInput;
@@ -27,6 +27,7 @@ export interface IWebXRHandTrackingOptions {
         keepOriginalVisible?: boolean;
         scaleFactor?: number;
         enablePhysics?: boolean;
+        physicsProps?: { friction?: number; restitution?: number; impostorType?: number };
     };
 }
 
@@ -135,10 +136,17 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      */
     public static readonly Version = 1;
 
+    /**
+     * This observable will notify registered observers when a new hand object was added and initialized
+     */
+    public onHandAddedObservable: Observable<WebXRHand> = new Observable();
+    /**
+     * This observable will notify its observers right before the hand object is disposed
+     */
+    public onHandRemovedObservable: Observable<WebXRHand> = new Observable();
+
     private _hands: {
-        [id: string]: {
-            xrController: WebXRInputSource;
-            tmpRay: Ray;
+        [controllerId: string]: {
             id: number;
             handObject: WebXRHand;
         };
@@ -207,6 +215,14 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     /**
+     * Dispose this feature and all of the resources attached
+     */
+    public dispose(): void {
+        super.dispose();
+        this.onHandAddedObservable.clear();
+    }
+
+    /**
      * Get the hand object according to the controller id
      * @param controllerId the controller id to which we want to get the hand
      */
@@ -219,7 +235,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * @param handedness the handedness to request
      */
     public getHandByHandedness(handedness: XRHandedness): Nullable<WebXRHand> {
-        const handednesses = Object.keys(this._hands).map((key) => this._hands[key].xrController.inputSource.handedness);
+        const handednesses = Object.keys(this._hands).map((key) => this._hands[key].handObject.xrController.inputSource.handedness);
         const found = handednesses.indexOf(handedness);
         if (found !== -1) {
             return this._hands[found].handObject;
@@ -248,23 +264,30 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             const newInstance = originalMesh.createInstance(`${xrController.uniqueId}-handJoint-${i}`);
             newInstance.isPickable = false;
             if (this.options.jointMeshes?.enablePhysics) {
-                newInstance.physicsImpostor = new PhysicsImpostor(newInstance, PhysicsImpostor.SphereImpostor, { mass: 0 });
+                const props = this.options.jointMeshes.physicsProps || {};
+                const type = props.impostorType !== undefined ? props.impostorType : PhysicsImpostor.SphereImpostor;
+                newInstance.physicsImpostor = new PhysicsImpostor(newInstance, type, { mass: 0, ...props });
             }
             newInstance.rotationQuaternion = new Quaternion();
             trackedMeshes.push(newInstance);
         }
 
+        const webxrHand = new WebXRHand(xrController, trackedMeshes);
+
         // get two new meshes
         this._hands[xrController.uniqueId] = {
-            xrController,
-            handObject: new WebXRHand(xrController, trackedMeshes),
-            tmpRay: new Ray(new Vector3(), new Vector3()),
+            handObject: webxrHand,
             id: WebXRHandTracking._idCounter++,
         };
+
+        this.onHandAddedObservable.notifyObservers(webxrHand);
     };
 
     private _detachHand(controllerId: string) {
-        this._hands[controllerId] && this._hands[controllerId].handObject.dispose();
+        if (this._hands[controllerId]) {
+            this.onHandRemovedObservable.notifyObservers(this._hands[controllerId].handObject);
+            this._hands[controllerId].handObject.dispose();
+        }
     }
 }
 
