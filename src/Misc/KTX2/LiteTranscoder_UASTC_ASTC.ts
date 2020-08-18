@@ -11,6 +11,6 @@ export class LiteTranscoder_UASTC_ASTC extends LiteTranscoder {
     }
 
     public initialize(): void {
-        this.setModulePath("/dist/preview release/basisTranscoder/uastc_astc.wasm");
+        this.setModulePath("https://cdn.babylonjs.com/ktx2Transcoders/uastc_astc.wasm");
     }
 }
