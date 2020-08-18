@@ -2,6 +2,7 @@ import { IToolParameters, IToolData } from '../textureEditorComponent';
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 import { Nullable } from 'babylonjs/types'
 import { Observer } from 'babylonjs/Misc/observable';
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 export const Eyedropper : IToolData = {
     name: 'Eyedropper',
@@ -20,7 +21,7 @@ export const Eyedropper : IToolData = {
             const {x, y} = getMouseCoordinates(pointerInfo);
             const pixel = ctx!.getImageData(x, y, 1, 1).data;
             setMetadata({
-                color: '#' + ('000000' + this.rgbToHex(pixel[0], pixel[1], pixel[2])).slice(-6),
+                color: Color3.FromInts(pixel[0], pixel[1], pixel[2]).toHexString(),
                 alpha: pixel[3] / 255
             });
         }
@@ -46,9 +47,6 @@ export const Eyedropper : IToolData = {
             if (this.pointerObserver) {
                 this.getParameters().scene.onPointerObservable.remove(this.pointerObserver);
             }
-        }
-        rgbToHex(r: number, g:number, b: number) {
-            return ((r << 16) | (g << 8) | b).toString(16);
         }
     },
     icon: `PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHN0eWxlPSJmaWxsOm5vbmUiLz48cGF0aCBkPSJNMjkuMzIsMTAu
