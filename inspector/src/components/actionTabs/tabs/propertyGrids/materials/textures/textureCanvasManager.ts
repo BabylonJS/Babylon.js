@@ -338,7 +338,7 @@ export class TextureCanvasManager {
         topBar.background = '#666666';
         topBar.thickness = 0;
         topBar.hoverCursor = 'grab';
-        topBar.onPointerDownObservable.add(evt => {this._GUI.isDragging = true; topBar.hoverCursor = 'grabbing';});
+        topBar.onPointerDownObservable.add(() => {this._GUI.isDragging = true; topBar.hoverCursor = 'grabbing';});
         topBar.onPointerUpObservable.add(() => {this._GUI.isDragging = false; this._GUI.dragCoords = null; topBar.hoverCursor = 'grab';});
 
         const title = new TextBlock();
@@ -493,7 +493,6 @@ export class TextureCanvasManager {
                 (this._target as HtmlElementTexture).element = element;
             }
             this.queueTextureUpdate();
-            //(this._target as HtmlElementTexture).update((this._originalTexture as Texture).invertY);
         }
         this._originalTexture._texture = this._target._texture;
         this._channelsTexture.element = element;
