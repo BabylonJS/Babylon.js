@@ -69,7 +69,7 @@ export class WebXREnterExitUIOptions {
 export class WebXREnterExitUI implements IDisposable {
     private _activeButton: Nullable<WebXREnterExitUIButton> = null;
     private _buttons: Array<WebXREnterExitUIButton> = [];
-    private _overlay: HTMLDivElement;
+    public readonly overlay: HTMLDivElement;
 
     /**
      * Fired every time the active button is changed.
@@ -90,8 +90,9 @@ export class WebXREnterExitUI implements IDisposable {
         /** version of the options passed to this UI */
         public options: WebXREnterExitUIOptions
     ) {
-        this._overlay = document.createElement("div");
-        this._overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
+        this.overlay = document.createElement("div");
+        this.overlay.classList.add('xr-button-overlay');
+        this.overlay.style.cssText = "z-index:11;position: absolute; right: 20px;bottom: 50px;";
 
         // if served over HTTP, warn people.
         // Hopefully the browsers will catch up
@@ -131,7 +132,7 @@ export class WebXREnterExitUI implements IDisposable {
 
         var renderCanvas = scene.getEngine().getInputElement();
         if (renderCanvas && renderCanvas.parentNode) {
-            renderCanvas.parentNode.appendChild(this._overlay);
+            renderCanvas.parentNode.appendChild(this.overlay);
             scene.onDisposeObservable.addOnce(() => {
                 this.dispose();
             });
@@ -158,7 +159,7 @@ export class WebXREnterExitUI implements IDisposable {
         return Promise.all(supportedPromises).then((results) => {
             results.forEach((supported, i) => {
                 if (supported) {
-                    ui._overlay.appendChild(ui._buttons[i].element);
+                    ui.overlay.appendChild(ui._buttons[i].element);
                     ui._buttons[i].element.onclick = async () => {
                         if (helper.state == WebXRState.IN_XR) {
                             await helper.exitXRAsync();
@@ -192,8 +193,8 @@ export class WebXREnterExitUI implements IDisposable {
      */
     public dispose() {
         var renderCanvas = this.scene.getEngine().getInputElement();
-        if (renderCanvas && renderCanvas.parentNode && renderCanvas.parentNode.contains(this._overlay)) {
-            renderCanvas.parentNode.removeChild(this._overlay);
+        if (renderCanvas && renderCanvas.parentNode && renderCanvas.parentNode.contains(this.overlay)) {
+            renderCanvas.parentNode.removeChild(this.overlay);
         }
         this.activeButtonChangedObservable.clear();
     }
