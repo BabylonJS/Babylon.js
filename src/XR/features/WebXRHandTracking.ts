@@ -46,14 +46,20 @@ export const enum HandPart {
  * Representing a single hand (with its corresponding native XRHand object)
  */
 export class WebXRHand implements IDisposable {
-    public static HandPartsDefinition = {
-        [HandPart.WRIST]: [XRHand.WRIST],
-        [HandPart.THUMB]: [XRHand.THUMB_METACARPAL, XRHand.THUMB_PHALANX_PROXIMAL, XRHand.THUMB_PHALANX_DISTAL, XRHand.THUMB_PHALANX_TIP],
-        [HandPart.INDEX]: [XRHand.INDEX_METACARPAL, XRHand.INDEX_PHALANX_PROXIMAL, XRHand.INDEX_PHALANX_INTERMEDIATE, XRHand.INDEX_PHALANX_DISTAL, XRHand.INDEX_PHALANX_TIP],
-        [HandPart.MIDDLE]: [XRHand.MIDDLE_METACARPAL, XRHand.MIDDLE_PHALANX_PROXIMAL, XRHand.MIDDLE_PHALANX_INTERMEDIATE, XRHand.MIDDLE_PHALANX_DISTAL, XRHand.MIDDLE_PHALANX_TIP],
-        [HandPart.RING]: [XRHand.RING_METACARPAL, XRHand.RING_PHALANX_PROXIMAL, XRHand.RING_PHALANX_INTERMEDIATE, XRHand.RING_PHALANX_DISTAL, XRHand.RING_PHALANX_TIP],
-        [HandPart.LITTLE]: [XRHand.LITTLE_METACARPAL, XRHand.LITTLE_PHALANX_PROXIMAL, XRHand.LITTLE_PHALANX_INTERMEDIATE, XRHand.LITTLE_PHALANX_DISTAL, XRHand.LITTLE_PHALANX_TIP],
-    };
+    public static HandPartsDefinition: { [key: string]: number[] };
+
+    public static _PopulateHandPartsDefinition() {
+        if (typeof XRHand !== "undefined") {
+            WebXRHand.HandPartsDefinition = {
+                [HandPart.WRIST]: [XRHand.WRIST],
+                [HandPart.THUMB]: [XRHand.THUMB_METACARPAL, XRHand.THUMB_PHALANX_PROXIMAL, XRHand.THUMB_PHALANX_DISTAL, XRHand.THUMB_PHALANX_TIP],
+                [HandPart.INDEX]: [XRHand.INDEX_METACARPAL, XRHand.INDEX_PHALANX_PROXIMAL, XRHand.INDEX_PHALANX_INTERMEDIATE, XRHand.INDEX_PHALANX_DISTAL, XRHand.INDEX_PHALANX_TIP],
+                [HandPart.MIDDLE]: [XRHand.MIDDLE_METACARPAL, XRHand.MIDDLE_PHALANX_PROXIMAL, XRHand.MIDDLE_PHALANX_INTERMEDIATE, XRHand.MIDDLE_PHALANX_DISTAL, XRHand.MIDDLE_PHALANX_TIP],
+                [HandPart.RING]: [XRHand.RING_METACARPAL, XRHand.RING_PHALANX_PROXIMAL, XRHand.RING_PHALANX_INTERMEDIATE, XRHand.RING_PHALANX_DISTAL, XRHand.RING_PHALANX_TIP],
+                [HandPart.LITTLE]: [XRHand.LITTLE_METACARPAL, XRHand.LITTLE_PHALANX_PROXIMAL, XRHand.LITTLE_PHALANX_INTERMEDIATE, XRHand.LITTLE_PHALANX_DISTAL, XRHand.LITTLE_PHALANX_TIP],
+            };
+        }
+    }
 
     /**
      * Construct a new hand object
@@ -114,6 +120,8 @@ export class WebXRHand implements IDisposable {
     }
 }
 
+WebXRHand._PopulateHandPartsDefinition();
+
 export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _idCounter = 0;
     /**
@@ -153,13 +161,12 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     /**
-     * Check if the needed objects are defined. This does not mean that the feature is enabled, but that the objects needed are well defined.
+     * Check if the needed objects are defined.
+     * This does not mean that the feature is enabled, but that the objects needed are well defined.
      */
     public isCompatible(): boolean {
         return typeof XRHand !== "undefined";
     }
-
-    private _pointerSelectionDetached: boolean = false;
 
     /**
      * attach this feature
@@ -170,10 +177,6 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     public attach(): boolean {
         if (!super.attach()) {
             return false;
-        }
-        if (this.options.pointerSelectionFeature && this.options.pointerSelectionFeature.attached) {
-            // this.options.pointerSelectionFeature.detach();
-            // this._pointerSelectionDetached = true;
         }
         this.options.xrInput.controllers.forEach(this._attachHand);
         this._addNewAttachObserver(this.options.xrInput.onControllerAddedObservable, this._attachHand);
@@ -199,9 +202,6 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         Object.keys(this._hands).forEach((controllerId) => {
             this._detachHand(controllerId);
         });
-        if (this._pointerSelectionDetached) {
-            // this.options.pointerSelectionFeature?.attach();
-        }
 
         return true;
     }
@@ -275,5 +275,5 @@ WebXRFeaturesManager.AddWebXRFeature(
         return () => new WebXRHandTracking(xrSessionManager, options);
     },
     WebXRHandTracking.Version,
-    true
+    false
 );
