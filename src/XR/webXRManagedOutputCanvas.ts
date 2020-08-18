@@ -26,12 +26,12 @@ export class WebXRManagedOutputCanvasOptions {
      * Get the default values of the configuration object
      * @returns default values of this configuration object
      */
-    public static GetDefaults(): WebXRManagedOutputCanvasOptions {
+    public static GetDefaults(engine?: ThinEngine): WebXRManagedOutputCanvasOptions {
         const defaults = new WebXRManagedOutputCanvasOptions();
         defaults.canvasOptions = {
             antialias: true,
             depth: true,
-            stencil: false,
+            stencil: engine ? engine.isStencilEnable : true,
             alpha: true,
             multiview: false,
             framebufferScaleFactor: 1,

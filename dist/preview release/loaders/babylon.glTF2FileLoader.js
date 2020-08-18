@@ -1389,6 +1389,14 @@ var KHR_materials_variants = /** @class */ (function () {
         return ((_b = (_a = rootMesh === null || rootMesh === void 0 ? void 0 : rootMesh.metadata) === null || _a === void 0 ? void 0 : _a.gltf) === null || _b === void 0 ? void 0 : _b[NAME]) || null;
     };
     /** @hidden */
+    KHR_materials_variants.prototype.onLoading = function () {
+        var extensions = this._loader.gltf.extensions;
+        if (extensions && extensions[this.name]) {
+            var extension = extensions[this.name];
+            this._variants = extension.variants;
+        }
+    };
+    /** @hidden */
     KHR_materials_variants.prototype._loadMeshPrimitiveAsync = function (context, name, node, mesh, primitive, assign) {
         var _this = this;
         return _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"].LoadExtensionAsync(context, primitive, this.name, function (extensionContext, extension) {
@@ -1407,19 +1415,20 @@ var KHR_materials_variants = /** @class */ (function () {
                     var variants_1 = extensionMetadata.variants;
                     for (var _i = 0, _a = extension.mapping; _i < _a.length; _i++) {
                         var mapping = _a[_i];
-                        var _loop_1 = function (variant) {
+                        var _loop_1 = function (variantIndex) {
+                            var variant = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/mapping/" + variantIndex, _this._variants, variantIndex);
                             var material = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get("#/materials/", _this._loader.gltf.materials, mapping.material);
                             promises.push(_this._loader._loadMaterialAsync("#/materials/" + mapping.material, material, babylonMesh, babylonDrawMode, function (babylonMaterial) {
-                                variants_1[variant] = variants_1[variant] || [];
-                                variants_1[variant].push({
+                                variants_1[variant.name] = variants_1[variant.name] || [];
+                                variants_1[variant.name].push({
                                     mesh: babylonMesh,
                                     material: babylonMaterial
                                 });
                             }));
                         };
                         for (var _b = 0, _c = mapping.variants; _b < _c.length; _b++) {
-                            var variant = _c[_b];
-                            _loop_1(variant);
+                            var variantIndex = _c[_b];
+                            _loop_1(variantIndex);
                         }
                     }
                 }
@@ -4801,6 +4810,7 @@ var GLTFFileLoader = /** @class */ (function () {
         this.preprocessUrlAsync = function (url) { return Promise.resolve(url); };
         /**
          * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+         * Note that the observable is raised as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
          */
         this.onMeshLoadedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
         /**
@@ -4879,6 +4889,7 @@ var GLTFFileLoader = /** @class */ (function () {
     Object.defineProperty(GLTFFileLoader.prototype, "onMeshLoaded", {
         /**
          * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+         * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
          */
         set: function (callback) {
             if (this._onMeshLoadedObserver) {
