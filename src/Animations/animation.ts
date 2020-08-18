@@ -1029,10 +1029,10 @@ export class Animation {
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:
                     key.values = [animationKey.value];
-                    if (animationKey.inTangent) {
+                    if (animationKey.inTangent !== undefined) {
                         key.values.push(animationKey.inTangent);
                     }
-                    if (animationKey.outTangent) {
+                    if (animationKey.outTangent !== undefined) {
                         if (animationKey.inTangent === undefined) {
                             key.values.push(undefined);
                         }
@@ -1045,10 +1045,10 @@ export class Animation {
                 case Animation.ANIMATIONTYPE_COLOR3:
                 case Animation.ANIMATIONTYPE_COLOR4:
                     key.values = animationKey.value.asArray();
-                    if (animationKey.inTangent) {
+                    if (animationKey.inTangent != undefined) {
                         key.values.push(animationKey.inTangent.asArray());
                     }
-                    if (animationKey.outTangent) {
+                    if (animationKey.outTangent != undefined) {
                         if (animationKey.inTangent === undefined) {
                             key.values.push(undefined);
                         }
