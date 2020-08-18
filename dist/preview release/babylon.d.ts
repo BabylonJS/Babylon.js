@@ -46800,9 +46800,10 @@ declare module BABYLON {
         newCanvasCssStyle?: string;
         /**
          * Get the default values of the configuration object
+         * @param engine defines the engine to use (can be null)
          * @returns default values of this configuration object
          */
-        static GetDefaults(): WebXRManagedOutputCanvasOptions;
+        static GetDefaults(engine?: ThinEngine): WebXRManagedOutputCanvasOptions;
     }
     /**
      * Creates a canvas that is added/removed from the webpage when entering/exiting XR
@@ -47082,6 +47083,10 @@ declare module BABYLON {
          * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
          */
         xrNativeFeatureName?: string;
+        /**
+         * A list of (Babylon WebXR) features this feature depends on
+         */
+        dependsOn?: string[];
     }
     /**
      * A list of the currently available features without referencing them
@@ -47119,6 +47124,10 @@ declare module BABYLON {
          * The name of the feature points feature.
          */
         static readonly FEATURE_POINTS: string;
+        /**
+         * The name of the hand tracking feature.
+         */
+        static readonly HAND_TRACKING: string;
     }
     /**
      * Defining the constructor of a feature. Used to register the modules.
@@ -48065,7 +48074,7 @@ declare module BABYLON {
         /**
          * The mesh that will be changed when axis value changes
          */
-        valueMesh: AbstractMesh;
+        valueMesh?: AbstractMesh;
     }
     /**
      * The elements needed for change-detection of the gamepad objects in motion controllers
@@ -48215,8 +48224,8 @@ declare module BABYLON {
          * @returns a promise that will send true when the pulse has ended and false if the device doesn't support pulse or an error accrued
          */
         pulse(value: number, duration: number, hapticActuatorIndex?: number): Promise<boolean>;
-        protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh;
-        protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh;
+        protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh | undefined;
+        protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh | undefined;
         /**
          * Moves the axis on the controller mesh based on its current state
          * @param axis the index of the axis
@@ -48467,6 +48476,7 @@ declare module BABYLON {
         private _options;
         private _tmpVector;
         private _uniqueId;
+        private _disposed;
         /**
          * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
          */
@@ -48992,7 +49002,10 @@ declare module BABYLON {
         options: WebXREnterExitUIOptions;
         private _activeButton;
         private _buttons;
-        private _overlay;
+        /**
+         * The HTML Div Element to which buttons are added.
+         */
+        readonly overlay: HTMLDivElement;
         /**
          * Fired every time the active button is changed.
          *
@@ -74861,6 +74874,209 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Configuration interface for the hand tracking feature
+     */
+    export interface IWebXRHandTrackingOptions {
+        /**
+         * The xrInput that will be used as source for new hands
+         */
+        xrInput: WebXRInput;
+        /**
+         * Configuration object for the joint meshes
+         */
+        jointMeshes?: {
+            /**
+             * Should the meshes created be invisible (defaults to false)
+             */
+            invisible?: boolean;
+            /**
+             * A source mesh to be used to create instances. Defaults to a sphere.
+             * This mesh will be the source for all other (25) meshes.
+             * It should have the general size of a single unit, as the instances will be scaled according to the provided radius
+             */
+            sourceMesh?: Mesh;
+            /**
+             * Should the source mesh stay visible. Defaults to false
+             */
+            keepOriginalVisible?: boolean;
+            /**
+             * Scale factor for all instances (defaults to 2)
+             */
+            scaleFactor?: number;
+            /**
+             * Should each instance have its own physics impostor
+             */
+            enablePhysics?: boolean;
+            /**
+             * If enabled, override default physics properties
+             */
+            physicsProps?: {
+                friction?: number;
+                restitution?: number;
+                impostorType?: number;
+            };
+            /**
+             * For future use - a single hand-mesh that will be updated according to the XRHand data provided
+             */
+            handMesh?: AbstractMesh;
+        };
+    }
+    /**
+     * Parts of the hands divided to writs and finger names
+     */
+    export const enum HandPart {
+        /**
+         * HandPart - Wrist
+         */
+        WRIST = "wrist",
+        /**
+         * HandPart - The THumb
+         */
+        THUMB = "thumb",
+        /**
+         * HandPart - Index finger
+         */
+        INDEX = "index",
+        /**
+         * HandPart - Middle finger
+         */
+        MIDDLE = "middle",
+        /**
+         * HandPart - Ring finger
+         */
+        RING = "ring",
+        /**
+         * HandPart - Little finger
+         */
+        LITTLE = "little"
+    }
+    /**
+     * Representing a single hand (with its corresponding native XRHand object)
+     */
+    export class WebXRHand implements IDisposable {
+        /** the controller to which the hand correlates */
+        readonly xrController: WebXRInputSource;
+        /** the meshes to be used to track the hand joints */
+        readonly trackedMeshes: AbstractMesh[];
+        /**
+         * Hand-parts definition (key is HandPart)
+         */
+        static HandPartsDefinition: {
+            [key: string]: number[];
+        };
+        /**
+         * Populate the HandPartsDefinition object.
+         * This is called as a side effect since certain browsers don't have XRHand defined.
+         */
+        static _PopulateHandPartsDefinition(): void;
+        /**
+         * Construct a new hand object
+         * @param xrController the controller to which the hand correlates
+         * @param trackedMeshes the meshes to be used to track the hand joints
+         */
+        constructor(
+        /** the controller to which the hand correlates */
+        xrController: WebXRInputSource, 
+        /** the meshes to be used to track the hand joints */
+        trackedMeshes: AbstractMesh[]);
+        /**
+         * Update this hand from the latest xr frame
+         * @param xrFrame xrFrame to update from
+         * @param referenceSpace The current viewer reference space
+         * @param scaleFactor optional scale factor for the meshes
+         */
+        updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, scaleFactor?: number): void;
+        /**
+         * Get meshes of part of the hand
+         * @param part the part of hand to get
+         * @returns An array of meshes that correlate to the hand part requested
+         */
+        getHandPartMeshes(part: HandPart): AbstractMesh[];
+        /**
+         * Dispose this Hand object
+         */
+        dispose(): void;
+    }
+    /**
+     * WebXR Hand Joint tracking feature, available for selected browsers and devices
+     */
+    export class WebXRHandTracking extends WebXRAbstractFeature {
+        /**
+         * options to use when constructing this feature
+         */
+        readonly options: IWebXRHandTrackingOptions;
+        private static _idCounter;
+        /**
+         * The module's name
+         */
+        static readonly Name: string;
+        /**
+         * The (Babylon) version of this module.
+         * This is an integer representing the implementation version.
+         * This number does not correspond to the WebXR specs version
+         */
+        static readonly Version: number;
+        /**
+         * This observable will notify registered observers when a new hand object was added and initialized
+         */
+        onHandAddedObservable: Observable<WebXRHand>;
+        /**
+         * This observable will notify its observers right before the hand object is disposed
+         */
+        onHandRemovedObservable: Observable<WebXRHand>;
+        private _hands;
+        /**
+         * Creates a new instance of the hit test feature
+         * @param _xrSessionManager an instance of WebXRSessionManager
+         * @param options options to use when constructing this feature
+         */
+        constructor(_xrSessionManager: WebXRSessionManager, 
+        /**
+         * options to use when constructing this feature
+         */
+        options: IWebXRHandTrackingOptions);
+        /**
+         * Check if the needed objects are defined.
+         * This does not mean that the feature is enabled, but that the objects needed are well defined.
+         */
+        isCompatible(): boolean;
+        /**
+         * attach this feature
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        attach(): boolean;
+        /**
+         * detach this feature.
+         * Will usually be called by the features manager
+         *
+         * @returns true if successful.
+         */
+        detach(): boolean;
+        /**
+         * Dispose this feature and all of the resources attached
+         */
+        dispose(): void;
+        /**
+         * Get the hand object according to the controller id
+         * @param controllerId the controller id to which we want to get the hand
+         * @returns null if not found or the WebXRHand object if found
+         */
+        getHandByControllerId(controllerId: string): Nullable<WebXRHand>;
+        /**
+         * Get a hand object according to the requested handedness
+         * @param handedness the handedness to request
+         * @returns null if not found or the WebXRHand object if found
+         */
+        getHandByHandedness(handedness: XRHandedness): Nullable<WebXRHand>;
+        protected _onXRFrame(_xrFrame: XRFrame): void;
+        private _attachHand;
+        private _detachHand;
+    }
+}
+declare module BABYLON {
+    /**
      * The motion controller class for all microsoft mixed reality controllers
      */
     export class WebXRMicrosoftMixedRealityController extends WebXRAbstractMotionController {
@@ -75589,59 +75805,23 @@ interface Window {
 interface Gamepad {
     readonly displayId: number;
 }
-type XRSessionMode =
-    | "inline"
-    | "immersive-vr"
-    | "immersive-ar";
+type XRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
 
-type XRReferenceSpaceType =
-    | "viewer"
-    | "local"
-    | "local-floor"
-    | "bounded-floor"
-    | "unbounded";
+type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
 
-type XREnvironmentBlendMode =
-    | "opaque"
-    | "additive"
-    | "alpha-blend";
+type XREnvironmentBlendMode = "opaque" | "additive" | "alpha-blend";
 
-type XRVisibilityState =
-    | "visible"
-    | "visible-blurred"
-    | "hidden";
+type XRVisibilityState = "visible" | "visible-blurred" | "hidden";
 
-type XRHandedness =
-    | "none"
-    | "left"
-    | "right";
+type XRHandedness = "none" | "left" | "right";
 
-type XRTargetRayMode =
-    | "gaze"
-    | "tracked-pointer"
-    | "screen";
+type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
 
-type XREye =
-    | "none"
-    | "left"
-    | "right";
+type XREye = "none" | "left" | "right";
 
-type XREventType =
-    | "devicechange"
-    | "visibilitychange"
-    | "end"
-    | "inputsourceschange"
-    | "select"
-    | "selectstart"
-    | "selectend"
-    | "squeeze"
-    | "squeezestart"
-    | "squeezeend"
-    | "reset";
+type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
-interface XRSpace extends EventTarget {
-
-}
+interface XRSpace extends EventTarget {}
 
 interface XRRenderState {
     depthNear?: number;
@@ -75657,6 +75837,7 @@ interface XRInputSource {
     gripSpace: XRSpace | undefined;
     gamepad: Gamepad | undefined;
     profiles: Array<string>;
+    hand: XRHand | undefined;
 }
 
 interface XRSessionInit {
@@ -75682,9 +75863,7 @@ interface XRSession {
     requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
     // legacy plane detection
-    updateWorldTrackingState(options: {
-        planeDetectionState?: { enabled: boolean; }
-    }): void;
+    updateWorldTrackingState(options: { planeDetectionState?: { enabled: boolean } }): void;
 }
 
 interface XRReferenceSpace extends XRSpace {
@@ -75701,7 +75880,7 @@ interface XRFrame {
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
 
     // AR
-    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult> ;
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
     getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
@@ -75710,6 +75889,8 @@ interface XRFrame {
     worldInformation: {
         detectedPlanes?: XRPlaneSet;
     };
+    // Hand tracking
+    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
 }
 
 interface XRViewerPose extends XRPose {
@@ -75732,7 +75913,7 @@ interface XRWebGLLayerOptions {
 
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
-    new(session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
+    new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
 };
 interface XRWebGLLayer {
     framebuffer: WebGLFramebuffer;
@@ -75777,7 +75958,7 @@ declare class XRRay {
 declare enum XRHitTestTrackableType {
     "point",
     "plane",
-    "mesh"
+    "mesh",
 }
 
 interface XRHitResult {
@@ -75826,6 +76007,48 @@ interface XRPlane {
     polygon: Array<DOMPointReadOnly>;
     lastChangedTime: number;
 }
+
+interface XRJointSpace extends XRSpace {}
+
+interface XRJointPose extends XRPose {
+    radius: number | undefined;
+}
+
+declare class XRHand extends Array<XRJointSpace> {
+    readonly length: number;
+
+    static readonly WRIST = 0;
+
+    static readonly THUMB_METACARPAL = 1;
+    static readonly THUMB_PHALANX_PROXIMAL = 2;
+    static readonly THUMB_PHALANX_DISTAL = 3;
+    static readonly THUMB_PHALANX_TIP = 4;
+
+    static readonly INDEX_METACARPAL = 5;
+    static readonly INDEX_PHALANX_PROXIMAL = 6;
+    static readonly INDEX_PHALANX_INTERMEDIATE = 7;
+    static readonly INDEX_PHALANX_DISTAL = 8;
+    static readonly INDEX_PHALANX_TIP = 9;
+
+    static readonly MIDDLE_METACARPAL = 10;
+    static readonly MIDDLE_PHALANX_PROXIMAL = 11;
+    static readonly MIDDLE_PHALANX_INTERMEDIATE = 12;
+    static readonly MIDDLE_PHALANX_DISTAL = 13;
+    static readonly MIDDLE_PHALANX_TIP = 14;
+
+    static readonly RING_METACARPAL = 15;
+    static readonly RING_PHALANX_PROXIMAL = 16;
+    static readonly RING_PHALANX_INTERMEDIATE = 17;
+    static readonly RING_PHALANX_DISTAL = 18;
+    static readonly RING_PHALANX_TIP = 19;
+
+    static readonly LITTLE_METACARPAL = 20;
+    static readonly LITTLE_PHALANX_PROXIMAL = 21;
+    static readonly LITTLE_PHALANX_INTERMEDIATE = 22;
+    static readonly LITTLE_PHALANX_DISTAL = 23;
+    static readonly LITTLE_PHALANX_TIP = 24;
+}
+
 // This file contains native only extensions for WebXR  These APIs are not supported in the browser yet.
 // They are intended for use with either Babylon Native https://github.com/BabylonJS/BabylonNative or
 // Babylon React Native: https://github.com/BabylonJS/BabylonReactNative
