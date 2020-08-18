@@ -1,6 +1,7 @@
 import { IToolData, IToolParameters } from '../textureEditorComponent';
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
-import { Observer, Nullable } from 'babylonjs';
+import { Nullable } from 'babylonjs/types'
+import { Observer } from 'babylonjs/Misc/observable';
 
 export const RectangleSelect : IToolData = {
     name: 'Rectangle Select',

@@ -1,11 +1,13 @@
 import { IToolParameters, IToolData } from '../textureEditorComponent';
-import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
+import { Nullable } from 'babylonjs/types'
+import { Observer } from 'babylonjs/Misc/observable';
 
 export const Floodfill : IToolData = {
     name: 'Floodfill',
     type: class {
         getParameters: () => IToolParameters;
-        pointerObserver: any;
+        pointerObserver: Nullable<Observer<PointerInfo>>;
         constructor(getParameters: () => IToolParameters) {
             this.getParameters = getParameters;
         }

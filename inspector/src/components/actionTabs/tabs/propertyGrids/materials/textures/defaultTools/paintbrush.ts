@@ -2,7 +2,9 @@ import { IToolParameters, IToolData, IToolType } from '../textureEditorComponent
 import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
 import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
 import { Slider } from 'babylonjs-gui/2D/controls/sliders/slider';
-import { Observer, Nullable, Vector2 } from 'babylonjs';
+import { Nullable } from 'babylonjs/types'
+import { Observer } from 'babylonjs/Misc/observable';
+import { Vector2 } from 'babylonjs/Maths/math.vector';
 
 export const Paintbrush : IToolData = {
     name: 'Paintbrush',
