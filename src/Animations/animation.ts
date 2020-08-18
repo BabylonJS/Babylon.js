@@ -1029,6 +1029,15 @@ export class Animation {
             switch (dataType) {
                 case Animation.ANIMATIONTYPE_FLOAT:
                     key.values = [animationKey.value];
+                    if (animationKey.inTangent) {
+                        key.values.push(animationKey.inTangent);
+                    }
+                    if (animationKey.outTangent) {
+                        if (animationKey.inTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        key.values.push(animationKey.outTangent);
+                    }
                     break;
                 case Animation.ANIMATIONTYPE_QUATERNION:
                 case Animation.ANIMATIONTYPE_MATRIX:
@@ -1036,6 +1045,15 @@ export class Animation {
                 case Animation.ANIMATIONTYPE_COLOR3:
                 case Animation.ANIMATIONTYPE_COLOR4:
                     key.values = animationKey.value.asArray();
+                    if (animationKey.inTangent) {
+                        key.values.push(animationKey.inTangent.asArray());
+                    }
+                    if (animationKey.outTangent) {
+                        if (animationKey.inTangent === undefined) {
+                            key.values.push(undefined);
+                        }
+                        key.values.push(animationKey.outTangent.asArray());
+                    }
                     break;
             }
 
