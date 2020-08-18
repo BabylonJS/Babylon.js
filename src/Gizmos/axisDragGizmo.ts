@@ -115,6 +115,9 @@ export class AxisDragGizmo extends Gizmo {
                 }
                 // Snapping logic
                 if (this.snapDistance == 0) {
+                    if ((this.attachedNode as any).position) { // Required for nodes like lights
+                        (this.attachedNode as any).position.addInPlaceFromFloats(localDelta.x, localDelta.y, localDelta.z);
+                    }
                     this.attachedNode.getWorldMatrix().addTranslationFromFloats(localDelta.x, localDelta.y, localDelta.z);
                     this.attachedNode.updateCache();
                 } else {
