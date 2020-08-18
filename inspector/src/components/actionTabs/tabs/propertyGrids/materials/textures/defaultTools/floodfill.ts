@@ -1,28 +1,30 @@
 import { IToolParameters, IToolData } from '../textureEditorComponent';
-import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerEventTypes, PointerInfo } from 'babylonjs/Events/pointerEvents';
+import { Nullable } from 'babylonjs/types'
+import { Observer } from 'babylonjs/Misc/observable';
 
 export const Floodfill : IToolData = {
     name: 'Floodfill',
     type: class {
         getParameters: () => IToolParameters;
-        pointerObservable: any;
-
+        pointerObserver: Nullable<Observer<PointerInfo>>;
         constructor(getParameters: () => IToolParameters) {
             this.getParameters = getParameters;
         }
 
         fill() {
-            const p = this.getParameters();
-            const ctx = p.canvas2D.getContext('2d')!;
-            ctx.fillStyle = p.metadata.color;
-            ctx.globalAlpha = p.metadata.opacity;
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillRect(0,0, p.size.width, p.size.height);
-            p.updateTexture();
+            const {metadata, startPainting, updatePainting, stopPainting} = this.getParameters();
+            const ctx = startPainting();
+            ctx.fillStyle = metadata.color;
+            ctx.globalAlpha = metadata.alpha;
+            ctx.globalCompositeOperation = 'copy';
+            ctx.fillRect(0,0, ctx.canvas.width, ctx.canvas.height);
+            updatePainting();
+            stopPainting();
         }
         
         setup () {
-            this.pointerObservable = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
+            this.pointerObserver = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         this.fill();
@@ -31,8 +33,8 @@ export const Floodfill : IToolData = {
             });
         }
         cleanup () {
-            if (this.pointerObservable) {
-                this.getParameters().scene.onPointerObservable.remove(this.pointerObservable);
+            if (this.pointerObserver) {
+                this.getParameters().scene.onPointerObservable.remove(this.pointerObserver);
             }
         }
     },

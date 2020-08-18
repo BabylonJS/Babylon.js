@@ -246,8 +246,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public releaseDrag() {
         if (this.dragging) {
-            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
             this.dragging = false;
+            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
         }
 
         this.currentDraggingPointerID = -1;
