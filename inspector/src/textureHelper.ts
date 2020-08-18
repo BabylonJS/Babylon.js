@@ -1,11 +1,13 @@
 import { PostProcess } from 'babylonjs/PostProcesses/postProcess';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
-import { PassPostProcess, PassCubePostProcess } from 'babylonjs/PostProcesses/passPostProcess';
-import { Constants } from 'babylonjs/Engines/constants';
 import { GlobalState } from './components/globalState';
 import { RenderTargetTexture } from 'babylonjs/Materials/Textures/renderTargetTexture';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { Nullable } from 'babylonjs/types';
+
+import "./lod.fragment";
+import "./lodCube.fragment";
+
 
 export interface TextureChannelsToDisplay {
     R: boolean;
@@ -16,27 +18,34 @@ export interface TextureChannelsToDisplay {
 
 export class TextureHelper {
 
-    private static _ProcessAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState: Nullable<GlobalState>, resolve: (result: Uint8Array) => void, reject: () => void) {
+    private static _ProcessAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, lod: number, globalState: Nullable<GlobalState>, resolve: (result: Uint8Array) => void, reject: () => void) {
         var scene = texture.getScene()!;
         var engine = scene.getEngine();
 
-        let passPostProcess: PostProcess;
+        let lodPostProcess: PostProcess;
 
         if (!texture.isCube) {
-            passPostProcess = new PassPostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+            lodPostProcess = new PostProcess("lod", "lod", ["lod"], null, 1.0, null, Texture.NEAREST_SAMPLINGMODE, engine);
         } else {
-            var passCubePostProcess = new PassCubePostProcess("pass", 1, null, Texture.NEAREST_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
-            passCubePostProcess.face = face;
-
-            passPostProcess = passCubePostProcess;
+            const faceDefines = [
+                "#define POSITIVEX",
+                "#define NEGATIVEX",
+                "#define POSITIVEY",
+                "#define NEGATIVEY",
+                "#define POSITIVEZ",
+                "#define NEGATIVEZ",
+            ];
+            lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod"], null, 1.0, null, Texture.NEAREST_SAMPLINGMODE, engine, false, faceDefines[face]);
         }
 
-        if (!passPostProcess.getEffect().isReady()) {
+        
+
+        if (!lodPostProcess.getEffect().isReady()) {
             // Try again later
-            passPostProcess.dispose();
+            lodPostProcess.dispose();
 
             setTimeout(() => {
-                this._ProcessAsync(texture, width, height, face, channels, globalState, resolve, reject);
+                this._ProcessAsync(texture, width, height, face, channels, lod, globalState, resolve, reject);
             }, 250);
 
             return;
@@ -51,14 +60,15 @@ export class TextureHelper {
             { width: width, height: height },
             scene, false);
 
-        passPostProcess.onApply = function(effect) {
+        lodPostProcess.onApply = function(effect) {
             effect.setTexture("textureSampler", texture);
+            effect.setFloat("lod", lod);
         };
 
         let internalTexture = rtt.getInternalTexture();
 
         if (internalTexture) {
-            scene.postProcessManager.directRender([passPostProcess], internalTexture);
+            scene.postProcessManager.directRender([lodPostProcess], internalTexture);
 
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
@@ -141,23 +151,23 @@ export class TextureHelper {
         }
 
         rtt.dispose();
-        passPostProcess.dispose();
+        lodPostProcess.dispose();
         
         if (globalState) {
             globalState.blockMutationUpdates = false;
         }
     }
 
-    public static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState): Promise<Uint8Array> {
+    public static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState, lod: number = 0): Promise<Uint8Array> {
         return new Promise((resolve, reject) => {
             if (!texture.isReady() && texture._texture) {
                 texture._texture.onLoadedObservable.addOnce(() => {
-                    this._ProcessAsync(texture, width, height, face, channels, globalState || null, resolve, reject);
+                    this._ProcessAsync(texture, width, height, face, channels, lod, globalState || null, resolve, reject);
                 });
                 return;
             }        
 
-            this._ProcessAsync(texture, width, height, face, channels, globalState || null, resolve, reject);
+            this._ProcessAsync(texture, width, height, face, channels, lod, globalState || null, resolve, reject);
         });
     }
 }
