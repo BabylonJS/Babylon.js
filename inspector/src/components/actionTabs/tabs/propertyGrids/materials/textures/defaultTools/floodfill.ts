@@ -11,13 +11,14 @@ export const Floodfill : IToolData = {
         }
 
         fill() {
-            const {metadata, startPainting, stopPainting} = this.getParameters();
+            const {metadata, startPainting, updatePainting, stopPainting} = this.getParameters();
             const ctx = startPainting();
             ctx.fillStyle = metadata.color;
             ctx.globalAlpha = metadata.alpha;
             ctx.globalCompositeOperation = 'copy';
             ctx.fillRect(0,0, ctx.canvas.width, ctx.canvas.height);
-            stopPainting(ctx);
+            updatePainting();
+            stopPainting();
         }
         
         setup () {

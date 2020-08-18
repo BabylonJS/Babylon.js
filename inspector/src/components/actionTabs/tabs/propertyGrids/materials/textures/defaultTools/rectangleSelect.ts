@@ -8,6 +8,8 @@ export const RectangleSelect : IToolData = {
         getParameters: () => IToolParameters;
         pointerObserver: Nullable<Observer<PointerInfo>>;
         isSelecting = false;
+        xStart : number = -1;
+        yStart : number = -1;
         constructor(getParameters: () => IToolParameters) {
             this.getParameters = getParameters;
         }
@@ -19,7 +21,7 @@ export const RectangleSelect : IToolData = {
                     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                         if (pointerInfo.event.button == 0) {
                             this.isSelecting = true;
-                            const {x, y} = getMouseCoordinates(pointerInfo);
+                            const {x, y} = {x: this.xStart, y: this.yStart} = getMouseCoordinates(pointerInfo);
                             setMetadata({
                                 select: {
                                     x1: x,
@@ -32,13 +34,12 @@ export const RectangleSelect : IToolData = {
                     }
                     if (pointerInfo.type === PointerEventTypes.POINTERMOVE && this.isSelecting) {
                         const {x, y} = getMouseCoordinates(pointerInfo);
-                        const {select} = metadata;
                         setMetadata({
                             select: {
-                                x1: Math.min(x, select.x1),
-                                y1: Math.min(y, select.y1),
-                                x2: Math.max(x, select.x1),
-                                y2: Math.max(y, select.y1)
+                                x1: Math.min(x, this.xStart),
+                                y1: Math.min(y, this.yStart),
+                                x2: Math.max(x, this.xStart),
+                                y2: Math.max(y, this.yStart)
                             }
                         })
                     }

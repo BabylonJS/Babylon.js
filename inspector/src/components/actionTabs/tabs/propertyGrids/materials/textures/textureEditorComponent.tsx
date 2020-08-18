@@ -40,7 +40,7 @@ interface ITextureEditorComponentState {
 export interface IToolParameters {
     /** The visible scene in the editor. Useful for adding pointer and keyboard events. */
     scene: Scene;
-    /** The 2D canvas which tools can paint on using the canvas API. */
+    /** The 2D canvas which you can sample pixel data from. Tools should not paint directly on this canvas. */
     canvas2D: HTMLCanvasElement;
     /** The 3D scene which tools can add post processes to. */
     scene3D: Scene;
@@ -58,8 +58,12 @@ export interface IToolParameters {
     GUI: IToolGUI;
     /** Provides access to the BABYLON namespace */
     BABYLON: any;
+    /** Provides a canvas that you can use the canvas API to paint on. */
     startPainting: () => CanvasRenderingContext2D;
-    stopPainting: (ctx: CanvasRenderingContext2D) => void;
+    /** After you have painted on your canvas, call this method to push the updates back to the texture. */
+    updatePainting: () => void;
+    /** Call this when you are finished painting. */
+    stopPainting: () => void;
 }
 
 
@@ -113,6 +117,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
     private _2DCanvas = React.createRef<HTMLCanvasElement>();
     private _3DCanvas = React.createRef<HTMLCanvasElement>();
     private _timer : number | null;
+    private static PREVIEW_UPDATE_DELAY_MS = 160;
 
     constructor(props : ITextureEditorComponentProps) {
         super(props);
@@ -142,7 +147,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             channels,
             pixelData: {},
             face: 0,
-            mipLevel: 1
+            mipLevel: 0
         }
         this.loadToolFromURL = this.loadToolFromURL.bind(this);
         this.changeTool = this.changeTool.bind(this);
@@ -188,7 +193,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this._timer = window.setTimeout(() => {
             this.props.onUpdate();
             this._timer = null;
-        }, 300);
+        }, TextureEditorComponent.PREVIEW_UPDATE_DELAY_MS);
     }
 
     loadToolFromURL(url : string) {
@@ -219,7 +224,8 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             size: this._textureCanvasManager.size,
             updateTexture: () => this._textureCanvasManager.updateTexture(),
             startPainting: () => this._textureCanvasManager.startPainting(),
-            stopPainting: (ctx : CanvasRenderingContext2D) => this._textureCanvasManager.stopPainting(ctx),
+            stopPainting: () => this._textureCanvasManager.stopPainting(),
+            updatePainting: () => this._textureCanvasManager.updatePainting(),
             metadata: this.state.metadata,
             setMetadata: (data : any) => this.setMetadata(data),
             getMouseCoordinates: (pointerInfo : PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
