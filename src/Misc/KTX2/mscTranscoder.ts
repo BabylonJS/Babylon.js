@@ -20,7 +20,7 @@ export class MSCTranscoder extends Transcoder {
         }
 
         this._mscBasisTranscoderPromise = new Promise((resolve) => {
-            importScripts("https://cdn.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js");
+            importScripts("https://preview.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js");
             MSC_TRANSCODER().then((basisModule: any) => {
                 basisModule.initTranscoders();
                 this._mscBasisModule = basisModule;

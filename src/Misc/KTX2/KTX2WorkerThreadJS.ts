@@ -212,7 +212,7 @@ export function workerFunc() {
             return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.BC7_M5_RGBA;
         };
         LiteTranscoder_UASTC_BC7.prototype.initialize = function () {
-            this.setModulePath("https://cdn.babylonjs.com/ktx2Transcoders/uastc_bc7.wasm");
+            this.setModulePath("https://preview.babylonjs.com/ktx2Transcoders/uastc_bc7.wasm");
         };
         return LiteTranscoder_UASTC_BC7;
     }(LiteTranscoder));
@@ -229,7 +229,7 @@ export function workerFunc() {
             return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.ASTC_4x4_RGBA;
         };
         LiteTranscoder_UASTC_ASTC.prototype.initialize = function () {
-            this.setModulePath("https://cdn.babylonjs.com/ktx2Transcoders/uastc_astc.wasm");
+            this.setModulePath("https://preview.babylonjs.com/ktx2Transcoders/uastc_astc.wasm");
         };
         return LiteTranscoder_UASTC_ASTC;
     }(LiteTranscoder));
@@ -248,7 +248,7 @@ export function workerFunc() {
                 return this._mscBasisTranscoderPromise;
             }
             this._mscBasisTranscoderPromise = new Promise(function (resolve) {
-                importScripts("https://cdn.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js");
+                importScripts("https://preview.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js");
                 MSC_TRANSCODER().then(function (basisModule) {
                     basisModule.initTranscoders();
                     _this._mscBasisModule = basisModule;
