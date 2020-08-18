@@ -191,6 +191,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         texture={this.props.texture}
                         url={textureUrl}
                         window={this.popoutWindowRef}
+                        onUpdate={() => this.forceRefresh()}
                     />
                 </PopupComponent>)}
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
