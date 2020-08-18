@@ -238,7 +238,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
     keyDown(e: KeyboardEvent) {
         e.preventDefault();
-        if (e.keyCode === 17) {
+        if (e.keyCode === 17 || e.keyCode === 32) {
             this._draggableArea.current?.style.setProperty("cursor", "grab");
             this._isControlKeyPress = true;
         }
@@ -246,7 +246,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
     keyUp(e: KeyboardEvent) {
         e.preventDefault();
-        if (e.keyCode === 17) {
+        if (e.keyCode === 17 || e.keyCode === 32) {
             this._draggableArea.current?.style.setProperty("cursor", "initial");
             this._isControlKeyPress = false;
             this._active = false;
