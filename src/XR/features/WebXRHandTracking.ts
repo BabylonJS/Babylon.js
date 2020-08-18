@@ -10,24 +10,52 @@ import { Quaternion } from "../../Maths/math.vector";
 import { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/physicsImpostor";
 import { WebXRFeaturesManager } from "../webXRFeaturesManager";
-import { WebXRControllerPointerSelection } from "./WebXRControllerPointerSelection";
 import { IDisposable } from "../../scene";
 import { Observable } from "../../Misc/observable";
 
+/**
+ * Configuration interface for the hand tracking feature
+ */
 export interface IWebXRHandTrackingOptions {
+    /**
+     * The xrInput that will be used as source for new hands
+     */
     xrInput: WebXRInput;
 
-    pointerSelectionFeature?: WebXRControllerPointerSelection;
-
-    enableFingerPointer?: boolean;
-
+    /**
+     * Configuration object for the joint meshes
+     */
     jointMeshes?: {
+        /**
+         * Should the meshes created be invisible (defaults to false)
+         */
         invisible?: boolean;
-        originalMesh?: Mesh;
+        /**
+         * A source mesh to be used to create instances. Defaults to a sphere.
+         * This mesh will be the source for all other (25) meshes.
+         * It should have the general size of a single unit, as the instances will be scaled according to the provided radius
+         */
+        sourceMesh?: Mesh;
+        /**
+         * Should the source mesh stay visible. Defaults to false
+         */
         keepOriginalVisible?: boolean;
+        /**
+         * Scale factor for all instances (defaults to 2)
+         */
         scaleFactor?: number;
+        /**
+         * Should each instance have its own physics impostor
+         */
         enablePhysics?: boolean;
+        /**
+         * If enabled, override default physics properties
+         */
         physicsProps?: { friction?: number; restitution?: number; impostorType?: number };
+        /**
+         * For future use - a single hand-mesh that will be updated according to the XRHand data provided
+         */
+        handMesh?: AbstractMesh;
     };
 }
 
@@ -47,8 +75,15 @@ export const enum HandPart {
  * Representing a single hand (with its corresponding native XRHand object)
  */
 export class WebXRHand implements IDisposable {
+    /**
+     * Hand-parts definition (key is HandPart)
+     */
     public static HandPartsDefinition: { [key: string]: number[] };
 
+    /**
+     * Populate the HandPartsDefinition object.
+     * This is called as a side effect since certain browsers don't have XRHand defined.
+     */
     public static _PopulateHandPartsDefinition() {
         if (typeof XRHand !== "undefined") {
             WebXRHand.HandPartsDefinition = {
@@ -121,6 +156,7 @@ export class WebXRHand implements IDisposable {
     }
 }
 
+// Populate the hand parts definition
 WebXRHand._PopulateHandPartsDefinition();
 
 export class WebXRHandTracking extends WebXRAbstractFeature {
@@ -258,7 +294,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
         const hand = xrController.inputSource.hand;
         const trackedMeshes: AbstractMesh[] = [];
-        const originalMesh = this.options.jointMeshes?.originalMesh || SphereBuilder.CreateSphere("jointParent", { diameter: 1 });
+        const originalMesh = this.options.jointMeshes?.sourceMesh || SphereBuilder.CreateSphere("jointParent", { diameter: 1 });
         originalMesh.isVisible = !!this.options.jointMeshes?.keepOriginalVisible;
         for (let i = 0; i < hand.length; ++i) {
             const newInstance = originalMesh.createInstance(`${xrController.uniqueId}-handJoint-${i}`);
