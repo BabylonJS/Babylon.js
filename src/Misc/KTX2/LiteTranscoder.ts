@@ -1,5 +1,4 @@
 import { Nullable } from '../../types';
-import { Tools } from '../tools';
 import { Transcoder, sourceTextureFormat, transcodeTarget } from './transcoder';
 import { WASMMemoryManager } from './wasmMemoryManager';
 import { KTX2FileReader, IKTX2_ImageDesc } from './KTX2FileReader';
@@ -19,7 +18,11 @@ export class LiteTranscoder extends Transcoder {
         }
 
         this._modulePromise = new Promise((resolve) => {
-            Tools.LoadFileAsync(this._modulePath).then((wasmBinary: string | ArrayBuffer) => {
+            fetch(this._modulePath).
+            then((response) => {
+                return response.arrayBuffer();
+            }).
+            then((wasmBinary: string | ArrayBuffer) => {
                 WebAssembly.instantiate(wasmBinary as ArrayBuffer, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
                     resolve({ module: moduleWrapper.instance.exports });
                 });
