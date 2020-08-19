@@ -54878,12 +54878,127 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Display a 360/180 degree texture on an approximately spherical surface, useful for VR applications or skyboxes.
+     * As a subclass of TransformNode, this allow parenting to the camera or multiple textures with different locations in the scene.
+     * This class achieves its effect with a Texture and a correctly configured BackgroundMaterial on an inverted sphere.
+     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
+     */
+    export abstract class TextureDome<T extends Texture> extends TransformNode {
+        protected onError: Nullable<(message?: string, exception?: any) => void>;
+        /**
+         * Define the source as a Monoscopic panoramic 360/180.
+         */
+        static readonly MODE_MONOSCOPIC: number;
+        /**
+         * Define the source as a Stereoscopic TopBottom/OverUnder panoramic 360/180.
+         */
+        static readonly MODE_TOPBOTTOM: number;
+        /**
+         * Define the source as a Stereoscopic Side by Side panoramic 360/180.
+         */
+        static readonly MODE_SIDEBYSIDE: number;
+        private _halfDome;
+        protected _useDirectMapping: boolean;
+        /**
+         * The texture being displayed on the sphere
+         */
+        protected _texture: T;
+        /**
+         * Gets the texture being displayed on the sphere
+         */
+        get texture(): T;
+        /**
+         * Sets the texture being displayed on the sphere
+         */
+        set texture(newTexture: T);
+        /**
+         * The skybox material
+         */
+        protected _material: BackgroundMaterial;
+        /**
+         * The surface used for the dome
+         */
+        protected _mesh: Mesh;
+        /**
+         * Gets the mesh used for the dome.
+         */
+        get mesh(): Mesh;
+        /**
+         * A mesh that will be used to mask the back of the dome in case it is a 180 degree movie.
+         */
+        private _halfDomeMask;
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Also see the options.resolution property.
+         */
+        get fovMultiplier(): number;
+        set fovMultiplier(value: number);
+        protected _textureMode: number;
+        /**
+         * Gets or set the current texture mode for the texture. It can be:
+         * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
+         * * TextureDome.MODE_TOPBOTTOM  : Define the texture source as a Stereoscopic TopBottom/OverUnder panoramic 360.
+         * * TextureDome.MODE_SIDEBYSIDE : Define the texture source as a Stereoscopic Side by Side panoramic 360.
+         */
+        get textureMode(): number;
+        /**
+         * Sets the current texture mode for the texture. It can be:
+          * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
+         * * TextureDome.MODE_TOPBOTTOM  : Define the texture source as a Stereoscopic TopBottom/OverUnder panoramic 360.
+         * * TextureDome.MODE_SIDEBYSIDE : Define the texture source as a Stereoscopic Side by Side panoramic 360.
+         */
+        set textureMode(value: number);
+        /**
+         * Is it a 180 degrees dome (half dome) or 360 texture (full dome)
+         */
+        get halfDome(): boolean;
+        /**
+         * Set the halfDome mode. If set, only the front (180 degrees) will be displayed and the back will be blacked out.
+         */
+        set halfDome(enabled: boolean);
+        /**
+         * Oberserver used in Stereoscopic VR Mode.
+         */
+        private _onBeforeCameraRenderObserver;
+        /**
+         * Observable raised when an error occured while loading the 360 image
+         */
+        onLoadErrorObservable: Observable<string>;
+        /**
+         * Create an instance of this class and pass through the parameters to the relevant classes- Texture, StandardMaterial, and Mesh.
+         * @param name Element's name, child elements will append suffixes for their own names.
+         * @param textureUrlOrElement defines the url(s) or the (video) HTML element to use
+         * @param options An object containing optional or exposed sub element properties
+         */
+        constructor(name: string, textureUrlOrElement: string | string[] | HTMLVideoElement, options: {
+            resolution?: number;
+            clickToPlay?: boolean;
+            autoPlay?: boolean;
+            loop?: boolean;
+            size?: number;
+            poster?: string;
+            faceForward?: boolean;
+            useDirectMapping?: boolean;
+            halfDomeMode?: boolean;
+        }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
+        protected abstract _initTexture(urlsOrElement: string | string[] | HTMLElement, scene: Scene, options: any): T;
+        protected _changeTextureMode(value: number): void;
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
      * Display a 360 degree photo on an approximately spherical surface, useful for VR applications or skyboxes.
      * As a subclass of TransformNode, this allow parenting to the camera with different locations in the scene.
      * This class achieves its effect with a Texture and a correctly configured BackgroundMaterial on an inverted sphere.
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
-    export class PhotoDome extends TransformNode {
+    export class PhotoDome extends TextureDome<Texture> {
         /**
          * Define the image as a Monoscopic panoramic 360 image.
          */
@@ -54896,68 +55011,29 @@ declare module BABYLON {
          * Define the image as a Stereoscopic Side by Side panoramic 360 image.
          */
         static readonly MODE_SIDEBYSIDE: number;
-        private _useDirectMapping;
-        /**
-         * The texture being displayed on the sphere
-         */
-        protected _photoTexture: Texture;
         /**
          * Gets or sets the texture being displayed on the sphere
          */
         get photoTexture(): Texture;
+        /**
+         * sets the texture being displayed on the sphere
+         */
         set photoTexture(value: Texture);
         /**
-         * Observable raised when an error occured while loading the 360 image
-         */
-        onLoadErrorObservable: Observable<string>;
-        /**
-         * The skybox material
-         */
-        protected _material: BackgroundMaterial;
-        /**
-         * The surface used for the skybox
-         */
-        protected _mesh: Mesh;
-        /**
-         * Gets the mesh used for the skybox.
-         */
-        get mesh(): Mesh;
-        /**
-         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
-         * Also see the options.resolution property.
-         */
-        get fovMultiplier(): number;
-        set fovMultiplier(value: number);
-        private _imageMode;
-        /**
-         * Gets or set the current video mode for the video. It can be:
-         * * PhotoDome.MODE_MONOSCOPIC : Define the image as a Monoscopic panoramic 360 image.
-         * * PhotoDome.MODE_TOPBOTTOM  : Define the image as a Stereoscopic TopBottom/OverUnder panoramic 360 image.
-         * * PhotoDome.MODE_SIDEBYSIDE : Define the image as a Stereoscopic Side by Side panoramic 360 image.
+         * Gets the current video mode for the video. It can be:
+         * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
+         * * TextureDome.MODE_TOPBOTTOM  : Define the texture source as a Stereoscopic TopBottom/OverUnder panoramic 360.
+         * * TextureDome.MODE_SIDEBYSIDE : Define the texture source as a Stereoscopic Side by Side panoramic 360.
          */
         get imageMode(): number;
+        /**
+         * Sets the current video mode for the video. It can be:
+         * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
+         * * TextureDome.MODE_TOPBOTTOM  : Define the texture source as a Stereoscopic TopBottom/OverUnder panoramic 360.
+         * * TextureDome.MODE_SIDEBYSIDE : Define the texture source as a Stereoscopic Side by Side panoramic 360.
+         */
         set imageMode(value: number);
-        /**
-         * Create an instance of this class and pass through the parameters to the relevant classes, Texture, StandardMaterial, and Mesh.
-         * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOfPhoto defines the url of the photo to display
-         * @param options defines an object containing optional or exposed sub element properties
-         * @param onError defines a callback called when an error occured while loading the texture
-         */
-        constructor(name: string, urlOfPhoto: string, options: {
-            resolution?: number;
-            size?: number;
-            useDirectMapping?: boolean;
-            faceForward?: boolean;
-        }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
-        private _onBeforeCameraRenderObserver;
-        private _changeImageMode;
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        protected _initTexture(urlsOrElement: string, scene: Scene, options: any): Texture;
     }
 }
 declare module BABYLON {
@@ -57662,7 +57738,7 @@ declare module BABYLON {
      * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
-    export class VideoDome extends TransformNode {
+    export class VideoDome extends TextureDome<VideoTexture> {
         /**
          * Define the video source as a Monoscopic panoramic 360 video.
          */
@@ -57675,84 +57751,20 @@ declare module BABYLON {
          * Define the video source as a Stereoscopic Side by Side panoramic 360 video.
          */
         static readonly MODE_SIDEBYSIDE: number;
-        private _halfDome;
-        private _useDirectMapping;
         /**
-         * The video texture being displayed on the sphere
-         */
-        protected _videoTexture: VideoTexture;
-        /**
-         * Gets the video texture being displayed on the sphere
+         * Get the video texture associated with this video dome
          */
         get videoTexture(): VideoTexture;
         /**
-         * The skybox material
-         */
-        protected _material: BackgroundMaterial;
-        /**
-         * The surface used for the video dome
-         */
-        protected _mesh: Mesh;
-        /**
-         * Gets the mesh used for the video dome.
-         */
-        get mesh(): Mesh;
-        /**
-         * A mesh that will be used to mask the back of the video dome in case it is a 180 degree movie.
-         */
-        private _halfDomeMask;
-        /**
-         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
-         * Also see the options.resolution property.
-         */
-        get fovMultiplier(): number;
-        set fovMultiplier(value: number);
-        private _videoMode;
-        /**
-         * Gets or set the current video mode for the video. It can be:
-         * * VideoDome.MODE_MONOSCOPIC : Define the video source as a Monoscopic panoramic 360 video.
-         * * VideoDome.MODE_TOPBOTTOM  : Define the video source as a Stereoscopic TopBottom/OverUnder panoramic 360 video.
-         * * VideoDome.MODE_SIDEBYSIDE : Define the video source as a Stereoscopic Side by Side panoramic 360 video.
+         * Get the video mode of this dome
          */
         get videoMode(): number;
+        /**
+         * Set the video mode of this dome.
+         * @see textureMode
+         */
         set videoMode(value: number);
-        /**
-         * Is the video a 180 degrees video (half dome) or 360 video (full dome)
-         *
-         */
-        get halfDome(): boolean;
-        /**
-         * Set the halfDome mode. If set, only the front (180 degrees) will be displayed and the back will be blacked out.
-         */
-        set halfDome(enabled: boolean);
-        /**
-         * Oberserver used in Stereoscopic VR Mode.
-         */
-        private _onBeforeCameraRenderObserver;
-        /**
-         * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
-         * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOrVideo defines the url(s) or the video element to use
-         * @param options An object containing optional or exposed sub element properties
-         */
-        constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
-            resolution?: number;
-            clickToPlay?: boolean;
-            autoPlay?: boolean;
-            loop?: boolean;
-            size?: number;
-            poster?: string;
-            faceForward?: boolean;
-            useDirectMapping?: boolean;
-            halfDomeMode?: boolean;
-        }, scene: Scene);
-        private _changeVideoMode;
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+        protected _initTexture(urlsOrElement: string | string[] | HTMLVideoElement, scene: Scene, options: any): VideoTexture;
     }
 }
 declare module BABYLON {
