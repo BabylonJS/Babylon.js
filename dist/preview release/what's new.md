@@ -18,7 +18,7 @@
 ### General
 
 - Added support for postproces serialization ([Deltakosh](https://github.com/deltakosh))
-- Added support for querystrings on KTX file URLs ([abogartz](https://github.com/abogartz)
+- Added support for querystrings on KTX file URLs ([abogartz](https://github.com/abogartz))
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
 - Camera gizmo ([cedricguillemet](https://github.com/cedricguillemet))
