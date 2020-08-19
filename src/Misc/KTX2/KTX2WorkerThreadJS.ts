@@ -1,5 +1,6 @@
 // @ts-nocheck
 // tslint:disable
+
 export function workerFunc() {
 
     var COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
@@ -11,7 +12,7 @@ export function workerFunc() {
     var COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
     var COMPRESSED_RGB8_ETC2 = 0x9274;
     var COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
-    var RGBAFormat = 0x3FF;
+    var RGBA8Format = 0x8058;
     
     var __extends = (this && this.__extends) || (function () {
         var extendStatics = function (d, b) {
@@ -334,8 +335,8 @@ export function workerFunc() {
         return MSCTranscoder;
     }(Transcoder));
 
-    TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_ASTC);
-    TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_BC7);
+    //TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_ASTC);
+    //TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_BC7);
     TranscoderManager.registerTranscoder(MSCTranscoder);
 
     /**
@@ -777,8 +778,8 @@ export function workerFunc() {
             case "createMipmaps":
                 try {
                     var kfr = new KTX2FileReader(event.data.data);
-                    _createMipmaps(kfr, event.data.caps).then(function (mipmaps) {
-                        postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
+                    _createMipmaps(kfr, event.data.caps).then(function (data) {
+                        postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, decodedData: data.decodedData }, data.mipmapBuffers);
                     }).catch(function (reason) {
                         postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: reason });
                     });
@@ -796,7 +797,6 @@ export function workerFunc() {
         var isPowerOfTwo = function (value) {
             return (value & (value - 1)) === 0 && value !== 0;
         };
-
         // PVRTC1 transcoders (from both ETC1S and UASTC) only support power of 2 dimensions.
         var pvrtcTranscodable = isPowerOfTwo(width) && isPowerOfTwo(height);
         var targetFormat = transcodeTarget.BC7_M5_RGBA;
@@ -827,15 +827,18 @@ export function workerFunc() {
         }
         else {
             targetFormat = transcodeTarget.RGBA32;
-            transcodedFormat = RGBAFormat;
+            transcodedFormat = RGBA8Format;
         }
+        targetFormat = transcodeTarget.RGBA32;
+        transcodedFormat = RGBA8Format;
         var transcoder = transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
         if (transcoder === null) {
             throw new Error("no transcoder found to transcode source texture format \"" + sourceTextureFormat[srcTexFormat] + "\" to format \"" + transcodeTarget[targetFormat] + "\"");
         }
         var mipmaps = [];
-        var texturePromises = [];
-        var mipmapsData = [];
+        var dataPromises = [];
+        var mipmapBuffers = [];
+        var decodedData = { width: 0, height: 0, transcodedFormat: transcodedFormat, mipmaps: mipmaps };
         var firstImageDescIndex = 0;
         for (var level = 0; level < kfr.header.levelCount; level++) {
             if (level > 0) {
@@ -853,6 +856,10 @@ export function workerFunc() {
                 //levelDataBuffer = this.zstd.decode(new Uint8Array(levelDataBuffer, levelDataOffset, levelByteLength), levelUncompressedByteLength);
                 levelDataOffset = 0;
             }
+            if (level === 0) {
+                decodedData.width = levelWidth;
+                decodedData.height = levelHeight;
+            }
             var _loop_1 = function (imageIndex) {
                 var encodedData = void 0;
                 var imageDesc = null;
@@ -868,25 +875,24 @@ export function workerFunc() {
                     data: null,
                     width: levelWidth,
                     height: levelHeight,
-                    transcodedFormat: transcodedFormat
                 };
                 var transcodedData = transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData).
                     then(function (data) {
                     mipmap.data = data;
                     if (data) {
-                        mipmapsData.push(data.buffer);
+                        mipmapBuffers.push(data.buffer);
                     }
                     return data;
                 });
                 mipmaps.push(mipmap);
-                texturePromises.push(transcodedData);
+                dataPromises.push(transcodedData);
             };
             for (var imageIndex = 0; imageIndex < numImagesInLevel; imageIndex++) {
                 _loop_1(imageIndex);
             }
         }
-        return Promise.all(texturePromises).then(function () {
-            return { mipmaps: mipmaps, mipmapsData: mipmapsData };
+        return Promise.all(dataPromises).then(function () {
+            return { decodedData: decodedData, mipmapBuffers: mipmapBuffers };
         });
     };
 }

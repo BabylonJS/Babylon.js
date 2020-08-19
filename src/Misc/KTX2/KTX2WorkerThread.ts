@@ -17,13 +17,19 @@ const COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
 const COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
 const COMPRESSED_RGB8_ETC2 = 0x9274;
 const COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
-const RGBAFormat = 0x3FF;
+const RGBA8Format = 0x8058;
 
 export interface IMipmap {
     data: Nullable<Uint8Array>;
     width: number;
     height: number;
+}
+
+export interface IDecodedData {
+    width: number;
+    height: number;
     transcodedFormat: number;
+    mipmaps: Array<IMipmap>;
 }
 
 export function workerFunc(): void {
@@ -41,8 +47,8 @@ export function workerFunc(): void {
             case "createMipmaps":
                 try {
                     const kfr = new KTX2FileReader(event.data.data);
-                    _createMipmaps(kfr, event.data.caps).then((mipmaps) => {
-                        postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
+                    _createMipmaps(kfr, event.data.caps).then((data) => {
+                        postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, decodedData: data.decodedData }, data.mipmapBuffers);
                     }).catch((reason) => {
                         postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: reason });
                     });
@@ -53,7 +59,7 @@ export function workerFunc(): void {
         }
     };
 
-    const _createMipmaps = (kfr: KTX2FileReader, caps: { [name: string]: any }): Promise<{ mipmaps: Array<IMipmap>, mipmapsData: Array<ArrayBuffer> }> => {
+    const _createMipmaps = (kfr: KTX2FileReader, caps: { [name: string]: any }): Promise<{ decodedData: IDecodedData, mipmapBuffers: Array<ArrayBuffer> }> => {
         const width = kfr.header.pixelWidth;
         const height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;
@@ -88,7 +94,7 @@ export function workerFunc(): void {
             transcodedFormat = COMPRESSED_RGB_ETC1_WEBGL;
         } else {
             targetFormat = transcodeTarget.RGBA32;
-            transcodedFormat = RGBAFormat;
+            transcodedFormat = RGBA8Format;
         }
 
         const transcoder = transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
@@ -98,8 +104,9 @@ export function workerFunc(): void {
         }
 
         const mipmaps: Array<IMipmap> = [];
-        const texturePromises: Array<Promise<Nullable<Uint8Array>>> = [];
-        const mipmapsData: Array<ArrayBuffer> = [];
+        const dataPromises: Array<Promise<Nullable<Uint8Array>>> = [];
+        const mipmapBuffers: Array<ArrayBuffer> = [];
+        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps };
 
         let firstImageDescIndex = 0;
 
@@ -125,6 +132,11 @@ export function workerFunc(): void {
                 levelDataOffset = 0;
             }
 
+            if (level === 0) {
+                decodedData.width = levelWidth;
+                decodedData.height = levelHeight;
+            }
+
             for (let imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {
                 let encodedData: Uint8Array;
                 let imageDesc: Nullable<IKTX2_ImageDesc> = null;
@@ -143,14 +155,13 @@ export function workerFunc(): void {
                     data: null,
                     width: levelWidth,
                     height: levelHeight,
-                    transcodedFormat: transcodedFormat
                 };
 
                 const transcodedData = transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData).
                         then((data) => {
                             mipmap.data = data;
                             if (data) {
-                                mipmapsData.push(data.buffer);
+                                mipmapBuffers.push(data.buffer);
                             }
                             return data;
                         }
@@ -158,12 +169,12 @@ export function workerFunc(): void {
 
                 mipmaps.push(mipmap);
 
-                texturePromises.push(transcodedData);
+                dataPromises.push(transcodedData);
             }
         }
 
-        return Promise.all(texturePromises).then(() => {
-            return { mipmaps, mipmapsData };
+        return Promise.all(dataPromises).then(() => {
+            return { decodedData, mipmapBuffers };
         });
     };
 }

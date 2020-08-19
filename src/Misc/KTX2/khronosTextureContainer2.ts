@@ -1,16 +1,12 @@
 import { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { ThinEngine } from "../../Engines/thinEngine";
-//import { EngineCapabilities } from '../../Engines/engineCapabilities';
-//import { Tools } from '../tools';
 import { Nullable } from '../../types';
 
-import { IMipmap } from "./KTX2WorkerThread";
+import { IDecodedData } from "./KTX2WorkerThread";
 import { workerFunc } from "./KTX2WorkerThreadJS";
 import { KTX2FileReader } from './KTX2FileReader';
 import { Tools } from '../tools';
-
-//const RGB_S3TC_DXT1_Format = 33776;
-//const RGBA_S3TC_DXT5_Format = 33779;
+import { Constants } from '../../Engines/constants';
 
 /**
  * Class for loading KTX2 files
@@ -78,7 +74,7 @@ export class KhronosTextureContainer2 {
                         if (!msg.data.success) {
                             rej({ message: msg.data.msg });
                         }else {
-                            this._createTexture(msg.data.mipmaps, internalTexture);
+                            this._createTexture(msg.data.decodedData, internalTexture);
                             res();
                         }
                     }
@@ -106,9 +102,21 @@ export class KhronosTextureContainer2 {
         });
     }
 
-    protected _createTexture(mipmaps: Array<IMipmap>, internalTexture: InternalTexture) {
-        for (let t = 0; t < mipmaps.length; ++t) {
-            let mipmap = mipmaps[t];
+    protected _createTexture(data: IDecodedData, internalTexture: InternalTexture) {
+        this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
+
+        internalTexture.generateMipMaps = false;
+        internalTexture.invertY = false;
+        internalTexture.width = internalTexture.baseWidth = data.width;
+        internalTexture.height = internalTexture.baseHeight = data.height;
+        internalTexture.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+
+        console.log("transcoded format=", data.transcodedFormat);
+
+        for (let t = 0; t < data.mipmaps.length; ++t) {
+            let mipmap = data.mipmaps[t];
+
+            if (t !== 0) break;
 
             if (!mipmap || !mipmap.data) {
                 throw new Error("KTX2 container - could not transcode one of the image");
@@ -116,17 +124,31 @@ export class KhronosTextureContainer2 {
 
             console.log(`mipmap #${t} byte length=`, mipmap.data.byteLength);
 
-            internalTexture.width = internalTexture.baseWidth = mipmap.width;
-            internalTexture.height = internalTexture.baseHeight = mipmap.height;
-            internalTexture.generateMipMaps = false;
-            internalTexture.invertY = false;
+            if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
+                // uncompressed RGBA
+                internalTexture.width = internalTexture.baseWidth = mipmap.width;
+                internalTexture.height = internalTexture.baseHeight = mipmap.height;
 
-            this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
-            this._engine._uploadCompressedDataToTextureDirectly(internalTexture, mipmap.transcodedFormat, mipmap.width, mipmap.height, mipmap.data, 0, 0);
+                internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
 
-            internalTexture.isReady = true;
-            break;
+                const gl = this._engine._gl;
+                //this._engine._uploadDataToTextureDirectly(internalTexture, mipmap.data, 0, t, undefined, true);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, mipmap.width, mipmap.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, mipmap.data);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            } else {
+                this._engine._uploadCompressedDataToTextureDirectly(internalTexture, data.transcodedFormat, mipmap.width, mipmap.height, mipmap.data, 0, t);
+            }
         }
+
+        internalTexture.isReady = true;
+
+        internalTexture.width = internalTexture.baseWidth = data.width;
+        internalTexture.height = internalTexture.baseHeight = data.height;
+
+        this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, null);
     }
 
     /**
