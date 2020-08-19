@@ -1,7 +1,28 @@
+declare function postMessage(message: any, transfer?: any[]): void;
+
 /**
  * @hidden
  */
 export class WASMMemoryManager {
+
+    private static _RequestId = 0;
+
+    public static LoadWASM(path: string): Promise<ArrayBuffer> {
+        return new Promise((resolve) => {
+            const id = this._RequestId++;
+
+            const wasmLoadedHandler = (msg: any) => {
+                if (msg.data.action === "wasmLoaded" && msg.data.id === id) {
+                    self.removeEventListener("message", wasmLoadedHandler);
+                    resolve(msg.data.wasmBinary);
+                }
+            };
+
+            self.addEventListener("message", wasmLoadedHandler);
+
+            postMessage({ action: "loadWASM", path: path, id: id });
+        });
+    }
 
     private _memory: WebAssembly.Memory;
     private _numPages: number;
@@ -26,14 +47,12 @@ export class WASMMemoryManager {
         byteLength = byteLength ?? numPages << 16;
 
         if (this._numPages < numPages) {
-            console.log("grow memory", this._numPages, numPages);
             this._memory.grow(numPages - this._numPages);
             this._numPages = numPages;
             this._memoryView = new Uint8Array(this._memory.buffer, offset, byteLength);
             this._memoryViewByteLength = byteLength;
             this._memoryViewOffset = offset;
         } else {
-            console.log("recreate view", this._memoryViewByteLength, byteLength, this._memoryViewOffset, offset);
             this._memoryView = new Uint8Array(this._memory.buffer, offset, byteLength);
             this._memoryViewByteLength = byteLength;
             this._memoryViewOffset = offset;

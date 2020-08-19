@@ -7,6 +7,7 @@ import { Nullable } from '../../types';
 import { IMipmap } from "./KTX2WorkerThread";
 import { workerFunc } from "./KTX2WorkerThreadJS";
 import { KTX2FileReader } from './KTX2FileReader';
+import { Tools } from '../tools';
 
 //const RGB_S3TC_DXT1_Format = 33776;
 //const RGBA_S3TC_DXT5_Format = 33779;
@@ -38,7 +39,24 @@ export class KhronosTextureContainer2 {
                             res(this._Worker!);
                         }
                     };
+
+                    const loadWASMHandler = (msg: any) => {
+                        const cache: { [path: string]: Promise<ArrayBuffer | string> } = {};
+                        if (msg.data.action === "loadWASM") {
+                            let promise = cache[msg.data.path];
+                            if (!promise) {
+                                promise = Tools.LoadFileAsync(msg.data.path);
+                                cache[msg.data.path] = promise;
+                            }
+                            promise.then((wasmBinary) => {
+                                this._Worker!.postMessage({ action: "wasmLoaded", wasmBinary: wasmBinary, id: msg.data.id });
+                                return wasmBinary;
+                            });
+                        }
+                    };
+
                     this._Worker.addEventListener("message", initHandler);
+                    this._Worker.addEventListener("message", loadWASMHandler);
                     this._Worker.postMessage({ action: "init" });
                 }
             });
