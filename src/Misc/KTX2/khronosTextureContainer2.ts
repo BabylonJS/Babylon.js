@@ -76,7 +76,7 @@ export class KhronosTextureContainer2 {
                     if (msg.data.action === "mipmapsCreated" && msg.data.id === actionId) {
                         KhronosTextureContainer2._Worker!.removeEventListener("message", messageHandler);
                         if (!msg.data.success) {
-                            rej();
+                            rej({ message: msg.data.msg });
                         }else {
                             this._createTexture(msg.data.mipmaps, internalTexture);
                             res();
