@@ -51,15 +51,22 @@ export class AnimationListTree extends React.Component<
         selectedCoordinate: SelectedCoordinate;
         selectedAnimation: number;
         animationList: Item[] | null;
+        animations: Nullable<Animation[]> | Animation;
     }
 > {
     constructor(props: IAnimationListTreeProps) {
         super(props);
 
+        const animations =
+            this.props.entity instanceof TargetedAnimation
+                ? (this.props.entity as TargetedAnimation).animation
+                : (this.props.entity as IAnimatable).animations;
+
         this.state = {
             selectedCoordinate: 0,
             selectedAnimation: 0,
             animationList: this.generateList(),
+            animations: animations,
         };
     }
 
@@ -68,11 +75,17 @@ export class AnimationListTree extends React.Component<
             if (
                 (this.props.entity as TargetedAnimation).animation !== (prevProps.entity as TargetedAnimation).animation
             ) {
-                this.setState({ animationList: this.generateList() });
+                this.setState({
+                    animationList: this.generateList(),
+                    animations: (this.props.entity as TargetedAnimation).animation,
+                });
             }
         } else {
             if ((this.props.entity as IAnimatable).animations !== (prevProps.entity as IAnimatable).animations) {
-                this.setState({ animationList: this.generateList() });
+                this.setState({
+                    animationList: this.generateList(),
+                    animations: (this.props.entity as IAnimatable).animations,
+                });
             }
         }
     }
@@ -84,13 +97,37 @@ export class AnimationListTree extends React.Component<
         } else {
             let animations = (this.props.entity as IAnimatable).animations;
             if (animations) {
-                let updatedAnimations = animations.filter((anim) => anim !== currentSelected);
-                (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
-                this.props.deselectAnimation();
-                this.setState({ animationList: this.generateList() });
+                if ((this.props.entity as IAnimatable).animations !== null) {
+                    let updatedAnimations = animations.filter((anim) => anim !== currentSelected);
+                    const store = (this.props.entity as IAnimatable).animations!;
+                    this.raiseOnPropertyChanged(updatedAnimations, store);
+                    (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
+                    this.setState(
+                        {
+                            animationList: this.generateList(),
+                            animations: (this.props.entity as IAnimatable).animations,
+                        },
+                        () => {
+                            this.props.deselectAnimation();
+                        }
+                    );
+                }
             }
         }
     };
+
+    raiseOnPropertyChanged(newValue: Animation[], previousValue: Animation[]) {
+        if (!this.props.onPropertyChangedObservable) {
+            return;
+        }
+
+        this.props.onPropertyChangedObservable.notifyObservers({
+            object: this.props.entity,
+            property: "animations",
+            value: newValue,
+            initialValue: previousValue,
+        });
+    }
 
     generateList() {
         let animationList =
@@ -192,10 +229,10 @@ export class AnimationListTree extends React.Component<
     }
 
     setListItem(animation: Animation, i: number) {
-        const editAnimation = () => this.props.editAnimation(animation);
-        const selectAnimation = () => this.props.selectAnimation(animation, 0);
         switch (animation.dataType) {
             case Animation.ANIMATIONTYPE_FLOAT:
+                const editAnimation = () => this.props.editAnimation(animation);
+                const selectAnimation = () => this.props.selectAnimation(animation, 0);
                 return (
                     <li
                         className={
@@ -279,9 +316,9 @@ export class AnimationListTree extends React.Component<
             <div className="object-tree">
                 <ul>
                     {this.props.isTargetedAnimation
-                        ? this.setListItem((this.props.entity as TargetedAnimation).animation, 0)
-                        : (this.props.entity as IAnimatable).animations &&
-                          (this.props.entity as IAnimatable).animations?.map((animation, i) => {
+                        ? this.setListItem(this.state.animations as Animation, 0)
+                        : this.state.animations &&
+                          (this.state.animations as Animation[]).map((animation, i) => {
                               return this.setListItem(animation, i);
                           })}
                 </ul>

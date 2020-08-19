@@ -1481,12 +1481,15 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     deselectAnimation = () => {
-        this.setState({
-            selected: null,
-            svgKeyframes: [],
-            selectedPathData: [],
-            selectedCoordinate: 0,
-        });
+        this.setState(
+            {
+                selected: null,
+                svgKeyframes: [],
+                selectedPathData: undefined,
+                selectedCoordinate: 0,
+            },
+            () => console.log(this.state)
+        );
     };
 
     /**
