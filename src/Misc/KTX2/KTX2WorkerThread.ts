@@ -37,7 +37,8 @@ export function workerFunc(): void {
         if (event.data.action === "init") {
             postMessage({action: "init"});
         } else if (event.data.action === "createMipmaps") {
-            _createMipmaps(event.data.kfr, event.data.caps).then((mipmaps) => {
+            const kfr = new KTX2FileReader(event.data.data);
+            _createMipmaps(kfr, event.data.caps).then((mipmaps) => {
                 postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
             }).catch((reason) => {
                 postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: reason });
