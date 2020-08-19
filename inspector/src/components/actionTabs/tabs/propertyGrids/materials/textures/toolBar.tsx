@@ -61,22 +61,6 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
                         />
                     }
                 )}
-                <div id='add-tool'>
-                    <img src={this._addTool} className='icon button' title='Add Tool' alt='Add Tool' onClick={() => this.setState({addOpen: !this.state.addOpen})}/>
-                    { this.state.addOpen && 
-                    <div id='add-tool-popup'>
-                        <form onSubmit={event => {
-                            event.preventDefault();
-                            this.props.addTool(this.state.toolURL);
-                            this.setState({toolURL: '', addOpen: false})
-                        }}>
-                            <label>
-                                Enter tool URL: <input value={this.state.toolURL} onChange={evt => this.setState({toolURL: evt.target.value})} type='text'/>
-                            </label>
-                            <button>Add</button>
-                        </form>
-                    </div> }
-                </div>
             </div>
             <div id='color' onClick={() => this.setState({pickerOpen: !this.state.pickerOpen})} title='Color' className={`icon button${this.state.pickerOpen ? ` active` : ``}`}>
                 <div id='active-color-bg'>
