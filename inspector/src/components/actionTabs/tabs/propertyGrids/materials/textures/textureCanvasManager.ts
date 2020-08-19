@@ -283,6 +283,11 @@ export class TextureCanvasManager {
                         int yPixel = int(floor((1.0 - vUV.y) * hF));
                         int xDis = min(abs(xPixel - x1), abs(xPixel - x2));
                         int yDis = min(abs(yPixel - y1), abs(yPixel - y2));
+                        vec2 frac = fract(vUV * vec2(wF,hF));
+                        float thickness = 0.1;
+                        if (abs(frac.x) < thickness || abs (frac.y) < thickness) {
+                            gl_FragColor = vec4(0.5,0.5,0.5,1.0);
+                        }
                         if (xPixel >= x1 && yPixel >= y1 && xPixel <= x2 && yPixel <= y2) {
                             if (xDis <= 4 || yDis <= 4) {
                                 float c = sin(vUV.x * scl + vUV.y * scl + float(time) * speed);
@@ -402,7 +407,7 @@ export class TextureCanvasManager {
         this._isPanning = false;
 
         this._scene.onBeforeRenderObservable.add(() => {
-            this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE), TextureCanvasManager.MAX_SCALE);
+            this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE), TextureCanvasManager.MAX_SCALE * Math.log2(this._size.width));
             const ratio = this._UICanvas?.width / this._UICanvas?.height;
             const {x,y} = this._cameraPos;
             this._camera.orthoBottom = y - 1 / this._scale;
@@ -560,6 +565,7 @@ export class TextureCanvasManager {
         ctx2D.fillStyle = 'white';
         ctx2D.fillRect(x,y,w,h);
         ctx2D.imageSmoothingEnabled = false;
+        // If we're not editing all channels, we must process the pixel data
         if (!editingAllChannels) {
             const newData = ctx.getImageData(0, 0, w, h);
             const nd = newData.data;
@@ -576,6 +582,7 @@ export class TextureCanvasManager {
         } else {
             ctx2D.globalCompositeOperation = 'source-over';
             ctx2D.globalAlpha = 1.0;
+            // We want to use drawImage wherever possible since it is much faster than putImageData
             ctx2D.drawImage(ctx.canvas, x, y);
         }
         this.updateTexture();
@@ -750,7 +757,8 @@ export class TextureCanvasManager {
         this._didEdit = true;
     }
 
-    public setSize(size: ISize, adjustZoom = true) {
+    public setSize(size: ISize) {
+        const oldSize = this._size;
         this._size = size;
         this._2DCanvas.width = this._size.width;
         this._2DCanvas.height = this._size.height;
@@ -758,7 +766,7 @@ export class TextureCanvasManager {
         this._3DCanvas.height = this._size.height;
         this._planeMaterial.setInt('w', this._size.width);
         this._planeMaterial.setInt('h', this._size.height);
-        if (adjustZoom) {
+        if (oldSize.width != size.width || oldSize.height != size.height) {
             this._cameraPos.x = 0;
             this._cameraPos.y = 0;
             this._scale = 1.5 / (this._size.width/this._size.height);
