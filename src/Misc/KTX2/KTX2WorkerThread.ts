@@ -34,15 +34,22 @@ export function workerFunc(): void {
     let transcoderMgr = new TranscoderManager();
 
     onmessage = (event) => {
-        if (event.data.action === "init") {
-            postMessage({ action: "init" });
-        } else if (event.data.action === "createMipmaps") {
-            const kfr = new KTX2FileReader(event.data.data);
-            _createMipmaps(kfr, event.data.caps).then((mipmaps) => {
-                postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
-            }).catch((reason) => {
-                postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: reason });
-            });
+        switch (event.data.action) {
+            case "init":
+                postMessage({ action: "init" });
+                break;
+            case "createMipmaps":
+                try {
+                    const kfr = new KTX2FileReader(event.data.data);
+                    _createMipmaps(kfr, event.data.caps).then((mipmaps) => {
+                        postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
+                    }).catch((reason) => {
+                        postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: reason });
+                    });
+                } catch (err) {
+                    postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: err });
+                }
+                break;
         }
     };
 
@@ -87,7 +94,7 @@ export function workerFunc(): void {
         const transcoder = transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
 
         if (transcoder === null) {
-            throw new Error(`KTX2 container - no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[targetFormat]}"`);
+            throw new Error(`no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[targetFormat]}"`);
         }
 
         const mipmaps: Array<IMipmap> = [];
