@@ -42,6 +42,7 @@
 - Allow 180 monoscopic videos on top of the video dome ([#8575](https://github.com/BabylonJS/Babylon.js/issues/8575)) ([RaananW](https://github.com/RaananW))
 - Added `AssetContainerTask` support to `AssetsManager` class ([MackeyK24](https://github.com/MackeyK24))
 - Changed DeviceSourceManager getInput contract to no longer return nullable values ([Drigax](https://github.com/drigax))
+- Photo Dome and Video Dome now use the same abstract class and support the same parameters ([#8771](https://github.com/BabylonJS/Babylon.js/issues/8771)) ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
