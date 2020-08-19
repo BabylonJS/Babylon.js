@@ -80,6 +80,20 @@ export function workerFunc() {
             this._memoryViewOffset = 0;
             this._memoryView = new Uint8Array(this._memory.buffer, this._memoryViewOffset, this._memoryViewByteLength);
         }
+        WASMMemoryManager.LoadWASM = function (path) {
+            var _this = this;
+            return new Promise(function (resolve) {
+                var id = _this._RequestId++;
+                var wasmLoadedHandler = function (msg) {
+                    if (msg.data.action === "wasmLoaded" && msg.data.id === id) {
+                        self.removeEventListener("message", wasmLoadedHandler);
+                        resolve(msg.data.wasmBinary);
+                    }
+                };
+                self.addEventListener("message", wasmLoadedHandler);
+                postMessage({ action: "loadWASM", path: path, id: id });
+            });
+        };
         Object.defineProperty(WASMMemoryManager.prototype, "wasmMemory", {
             get: function () {
                 return this._memory;
@@ -91,24 +105,23 @@ export function workerFunc() {
             if (offset === void 0) { offset = 0; }
             byteLength = byteLength !== null && byteLength !== void 0 ? byteLength : numPages << 16;
             if (this._numPages < numPages) {
-                console.log("grow memory", this._numPages, numPages);
                 this._memory.grow(numPages - this._numPages);
                 this._numPages = numPages;
                 this._memoryView = new Uint8Array(this._memory.buffer, offset, byteLength);
                 this._memoryViewByteLength = byteLength;
                 this._memoryViewOffset = offset;
             }
-            else if (this._memoryViewByteLength < byteLength || this._memoryViewOffset !== offset) {
-                console.log("recreate view", this._memoryViewByteLength, byteLength, this._memoryViewOffset, offset);
+            else {
                 this._memoryView = new Uint8Array(this._memory.buffer, offset, byteLength);
                 this._memoryViewByteLength = byteLength;
                 this._memoryViewOffset = offset;
             }
             return this._memoryView;
         };
+        WASMMemoryManager._RequestId = 0;
         return WASMMemoryManager;
     }());
-
+                    
     /**
      * TranscoderManager
      */
@@ -159,10 +172,7 @@ export function workerFunc() {
                 return this._modulePromise;
             }
             this._modulePromise = new Promise(function (resolve) {
-                fetch(_this._modulePath).
-                then(function (response) {
-                    return response.arrayBuffer();
-                }).then(function (wasmBinary) {
+                WASMMemoryManager.LoadWASM(_this._modulePath).then(function (wasmBinary) {
                     WebAssembly.instantiate(wasmBinary, { env: { memory: _this._memoryManager.wasmMemory } }).then(function (moduleWrapper) {
                         resolve({ module: moduleWrapper.instance.exports });
                     });
@@ -199,7 +209,7 @@ export function workerFunc() {
         };
         return LiteTranscoder;
     }(Transcoder));
-
+    
     /**
      * LiteTranscoder_UASTC_BC7
      */
@@ -212,11 +222,15 @@ export function workerFunc() {
             return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.BC7_M5_RGBA;
         };
         LiteTranscoder_UASTC_BC7.prototype.initialize = function () {
-            this.setModulePath("https://preview.babylonjs.com/ktx2Transcoders/uastc_bc7.wasm");
+            this.setModulePath(LiteTranscoder_UASTC_BC7.WasmModuleURL);
         };
+        /**
+         * URL to use when loading the wasm module for the transcoder
+         */
+        LiteTranscoder_UASTC_BC7.WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_bc7.wasm";
         return LiteTranscoder_UASTC_BC7;
     }(LiteTranscoder));
-
+    
     /**
      * LiteTranscoder_UASTC_ASTC
      */
@@ -229,13 +243,17 @@ export function workerFunc() {
             return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.ASTC_4x4_RGBA;
         };
         LiteTranscoder_UASTC_ASTC.prototype.initialize = function () {
-            this.setModulePath("https://preview.babylonjs.com/ktx2Transcoders/uastc_astc.wasm");
+            this.setModulePath(LiteTranscoder_UASTC_ASTC.WasmModuleURL);
         };
+        /**
+         * URL to use when loading the wasm module for the transcoder
+         */
+        LiteTranscoder_UASTC_ASTC.WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_astc.wasm";
         return LiteTranscoder_UASTC_ASTC;
     }(LiteTranscoder));
-
+    
     /**
-     * LiteTranscoder_UASTC_ASTC
+     * MSCTranscoder
      */
     var MSCTranscoder = /** @class */ (function (_super) {
         __extends(MSCTranscoder, _super);
@@ -248,11 +266,13 @@ export function workerFunc() {
                 return this._mscBasisTranscoderPromise;
             }
             this._mscBasisTranscoderPromise = new Promise(function (resolve) {
-                importScripts("https://preview.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js");
-                MSC_TRANSCODER().then(function (basisModule) {
-                    basisModule.initTranscoders();
-                    _this._mscBasisModule = basisModule;
-                    resolve();
+                importScripts(MSCTranscoder.JSModuleURL);
+                WASMMemoryManager.LoadWASM(MSCTranscoder.WasmModuleURL).then(function (wasmBinary) {
+                    MSC_TRANSCODER({ wasmBinary: wasmBinary }).then(function (basisModule) {
+                        basisModule.initTranscoders();
+                        _this._mscBasisModule = basisModule;
+                        resolve();
+                    });
                 });
             });
             return this._mscBasisTranscoderPromise;
@@ -303,9 +323,17 @@ export function workerFunc() {
                 return null;
             });
         };
+        /**
+         * URL to use when loading the MSC transcoder
+         */
+        MSCTranscoder.JSModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js";
+        /**
+         * URL to use when loading the wasm module for the transcoder
+         */
+        MSCTranscoder.WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.wasm";
         return MSCTranscoder;
     }(Transcoder));
-    
+
     TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_ASTC);
     TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_BC7);
     TranscoderManager.registerTranscoder(MSCTranscoder);
@@ -742,18 +770,23 @@ export function workerFunc() {
 
     var transcoderMgr = new TranscoderManager();
     onmessage = function (event) {
-        if (event.data.action === "init") {
-            postMessage({ action: "init" });
-        }
-        else if (event.data.action === "createMipmaps") {
-            var kfr = new KTX2FileReader(event.data.data);
-            _createMipmaps(kfr).then(function (mipmaps) {
-                //if (!success) {
-                //    postMessage({action: "transcode", success: success, id: event.data.id});
-                //} else {
-                postMessage({ action: "mipmapsCreated", success: true /*success*/, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
-                //}
-            });
+        switch (event.data.action) {
+            case "init":
+                postMessage({ action: "init" });
+                break;
+            case "createMipmaps":
+                try {
+                    var kfr = new KTX2FileReader(event.data.data);
+                    _createMipmaps(kfr, event.data.caps).then(function (mipmaps) {
+                        postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, mipmaps: mipmaps.mipmaps }, mipmaps.mipmapsData);
+                    }).catch(function (reason) {
+                        postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: reason });
+                    });
+                }
+                catch (err) {
+                    postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: err });
+                }
+                break;
         }
     };
     var _createMipmaps = function (kfr, caps) {
@@ -763,6 +796,7 @@ export function workerFunc() {
         var isPowerOfTwo = function (value) {
             return (value & (value - 1)) === 0 && value !== 0;
         };
+
         // PVRTC1 transcoders (from both ETC1S and UASTC) only support power of 2 dimensions.
         var pvrtcTranscodable = isPowerOfTwo(width) && isPowerOfTwo(height);
         var targetFormat = transcodeTarget.BC7_M5_RGBA;
@@ -797,7 +831,7 @@ export function workerFunc() {
         }
         var transcoder = transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
         if (transcoder === null) {
-            throw new Error("KTX2 container - no transcoder found to transcode source texture format \"" + sourceTextureFormat[srcTexFormat] + "\" to format \"" + transcodeTarget[targetFormat] + "\"");
+            throw new Error("no transcoder found to transcode source texture format \"" + sourceTextureFormat[srcTexFormat] + "\" to format \"" + transcodeTarget[targetFormat] + "\"");
         }
         var mipmaps = [];
         var texturePromises = [];
