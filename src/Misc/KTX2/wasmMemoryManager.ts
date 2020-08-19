@@ -32,7 +32,7 @@ export class WASMMemoryManager {
             this._memoryView = new Uint8Array(this._memory.buffer, offset, byteLength);
             this._memoryViewByteLength = byteLength;
             this._memoryViewOffset = offset;
-        } else if (this._memoryViewByteLength < byteLength || this._memoryViewOffset !== offset) {
+        } else {
             console.log("recreate view", this._memoryViewByteLength, byteLength, this._memoryViewOffset, offset);
             this._memoryView = new Uint8Array(this._memory.buffer, offset, byteLength);
             this._memoryViewByteLength = byteLength;
