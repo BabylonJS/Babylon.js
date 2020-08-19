@@ -1,6 +1,7 @@
 import { Nullable } from '../../types';
 import { Transcoder, sourceTextureFormat, transcodeTarget } from './transcoder';
 import { KTX2FileReader, IKTX2_ImageDesc } from './KTX2FileReader';
+import { WASMMemoryManager } from './wasmMemoryManager';
 
 declare var MSC_TRANSCODER: any;
 
@@ -10,6 +11,14 @@ declare function importScripts(...urls: string[]): void;
  * @hidden
  */
 export class MSCTranscoder extends Transcoder {
+    /**
+     * URL to use when loading the MSC transcoder
+     */
+    public static JSModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js";
+    /**
+     * URL to use when loading the wasm module for the transcoder
+     */
+    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.wasm";
 
     private _mscBasisTranscoderPromise: Promise<any>;
     private _mscBasisModule: any;
@@ -20,11 +29,13 @@ export class MSCTranscoder extends Transcoder {
         }
 
         this._mscBasisTranscoderPromise = new Promise((resolve) => {
-            importScripts("https://preview.babylonjs.com/ktx2Transcoders/msc_basis_transcoder.js");
-            MSC_TRANSCODER().then((basisModule: any) => {
-                basisModule.initTranscoders();
-                this._mscBasisModule = basisModule;
-                resolve();
+            importScripts(MSCTranscoder.JSModuleURL);
+            WASMMemoryManager.LoadWASM(MSCTranscoder.WasmModuleURL).then((wasmBinary) => {
+                MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
+                    basisModule.initTranscoders();
+                    this._mscBasisModule = basisModule;
+                    resolve();
+                });
             });
         });
 
