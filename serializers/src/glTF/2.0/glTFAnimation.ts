@@ -6,6 +6,8 @@ import { Tools } from "babylonjs/Misc/tools";
 import { Animation } from "babylonjs/Animations/animation";
 import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
+import { MorphTarget } from "babylonjs/Morph/morphTarget";
+import { Mesh } from "babylonjs/Meshes/mesh";
 
 import { _BinaryWriter } from "./glTFExporter";
 import { _GLTFUtilities } from "./glTFUtilities";
@@ -49,7 +51,7 @@ export interface _IAnimationInfo {
     /**
      * The glTF accessor type for the data.
      */
-    dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4;
+    dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4 | AccessorType.SCALAR;
     /**
      * Specifies if quaternions should be used.
      */
@@ -153,6 +155,11 @@ export class _GLTFAnimation {
                 animationChannelTargetPath = AnimationChannelTargetPath.ROTATION;
                 break;
             }
+            case 'influence': {
+                dataAccessorType = AccessorType.SCALAR;
+                animationChannelTargetPath = AnimationChannelTargetPath.WEIGHTS;
+                break;
+            }
             default: {
                 Tools.Error(`Unsupported animatable property ${property[0]}`);
             }
@@ -215,9 +222,84 @@ export class _GLTFAnimation {
         }
     }
 
+        /**
+     * @ignore
+     * Create individual morph animations from the mesh's morph target animation tracks
+     * @param babylonNode
+     * @param runtimeGLTFAnimation
+     * @param idleGLTFAnimations
+     * @param nodeMap
+     * @param nodes
+     * @param binaryWriter
+     * @param bufferViews
+     * @param accessors
+     * @param convertToRightHandedSystem
+     * @param animationSampleRate
+     */
+    public static _CreateMorphTargetAnimationFromMorphTargets(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
+        let glTFAnimation: IAnimation;
+        if (babylonNode instanceof Mesh) {
+            let morphTargetManager = babylonNode.morphTargetManager;
+            if (morphTargetManager) {
+                for (let i = 0; i < morphTargetManager.numTargets; ++i) {
+                    let morphTarget = morphTargetManager.getTarget(i);
+                    for (let j = 0; j < morphTarget.animations.length; ++j){
+                        let animation = morphTarget.animations[j]
+                        let combinedAnimation = new Animation(`${animation.name}`,
+                                                               "influence",
+                                                               animation.framePerSecond,
+                                                               animation.dataType,
+                                                               animation.loopMode,
+                                                               animation.enableBlending);
+                        let combinedAnimationKeys : IAnimationKey[] = []
+                        let animationKeys = animation.getKeys();
+
+                        for (let k = 0; k < animationKeys.length; ++k){
+                            let animationKey = animationKeys[k];
+                            for (let l = 0; l < morphTargetManager.numTargets; ++l){
+                                if (l == i){
+                                    combinedAnimationKeys.push(animationKey);
+                                } else {
+                                    combinedAnimationKeys.push({ frame: animationKey.frame, value: morphTargetManager.getTarget(l).influence });
+                                }
+                            }
+                        }
+                        combinedAnimation.setKeys(combinedAnimationKeys);
+                        let animationInfo = _GLTFAnimation._DeduceAnimationInfo(combinedAnimation);
+                        if (animationInfo) {
+                            glTFAnimation = {
+                                name: combinedAnimation.name,
+                                samplers: [],
+                                channels: []
+                            };
+                            _GLTFAnimation.AddAnimation(`${animation.name}`,
+                                animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
+                                babylonNode,
+                                animation,
+                                animationInfo.dataAccessorType,
+                                animationInfo.animationChannelTargetPath,
+                                nodeMap,
+                                binaryWriter,
+                                bufferViews,
+                                accessors,
+                                convertToRightHandedSystem,
+                                animationInfo.useQuaternion,
+                                animationSampleRate,
+                                morphTargetManager.numTargets
+                            );
+                            if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
+                                idleGLTFAnimations.push(glTFAnimation);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * @ignore
-     * Create node animations from the animation groups
+     * Create node and morph animations from the animation groups
      * @param babylonScene
      * @param glTFAnimations
      * @param nodeMap
@@ -232,14 +314,18 @@ export class _GLTFAnimation {
         let glTFAnimation: IAnimation;
         if (babylonScene.animationGroups) {
             let animationGroups = babylonScene.animationGroups;
-
             for (let animationGroup of animationGroups) {
+                let morphAnimations: Map<Mesh, Map<MorphTarget, Animation>> = new Map();
+                let sampleAnimations: Map<Mesh, Animation> = new Map();
+                let morphAnimationMeshes: Set<Mesh> = new Set();
+                let animationGroupFrameDiff = animationGroup.to - animationGroup.from;
                 glTFAnimation = {
                     name: animationGroup.name,
                     channels: [],
                     samplers: []
                 };
-                for (let targetAnimation of animationGroup.targetedAnimations) {
+                for (let i = 0; i < animationGroup.targetedAnimations.length; ++i) {
+                    let targetAnimation = animationGroup.targetedAnimations[i];
                     let target = targetAnimation.target;
                     let animation = targetAnimation.animation;
                     if (target instanceof TransformNode || target.length === 1 && target[0] instanceof TransformNode) {
@@ -262,8 +348,90 @@ export class _GLTFAnimation {
                                 animationSampleRate
                             );
                         }
+                    } else if (target instanceof MorphTarget || target.length === 1 && target[0] instanceof MorphTarget){
+                        let animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
+                        if (animationInfo) {
+                            let babylonMorphTarget = target instanceof MorphTarget ? target as MorphTarget : target[0] as MorphTarget;
+                            if (babylonMorphTarget){
+                                let babylonMorphTargetManager = babylonScene.morphTargetManagers.find((morphTargetManager) => {
+                                    for(let j = 0; j < morphTargetManager.numTargets; ++j){
+                                        if (morphTargetManager.getTarget(j) === babylonMorphTarget){
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                });
+                                if (babylonMorphTargetManager) {
+                                    let babylonMesh = <Mesh>babylonScene.meshes.find((mesh) => {
+                                        return (mesh as Mesh).morphTargetManager === babylonMorphTargetManager;
+                                    });
+                                    if (babylonMesh){
+                                        if (!morphAnimations.has(babylonMesh)){
+                                            morphAnimations.set(babylonMesh, new Map());
+                                        }
+                                        morphAnimations.get(babylonMesh)?.set(babylonMorphTarget, animation);
+                                        morphAnimationMeshes.add(babylonMesh);
+                                        sampleAnimations.set(babylonMesh, animation);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+                morphAnimationMeshes.forEach(mesh => {
+                    // for each mesh that we want to export a Morph target animation track for...
+                    let morphTargetManager = mesh.morphTargetManager;
+                    let combinedAnimationGroup: Nullable<Animation> = null;
+                    let animationKeys : IAnimationKey[] = [];
+                    let sampleAnimation = sampleAnimations.get(mesh)!;
+                    let numAnimationKeys = sampleAnimation.getKeys().length;
+                    // for each frame of this mesh's animation group track
+                    for (let i = 0; i < numAnimationKeys; ++i){
+                        // construct a new Animation track by interlacing the frames of each morph target animation track
+                        if (morphTargetManager){
+                            for (let j = 0; j < morphTargetManager.numTargets; ++j){
+                                let morphTarget = morphTargetManager.getTarget(j);
+                                let animationsByMorphTarget = morphAnimations.get(mesh);
+                                if (animationsByMorphTarget){
+                                    let morphTargetAnimation = animationsByMorphTarget.get(morphTarget);
+                                    if (morphTargetAnimation){
+                                        if (!combinedAnimationGroup){
+                                            combinedAnimationGroup = new Animation(`${animationGroup.name}_${mesh.name}_MorphWeightAnimation`,
+                                                                                    "influence",
+                                                                                    morphTargetAnimation.framePerSecond,
+                                                                                    Animation.ANIMATIONTYPE_FLOAT,
+                                                                                    morphTargetAnimation.loopMode,
+                                                                                    morphTargetAnimation.enableBlending);
+                                        }
+                                        animationKeys.push(morphTargetAnimation.getKeys()[i]);
+                                    }
+                                    else {
+                                        animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff/numAnimationKeys) * i, value: morphTarget.influence });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    combinedAnimationGroup!.setKeys(animationKeys);
+                    let animationInfo = _GLTFAnimation._DeduceAnimationInfo(combinedAnimationGroup!);
+                    if (animationInfo){
+                        _GLTFAnimation.AddAnimation(`${animationGroup.name}_${mesh.name}_MorphWeightAnimation`,
+                                                glTFAnimation,
+                                                mesh,
+                                                combinedAnimationGroup!,
+                                                animationInfo.dataAccessorType,
+                                                animationInfo.animationChannelTargetPath,
+                                                nodeMap,
+                                                binaryWriter,
+                                                bufferViews,
+                                                accessors,
+                                                false,
+                                                animationInfo.useQuaternion,
+                                                animationSampleRate,
+                                                morphTargetManager?.numTargets
+                                            );
+                    }
+                });
                 if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
                     glTFAnimations.push(glTFAnimation);
                 }
@@ -271,8 +439,10 @@ export class _GLTFAnimation {
         }
     }
 
-    private static AddAnimation(name: string, glTFAnimation: IAnimation, babylonTransformNode: TransformNode, animation: Animation, dataAccessorType: AccessorType, animationChannelTargetPath: AnimationChannelTargetPath, nodeMap: { [key: number]: number }, binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number) {
-        let animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate);
+    private static AddAnimation(name: string, glTFAnimation: IAnimation, babylonTransformNode: TransformNode, animation: Animation, dataAccessorType: AccessorType, animationChannelTargetPath: AnimationChannelTargetPath, nodeMap: { [key: number]: number }, binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number, morphAnimationChannels?: number) {
+        let animationData;
+        animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate);
+        
         let bufferView: IBufferView;
         let accessor: IAccessor;
         let keyframeAccessorIndex: number;
@@ -282,6 +452,20 @@ export class _GLTFAnimation {
         let animationChannel: IAnimationChannel;
 
         if (animationData) {
+            if (morphAnimationChannels){
+                let index = 0;
+                let currentInput: number = 0;
+                let newInputs: number[] = [];
+                while (animationData.inputs.length > 0){
+                    currentInput = animationData.inputs.shift()!;
+                    if (index % morphAnimationChannels == 0){
+                        newInputs.push(currentInput);
+                    }
+                    index++;
+                }
+                animationData.inputs = newInputs;
+            }
+
             let nodeIndex = nodeMap[babylonTransformNode.uniqueId];
 
             // Creates buffer view and accessor for key frames.
@@ -298,7 +482,7 @@ export class _GLTFAnimation {
 
             // create bufferview and accessor for keyed values.
             outputLength = animationData.outputs.length;
-            byteLength = dataAccessorType === AccessorType.VEC3 ? animationData.outputs.length * 12 : animationData.outputs.length * 16;
+            byteLength = _GLTFUtilities._GetDataAccessorElementCount(dataAccessorType) * 4 * animationData.outputs.length;
 
             // check for in and out tangents
             bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  data view`);
@@ -451,9 +635,9 @@ export class _GLTFAnimation {
 
     private static _SetInterpolatedValue(babylonTransformNode: TransformNode, value: Nullable<number | Vector3 | Quaternion>, time: number, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, quaternionCache: Quaternion, inputs: number[], outputs: number[][], convertToRightHandedSystem: boolean, useQuaternion: boolean) {
         const animationType = animation.dataType;
-        let cacheValue: Vector3 | Quaternion;
+        let cacheValue: Vector3 | Quaternion | number;
         inputs.push(time);
-        if (typeof value === "number") {
+        if (typeof value === "number" && babylonTransformNode instanceof TransformNode) {
             value = this._ConvertFactorToVector3OrQuaternion(value as number, babylonTransformNode, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
         }
         if (value) {
@@ -474,7 +658,10 @@ export class _GLTFAnimation {
                 }
                 outputs.push(quaternionCache.asArray());
             }
-            else {
+            else if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
+                outputs.push([value as number]);
+            }
+            else { // scaling and position animation
                 cacheValue = value as Vector3;
                 if (convertToRightHandedSystem && (animationChannelTargetPath !== AnimationChannelTargetPath.SCALE)) {
                     _GLTFUtilities._GetRightHandedPositionVector3FromRef(cacheValue);
@@ -594,7 +781,7 @@ export class _GLTFAnimation {
      */
     private static _AddKeyframeValue(keyFrame: IAnimationKey, animation: Animation, outputs: number[][], animationChannelTargetPath: AnimationChannelTargetPath, babylonTransformNode: TransformNode, convertToRightHandedSystem: boolean, useQuaternion: boolean) {
         let value: number[];
-        let newPositionRotationOrScale: Nullable<Vector3 | Quaternion>;
+        let newPositionRotationOrScale: Nullable<Vector3 | Quaternion | number>;
         const animationType = animation.dataType;
         if (animationType === Animation.ANIMATIONTYPE_VECTOR3) {
             value = keyFrame.value.asArray();
@@ -622,31 +809,35 @@ export class _GLTFAnimation {
             outputs.push(value); // scale  vector.
 
         }
-        else if (animationType === Animation.ANIMATIONTYPE_FLOAT) { // handles single component x, y, z or w component animation by using a base property and animating over a component.
-            newPositionRotationOrScale = this._ConvertFactorToVector3OrQuaternion(keyFrame.value as number, babylonTransformNode, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
-            if (newPositionRotationOrScale) {
-                if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
-                    let posRotScale = useQuaternion ? newPositionRotationOrScale as Quaternion : Quaternion.RotationYawPitchRoll(newPositionRotationOrScale.y, newPositionRotationOrScale.x, newPositionRotationOrScale.z).normalize();
-                    if (convertToRightHandedSystem) {
-                        _GLTFUtilities._GetRightHandedQuaternionFromRef(posRotScale);
+        else if (animationType === Animation.ANIMATIONTYPE_FLOAT) {
+            if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
+                outputs.push([keyFrame.value]);
+            } else {  // handles single component x, y, z or w component animation by using a base property and animating over a component.
+                newPositionRotationOrScale = this._ConvertFactorToVector3OrQuaternion(keyFrame.value as number, babylonTransformNode, animation, animationType, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion);
+                if (newPositionRotationOrScale) {
+                    if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
+                        let posRotScale = useQuaternion ? newPositionRotationOrScale as Quaternion : Quaternion.RotationYawPitchRoll(newPositionRotationOrScale.y, newPositionRotationOrScale.x, newPositionRotationOrScale.z).normalize();
+                        if (convertToRightHandedSystem) {
+                            _GLTFUtilities._GetRightHandedQuaternionFromRef(posRotScale);
 
-                        if (!babylonTransformNode.parent) {
-                            posRotScale = Quaternion.FromArray([0, 1, 0, 0]).multiply(posRotScale);
+                            if (!babylonTransformNode.parent) {
+                                posRotScale = Quaternion.FromArray([0, 1, 0, 0]).multiply(posRotScale);
+                            }
+                        }
+                        outputs.push(posRotScale.asArray());
+                    }
+                    else if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
+                        if (convertToRightHandedSystem) {
+                            _GLTFUtilities._GetRightHandedNormalVector3FromRef(newPositionRotationOrScale as Vector3);
+
+                            if (!babylonTransformNode.parent) {
+                                newPositionRotationOrScale.x *= -1;
+                                newPositionRotationOrScale.z *= -1;
+                            }
                         }
                     }
-                    outputs.push(posRotScale.asArray());
+                    outputs.push(newPositionRotationOrScale.asArray());
                 }
-                else if (animationChannelTargetPath === AnimationChannelTargetPath.TRANSLATION) {
-                    if (convertToRightHandedSystem) {
-                        _GLTFUtilities._GetRightHandedNormalVector3FromRef(newPositionRotationOrScale as Vector3);
-
-                        if (!babylonTransformNode.parent) {
-                            newPositionRotationOrScale.x *= -1;
-                            newPositionRotationOrScale.z *= -1;
-                        }
-                    }
-                }
-                outputs.push(newPositionRotationOrScale.asArray());
             }
         }
         else if (animationType === Animation.ANIMATIONTYPE_QUATERNION) {
@@ -736,7 +927,7 @@ export class _GLTFAnimation {
      */
     private static AddSplineTangent(babylonTransformNode: TransformNode, tangentType: _TangentType, outputs: number[][], animationChannelTargetPath: AnimationChannelTargetPath, interpolation: AnimationSamplerInterpolation, keyFrame: IAnimationKey, frameDelta: number, useQuaternion: boolean, convertToRightHandedSystem: boolean) {
         let tangent: number[];
-        let tangentValue: Vector3 | Quaternion = tangentType === _TangentType.INTANGENT ? keyFrame.inTangent : keyFrame.outTangent;
+        let tangentValue: Vector3 | Quaternion | number = tangentType === _TangentType.INTANGENT ? keyFrame.inTangent : keyFrame.outTangent;
         if (interpolation === AnimationSamplerInterpolation.CUBICSPLINE) {
             if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
                 if (tangentValue) {
@@ -759,7 +950,14 @@ export class _GLTFAnimation {
                     tangent = [0, 0, 0, 0];
                 }
             }
-            else {
+            else if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
+                if (tangentValue){
+                    tangent = [tangentValue as number];
+                } else {
+                    tangent = [0];
+                }
+            }
+            else{
                 if (tangentValue) {
                     tangent = (tangentValue as Vector3).asArray();
                     if (convertToRightHandedSystem) {

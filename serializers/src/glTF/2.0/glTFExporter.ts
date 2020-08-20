@@ -810,8 +810,8 @@ export class _Exporter {
 
         switch (vertexBufferKind) {
             case VertexBuffer.PositionKind: {
-                for (let k = meshPrimitive.indexStart, length = meshPrimitive.indexCount / stride; k < length; ++k) {
-                    index = k * stride;
+                for (let k = meshPrimitive.verticesStart; k < meshPrimitive.verticesCount; ++k) {
+                    index = meshPrimitive.indexStart + k * stride;
                     const vertexData = Vector3.FromArray(meshAttributeArray, index);
                     const morphData = Vector3.FromArray(morphTargetAttributeArray, index);
                     difference = morphData.subtractToRef(vertexData, difference);
@@ -827,8 +827,8 @@ export class _Exporter {
                 break;
             }
             case VertexBuffer.NormalKind: {
-                for (let k = meshPrimitive.indexStart, length = meshPrimitive.indexCount / stride; k < length; ++k) {
-                    index = k * stride;
+                for (let k = meshPrimitive.verticesStart; k < meshPrimitive.verticesCount; ++k) {
+                    index = meshPrimitive.indexStart + k * stride;
                     const vertexData = Vector3.FromArray(meshAttributeArray, index);
                     vertexData.normalize();
                     const morphData = Vector3.FromArray(morphTargetAttributeArray, index);
@@ -842,8 +842,8 @@ export class _Exporter {
                 break;
             }
             case VertexBuffer.TangentKind: {
-                for (let k = meshPrimitive.indexStart, length = meshPrimitive.indexCount / (stride + 1); k < length; ++k) {
-                    index = k * (stride + 1);
+                for (let k = meshPrimitive.verticesStart; k < meshPrimitive.verticesCount; ++k) {
+                    index = meshPrimitive.indexStart + k * (stride + 1);
                     const vertexData = Vector4.FromArray(meshAttributeArray, index);
                     _GLTFUtilities._NormalizeTangentFromRef(vertexData);
                     const morphData = Vector4.FromArray(morphTargetAttributeArray, index);
@@ -1587,7 +1587,6 @@ export class _Exporter {
                         for (let i = 0; i < morphTargetManager.numTargets; ++i) {
                             target = morphTargetManager.getTarget(i);
                             this.setMorphTargetAttributes(submesh, meshPrimitive, target, binaryWriter, convertToRightHandedSystem);
-
                         }
                     }
 
@@ -1795,6 +1794,7 @@ export class _Exporter {
 
                                 if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
                                     _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargets(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
                                 }
                             });
                         }
@@ -1846,7 +1846,15 @@ export class _Exporter {
             if (babylonNode instanceof TransformNode) {
                 // Set transformation
                 this.setNodeTransformation(node, babylonNode, convertToRightHandedSystem);
-
+                if (babylonNode instanceof Mesh){
+                    let morphTargetManager = babylonNode.morphTargetManager;
+                    if (morphTargetManager && morphTargetManager.numTargets > 0){
+                        mesh.weights = [];
+                        for( let i = 0; i < morphTargetManager.numTargets; ++i){
+                            mesh.weights.push(morphTargetManager.getTarget(i).influence);
+                        }
+                    }
+                }
                 return this.setPrimitiveAttributesAsync(mesh, babylonNode, binaryWriter, convertToRightHandedSystem).then(() => {
                     if (mesh.primitives.length) {
                         this._meshes.push(mesh);
