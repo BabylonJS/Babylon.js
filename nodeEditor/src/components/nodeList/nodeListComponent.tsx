@@ -6,6 +6,9 @@ import { DraggableLineComponent } from '../../sharedComponents/draggableLineComp
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
+import { DraggableLineWithButtonComponent } from '../../sharedComponents/draggableLineWithButtonComponent';
+import { LineWithFileButtonContainerComponent } from '../../sharedComponents/lineWithFileButtonContainerComponent';
+import { Tools } from 'babylonjs';
 
 require("./nodeList.scss");
 
@@ -144,11 +147,19 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
     };
+    
+    customFrameList: string[] | null;
 
     constructor(props: INodeListComponentProps) {
         super(props);
 
         this.state = { filter: "" };
+
+        let frameJson = localStorage.getItem("Custom-Frame-List");
+        if(frameJson) {
+            this.customFrameList = JSON.parse(frameJson);
+        }
+
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
@@ -163,10 +174,62 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         this.setState({ filter: filter });
     }
 
+    loadFrameBlock(file: File) {
+        Tools.ReadFile(file, async (data) => {
+            // get Frame Data from file
+            let decoder = new TextDecoder("utf-8");
+            const frameData = JSON.parse(decoder.decode(data));
+            let frameName = file.name.replace(".json","") + "Custom";
+
+            try {
+                localStorage.setItem(frameName, JSON.stringify(frameData));
+            } catch (error) {
+                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
+                return;
+            }
+
+            let frameJson = localStorage.getItem("Custom-Frame-List");
+            if(frameJson) {
+                let frameList = JSON.parse(frameJson);
+                let index = frameList.findIndex((element: string) => element === frameName);
+                if( index === -1){
+                    frameList[frameList.length] = frameName;
+                    localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
+                    this.customFrameList = frameList;
+                    this.forceUpdate();
+                }
+            }
+            else {
+                let newframeList: string[] = [frameName];
+                let newFrameJson = JSON.stringify(newframeList);
+                localStorage.setItem("Custom-Frame-List", newFrameJson);
+                this.customFrameList = newframeList;
+                this.forceUpdate();
+            }
+
+        
+        }, undefined, true);
+    }
+
+    removeItem(value : string) : void {
+        let frameJson = localStorage.getItem("Custom-Frame-List");
+            if(frameJson) {
+                let frameList = JSON.parse(frameJson);
+                let index = frameList.findIndex((element: string) => element === value);
+                frameList.splice(index, 1);
+                localStorage.removeItem(value);
+                localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
+                this.customFrameList = frameList;
+                this.forceUpdate();
+            }
+           
+    }
+
     render() {
+
         // Block types used to create the menu from
         const allBlocks = {
-
+            Custom_Blocks: this.customFrameList === null ? [""] : this.customFrameList,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -213,10 +276,25 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             .map((block: any, i: number) => {
                 let tooltip = NodeListComponent._Tooltips[block] || "";
 
+                
+                if(key.indexOf("Custom") === -1) {
                 return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>;
+                }
+                return <DraggableLineWithButtonComponent key={block} data={block} tooltip={tooltip} 
+                onIconClick={ value => this.removeItem(value)}/>;
             });
 
-            if (blockList.length) {
+            if(key === "Custom_Blocks") {
+                blockMenu.push(
+                    <LineWithFileButtonContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}
+                    label="Load Custom" uploadName={'custom-frame-upload2'}  accept=".json" onClick={(file) => {
+                        this.loadFrameBlock(file);
+                    }}>
+                        {blockList}
+                    </LineWithFileButtonContainerComponent>
+                );
+            }
+            else if(blockList.length) {
                 blockMenu.push(
                     <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
                         {blockList}

@@ -545,9 +545,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         var data = event.dataTransfer.getData("babylonjs-material-node") as string;
         let newNode: GraphNode;
 
+        if(data.indexOf("Custom") > -1) {
+            let storageData = localStorage.getItem(data);
+            if(storageData) {   
+                const frameData = JSON.parse(storageData);
+                SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
+                this.forceUpdate();
+                return;
+            }
+        }
+
         if (data.indexOf("Block") === -1) {
             newNode = this.addValueNode(data);
-        } else {
+        } 
+        else {
             let block = BlockTools.GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial)!;   
             
             if (block.isUnique) {
