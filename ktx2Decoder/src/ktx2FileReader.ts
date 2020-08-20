@@ -335,18 +335,16 @@ export class KTX2FileReader {
         return false;
     }
 
-    public getHasAlpha(): boolean {
-        const tformat = this.textureFormat;
+    public needZSTDDecoder(): boolean {
+        let needZSTDDecoder = false;
 
-        switch (tformat) {
-            case sourceTextureFormat.ETC1S:
-                return this._dfdBlock.numSamples === 2 && (this._dfdBlock.samples[0].channelType === dfdChannel_ETC1S.AAA || this._dfdBlock.samples[1].channelType === dfdChannel_ETC1S.AAA);
-
-            case sourceTextureFormat.UASTC4x4:
-                return this._dfdBlock.samples[0].channelType === dfdChannel_UASTC.RGBA;
+        for (let level = 0; level < this._header.levelCount && !needZSTDDecoder; level ++) {
+            if (this._header.supercompressionScheme === supercompressionScheme.ZStandard) {
+                needZSTDDecoder = true;
+            }
         }
 
-        return false;
+        return needZSTDDecoder;
     }
 
     public static IsValid(data: ArrayBufferView): boolean {
