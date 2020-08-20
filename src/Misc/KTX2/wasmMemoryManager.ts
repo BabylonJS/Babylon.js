@@ -5,12 +5,22 @@ declare function postMessage(message: any, transfer?: any[]): void;
  */
 export class WASMMemoryManager {
 
+    public static LoadBinariesFromMainThread = false;
+
     private static _RequestId = 0;
 
     public static LoadWASM(path: string): Promise<ArrayBuffer> {
-        return new Promise((resolve) => {
-            const id = this._RequestId++;
+        if (!this.LoadBinariesFromMainThread) {
+            return new Promise((resolve) => {
+                fetch(path)
+                .then((response) => response.arrayBuffer())
+                .then((wasmBinary) => resolve(wasmBinary));
+            });
+        }
 
+        const id = this._RequestId++;
+
+        return new Promise((resolve) => {
             const wasmLoadedHandler = (msg: any) => {
                 if (msg.data.action === "wasmLoaded" && msg.data.id === id) {
                     self.removeEventListener("message", wasmLoadedHandler);

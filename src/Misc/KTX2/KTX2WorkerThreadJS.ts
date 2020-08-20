@@ -82,9 +82,15 @@ export function workerFunc() {
             this._memoryView = new Uint8Array(this._memory.buffer, this._memoryViewOffset, this._memoryViewByteLength);
         }
         WASMMemoryManager.LoadWASM = function (path) {
-            var _this = this;
+            if (!this.LoadBinariesFromMainThread) {
+                return new Promise(function (resolve) {
+                    fetch(path)
+                        .then(function (response) { return response.arrayBuffer(); })
+                        .then(function (wasmBinary) { return resolve(wasmBinary); });
+                });
+            }
+            var id = this._RequestId++;
             return new Promise(function (resolve) {
-                var id = _this._RequestId++;
                 var wasmLoadedHandler = function (msg) {
                     if (msg.data.action === "wasmLoaded" && msg.data.id === id) {
                         self.removeEventListener("message", wasmLoadedHandler);
@@ -119,10 +125,11 @@ export function workerFunc() {
             }
             return this._memoryView;
         };
+        WASMMemoryManager.LoadBinariesFromMainThread = false;
         WASMMemoryManager._RequestId = 0;
         return WASMMemoryManager;
     }());
-                    
+                        
     /**
      * TranscoderManager
      */
