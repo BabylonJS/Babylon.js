@@ -16,7 +16,7 @@ interface IChannelsBarProps {
 const eyeOpen = require('./assets/eyeOpen.svg');
 const eyeClosed = require('./assets/eyeClosed.svg');
 
-export class ChannelsBar extends React.Component<IChannelsBarProps> {
+export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
     render() {
         return <div id='channels-bar'>
             {this.props.channels.map(
