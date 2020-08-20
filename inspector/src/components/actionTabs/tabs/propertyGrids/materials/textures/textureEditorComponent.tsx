@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { GlobalState } from '../../../../../globalState';
-import { TextureCanvasManager, IPixelData, IToolGUI } from './textureCanvasManager';
+import { TextureCanvasManager, IPixelData } from './textureCanvasManager';
 import { ITool, ToolBar } from './toolBar';
 import { PropertiesBar } from './propertiesBar';
 import { IChannel, ChannelsBar } from './channelsBar';
@@ -16,11 +15,11 @@ import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { PointerInfo } from 'babylonjs/Events/pointerEvents';
 
 import { PopupComponent } from '../../../../../popupComponent';
+import { ToolUI } from './toolUI';
 
 require('./textureEditor.scss');
 
 interface ITextureEditorComponentProps {
-    globalState: GlobalState;
     texture: BaseTexture;
     url: string;
     window: React.RefObject<PopupComponent>;
@@ -54,8 +53,6 @@ export interface IToolParameters {
     setMetadata: (data : any) => void;
     /** Returns the texture coordinates under the cursor */
     getMouseCoordinates: (pointerInfo : PointerInfo) => Vector2;
-    /** An object which holds the GUI's ADT as well as the tool window. */
-    GUI: IToolGUI;
     /** Provides access to the BABYLON namespace */
     BABYLON: any;
     /** Provides a canvas that you can use the canvas API to paint on. */
@@ -66,6 +63,9 @@ export interface IToolParameters {
     stopPainting: () => void;
 }
 
+export interface IToolGUIProps {
+    instance: IToolType
+}
 
 /** An interface representing the definition of a tool */
 export interface IToolData {
@@ -79,15 +79,17 @@ export interface IToolData {
     usesWindow? : boolean;
     /** Whether the tool uses postprocesses */
     is3D? : boolean;
+    GUI? : React.ComponentType<IToolGUIProps>;
 }
 
 export interface IToolType {
     /** Called when the tool is selected. */
     setup: () => void;
-    /** Called when the tool is deselected. */
+    /** Called when the tool is deseleted. */
     cleanup: () => void;
     /** Optional. Called when the user resets the texture or uploads a new texture. Tools may want to reset their state when this happens. */
     onReset?: () => void;
+    gui?: (props: any) => JSX.Element;
 }
 
 /** For constructable types, TS requires that you define a seperate interface which constructs your actual interface */
@@ -229,7 +231,6 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             metadata: this.state.metadata,
             setMetadata: (data : any) => this.setMetadata(data),
             getMouseCoordinates: (pointerInfo : PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
-            GUI: this._textureCanvasManager.GUI,
             BABYLON: BABYLON,
         };
     }
@@ -271,6 +272,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
     }
 
     render() {
+        const currentTool : ITool | undefined = this.state.tools[this.state.activeToolIndex];
         return <div id="texture-editor">
             <PropertiesBar
                 texture={this.props.texture}
@@ -294,6 +296,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             />}
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
             <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
+            <ToolUI tool={currentTool} />
             <BottomBar name={this.props.url} mipLevel={this.state.mipLevel} hasMips={!this.props.texture.noMipmap}/>
         </div>
     }
