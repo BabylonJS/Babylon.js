@@ -15,7 +15,7 @@ import { Vector2 } from 'babylonjs/Maths/math.vector';
 import { PointerInfo } from 'babylonjs/Events/pointerEvents';
 
 import { PopupComponent } from '../../../../../popupComponent';
-import { ToolUI } from './toolUI';
+import { ToolSettings } from './toolSettings';
 
 require('./textureEditor.scss');
 
@@ -79,17 +79,16 @@ export interface IToolData {
     usesWindow? : boolean;
     /** Whether the tool uses postprocesses */
     is3D? : boolean;
-    GUI? : React.ComponentType<IToolGUIProps>;
+    settingsComponent? : React.ComponentType<IToolGUIProps>;
 }
 
 export interface IToolType {
     /** Called when the tool is selected. */
     setup: () => void;
-    /** Called when the tool is deseleted. */
+    /** Called when the tool is deselected. */
     cleanup: () => void;
     /** Optional. Called when the user resets the texture or uploads a new texture. Tools may want to reset their state when this happens. */
     onReset?: () => void;
-    gui?: (props: any) => JSX.Element;
 }
 
 /** For constructable types, TS requires that you define a seperate interface which constructs your actual interface */
@@ -296,7 +295,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             />}
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
             <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
-            <ToolUI tool={currentTool} />
+            <ToolSettings tool={currentTool} />
             <BottomBar name={this.props.url} mipLevel={this.state.mipLevel} hasMips={!this.props.texture.noMipmap}/>
         </div>
     }
