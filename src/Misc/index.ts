@@ -49,3 +49,4 @@ export * from "./minMaxReducer";
 export * from "./depthReducer";
 export * from "./dataStorage";
 export * from "./sceneRecorder";
+export * from "./uvMapper";
