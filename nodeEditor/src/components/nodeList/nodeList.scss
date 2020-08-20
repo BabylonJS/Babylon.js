@@ -75,6 +75,19 @@
                         color: white;
                     }
                 }
+
+                .withButton {
+                    height: 40px;
+                    position: relative;
+                    fill: white;
+                    .icon {
+                        position: absolute;
+                        right: 10px;
+                        top: 10px;
+                        fill: white;
+                    }
+                    
+                }
             
                 .buttonLine {
                     height: 30px;
@@ -101,6 +114,50 @@
                     button:focus {
                         outline: 0px;
                     }  
+                }
+
+                .buttonIcon {
+                    position: relative;
+                    .icon {
+                        position: absolute;
+                        right: 20px;
+                        top:  3px;
+                    }
+
+                    height: 30px;
+                    display: grid;
+                    align-items: center;
+                    justify-items: stretch;
+                    padding-bottom: 5px;
+            
+                    input[type="file"] {
+                        display: none;
+                    }
+            
+                    .file-upload {    
+                        position: absolute;           
+                        background: transparent;
+                        border: 1px transparent;
+                        margin: 5px 10px;
+                        color:transparent;
+                        padding: 15px 5px 0px 15px;
+                        opacity: 0.9;
+                        cursor: pointer;
+                        text-align: center;
+                        display: inline-block;
+                        z-index: 1;
+                        right: 20px;
+                        top:  2px;
+                    }
+            
+                    .file-upload:hover {
+                        opacity: 0.0;
+                    }
+            
+                    .file-upload:active {
+                        transform: scale(0.98);
+                        transform-origin: 0.5 0.5;
+                    }
                 }
 
                 .paneContainer {
