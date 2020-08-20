@@ -105,24 +105,19 @@ export class KhronosTextureContainer2 {
     protected _createTexture(data: IDecodedData, internalTexture: InternalTexture) {
         this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
 
-        internalTexture.generateMipMaps = false;
-        internalTexture.invertY = false;
-        internalTexture.width = internalTexture.baseWidth = data.width;
-        internalTexture.height = internalTexture.baseHeight = data.height;
-        internalTexture.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-
-        console.log("transcoded format=", data.transcodedFormat);
+        if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
+            internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+        } else {
+            internalTexture.format = data.transcodedFormat;
+        }
 
         for (let t = 0; t < data.mipmaps.length; ++t) {
             let mipmap = data.mipmaps[t];
 
-            if (t !== 0) break;
-
             if (!mipmap || !mipmap.data) {
                 throw new Error("KTX2 container - could not transcode one of the image");
             }
-
-            console.log(`mipmap #${t} byte length=`, mipmap.data.byteLength);
 
             if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
                 // uncompressed RGBA

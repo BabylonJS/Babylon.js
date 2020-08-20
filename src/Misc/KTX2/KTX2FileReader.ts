@@ -189,10 +189,8 @@ export class KTX2FileReader {
         }
 
         if (header.faceCount > 1) {
-            //throw new Error(`Failed to parse KTX2 file - Cube textures are not currently supported.`);
+            throw new Error(`Failed to parse KTX2 file - Cube textures are not currently supported.`);
         }
-
-        console.log(header);
 
         offsetInFile += hdrReader.byteOffset;
 
@@ -214,8 +212,6 @@ export class KTX2FileReader {
         }
 
         offsetInFile += levelReader.byteOffset;
-
-        console.log(levels);
 
         /**
          * Get the data format descriptor (DFD) blocks
@@ -275,14 +271,6 @@ export class KTX2FileReader {
             dfdBlock.samples.push(sample);
         }
 
-        console.log(dfdBlock);
-
-        /*if (header.vkFormat !== KhronosTextureContainer2.VK_FORMAT_UNDEFINED &&
-             !(header.supercompressionScheme === supercompressionScheme.BasisLZ ||
-                dfdBlock.colorModel === dfdModel.UASTC)) {
-            throw new Error(`Failed to upload - Only Basis Universal supercompression is currently supported.`);
-        }*/
-
         /**
          * Get the Supercompression Global Data (sgd)
          */
@@ -321,8 +309,6 @@ export class KTX2FileReader {
             sgd.tablesData = new Uint8Array(this._data.buffer, tablesByteOffset, sgd.tablesByteLength);
             sgd.extendedData = new Uint8Array(this._data.buffer, extendedByteOffset, sgd.extendedByteLength);
         }
-
-        console.log("sgd", sgd);
 
     }
 

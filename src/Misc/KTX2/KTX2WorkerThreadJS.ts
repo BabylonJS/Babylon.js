@@ -829,8 +829,6 @@ export function workerFunc() {
             targetFormat = transcodeTarget.RGBA32;
             transcodedFormat = RGBA8Format;
         }
-        targetFormat = transcodeTarget.RGBA32;
-        transcodedFormat = RGBA8Format;
         var transcoder = transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
         if (transcoder === null) {
             throw new Error("no transcoder found to transcode source texture format \"" + sourceTextureFormat[srcTexFormat] + "\" to format \"" + transcodeTarget[targetFormat] + "\"");
