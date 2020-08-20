@@ -121,27 +121,19 @@ export class KhronosTextureContainer2 {
 
             if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
                 // uncompressed RGBA
-                internalTexture.width = internalTexture.baseWidth = mipmap.width;
-                internalTexture.height = internalTexture.baseHeight = mipmap.height;
+                internalTexture.width = mipmap.width; // need to set width/height so that the call to _uploadDataToTextureDirectly uses the right dimensions
+                internalTexture.height = mipmap.height;
 
-                internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
-
-                const gl = this._engine._gl;
-                //this._engine._uploadDataToTextureDirectly(internalTexture, mipmap.data, 0, t, undefined, true);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, mipmap.width, mipmap.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, mipmap.data);
-                gl.generateMipmap(gl.TEXTURE_2D);
+                this._engine._uploadDataToTextureDirectly(internalTexture, mipmap.data, 0, t, undefined, true);
             } else {
                 this._engine._uploadCompressedDataToTextureDirectly(internalTexture, data.transcodedFormat, mipmap.width, mipmap.height, mipmap.data, 0, t);
             }
         }
 
+        internalTexture.width = data.mipmaps[0].width;
+        internalTexture.height = data.mipmaps[0].height;
+        internalTexture.generateMipMaps = data.mipmaps.length > 1;
         internalTexture.isReady = true;
-
-        internalTexture.width = internalTexture.baseWidth = data.width;
-        internalTexture.height = internalTexture.baseHeight = data.height;
 
         this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, null);
     }
