@@ -1,18 +1,20 @@
-import { InternalTexture } from "../../Materials/Textures/internalTexture";
-import { ThinEngine } from "../../Engines/thinEngine";
-import { Nullable } from '../../types';
+import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { ThinEngine } from "../Engines/thinEngine";
+import { Nullable } from '../types';
+import { Tools } from './tools';
+import { Constants } from '../Engines/constants';
 
-import { IDecodedData } from "./KTX2WorkerThread";
-import { workerFunc } from "./KTX2WorkerThreadJS";
-import { KTX2FileReader } from './KTX2FileReader';
-import { Tools } from '../tools';
-import { Constants } from '../../Engines/constants';
+declare var KTX2DECODER: any;
 
 /**
  * Class for loading KTX2 files
  * @hidden
  */
 export class KhronosTextureContainer2 {
+    /**
+     * URL to use when loading the KTX2 decoder module
+     */
+    public static JSModuleURL = "https://preview.babylonjs.com/ktx2Decoder/babylon.ktx2Decoder.js";
 
     private _engine: ThinEngine;
 
@@ -53,7 +55,7 @@ export class KhronosTextureContainer2 {
 
                     this._Worker.addEventListener("message", initHandler);
                     this._Worker.addEventListener("message", loadWASMHandler);
-                    this._Worker.postMessage({ action: "init" });
+                    this._Worker.postMessage({ action: "init", jsPath: KhronosTextureContainer2.JSModuleURL });
                 }
             });
         }
@@ -69,11 +71,12 @@ export class KhronosTextureContainer2 {
             KhronosTextureContainer2._CreateWorkerAsync().then(() => {
                 const actionId = KhronosTextureContainer2._actionId++;
                 const messageHandler = (msg: any) => {
-                    if (msg.data.action === "mipmapsCreated" && msg.data.id === actionId) {
+                    if (msg.data.action === "decoded" && msg.data.id === actionId) {
                         KhronosTextureContainer2._Worker!.removeEventListener("message", messageHandler);
                         if (!msg.data.success) {
                             rej({ message: msg.data.msg });
-                        }else {
+                        } else {
+                            console.log(msg.data, msg.data.decodedData);
                             this._createTexture(msg.data.decodedData, internalTexture);
                             res();
                         }
@@ -93,7 +96,7 @@ export class KhronosTextureContainer2 {
                 };
 
                 KhronosTextureContainer2._Worker!.postMessage({
-                    action: "createMipmaps",
+                    action: "decode",
                     id: actionId,
                     data: data,
                     caps: compressedTexturesCaps,
@@ -102,7 +105,41 @@ export class KhronosTextureContainer2 {
         });
     }
 
-    protected _createTexture(data: IDecodedData, internalTexture: InternalTexture) {
+    public __uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void> {
+        return new Promise((res, rej) => {
+                const caps = this._engine.getCaps();
+
+                const compressedTexturesCaps = {
+                    astc: !!caps.astc,
+                    bptc: !!caps.bptc,
+                    s3tc: !!caps.s3tc,
+                    pvrtc: !!caps.pvrtc,
+                    etc2: !!caps.etc2,
+                    etc1: !!caps.etc1,
+                };
+
+                let ktx2Decoder = new KTX2DECODER.KTX2Decoder();
+
+                try {
+                    const promise = ktx2Decoder.decode(data, compressedTexturesCaps);
+
+                    if (!promise) {
+                        throw new Error("Invalid format for the KTX2 file");
+                    }
+
+                    promise.then((data: any) => {
+                        this._createTexture(data, internalTexture);
+                        res();
+                    }).catch((reason: any) => {
+                        rej(reason);
+                    });
+                } catch (err) {
+                    rej(err);
+                }
+        });
+    }
+
+    protected _createTexture(data: any/*IDecodedData*/, internalTexture: InternalTexture) {
         this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
 
         if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
@@ -144,6 +181,52 @@ export class KhronosTextureContainer2 {
      * @returns true if the data is a KTX2 file or false otherwise
      */
     public static IsValid(data: ArrayBufferView): boolean {
-        return KTX2FileReader.IsValid(data);
+        if (data.byteLength >= 12) {
+            // '«', 'K', 'T', 'X', ' ', '2', '0', '»', '\r', '\n', '\x1A', '\n'
+            const identifier = new Uint8Array(data.buffer, data.byteOffset, 12);
+            if (identifier[0] === 0xAB && identifier[1] === 0x4B && identifier[2] === 0x54 && identifier[3] === 0x58 && identifier[4] === 0x20 && identifier[5] === 0x32 &&
+                identifier[6] === 0x30 && identifier[7] === 0xBB && identifier[8] === 0x0D && identifier[9] === 0x0A && identifier[10] === 0x1A && identifier[11] === 0x0A) {
+                return true;
+            }
+        }
+
+        return false;
     }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare function postMessage(message: any, transfer?: any[]): void;
+
+declare var KTX2DECODER: any;
+
+export function workerFunc(): void {
+    let ktx2Decoder: any;
+
+    onmessage = (event) => {
+        switch (event.data.action) {
+            case "init":
+                importScripts(event.data.jsPath);
+                ktx2Decoder = new KTX2DECODER.KTX2Decoder();
+                postMessage({ action: "init" });
+                break;
+            case "decode":
+                try {
+                    ktx2Decoder.decode(event.data.data, event.data.caps).then((data: any) => {
+                        const buffers = [];
+                        for (let mip = 0; mip < data.mipmaps.length; ++mip) {
+                            const mipmap = data.mipmaps[mip];
+                            if (mipmap) {
+                                buffers.push(mipmap.data.buffer);
+                            }
+                        }
+                        postMessage({ action: "decoded", success: true, id: event.data.id, decodedData: data }, buffers);
+                    }).catch((reason: any) => {
+                        postMessage({ action: "decoded", success: false, id: event.data.id, msg: reason });
+                    });
+                } catch (err) {
+                    postMessage({ action: "decoded", success: false, id: event.data.id, msg: err });
+                }
+                break;
+        }
+    };
 }

@@ -1,4 +1,4 @@
-import { Nullable } from '../../types';
+import { Nullable } from './types';
 import { WASMMemoryManager } from './wasmMemoryManager';
 import { KTX2FileReader, IKTX2_ImageDesc } from './KTX2FileReader';
 

@@ -6,6 +6,7 @@ declare function postMessage(message: any, transfer?: any[]): void;
 export class WASMMemoryManager {
 
     public static LoadBinariesFromMainThread = false;
+    public static InitialMemoryPages = (1 * 1024 * 1024) >> 16; // 1 Mbytes
 
     private static _RequestId = 0;
 
@@ -40,7 +41,7 @@ export class WASMMemoryManager {
     private _memoryViewByteLength: number;
     private _memoryViewOffset: number;
 
-    constructor(initialMemoryPages: number = (1 * 1024 * 1024) >> 16) {
+    constructor(initialMemoryPages: number = WASMMemoryManager.InitialMemoryPages) {
         this._numPages = initialMemoryPages;
 
         this._memory = new WebAssembly.Memory({ initial: this._numPages });

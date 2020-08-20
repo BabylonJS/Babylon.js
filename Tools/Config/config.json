@@ -22,7 +22,8 @@
             "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts",
             "../../dist/preview release/materialsLibrary/babylonjs.materials.d.ts",
             "../../dist/preview release/postProcessesLibrary/babylonjs.postProcess.d.ts",
-            "../../dist/preview release/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts"
+            "../../dist/preview release/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
+            "../../dist/preview release/ktx2Decoder/babylonjs.ktx2Decoder.d.ts"
         ],
         "typedocGenerationFiles": [
             "../../dist/preview release/babylon.d.ts",
@@ -47,7 +48,8 @@
         "serializers",
         "gui",
         "inspector",
-        "nodeEditor"
+        "nodeEditor",
+        "ktx2Decoder"
     ],
     "es6modules": [
         "core",
@@ -59,7 +61,8 @@
         "gui",
         "inspector",
         "viewer",
-        "nodeEditor"
+        "nodeEditor",
+        "ktx2Decoder"
     ],
     "apps": [
         "playground",
@@ -637,6 +640,41 @@
                 ],
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
+            }
+        }
+    },
+    "ktx2Decoder": {
+        "libraries": [
+            {
+                "output": "babylon.ktx2Decoder.js",
+                "entry": "./legacy/legacy.ts"
+            }
+        ],
+        "build": {            
+            "mainFolder": "./ktx2Decoder/",
+            "umd": {
+                "packageName": "babylonjs-ktx2-decoder",
+                "webpackRoot": "KTX2DECODER",
+                "processDeclaration": {
+                    "filename": "babylon.ktx2Decoder.module.d.ts",
+                    "moduleName": "KTX2DECODER",
+                    "importsToRemove": []
+                }
+            },
+            "es6": {
+                "webpackBuild": true,
+                "buildDependencies": [
+                ],
+                "packageName": "@babylonjs/ktx2-decoder",
+                "readme": "dist/preview release/ktx2Decoder/readme-es6.md",
+                "packagesFiles": [
+                    "babylon.ktx2Decoder.max.js",
+                    "babylon.ktx2Decoder.max.js.map",
+                    "babylon.ktx2Decoder.module.d.ts",
+                    "readme.md"
+                ],
+                "typings": "babylon.ktx2Decoder.module.d.ts",
+                "index": "babylon.ktx2Decoder+.max.js"
             }
         }
     },

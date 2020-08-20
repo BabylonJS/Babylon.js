@@ -1,12 +1,19 @@
-import { TranscoderManager } from "./transcoderManager";
-import { sourceTextureFormat, transcodeTarget } from './transcoder';
-import { KTX2FileReader, supercompressionScheme, IKTX2_ImageDesc } from './KTX2FileReader';
-import { Nullable } from '../../types';
-import { LiteTranscoder_UASTC_ASTC } from './LiteTranscoder_UASTC_ASTC';
-import { LiteTranscoder_UASTC_BC7 } from './LiteTranscoder_UASTC_BC7';
-import { MSCTranscoder } from './mscTranscoder';
+/**
+ * Resources used for the implementation:
+ *  - KTX2 specification: http://github.khronos.org/KTX-Specification/
+ *  - KTX2 binaries to convert files: https://github.com/KhronosGroup/KTX-Software/releases
+ *  - KTX specification: https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html
+ *  - KTX-Software: https://github.com/KhronosGroup/KTX-Software
+ *  - 3js KTX2 loader: https://github.com/mrdoob/three.js/blob/dfb5c23ce126ec845e4aa240599915fef5375797/examples/jsm/loaders/KTX2Loader.js
+ */
 
-declare function postMessage(message: any, transfer?: any[]): void;
+import { KTX2FileReader, supercompressionScheme, IKTX2_ImageDesc } from './ktx2FileReader';
+import { TranscoderManager } from './transcoderManager';
+import { LiteTranscoder_UASTC_ASTC } from './Transcoders/liteTranscoder_UASTC_ASTC';
+import { LiteTranscoder_UASTC_BC7 } from './Transcoders/liteTranscoder_UASTC_BC7';
+import { MSCTranscoder } from './Transcoders/mscTranscoder';
+import { transcodeTarget, sourceTextureFormat } from './transcoder';
+import { Nullable } from './types';
 
 const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
 const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
@@ -19,12 +26,6 @@ const COMPRESSED_RGB8_ETC2 = 0x9274;
 const COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
 const RGBA8Format = 0x8058;
 
-export interface IMipmap {
-    data: Nullable<Uint8Array>;
-    width: number;
-    height: number;
-}
-
 export interface IDecodedData {
     width: number;
     height: number;
@@ -32,47 +33,54 @@ export interface IDecodedData {
     mipmaps: Array<IMipmap>;
 }
 
-export function workerFunc(): void {
-    TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_ASTC);
-    TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_BC7);
-    TranscoderManager.registerTranscoder(MSCTranscoder);
+export interface IMipmap {
+    data: Nullable<Uint8Array>;
+    width: number;
+    height: number;
+}
 
-    let transcoderMgr = new TranscoderManager();
+export interface ICompressedFormatCapabilities {
+    astc?: boolean;
+    bptc?: boolean;
+    s3tc?: boolean;
+    pvrtc?: boolean;
+    etc2?: boolean;
+    etc1?: boolean;
+}
 
-    onmessage = (event) => {
-        switch (event.data.action) {
-            case "init":
-                postMessage({ action: "init" });
-                break;
-            case "createMipmaps":
-                try {
-                    const kfr = new KTX2FileReader(event.data.data);
-                    _createMipmaps(kfr, event.data.caps).then((data) => {
-                        postMessage({ action: "mipmapsCreated", success: true, id: event.data.id, decodedData: data.decodedData }, data.mipmapBuffers);
-                    }).catch((reason) => {
-                        postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: reason });
-                    });
-                } catch (err) {
-                    postMessage({ action: "mipmapsCreated", success: false, id: event.data.id, msg: err });
-                }
-                break;
+const isPowerOfTwo = (value: number)  => {
+    return (value & (value - 1)) === 0 && value !== 0;
+};
+
+/**
+ * Class for decoding KTX2 files
+ */
+export class KTX2Decoder {
+
+    private _transcoderMgr: TranscoderManager;
+
+    constructor() {
+        this._transcoderMgr = new TranscoderManager();
+    }
+
+    public decode(data: Uint8Array, caps: ICompressedFormatCapabilities): Nullable<Promise<IDecodedData>> {
+        const kfr = new KTX2FileReader(data);
+
+        if (!kfr.isValid) {
+            return null;
         }
-    };
 
-    const _createMipmaps = (kfr: KTX2FileReader, caps: { [name: string]: any }): Promise<{ decodedData: IDecodedData, mipmapBuffers: Array<ArrayBuffer> }> => {
+        kfr.parse();
+
         const width = kfr.header.pixelWidth;
         const height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;
 
-        const isPowerOfTwo = (value: number)  => {
-            return (value & (value - 1)) === 0 && value !== 0;
-        };
-
         // PVRTC1 transcoders (from both ETC1S and UASTC) only support power of 2 dimensions.
         const pvrtcTranscodable = isPowerOfTwo(width) && isPowerOfTwo(height);
 
-        let targetFormat = transcodeTarget.BC7_M5_RGBA;
-        let transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
+        let targetFormat = -1;
+        let transcodedFormat = -1;
 
         if (caps.astc) {
             targetFormat = transcodeTarget.ASTC_4x4_RGBA;
@@ -97,7 +105,7 @@ export function workerFunc(): void {
             transcodedFormat = RGBA8Format;
         }
 
-        const transcoder = transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
+        const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
 
         if (transcoder === null) {
             throw new Error(`no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[targetFormat]}"`);
@@ -129,7 +137,8 @@ export function workerFunc(): void {
 
             if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
                 //levelDataBuffer = this.zstd.decode(new Uint8Array(levelDataBuffer, levelDataOffset, levelByteLength), levelUncompressedByteLength);
-                levelDataOffset = 0;
+                //levelDataOffset = 0;
+                throw new Error("ZStandard supercompression scheme is not supported yet");
             }
 
             if (level === 0) {
@@ -174,7 +183,12 @@ export function workerFunc(): void {
         }
 
         return Promise.all(dataPromises).then(() => {
-            return { decodedData, mipmapBuffers };
+            return decodedData;
         });
-    };
+    }
 }
+
+// Put in the order you want the transcoders to be used in priority
+TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_ASTC);
+TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_BC7);
+TranscoderManager.registerTranscoder(MSCTranscoder); // catch all transcoder - will throw an error if the format can't be transcoded

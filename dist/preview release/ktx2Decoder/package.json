@@ -1,0 +1,26 @@
+{
+    "author": {
+        "name": "David CATUHE"
+    },
+    "name": "babylonjs-ktx2-decoder",
+    "description": "The Babylon.js KTX2 decoder.",
+    "version": "4.2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "license": "Apache-2.0",
+    "dependencies": {
+    },
+    "files": [
+        "babylon.ktx2Decoder.max.js.map",
+        "babylon.ktx2Decoder.max.js",
+        "babylon.ktx2Decoder.js",
+        "babylon.ktx2Decoder.module.d.ts",
+        "readme.md",
+        "package.json"
+    ],
+    "engines": {
+        "node": "*"
+    }
+}
