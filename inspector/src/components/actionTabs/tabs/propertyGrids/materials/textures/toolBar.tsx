@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { SketchPicker } from 'react-color';
-import { IToolData, IToolType } from './textureEditorComponent';
+import { IToolData, IToolType, IMetadata } from './textureEditorComponent';
 
 export interface ITool extends IToolData {
     instance: IToolType;
@@ -11,7 +11,7 @@ interface IToolBarProps {
     addTool(url: string): void;
     changeTool(toolIndex : number): void;
     activeToolIndex : number;
-    metadata: any;
+    metadata: IMetadata;
     setMetadata(data : any): void;
 }
 
@@ -37,7 +37,7 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
     }
 
     computeRGBAColor() {
-        const opacityInt = Math.floor(this.props.metadata.opacity * 255);
+        const opacityInt = Math.floor(this.props.metadata.alpha * 255);
         const opacityHex = opacityInt.toString(16).padStart(2, '0');
         return `${this.props.metadata.color}${opacityHex}`;
     }
@@ -79,7 +79,9 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
                 </div>
             </div>
             <div id='color' onClick={() => this.setState({pickerOpen: !this.state.pickerOpen})} title='Color' className={`icon button${this.state.pickerOpen ? ` active` : ``}`}>
-                <div id='activeColor' style={{backgroundColor: this.props.metadata.color}}></div>
+                <div id='active-color-bg'>
+                    <div id='active-color' style={{backgroundColor: this.props.metadata.color, opacity: this.props.metadata.alpha}}></div>
+                </div>
             </div>
             {
                 this.state.pickerOpen &&
@@ -92,7 +94,7 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
                     }}>
                     </div>
                     <div className='color-picker' ref={this._pickerRef}>
-                            <SketchPicker color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, opacity: color.rgb.a})}/>
+                            <SketchPicker color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, alpha: color.rgb.a})}/>
                     </div>
                 </>
             }

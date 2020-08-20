@@ -1061,6 +1061,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (this._canvasPointerOutObserver) {
             scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
         }
+        if (this._canvasBlurObserver) {
+            scene.getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+        }
         if (this._layerToDispose) {
             this._layerToDispose.texture = null;
             this._layerToDispose.dispose();
@@ -1315,6 +1318,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
         });
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     };
     /**
     * Register the clipboard Events onto the canvas
@@ -1395,6 +1399,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         });
         mesh.enablePointerMoveEvents = supportPointerMove;
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     };
     /**
     * Move the focus to a specific control
@@ -1432,6 +1437,16 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 _this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
                 delete _this._lastControlDown[pointerEvent.pointerId];
             }
+        });
+    };
+    AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
+        var _this = this;
+        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function (pointerEvent) {
+            Object.entries(_this._lastControlDown).forEach(function (_a) {
+                var key = _a[0], value = _a[1];
+                value._onCanvasBlur();
+            });
+            _this._lastControlDown = {};
         });
     };
     // Statics
@@ -2292,6 +2307,10 @@ var ColorPicker = /** @class */ (function (_super) {
         this._pointerIsDown = false;
         delete this._host._capturingControl[pointerId];
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+    };
+    ColorPicker.prototype._onCanvasBlur = function () {
+        this._forcePointerUp();
+        _super.prototype._onCanvasBlur.call(this);
     };
     /**
      * This function expands the color picker by creating a color picker dialog with manual
@@ -5091,7 +5110,7 @@ var Control = /** @class */ (function () {
         }
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             this.host._numLayoutCalls++;
-            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+            this._currentMeasure.addAndTransformToRef(this._transformMatrix, -this.paddingLeftInPixels | 0, -this.paddingTopInPixels | 0, this.paddingRightInPixels | 0, this.paddingBottomInPixels | 0, this._prevCurrentMeasureTransformedIntoGlobalSpace);
             context.save();
             this._applyStates(context);
             var rebuildCount = 0;
@@ -5466,6 +5485,8 @@ var Control = /** @class */ (function () {
             this.parent._onWheelScroll(deltaX, deltaY);
         }
     };
+    /** @hidden */
+    Control.prototype._onCanvasBlur = function () { };
     /** @hidden */
     Control.prototype._processObservables = function (type, x, y, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled) {
@@ -11286,6 +11307,10 @@ var BaseSlider = /** @class */ (function (_super) {
         delete this._host._capturingControl[pointerId];
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
     };
+    BaseSlider.prototype._onCanvasBlur = function () {
+        this._forcePointerUp();
+        _super.prototype._onCanvasBlur.call(this);
+    };
     return BaseSlider;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -12679,13 +12704,13 @@ var TextBlock = /** @class */ (function (_super) {
         }
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                var newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
+                var newWidth = (this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth) | 0;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
             }
-            var newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
+            var newHeight = (this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 var lineSpacing = 0;
                 if (this._lineSpacing.isPixel) {
@@ -13583,13 +13608,21 @@ var Measure = /** @class */ (function () {
     /**
      * Computes the axis aligned bounding box of the measure after it is modified by a given transform
      * @param transform the matrix to transform the measure before computing the AABB
+     * @param addX number to add to left
+     * @param addY number to add to top
+     * @param addWidth number to add to width
+     * @param addHeight number to add to height
      * @param result the resulting AABB
      */
-    Measure.prototype.transformToRef = function (transform, result) {
-        tmpRect[0].copyFromFloats(this.left, this.top);
-        tmpRect[1].copyFromFloats(this.left + this.width, this.top);
-        tmpRect[2].copyFromFloats(this.left + this.width, this.top + this.height);
-        tmpRect[3].copyFromFloats(this.left, this.top + this.height);
+    Measure.prototype.addAndTransformToRef = function (transform, addX, addY, addWidth, addHeight, result) {
+        var left = this.left + addX;
+        var top = this.top + addY;
+        var width = this.width + addWidth;
+        var height = this.height + addHeight;
+        tmpRect[0].copyFromFloats(left, top);
+        tmpRect[1].copyFromFloats(left + width, top);
+        tmpRect[2].copyFromFloats(left + width, top + height);
+        tmpRect[3].copyFromFloats(left, top + height);
         tmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
         tmpV2.copyFromFloats(0, 0);
         for (var i = 0; i < 4; i++) {
@@ -13605,10 +13638,18 @@ var Measure = /** @class */ (function () {
         result.height = tmpV2.y - tmpV1.y;
     };
     /**
-     * Check equality between this measure and another one
-     * @param other defines the other measures
-     * @returns true if both measures are equals
+     * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+     * @param transform the matrix to transform the measure before computing the AABB
+     * @param result the resulting AABB
      */
+    Measure.prototype.transformToRef = function (transform, result) {
+        this.addAndTransformToRef(transform, 0, 0, 0, 0, result);
+    };
+    /**
+ * Check equality between this measure and another one
+ * @param other defines the other measures
+ * @returns true if both measures are equals
+ */
     Measure.prototype.isEqualsTo = function (other) {
         if (this.left !== other.left) {
             return false;
