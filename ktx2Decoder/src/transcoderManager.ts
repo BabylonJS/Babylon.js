@@ -1,5 +1,5 @@
 import { transcodeTarget, sourceTextureFormat, Transcoder } from './transcoder';
-import { Nullable } from '../../types';
+import { Nullable } from './types';
 import { WASMMemoryManager } from './wasmMemoryManager';
 
 /**

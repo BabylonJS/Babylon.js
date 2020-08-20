@@ -1,7 +1,7 @@
-import { Nullable } from '../../types';
-import { Transcoder, sourceTextureFormat, transcodeTarget } from './transcoder';
-import { WASMMemoryManager } from './wasmMemoryManager';
-import { KTX2FileReader, IKTX2_ImageDesc } from './KTX2FileReader';
+import { Nullable } from '../types';
+import { Transcoder, sourceTextureFormat, transcodeTarget } from '../transcoder';
+import { WASMMemoryManager } from '../wasmMemoryManager';
+import { KTX2FileReader, IKTX2_ImageDesc } from '../ktx2FileReader';
 
 /**
  * @hidden

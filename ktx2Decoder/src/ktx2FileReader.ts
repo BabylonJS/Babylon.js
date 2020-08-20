@@ -1,4 +1,4 @@
-import { DataReader } from '../dataReader';
+import { DataReader } from './Misc/dataReader';
 import { sourceTextureFormat } from './transcoder';
 
 /** @hidden */
@@ -110,13 +110,7 @@ export interface IKTX2_SupercompressionGlobalData {
     extendedData?: Uint8Array;
 }
 
-/**
- * Based on https://github.com/mrdoob/three.js/blob/dfb5c23ce126ec845e4aa240599915fef5375797/examples/jsm/loaders/KTX2Loader.js
- * @hidden
- */
 export class KTX2FileReader {
-
-    //private static readonly VK_FORMAT_UNDEFINED = 0x00;
 
     private _data: ArrayBufferView;
     private _header: IKTX2_Header;
@@ -129,8 +123,6 @@ export class KTX2FileReader {
      */
     constructor(data: ArrayBufferView) {
         this._data = data;
-
-        this._parseData();
     }
 
     public get data(): ArrayBufferView {
@@ -153,13 +145,17 @@ export class KTX2FileReader {
         return this._supercompressionGlobalData;
     }
 
-    private _parseData() {
+    public isValid() {
+        return KTX2FileReader.IsValid(this._data);
+    }
+
+    public parse() {
         let offsetInFile = 12; // skip the header
 
         /**
          * Get the header
          */
-        const hdrReader = new DataReader().setBuffer(this._data, offsetInFile, 17 * 4);
+        const hdrReader = new DataReader(this._data, offsetInFile, 17 * 4);
 
         const header = this._header = {
             vkFormat:               hdrReader.readUint32(),
@@ -199,7 +195,7 @@ export class KTX2FileReader {
          */
         let levelCount = Math.max(1, header.levelCount);
 
-        const levelReader = new DataReader().setBuffer(this._data, offsetInFile, levelCount * 3 * (2 * 4));
+        const levelReader = new DataReader(this._data, offsetInFile, levelCount * 3 * (2 * 4));
 
         const levels: Array<IKTX2_Level> = this._levels = [];
 
@@ -216,7 +212,7 @@ export class KTX2FileReader {
         /**
          * Get the data format descriptor (DFD) blocks
          */
-        const dfdReader = new DataReader().setBuffer(this._data, header.dfdByteOffset, header.dfdByteLength);
+        const dfdReader = new DataReader(this._data, header.dfdByteOffset, header.dfdByteLength);
 
         const dfdBlock = this._dfdBlock = {
             vendorId: dfdReader.skipBytes(4 /* skip totalSize */).readUint16(),
@@ -277,7 +273,7 @@ export class KTX2FileReader {
         const sgd: IKTX2_SupercompressionGlobalData = this._supercompressionGlobalData = {};
 
         if (header.sgdByteLength > 0) {
-            const sgdReader = new DataReader().setBuffer(this._data, header.sgdByteOffset, header.sgdByteLength);
+            const sgdReader = new DataReader(this._data, header.sgdByteOffset, header.sgdByteLength);
 
             sgd.endpointCount = sgdReader.readUint16();
             sgd.selectorCount = sgdReader.readUint16();

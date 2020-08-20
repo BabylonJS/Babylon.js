@@ -1,5 +1,5 @@
 import { KhronosTextureContainer } from "../../../Misc/khronosTextureContainer";
-import { KhronosTextureContainer2 } from "../../../Misc/KTX2/khronosTextureContainer2";
+import { KhronosTextureContainer2 } from "../../../Misc/khronosTextureContainer2";
 import { Nullable } from "../../../types";
 import { Engine } from "../../../Engines/engine";
 import { InternalTexture } from "../../../Materials/Textures/internalTexture";
