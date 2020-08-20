@@ -23,7 +23,6 @@ interface IToolBarState {
 
 
 export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
-    private _addTool = require('./assets/addTool.svg');
 
     private _pickerRef : React.RefObject<HTMLDivElement>;
     constructor(props : IToolBarProps) {

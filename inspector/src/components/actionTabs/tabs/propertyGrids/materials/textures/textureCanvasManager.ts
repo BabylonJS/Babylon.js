@@ -626,9 +626,9 @@ export class TextureCanvasManager {
         ctx.putImageData(imgData, 0, 0);
     }
 
-    public grabOriginalTexture(adjustZoom = true) {
+    public grabOriginalTexture() {
         // Grab image data from original texture and paint it onto the context of a DynamicTexture
-        this.setSize(this._originalTexture.getSize(), adjustZoom);
+        this.setSize(this._originalTexture.getSize());
         TextureHelper.GetTextureDataAsync(
             this._originalTexture,
             this._size.width,
@@ -697,7 +697,7 @@ export class TextureCanvasManager {
     public set face(face: number) {
         if (this._face !== face) {
             this._face = face;
-            this.grabOriginalTexture(false);
+            this.grabOriginalTexture();
             this.updateDisplay();
         }
     }
@@ -705,7 +705,7 @@ export class TextureCanvasManager {
     public set mipLevel(mipLevel : number) {
         if (this._mipLevel === mipLevel) return;
         this._mipLevel = mipLevel;
-        this.grabOriginalTexture(false);
+        this.grabOriginalTexture();
     }
 
     /** Returns the tool GUI object, allowing tools to access the GUI */
