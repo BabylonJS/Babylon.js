@@ -76,12 +76,12 @@ export class KhronosTextureContainer2 {
                         if (!msg.data.success) {
                             rej({ message: msg.data.msg });
                         } else {
-                            console.log(msg.data, msg.data.decodedData);
                             this._createTexture(msg.data.decodedData, internalTexture);
                             res();
                         }
                     }
                 };
+
                 KhronosTextureContainer2._Worker!.addEventListener("message", messageHandler);
 
                 const caps = this._engine.getCaps();
@@ -105,41 +105,7 @@ export class KhronosTextureContainer2 {
         });
     }
 
-    public __uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void> {
-        return new Promise((res, rej) => {
-                const caps = this._engine.getCaps();
-
-                const compressedTexturesCaps = {
-                    astc: !!caps.astc,
-                    bptc: !!caps.bptc,
-                    s3tc: !!caps.s3tc,
-                    pvrtc: !!caps.pvrtc,
-                    etc2: !!caps.etc2,
-                    etc1: !!caps.etc1,
-                };
-
-                let ktx2Decoder = new KTX2DECODER.KTX2Decoder();
-
-                try {
-                    const promise = ktx2Decoder.decode(data, compressedTexturesCaps);
-
-                    if (!promise) {
-                        throw new Error("Invalid format for the KTX2 file");
-                    }
-
-                    promise.then((data: any) => {
-                        this._createTexture(data, internalTexture);
-                        res();
-                    }).catch((reason: any) => {
-                        rej(reason);
-                    });
-                } catch (err) {
-                    rej(err);
-                }
-        });
-    }
-
-    protected _createTexture(data: any/*IDecodedData*/, internalTexture: InternalTexture) {
+    protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture) {
         this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
 
         if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
