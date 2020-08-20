@@ -53,7 +53,7 @@ class contrastTool implements IToolType {
     }
 };
 
-class GUI extends React.Component<IToolGUIProps> {
+class Settings extends React.Component<IToolGUIProps> {
     render() {
         const instance = this.props.instance as contrastTool;
         return (
@@ -89,7 +89,7 @@ export const Contrast : IToolData = {
     name: 'Contrast/Exposure',
     type: contrastTool,
     is3D: true,
-    GUI: GUI,
+    settingsComponent: Settings,
     icon: `PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cmVjdCB3aWR0aD0i
     NDAiIGhlaWdodD0iNDAiIHN0eWxlPSJmaWxsOm5vbmUiLz48cGF0aCBkPSJNMTcuNTUsMjYuNTVsOC41OS0zLjIxQTYuODYsNi44NiwwLDAsMSwyNCwyNS43NWwtMy4x
     OSwxLjE5QTcsNywwLDAsMSwxNy41NSwyNi41NVpNMjAsMTEuNUE4LjUsOC41LDAsMSwwLDI4LjUsMjAsOC41MSw4LjUxLDAsMCwwLDIwLDExLjVNMjAsMTBBMTAsMTAs
