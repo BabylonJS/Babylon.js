@@ -14,6 +14,7 @@ import { LiteTranscoder_UASTC_BC7 } from './Transcoders/liteTranscoder_UASTC_BC7
 import { MSCTranscoder } from './Transcoders/mscTranscoder';
 import { transcodeTarget, sourceTextureFormat } from './transcoder';
 import { Nullable } from './types';
+import { ZSTDDecoder } from './zstddec';
 
 const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
 const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
@@ -58,6 +59,7 @@ const isPowerOfTwo = (value: number)  => {
 export class KTX2Decoder {
 
     private _transcoderMgr: TranscoderManager;
+    private _zstdDecoder: ZSTDDecoder;
 
     constructor() {
         this._transcoderMgr = new TranscoderManager();
@@ -72,6 +74,18 @@ export class KTX2Decoder {
 
         kfr.parse();
 
+        if (kfr.needZSTDDecoder && !this._zstdDecoder) {
+            this._zstdDecoder = new ZSTDDecoder();
+
+            return this._zstdDecoder.init().then(() => {
+                return this._decodeData(kfr, caps);
+            });
+        }
+
+        return this._decodeData(kfr, caps);
+    }
+
+    private _decodeData(kfr: KTX2FileReader, caps: ICompressedFormatCapabilities): Promise<IDecodedData> {
         const width = kfr.header.pixelWidth;
         const height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;
@@ -136,9 +150,8 @@ export class KTX2Decoder {
             let imageOffsetInLevel = 0;
 
             if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
-                //levelDataBuffer = this.zstd.decode(new Uint8Array(levelDataBuffer, levelDataOffset, levelByteLength), levelUncompressedByteLength);
-                //levelDataOffset = 0;
-                throw new Error("ZStandard supercompression scheme is not supported yet");
+                levelDataBuffer = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
+                levelDataOffset = 0;
             }
 
             if (level === 0) {
