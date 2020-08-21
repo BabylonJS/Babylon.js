@@ -1,8 +1,7 @@
 import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { ThinEngine } from "../Engines/thinEngine";
-import { Nullable } from '../types';
-import { Tools } from './tools';
 import { Constants } from '../Engines/constants';
+import { WorkerPool } from './workerPool';
 
 declare var KTX2DECODER: any;
 
@@ -11,98 +10,175 @@ declare var KTX2DECODER: any;
  * @hidden
  */
 export class KhronosTextureContainer2 {
+    private static _WorkerPoolPromise?: Promise<WorkerPool>;
+    private static _Initialized: boolean;
+    private static _Ktx2Decoder: any; // used when no worker pool is used
+
     /**
      * URL to use when loading the KTX2 decoder module
      */
-    public static JSModuleURL = "https://preview.babylonjs.com/ktx2Decoder/babylon.ktx2Decoder.js";
+    //public static JSModuleURL = "https://preview.babylonjs.com/ktx2Decoder/babylon.ktx2Decoder.js";
+    public static JSModuleURL = "https://popov72.github.io/BabylonDev/resources/lib/babylon.ktx2Decoder.js";
+
+    /**
+     * Default number of workers to create when creating the draco compression object.
+     */
+    public static DefaultNumWorkers = KhronosTextureContainer2.GetDefaultNumWorkers();
+
+    private static GetDefaultNumWorkers(): number {
+        if (typeof navigator !== "object" || !navigator.hardwareConcurrency) {
+            return 1;
+        }
+
+        // Use 50% of the available logical processors but capped at 4.
+        return Math.min(Math.floor(navigator.hardwareConcurrency * 0.5), 4);
+    }
 
     private _engine: ThinEngine;
 
-    private static _WorkerPromise: Nullable<Promise<Worker>> = null;
-    private static _Worker: Nullable<Worker> = null;
-    private static _actionId = 0;
-    private static _CreateWorkerAsync() {
-        if (!this._WorkerPromise) {
-            this._WorkerPromise = new Promise((res) => {
-                if (this._Worker) {
-                    res(this._Worker);
-                } else {
-                    const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunc})()`], { type: "application/javascript" }));
-                    this._Worker = new Worker(workerBlobUrl);
-                    URL.revokeObjectURL(workerBlobUrl);
+    private static _CreateWorkerPool(numWorkers: number) {
+        this._Initialized = true;
 
-                    const initHandler = (msg: any) => {
-                        if (msg.data.action === "init") {
-                            this._Worker!.removeEventListener("message", initHandler);
-                            res(this._Worker!);
-                        }
-                    };
+        if (numWorkers && typeof Worker === "function") {
+            KhronosTextureContainer2._WorkerPoolPromise = new Promise((resolve) => {
+                const workerContent = `(${workerFunc})()`;
+                const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
+                const workerPromises = new Array<Promise<Worker>>(numWorkers);
+                for (let i = 0; i < workerPromises.length; i++) {
+                    workerPromises[i] = new Promise((resolve, reject) => {
+                        const worker = new Worker(workerBlobUrl);
 
-                    const loadWASMHandler = (msg: any) => {
-                        const cache: { [path: string]: Promise<ArrayBuffer | string> } = {};
-                        if (msg.data.action === "loadWASM") {
-                            let promise = cache[msg.data.path];
-                            if (!promise) {
-                                promise = Tools.LoadFileAsync(msg.data.path);
-                                cache[msg.data.path] = promise;
+                        (worker as any).__id = i;
+
+                        const onError = (error: ErrorEvent) => {
+                            worker.removeEventListener("error", onError);
+                            worker.removeEventListener("message", onMessage);
+                            reject(error);
+                        };
+
+                        const onMessage = (message: MessageEvent) => {
+                            if (message.data.action === "init") {
+                                worker.removeEventListener("error", onError);
+                                worker.removeEventListener("message", onMessage);
+                                resolve(worker);
                             }
-                            promise.then((wasmBinary) => {
-                                this._Worker!.postMessage({ action: "wasmLoaded", wasmBinary: wasmBinary, id: msg.data.id });
-                                return wasmBinary;
-                            });
-                        }
-                    };
+                        };
 
-                    this._Worker.addEventListener("message", initHandler);
-                    this._Worker.addEventListener("message", loadWASMHandler);
-                    this._Worker.postMessage({ action: "init", jsPath: KhronosTextureContainer2.JSModuleURL });
+                        worker.addEventListener("error", onError);
+                        worker.addEventListener("message", onMessage);
+
+                        worker.postMessage({
+                            action: "init",
+                            jsPath: KhronosTextureContainer2.JSModuleURL
+                        });
+                    });
                 }
+
+                Promise.all(workerPromises).then((workers) => {
+                    resolve(new WorkerPool(workers));
+                });
             });
+        } else {
+            KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
+            KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
         }
-        return this._WorkerPromise;
     }
 
-    public constructor(engine: ThinEngine) {
+    /**
+     * Constructor
+     * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
+     */
+    public constructor(engine: ThinEngine, numWorkers = KhronosTextureContainer2.DefaultNumWorkers) {
         this._engine = engine;
+
+        if (!KhronosTextureContainer2._Initialized) {
+            KhronosTextureContainer2._CreateWorkerPool(numWorkers);
+        }
     }
 
     public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void> {
-        return new Promise((res, rej) => {
-            KhronosTextureContainer2._CreateWorkerAsync().then(() => {
-                const actionId = KhronosTextureContainer2._actionId++;
-                const messageHandler = (msg: any) => {
-                    if (msg.data.action === "decoded" && msg.data.id === actionId) {
-                        KhronosTextureContainer2._Worker!.removeEventListener("message", messageHandler);
-                        if (!msg.data.success) {
-                            rej({ message: msg.data.msg });
-                        } else {
-                            this._createTexture(msg.data.decodedData, internalTexture);
-                            res();
+        const caps = this._engine.getCaps();
+
+        const compressedTexturesCaps = {
+            astc: !!caps.astc,
+            bptc: !!caps.bptc,
+            s3tc: !!caps.s3tc,
+            pvrtc: !!caps.pvrtc,
+            etc2: !!caps.etc2,
+            etc1: !!caps.etc1,
+        };
+
+        if (KhronosTextureContainer2._WorkerPoolPromise) {
+            return KhronosTextureContainer2._WorkerPoolPromise.then((workerPool) => {
+                return new Promise((resolve, reject) => {
+                    workerPool.push((worker, onComplete) => {
+                        console.log(worker);
+                        const onError = (error: ErrorEvent) => {
+                            worker.removeEventListener("error", onError);
+                            worker.removeEventListener("message", onMessage);
+                            reject(error);
+                            onComplete();
+                        };
+
+                        const onMessage = (message: MessageEvent) => {
+                            if (message.data.action === "decoded") {
+                                worker.removeEventListener("error", onError);
+                                worker.removeEventListener("message", onMessage);
+                                if (!message.data.success) {
+                                    reject({ message: message.data.msg });
+                                } else {
+                                    this._createTexture(message.data.decodedData, internalTexture);
+                                    resolve();
+                                }
+                                onComplete();
+                            }
+                        };
+
+                        worker.addEventListener("error", onError);
+                        worker.addEventListener("message", onMessage);
+
+                        worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps }, [data.buffer]);
+                    });
+                });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            if (!KhronosTextureContainer2._Ktx2Decoder) {
+                KhronosTextureContainer2._Ktx2Decoder = new KTX2DECODER.KTX2Decoder();
+            }
+
+            try {
+                KhronosTextureContainer2._Ktx2Decoder.decode(data, caps).then((data: any) => {
+                    const buffers = [];
+                    for (let mip = 0; mip < data.mipmaps.length; ++mip) {
+                        const mipmap = data.mipmaps[mip];
+                        if (mipmap) {
+                            buffers.push(mipmap.data.buffer);
                         }
                     }
-                };
-
-                KhronosTextureContainer2._Worker!.addEventListener("message", messageHandler);
-
-                const caps = this._engine.getCaps();
-
-                const compressedTexturesCaps = {
-                    astc: !!caps.astc,
-                    bptc: !!caps.bptc,
-                    s3tc: !!caps.s3tc,
-                    pvrtc: !!caps.pvrtc,
-                    etc2: !!caps.etc2,
-                    etc1: !!caps.etc1,
-                };
-
-                KhronosTextureContainer2._Worker!.postMessage({
-                    action: "decode",
-                    id: actionId,
-                    data: data,
-                    caps: compressedTexturesCaps,
-                }, [data.buffer]);
-            });
+                    resolve();
+                    this._createTexture(data, internalTexture);
+                }).catch((reason: any) => {
+                    reject({ message: reason });
+                });
+            } catch (err) {
+                reject({ message: err });
+            }
         });
+    }
+
+    /**
+     * Stop all async operations and release resources.
+     */
+    public dispose(): void {
+        if (KhronosTextureContainer2._WorkerPoolPromise) {
+            KhronosTextureContainer2._WorkerPoolPromise.then((workerPool) => {
+                workerPool.dispose();
+            });
+        }
+
+        delete KhronosTextureContainer2._WorkerPoolPromise;
     }
 
     protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture) {
@@ -185,12 +261,12 @@ export function workerFunc(): void {
                                 buffers.push(mipmap.data.buffer);
                             }
                         }
-                        postMessage({ action: "decoded", success: true, id: event.data.id, decodedData: data }, buffers);
+                        postMessage({ action: "decoded", success: true, decodedData: data }, buffers);
                     }).catch((reason: any) => {
-                        postMessage({ action: "decoded", success: false, id: event.data.id, msg: reason });
+                        postMessage({ action: "decoded", success: false, msg: reason });
                     });
                 } catch (err) {
-                    postMessage({ action: "decoded", success: false, id: event.data.id, msg: err });
+                    postMessage({ action: "decoded", success: false, msg: err });
                 }
                 break;
         }
