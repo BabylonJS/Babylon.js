@@ -384,6 +384,7 @@ export class Image extends Control {
     }
 
     private _onImageLoaded(): void {
+        this._imageDataCache.data = null;
         this._imageWidth = this._domImage.width;
         this._imageHeight = this._domImage.height;
         this._loaded = true;
@@ -470,7 +471,6 @@ export class Image extends Control {
         this._domImage = document.createElement("img");
 
         this._domImage.onload = () => {
-            this._imageDataCache.data = null;
             this._onImageLoaded();
         };
         if (value) {
