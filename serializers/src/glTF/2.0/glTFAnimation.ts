@@ -244,14 +244,14 @@ export class _GLTFAnimation {
                 for (let i = 0; i < morphTargetManager.numTargets; ++i) {
                     let morphTarget = morphTargetManager.getTarget(i);
                     for (let j = 0; j < morphTarget.animations.length; ++j) {
-                        let animation = morphTarget.animations[j]
+                        let animation = morphTarget.animations[j];
                         let combinedAnimation = new Animation(`${animation.name}`,
                             "influence",
                             animation.framePerSecond,
                             animation.dataType,
                             animation.loopMode,
                             animation.enableBlending);
-                        let combinedAnimationKeys: IAnimationKey[] = []
+                        let combinedAnimationKeys: IAnimationKey[] = [];
                         let animationKeys = animation.getKeys();
 
                         for (let k = 0; k < animationKeys.length; ++k) {
@@ -378,7 +378,7 @@ export class _GLTFAnimation {
                         }
                     }
                 }
-                morphAnimationMeshes.forEach(mesh => {
+                morphAnimationMeshes.forEach((mesh) => {
                     // for each mesh that we want to export a Morph target animation track for...
                     let morphTargetManager = mesh.morphTargetManager;
                     let combinedAnimationGroup: Nullable<Animation> = null;
