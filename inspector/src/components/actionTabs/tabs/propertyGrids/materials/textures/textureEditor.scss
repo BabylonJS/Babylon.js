@@ -231,6 +231,23 @@
         height: calc(100% - 70px);
         outline: none;
     }
+
+    #tool-ui {
+        background-color: #333;
+        position: absolute;
+        right: 0;
+        bottom: 30px;
+
+        label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type='range'] {
+            background: #d3d3d3;
+        }
+    }
     
     #bottom-bar {
         height: 30px;
