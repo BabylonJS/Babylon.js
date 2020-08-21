@@ -301,7 +301,7 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function(forceRefreshParentInfo
         }
     }
 
-    boundingInfo.reConstruct(TmpVectors.Vector3[0], TmpVectors.Vector3[1]);
+    boundingInfo.reConstruct(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this.getWorldMatrix());
 };
 
 Mesh.prototype._thinInstanceUpdateBufferSize = function(kind: string, numInstances: number = 1) {

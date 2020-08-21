@@ -603,6 +603,11 @@
             "referenceImage": "gltfSerializerSkinningAndAnimation.png"
         },
         {
+            "title": "GLTF Serializer Morph Target Animation",
+            "playgroundId": "#T087A8#27",
+            "referenceImage": "gltfSerializerMorphTargetAnimation.png"
+        },
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"

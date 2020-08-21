@@ -1,56 +1,20 @@
-type XRSessionMode =
-    | "inline"
-    | "immersive-vr"
-    | "immersive-ar";
+type XRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
 
-type XRReferenceSpaceType =
-    | "viewer"
-    | "local"
-    | "local-floor"
-    | "bounded-floor"
-    | "unbounded";
+type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
 
-type XREnvironmentBlendMode =
-    | "opaque"
-    | "additive"
-    | "alpha-blend";
+type XREnvironmentBlendMode = "opaque" | "additive" | "alpha-blend";
 
-type XRVisibilityState =
-    | "visible"
-    | "visible-blurred"
-    | "hidden";
+type XRVisibilityState = "visible" | "visible-blurred" | "hidden";
 
-type XRHandedness =
-    | "none"
-    | "left"
-    | "right";
+type XRHandedness = "none" | "left" | "right";
 
-type XRTargetRayMode =
-    | "gaze"
-    | "tracked-pointer"
-    | "screen";
+type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
 
-type XREye =
-    | "none"
-    | "left"
-    | "right";
+type XREye = "none" | "left" | "right";
 
-type XREventType =
-    | "devicechange"
-    | "visibilitychange"
-    | "end"
-    | "inputsourceschange"
-    | "select"
-    | "selectstart"
-    | "selectend"
-    | "squeeze"
-    | "squeezestart"
-    | "squeezeend"
-    | "reset";
+type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
-interface XRSpace extends EventTarget {
-
-}
+interface XRSpace extends EventTarget {}
 
 interface XRRenderState {
     depthNear?: number;
@@ -66,6 +30,7 @@ interface XRInputSource {
     gripSpace: XRSpace | undefined;
     gamepad: Gamepad | undefined;
     profiles: Array<string>;
+    hand: XRHand | undefined;
 }
 
 interface XRSessionInit {
@@ -91,9 +56,7 @@ interface XRSession {
     requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
     // legacy plane detection
-    updateWorldTrackingState(options: {
-        planeDetectionState?: { enabled: boolean; }
-    }): void;
+    updateWorldTrackingState(options: { planeDetectionState?: { enabled: boolean } }): void;
 }
 
 interface XRReferenceSpace extends XRSpace {
@@ -110,7 +73,7 @@ interface XRFrame {
     getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
 
     // AR
-    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult> ;
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
     getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
@@ -119,6 +82,8 @@ interface XRFrame {
     worldInformation: {
         detectedPlanes?: XRPlaneSet;
     };
+    // Hand tracking
+    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
 }
 
 interface XRViewerPose extends XRPose {
@@ -141,7 +106,7 @@ interface XRWebGLLayerOptions {
 
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
-    new(session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
+    new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
 };
 interface XRWebGLLayer {
     framebuffer: WebGLFramebuffer;
@@ -185,7 +150,8 @@ declare class XRRay {
 
 declare enum XRHitTestTrackableType {
     "point",
-    "plane"
+    "plane",
+    "mesh",
 }
 
 interface XRHitResult {
@@ -233,4 +199,45 @@ interface XRPlane {
     planeSpace: XRSpace;
     polygon: Array<DOMPointReadOnly>;
     lastChangedTime: number;
+}
+
+interface XRJointSpace extends XRSpace {}
+
+interface XRJointPose extends XRPose {
+    radius: number | undefined;
+}
+
+declare class XRHand extends Array<XRJointSpace> {
+    readonly length: number;
+
+    static readonly WRIST = 0;
+
+    static readonly THUMB_METACARPAL = 1;
+    static readonly THUMB_PHALANX_PROXIMAL = 2;
+    static readonly THUMB_PHALANX_DISTAL = 3;
+    static readonly THUMB_PHALANX_TIP = 4;
+
+    static readonly INDEX_METACARPAL = 5;
+    static readonly INDEX_PHALANX_PROXIMAL = 6;
+    static readonly INDEX_PHALANX_INTERMEDIATE = 7;
+    static readonly INDEX_PHALANX_DISTAL = 8;
+    static readonly INDEX_PHALANX_TIP = 9;
+
+    static readonly MIDDLE_METACARPAL = 10;
+    static readonly MIDDLE_PHALANX_PROXIMAL = 11;
+    static readonly MIDDLE_PHALANX_INTERMEDIATE = 12;
+    static readonly MIDDLE_PHALANX_DISTAL = 13;
+    static readonly MIDDLE_PHALANX_TIP = 14;
+
+    static readonly RING_METACARPAL = 15;
+    static readonly RING_PHALANX_PROXIMAL = 16;
+    static readonly RING_PHALANX_INTERMEDIATE = 17;
+    static readonly RING_PHALANX_DISTAL = 18;
+    static readonly RING_PHALANX_TIP = 19;
+
+    static readonly LITTLE_METACARPAL = 20;
+    static readonly LITTLE_PHALANX_PROXIMAL = 21;
+    static readonly LITTLE_PHALANX_INTERMEDIATE = 22;
+    static readonly LITTLE_PHALANX_DISTAL = 23;
+    static readonly LITTLE_PHALANX_TIP = 24;
 }
