@@ -470,6 +470,7 @@ export class Image extends Control {
         this._domImage = document.createElement("img");
 
         this._domImage.onload = () => {
+            this._imageDataCache.data = null;
             this._onImageLoaded();
         };
         if (value) {
@@ -652,6 +653,7 @@ export class Image extends Control {
             const context = canvas.getContext("2d")!;
 
             this._imageDataCache.data = imageData = context.getImageData(0, 0, width, height).data;
+            this._imageDataCache.key = key;
         }
 
         x = (x - this._currentMeasure.left) | 0;
