@@ -222,20 +222,20 @@ export class _GLTFAnimation {
         }
     }
 
-        /**
-     * @ignore
-     * Create individual morph animations from the mesh's morph target animation tracks
-     * @param babylonNode
-     * @param runtimeGLTFAnimation
-     * @param idleGLTFAnimations
-     * @param nodeMap
-     * @param nodes
-     * @param binaryWriter
-     * @param bufferViews
-     * @param accessors
-     * @param convertToRightHandedSystem
-     * @param animationSampleRate
-     */
+    /**
+ * @ignore
+ * Create individual morph animations from the mesh's morph target animation tracks
+ * @param babylonNode
+ * @param runtimeGLTFAnimation
+ * @param idleGLTFAnimations
+ * @param nodeMap
+ * @param nodes
+ * @param binaryWriter
+ * @param bufferViews
+ * @param accessors
+ * @param convertToRightHandedSystem
+ * @param animationSampleRate
+ */
     public static _CreateMorphTargetAnimationFromMorphTargets(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
         let glTFAnimation: IAnimation;
         if (babylonNode instanceof Mesh) {
@@ -243,21 +243,21 @@ export class _GLTFAnimation {
             if (morphTargetManager) {
                 for (let i = 0; i < morphTargetManager.numTargets; ++i) {
                     let morphTarget = morphTargetManager.getTarget(i);
-                    for (let j = 0; j < morphTarget.animations.length; ++j){
+                    for (let j = 0; j < morphTarget.animations.length; ++j) {
                         let animation = morphTarget.animations[j]
                         let combinedAnimation = new Animation(`${animation.name}`,
-                                                               "influence",
-                                                               animation.framePerSecond,
-                                                               animation.dataType,
-                                                               animation.loopMode,
-                                                               animation.enableBlending);
-                        let combinedAnimationKeys : IAnimationKey[] = []
+                            "influence",
+                            animation.framePerSecond,
+                            animation.dataType,
+                            animation.loopMode,
+                            animation.enableBlending);
+                        let combinedAnimationKeys: IAnimationKey[] = []
                         let animationKeys = animation.getKeys();
 
-                        for (let k = 0; k < animationKeys.length; ++k){
+                        for (let k = 0; k < animationKeys.length; ++k) {
                             let animationKey = animationKeys[k];
-                            for (let l = 0; l < morphTargetManager.numTargets; ++l){
-                                if (l == i){
+                            for (let l = 0; l < morphTargetManager.numTargets; ++l) {
+                                if (l == i) {
                                     combinedAnimationKeys.push(animationKey);
                                 } else {
                                     combinedAnimationKeys.push({ frame: animationKey.frame, value: morphTargetManager.getTarget(l).influence });
@@ -348,14 +348,14 @@ export class _GLTFAnimation {
                                 animationSampleRate
                             );
                         }
-                    } else if (target instanceof MorphTarget || target.length === 1 && target[0] instanceof MorphTarget){
+                    } else if (target instanceof MorphTarget || target.length === 1 && target[0] instanceof MorphTarget) {
                         let animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
                             let babylonMorphTarget = target instanceof MorphTarget ? target as MorphTarget : target[0] as MorphTarget;
-                            if (babylonMorphTarget){
+                            if (babylonMorphTarget) {
                                 let babylonMorphTargetManager = babylonScene.morphTargetManagers.find((morphTargetManager) => {
-                                    for(let j = 0; j < morphTargetManager.numTargets; ++j){
-                                        if (morphTargetManager.getTarget(j) === babylonMorphTarget){
+                                    for (let j = 0; j < morphTargetManager.numTargets; ++j) {
+                                        if (morphTargetManager.getTarget(j) === babylonMorphTarget) {
                                             return true;
                                         }
                                     }
@@ -365,8 +365,8 @@ export class _GLTFAnimation {
                                     let babylonMesh = <Mesh>babylonScene.meshes.find((mesh) => {
                                         return (mesh as Mesh).morphTargetManager === babylonMorphTargetManager;
                                     });
-                                    if (babylonMesh){
-                                        if (!morphAnimations.has(babylonMesh)){
+                                    if (babylonMesh) {
+                                        if (!morphAnimations.has(babylonMesh)) {
                                             morphAnimations.set(babylonMesh, new Map());
                                         }
                                         morphAnimations.get(babylonMesh)?.set(babylonMorphTarget, animation);
@@ -382,31 +382,31 @@ export class _GLTFAnimation {
                     // for each mesh that we want to export a Morph target animation track for...
                     let morphTargetManager = mesh.morphTargetManager;
                     let combinedAnimationGroup: Nullable<Animation> = null;
-                    let animationKeys : IAnimationKey[] = [];
+                    let animationKeys: IAnimationKey[] = [];
                     let sampleAnimation = sampleAnimations.get(mesh)!;
                     let numAnimationKeys = sampleAnimation.getKeys().length;
                     // for each frame of this mesh's animation group track
-                    for (let i = 0; i < numAnimationKeys; ++i){
+                    for (let i = 0; i < numAnimationKeys; ++i) {
                         // construct a new Animation track by interlacing the frames of each morph target animation track
-                        if (morphTargetManager){
-                            for (let j = 0; j < morphTargetManager.numTargets; ++j){
+                        if (morphTargetManager) {
+                            for (let j = 0; j < morphTargetManager.numTargets; ++j) {
                                 let morphTarget = morphTargetManager.getTarget(j);
                                 let animationsByMorphTarget = morphAnimations.get(mesh);
-                                if (animationsByMorphTarget){
+                                if (animationsByMorphTarget) {
                                     let morphTargetAnimation = animationsByMorphTarget.get(morphTarget);
-                                    if (morphTargetAnimation){
-                                        if (!combinedAnimationGroup){
+                                    if (morphTargetAnimation) {
+                                        if (!combinedAnimationGroup) {
                                             combinedAnimationGroup = new Animation(`${animationGroup.name}_${mesh.name}_MorphWeightAnimation`,
-                                                                                    "influence",
-                                                                                    morphTargetAnimation.framePerSecond,
-                                                                                    Animation.ANIMATIONTYPE_FLOAT,
-                                                                                    morphTargetAnimation.loopMode,
-                                                                                    morphTargetAnimation.enableBlending);
+                                                "influence",
+                                                morphTargetAnimation.framePerSecond,
+                                                Animation.ANIMATIONTYPE_FLOAT,
+                                                morphTargetAnimation.loopMode,
+                                                morphTargetAnimation.enableBlending);
                                         }
                                         animationKeys.push(morphTargetAnimation.getKeys()[i]);
                                     }
                                     else {
-                                        animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff/numAnimationKeys) * i, value: morphTarget.influence });
+                                        animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i, value: morphTarget.influence });
                                     }
                                 }
                             }
@@ -414,22 +414,22 @@ export class _GLTFAnimation {
                     }
                     combinedAnimationGroup!.setKeys(animationKeys);
                     let animationInfo = _GLTFAnimation._DeduceAnimationInfo(combinedAnimationGroup!);
-                    if (animationInfo){
+                    if (animationInfo) {
                         _GLTFAnimation.AddAnimation(`${animationGroup.name}_${mesh.name}_MorphWeightAnimation`,
-                                                glTFAnimation,
-                                                mesh,
-                                                combinedAnimationGroup!,
-                                                animationInfo.dataAccessorType,
-                                                animationInfo.animationChannelTargetPath,
-                                                nodeMap,
-                                                binaryWriter,
-                                                bufferViews,
-                                                accessors,
-                                                false,
-                                                animationInfo.useQuaternion,
-                                                animationSampleRate,
-                                                morphTargetManager?.numTargets
-                                            );
+                            glTFAnimation,
+                            mesh,
+                            combinedAnimationGroup!,
+                            animationInfo.dataAccessorType,
+                            animationInfo.animationChannelTargetPath,
+                            nodeMap,
+                            binaryWriter,
+                            bufferViews,
+                            accessors,
+                            false,
+                            animationInfo.useQuaternion,
+                            animationSampleRate,
+                            morphTargetManager?.numTargets
+                        );
                     }
                 });
                 if (glTFAnimation.channels.length && glTFAnimation.samplers.length) {
@@ -442,7 +442,7 @@ export class _GLTFAnimation {
     private static AddAnimation(name: string, glTFAnimation: IAnimation, babylonTransformNode: TransformNode, animation: Animation, dataAccessorType: AccessorType, animationChannelTargetPath: AnimationChannelTargetPath, nodeMap: { [key: number]: number }, binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, useQuaternion: boolean, animationSampleRate: number, morphAnimationChannels?: number) {
         let animationData;
         animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate);
-        
+
         let bufferView: IBufferView;
         let accessor: IAccessor;
         let keyframeAccessorIndex: number;
@@ -452,13 +452,13 @@ export class _GLTFAnimation {
         let animationChannel: IAnimationChannel;
 
         if (animationData) {
-            if (morphAnimationChannels){
+            if (morphAnimationChannels) {
                 let index = 0;
                 let currentInput: number = 0;
                 let newInputs: number[] = [];
-                while (animationData.inputs.length > 0){
+                while (animationData.inputs.length > 0) {
                     currentInput = animationData.inputs.shift()!;
-                    if (index % morphAnimationChannels == 0){
+                    if (index % morphAnimationChannels == 0) {
                         newInputs.push(currentInput);
                     }
                     index++;
@@ -472,7 +472,7 @@ export class _GLTFAnimation {
             let byteLength = animationData.inputs.length * 4;
             bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  keyframe data view`);
             bufferViews.push(bufferView);
-            animationData.inputs.forEach(function(input) {
+            animationData.inputs.forEach(function (input) {
                 binaryWriter.setFloat32(input);
             });
 
@@ -488,8 +488,8 @@ export class _GLTFAnimation {
             bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, undefined, `${name}  data view`);
             bufferViews.push(bufferView);
 
-            animationData.outputs.forEach(function(output) {
-                output.forEach(function(entry) {
+            animationData.outputs.forEach(function (output) {
+                output.forEach(function (entry) {
                     binaryWriter.setFloat32(entry);
                 });
             });
@@ -706,7 +706,7 @@ export class _GLTFAnimation {
      * @param useQuaternion Specifies if quaternions are used in the animation
      */
     private static _CreateCubicSplineAnimation(babylonTransformNode: TransformNode, animation: Animation, animationChannelTargetPath: AnimationChannelTargetPath, frameDelta: number, inputs: number[], outputs: number[][], convertToRightHandedSystem: boolean, useQuaternion: boolean) {
-        animation.getKeys().forEach(function(keyFrame) {
+        animation.getKeys().forEach(function (keyFrame) {
             inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
             _GLTFAnimation.AddSplineTangent(
                 babylonTransformNode,
@@ -951,13 +951,13 @@ export class _GLTFAnimation {
                 }
             }
             else if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
-                if (tangentValue){
+                if (tangentValue) {
                     tangent = [tangentValue as number];
                 } else {
                     tangent = [0];
                 }
             }
-            else{
+            else {
                 if (tangentValue) {
                     tangent = (tangentValue as Vector3).asArray();
                     if (convertToRightHandedSystem) {
@@ -987,7 +987,7 @@ export class _GLTFAnimation {
     private static calculateMinMaxKeyFrames(keyFrames: IAnimationKey[]): { min: number, max: number } {
         let min: number = Infinity;
         let max: number = -Infinity;
-        keyFrames.forEach(function(keyFrame) {
+        keyFrames.forEach(function (keyFrame) {
             min = Math.min(min, keyFrame.frame);
             max = Math.max(max, keyFrame.frame);
         });

@@ -205,8 +205,8 @@ export class _GLTFUtilities {
         );
     }
 
-    public static _GetDataAccessorElementCount(accessorType: AccessorType){
-        switch(accessorType){
+    public static _GetDataAccessorElementCount(accessorType: AccessorType) {
+        switch (accessorType) {
             case AccessorType.MAT2:
                 return 4;
             case AccessorType.MAT3:
