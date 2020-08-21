@@ -43,11 +43,11 @@ export class LineWithFileButtonContainerComponent extends React.Component<ILineW
     render() {
         return (
             <div className="nonDraggableLine withButton" title="add">
-                Add
-                <div className="icon" title="Upload Custom">
+                Add...
+                <div className="icon" title="Upload Custom Frame">
                 <img src={addButton}/>
                 </div>
-                <div className="buttonLine" title="Upload Custom">
+                <div className="buttonLine" title="Upload Custom Frame">
                     <label htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"} className="file-upload"/>   
                     <input ref={this.uploadRef} id={this.props.uploadName ? this.props.uploadName : "file-upload"} type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
                 </div>
