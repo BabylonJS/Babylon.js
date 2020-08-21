@@ -10,6 +10,7 @@ import { DraggableLineWithButtonComponent } from '../../sharedComponents/draggab
 import { LineWithFileButtonContainerComponent } from '../../sharedComponents/lineWithFileButtonContainerComponent';
 import { Tools } from 'babylonjs';
 
+
 require("./nodeList.scss");
 
 interface INodeListComponentProps {
@@ -174,7 +175,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         this.setState({ filter: filter });
     }
 
-    loadFrameBlock(file: File) {
+    loadCustomFrame(file: File) {
         Tools.ReadFile(file, async (data) => {
             // get Frame Data from file
             let decoder = new TextDecoder("utf-8");
@@ -229,7 +230,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
         // Block types used to create the menu from
         const allBlocks = {
-            Custom_Blocks: this.customFrameList === null ? [""] : this.customFrameList,
+            Custom_Frames: this.customFrameList === null || this.customFrameList.length === 0 ? [] : this.customFrameList,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -276,31 +277,30 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             .map((block: any, i: number) => {
                 let tooltip = NodeListComponent._Tooltips[block] || "";
 
-                
                 if(key.indexOf("Custom") === -1) {
-                return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>;
+                
+                   return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>;
                 }
                 return <DraggableLineWithButtonComponent key={block} data={block} tooltip={tooltip} 
                 onIconClick={ value => this.removeItem(value)}/>;
             });
 
-            if(key === "Custom_Blocks") {
-                blockMenu.push(
-                    <LineWithFileButtonContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}
-                    label="Load Custom" uploadName={'custom-frame-upload2'}  accept=".json" onClick={(file) => {
-                        this.loadFrameBlock(file);
-                    }}>
-                        {blockList}
-                    </LineWithFileButtonContainerComponent>
-                );
-            }
-            else if(blockList.length) {
+            if(key.indexOf("Custom") != -1)
+            {
+                let line =  <LineWithFileButtonContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}
+                label="Add Custom Frame" uploadName={'custom-frame-upload'}  accept=".json" onClick={(file) => {
+                    this.loadCustomFrame(file);
+                }}/>;
+                blockList.push(line);
+                
+            }         
+            if(blockList.length) {
                 blockMenu.push(
                     <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
                         {blockList}
                     </LineContainerComponent>
                 );
-            }
+           }
         }
 
         return (

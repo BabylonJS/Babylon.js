@@ -12,9 +12,7 @@ export class DraggableLineWithButtonComponent extends React.Component<IDraggable
         super(props);
     }
 
-    render() {
-
-        
+    render() { 
         return (
             <div className="draggableLine withButton" 
                 title={this.props.tooltip}
