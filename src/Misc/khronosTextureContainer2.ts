@@ -17,8 +17,7 @@ export class KhronosTextureContainer2 {
     /**
      * URL to use when loading the KTX2 decoder module
      */
-    //public static JSModuleURL = "https://preview.babylonjs.com/ktx2Decoder/babylon.ktx2Decoder.js";
-    public static JSModuleURL = "https://popov72.github.io/BabylonDev/resources/lib/babylon.ktx2Decoder.js";
+    public static JSModuleURL = "https://preview.babylonjs.com/ktx2Decoder/babylon.ktx2Decoder.js";
 
     /**
      * Default number of workers to create when creating the draco compression object.
@@ -47,8 +46,6 @@ export class KhronosTextureContainer2 {
                 for (let i = 0; i < workerPromises.length; i++) {
                     workerPromises[i] = new Promise((resolve, reject) => {
                         const worker = new Worker(workerBlobUrl);
-
-                        (worker as any).__id = i;
 
                         const onError = (error: ErrorEvent) => {
                             worker.removeEventListener("error", onError);
@@ -112,7 +109,6 @@ export class KhronosTextureContainer2 {
             return KhronosTextureContainer2._WorkerPoolPromise.then((workerPool) => {
                 return new Promise((resolve, reject) => {
                     workerPool.push((worker, onComplete) => {
-                        console.log(worker);
                         const onError = (error: ErrorEvent) => {
                             worker.removeEventListener("error", onError);
                             worker.removeEventListener("message", onMessage);
