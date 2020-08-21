@@ -84,7 +84,7 @@
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
-- View & edit textures in pop out inspector using canvas and postprocesses. Supports region selection and individual channel editing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- View & edit textures in pop out inspector using 5 tools. Supports region selection and individual channel editing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Cameras
 
@@ -130,6 +130,7 @@
 
 - Added support for KHR_materials_unlit to glTF serializer ([Popov72](https://github.com/Popov72))
 - Added support for glTF Skins to glTF serializer ([Drigax](https://github.com/Drigax))
+- Added support for glTF Morph Target serialization ([Drigax](https://github.com/Drigax))
 
 ### Navigation
 

@@ -300,6 +300,7 @@ declare module INSPECTOR {
             value: string;
         }): boolean;
         updateValue(evt: any): void;
+        onBlur(): void;
         render(): JSX.Element;
     }
 }
@@ -1369,7 +1370,7 @@ declare module INSPECTOR {
         channels: IChannel[];
         setChannels(channelState: IChannel[]): void;
     }
-    export class ChannelsBar extends React.Component<IChannelsBarProps> {
+    export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
         render(): JSX.Element;
     }
 }
@@ -1381,13 +1382,6 @@ declare module INSPECTOR {
         g?: number;
         b?: number;
         a?: number;
-    }
-    export interface IToolGUI {
-        adt: BABYLON.GUI.AdvancedDynamicTexture;
-        toolWindow: BABYLON.GUI.StackPanel;
-        isDragging: boolean;
-        dragCoords: BABYLON.Nullable<BABYLON.Vector2>;
-        style: BABYLON.GUI.Style;
     }
     export class TextureCanvasManager {
         private _engine;
@@ -1429,7 +1423,6 @@ declare module INSPECTOR {
         private static DESELECT_KEY;
         private _tool;
         private _setPixelData;
-        private _GUI;
         private _window;
         private _metadata;
         private _editing3D;
@@ -1457,8 +1450,6 @@ declare module INSPECTOR {
         get tool(): BABYLON.Nullable<ITool>;
         set face(face: number);
         set mipLevel(mipLevel: number);
-        /** Returns the tool GUI object, allowing tools to access the GUI */
-        get GUI(): IToolGUI;
         /** Returns the 3D scene used for postprocesses */
         get scene3D(): BABYLON.Scene;
         set metadata(metadata: IMetadata);
@@ -1487,7 +1478,7 @@ declare module INSPECTOR {
         width: number;
         height: number;
     }
-    export class PropertiesBar extends React.Component<IPropertiesBarProps, IPropertiesBarState> {
+    export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPropertiesBarState> {
         private _resetButton;
         private _uploadButton;
         private _saveButton;
@@ -1503,12 +1494,12 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface BottomBarProps {
+    interface IBottomBarProps {
         name: string;
         mipLevel: number;
         hasMips: boolean;
     }
-    export class BottomBar extends React.Component<BottomBarProps> {
+    export class BottomBar extends React.PureComponent<IBottomBarProps> {
         render(): JSX.Element;
     }
 }
@@ -1519,7 +1510,7 @@ declare module INSPECTOR {
         canvas3D: React.RefObject<HTMLCanvasElement>;
         texture: BABYLON.BaseTexture;
     }
-    export class TextureCanvasComponent extends React.Component<ITextureCanvasComponentProps> {
+    export class TextureCanvasComponent extends React.PureComponent<ITextureCanvasComponentProps> {
         shouldComponentUpdate(nextProps: ITextureCanvasComponentProps): boolean;
         render(): JSX.Element;
     }
@@ -1544,8 +1535,15 @@ declare module INSPECTOR {
     export default _default;
 }
 declare module INSPECTOR {
+    interface IToolSettingsProps {
+        tool: ITool | undefined;
+    }
+    export class ToolSettings extends React.Component<IToolSettingsProps> {
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITextureEditorComponentProps {
-        globalState: GlobalState;
         texture: BABYLON.BaseTexture;
         url: string;
         window: React.RefObject<PopupComponent>;
@@ -1577,8 +1575,6 @@ declare module INSPECTOR {
         setMetadata: (data: any) => void;
         /** Returns the texture coordinates under the cursor */
         getMouseCoordinates: (pointerInfo: BABYLON.PointerInfo) => BABYLON.Vector2;
-        /** An object which holds the GUI's ADT as well as the tool window. */
-        GUI: IToolGUI;
         /** Provides access to the BABYLON namespace */
         BABYLON: any;
         /** Provides a canvas that you can use the canvas API to paint on. */
@@ -1587,6 +1583,9 @@ declare module INSPECTOR {
         updatePainting: () => void;
         /** Call this when you are finished painting. */
         stopPainting: () => void;
+    }
+    export interface IToolGUIProps {
+        instance: IToolType;
     }
     /** An interface representing the definition of a tool */
     export interface IToolData {
@@ -1600,6 +1599,7 @@ declare module INSPECTOR {
         usesWindow?: boolean;
         /** Whether the tool uses postprocesses */
         is3D?: boolean;
+        settingsComponent?: React.ComponentType<IToolGUIProps>;
     }
     export interface IToolType {
         /** Called when the tool is selected. */
@@ -1666,10 +1666,12 @@ declare module INSPECTOR {
         private _adtInstrumentation;
         private popoutWindowRef;
         private textureLineRef;
+        private _textureInspectorSize;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
-        onOpenTextureEditor(): void;
+        openTextureEditor(): void;
+        onOpenTextureEditor(window: Window): void;
         onCloseTextureEditor(window: Window | null, callback?: {
             (): void;
         }): void;
