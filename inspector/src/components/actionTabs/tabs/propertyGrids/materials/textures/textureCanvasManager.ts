@@ -28,12 +28,6 @@ import { TextureHelper } from '../../../../../../textureHelper';
 
 import { ITool } from './toolBar';
 import { IChannel } from './channelsBar';
-import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
-import { Rectangle } from 'babylonjs-gui/2D/controls/rectangle';
-import { StackPanel } from 'babylonjs-gui/2D/controls/stackPanel';
-import { Control } from 'babylonjs-gui/2D/controls/control';
-import { Style } from 'babylonjs-gui/2D/style';
-import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
 import { IMetadata } from './textureEditorComponent';
 
 
@@ -44,14 +38,6 @@ export interface IPixelData {
     g? : number;
     b? : number;
     a? : number;
-}
-
-export interface IToolGUI {
-    adt: AdvancedDynamicTexture;
-    toolWindow: StackPanel;
-    isDragging: boolean;
-    dragCoords: Nullable<Vector2>;
-    style: Style;
 }
 
 export class TextureCanvasManager {
@@ -117,8 +103,6 @@ export class TextureCanvasManager {
     private _tool : Nullable<ITool>;
 
     private _setPixelData : (pixelData : IPixelData) => void;
-
-    private _GUI : IToolGUI;
 
     private _window : Window;
 
@@ -314,53 +298,6 @@ export class TextureCanvasManager {
         this._planeMaterial.setInt('time', 0);
         this._plane.material = this._planeMaterial;
         
-        const adt = AdvancedDynamicTexture.CreateFullscreenUI('gui', true, this._scene);
-        const style = adt.createStyle();
-        style.fontFamily = 'acumin-pro-condensed';
-        style.fontSize = '15px';
-
-        const toolWindow = new StackPanel();
-        toolWindow.background = '#333333';
-        toolWindow.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        toolWindow.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-        toolWindow.left = '0px';
-        toolWindow.top = '-30px';
-        toolWindow.width = '200px';
-        toolWindow.isVisible = false;
-        toolWindow.isPointerBlocker = true;
-        adt.addControl(toolWindow);
-
-        this._GUI = {adt, style, toolWindow, isDragging: false, dragCoords: null};
-
-        const topBar = new Rectangle();
-        topBar.width = '100%';
-        topBar.height = '20px';
-        topBar.background = '#666666';
-        topBar.thickness = 0;
-        topBar.hoverCursor = 'grab';
-        topBar.onPointerDownObservable.add(() => {this._GUI.isDragging = true; topBar.hoverCursor = 'grabbing';});
-        topBar.onPointerUpObservable.add(() => {this._GUI.isDragging = false; this._GUI.dragCoords = null; topBar.hoverCursor = 'grab';});
-
-        const title = new TextBlock();
-        title.text = 'Tool Settings';
-        title.color = 'white';
-        title.height = '20px';
-        title.style = this._GUI.style;
-        topBar.addControl(title);
-        this._GUI.toolWindow.addControl(topBar);
-
-        this._window.addEventListener('pointermove', evt => {
-            if (!this._GUI.isDragging) return;
-            if (!this._GUI.dragCoords) {
-                this._GUI.dragCoords = new Vector2(evt.x, evt.y);
-                return;
-            }
-            this._GUI.toolWindow.leftInPixels += evt.x - this._GUI.dragCoords.x;
-            this._GUI.toolWindow.topInPixels += evt.y - this._GUI.dragCoords.y;
-            this._GUI.dragCoords.x = evt.x;
-            this._GUI.dragCoords.y = evt.y;
-        });
-
         this._window.addEventListener('keydown', evt => {
             this._keyMap[evt.code] = true;
             if (evt.code === TextureCanvasManager.SELECT_ALL_KEY && evt.ctrlKey) {
@@ -392,8 +329,6 @@ export class TextureCanvasManager {
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
-            this.GUI.toolWindow.left = Math.min(Math.max(this._GUI.toolWindow.leftInPixels, -this._UICanvas.width + this._GUI.toolWindow.widthInPixels), 0);
-            this.GUI.toolWindow.top = Math.min(Math.max(this._GUI.toolWindow.topInPixels, -this._UICanvas.height + this._GUI.toolWindow.heightInPixels), 0);
             this._scene.render();
             this._planeMaterial.setInt('time', new Date().getTime());
         });
@@ -667,11 +602,6 @@ export class TextureCanvasManager {
         this._tool = tool;
         if (this._tool) {
             this._tool.instance.setup();
-            if (this._tool.usesWindow) {
-                this._GUI.toolWindow.isVisible = true;
-            } else {
-                this._GUI.toolWindow.isVisible = false;
-            }
             if (this._editing3D && !this._tool.is3D) {
                 this._editing3D = false;
                 this._2DCanvas.getContext('2d')?.drawImage(this._3DCanvas, 0, 0);
@@ -699,11 +629,6 @@ export class TextureCanvasManager {
         if (this._mipLevel === mipLevel) return;
         this._mipLevel = mipLevel;
         this.grabOriginalTexture(false);
-    }
-
-    /** Returns the tool GUI object, allowing tools to access the GUI */
-    public get GUI() {
-        return this._GUI;
     }
 
     /** Returns the 3D scene used for postprocesses */

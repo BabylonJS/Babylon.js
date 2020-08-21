@@ -25,7 +25,7 @@ interface IPixelDataProps {
     data: number | undefined;
 }
 
-export class PropertiesBar extends React.Component<IPropertiesBarProps,IPropertiesBarState> {
+export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IPropertiesBarState> {
     private _resetButton = require('./assets/reset.svg');
     private _uploadButton = require('./assets/upload.svg');
     private _saveButton = require('./assets/save.svg');

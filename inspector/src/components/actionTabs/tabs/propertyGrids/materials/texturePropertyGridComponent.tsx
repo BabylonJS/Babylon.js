@@ -48,6 +48,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
     private popoutWindowRef : React.RefObject<PopupComponent>;
     private textureLineRef: React.RefObject<TextureLineComponent>;
 
+    private _textureInspectorSize = {width: 1024, height: 490};
+
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
@@ -70,6 +72,9 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
         this._adtInstrumentation!.captureRenderTime = true;
         this._adtInstrumentation!.captureLayoutTime = true;
+        
+        this.onOpenTextureEditor.bind(this);
+        this.onCloseTextureEditor.bind(this);
     }
 
     componentWillUnmount() {
@@ -106,9 +111,9 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         }, undefined, true);
     }
 
-    onOpenTextureEditor() {
+    openTextureEditor() {
         if (this.state.isTextureEditorOpen && this.state.textureEditing !== this.props.texture) {
-            this.onCloseTextureEditor(null, () => this.onOpenTextureEditor());
+            this.onCloseTextureEditor(null, () => this.openTextureEditor());
             return;
         }
         this.setState({
@@ -116,6 +121,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             textureEditing: this.props.texture
         });
     }
+
+    onOpenTextureEditor(window: Window) {}
     
     onCloseTextureEditor(window: Window | null, callback?: {() : void}) {
         this.setState({
@@ -169,7 +176,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
-                    <ButtonLineComponent label="Edit" onClick={() => this.onOpenTextureEditor()} />
+                    <ButtonLineComponent label="Edit" onClick={() => this.openTextureEditor()} />
                     <TextInputLineComponent label="URL" value={textureUrl} lockObject={this.props.lockObject} onChange={url => {
                         (texture as Texture).updateURL(url);
                         this.forceRefresh();
@@ -179,15 +186,12 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <PopupComponent
                   id='texture-editor'
                   title='Texture Inspector'
-                  size={{ width: 1024, height: 490 }}
-                  onOpen={(window: Window) => {}}
-                  onClose={(window: Window) =>
-                    this.onCloseTextureEditor(window)
-                  }
+                  size={this._textureInspectorSize}
+                  onOpen={this.onOpenTextureEditor}
+                  onClose={this.onCloseTextureEditor}
                   ref={this.popoutWindowRef}
                 >
                     <TextureEditorComponent
-                        globalState={this.props.globalState}
                         texture={this.props.texture}
                         url={textureUrl}
                         window={this.popoutWindowRef}
