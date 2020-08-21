@@ -3,6 +3,7 @@
     width: 100%;
     color: white;
     background-color: #1e1e1e;
+    font-family: 'acumin-pro-condensed';
 
     .icon {
         width: 40px;
@@ -13,11 +14,13 @@
                 background-color: #4a4a4a;
                 cursor: pointer;
             }
+            // When the button is selected - className='active'
             &.active {
                 background-color: #666666;
             }
+            // When the button is clicked
             &:active {
-                background-color: #888888;
+                background-color: #837c7c;
             }
         }
     }
@@ -44,67 +47,59 @@
     }
     
     #properties {
-        position: absolute;
         width: 100%;
         height: 40px;
         
         display: flex;
-        flex-flow: row nowrap;
         align-items: center;
         font-size: 12px;
         color: white;
         user-select: none;
-        background-color: #1e1e1e;
+        background-color: #333333;
     
         .tab {
-            display: flex;
+            display: inline-flex;
             line-height: 40px;
             height: 40px;
             flex-shrink: 0;
             flex-grow: 0;
-            margin-right: 2px;
+            border-right: 2px solid #1e1e1e;
             background-color: #333333;
         }
-        #dimensions-tab {
-            label {
-                margin-left: 15px;
-                color: #afafaf;
-                input {
-                    width: 40px;
-                    height: 24px;
-                    background-color: #000000;
-                    color: #ffffff;
-                    border: 0;
-                    padding-left: 4px;
-                    font-size: 12px;
+        #left {
+            overflow: hidden;
+            height: 40px;
+            flex-grow: 1;
+            flex-shrink: 1;
+            display: flex;
+            flex-wrap: wrap;
+            #dimensions-tab {
+                form {
+                    display: flex;
                 }
-    
-                &:last-of-type {
-                    margin-right: 8px;
+                label {
+                    margin-left: 15px;
+                    color: #afafaf;
+                    input {
+                        width: 40px;
+                        height: 24px;
+                        background-color: #000000;
+                        color: #ffffff;
+                        border: 0;
+                        padding-left: 4px;
+                        font-size: 12px;
+                    }
+        
+                    &:last-of-type {
+                        margin-right: 8px;
+                    }
                 }
-            }
-            @media only screen and (max-width: 334px) {
-                display: none;
-            }
-        }
-        #pixel-coords-tab {
-            @media only screen and (max-width: 440px) {
-                display: none;
-            }
-        }
-        #pixel-color-tab {
-            @media only screen and (max-width: 640px) {
-                display: none;
             }
         }
         #right-tab {
-            flex-grow: 1;
-            flex-shrink: 1;
             margin-right: 0;
-            .content {
-                position: absolute;
-                right: 0px;
-            }
+            flex-grow: 0;
+            flex-shrink: 0;
             
             input[type="file"] {
                 display: none;
@@ -146,7 +141,7 @@
             position: relative;
             #add-tool-popup {
                 background-color: #333333;
-                width: 340px;
+                width: 348px;
                 margin-left: 40px;
                 position: absolute;
                 top: 0px;
@@ -173,10 +168,22 @@
 
         #color {
             margin-top: 8px;
-            #activeColor {
-                margin: 10px;
+            #active-color-bg {
+                border-radius: 50%;
                 width: 20px;
                 height: 20px;
+                margin: 10px;
+                position: relative;
+                background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%);
+                background-size: 20px 20px;
+                background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            }
+            #active-color {
+                width: 20px;
+                height: 20px;
+                position: absolute;
+                top: 0;
+                left: 0;
                 border-radius: 50%;
             }
         }
@@ -221,20 +228,42 @@
     
     #canvas-ui {
         width: 100%;
-        height: 100%;
+        height: calc(100% - 70px);
+        outline: none;
+    }
+
+    #tool-ui {
+        background-color: #333;
+        position: absolute;
+        right: 0;
+        bottom: 30px;
+
+        label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type='range'] {
+            background: #d3d3d3;
+        }
     }
     
     #bottom-bar {
-        position: absolute;
-        bottom: 0;
         height: 30px;
         width: 100%;
         background-color: #333333;
         font-size: 14px;
         user-select: none;
         line-height: 30px;
+        position: relative;
         #file-url {
-            margin-left: 30px;
+            left: 30px;
+            position: absolute;
+        }
+        #mip-level {
+            right: 30px;
+            position: absolute;
         }
     }
 }

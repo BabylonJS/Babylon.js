@@ -86,13 +86,22 @@ export class Measure {
     /**
      * Computes the axis aligned bounding box of the measure after it is modified by a given transform
      * @param transform the matrix to transform the measure before computing the AABB
+     * @param addX number to add to left
+     * @param addY number to add to top
+     * @param addWidth number to add to width
+     * @param addHeight number to add to height
      * @param result the resulting AABB
      */
-    public transformToRef(transform: Matrix2D, result: Measure) {
-        tmpRect[0].copyFromFloats(this.left, this.top);
-        tmpRect[1].copyFromFloats(this.left + this.width, this.top);
-        tmpRect[2].copyFromFloats(this.left + this.width, this.top + this.height);
-        tmpRect[3].copyFromFloats(this.left, this.top + this.height);
+    public addAndTransformToRef(transform: Matrix2D, addX: number, addY: number, addWidth: number, addHeight: number, result: Measure) {
+        const left = this.left + addX;
+        const top = this.top + addY;
+        const width = this.width + addWidth;
+        const height = this.height + addHeight;
+
+        tmpRect[0].copyFromFloats(left, top);
+        tmpRect[1].copyFromFloats(left + width, top);
+        tmpRect[2].copyFromFloats(left + width, top + height);
+        tmpRect[3].copyFromFloats(left, top + height);
 
         tmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
         tmpV2.copyFromFloats(0, 0);
@@ -110,6 +119,14 @@ export class Measure {
     }
 
     /**
+     * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+     * @param transform the matrix to transform the measure before computing the AABB
+     * @param result the resulting AABB
+     */
+    public transformToRef(transform: Matrix2D, result: Measure) {
+        this.addAndTransformToRef(transform, 0, 0, 0, 0, result);
+    }
+        /**
      * Check equality between this measure and another one
      * @param other defines the other measures
      * @returns true if both measures are equals

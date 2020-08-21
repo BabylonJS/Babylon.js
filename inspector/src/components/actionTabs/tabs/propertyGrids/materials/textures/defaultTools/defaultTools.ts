@@ -1,5 +1,7 @@
-import { Paintbrush } from './Paintbrush';
-import { Eyedropper } from './Eyedropper';
-import { Floodfill } from './Floodfill';
+import { Paintbrush } from './paintbrush';
+import { Eyedropper } from './eyedropper';
+import { Floodfill } from './floodfill';
+import { Contrast } from './contrast';
+import { RectangleSelect } from './rectangleSelect';
 
-export default [Paintbrush, Eyedropper, Floodfill];
+export default [RectangleSelect, Paintbrush, Eyedropper, Floodfill, Contrast];

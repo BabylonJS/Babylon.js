@@ -7,7 +7,6 @@ import { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "../../lineContainerComponent";
 import { LockObject } from "./lockObject";
 import { GlobalState } from "../../../globalState";
-import { ButtonLineComponent } from '../../lines/buttonLineComponent';
 import { OptionsLineComponent } from '../../lines/optionsLineComponent';
 
 declare type KHR_materials_variants = import("babylonjs-loaders/glTF/2.0/Extensions/KHR_materials_variants").KHR_materials_variants;
@@ -74,10 +73,6 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
                         return index;
                     }}
                 />
-                    <ButtonLineComponent label="Reset" onClick={() => {
-                        extension.reset(this.props.host);
-                        this.forceUpdate();
-                    }} />
                 </LineContainerComponent>
             </div>
         );

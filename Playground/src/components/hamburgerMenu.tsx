@@ -43,7 +43,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
     }
 
     onInspector() {
-        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+        this.props.globalState.onInspectorRequiredObservable.notifyObservers(!this.props.globalState.inspectorIsOpened);
         this.setState({isExpanded: false});
     }
 

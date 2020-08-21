@@ -40,6 +40,7 @@ export interface IWebXRControllerOptions {
 export class WebXRInputSource {
     private _tmpVector = new Vector3();
     private _uniqueId: string;
+    private _disposed = false;
 
     /**
      * Represents the part of the controller that is held. This may not exist if the controller is the head mounted display itself, if thats the case only the pointer from the head will be availible
@@ -116,6 +117,10 @@ export class WebXRInputSource {
                                 this.motionController.rootMesh.parent = this.grip || this.pointer;
                                 this.motionController.disableAnimation = !!this._options.disableMotionControllerAnimation;
                             }
+                            // make sure to dispose is the controller is already disposed
+                            if (this._disposed) {
+                                this.motionController?.dispose();
+                            }
                         });
                     }
                 },
@@ -148,6 +153,7 @@ export class WebXRInputSource {
         this.onMeshLoadedObservable.clear();
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+        this._disposed = true;
     }
 
     /**

@@ -382,7 +382,10 @@ export class Inspector {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             } else {
-                let parentControl = (options.globalRoot ? options.globalRoot : rootElement!.parentElement) as HTMLElement;
+                if (!rootElement) {
+                    return;
+                }
+                let parentControl = (options.globalRoot ? options.globalRoot : rootElement.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
                     this._CreateCanvasContainer(parentControl);
@@ -490,6 +493,11 @@ export class Inspector {
         this._GlobalState.lightGizmos.forEach((g) => {
             if (g.light) {
                 this._GlobalState.enableLightGizmo(g.light, false);
+            }
+        });
+        this._GlobalState.cameraGizmos.forEach((g) => {
+            if (g.camera) {
+                this._GlobalState.enableCameraGizmo(g.camera, false);
             }
         });
         if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
