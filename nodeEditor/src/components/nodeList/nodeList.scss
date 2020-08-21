@@ -76,89 +76,79 @@
                     }
                 }
 
+                .nonDraggableLine {
+                    height: 30px;
+                    display: grid;
+                    align-items: center;
+                    justify-items: stretch;
+                    background: #222222;
+                    text-align: center;
+                    margin: 0;
+                    box-sizing: border-box;
+                }
+
                 .withButton {
                     height: 40px;
                     position: relative;
-                    fill: white;
                     .icon {
                         position: absolute;
                         right: 10px;
                         top: 10px;
-                        fill: white;
-                    }
-                    
-                }
-            
-                .buttonLine {
-                    height: 30px;
-                    display: grid;
-                    align-items: center;
-                    justify-items: stretch;
-
-                    button {
-                        background: #222222;
-                        margin: 5px 10px 5px 10px;
-                        color:white;
-                        padding: 4px 5px;
-                        opacity: 0.9;
                     }
 
-                    button:hover {
-                        opacity: 1.0;
-                    }
-
-                    button:active {
-                        background: #282828;
-                    }   
-                    
-                    button:focus {
-                        outline: 0px;
-                    }  
-                }
-
-                .buttonIcon {
-                    position: relative;
-                    .icon {
+                    .buttonLine {
+                       
                         position: absolute;
-                        right: 20px;
-                        top:  3px;
+                        right: 10px;
+                        top: 10px;
+                        input[type="file"] {
+                            display: none;
+                        }
+                
+                        .file-upload {            
+                            background: transparent;
+                            border: transparent;
+                            margin: 0px 0px;
+                            color:white;
+                            padding: 0px 0px 5px 20px;
+                            opacity: 0.9;
+                            cursor: pointer;
+                            text-align: center;
+                        }
+                
+                        .file-upload:hover {
+                            opacity: 1.0;
+                        }
+                
+                        .file-upload:active {
+                            transform: scale(0.98);
+                            transform-origin: 0.5 0.5;
+                        }
+                
+                        button {
+                            background: transparent;
+                            border: transparent;
+                            margin: 5px 10px 5px 10px;
+                            color:white;
+                            padding: 4px 5px;
+                            opacity: 0.9;
+                        }
+                
+                        button:hover {
+                            opacity: 0.0;
+                        }
+                
+                        button:active {
+                            background: transparent;
+                        }   
+                        
+                        button:focus {
+                            border: transparent;
+                            outline: 0px;
+                        }  
                     }
-
-                    height: 30px;
-                    display: grid;
-                    align-items: center;
-                    justify-items: stretch;
-                    padding-bottom: 5px;
-            
-                    input[type="file"] {
-                        display: none;
-                    }
-            
-                    .file-upload {    
-                        position: absolute;           
-                        background: transparent;
-                        border: 1px transparent;
-                        margin: 5px 10px;
-                        color:transparent;
-                        padding: 15px 5px 0px 15px;
-                        opacity: 0.9;
-                        cursor: pointer;
-                        text-align: center;
-                        display: inline-block;
-                        z-index: 1;
-                        right: 20px;
-                        top:  2px;
-                    }
-            
-                    .file-upload:hover {
-                        opacity: 0.0;
-                    }
-            
-                    .file-upload:active {
-                        transform: scale(0.98);
-                        transform-origin: 0.5 0.5;
-                    }
-                }
+                    
+                }                
 
                 .paneContainer {
                     margin-top: 3px;
