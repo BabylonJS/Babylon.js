@@ -5,13 +5,13 @@ declare function postMessage(message: any, transfer?: any[]): void;
  */
 export class WASMMemoryManager {
 
-    public static LoadBinariesFromMainThread = false;
+    public static LoadBinariesFromCurrentThread = true;
     public static InitialMemoryPages = (1 * 1024 * 1024) >> 16; // 1 Mbytes
 
     private static _RequestId = 0;
 
     public static LoadWASM(path: string): Promise<ArrayBuffer> {
-        if (!this.LoadBinariesFromMainThread) {
+        if (this.LoadBinariesFromCurrentThread) {
             return new Promise((resolve) => {
                 fetch(path)
                 .then((response) => response.arrayBuffer())
