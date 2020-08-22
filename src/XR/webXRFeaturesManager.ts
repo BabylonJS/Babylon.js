@@ -43,6 +43,11 @@ export interface IWebXRFeature extends IDisposable {
      * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
      */
     xrNativeFeatureName?: string;
+
+    /**
+     * A list of (Babylon WebXR) features this feature depends on
+     */
+    dependsOn?: string[];
 }
 
 /**
@@ -81,6 +86,10 @@ export class WebXRFeatureName {
      * The name of the feature points feature.
      */
     public static readonly FEATURE_POINTS = "xr-feature-points";
+    /**
+     * The name of the hand tracking feature.
+     */
+    public static readonly HAND_TRACKING = "xr-hand-tracking";
 }
 
 /**
@@ -312,6 +321,12 @@ export class WebXRFeaturesManager implements IDisposable {
         }
 
         const constructed = constructFunction();
+        if (constructed.dependsOn) {
+            const dependentsFound = constructed.dependsOn.every((featureName) => !!this._features[featureName]);
+            if (!dependentsFound) {
+                throw new Error(`Dependant features missing. Make sure the following features are enabled - ${constructed.dependsOn.join(", ")}`);
+            }
+        }
         if (constructed.isCompatible()) {
             this._features[name] = {
                 featureImplementation: constructed,
