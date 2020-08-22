@@ -250,7 +250,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
                 return;
             } else if (globalObject.scene.then) {
-                globalObject.scene.then(function () {});
+                globalObject.scene.then(() => {
+                    if (this._engine!.scenes[0] && displayInspector) {
+                        this.props.globalState.onInspectorRequiredObservable.notifyObservers(true);
+                    }
+                });
             } else {
                 this._engine.scenes[0].executeWhenReady(function () {});
             }

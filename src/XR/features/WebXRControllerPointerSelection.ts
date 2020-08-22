@@ -85,6 +85,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // already attached
             return;
         }
+        // For now no support for hand-tracked input sources!
+        if (xrController.inputSource.hand && !xrController.inputSource.gamepad) {
+            return;
+        }
         // only support tracker pointer
         const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
 

@@ -340,6 +340,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/numericInputComp
             value: string;
         }): boolean;
         updateValue(evt: any): void;
+        onBlur(): void;
         render(): JSX.Element;
     }
 }
@@ -1448,9 +1449,25 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/lod" {
+    /** @hidden */
+    export var lodPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module "babylonjs-inspector/lodCube" {
+    /** @hidden */
+    export var lodCubePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
 declare module "babylonjs-inspector/textureHelper" {
     import { GlobalState } from "babylonjs-inspector/components/globalState";
     import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
+    import "babylonjs-inspector/lod";
+    import "babylonjs-inspector/lodCube";
     export interface TextureChannelsToDisplay {
         R: boolean;
         G: boolean;
@@ -1459,7 +1476,7 @@ declare module "babylonjs-inspector/textureHelper" {
     }
     export class TextureHelper {
         private static _ProcessAsync;
-        static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+        static GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState, lod?: number): Promise<Uint8Array>;
     }
 }
 declare module "babylonjs-inspector/components/actionTabs/lines/textureLineComponent" {
@@ -1493,7 +1510,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/textureLineCompo
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar" {
     import * as React from 'react';
-    import { IToolData, IToolType } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
+    import { IToolData, IToolType, IMetadata } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
     export interface ITool extends IToolData {
         instance: IToolType;
     }
@@ -1502,7 +1519,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         addTool(url: string): void;
         changeTool(toolIndex: number): void;
         activeToolIndex: number;
-        metadata: any;
+        metadata: IMetadata;
         setMetadata(data: any): void;
     }
     interface IToolBarState {
@@ -1531,7 +1548,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         channels: IChannel[];
         setChannels(channelState: IChannel[]): void;
     }
-    export class ChannelsBar extends React.Component<IChannelsBarProps> {
+    export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
         render(): JSX.Element;
     }
 }
@@ -1544,9 +1561,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { PointerInfo } from 'babylonjs/Events/pointerEvents';
     import { ITool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
     import { IChannel } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar";
-    import { StackPanel } from 'babylonjs-gui/2D/controls/stackPanel';
-    import { Style } from 'babylonjs-gui/2D/style';
-    import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
+    import { IMetadata } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
     export interface IPixelData {
         x?: number;
         y?: number;
@@ -1555,17 +1570,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         b?: number;
         a?: number;
     }
-    export interface IToolGUI {
-        adt: AdvancedDynamicTexture;
-        toolWindow: StackPanel;
-        isDragging: boolean;
-        dragCoords: Nullable<Vector2>;
-        style: Style;
-    }
     export class TextureCanvasManager {
         private _engine;
         private _scene;
         private _camera;
+        private _cameraPos;
         private _scale;
         private _isPanning;
         private _mouseX;
@@ -1581,6 +1590,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _3DScene;
         private _channels;
         private _face;
+        private _mipLevel;
         private _originalTexture;
         private _target;
         private _originalInternalTexture;
@@ -1596,14 +1606,25 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private static PAN_MOUSE_BUTTON;
         private static MIN_SCALE;
         private static MAX_SCALE;
+        private static SELECT_ALL_KEY;
+        private static DESELECT_KEY;
         private _tool;
         private _setPixelData;
-        private _GUI;
         private _window;
-        metadata: any;
+        private _metadata;
         private _editing3D;
-        constructor(texture: BaseTexture, window: Window, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvas3D: HTMLCanvasElement, setPixelData: (pixelData: IPixelData) => void);
+        private _onUpdate;
+        private _setMetadata;
+        private _imageData;
+        private _canUpdate;
+        private _shouldUpdate;
+        private _paintCanvas;
+        constructor(texture: BaseTexture, window: Window, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvas3D: HTMLCanvasElement, setPixelData: (pixelData: IPixelData) => void, metadata: IMetadata, onUpdate: () => void, setMetadata: (metadata: any) => void);
         updateTexture(): Promise<void>;
+        private queueTextureUpdate;
+        startPainting(): CanvasRenderingContext2D;
+        updatePainting(): void;
+        stopPainting(): void;
         private updateDisplay;
         set channels(channels: IChannel[]);
         static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
@@ -1615,10 +1636,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         set tool(tool: Nullable<ITool>);
         get tool(): Nullable<ITool>;
         set face(face: number);
-        /** Returns the tool GUI object, allowing tools to access the GUI */
-        get GUI(): IToolGUI;
+        set mipLevel(mipLevel: number);
         /** Returns the 3D scene used for postprocesses */
         get scene3D(): Scene;
+        set metadata(metadata: IMetadata);
         private makePlane;
         reset(): void;
         resize(newSize: ISize): Promise<void>;
@@ -1640,12 +1661,14 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         resetTexture(): void;
         resizeTexture(width: number, height: number): void;
         uploadTexture(file: File): void;
+        mipLevel: number;
+        setMipLevel: (mipLevel: number) => void;
     }
     interface IPropertiesBarState {
         width: number;
         height: number;
     }
-    export class PropertiesBar extends React.Component<IPropertiesBarProps, IPropertiesBarState> {
+    export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPropertiesBarState> {
         private _resetButton;
         private _uploadButton;
         private _saveButton;
@@ -1662,10 +1685,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/bottomBar" {
     import * as React from 'react';
-    interface BottomBarProps {
+    interface IBottomBarProps {
         name: string;
+        mipLevel: number;
+        hasMips: boolean;
     }
-    export class BottomBar extends React.Component<BottomBarProps> {
+    export class BottomBar extends React.PureComponent<IBottomBarProps> {
         render(): JSX.Element;
     }
 }
@@ -1678,7 +1703,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         canvas3D: React.RefObject<HTMLCanvasElement>;
         texture: BaseTexture;
     }
-    export class TextureCanvasComponent extends React.Component<ITextureCanvasComponentProps> {
+    export class TextureCanvasComponent extends React.PureComponent<ITextureCanvasComponentProps> {
         shouldComponentUpdate(nextProps: ITextureCanvasComponentProps): boolean;
         render(): JSX.Element;
     }
@@ -1699,14 +1724,27 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { IToolData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
     export const Contrast: IToolData;
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/defaultTools/rectangleSelect" {
+    import { IToolData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
+    export const RectangleSelect: IToolData;
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/defaultTools/defaultTools" {
     const _default: import("babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent").IToolData[];
     export default _default;
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolSettings" {
+    import * as React from 'react';
+    import { ITool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
+    interface IToolSettingsProps {
+        tool: ITool | undefined;
+    }
+    export class ToolSettings extends React.Component<IToolSettingsProps> {
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent" {
     import * as React from 'react';
-    import { GlobalState } from "babylonjs-inspector/components/globalState";
-    import { IPixelData, IToolGUI } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
+    import { IPixelData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
     import { ITool } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/toolBar";
     import { IChannel } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/channelsBar";
     import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
@@ -1716,23 +1754,24 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { PointerInfo } from 'babylonjs/Events/pointerEvents';
     import { PopupComponent } from "babylonjs-inspector/components/popupComponent";
     interface ITextureEditorComponentProps {
-        globalState: GlobalState;
         texture: BaseTexture;
         url: string;
         window: React.RefObject<PopupComponent>;
+        onUpdate: () => void;
     }
     interface ITextureEditorComponentState {
         tools: ITool[];
         activeToolIndex: number;
-        metadata: any;
+        metadata: IMetadata;
         channels: IChannel[];
         pixelData: IPixelData;
         face: number;
+        mipLevel: number;
     }
     export interface IToolParameters {
         /** The visible scene in the editor. Useful for adding pointer and keyboard events. */
         scene: Scene;
-        /** The 2D canvas which tools can paint on using the canvas API. */
+        /** The 2D canvas which you can sample pixel data from. Tools should not paint directly on this canvas. */
         canvas2D: HTMLCanvasElement;
         /** The 3D scene which tools can add post processes to. */
         scene3D: Scene;
@@ -1741,15 +1780,22 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         /** Pushes the editor texture back to the original scene. This should be called every time a tool makes any modification to a texture. */
         updateTexture: () => void;
         /** The metadata object which is shared between all tools. Feel free to store any information here. Do not set this directly: instead call setMetadata. */
-        metadata: any;
+        metadata: IMetadata;
         /** Call this when you want to mutate the metadata. */
         setMetadata: (data: any) => void;
         /** Returns the texture coordinates under the cursor */
         getMouseCoordinates: (pointerInfo: PointerInfo) => Vector2;
-        /** An object which holds the GUI's ADT as well as the tool window. */
-        GUI: IToolGUI;
         /** Provides access to the BABYLON namespace */
         BABYLON: any;
+        /** Provides a canvas that you can use the canvas API to paint on. */
+        startPainting: () => CanvasRenderingContext2D;
+        /** After you have painted on your canvas, call this method to push the updates back to the texture. */
+        updatePainting: () => void;
+        /** Call this when you are finished painting. */
+        stopPainting: () => void;
+    }
+    export interface IToolGUIProps {
+        instance: IToolType;
     }
     /** An interface representing the definition of a tool */
     export interface IToolData {
@@ -1763,6 +1809,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         usesWindow?: boolean;
         /** Whether the tool uses postprocesses */
         is3D?: boolean;
+        settingsComponent?: React.ComponentType<IToolGUIProps>;
     }
     export interface IToolType {
         /** Called when the tool is selected. */
@@ -1776,6 +1823,17 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     interface IToolConstructable {
         new (getParameters: () => IToolParameters): IToolType;
     }
+    export interface IMetadata {
+        color: string;
+        alpha: number;
+        select: {
+            x1: number;
+            y1: number;
+            x2: number;
+            y2: number;
+        };
+        [key: string]: any;
+    }
     global {
         var _TOOL_DATA_: IToolData;
     }
@@ -1784,16 +1842,18 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _UICanvas;
         private _2DCanvas;
         private _3DCanvas;
+        private _timer;
+        private static PREVIEW_UPDATE_DELAY_MS;
         constructor(props: ITextureEditorComponentProps);
         componentDidMount(): void;
         componentDidUpdate(): void;
         componentWillUnmount(): void;
+        textureDidUpdate(): void;
         loadToolFromURL(url: string): void;
         addTools(tools: IToolData[]): void;
         getToolParameters(): IToolParameters;
         changeTool(index: number): void;
         setMetadata(newMetadata: any): void;
-        setFace(face: number): void;
         saveTexture(): void;
         resetTexture(): void;
         resizeTexture(width: number, height: number): void;
@@ -1823,10 +1883,12 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _adtInstrumentation;
         private popoutWindowRef;
         private textureLineRef;
+        private _textureInspectorSize;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
-        onOpenTextureEditor(): void;
+        openTextureEditor(): void;
+        onOpenTextureEditor(window: Window): void;
         onCloseTextureEditor(window: Window | null, callback?: {
             (): void;
         }): void;
@@ -4091,10 +4153,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/defaultTools/rectangleSelect" {
-    import { IToolData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
-    export const RectangleSelect: IToolData;
-}
 declare module "babylonjs-inspector/legacy/legacy" {
     export * from "babylonjs-inspector/index";
 }
@@ -4403,6 +4461,7 @@ declare module INSPECTOR {
             value: string;
         }): boolean;
         updateValue(evt: any): void;
+        onBlur(): void;
         render(): JSX.Element;
     }
 }
@@ -5385,6 +5444,20 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    /** @hidden */
+    export var lodPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module INSPECTOR {
+    /** @hidden */
+    export var lodCubePixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module INSPECTOR {
     export interface TextureChannelsToDisplay {
         R: boolean;
         G: boolean;
@@ -5393,7 +5466,7 @@ declare module INSPECTOR {
     }
     export class TextureHelper {
         private static _ProcessAsync;
-        static GetTextureDataAsync(texture: BABYLON.BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState): Promise<Uint8Array>;
+        static GetTextureDataAsync(texture: BABYLON.BaseTexture, width: number, height: number, face: number, channels: TextureChannelsToDisplay, globalState?: GlobalState, lod?: number): Promise<Uint8Array>;
     }
 }
 declare module INSPECTOR {
@@ -5430,7 +5503,7 @@ declare module INSPECTOR {
         addTool(url: string): void;
         changeTool(toolIndex: number): void;
         activeToolIndex: number;
-        metadata: any;
+        metadata: IMetadata;
         setMetadata(data: any): void;
     }
     interface IToolBarState {
@@ -5458,7 +5531,7 @@ declare module INSPECTOR {
         channels: IChannel[];
         setChannels(channelState: IChannel[]): void;
     }
-    export class ChannelsBar extends React.Component<IChannelsBarProps> {
+    export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
         render(): JSX.Element;
     }
 }
@@ -5471,17 +5544,11 @@ declare module INSPECTOR {
         b?: number;
         a?: number;
     }
-    export interface IToolGUI {
-        adt: BABYLON.GUI.AdvancedDynamicTexture;
-        toolWindow: BABYLON.GUI.StackPanel;
-        isDragging: boolean;
-        dragCoords: BABYLON.Nullable<BABYLON.Vector2>;
-        style: BABYLON.GUI.Style;
-    }
     export class TextureCanvasManager {
         private _engine;
         private _scene;
         private _camera;
+        private _cameraPos;
         private _scale;
         private _isPanning;
         private _mouseX;
@@ -5497,6 +5564,7 @@ declare module INSPECTOR {
         private _3DScene;
         private _channels;
         private _face;
+        private _mipLevel;
         private _originalTexture;
         private _target;
         private _originalInternalTexture;
@@ -5512,14 +5580,25 @@ declare module INSPECTOR {
         private static PAN_MOUSE_BUTTON;
         private static MIN_SCALE;
         private static MAX_SCALE;
+        private static SELECT_ALL_KEY;
+        private static DESELECT_KEY;
         private _tool;
         private _setPixelData;
-        private _GUI;
         private _window;
-        metadata: any;
+        private _metadata;
         private _editing3D;
-        constructor(texture: BABYLON.BaseTexture, window: Window, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvas3D: HTMLCanvasElement, setPixelData: (pixelData: IPixelData) => void);
+        private _onUpdate;
+        private _setMetadata;
+        private _imageData;
+        private _canUpdate;
+        private _shouldUpdate;
+        private _paintCanvas;
+        constructor(texture: BABYLON.BaseTexture, window: Window, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvas3D: HTMLCanvasElement, setPixelData: (pixelData: IPixelData) => void, metadata: IMetadata, onUpdate: () => void, setMetadata: (metadata: any) => void);
         updateTexture(): Promise<void>;
+        private queueTextureUpdate;
+        startPainting(): CanvasRenderingContext2D;
+        updatePainting(): void;
+        stopPainting(): void;
         private updateDisplay;
         set channels(channels: IChannel[]);
         static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
@@ -5531,10 +5610,10 @@ declare module INSPECTOR {
         set tool(tool: BABYLON.Nullable<ITool>);
         get tool(): BABYLON.Nullable<ITool>;
         set face(face: number);
-        /** Returns the tool GUI object, allowing tools to access the GUI */
-        get GUI(): IToolGUI;
+        set mipLevel(mipLevel: number);
         /** Returns the 3D scene used for postprocesses */
         get scene3D(): BABYLON.Scene;
+        set metadata(metadata: IMetadata);
         private makePlane;
         reset(): void;
         resize(newSize: BABYLON.ISize): Promise<void>;
@@ -5553,12 +5632,14 @@ declare module INSPECTOR {
         resetTexture(): void;
         resizeTexture(width: number, height: number): void;
         uploadTexture(file: File): void;
+        mipLevel: number;
+        setMipLevel: (mipLevel: number) => void;
     }
     interface IPropertiesBarState {
         width: number;
         height: number;
     }
-    export class PropertiesBar extends React.Component<IPropertiesBarProps, IPropertiesBarState> {
+    export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPropertiesBarState> {
         private _resetButton;
         private _uploadButton;
         private _saveButton;
@@ -5574,10 +5655,12 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
-    interface BottomBarProps {
+    interface IBottomBarProps {
         name: string;
+        mipLevel: number;
+        hasMips: boolean;
     }
-    export class BottomBar extends React.Component<BottomBarProps> {
+    export class BottomBar extends React.PureComponent<IBottomBarProps> {
         render(): JSX.Element;
     }
 }
@@ -5588,7 +5671,7 @@ declare module INSPECTOR {
         canvas3D: React.RefObject<HTMLCanvasElement>;
         texture: BABYLON.BaseTexture;
     }
-    export class TextureCanvasComponent extends React.Component<ITextureCanvasComponentProps> {
+    export class TextureCanvasComponent extends React.PureComponent<ITextureCanvasComponentProps> {
         shouldComponentUpdate(nextProps: ITextureCanvasComponentProps): boolean;
         render(): JSX.Element;
     }
@@ -5606,28 +5689,40 @@ declare module INSPECTOR {
     export const Contrast: IToolData;
 }
 declare module INSPECTOR {
+    export const RectangleSelect: IToolData;
+}
+declare module INSPECTOR {
     const _default: import("babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent").IToolData[];
     export default _default;
 }
 declare module INSPECTOR {
+    interface IToolSettingsProps {
+        tool: ITool | undefined;
+    }
+    export class ToolSettings extends React.Component<IToolSettingsProps> {
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface ITextureEditorComponentProps {
-        globalState: GlobalState;
         texture: BABYLON.BaseTexture;
         url: string;
         window: React.RefObject<PopupComponent>;
+        onUpdate: () => void;
     }
     interface ITextureEditorComponentState {
         tools: ITool[];
         activeToolIndex: number;
-        metadata: any;
+        metadata: IMetadata;
         channels: IChannel[];
         pixelData: IPixelData;
         face: number;
+        mipLevel: number;
     }
     export interface IToolParameters {
         /** The visible scene in the editor. Useful for adding pointer and keyboard events. */
         scene: BABYLON.Scene;
-        /** The 2D canvas which tools can paint on using the canvas API. */
+        /** The 2D canvas which you can sample pixel data from. Tools should not paint directly on this canvas. */
         canvas2D: HTMLCanvasElement;
         /** The 3D scene which tools can add post processes to. */
         scene3D: BABYLON.Scene;
@@ -5636,15 +5731,22 @@ declare module INSPECTOR {
         /** Pushes the editor texture back to the original scene. This should be called every time a tool makes any modification to a texture. */
         updateTexture: () => void;
         /** The metadata object which is shared between all tools. Feel free to store any information here. Do not set this directly: instead call setMetadata. */
-        metadata: any;
+        metadata: IMetadata;
         /** Call this when you want to mutate the metadata. */
         setMetadata: (data: any) => void;
         /** Returns the texture coordinates under the cursor */
         getMouseCoordinates: (pointerInfo: BABYLON.PointerInfo) => BABYLON.Vector2;
-        /** An object which holds the GUI's ADT as well as the tool window. */
-        GUI: IToolGUI;
         /** Provides access to the BABYLON namespace */
         BABYLON: any;
+        /** Provides a canvas that you can use the canvas API to paint on. */
+        startPainting: () => CanvasRenderingContext2D;
+        /** After you have painted on your canvas, call this method to push the updates back to the texture. */
+        updatePainting: () => void;
+        /** Call this when you are finished painting. */
+        stopPainting: () => void;
+    }
+    export interface IToolGUIProps {
+        instance: IToolType;
     }
     /** An interface representing the definition of a tool */
     export interface IToolData {
@@ -5658,6 +5760,7 @@ declare module INSPECTOR {
         usesWindow?: boolean;
         /** Whether the tool uses postprocesses */
         is3D?: boolean;
+        settingsComponent?: React.ComponentType<IToolGUIProps>;
     }
     export interface IToolType {
         /** Called when the tool is selected. */
@@ -5671,6 +5774,17 @@ declare module INSPECTOR {
     interface IToolConstructable {
         new (getParameters: () => IToolParameters): IToolType;
     }
+    export interface IMetadata {
+        color: string;
+        alpha: number;
+        select: {
+            x1: number;
+            y1: number;
+            x2: number;
+            y2: number;
+        };
+        [key: string]: any;
+    }
     global {
         var _TOOL_DATA_: IToolData;
     }
@@ -5679,16 +5793,18 @@ declare module INSPECTOR {
         private _UICanvas;
         private _2DCanvas;
         private _3DCanvas;
+        private _timer;
+        private static PREVIEW_UPDATE_DELAY_MS;
         constructor(props: ITextureEditorComponentProps);
         componentDidMount(): void;
         componentDidUpdate(): void;
         componentWillUnmount(): void;
+        textureDidUpdate(): void;
         loadToolFromURL(url: string): void;
         addTools(tools: IToolData[]): void;
         getToolParameters(): IToolParameters;
         changeTool(index: number): void;
         setMetadata(newMetadata: any): void;
-        setFace(face: number): void;
         saveTexture(): void;
         resetTexture(): void;
         resizeTexture(width: number, height: number): void;
@@ -5711,10 +5827,12 @@ declare module INSPECTOR {
         private _adtInstrumentation;
         private popoutWindowRef;
         private textureLineRef;
+        private _textureInspectorSize;
         constructor(props: ITexturePropertyGridComponentProps);
         componentWillUnmount(): void;
         updateTexture(file: File): void;
-        onOpenTextureEditor(): void;
+        openTextureEditor(): void;
+        onOpenTextureEditor(window: Window): void;
         onCloseTextureEditor(window: Window | null, callback?: {
             (): void;
         }): void;
@@ -7468,7 +7586,4 @@ declare module INSPECTOR {
         calculateMove(): string;
         render(): JSX.Element;
     }
-}
-declare module INSPECTOR {
-    export const RectangleSelect: IToolData;
 }

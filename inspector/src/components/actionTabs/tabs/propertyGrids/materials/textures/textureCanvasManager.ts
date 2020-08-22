@@ -28,12 +28,7 @@ import { TextureHelper } from '../../../../../../textureHelper';
 
 import { ITool } from './toolBar';
 import { IChannel } from './channelsBar';
-import { TextBlock } from 'babylonjs-gui/2D/controls/textBlock';
-import { Rectangle } from 'babylonjs-gui/2D/controls/rectangle';
-import { StackPanel } from 'babylonjs-gui/2D/controls/stackPanel';
-import { Control } from 'babylonjs-gui/2D/controls/control';
-import { Style } from 'babylonjs-gui/2D/style';
-import { AdvancedDynamicTexture } from 'babylonjs-gui/2D/advancedDynamicTexture';
+import { IMetadata } from './textureEditorComponent';
 
 
 export interface IPixelData {
@@ -45,18 +40,11 @@ export interface IPixelData {
     a? : number;
 }
 
-export interface IToolGUI {
-    adt: AdvancedDynamicTexture;
-    toolWindow: StackPanel;
-    isDragging: boolean;
-    dragCoords: Nullable<Vector2>;
-    style: Style;
-}
-
 export class TextureCanvasManager {
     private _engine: Engine;
     private _scene: Scene;
     private _camera: FreeCamera;
+    private _cameraPos: Vector2;
 
     private _scale : number;
     private _isPanning : boolean = false;
@@ -81,6 +69,7 @@ export class TextureCanvasManager {
 
     private _channels : IChannel[] = [];
     private _face : number = 0;
+    private _mipLevel : number = 0;
 
     /* The texture from the original engine that we invoked the editor on */
     private _originalTexture: BaseTexture;
@@ -108,17 +97,26 @@ export class TextureCanvasManager {
     private static MIN_SCALE : number = 0.01;
     private static MAX_SCALE : number = 10;
 
+    private static SELECT_ALL_KEY = 'KeyA';
+    private static DESELECT_KEY = 'Escape'
+
     private _tool : Nullable<ITool>;
 
     private _setPixelData : (pixelData : IPixelData) => void;
 
-    private _GUI : IToolGUI;
-
     private _window : Window;
 
-    public metadata : any = {};
+    private _metadata : IMetadata;
 
     private _editing3D : boolean = false;
+
+    private _onUpdate : () => void;
+    private _setMetadata : (metadata: any) => void;
+
+    private _imageData : Uint8Array | Uint8ClampedArray;
+    private _canUpdate : boolean = true;
+    private _shouldUpdate : boolean = false;
+    private _paintCanvas: HTMLCanvasElement;
 
     public constructor(
         texture: BaseTexture,
@@ -126,14 +124,21 @@ export class TextureCanvasManager {
         canvasUI: HTMLCanvasElement,
         canvas2D: HTMLCanvasElement,
         canvas3D: HTMLCanvasElement,
-        setPixelData: (pixelData : IPixelData) => void
+        setPixelData: (pixelData : IPixelData) => void,
+        metadata: IMetadata,
+        onUpdate: () => void,
+        setMetadata: (metadata: any) => void
     ) {
         this._window = window;
 
         this._UICanvas = canvasUI;
         this._2DCanvas = canvas2D;
         this._3DCanvas = canvas3D;
+        this._paintCanvas = document.createElement('canvas');
         this._setPixelData = setPixelData;
+        this._metadata = metadata;
+        this._onUpdate = onUpdate;
+        this._setMetadata = setMetadata;
 
         this._size = texture.getSize();
         this._originalTexture = texture;
@@ -144,8 +149,9 @@ export class TextureCanvasManager {
 
         this._camera = new FreeCamera('camera', new Vector3(0, 0, -1), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+        this._cameraPos = new Vector2();
 
-        this._channelsTexture = new HtmlElementTexture('ct', this._2DCanvas, {engine: this._engine, scene: null, samplingMode: Engine.TEXTURE_NEAREST_LINEAR});
+        this._channelsTexture = new HtmlElementTexture('ct', this._2DCanvas, {engine: this._engine, scene: null, samplingMode: Texture.NEAREST_SAMPLINGMODE, generateMipMaps: true});
 
         this._3DEngine = new Engine(this._3DCanvas);
         this._3DScene = new Scene(this._3DEngine);
@@ -156,15 +162,13 @@ export class TextureCanvasManager {
         cam.mode = Camera.ORTHOGRAPHIC_CAMERA;
         [cam.orthoBottom, cam.orthoLeft, cam.orthoTop, cam.orthoRight] = [-0.5, -0.5, 0.5, 0.5];
         this._3DPlane = PlaneBuilder.CreatePlane('texture', {width: 1, height: 1}, this._3DScene);
+        this._3DPlane.hasVertexAlpha = true;
         const mat = new StandardMaterial('material', this._3DScene);
         mat.diffuseTexture = this._3DCanvasTexture;
+        mat.useAlphaFromDiffuseTexture = true;
         mat.disableLighting = true;
         mat.emissiveColor = Color3.White();
         this._3DPlane.material = mat;
-        
-
-        this.grabOriginalTexture();
-
 
         this._planeMaterial = new ShaderMaterial(
             'shader',
@@ -194,11 +198,23 @@ export class TextureCanvasManager {
                     uniform bool g;
                     uniform bool b;
                     uniform bool a;
+
+                    uniform int x1;
+                    uniform int y1;
+                    uniform int x2;
+                    uniform int y2;
+                    uniform int w;
+                    uniform int h;
+
+                    uniform int time;
             
                     varying vec2 vUV;
+
+                    float scl = 200.0;
+                    float speed = 10.0 / 1000.0;
+                    float smoothing = 0.2;
             
                     void main(void) {
-                        float size = 20.0;
                         vec2 pos2 = vec2(gl_FragCoord.x, gl_FragCoord.y);
                         vec2 pos = floor(pos2 * 0.05);
                         float pattern = mod(pos.x + pos.y, 2.0); 
@@ -244,76 +260,77 @@ export class TextureCanvasManager {
                                 col.a = 1.0;
                             }
                         }
-                        gl_FragColor = col;
                         gl_FragColor = col * (col.a) + bg * (1.0 - col.a);
+                        float wF = float(w);
+                        float hF = float(h);
+                        int xPixel = int(floor(vUV.x * wF));
+                        int yPixel = int(floor((1.0 - vUV.y) * hF));
+                        int xDis = min(abs(xPixel - x1), abs(xPixel - x2));
+                        int yDis = min(abs(yPixel - y1), abs(yPixel - y2));
+                        if (xPixel >= x1 && yPixel >= y1 && xPixel <= x2 && yPixel <= y2) {
+                            if (xDis <= 4 || yDis <= 4) {
+                                float c = sin(vUV.x * scl + vUV.y * scl + float(time) * speed);
+                                c = smoothstep(-smoothing,smoothing,c);
+                                float val = 1.0 - c;
+                                gl_FragColor = vec4(val, val, val, 1.0) * 0.7 + gl_FragColor * 0.3;
+                            }
+                        }
                     }`
             },
         {
             attributes: ['position', 'uv'],
-            uniforms: ['worldViewProjection', 'textureSampler', 'r', 'g', 'b', 'a']
+            uniforms: ['worldViewProjection', 'textureSampler', 'r', 'g', 'b', 'a', 'x1', 'y1', 'x2', 'y2', 'w', 'h', 'time']
         });
+        
+        this.grabOriginalTexture();
 
         this._planeMaterial.setTexture('textureSampler', this._channelsTexture);
         this._planeMaterial.setFloat('r', 1.0);
         this._planeMaterial.setFloat('g', 1.0);
         this._planeMaterial.setFloat('b', 1.0);
         this._planeMaterial.setFloat('a', 1.0);
+        this._planeMaterial.setInt('x1', -1);
+        this._planeMaterial.setInt('y1', -1);
+        this._planeMaterial.setInt('x2', -1);
+        this._planeMaterial.setInt('y2', -1);
+        this._planeMaterial.setInt('w', this._size.width);
+        this._planeMaterial.setInt('h', this._size.height);
+        this._planeMaterial.setInt('time', 0);
         this._plane.material = this._planeMaterial;
         
-        const adt = AdvancedDynamicTexture.CreateFullscreenUI('gui', true, this._scene);
-        const style = adt.createStyle();
-        style.fontFamily = 'acumin-pro-condensed';
-        style.fontSize = '15px';
-
-        const toolWindow = new StackPanel();
-        toolWindow.background = '#333333';
-        toolWindow.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        toolWindow.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-        toolWindow.left = '0px';
-        toolWindow.top = '-30px';
-        toolWindow.width = '200px';
-        toolWindow.isVisible = false;
-        toolWindow.isPointerBlocker = true;
-        adt.addControl(toolWindow);
-
-        this._GUI = {adt, style, toolWindow, isDragging: false, dragCoords: null};
-
-        const topBar = new Rectangle();
-        topBar.width = '100%';
-        topBar.height = '20px';
-        topBar.background = '#666666';
-        topBar.thickness = 0;
-        topBar.hoverCursor = 'grab';
-        topBar.onPointerDownObservable.add(evt => {this._GUI.isDragging = true; topBar.hoverCursor = 'grabbing';});
-        topBar.onPointerUpObservable.add(() => {this._GUI.isDragging = false; this._GUI.dragCoords = null; topBar.hoverCursor = 'grab';});
-
-        const title = new TextBlock();
-        title.text = 'Tool Settings';
-        title.color = 'white';
-        title.height = '20px';
-        title.style = this._GUI.style;
-        topBar.addControl(title);
-        this._GUI.toolWindow.addControl(topBar);
-
-        this._window.addEventListener('pointermove',  (evt : PointerEvent) => {
-            if (!this._GUI.isDragging) return;
-            if (!this._GUI.dragCoords) {
-                this._GUI.dragCoords = new Vector2(evt.x, evt.y);
-                return;
+        this._window.addEventListener('keydown', evt => {
+            this._keyMap[evt.code] = true;
+            if (evt.code === TextureCanvasManager.SELECT_ALL_KEY && evt.ctrlKey) {
+                this._setMetadata({
+                    select: {
+                        x1: 0,
+                        y1: 0,
+                        x2: this._size.width,
+                        y2: this._size.height
+                    }
+                });
+                evt.preventDefault();
             }
-            let x = parseInt(this._GUI.toolWindow.left.toString().replace('px', ''));
-            let y = parseInt(this._GUI.toolWindow.top.toString().replace('px', ''));
-            x += evt.x - this._GUI.dragCoords.x;
-            y += evt.y - this._GUI.dragCoords.y;
-            this._GUI.toolWindow.left = `${x}px`;
-            this._GUI.toolWindow.top = `${y}px`;
-            this._GUI.dragCoords.x = evt.x;
-            this._GUI.dragCoords.y = evt.y;
+            if (evt.code === TextureCanvasManager.DESELECT_KEY) {
+                this._setMetadata({
+                    select: {
+                        x1: -1,
+                        y1: -1,
+                        x2: -1,
+                        y2: -1
+                    }
+                })
+            }
+        });
+        
+        this._window.addEventListener('keyup', evt => {
+            this._keyMap[evt.code] = false;
         });
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
+            this._planeMaterial.setInt('time', new Date().getTime());
         });
 
         this._scale = 1.5;
@@ -322,10 +339,11 @@ export class TextureCanvasManager {
         this._scene.onBeforeRenderObservable.add(() => {
             this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE), TextureCanvasManager.MAX_SCALE);
             const ratio = this._UICanvas?.width / this._UICanvas?.height;
-            this._camera.orthoBottom = -1 / this._scale;
-            this._camera.orthoTop = 1 / this._scale;
-            this._camera.orthoLeft =  ratio / -this._scale;
-            this._camera.orthoRight = ratio / this._scale;
+            const {x,y} = this._cameraPos;
+            this._camera.orthoBottom = y - 1 / this._scale;
+            this._camera.orthoTop = y + 1 / this._scale;
+            this._camera.orthoLeft =  x - ratio / this._scale;
+            this._camera.orthoRight = x + ratio / this._scale;
         })
 
         this._scene.onPointerObservable.add((pointerInfo) => {
@@ -349,16 +367,15 @@ export class TextureCanvasManager {
                     break;
                 case PointerEventTypes.POINTERMOVE:
                     if (this._isPanning) {
-                        this._camera.position.x -= (pointerInfo.event.x - this._mouseX) / this._scale * TextureCanvasManager.PAN_SPEED;
-                        this._camera.position.y += (pointerInfo.event.y - this._mouseY) / this._scale * TextureCanvasManager.PAN_SPEED;
+                        this._cameraPos.x -= (pointerInfo.event.x - this._mouseX) / this._scale * TextureCanvasManager.PAN_SPEED;
+                        this._cameraPos.y += (pointerInfo.event.y - this._mouseY) / this._scale * TextureCanvasManager.PAN_SPEED;
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
                     }
                     if (pointerInfo.pickInfo?.hit) {
                         const pos = this.getMouseCoordinates(pointerInfo);
-                        const ctx = this._2DCanvas.getContext('2d');
-                        const pixel = ctx?.getImageData(pos.x, pos.y, 1, 1).data!;
-                        this._setPixelData({x: pos.x, y: pos.y, r:pixel[0], g:pixel[1], b:pixel[2], a:pixel[3]});
+                        const idx = (pos.x + pos.y * this._size.width) * 4;
+                        this._setPixelData({x: pos.x, y: pos.y, r:this._imageData[idx], g:this._imageData[idx + 1], b:this._imageData[idx + 2], a:this._imageData[idx + 3]});
                     } else {
                         this._setPixelData({});
                     }
@@ -370,11 +387,13 @@ export class TextureCanvasManager {
             switch(kbInfo.type) {
                 case KeyboardEventTypes.KEYDOWN:
                     this._keyMap[kbInfo.event.key] = true;
-                    if (kbInfo.event.key === TextureCanvasManager.ZOOM_IN_KEY) {
-                        this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
-                    }
-                    if (kbInfo.event.key === TextureCanvasManager.ZOOM_OUT_KEY) {
-                        this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                    switch (kbInfo.event.key) {
+                        case TextureCanvasManager.ZOOM_IN_KEY:
+                            this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                            break;
+                        case TextureCanvasManager.ZOOM_OUT_KEY:
+                            this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                            break;
                     }
                     break;
                 case KeyboardEventTypes.KEYUP:
@@ -383,6 +402,7 @@ export class TextureCanvasManager {
             }
         });
     }
+
 
     public async updateTexture() {
         this._didEdit = true;
@@ -407,16 +427,102 @@ export class TextureCanvasManager {
             } else {
                 (this._target as HtmlElementTexture).element = element;
             }
-            (this._target as HtmlElementTexture).update((this._originalTexture as Texture).invertY);
+            this.queueTextureUpdate();
         }
         this._originalTexture._texture = this._target._texture;
         this._channelsTexture.element = element;
         this.updateDisplay();
+        this._onUpdate();
+    }
+
+    private queueTextureUpdate() {
+        if (this._canUpdate) {
+            (this._target as HtmlElementTexture).update((this._originalTexture as Texture).invertY);
+            if (this._editing3D) {
+                this._imageData = this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
+            } else {
+                this._imageData = this._2DCanvas.getContext('2d')!.getImageData(0, 0, this._size.width, this._size.height).data;
+            }
+            this._canUpdate = false;
+            this._shouldUpdate = false;
+            setTimeout(() => {
+                this._canUpdate = true;
+                if (this._shouldUpdate) {
+                    this.queueTextureUpdate();
+                }
+            }, 32);
+        } else {
+            this._shouldUpdate = true;
+        }
+    }
+
+    public startPainting() : CanvasRenderingContext2D {
+        let x = 0, y = 0, w = this._size.width, h = this._size.height;
+        if (this._metadata.select.x1 != -1) {
+            x = this._metadata.select.x1;
+            y = this._metadata.select.y1;
+            w = this._metadata.select.x2 - this._metadata.select.x1;
+            h = this._metadata.select.y2 - this._metadata.select.y1;
+        }
+        this._paintCanvas.width = w;
+        this._paintCanvas.height = h;
+        const ctx = this._paintCanvas.getContext('2d')!;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(this._2DCanvas, x, y, w, h, 0, 0, w, h);
+        return ctx;
+    }
+
+    public updatePainting() {
+        let x = 0, y = 0, w = this._size.width, h = this._size.height;
+        if (this._metadata.select.x1 != -1) {
+            x = this._metadata.select.x1;
+            y = this._metadata.select.y1;
+            w = this._metadata.select.x2 - this._metadata.select.x1;
+            h = this._metadata.select.y2 - this._metadata.select.y1;
+        }
+        let editingAllChannels = true;
+        this._channels.forEach(channel => {
+            if (!channel.editable) editingAllChannels = false;
+        })
+        let oldData : Uint8ClampedArray;
+        if (!editingAllChannels) {
+            oldData = this._2DCanvas.getContext('2d')!.getImageData(x, y, w, h).data;
+        }
+        const ctx = this._paintCanvas.getContext('2d')!;
+        const ctx2D = this.canvas2D.getContext('2d')!;
+        ctx2D.globalAlpha = 1.0;
+        ctx2D.globalCompositeOperation = 'destination-out';
+        ctx2D.fillStyle = 'white';
+        ctx2D.fillRect(x,y,w,h);
+        ctx2D.imageSmoothingEnabled = false;
+        if (!editingAllChannels) {
+            const newData = ctx.getImageData(0, 0, w, h);
+            const nd = newData.data;
+            this._channels.forEach((channel, index) => {
+                if (!channel.editable) {
+                    for(let i = index; i < w * h * 4; i += 4) {
+                        nd[i] = oldData[i];
+                    }
+                }
+            });
+            ctx2D.globalCompositeOperation = 'source-over';
+            ctx2D.globalAlpha = 1.0;
+            ctx2D.putImageData(newData, x, y);
+        } else {
+            ctx2D.globalCompositeOperation = 'source-over';
+            ctx2D.globalAlpha = 1.0;
+            ctx2D.drawImage(ctx.canvas, x, y);
+        }
+        this.updateTexture();
+    }
+
+    public stopPainting() : void {
+        this._paintCanvas.getContext('2d')!.clearRect(0, 0, this._paintCanvas.width, this._paintCanvas.height);
     }
 
     private updateDisplay() {
-        this._3DScene.render()
-        this._channelsTexture.update();
+        this._3DScene.render();
+        this._channelsTexture.update(true);
     }
 
     public set channels(channels: IChannel[]) {
@@ -456,8 +562,11 @@ export class TextureCanvasManager {
             this._size.width,
             this._size.height,
             this._face,
-            {R:true ,G:true ,B:true ,A:true}
+            {R:true, G:true, B:true, A:true},
+            undefined,
+            this._mipLevel
         ).then(data => {
+            this._imageData = data;
             TextureCanvasManager.paintPixelsOnCanvas(data, this._2DCanvas);
             this._3DCanvasTexture.update();
             this.updateDisplay();
@@ -493,11 +602,6 @@ export class TextureCanvasManager {
         this._tool = tool;
         if (this._tool) {
             this._tool.instance.setup();
-            if (this._tool.usesWindow) {
-                this._GUI.toolWindow.isVisible = true;
-            } else {
-                this._GUI.toolWindow.isVisible = false;
-            }
             if (this._editing3D && !this._tool.is3D) {
                 this._editing3D = false;
                 this._2DCanvas.getContext('2d')?.drawImage(this._3DCanvas, 0, 0);
@@ -513,7 +617,6 @@ export class TextureCanvasManager {
         return this._tool;
     }
 
-    // BROKEN : FIX THIS
     public set face(face: number) {
         if (this._face !== face) {
             this._face = face;
@@ -522,14 +625,24 @@ export class TextureCanvasManager {
         }
     }
 
-    /** Returns the tool GUI object, allowing tools to access the GUI */
-    public get GUI() {
-        return this._GUI;
+    public set mipLevel(mipLevel : number) {
+        if (this._mipLevel === mipLevel) return;
+        this._mipLevel = mipLevel;
+        this.grabOriginalTexture(false);
     }
 
     /** Returns the 3D scene used for postprocesses */
     public get scene3D() {
         return this._3DScene;
+    }
+
+    public set metadata(metadata: IMetadata) {
+        this._metadata = metadata;
+        const {x1,y1,x2,y2} = metadata.select;
+        this._planeMaterial.setInt('x1', x1);
+        this._planeMaterial.setInt('y1', y1);
+        this._planeMaterial.setInt('x2', x2);
+        this._planeMaterial.setInt('y2', y2);
     }
 
     private makePlane() {
@@ -551,6 +664,7 @@ export class TextureCanvasManager {
         this.grabOriginalTexture();
         this.makePlane();
         this._didEdit = false;
+        this._onUpdate();
     }
 
     public async resize(newSize : ISize) {
@@ -567,9 +681,11 @@ export class TextureCanvasManager {
         this._2DCanvas.height = this._size.height;
         this._3DCanvas.width = this._size.width;
         this._3DCanvas.height = this._size.height;
+        this._planeMaterial.setInt('w', this._size.width);
+        this._planeMaterial.setInt('h', this._size.height);
         if (adjustZoom) {
-            this._camera.position.x = 0;
-            this._camera.position.y = 0;
+            this._cameraPos.x = 0;
+            this._cameraPos.y = 0;
             this._scale = 1.5 / (this._size.width/this._size.height);
         }
         this.makePlane();
@@ -607,7 +723,7 @@ export class TextureCanvasManager {
                         this._scene,
                         this._originalTexture.noMipmap,
                         false,
-                        Engine.TEXTURE_NEAREST_SAMPLINGMODE,
+                        Texture.NEAREST_SAMPLINGMODE,
                         () => {
                             TextureHelper.GetTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, {R: true, G: true, B: true, A: true})
                                 .then((pixels) => {
@@ -633,7 +749,8 @@ export class TextureCanvasManager {
         }
         if (this._tool) {
             this._tool.instance.cleanup();
-        }        
+        }
+        this._paintCanvas.parentNode?.removeChild(this._paintCanvas);
         this._3DPlane.dispose();
         this._3DCanvasTexture.dispose();
         this._3DScene.dispose();

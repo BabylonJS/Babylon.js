@@ -6863,6 +6863,7 @@ var Image = /** @class */ (function (_super) {
         configurable: true
     });
     Image.prototype._onImageLoaded = function () {
+        this._imageDataCache.data = null;
         this._imageWidth = this._domImage.width;
         this._imageHeight = this._domImage.height;
         this._loaded = true;
@@ -7106,6 +7107,7 @@ var Image = /** @class */ (function (_super) {
             var canvas = this._workingCanvas;
             var context_1 = canvas.getContext("2d");
             this._imageDataCache.data = imageData = context_1.getImageData(0, 0, width, height).data;
+            this._imageDataCache.key = key;
         }
         x = (x - this._currentMeasure.left) | 0;
         y = (y - this._currentMeasure.top) | 0;
