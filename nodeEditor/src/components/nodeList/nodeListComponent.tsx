@@ -7,9 +7,10 @@ import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialMo
 import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
 import { DraggableLineWithButtonComponent } from '../../sharedComponents/draggableLineWithButtonComponent';
-import { LineWithFileButtonContainerComponent } from '../../sharedComponents/lineWithFileButtonContainerComponent';
+import { LineWithFileButtonComponent } from '../../sharedComponents/lineWithFileButtonComponent';
 import { Tools } from 'babylonjs';
-
+const addButton = require("../../../imgs/add.svg");
+const deleteButton = require('../../../imgs/delete.svg');
 
 require("./nodeList.scss");
 
@@ -161,7 +162,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             this.customFrameList = JSON.parse(frameJson);
         }
 
-
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
         });
@@ -206,9 +206,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 localStorage.setItem("Custom-Frame-List", newFrameJson);
                 this.customFrameList = newframeList;
                 this.forceUpdate();
-            }
-
-        
+            }        
         }, undefined, true);
     }
 
@@ -222,8 +220,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
                 this.customFrameList = frameList;
                 this.forceUpdate();
-            }
-           
+            }        
     }
 
     render() {
@@ -277,22 +274,20 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             .map((block: any, i: number) => {
                 let tooltip = NodeListComponent._Tooltips[block] || "";
 
-                if(key.indexOf("Custom") === -1) {
+                if(key != "Custom_Frames") {
                 
                    return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>;
                 }
-                return <DraggableLineWithButtonComponent key={block} data={block} tooltip={tooltip} 
+                return <DraggableLineWithButtonComponent key={block} data={block} tooltip={tooltip} iconImage={deleteButton} iconTitle="Delete"
                 onIconClick={ value => this.removeItem(value)}/>;
             });
 
-            if(key.indexOf("Custom") != -1)
-            {
-                let line =  <LineWithFileButtonContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}
-                label="Add Custom Frame" uploadName={'custom-frame-upload'}  accept=".json" onClick={(file) => {
+            if(key === "Custom_Frames") {
+                let line =  <LineWithFileButtonComponent title={"Add Custom Frame"} closed={false}
+                label="Add..." uploadName={'custom-frame-upload'} iconImage={addButton} accept=".json" onIconClick={(file) => {
                     this.loadCustomFrame(file);
                 }}/>;
                 blockList.push(line);
-                
             }         
             if(blockList.length) {
                 blockMenu.push(
@@ -322,6 +317,5 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 </div>
             </div>
         );
-
     }
 }
