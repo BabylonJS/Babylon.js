@@ -544,36 +544,27 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     emitNewBlock(event: React.DragEvent<HTMLDivElement>) {
         var data = event.dataTransfer.getData("babylonjs-material-node") as string;
         let newNode: GraphNode;
-
         
         if(data.indexOf("Custom") > -1) {
             let storageData = localStorage.getItem(data);
             if(storageData) {   
                 let frameData = JSON.parse(storageData);
 
-                let x = event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth;
-                let y = event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20;
-                
-                let newX= x / this._graphCanvas.zoom;
-                let newY= y / this._graphCanvas.zoom;
+                //edit position before loading.
+                let newX = (event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth) / this._graphCanvas.zoom;
+                let newY = (event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20) / this._graphCanvas.zoom;;
                 let oldX = frameData.editorData.frames[0].x;
                 let oldY = frameData.editorData.frames[0].y;
                 frameData.editorData.frames[0].x = newX;
                 frameData.editorData.frames[0].y = newY;
-
                 for (var location of frameData.editorData.locations) 
                 {
-                    location.x +=  newX- oldX;
-                    location.y +=  newY- oldY;       
+                    location.x +=  newX - oldX;
+                    location.y +=  newY - oldY;       
                 }
+
                 SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial); 
-
-                
-                let newFrame = this._graphCanvas.frames[this._graphCanvas.frames.length -1];
-                newFrame.cleanAccumulation();
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                this.props.globalState.onSelectionChangedObservable.notifyObservers(newFrame);
-
+                this._graphCanvas.frames[this._graphCanvas.frames.length -1].cleanAccumulation();
                 this.forceUpdate();
                 return;
             }
