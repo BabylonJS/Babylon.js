@@ -150,7 +150,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
     };
     
-    customFrameList: string[] | null;
+    private _customFrameList: {[key: string]: string};
 
     constructor(props: INodeListComponentProps) {
         super(props);
@@ -159,7 +159,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
         let frameJson = localStorage.getItem("Custom-Frame-List");
         if(frameJson) {
-            this.customFrameList = JSON.parse(frameJson);
+            this._customFrameList = JSON.parse(frameJson);
         }
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
@@ -180,7 +180,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             // get Frame Data from file
             let decoder = new TextDecoder("utf-8");
             const frameData = JSON.parse(decoder.decode(data));
-            let frameName = file.name.replace(".json","") + "Custom";
+            let frameName = frameData.editorData.frames[0].name + "Custom";
+            let frameToolTip = frameData.editorData.frames[0].comments || "";
 
             try {
                 localStorage.setItem(frameName, JSON.stringify(frameData));
@@ -190,23 +191,15 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             }
 
             let frameJson = localStorage.getItem("Custom-Frame-List");
+            let frameList:  {[key: string]: string} = {};
             if(frameJson) {
-                let frameList = JSON.parse(frameJson);
-                let index = frameList.findIndex((element: string) => element === frameName);
-                if( index === -1){
-                    frameList[frameList.length] = frameName;
-                    localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
-                    this.customFrameList = frameList;
-                    this.forceUpdate();
-                }
+                frameList = JSON.parse(frameJson); 
             }
-            else {
-                let newframeList: string[] = [frameName];
-                let newFrameJson = JSON.stringify(newframeList);
-                localStorage.setItem("Custom-Frame-List", newFrameJson);
-                this.customFrameList = newframeList;
+            frameList[frameName] = frameToolTip;
+            localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
+                this._customFrameList = frameList;
                 this.forceUpdate();
-            }        
+
         }, undefined, true);
     }
 
@@ -214,20 +207,24 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         let frameJson = localStorage.getItem("Custom-Frame-List");
             if(frameJson) {
                 let frameList = JSON.parse(frameJson);
-                let index = frameList.findIndex((element: string) => element === value);
-                frameList.splice(index, 1);
+                delete frameList[value];
                 localStorage.removeItem(value);
                 localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
-                this.customFrameList = frameList;
+                this._customFrameList = frameList;
                 this.forceUpdate();
             }        
     }
 
     render() {
 
+        let customFrameNames: string[] = [];
+        for(let frame in this._customFrameList){
+            customFrameNames.push(frame);
+        }
+        
         // Block types used to create the menu from
         const allBlocks = {
-            Custom_Frames: this.customFrameList === null || this.customFrameList.length === 0 ? [] : this.customFrameList,
+            Custom_Frames: customFrameNames,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -272,14 +269,12 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             var blockList = (allBlocks as any)[key].filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
             .sort((a: string, b: string) => a.localeCompare(b))
             .map((block: any, i: number) => {
-                let tooltip = NodeListComponent._Tooltips[block] || "";
-
-                if(key != "Custom_Frames") {
-                
-                   return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>;
+                if(key === "Custom_Frames") {
+                    return <DraggableLineWithButtonComponent key={block} data={block} tooltip={this._customFrameList[block] || ""} iconImage={deleteButton} iconTitle="Delete"
+                    onIconClick={ value => this.removeItem(value)}/>;
                 }
-                return <DraggableLineWithButtonComponent key={block} data={block} tooltip={tooltip} iconImage={deleteButton} iconTitle="Delete"
-                onIconClick={ value => this.removeItem(value)}/>;
+                return <DraggableLineComponent key={block} data={block} tooltip={ NodeListComponent._Tooltips[block] || ""}/>;
+
             });
 
             if(key === "Custom_Frames") {
