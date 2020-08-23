@@ -8,7 +8,7 @@ import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
 import { DraggableLineWithButtonComponent } from '../../sharedComponents/draggableLineWithButtonComponent';
 import { LineWithFileButtonComponent } from '../../sharedComponents/lineWithFileButtonComponent';
-import { Tools } from 'babylonjs';
+import { Tools } from 'babylonjs/Misc/tools';
 const addButton = require("../../../imgs/add.svg");
 const deleteButton = require('../../../imgs/delete.svg');
 
