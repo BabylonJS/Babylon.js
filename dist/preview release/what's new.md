@@ -18,7 +18,7 @@
 ### General
 
 - Added support for postproces serialization ([Deltakosh](https://github.com/deltakosh))
-- Added support for querystrings on KTX file URLs ([abogartz](https://github.com/abogartz)
+- Added support for querystrings on KTX file URLs ([abogartz](https://github.com/abogartz))
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
 - Camera gizmo ([cedricguillemet](https://github.com/cedricguillemet))
@@ -42,6 +42,7 @@
 - Allow 180 monoscopic videos on top of the video dome ([#8575](https://github.com/BabylonJS/Babylon.js/issues/8575)) ([RaananW](https://github.com/RaananW))
 - Added `AssetContainerTask` support to `AssetsManager` class ([MackeyK24](https://github.com/MackeyK24))
 - Changed DeviceSourceManager getInput contract to no longer return nullable values ([Drigax](https://github.com/drigax))
+- Photo Dome and Video Dome now use the same abstract class and support the same parameters ([#8771](https://github.com/BabylonJS/Babylon.js/issues/8771)) ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -83,7 +84,7 @@
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
-- View & edit textures in pop out inspector using canvas and postprocesses. Supports region selection and individual channel editing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- View & edit textures in pop out inspector using 5 tools. Supports region selection and individual channel editing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Cameras
 
@@ -129,6 +130,7 @@
 
 - Added support for KHR_materials_unlit to glTF serializer ([Popov72](https://github.com/Popov72))
 - Added support for glTF Skins to glTF serializer ([Drigax](https://github.com/Drigax))
+- Added support for glTF Morph Target serialization ([Drigax](https://github.com/Drigax))
 
 ### Navigation
 
