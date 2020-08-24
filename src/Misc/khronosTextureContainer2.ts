@@ -123,8 +123,12 @@ export class KhronosTextureContainer2 {
                                 if (!message.data.success) {
                                     reject({ message: message.data.msg });
                                 } else {
-                                    this._createTexture(message.data.decodedData, internalTexture);
-                                    resolve();
+                                    try {
+                                        this._createTexture(message.data.decodedData, internalTexture);
+                                        resolve();
+                                    } catch (err) {
+                                        reject({ message: err });
+                                    }
                                 }
                                 onComplete();
                             }
@@ -185,6 +189,10 @@ export class KhronosTextureContainer2 {
             internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
         } else {
             internalTexture.format = data.transcodedFormat;
+        }
+
+        if (data.errors) {
+            throw new Error("KTX2 container - could not transcode the data. " + data.errors);
         }
 
         for (let t = 0; t < data.mipmaps.length; ++t) {
@@ -253,7 +261,7 @@ export function workerFunc(): void {
                         const buffers = [];
                         for (let mip = 0; mip < data.mipmaps.length; ++mip) {
                             const mipmap = data.mipmaps[mip];
-                            if (mipmap) {
+                            if (mipmap && mipmap.data) {
                                 buffers.push(mipmap.data.buffer);
                             }
                         }

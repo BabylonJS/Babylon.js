@@ -44,7 +44,12 @@ export class ZSTDDecoder {
             // Web.
 
             init = fetch(ZSTDDecoder.WasmModuleURL)
-                .then((response) => response.arrayBuffer())
+                .then((response) => {
+                    if (response.ok) {
+                        return response.arrayBuffer();
+                    }
+                    throw new Error(`Could not fetch the wasm component for the Zstandard decompression lib: ${response.status} - ${response.statusText}`);
+                })
                 .then((arrayBuffer) => WebAssembly.instantiate(arrayBuffer, IMPORT_OBJECT))
                 .then(this._init);
 

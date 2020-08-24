@@ -17,12 +17,18 @@ export class LiteTranscoder extends Transcoder {
             return this._modulePromise;
         }
 
-        this._modulePromise = new Promise((resolve) => {
-            WASMMemoryManager.LoadWASM(this._modulePath).then((wasmBinary) => {
-                WebAssembly.instantiate(wasmBinary as ArrayBuffer, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
-                    resolve({ module: moduleWrapper.instance.exports });
+        this._modulePromise = new Promise((resolve, reject) => {
+            WASMMemoryManager.LoadWASM(this._modulePath)
+                .then((wasmBinary) => {
+                    WebAssembly.instantiate(wasmBinary as ArrayBuffer, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
+                        resolve({ module: moduleWrapper.instance.exports });
+                    });
+                }, (reason) => {
+                    reject(reason);
+                })
+                .catch((reason) => {
+                    reject(reason);
                 });
-            });
         });
 
         return this._modulePromise;
@@ -57,6 +63,8 @@ export class LiteTranscoder extends Transcoder {
             textureView.set(encodedData);
 
             return transcoder.transcode(nBlocks) === 0 ? textureView.slice() : null;
+        }, (reason) => {
+            throw new Error(reason);
         });
     }
 }
