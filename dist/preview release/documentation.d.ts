@@ -85095,7 +85095,7 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IKHRMaterialVariants_Mapping extends IProperty {
-        mapping: Array<{
+        mappings: Array<{
             variants: number[];
             material: number;
         }>;

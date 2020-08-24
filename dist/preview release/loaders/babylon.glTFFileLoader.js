@@ -4027,7 +4027,7 @@ var KHR_materials_variants = /** @class */ (function () {
                     extensionMetadata.original.push({ mesh: babylonMesh, material: babylonMesh.material });
                     // For each mapping, look at the variants and make a new entry for them.
                     var variants_1 = extensionMetadata.variants;
-                    for (var _i = 0, _a = extension.mapping; _i < _a.length; _i++) {
+                    for (var _i = 0, _a = extension.mappings; _i < _a.length; _i++) {
                         var mapping = _a[_i];
                         var _loop_1 = function (variantIndex) {
                             var variant = _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["ArrayItem"].Get(extensionContext + "/mapping/" + variantIndex, _this._variants, variantIndex);
