@@ -225,6 +225,11 @@ export class Texture extends BaseTexture {
     private _delayedOnError: Nullable<() => void> = null;
     private _mimeType?: string;
 
+    /** Returns the texture mime type if it was defined by a loader (undefined else) */
+    public get mimeType() {
+        return this._mimeType;
+    }
+
     /**
      * Observable triggered once the texture has been loaded.
      */

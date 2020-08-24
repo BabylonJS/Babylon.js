@@ -536,7 +536,7 @@ export class _GLTFMaterialExporter {
                             else {
                                 reject("gltfMaterialExporter: Failed to get blob from image canvas!");
                             }
-                        });
+                        }, mimeType);
                     }
                 }
                 else {
@@ -1198,6 +1198,8 @@ export class _GLTFMaterialExporter {
                     samplerIndex = foundSamplerIndex;
                 }
                 const size = babylonTexture.getSize();
+
+                mimeType = (babylonTexture as Texture).mimeType || mimeType;
 
                 return this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then((base64Data) => {
                     const textureInfo = this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex);
