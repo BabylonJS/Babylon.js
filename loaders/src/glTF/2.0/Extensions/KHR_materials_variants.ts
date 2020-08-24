@@ -194,7 +194,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
                     // For each mapping, look at the variants and make a new entry for them.
                     const variants = extensionMetadata.variants;
-                    for (const mapping of extension.mapping) {
+                    for (const mapping of extension.mappings) {
                         for (const variantIndex of mapping.variants) {
                             const variant = ArrayItem.Get(`${extensionContext}/mapping/${variantIndex}`, this._variants, variantIndex);
                             const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
