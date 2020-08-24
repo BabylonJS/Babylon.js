@@ -53,7 +53,7 @@ VertexData.CreateSphere = function(options: { segments?: number, diameter?: numb
                     indices.push((firstIndex + 1));
                     indices.push(firstIndex + totalYRotationSteps + 1);
                 }
-                if (zRotationStep < totalZRotationSteps) {
+                if (zRotationStep < totalZRotationSteps || slice < 1.0) {
                     indices.push((firstIndex + totalYRotationSteps + 1));
                     indices.push((firstIndex + 1));
                     indices.push((firstIndex + totalYRotationSteps + 2));
