@@ -10092,7 +10092,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "../../node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n        #nodeList .panes .pane .filter input::placeholder {\n          color: gray; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .buttonLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch; }\n          #nodeList .panes .pane .list-container .buttonLine button {\n            background: #222222;\n            margin: 5px 10px 5px 10px;\n            color: white;\n            padding: 4px 5px;\n            opacity: 0.9; }\n          #nodeList .panes .pane .list-container .buttonLine button:hover {\n            opacity: 1.0; }\n          #nodeList .panes .pane .list-container .buttonLine button:active {\n            background: #282828; }\n          #nodeList .panes .pane .list-container .buttonLine button:focus {\n            outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
+exports.push([module.i, "#nodeList {\n  background: #333333;\n  height: 100%;\n  margin: 0;\n  padding: 0;\n  display: grid;\n  width: 100%;\n  overflow: hidden; }\n  #nodeList .panes {\n    overflow: hidden; }\n    #nodeList .panes .pane {\n      color: white;\n      overflow: hidden;\n      height: 100%;\n      -webkit-user-select: none;\n      -moz-user-select: none;\n      -ms-user-select: none;\n      user-select: none; }\n      #nodeList .panes .pane .filter {\n        display: flex;\n        align-items: stretch; }\n        #nodeList .panes .pane .filter input {\n          width: 100%;\n          margin: 10px 10px 5px 10px;\n          display: block;\n          border: none;\n          padding: 0;\n          border-bottom: solid 1px #337ab7;\n          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #337ab7 4%);\n          background-position: -1000px 0;\n          background-size: 1000px 100%;\n          background-repeat: no-repeat;\n          color: white; }\n        #nodeList .panes .pane .filter input:focus {\n          box-shadow: none;\n          outline: none;\n          background-position: 0 0; }\n        #nodeList .panes .pane .filter input::placeholder {\n          color: gray; }\n      #nodeList .panes .pane .list-container {\n        overflow-x: hidden;\n        overflow-y: auto;\n        height: calc(100% - 32px); }\n        #nodeList .panes .pane .list-container .underline {\n          border-bottom: 0.5px solid rgba(255, 255, 255, 0.5); }\n        #nodeList .panes .pane .list-container .draggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          cursor: grab;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n          #nodeList .panes .pane .list-container .draggableLine:hover {\n            background: #337ab7;\n            color: white; }\n        #nodeList .panes .pane .list-container .nonDraggableLine {\n          height: 30px;\n          display: grid;\n          align-items: center;\n          justify-items: stretch;\n          background: #222222;\n          text-align: center;\n          margin: 0;\n          box-sizing: border-box; }\n        #nodeList .panes .pane .list-container .withButton {\n          height: 40px;\n          position: relative; }\n          #nodeList .panes .pane .list-container .withButton .icon {\n            position: absolute;\n            right: 10px;\n            top: 10px; }\n            #nodeList .panes .pane .list-container .withButton .icon:hover {\n              cursor: pointer; }\n          #nodeList .panes .pane .list-container .withButton .buttonLine {\n            position: absolute;\n            right: 10px;\n            top: 10px; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine input[type=\"file\"] {\n              display: none; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload {\n              background: transparent;\n              border: transparent;\n              margin: 0px 0px;\n              color: white;\n              padding: 0px 0px 5px 20px;\n              opacity: 0.9;\n              cursor: pointer;\n              text-align: center; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload:hover {\n              opacity: 1.0; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine .file-upload:active {\n              transform: scale(0.98);\n              transform-origin: 0.5 0.5; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button {\n              background: transparent;\n              border: transparent;\n              margin: 5px 10px 5px 10px;\n              color: white;\n              padding: 4px 5px;\n              opacity: 0.9; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:hover {\n              opacity: 0.0; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:active {\n              background: transparent; }\n            #nodeList .panes .pane .list-container .withButton .buttonLine button:focus {\n              border: transparent;\n              outline: 0px; }\n        #nodeList .panes .pane .list-container .paneContainer {\n          margin-top: 3px;\n          display: grid;\n          grid-template-rows: 100%;\n          grid-template-columns: 100%; }\n          #nodeList .panes .pane .list-container .paneContainer .paneContainer-content {\n            grid-row: 1;\n            grid-column: 1; }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header {\n              display: grid;\n              grid-template-columns: 1fr auto;\n              background: #555555;\n              height: 30px;\n              padding-right: 5px;\n              cursor: pointer; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .title {\n                border-left: 3px solid transparent;\n                padding-left: 5px;\n                grid-column: 1;\n                display: flex;\n                align-items: center; }\n              #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse {\n                grid-column: 2;\n                display: flex;\n                align-items: center;\n                justify-items: center;\n                transform-origin: center; }\n                #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .header .collapse.closed {\n                  transform: rotate(180deg); }\n            #nodeList .panes .pane .list-container .paneContainer .paneContainer-content .paneList > div:not(:last-child) {\n              border-bottom: 1px solid rgba(255, 255, 255, 0.3); }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -62938,6 +62938,28 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "../imgs/add.svg":
+/*!***********************!*\
+  !*** ../imgs/add.svg ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 24 24' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24'%3E %3C!-- Generator: Sketch 63.1 (92452) - https://sketch.com --%3E %3Ctitle%3Eic_fluent_add_circle_24_regular%3C/title%3E %3Cdesc%3ECreated with Sketch.%3C/desc%3E %3Cg id='🔍-System-Icons' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E %3Cg id='ic_fluent_add_circle_24_regular' fill='white' fill-rule='nonzero'%3E %3Cpath d='M12,2 C17.5228475,2 22,6.4771525 22,12 C22,17.5228475 17.5228475,22 12,22 C6.4771525,22 2,17.5228475 2,12 C2,6.4771525 6.4771525,2 12,2 Z M12,3.5 C7.30557963,3.5 3.5,7.30557963 3.5,12 C3.5,16.6944204 7.30557963,20.5 12,20.5 C16.6944204,20.5 20.5,16.6944204 20.5,12 C20.5,7.30557963 16.6944204,3.5 12,3.5 Z M12,7 C12.4142136,7 12.75,7.33578644 12.75,7.75 L12.75,11.25 L16.25,11.25 C16.6642136,11.25 17,11.5857864 17,12 C17,12.4142136 16.6642136,12.75 16.25,12.75 L12.75,12.75 L12.75,16.25 C12.75,16.6642136 12.4142136,17 12,17 C11.5857864,17 11.25,16.6642136 11.25,16.25 L11.25,12.75 L7.75,12.75 C7.33578644,12.75 7,12.4142136 7,12 C7,11.5857864 7.33578644,11.25 7.75,11.25 L11.25,11.25 L11.25,7.75 C11.25,7.33578644 11.5857864,7 12,7 Z' id='🎨-Color'%3E%3C/path%3E %3C/g%3E %3C/g%3E %3C/svg%3E"
+
+/***/ }),
+
+/***/ "../imgs/delete.svg":
+/*!**************************!*\
+  !*** ../imgs/delete.svg ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/svg+xml,%3Csvg viewBox='0 0 24 24' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='24' height='24'%3E %3C!-- Generator: Sketch 59.1 (86144) - https://sketch.com --%3E %3Ctitle%3Eic_fluent_delete_24_regular%3C/title%3E %3Cdesc%3ECreated with Sketch.%3C/desc%3E %3Cg id='🔍-Product-Icons' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd'%3E %3Cg id='ic_fluent_delete_24_regular' fill='white' fill-rule='nonzero'%3E %3Cpath d='M12,1.75 C13.7330315,1.75 15.1492459,3.10645477 15.2448552,4.81557609 L15.25,5 L20.5,5 C20.9142136,5 21.25,5.33578644 21.25,5.75 C21.25,6.12969577 20.9678461,6.44349096 20.6017706,6.49315338 L20.5,6.5 L19.704,6.5 L18.4238627,19.5191927 C18.2911666,20.8682696 17.1984309,21.9099961 15.8626249,21.9944645 L15.6870698,22 L8.31293022,22 C6.95734302,22 5.81365352,21.0144851 5.59883106,19.6933629 L5.57613734,19.5191927 L4.295,6.5 L3.5,6.5 C3.12030423,6.5 2.80650904,6.21784612 2.75684662,5.85177056 L2.75,5.75 C2.75,5.37030423 3.03215388,5.05650904 3.39822944,5.00684662 L3.5,5 L8.75,5 C8.75,3.20507456 10.2050746,1.75 12,1.75 Z M18.197,6.5 L5.802,6.5 L7.06893346,19.3723603 C7.12767639,19.9695801 7.60033019,20.4342891 8.18584501,20.493596 L8.31293022,20.5 L15.6870698,20.5 C16.2871716,20.5 16.795916,20.0751057 16.9122531,19.4982083 L16.9310665,19.3723603 L18.197,6.5 Z M13.75,9.25 C14.1296958,9.25 14.443491,9.53215388 14.4931534,9.89822944 L14.5,10 L14.5,17 C14.5,17.4142136 14.1642136,17.75 13.75,17.75 C13.3703042,17.75 13.056509,17.4678461 13.0068466,17.1017706 L13,17 L13,10 C13,9.58578644 13.3357864,9.25 13.75,9.25 Z M10.25,9.25 C10.6296958,9.25 10.943491,9.53215388 10.9931534,9.89822944 L11,10 L11,17 C11,17.4142136 10.6642136,17.75 10.25,17.75 C9.87030423,17.75 9.55650904,17.4678461 9.50684662,17.1017706 L9.5,17 L9.5,10 C9.5,9.58578644 9.83578644,9.25 10.25,9.25 Z M12,3.25 C11.0818266,3.25 10.3288077,3.95711027 10.2558012,4.85647279 L10.25,5 L13.75,5 C13.75,4.03350169 12.9664983,3.25 12,3.25 Z' id='🎨-Color'%3E%3C/path%3E %3C/g%3E %3C/g%3E %3C/svg%3E"
+
+/***/ }),
+
 /***/ "./blockTools.ts":
 /*!***********************!*\
   !*** ./blockTools.ts ***!
@@ -63657,17 +63679,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/draggableLineComponent */ "./sharedComponents/draggableLineComponent.tsx");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Materials/Node/Enums/nodeMaterialModes */ "babylonjs/Misc/dataStorage");
 /* harmony import */ var babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _sharedComponents_draggableLineWithButtonComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/draggableLineWithButtonComponent */ "./sharedComponents/draggableLineWithButtonComponent.tsx");
+/* harmony import */ var _sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../sharedComponents/lineWithFileButtonComponent */ "./sharedComponents/lineWithFileButtonComponent.tsx");
 
 
 
 
 
+
+
+
+var addButton = __webpack_require__(/*! ../../../imgs/add.svg */ "../imgs/add.svg");
+var deleteButton = __webpack_require__(/*! ../../../imgs/delete.svg */ "../imgs/delete.svg");
 __webpack_require__(/*! ./nodeList.scss */ "./components/nodeList/nodeList.scss");
 var NodeListComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(NodeListComponent, _super);
     function NodeListComponent(props) {
         var _this = _super.call(this, props) || this;
         _this.state = { filter: "" };
+        var frameJson = localStorage.getItem("Custom-Frame-List");
+        if (frameJson) {
+            _this._customFrameList = JSON.parse(frameJson);
+        }
         _this._onResetRequiredObserver = _this.props.globalState.onResetRequiredObservable.add(function () {
             _this.forceUpdate();
         });
@@ -63679,10 +63712,55 @@ var NodeListComponent = /** @class */ (function (_super) {
     NodeListComponent.prototype.filterContent = function (filter) {
         this.setState({ filter: filter });
     };
+    NodeListComponent.prototype.loadCustomFrame = function (file) {
+        var _this = this;
+        babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["Tools"].ReadFile(file, function (data) { return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__awaiter"])(_this, void 0, void 0, function () {
+            var decoder, frameData, frameName, frameToolTip, frameJson, frameList;
+            return Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__generator"])(this, function (_a) {
+                decoder = new TextDecoder("utf-8");
+                frameData = JSON.parse(decoder.decode(data));
+                frameName = frameData.editorData.frames[0].name + "Custom";
+                frameToolTip = frameData.editorData.frames[0].comments || "";
+                try {
+                    localStorage.setItem(frameName, JSON.stringify(frameData));
+                }
+                catch (error) {
+                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
+                    return [2 /*return*/];
+                }
+                frameJson = localStorage.getItem("Custom-Frame-List");
+                frameList = {};
+                if (frameJson) {
+                    frameList = JSON.parse(frameJson);
+                }
+                frameList[frameName] = frameToolTip;
+                localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
+                this._customFrameList = frameList;
+                this.forceUpdate();
+                return [2 /*return*/];
+            });
+        }); }, undefined, true);
+    };
+    NodeListComponent.prototype.removeItem = function (value) {
+        var frameJson = localStorage.getItem("Custom-Frame-List");
+        if (frameJson) {
+            var frameList = JSON.parse(frameJson);
+            delete frameList[value];
+            localStorage.removeItem(value);
+            localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
+            this._customFrameList = frameList;
+            this.forceUpdate();
+        }
+    };
     NodeListComponent.prototype.render = function () {
         var _this = this;
+        var customFrameNames = [];
+        for (var frame in this._customFrameList) {
+            customFrameNames.push(frame);
+        }
         // Block types used to create the menu from
         var allBlocks = {
+            Custom_Frames: customFrameNames,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -63725,9 +63803,17 @@ var NodeListComponent = /** @class */ (function (_super) {
             var blockList = allBlocks[key].filter(function (b) { return !_this.state.filter || b.toLowerCase().indexOf(_this.state.filter.toLowerCase()) !== -1; })
                 .sort(function (a, b) { return a.localeCompare(b); })
                 .map(function (block, i) {
-                var tooltip = NodeListComponent._Tooltips[block] || "";
-                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: tooltip });
+                if (key === "Custom_Frames") {
+                    return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineWithButtonComponent__WEBPACK_IMPORTED_MODULE_5__["DraggableLineWithButtonComponent"], { key: block, data: block, tooltip: _this._customFrameList[block] || "", iconImage: deleteButton, iconTitle: "Delete", onIconClick: function (value) { return _this.removeItem(value); } });
+                }
+                return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: NodeListComponent._Tooltips[block] || "" });
             });
+            if (key === "Custom_Frames") {
+                var line = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { title: "Add Custom Frame", closed: false, label: "Add...", uploadName: 'custom-frame-upload', iconImage: addButton, accept: ".json", onIconClick: function (file) {
+                        _this.loadCustomFrame(file);
+                    } });
+                blockList.push(line);
+            }
             if (blockList.length) {
                 blockMenu.push(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { key: key + " blocks", title: key.replace("__", ": ").replace("_", " "), closed: false }, blockList));
             }
@@ -70928,6 +71014,29 @@ var GraphEditor = /** @class */ (function (_super) {
         var _this = this;
         var data = event.dataTransfer.getData("babylonjs-material-node");
         var newNode;
+        if (data.indexOf("Custom") > -1) {
+            var storageData = localStorage.getItem(data);
+            if (storageData) {
+                var frameData = JSON.parse(storageData);
+                //edit position before loading.
+                var newX = (event.clientX - event.currentTarget.offsetLeft - this._graphCanvas.x - this.NodeWidth) / this._graphCanvas.zoom;
+                var newY = (event.clientY - event.currentTarget.offsetTop - this._graphCanvas.y - 20) / this._graphCanvas.zoom;
+                ;
+                var oldX = frameData.editorData.frames[0].x;
+                var oldY = frameData.editorData.frames[0].y;
+                frameData.editorData.frames[0].x = newX;
+                frameData.editorData.frames[0].y = newY;
+                for (var _i = 0, _a = frameData.editorData.locations; _i < _a.length; _i++) {
+                    var location = _a[_i];
+                    location.x += newX - oldX;
+                    location.y += newY - oldY;
+                }
+                _serializationTools__WEBPACK_IMPORTED_MODULE_12__["SerializationTools"].AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeMaterial);
+                this._graphCanvas.frames[this._graphCanvas.frames.length - 1].cleanAccumulation();
+                this.forceUpdate();
+                return;
+            }
+        }
         if (data.indexOf("Block") === -1) {
             newNode = this.addValueNode(data);
         }
@@ -70935,8 +71044,8 @@ var GraphEditor = /** @class */ (function (_super) {
             var block_1 = _blockTools__WEBPACK_IMPORTED_MODULE_8__["BlockTools"].GetBlockFromString(data, this.props.globalState.nodeMaterial.getScene(), this.props.globalState.nodeMaterial);
             if (block_1.isUnique) {
                 var className = block_1.getClassName();
-                for (var _i = 0, _a = this._blocks; _i < _a.length; _i++) {
-                    var other = _a[_i];
+                for (var _b = 0, _c = this._blocks; _b < _c.length; _b++) {
+                    var other = _c[_b];
                     if (other !== block_1 && other.getClassName() === className) {
                         this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("You can only have one " + className + " per graph");
                         return;
@@ -71837,6 +71946,42 @@ var DraggableLineComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./sharedComponents/draggableLineWithButtonComponent.tsx":
+/*!***************************************************************!*\
+  !*** ./sharedComponents/draggableLineWithButtonComponent.tsx ***!
+  \***************************************************************/
+/*! exports provided: DraggableLineWithButtonComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DraggableLineWithButtonComponent", function() { return DraggableLineWithButtonComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
+
+var DraggableLineWithButtonComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(DraggableLineWithButtonComponent, _super);
+    function DraggableLineWithButtonComponent(props) {
+        return _super.call(this, props) || this;
+    }
+    DraggableLineWithButtonComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "draggableLine withButton", title: this.props.tooltip, draggable: true, onDragStart: function (event) {
+                event.dataTransfer.setData("babylonjs-material-node", _this.props.data);
+            } },
+            this.props.data.substr(0, this.props.data.length - 6),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon", onClick: function () { _this.props.onIconClick(_this.props.data); }, title: this.props.iconTitle },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { title: this.props.iconTitle, src: this.props.iconImage }))));
+    };
+    return DraggableLineWithButtonComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
 /***/ "./sharedComponents/fileButtonLineComponent.tsx":
 /*!******************************************************!*\
   !*** ./sharedComponents/fileButtonLineComponent.tsx ***!
@@ -72022,6 +72167,62 @@ var LineContainerComponent = /** @class */ (function (_super) {
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "paneList" }, this.props.children))));
     };
     return LineContainerComponent;
+}(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
+
+
+
+/***/ }),
+
+/***/ "./sharedComponents/lineWithFileButtonComponent.tsx":
+/*!**********************************************************!*\
+  !*** ./sharedComponents/lineWithFileButtonComponent.tsx ***!
+  \**********************************************************/
+/*! exports provided: LineWithFileButtonComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LineWithFileButtonComponent", function() { return LineWithFileButtonComponent; });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "../../node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/dataStorage */ "babylonjs/Misc/dataStorage");
+/* harmony import */ var babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__);
+
+
+
+var LineWithFileButtonComponent = /** @class */ (function (_super) {
+    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(LineWithFileButtonComponent, _super);
+    function LineWithFileButtonComponent(props) {
+        var _this = _super.call(this, props) || this;
+        var initialState = babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].ReadBoolean(_this.props.title, !_this.props.closed);
+        _this.state = { isExpanded: initialState };
+        _this.uploadRef = react__WEBPACK_IMPORTED_MODULE_1__["createRef"]();
+        return _this;
+    }
+    LineWithFileButtonComponent.prototype.onChange = function (evt) {
+        var files = evt.target.files;
+        if (files && files.length) {
+            this.props.onIconClick(files[0]);
+        }
+        evt.target.value = "";
+    };
+    LineWithFileButtonComponent.prototype.switchExpandedState = function () {
+        var newState = !this.state.isExpanded;
+        babylonjs_Misc_dataStorage__WEBPACK_IMPORTED_MODULE_2__["DataStorage"].WriteBoolean(this.props.title, newState);
+        this.setState({ isExpanded: newState });
+    };
+    LineWithFileButtonComponent.prototype.render = function () {
+        var _this = this;
+        return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "nonDraggableLine withButton" },
+            this.props.label,
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "icon", title: this.props.title },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { src: this.props.iconImage })),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { className: "buttonLine", title: this.props.title },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("label", { htmlFor: this.props.uploadName ? this.props.uploadName : "file-upload", className: "file-upload" }),
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", { ref: this.uploadRef, id: this.props.uploadName ? this.props.uploadName : "file-upload", type: "file", accept: this.props.accept, onChange: function (evt) { return _this.onChange(evt); } }))));
+    };
+    return LineWithFileButtonComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
 
 
