@@ -614,7 +614,7 @@ var KHR_lights_punctual = /** @class */ (function () {
     }
     /** @hidden */
     KHR_lights_punctual.prototype.dispose = function () {
-        delete this._lights;
+        this._lights = null;
     };
     Object.defineProperty(KHR_lights_punctual.prototype, "wasUsed", {
         /** @hidden */

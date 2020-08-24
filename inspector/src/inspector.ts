@@ -27,7 +27,7 @@ export class Inspector {
     private static _SceneExplorerHost: Nullable<HTMLElement>;
     private static _ActionTabsHost: Nullable<HTMLElement>;
     private static _EmbedHost: Nullable<HTMLElement>;
-    private static _NewCanvasContainer: HTMLElement;
+    private static _NewCanvasContainer: Nullable<HTMLElement>;
 
     private static _SceneExplorerWindow: Window;
     private static _ActionTabsWindow: Window;
@@ -471,6 +471,9 @@ export class Inspector {
     }
 
     private static _DestroyCanvasContainer() {
+        if (!this._NewCanvasContainer) {
+            return;
+        }
         const parentControl = this._NewCanvasContainer.parentElement!;
 
         while (this._NewCanvasContainer.childElementCount > 0) {
@@ -481,7 +484,7 @@ export class Inspector {
 
         parentControl.removeChild(this._NewCanvasContainer);
         parentControl.style.display = this._NewCanvasContainer.style.display;
-        delete this._NewCanvasContainer;
+        this._NewCanvasContainer = null;
     }
 
     private static _Cleanup() {

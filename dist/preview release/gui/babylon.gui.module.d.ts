@@ -4125,10 +4125,6 @@ declare module "babylonjs-gui/3D/materials/fluentMaterial" {
          */
         innerGlowColor: Color3;
         /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        alpha: number;
-        /**
          * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
          */
         albedoColor: Color3;
@@ -8295,10 +8291,6 @@ declare module BABYLON.GUI {
          * Gets or sets the inner glow color (white by default)
          */
         innerGlowColor: BABYLON.Color3;
-        /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        alpha: number;
         /**
          * Gets or sets the albedo color (Default is BABYLON.Color3(0.3, 0.35, 0.4))
          */
