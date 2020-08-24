@@ -130,10 +130,6 @@ export class MaterialDefines {
      * Rebuilds the material defines
      */
     public rebuild() {
-        if (this._keys) {
-            delete this._keys;
-        }
-
         this._keys = [];
 
         for (var key of Object.keys(this)) {

@@ -45,7 +45,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     /** @hidden */
     public dispose(): void {
         delete this.dracoCompression;
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */
