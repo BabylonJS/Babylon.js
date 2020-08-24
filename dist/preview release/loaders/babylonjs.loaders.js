@@ -4155,7 +4155,7 @@ var EXT_lights_image_based = /** @class */ (function () {
     }
     /** @hidden */
     EXT_lights_image_based.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
         delete this._lights;
     };
     /** @hidden */
@@ -4279,7 +4279,7 @@ var EXT_mesh_gpu_instancing = /** @class */ (function () {
     }
     /** @hidden */
     EXT_mesh_gpu_instancing.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     EXT_mesh_gpu_instancing.prototype.loadNodeAsync = function (context, node, assign) {
@@ -4367,7 +4367,7 @@ var EXT_texture_webp = /** @class */ (function () {
     }
     /** @hidden */
     EXT_texture_webp.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     EXT_texture_webp.prototype._loadTextureAsync = function (context, texture, assign) {
@@ -4426,7 +4426,7 @@ var ExtrasAsMetadata = /** @class */ (function () {
     };
     /** @hidden */
     ExtrasAsMetadata.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     ExtrasAsMetadata.prototype.loadNodeAsync = function (context, node, assign) {
@@ -4492,7 +4492,7 @@ var KHR_draco_mesh_compression = /** @class */ (function () {
     /** @hidden */
     KHR_draco_mesh_compression.prototype.dispose = function () {
         delete this.dracoCompression;
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_draco_mesh_compression.prototype._loadVertexDataAsync = function (context, primitive, babylonMesh) {
@@ -4588,7 +4588,7 @@ var KHR_lights = /** @class */ (function () {
     }
     /** @hidden */
     KHR_lights.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
         delete this._lights;
     };
     /** @hidden */
@@ -4686,7 +4686,7 @@ var KHR_materials_clearcoat = /** @class */ (function () {
     }
     /** @hidden */
     KHR_materials_clearcoat.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_materials_clearcoat.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
@@ -4785,7 +4785,7 @@ var KHR_materials_ior = /** @class */ (function () {
     }
     /** @hidden */
     KHR_materials_ior.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_materials_ior.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
@@ -4857,7 +4857,7 @@ var KHR_materials_pbrSpecularGlossiness = /** @class */ (function () {
     }
     /** @hidden */
     KHR_materials_pbrSpecularGlossiness.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_materials_pbrSpecularGlossiness.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
@@ -4948,7 +4948,7 @@ var KHR_materials_sheen = /** @class */ (function () {
     }
     /** @hidden */
     KHR_materials_sheen.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_materials_sheen.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
@@ -5033,7 +5033,7 @@ var KHR_materials_specular = /** @class */ (function () {
     }
     /** @hidden */
     KHR_materials_specular.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_materials_specular.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
@@ -5111,7 +5111,7 @@ var KHR_materials_transmission = /** @class */ (function () {
     }
     /** @hidden */
     KHR_materials_transmission.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_materials_transmission.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
@@ -5198,7 +5198,7 @@ var KHR_materials_unlit = /** @class */ (function () {
     }
     /** @hidden */
     KHR_materials_unlit.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_materials_unlit.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
@@ -5276,7 +5276,7 @@ var KHR_materials_variants = /** @class */ (function () {
     }
     /** @hidden */
     KHR_materials_variants.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /**
      * Gets the list of available variant names for this asset.
@@ -5504,7 +5504,7 @@ var KHR_texture_basisu = /** @class */ (function () {
     }
     /** @hidden */
     KHR_texture_basisu.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_texture_basisu.prototype._loadTextureAsync = function (context, texture, assign) {
@@ -5557,7 +5557,7 @@ var KHR_texture_transform = /** @class */ (function () {
     }
     /** @hidden */
     KHR_texture_transform.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /** @hidden */
     KHR_texture_transform.prototype.loadTextureInfoAsync = function (context, textureInfo, assign) {
@@ -5629,7 +5629,7 @@ var KHR_xmp = /** @class */ (function () {
     }
     /** @hidden */
     KHR_xmp.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     /**
      * Called after the loader state changes to LOADING.
@@ -5689,9 +5689,9 @@ var MSFT_audio_emitter = /** @class */ (function () {
     }
     /** @hidden */
     MSFT_audio_emitter.prototype.dispose = function () {
-        delete this._loader;
-        delete this._clips;
-        delete this._emitters;
+        this._loader = null;
+        this._clips = null;
+        this._emitters = null;
     };
     /** @hidden */
     MSFT_audio_emitter.prototype.onLoading = function () {
@@ -5949,7 +5949,7 @@ var MSFT_lod = /** @class */ (function () {
     }
     /** @hidden */
     MSFT_lod.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
         this._nodeIndexLOD = null;
         this._nodeSignalLODs.length = 0;
         this._nodePromiseLODs.length = 0;
@@ -6259,7 +6259,7 @@ var MSFT_minecraftMesh = /** @class */ (function () {
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
     MSFT_minecraftMesh.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     MSFT_minecraftMesh.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
         var _this = this;
@@ -6312,7 +6312,7 @@ var MSFT_sRGBFactors = /** @class */ (function () {
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
     MSFT_sRGBFactors.prototype.dispose = function () {
-        delete this._loader;
+        this._loader = null;
     };
     MSFT_sRGBFactors.prototype.loadMaterialPropertiesAsync = function (context, material, babylonMaterial) {
         var _this = this;
@@ -6631,9 +6631,9 @@ var GLTFLoader = /** @class */ (function () {
             extension.dispose && extension.dispose();
             delete this._extensions[name_1];
         }
-        delete this._gltf;
-        delete this._babylonScene;
-        delete this._rootBabylonMesh;
+        this._gltf = null;
+        this._babylonScene = null;
+        this._rootBabylonMesh = null;
         this._parent.dispose();
     };
     /** @hidden */
@@ -8574,8 +8574,11 @@ _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFFileLoader"]._CreateGLTF2Loade
 /*!*****************************************!*\
   !*** ./glTF/2.0/glTFLoaderExtension.ts ***!
   \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 
 
 
@@ -8585,8 +8588,11 @@ _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFFileLoader"]._CreateGLTF2Loade
 /*!******************************************!*\
   !*** ./glTF/2.0/glTFLoaderInterfaces.ts ***!
   \******************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 
 
 
@@ -8596,7 +8602,7 @@ _glTFFileLoader__WEBPACK_IMPORTED_MODULE_1__["GLTFFileLoader"]._CreateGLTF2Loade
 /*!***************************!*\
   !*** ./glTF/2.0/index.ts ***!
   \***************************/
-/*! no static exports found */
+/*! exports provided: ArrayItem, GLTFLoader, EXT_lights_image_based, EXT_mesh_gpu_instancing, EXT_texture_webp, KHR_draco_mesh_compression, KHR_lights, KHR_materials_pbrSpecularGlossiness, KHR_materials_unlit, KHR_materials_clearcoat, KHR_materials_sheen, KHR_materials_specular, KHR_materials_ior, KHR_materials_variants, KHR_materials_transmission, KHR_mesh_quantization, KHR_texture_basisu, KHR_texture_transform, KHR_xmp, MSFT_audio_emitter, MSFT_lod, MSFT_minecraftMesh, MSFT_sRGBFactors, ExtrasAsMetadata */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8607,12 +8613,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GLTFLoader", function() { return _glTFLoader__WEBPACK_IMPORTED_MODULE_0__["GLTFLoader"]; });
 
 /* harmony import */ var _glTFLoaderExtension__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./glTFLoaderExtension */ "./glTF/2.0/glTFLoaderExtension.ts");
-/* harmony import */ var _glTFLoaderExtension__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_glTFLoaderExtension__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _glTFLoaderExtension__WEBPACK_IMPORTED_MODULE_1__) if(["ArrayItem","GLTFLoader","default"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _glTFLoaderExtension__WEBPACK_IMPORTED_MODULE_1__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./glTF/2.0/glTFLoaderInterfaces.ts");
-/* harmony import */ var _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_2__) if(["ArrayItem","GLTFLoader","default"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_2__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var _Extensions__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Extensions */ "./glTF/2.0/Extensions/index.ts");
+/* empty/unused harmony star reexport *//* harmony import */ var _glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./glTFLoaderInterfaces */ "./glTF/2.0/glTFLoaderInterfaces.ts");
+/* empty/unused harmony star reexport *//* harmony import */ var _Extensions__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Extensions */ "./glTF/2.0/Extensions/index.ts");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_lights_image_based", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_3__["EXT_lights_image_based"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EXT_mesh_gpu_instancing", function() { return _Extensions__WEBPACK_IMPORTED_MODULE_3__["EXT_mesh_gpu_instancing"]; });
@@ -9857,7 +9859,6 @@ if (typeof globalObject !== "undefined") {
 __webpack_require__.r(__webpack_exports__);
 /* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var _glTF_2_0_Extensions__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../glTF/2.0/Extensions */ "./glTF/2.0/Extensions/index.ts");
 /* harmony import */ var _glTF_2_0_glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../glTF/2.0/glTFLoaderInterfaces */ "./glTF/2.0/glTFLoaderInterfaces.ts");
-/* harmony import */ var _glTF_2_0_glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_glTF_2_0_glTFLoaderInterfaces__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _glTF_2_0__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../glTF/2.0 */ "./glTF/2.0/index.ts");
 /* harmony reexport (module object) */ __webpack_require__.d(__webpack_exports__, "GLTF2", function() { return _glTF_2_0__WEBPACK_IMPORTED_MODULE_2__; });
 

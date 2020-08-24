@@ -90,7 +90,7 @@ export class BaseTexture implements IAnimatable {
     public coordinatesIndex = 0;
 
     @serialize("coordinatesMode")
-    private _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
+    protected _coordinatesMode = Constants.TEXTURE_EXPLICIT_MODE;
 
     /**
     * How a texture is mapped.
@@ -121,6 +121,7 @@ export class BaseTexture implements IAnimatable {
         return this._coordinatesMode;
     }
 
+    private _wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
     /**
     * | Value | Type               | Description |
     * | ----- | ------------------ | ----------- |
@@ -129,8 +130,15 @@ export class BaseTexture implements IAnimatable {
     * | 2     | MIRROR_ADDRESSMODE |             |
     */
     @serialize()
-    public wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    public get wrapU() {
+        return this._wrapU;
+    }
 
+    public set wrapU(value: number) {
+        this._wrapU = value;
+    }
+
+    private _wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
     /**
     * | Value | Type               | Description |
     * | ----- | ------------------ | ----------- |
@@ -139,7 +147,13 @@ export class BaseTexture implements IAnimatable {
     * | 2     | MIRROR_ADDRESSMODE |             |
     */
     @serialize()
-    public wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+    public get wrapV() {
+        return this._wrapV;
+    }
+
+    public set wrapV(value: number) {
+        this._wrapV = value;
+    }
 
     /**
     * | Value | Type               | Description |

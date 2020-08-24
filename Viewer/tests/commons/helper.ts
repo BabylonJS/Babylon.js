@@ -41,7 +41,7 @@ export class Helper {
     public static disposeViewer() {
         if (Helper.viewer != null) {
             Helper.viewer.dispose();
-            delete Helper.viewer;
+            (Helper.viewer as any)= null;
         }
     }
 

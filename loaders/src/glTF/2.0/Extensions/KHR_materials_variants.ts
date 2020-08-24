@@ -47,7 +47,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /**

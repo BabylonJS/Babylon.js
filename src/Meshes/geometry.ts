@@ -1348,7 +1348,7 @@ export class Geometry implements IGetSetVerticesData {
         // Flat shading
         if (mesh._shouldGenerateFlatShading) {
             mesh.convertToFlatShadedMesh();
-            delete mesh._shouldGenerateFlatShading;
+            mesh._shouldGenerateFlatShading = false;
         }
 
         // Update
