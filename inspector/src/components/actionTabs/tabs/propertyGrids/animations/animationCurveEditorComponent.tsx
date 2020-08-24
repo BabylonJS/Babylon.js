@@ -319,8 +319,8 @@ export class AnimationCurveEditorComponent extends React.Component<
         }
     }
 
-    encodeCurveId(animationName: string, coordinate: number) {
-        return animationName + "_" + coordinate;
+    encodeCurveId(animationName: string, keyframeIndex: number) {
+        return animationName + "_" + keyframeIndex;
     }
 
     decodeCurveId(id: string) {
@@ -371,6 +371,20 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.setState({
             svgKeyframes: updatedKeyframes,
             actionableKeyframe: frameValue ?? this.state.actionableKeyframe,
+        });
+    };
+
+    selectKeyframeFromId = (id: string, actionableKeyframe: IActionableKeyFrame) => {
+        this.deselectKeyframes();
+        const updatedKeyframes = this.state.svgKeyframes?.map((kf) => {
+            if (kf.id === id) {
+                kf.selected = true;
+            }
+            return kf;
+        });
+        this.setState({
+            svgKeyframes: updatedKeyframes,
+            actionableKeyframe: actionableKeyframe ?? this.state.actionableKeyframe,
         });
     };
 
@@ -1633,7 +1647,15 @@ export class AnimationCurveEditorComponent extends React.Component<
                 currentFrame: frame,
                 isPlaying: false,
             },
-            () => this.setCanvasPosition(keyframe)
+            () => {
+                if (this.state.selected) {
+                    const index = this.state.selected.getKeys().findIndex((x) => x.frame === keyframe.frame);
+                    const animationName = `${this.state.selected.name}_${this.state.selected.targetProperty}_${this.state.selectedCoordinate}`;
+                    const id = this.encodeCurveId(animationName, index);
+                    this.selectKeyframeFromId(id, keyframe);
+                }
+                this.setCanvasPosition(keyframe);
+            }
         );
     };
 
@@ -1682,11 +1704,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                 ];
             }
 
-            const centerCanvas = this._heightScale / 2;
-            let positionY = centerCanvas - value * centerCanvas;
-            if (positionY === centerCanvas) {
-                positionY = 0;
-            }
+            const valueScale = this._heightScale / this._scaleFactor;
+            const positionY = value === 0 ? 0 : valueScale - value * valueScale;
 
             this.setState({ panningX: positionX, panningY: positionY, repositionCanvas: true });
         }
