@@ -1199,7 +1199,18 @@ export class _GLTFMaterialExporter {
                 }
                 const size = babylonTexture.getSize();
 
-                mimeType = (babylonTexture as Texture).mimeType || mimeType;
+                // Preserve texture mime type if defined
+                if ((babylonTexture as Texture).mimeType) {
+                    switch ((babylonTexture as Texture).mimeType) {
+                        case "image/jpeg":
+                            mimeType = ImageMimeType.JPEG;
+                            break;
+                        case "image/png":
+                            mimeType = ImageMimeType.PNG;
+                            break;
+                    }
+
+                }
 
                 return this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then((base64Data) => {
                     const textureInfo = this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex);
