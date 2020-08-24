@@ -557,8 +557,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 let oldY = frameData.editorData.frames[0].y;
                 frameData.editorData.frames[0].x = newX;
                 frameData.editorData.frames[0].y = newY;
-                for (var location of frameData.editorData.locations) 
-                {
+                for (var location of frameData.editorData.locations) {
                     location.x +=  newX - oldX;
                     location.y +=  newY - oldY;       
                 }
