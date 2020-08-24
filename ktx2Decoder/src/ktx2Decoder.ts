@@ -32,6 +32,7 @@ export interface IDecodedData {
     height: number;
     transcodedFormat: number;
     mipmaps: Array<IMipmap>;
+    errors?: string;
 }
 
 export interface IMipmap {
@@ -179,19 +180,23 @@ export class KTX2Decoder {
                     height: levelHeight,
                 };
 
-                const transcodedData = transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData).
-                        then((data) => {
-                            mipmap.data = data;
-                            if (data) {
-                                mipmapBuffers.push(data.buffer);
-                            }
-                            return data;
+                const transcodedData = transcoder.transcode(srcTexFormat, targetFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
+                    .then((data) => {
+                        mipmap.data = data;
+                        if (data) {
+                            mipmapBuffers.push(data.buffer);
                         }
-                      );
-
-                mipmaps.push(mipmap);
+                        return data;
+                    })
+                    .catch((reason) => {
+                        decodedData.errors = decodedData.errors ?? "";
+                        decodedData.errors += reason + "\n";
+                        return null;
+                    });
 
                 dataPromises.push(transcodedData);
+
+                mipmaps.push(mipmap);
             }
         }
 

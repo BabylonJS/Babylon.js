@@ -12,10 +12,18 @@ export class WASMMemoryManager {
 
     public static LoadWASM(path: string): Promise<ArrayBuffer> {
         if (this.LoadBinariesFromCurrentThread) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 fetch(path)
-                .then((response) => response.arrayBuffer())
-                .then((wasmBinary) => resolve(wasmBinary));
+                .then((response) => {
+                    if (response.ok) {
+                        return response.arrayBuffer();
+                    }
+                    throw new Error(`Could not fetch the wasm component from "${path}": ${response.status} - ${response.statusText}`);
+                })
+                .then((wasmBinary) => resolve(wasmBinary))
+                .catch((reason) => {
+                    reject(reason);
+                });
             });
         }
 

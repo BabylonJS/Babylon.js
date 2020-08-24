@@ -335,16 +335,8 @@ export class KTX2FileReader {
         return false;
     }
 
-    public needZSTDDecoder(): boolean {
-        let needZSTDDecoder = false;
-
-        for (let level = 0; level < this._header.levelCount && !needZSTDDecoder; level ++) {
-            if (this._header.supercompressionScheme === supercompressionScheme.ZStandard) {
-                needZSTDDecoder = true;
-            }
-        }
-
-        return needZSTDDecoder;
+    public get needZSTDDecoder(): boolean {
+        return this._header.supercompressionScheme === supercompressionScheme.ZStandard;
     }
 
     public static IsValid(data: ArrayBufferView): boolean {

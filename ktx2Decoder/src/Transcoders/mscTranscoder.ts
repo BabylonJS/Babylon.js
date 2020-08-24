@@ -30,17 +30,21 @@ export class MSCTranscoder extends Transcoder {
             return this._mscBasisTranscoderPromise;
         }
 
-        this._mscBasisTranscoderPromise = new Promise((resolve) => {
+        this._mscBasisTranscoderPromise = new Promise((resolve, reject) => {
             if (MSCTranscoder.UseFromWorkerThread) {
                 importScripts(MSCTranscoder.JSModuleURL);
             }
-            WASMMemoryManager.LoadWASM(MSCTranscoder.WasmModuleURL).then((wasmBinary) => {
-                MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
-                    basisModule.initTranscoders();
-                    this._mscBasisModule = basisModule;
-                    resolve();
+            WASMMemoryManager.LoadWASM(MSCTranscoder.WasmModuleURL)
+                .then((wasmBinary) => {
+                    MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
+                        basisModule.initTranscoders();
+                        this._mscBasisModule = basisModule;
+                        resolve();
+                    });
+                })
+                .catch((reason) => {
+                    reject(reason);
                 });
-            });
         });
 
         return this._mscBasisTranscoderPromise;
@@ -103,6 +107,8 @@ export class MSCTranscoder extends Transcoder {
             }
 
             return null;
+        }, (reason) => {
+            throw new Error(reason);
         });
     }
 }
