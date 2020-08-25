@@ -3115,6 +3115,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var serializationInstance: any = {
                 name: instance.name,
                 id: instance.id,
+                isEnabled: instance.isEnabled(false),
+                isVisible: instance.isVisible,
                 isPickable: instance.isPickable,
                 checkCollisions: instance.checkCollisions,
                 position: instance.position.asArray(),
@@ -3522,6 +3524,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 if (parsedInstance.parentId) {
                     instance._waitingParentId = parsedInstance.parentId;
+                }
+
+                if (parsedInstance.isEnabled !== undefined && parsedInstance.isEnabled !== null) {
+                    instance.setEnabled(parsedInstance.isEnabled);
+                }
+
+                if (parsedInstance.isVisible !== undefined && parsedInstance.isVisible !== null) {
+                    instance.isVisible = parsedInstance.isVisible;
                 }
 
                 if (parsedInstance.isPickable !== undefined && parsedInstance.isPickable !== null) {
