@@ -267,9 +267,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
     }
 
     saveTexture() {
-        Tools.ToBlob(this._2DCanvas.current!, (blob) => {
-            Tools.Download(blob!, this.props.url);
-        });
+        this._textureCanvasManager.saveTexture();
     }
 
     resetTexture() {

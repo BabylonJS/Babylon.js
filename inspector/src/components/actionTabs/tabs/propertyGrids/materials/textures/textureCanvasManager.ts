@@ -100,6 +100,7 @@ export class TextureCanvasManager {
     private static MAX_SCALE : number = 10;
 
     private static SELECT_ALL_KEY = 'KeyA';
+    private static SAVE_KEY ='KeyS';
     private static DESELECT_KEY = 'Escape'
 
     private _tool : Nullable<ITool>;
@@ -208,6 +209,10 @@ export class TextureCanvasManager {
                         y2: this._size.height
                     }
                 });
+                evt.preventDefault();
+            }
+            if (evt.code === TextureCanvasManager.SAVE_KEY && evt.ctrlKey) {
+                this.saveTexture();
                 evt.preventDefault();
             }
             if (evt.code === TextureCanvasManager.DESELECT_KEY) {
@@ -639,6 +644,13 @@ export class TextureCanvasManager {
             };
 
         }, undefined, true);
+    }
+
+    public saveTexture() {
+        const canvas = this._editing3D ? this._3DCanvas : this._2DCanvas;
+        Tools.ToBlob(canvas, (blob) => {
+            Tools.Download(blob!, this._originalTexture.name);
+        });
     }
 
     public dispose() {
