@@ -23,7 +23,7 @@ export class DraggableLineWithButtonComponent extends React.Component<IDraggable
                 }}>
                 {this.props.data.substr(0, this.props.data.length - 6)}
                 <div className="icon" onClick={() => { this.props.onIconClick(this.props.data); }} title={this.props.iconTitle}>
-                    <img title={this.props.iconTitle} src={this.props.iconImage}/>
+                    <img className="img" title={this.props.iconTitle} src={this.props.iconImage}/>
                 </div>
             </div>
         );

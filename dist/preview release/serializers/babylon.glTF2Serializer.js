@@ -4146,7 +4146,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                             else {
                                 reject("gltfMaterialExporter: Failed to get blob from image canvas!");
                             }
-                        });
+                        }, mimeType);
                     }
                 }
                 else {
@@ -4742,6 +4742,17 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                     samplerIndex_1 = foundSamplerIndex;
                 }
                 var size = babylonTexture.getSize();
+                // Preserve texture mime type if defined
+                if (babylonTexture.mimeType) {
+                    switch (babylonTexture.mimeType) {
+                        case "image/jpeg":
+                            mimeType = "image/jpeg" /* JPEG */;
+                            break;
+                        case "image/png":
+                            mimeType = "image/png" /* PNG */;
+                            break;
+                    }
+                }
                 return _this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then(function (base64Data) {
                     var textureInfo = _this._getTextureInfoFromBase64(base64Data, babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"), mimeType, babylonTexture.coordinatesIndex, samplerIndex_1);
                     if (textureInfo) {

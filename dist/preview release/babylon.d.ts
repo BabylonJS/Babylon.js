@@ -23286,6 +23286,8 @@ declare module BABYLON {
         private _delayedOnLoad;
         private _delayedOnError;
         private _mimeType?;
+        /** Returns the texture mime type if it was defined by a loader (undefined else) */
+        get mimeType(): string | undefined;
         /**
          * Observable triggered once the texture has been loaded.
          */
