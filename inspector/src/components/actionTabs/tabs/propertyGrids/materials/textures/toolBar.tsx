@@ -16,6 +16,7 @@ interface IToolBarProps {
     pickerOpen: boolean;
     setPickerOpen(open: boolean): void;
     pickerRef: React.RefObject<HTMLDivElement>;
+    hasAlpha: boolean;
 }
 
 interface IToolBarState {
@@ -75,7 +76,7 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
             {
                 this.props.pickerOpen &&
                 <div id='color-picker' ref={this.props.pickerRef}>
-                    <SketchPicker color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, alpha: color.rgb.a})}/>
+                    <SketchPicker disableAlpha={!this.props.hasAlpha} color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, alpha: color.rgb.a})}/>
                 </div>
             }
         </div>;

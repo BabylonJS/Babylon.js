@@ -286,7 +286,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
 
     render() {
         const currentTool : ITool | undefined = this.state.tools[this.state.activeToolIndex];
-        
+
         return <div id="texture-editor" onPointerDown={this.onPointerDown}>
             <PropertiesBar
                 texture={this.props.texture}
@@ -311,6 +311,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
                 pickerOpen={this.state.pickerOpen}
                 setPickerOpen={this.setPickerOpen}
                 pickerRef={this._pickerRef}
+                hasAlpha={this.props.texture.hasAlpha}
             />}
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
             <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
