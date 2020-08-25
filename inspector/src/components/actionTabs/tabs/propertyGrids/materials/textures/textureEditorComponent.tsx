@@ -34,6 +34,7 @@ interface ITextureEditorComponentState {
     pixelData : IPixelData;
     face: number;
     mipLevel: number;
+    pickerOpen: boolean;
 }
 
 export interface IToolParameters {
@@ -117,6 +118,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
     private _UICanvas = React.createRef<HTMLCanvasElement>();
     private _2DCanvas = React.createRef<HTMLCanvasElement>();
     private _3DCanvas = React.createRef<HTMLCanvasElement>();
+    private _pickerRef = React.createRef<HTMLDivElement>();
     private _timer : number | null;
     private static PREVIEW_UPDATE_DELAY_MS = 160;
 
@@ -148,7 +150,8 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             channels,
             pixelData: {},
             face: 0,
-            mipLevel: 0
+            mipLevel: 0,
+            pickerOpen: false
         }
         this.loadToolFromURL = this.loadToolFromURL.bind(this);
         this.changeTool = this.changeTool.bind(this);
@@ -157,7 +160,8 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this.resetTexture = this.resetTexture.bind(this);
         this.resizeTexture = this.resizeTexture.bind(this);
         this.uploadTexture = this.uploadTexture.bind(this);
-
+        this.setPickerOpen = this.setPickerOpen.bind(this);
+        this.onPointerDown = this.onPointerDown.bind(this);
     }
 
     componentDidMount() {
@@ -252,6 +256,16 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this._textureCanvasManager.metadata = data;
     }
 
+    setPickerOpen(open: boolean) {
+        this.setState({pickerOpen: open});
+    }
+
+    onPointerDown(evt: React.PointerEvent) {
+        if (!this._pickerRef.current?.contains(evt.target as Node)) {
+            this.setPickerOpen(false);
+        }
+    }
+
     saveTexture() {
         Tools.ToBlob(this._2DCanvas.current!, (blob) => {
             Tools.Download(blob!, this.props.url);
@@ -272,7 +286,8 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
 
     render() {
         const currentTool : ITool | undefined = this.state.tools[this.state.activeToolIndex];
-        return <div id="texture-editor">
+        
+        return <div id="texture-editor" onPointerDown={this.onPointerDown}>
             <PropertiesBar
                 texture={this.props.texture}
                 saveTexture={this.saveTexture}
@@ -284,6 +299,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
                 uploadTexture={this.uploadTexture}
                 mipLevel={this.state.mipLevel}
                 setMipLevel={mipLevel => this.setState({mipLevel})}
+                size={this._textureCanvasManager?.size || this.props.texture.getSize()}
             />
             {!this.props.texture.isCube && <ToolBar
                 tools={this.state.tools}
@@ -292,6 +308,9 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
                 changeTool={this.changeTool}
                 metadata={this.state.metadata}
                 setMetadata={this.setMetadata}
+                pickerOpen={this.state.pickerOpen}
+                setPickerOpen={this.setPickerOpen}
+                pickerRef={this._pickerRef}
             />}
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
             <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
