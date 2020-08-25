@@ -643,7 +643,7 @@ SceneLoader.RegisterPlugin({
                             skeleton.overrideMesh = scene.getMeshByID(skeleton._waitingOverrideMeshId);
                             skeleton._waitingOverrideMeshId = null;
                         }
-        
+
                         skeleton._hasWaitingData = null;
                     }
                 }
