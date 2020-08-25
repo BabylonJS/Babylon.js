@@ -3892,10 +3892,6 @@ declare module BABYLON.GUI {
          */
         innerGlowColor: BABYLON.Color3;
         /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        alpha: number;
-        /**
          * Gets or sets the albedo color (Default is BABYLON.Color3(0.3, 0.35, 0.4))
          */
         albedoColor: BABYLON.Color3;

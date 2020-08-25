@@ -64,9 +64,9 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
-        delete this._clips;
-        delete this._emitters;
+        (this._loader as any) = null;
+        (this._clips as any) = null;
+        (this._emitters as any) = null;
     }
 
     /** @hidden */
