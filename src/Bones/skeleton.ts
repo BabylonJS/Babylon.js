@@ -770,7 +770,7 @@ export class Skeleton implements IAnimatable {
 
         skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
 
-        if (parsedSkeleton.overrideMeshId){
+        if (parsedSkeleton.overrideMeshId) {
             skeleton._hasWaitingData = true;
             skeleton._waitingOverrideMeshId = parsedSkeleton.overrideMeshId;
         }
