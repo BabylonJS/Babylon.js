@@ -646,7 +646,6 @@ SceneLoader.RegisterPlugin({
         
                         skeleton._hasWaitingData = null;
                     }
-                    skeleton.returnToRest();
                 }
 
                 // freeze and compute world matrix application
