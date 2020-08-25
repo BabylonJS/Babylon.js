@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { IPixelData } from './textureCanvasManager';
+import { ISize } from 'babylonjs/Maths/math.size';
 
 interface IPropertiesBarProps {
     texture: BaseTexture;
+    size: ISize;
     saveTexture(): void;
     pixelData: IPixelData;
     face: number;
@@ -21,7 +23,7 @@ interface IPropertiesBarState {
 }
 
 interface IPixelDataProps {
-    name : string;
+    name: string;
     data: number | undefined;
 }
 
@@ -50,8 +52,8 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
         super(props);
 
         this.state = {
-            width: props.texture.getSize().width,
-            height: props.texture.getSize().height
+            width: props.size.width,
+            height: props.size.height
         }
     }
 
@@ -69,8 +71,18 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
         return oldDim;
     }
 
+    componentWillUpdate(nextProps: IPropertiesBarProps) {
+        if (nextProps.size.width != this.props.size.width || nextProps.size.height != this.props.size.height) {
+            this.setState({
+                width: nextProps.size.width,
+                height: nextProps.size.height
+            })
+        }
+    }
+
     render() {
         const {mipLevel, setMipLevel, pixelData, resizeTexture, texture, face, setFace, saveTexture, resetTexture, uploadTexture} = this.props;
+        const maxLevels = 1 + Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
         return <div id='properties'>
                 <div className='tab' id='logo-tab'>
                     <img className='icon' src={this._babylonLogo}/>
@@ -114,7 +126,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
                     {!texture.noMipmap &&
                         <div className='tab' id='mip-tab'>
                             <img title='Mip Preview Up' className='icon button' src={this._mipUp} onClick={() => mipLevel > 0 && setMipLevel(mipLevel - 1)} />
-                            <img title='Mip Preview Down' className='icon button' src={this._mipDown} onClick={() => mipLevel < 12 && setMipLevel(mipLevel + 1)} />
+                            <img title='Mip Preview Down' className='icon button' src={this._mipDown} onClick={() => mipLevel < maxLevels && setMipLevel(mipLevel + 1)} />
                         </div>
                     }
                 </div>

@@ -4,7 +4,6 @@ import { Vector3, Vector2 } from 'babylonjs/Maths/math.vector';
 import { Color4, Color3 } from 'babylonjs/Maths/math.color';
 import { FreeCamera } from 'babylonjs/Cameras/freeCamera';
 import { Nullable } from 'babylonjs/types'
-
 import { PlaneBuilder } from 'babylonjs/Meshes/Builders/planeBuilder';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { Camera } from 'babylonjs/Cameras/camera';
@@ -29,6 +28,8 @@ import { TextureHelper } from '../../../../../../textureHelper';
 import { ITool } from './toolBar';
 import { IChannel } from './channelsBar';
 import { IMetadata } from './textureEditorComponent';
+
+import { canvasShader } from './canvasShader';
 
 
 export interface IPixelData {
@@ -86,8 +87,8 @@ export class TextureCanvasManager {
     /* Tracks which keys are currently pressed */
     private _keyMap : any = {};
 
-    private static ZOOM_MOUSE_SPEED : number = 0.0005;
-    private static ZOOM_KEYBOARD_SPEED : number = 0.2;
+    private static ZOOM_MOUSE_SPEED : number = 0.001;
+    private static ZOOM_KEYBOARD_SPEED : number = 0.4;
     private static ZOOM_IN_KEY : string = '+';
     private static ZOOM_OUT_KEY : string = '-';
 
@@ -95,6 +96,7 @@ export class TextureCanvasManager {
     private static PAN_MOUSE_BUTTON : number = 1; // MMB
 
     private static MIN_SCALE : number = 0.01;
+    private static GRID_SCALE : number = 0.047;
     private static MAX_SCALE : number = 10;
 
     private static SELECT_ALL_KEY = 'KeyA';
@@ -144,7 +146,7 @@ export class TextureCanvasManager {
         this._originalTexture = texture;
         this._originalInternalTexture = this._originalTexture._texture;
         this._engine = new Engine(this._UICanvas, true);
-        this._scene = new Scene(this._engine);
+        this._scene = new Scene(this._engine, {virtual: true});
         this._scene.clearColor = new Color4(0.11, 0.11, 0.11, 1.0);
 
         this._camera = new FreeCamera('camera', new Vector3(0, 0, -1), this._scene);
@@ -154,7 +156,7 @@ export class TextureCanvasManager {
         this._channelsTexture = new HtmlElementTexture('ct', this._2DCanvas, {engine: this._engine, scene: null, samplingMode: Texture.NEAREST_SAMPLINGMODE, generateMipMaps: true});
 
         this._3DEngine = new Engine(this._3DCanvas);
-        this._3DScene = new Scene(this._3DEngine);
+        this._3DScene = new Scene(this._3DEngine, {virtual: true});
         this._3DScene.clearColor = new Color4(0,0,0,0);
         this._3DCanvasTexture = new HtmlElementTexture('canvas', this._2DCanvas, {engine: this._3DEngine, scene: this._3DScene});
         this._3DCanvasTexture.hasAlpha = true;
@@ -170,117 +172,13 @@ export class TextureCanvasManager {
         mat.emissiveColor = Color3.White();
         this._3DPlane.material = mat;
 
+
         this._planeMaterial = new ShaderMaterial(
-            'shader',
+            'canvasShader',
             this._scene,
-            {
-                vertexSource: `
-                    precision highp float;
-
-                    attribute vec3 position;
-                    attribute vec2 uv;
-
-                    uniform mat4 worldViewProjection;
-
-                    varying vec2 vUV;
-
-                    void main(void) {
-                        gl_Position = worldViewProjection * vec4(position, 1.0);
-                        vUV = uv;
-                    }
-                `,
-                fragmentSource: `
-                    precision highp float;
-            
-                    uniform sampler2D textureSampler;
-            
-                    uniform bool r;
-                    uniform bool g;
-                    uniform bool b;
-                    uniform bool a;
-
-                    uniform int x1;
-                    uniform int y1;
-                    uniform int x2;
-                    uniform int y2;
-                    uniform int w;
-                    uniform int h;
-
-                    uniform int time;
-            
-                    varying vec2 vUV;
-
-                    float scl = 200.0;
-                    float speed = 10.0 / 1000.0;
-                    float smoothing = 0.2;
-            
-                    void main(void) {
-                        vec2 pos2 = vec2(gl_FragCoord.x, gl_FragCoord.y);
-                        vec2 pos = floor(pos2 * 0.05);
-                        float pattern = mod(pos.x + pos.y, 2.0); 
-                        if (pattern == 0.0) {
-                            pattern = 0.7;
-                        }
-                        vec4 bg = vec4(pattern, pattern, pattern, 1.0);
-                        vec4 col = texture(textureSampler, vUV);
-                        if (!r && !g && !b) {
-                            if (a) {
-                                col = vec4(col.a, col.a, col.a, 1.0);
-                            } else {
-                                col = vec4(0.0,0.0,0.0,0.0);
-                            }
-                        } else {
-                            if (!r) {
-                                col.r = 0.0;
-                                if (!b) {
-                                    col.r = col.g;
-                                }
-                                else if (!g) {
-                                    col.r = col.b;
-                                }
-                            }
-                            if (!g) {
-                                col.g = 0.0;
-                                if (!b) {
-                                    col.g = col.r;
-                                }
-                                else if (!r) {
-                                    col.g = col.b;
-                                }
-                            }
-                            if (!b) {
-                                col.b = 0.0;
-                                if (!r) {
-                                    col.b = col.g;
-                                } else if (!g) {
-                                    col.b = col.r;
-                                }
-                            }
-                            if (!a) {
-                                col.a = 1.0;
-                            }
-                        }
-                        gl_FragColor = col * (col.a) + bg * (1.0 - col.a);
-                        float wF = float(w);
-                        float hF = float(h);
-                        int xPixel = int(floor(vUV.x * wF));
-                        int yPixel = int(floor((1.0 - vUV.y) * hF));
-                        int xDis = min(abs(xPixel - x1), abs(xPixel - x2));
-                        int yDis = min(abs(yPixel - y1), abs(yPixel - y2));
-                        if (xPixel >= x1 && yPixel >= y1 && xPixel <= x2 && yPixel <= y2) {
-                            if (xDis <= 4 || yDis <= 4) {
-                                float c = sin(vUV.x * scl + vUV.y * scl + float(time) * speed);
-                                c = smoothstep(-smoothing,smoothing,c);
-                                float val = 1.0 - c;
-                                gl_FragColor = vec4(val, val, val, 1.0) * 0.7 + gl_FragColor * 0.3;
-                            }
-                        }
-                    }`
-            },
-        {
-            attributes: ['position', 'uv'],
-            uniforms: ['worldViewProjection', 'textureSampler', 'r', 'g', 'b', 'a', 'x1', 'y1', 'x2', 'y2', 'w', 'h', 'time']
-        });
+            canvasShader.path,
+            canvasShader.options
+        );
         
         this.grabOriginalTexture();
 
@@ -296,6 +194,7 @@ export class TextureCanvasManager {
         this._planeMaterial.setInt('w', this._size.width);
         this._planeMaterial.setInt('h', this._size.height);
         this._planeMaterial.setInt('time', 0);
+        this._planeMaterial.setFloat('showGrid', 0.0);
         this._plane.material = this._planeMaterial;
         
         this._window.addEventListener('keydown', evt => {
@@ -331,13 +230,19 @@ export class TextureCanvasManager {
             this._engine.resize();
             this._scene.render();
             this._planeMaterial.setInt('time', new Date().getTime());
+            
         });
 
-        this._scale = 1.5;
+        this._scale =  1.5 / Math.max(this._size.width, this._size.height);
         this._isPanning = false;
 
         this._scene.onBeforeRenderObservable.add(() => {
-            this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE), TextureCanvasManager.MAX_SCALE);
+            this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE / Math.log2(Math.min(this._size.width, this._size.height))), TextureCanvasManager.MAX_SCALE);
+            if (this._scale > TextureCanvasManager.GRID_SCALE) {
+                this._planeMaterial.setFloat('showGrid', 1.0);
+            } else {
+                this._planeMaterial.setFloat('showGrid', 0.0);
+            }
             const ratio = this._UICanvas?.width / this._UICanvas?.height;
             const {x,y} = this._cameraPos;
             this._camera.orthoBottom = y - 1 / this._scale;
@@ -438,6 +343,7 @@ export class TextureCanvasManager {
     private queueTextureUpdate() {
         if (this._canUpdate) {
             (this._target as HtmlElementTexture).update((this._originalTexture as Texture).invertY);
+            this._target._texture?.updateSize(this._size.width, this._size.height);
             if (this._editing3D) {
                 this._imageData = this._3DEngine.readPixels(0, 0, this._size.width, this._size.height);
             } else {
@@ -495,6 +401,7 @@ export class TextureCanvasManager {
         ctx2D.fillStyle = 'white';
         ctx2D.fillRect(x,y,w,h);
         ctx2D.imageSmoothingEnabled = false;
+        // If we're not editing all channels, we must process the pixel data
         if (!editingAllChannels) {
             const newData = ctx.getImageData(0, 0, w, h);
             const nd = newData.data;
@@ -511,6 +418,7 @@ export class TextureCanvasManager {
         } else {
             ctx2D.globalCompositeOperation = 'source-over';
             ctx2D.globalAlpha = 1.0;
+            // We want to use drawImage wherever possible since it is much faster than putImageData
             ctx2D.drawImage(ctx.canvas, x, y);
         }
         this.updateTexture();
@@ -554,9 +462,9 @@ export class TextureCanvasManager {
         ctx.putImageData(imgData, 0, 0);
     }
 
-    public grabOriginalTexture(adjustZoom = true) {
+    public grabOriginalTexture() {
         // Grab image data from original texture and paint it onto the context of a DynamicTexture
-        this.setSize(this._originalTexture.getSize(), adjustZoom);
+        this.setSize(this._originalTexture.getSize());
         TextureHelper.GetTextureDataAsync(
             this._originalTexture,
             this._size.width,
@@ -620,7 +528,7 @@ export class TextureCanvasManager {
     public set face(face: number) {
         if (this._face !== face) {
             this._face = face;
-            this.grabOriginalTexture(false);
+            this.grabOriginalTexture();
             this.updateDisplay();
         }
     }
@@ -628,7 +536,7 @@ export class TextureCanvasManager {
     public set mipLevel(mipLevel : number) {
         if (this._mipLevel === mipLevel) return;
         this._mipLevel = mipLevel;
-        this.grabOriginalTexture(false);
+        this.grabOriginalTexture();
     }
 
     /** Returns the 3D scene used for postprocesses */
@@ -646,9 +554,8 @@ export class TextureCanvasManager {
     }
 
     private makePlane() {
-        const textureRatio = this._size.width / this._size.height;
         if (this._plane) this._plane.dispose();
-        this._plane = PlaneBuilder.CreatePlane("plane", {width: textureRatio, height: 1}, this._scene);
+        this._plane = PlaneBuilder.CreatePlane("plane", {width: this._size.width, height: this._size.height}, this._scene);
         this._plane.enableEdgesRendering();
         this._plane.edgesWidth = 4.0;
         this._plane.edgesColor = new Color4(1,1,1,1);
@@ -675,7 +582,8 @@ export class TextureCanvasManager {
         this._didEdit = true;
     }
 
-    public setSize(size: ISize, adjustZoom = true) {
+    public setSize(size: ISize) {
+        const oldSize = this._size;
         this._size = size;
         this._2DCanvas.width = this._size.width;
         this._2DCanvas.height = this._size.height;
@@ -683,10 +591,10 @@ export class TextureCanvasManager {
         this._3DCanvas.height = this._size.height;
         this._planeMaterial.setInt('w', this._size.width);
         this._planeMaterial.setInt('h', this._size.height);
-        if (adjustZoom) {
+        if (oldSize.width != size.width || oldSize.height != size.height) {
             this._cameraPos.x = 0;
             this._cameraPos.y = 0;
-            this._scale = 1.5 / (this._size.width/this._size.height);
+            this._scale = 1.5 / Math.max(this._size.width, this._size.height);
         }
         this.makePlane();
     }
@@ -706,17 +614,7 @@ export class TextureCanvasManager {
                 let base64data = reader.result as string;     
 
                 if (extension === '.dds' || extension === '.env') {
-                    const texture = new CubeTexture(
-                        base64data,
-                        this._scene,
-                        [extension],
-                        this._originalTexture.noMipmap,                        
-                        null,
-                        () => {
-                            // TO-DO: implement cube loading
-                            texture.dispose();
-                        }
-                    );
+                    (this._originalTexture as CubeTexture).updateURL(base64data, extension, () => this.grabOriginalTexture());
                 } else {
                     const texture = new Texture(
                         base64data,
