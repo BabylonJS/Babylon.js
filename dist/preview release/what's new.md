@@ -281,6 +281,7 @@
 - Fix docs Matrix.RotationYawPitchRoll and Matrix.RotationYawPitchRollToRef ([VSerain](https://github.com/VSerain))
 - Fix issue in `GLTFLoader._updateBoneMatrices()` where bone rest position was not set. ([drigax](https://github.com/drigax))
 - Fix the bounding box of instances that does not match the instance position / rotation / scaling ([Popov72](https://github.com/Popov72))
+- Fixed issue with Babylon scene export of loaded glTF meshes.([Drigax]/(https://github.com/drigax))
 
 ## Breaking changes
 - `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))

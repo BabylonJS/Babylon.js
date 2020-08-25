@@ -3076,6 +3076,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Skeleton
         if (this.skeleton) {
             serializationObject.skeletonId = this.skeleton.id;
+            serializationObject.numBoneInfluencers = this.numBoneInfluencers;
         }
 
         // Physics
@@ -3438,12 +3439,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Morph targets
-        if (parsedMesh.morphTargetManagerId > -1) {
+        if (parsedMesh.morphTargetManagerId) {
             mesh.morphTargetManager = scene.getMorphTargetManagerById(parsedMesh.morphTargetManagerId);
         }
 
         // Skeleton
-        if (parsedMesh.skeletonId > -1) {
+        if (parsedMesh.skeletonId) {
             mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
