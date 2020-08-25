@@ -74,7 +74,7 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
             </div>
             {
                 this.props.pickerOpen &&
-                <div className='color-picker' ref={this.props.pickerRef}>
+                <div id='color-picker' ref={this.props.pickerRef}>
                     <SketchPicker color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, alpha: color.rgb.a})}/>
                 </div>
             }

@@ -79,6 +79,7 @@
                 }
                 label {
                     margin-left: 15px;
+                    font-size: 15px;
                     color: #afafaf;
                     input {
                         width: 40px;
@@ -86,8 +87,10 @@
                         background-color: #000000;
                         color: #ffffff;
                         border: 0;
-                        padding-left: 4px;
                         font-size: 12px;
+                        text-align: center;
+                        font-family: 'acumin-pro-condensed';
+                        font-size: 15px;
                     }
         
                     &:last-of-type {
@@ -110,6 +113,9 @@
             &:first-of-type {
                 margin-left: 15px;
             }
+            &:last-of-type {
+                padding-right: 15px;
+            }
             width: 45px;
             color: #afafaf;
             display: flex;
@@ -119,6 +125,7 @@
                 width: 30px;
                 color: white;
             }
+            font-size: 15px;
         }
     }
     
@@ -161,11 +168,6 @@
             }
         }
 
-        #color-picker {
-            position: absolute;
-            margin-left: 40px;
-        }
-
         #color {
             margin-top: 8px;
             #active-color-bg {
@@ -187,14 +189,7 @@
                 border-radius: 50%;
             }
         }
-        .color-picker-cover {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
-        .color-picker {
+        #color-picker {
             position: absolute;
             margin-left: 40px;
         }
@@ -221,6 +216,10 @@
 
             &:hover {
                 cursor: pointer;
+            }
+
+            &:last-of-type {
+                border-bottom: none;
             }
         }
         user-select: none;
