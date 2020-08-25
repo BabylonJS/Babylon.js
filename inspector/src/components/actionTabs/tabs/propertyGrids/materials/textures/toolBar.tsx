@@ -13,32 +13,33 @@ interface IToolBarProps {
     activeToolIndex : number;
     metadata: IMetadata;
     setMetadata(data : any): void;
+    pickerOpen: boolean;
+    setPickerOpen(open: boolean): void;
+    pickerRef: React.RefObject<HTMLDivElement>;
 }
 
 interface IToolBarState {
     toolURL : string;
-    pickerOpen : boolean;
     addOpen : boolean;
 }
 
-
 export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
-
-    private _pickerRef : React.RefObject<HTMLDivElement>;
     constructor(props : IToolBarProps) {
         super(props);
         this.state = {
             toolURL: "",
-            pickerOpen: false,
             addOpen: false
         };
-        this._pickerRef = React.createRef();
     }
 
     computeRGBAColor() {
         const opacityInt = Math.floor(this.props.metadata.alpha * 255);
         const opacityHex = opacityInt.toString(16).padStart(2, '0');
         return `${this.props.metadata.color}${opacityHex}`;
+    }
+    
+    shouldComponentUpdate(nextProps: IToolBarProps) {
+        return (nextProps.tools != this.props.tools || nextProps.activeToolIndex !== this.props.activeToolIndex || nextProps.metadata != this.props.metadata || nextProps.pickerOpen != this.props.pickerOpen);
     }
 
     render() {
@@ -61,25 +62,21 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
                     }
                 )}
             </div>
-            <div id='color' onClick={() => this.setState({pickerOpen: !this.state.pickerOpen})} title='Color' className={`icon button${this.state.pickerOpen ? ` active` : ``}`}>
+            <div
+                id='color'
+                onClick={() => {if (!this.props.pickerOpen) this.props.setPickerOpen(true);}}
+                title='Color'
+                className={`icon button${this.props.pickerOpen ? ` active` : ``}`}
+            >
                 <div id='active-color-bg'>
                     <div id='active-color' style={{backgroundColor: this.props.metadata.color, opacity: this.props.metadata.alpha}}></div>
                 </div>
             </div>
             {
-                this.state.pickerOpen &&
-                <>
-                    <div className='color-picker-cover' onClick={evt => {
-                        if (evt.target !== this._pickerRef.current?.ownerDocument.querySelector('.color-picker-cover')) {
-                            return;
-                        }
-                        this.setState({pickerOpen: false});
-                    }}>
-                    </div>
-                    <div className='color-picker' ref={this._pickerRef}>
-                            <SketchPicker color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, alpha: color.rgb.a})}/>
-                    </div>
-                </>
+                this.props.pickerOpen &&
+                <div className='color-picker' ref={this.props.pickerRef}>
+                    <SketchPicker color={this.computeRGBAColor()}  onChange={color => this.props.setMetadata({color: color.hex, alpha: color.rgb.a})}/>
+                </div>
             }
         </div>;
     }

@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 import { IPixelData } from './textureCanvasManager';
+import { ISize } from 'babylonjs/Maths/math.size';
 
 interface IPropertiesBarProps {
     texture: BaseTexture;
+    size: ISize;
     saveTexture(): void;
     pixelData: IPixelData;
     face: number;
@@ -21,7 +23,7 @@ interface IPropertiesBarState {
 }
 
 interface IPixelDataProps {
-    name : string;
+    name: string;
     data: number | undefined;
 }
 
@@ -50,8 +52,8 @@ export class PropertiesBar extends React.Component<IPropertiesBarProps,IProperti
         super(props);
 
         this.state = {
-            width: props.texture.getSize().width,
-            height: props.texture.getSize().height
+            width: props.size.width,
+            height: props.size.height
         }
     }
 
@@ -67,6 +69,15 @@ export class PropertiesBar extends React.Component<IPropertiesBarProps,IProperti
             }
         }
         return oldDim;
+    }
+
+    componentWillUpdate(nextProps: IPropertiesBarProps) {
+        if (nextProps.size.width != this.props.size.width || nextProps.size.height != this.props.size.height) {
+            this.setState({
+                width: nextProps.size.width,
+                height: nextProps.size.height
+            })
+        }
     }
 
     render() {
