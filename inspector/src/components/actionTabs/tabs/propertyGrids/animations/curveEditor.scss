@@ -1,7 +1,3 @@
-// body {
-//     background-color: #333;
-// }
-
 #animation-curve-editor {
     background-color: rgb(51, 51, 51);
     font-family: "acumin-pro-condensed";
@@ -746,8 +742,13 @@
 
             .load-container {
                 flex-direction: column;
-                height: 377px;
+                height: calc(100vh - 135px);
                 padding-top: 10px;
+                display: flex;
+                background-color: rgb(17, 17, 17);
+                z-index: 1000;
+                position: absolute;
+                width: 210px;
 
                 .load-server {
                     font-size: 12px;
@@ -755,7 +756,7 @@
                     background-color: #222222;
                     padding-left: 10px;
                     height: 20px;
-                    margin-top: 277px;
+                    margin-top: auto;
                     p {
                         margin: 0px;
                     }
@@ -764,6 +765,7 @@
                 .load-browse {
                     margin-top: 10px;
                     display: flex;
+                    margin-bottom: auto;
                     p {
                         height: 20px;
                         margin: 0px;
@@ -828,11 +830,15 @@
 
             .save-container {
                 flex-direction: column;
-                height: 377px;
+                height: calc(100vh - 135px);
                 padding-top: 10px;
+                background-color: rgb(17, 17, 17);
+                display: flex;
+                position: absolute;
+                width: 210px;
 
                 .item-list {
-                    height: 317px;
+                    margin-bottom: auto;
                     ul {
                         list-style: none;
                         padding-left: 10px;
@@ -984,7 +990,13 @@
             }
 
             .object-tree {
-                background-color: #111111;
+                background-color: rgb(17, 17, 17);
+                width: 210px;
+                position: absolute;
+                display: flex;
+                height: calc(100vh - 125px);
+                flex-direction: column;
+
                 ul {
                     list-style: none;
                     padding-left: 0px;
