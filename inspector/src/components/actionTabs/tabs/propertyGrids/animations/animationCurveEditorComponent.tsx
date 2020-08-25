@@ -1565,7 +1565,16 @@ export class AnimationCurveEditorComponent extends React.Component<
 
         this.setMainAnimatable();
         if (this.state.selected) {
-            this.changeAnimationLimit(this.state.selected.getHighestFrame());
+            const lastKeyframe = this.state.selected.getHighestFrame();
+            let limit = 120;
+            if (lastKeyframe === 0) {
+                limit = 120;
+            } else if (lastKeyframe < 50) {
+                limit = 50;
+            } else {
+                limit = lastKeyframe;
+            }
+            this.changeAnimationLimit(limit);
         }
     };
 
@@ -1785,16 +1794,17 @@ export class AnimationCurveEditorComponent extends React.Component<
                 //     }
                 // }
 
-                this.props.playOrPause && this.props.playOrPause();
-
-                const zeroFrames = keys.filter((x) => x.frame === 0);
-                if (zeroFrames.length > 1) {
-                    keys.shift();
+                if (keys.length !== 0) {
+                    this.props.playOrPause && this.props.playOrPause();
+                    const zeroFrames = keys.filter((x) => x.frame === 0);
+                    if (zeroFrames !== undefined) {
+                        keys.shift();
+                    }
+                    keys.sort((a, b) => a.frame - b.frame);
+                    this._isPlaying = true;
+                    this.setState({ isPlaying: true });
                 }
-                keys.sort((a, b) => a.frame - b.frame);
 
-                this._isPlaying = true;
-                this.setState({ isPlaying: true });
                 //this.forceUpdate();
             }
         }
