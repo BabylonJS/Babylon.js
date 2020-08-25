@@ -40,7 +40,7 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
             <div className="nonDraggableLine withButton">
                 {this.props.label}
                 <div className="icon" title={this.props.title}>
-                <img src={this.props.iconImage}/>
+                <img className="img" src={this.props.iconImage}/>
                 </div>
                 <div className="buttonLine" title={this.props.title}>
                     <label htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"} className="file-upload"/>   
