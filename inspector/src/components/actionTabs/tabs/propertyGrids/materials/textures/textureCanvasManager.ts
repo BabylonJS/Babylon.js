@@ -101,6 +101,7 @@ export class TextureCanvasManager {
 
     private static SELECT_ALL_KEY = 'KeyA';
     private static SAVE_KEY ='KeyS';
+    private static RESET_KEY = 'KeyR';
     private static DESELECT_KEY = 'Escape'
 
     private _tool : Nullable<ITool>;
@@ -213,6 +214,10 @@ export class TextureCanvasManager {
             }
             if (evt.code === TextureCanvasManager.SAVE_KEY && evt.ctrlKey) {
                 this.saveTexture();
+                evt.preventDefault();
+            }
+            if (evt.code === TextureCanvasManager.RESET_KEY && evt.ctrlKey) {
+                this.reset();
                 evt.preventDefault();
             }
             if (evt.code === TextureCanvasManager.DESELECT_KEY) {
