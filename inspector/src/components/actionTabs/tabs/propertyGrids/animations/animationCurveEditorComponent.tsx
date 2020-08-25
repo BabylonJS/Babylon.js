@@ -1564,6 +1564,9 @@ export class AnimationCurveEditorComponent extends React.Component<
         }
 
         this.setMainAnimatable();
+        if (this.state.selected) {
+            this.changeAnimationLimit(this.state.selected.getHighestFrame());
+        }
     };
 
     setMainAnimatable() {
@@ -1750,36 +1753,39 @@ export class AnimationCurveEditorComponent extends React.Component<
                 this.props.scene.stopAnimation(target);
                 this.setState({ isPlaying: false });
                 this._isPlaying = false;
-                this.forceUpdate();
+                this.props.playOrPause && this.props.playOrPause();
+                //this.forceUpdate();
             } else {
                 if (this.state.isPlaying) {
                     this.props.scene.stopAnimation(target);
                 }
                 this.props.scene.stopAllAnimations();
                 let keys = this.state.selected.getKeys();
-                if (keys.length !== 0) {
-                    let firstFrame = keys[0].frame;
-                    let LastFrame = this.state.selected.getHighestFrame();
-                    if (direction === 1) {
-                        this._mainAnimatable = this.props.scene.beginAnimation(
-                            target,
-                            firstFrame,
-                            LastFrame,
-                            this.state.isLooping
-                        );
-                    }
-                    if (direction === -1) {
-                        this._mainAnimatable = this.props.scene.beginAnimation(
-                            target,
-                            LastFrame,
-                            firstFrame,
-                            this.state.isLooping
-                        );
-                    }
-                    if (!this.state.isLooping && this._mainAnimatable) {
-                        this._mainAnimatable.onAnimationEnd = () => this.playPause(0);
-                    }
-                }
+                // if (keys.length !== 0) {
+                //     let firstFrame = keys[0].frame;
+                //     let LastFrame = this.state.selected.getHighestFrame();
+                //     if (direction === 1) {
+                //         this._mainAnimatable = this.props.scene.beginAnimation(
+                //             target,
+                //             firstFrame,
+                //             LastFrame,
+                //             this.state.isLooping
+                //         );
+                //     }
+                //     if (direction === -1) {
+                //         this._mainAnimatable = this.props.scene.beginAnimation(
+                //             target,
+                //             LastFrame,
+                //             firstFrame,
+                //             this.state.isLooping
+                //         );
+                //     }
+                //     if (!this.state.isLooping && this._mainAnimatable) {
+                //         this._mainAnimatable.onAnimationEnd = () => this.playPause(0);
+                //     }
+                // }
+
+                this.props.playOrPause && this.props.playOrPause();
 
                 const zeroFrames = keys.filter((x) => x.frame === 0);
                 if (zeroFrames.length > 1) {
@@ -1789,7 +1795,7 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                 this._isPlaying = true;
                 this.setState({ isPlaying: true });
-                this.forceUpdate();
+                //this.forceUpdate();
             }
         }
     };
