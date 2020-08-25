@@ -3450,12 +3450,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Morph targets
-        if (parsedMesh.morphTargetManagerId) {
+        if (parsedMesh.morphTargetManagerId > -1) {
             mesh.morphTargetManager = scene.getMorphTargetManagerById(parsedMesh.morphTargetManagerId);
         }
 
         // Skeleton
-        if (parsedMesh.skeletonId !== undefined ) {
+        if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
             mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
