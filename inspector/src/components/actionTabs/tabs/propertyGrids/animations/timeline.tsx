@@ -73,6 +73,12 @@ export class Timeline extends React.Component<
         this._inputAnimationLimit.current?.addEventListener("keyup", this.isEnterKeyUp.bind(this));
     }
 
+    componentDidUpdate(prevProps: ITimelineProps) {
+        if (prevProps.animationLimit !== this.props.animationLimit) {
+            this.setState({ limitValue: this.props.animationLimit });
+        }
+    }
+
     componentWillUnmount() {
         this._inputAnimationLimit.current?.removeEventListener("keyup", this.isEnterKeyUp.bind(this));
     }
@@ -147,9 +153,10 @@ export class Timeline extends React.Component<
         event.preventDefault();
         if (this._scrollable.current) {
             this._scrollable.current.focus();
-            const containerWidth = this._scrollable.current?.clientWidth;
-            const unit = Math.round(containerWidth / this.state.selectionLength.length);
-            const frame = Math.round((event.clientX - 233) / unit) + this.state.start;
+            const containerWidth = this._scrollable.current?.clientWidth - 20;
+            const framesOnView = this.state.selectionLength.length;
+            const unit = containerWidth / framesOnView;
+            const frame = Math.round((event.clientX - 230) / unit) + this.state.start;
             this.props.onCurrentFrameChange(frame);
         }
     };
