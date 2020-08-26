@@ -310,8 +310,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                     onMouseLeave={this.dragEnd}
                     onClick={this.focus}
                     viewBox={viewBoxScaling}>
-                    {this.props.children}
-
                     {this.props.keyframeSvgPoints.map((keyframe, i) => (
                         <KeyframeSvgPoint
                             key={`${keyframe.id}_${i}`}
@@ -326,6 +324,8 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                             selectKeyframe={this.props.selectKeyframe}
                         />
                     ))}
+
+                    {this.props.children}
                 </svg>
             </>
         );
