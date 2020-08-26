@@ -232,7 +232,7 @@ export class TextBlock extends Control {
         this._lineThrough = value;
         this._markAsDirty();
     }
-    
+
     /**
      * Gets or sets outlineColor of the text to display
      */
@@ -346,7 +346,7 @@ export class TextBlock extends Control {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
         context.fillText(text, this._currentMeasure.left + x, y);
-    
+
         if (this._underline) {
             context.beginPath();
             context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
