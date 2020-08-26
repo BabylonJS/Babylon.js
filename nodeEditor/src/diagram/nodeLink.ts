@@ -128,7 +128,7 @@ export class NodeLink {
         this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
     }
 
-    public dispose() {
+    public dispose(notify = true) {
         this._graphCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
 
         if (this._path.parentElement) {
@@ -147,8 +147,10 @@ export class NodeLink {
             this._portA.connectionPoint.disconnectFrom(this._portB!.connectionPoint);
         }
 
-        this.onDisposedObservable.notifyObservers(this);
+        if (notify) {
+            this.onDisposedObservable.notifyObservers(this);
 
-        this.onDisposedObservable.clear();
+            this.onDisposedObservable.clear();
+        }
     }
 }
