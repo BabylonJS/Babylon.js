@@ -71856,10 +71856,15 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
         div.style.left = host.getBoundingClientRect().left - div.getBoundingClientRect().width + "px";
     };
     ColorPickerLineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        return nextProps.value.toHexString() !== this.props.value.toHexString()
+        var result = nextProps.value.toHexString() !== this.props.value.toHexString()
             || nextProps.disableAlpha !== this.props.disableAlpha
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
+        if (result) {
+            nextState.color = nextProps.value;
+            nextState.hex = nextProps.value.toHexString();
+        }
+        return result;
     };
     ColorPickerLineComponent.prototype.componentDidUpdate = function () {
         this.syncPositions();
