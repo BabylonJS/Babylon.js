@@ -110,7 +110,7 @@ Engine.prototype.setTextureFormatToUse = function(formatsAvailable: Array<string
     }
     // actively set format to nothing, to allow this to be called more than once
     // and possibly fail the 2nd time
-    delete this._textureFormatInUse;
-    delete this._transformTextureUrl;
+    this._textureFormatInUse = "";
+    this._transformTextureUrl = null;
     return null;
 };

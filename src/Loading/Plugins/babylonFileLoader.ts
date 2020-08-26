@@ -391,6 +391,11 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                         }
                     });
                 }
+
+                if (skeleton._waitingOverrideMeshId) {
+                    skeleton.overrideMesh = scene.getMeshByID(skeleton._waitingOverrideMeshId);
+                    skeleton._waitingOverrideMeshId = null;
+                }
                 skeleton._hasWaitingData = null;
             }
         }
@@ -633,6 +638,12 @@ SceneLoader.RegisterPlugin({
                                 }
                             });
                         }
+
+                        if (skeleton._waitingOverrideMeshId) {
+                            skeleton.overrideMesh = scene.getMeshByID(skeleton._waitingOverrideMeshId);
+                            skeleton._waitingOverrideMeshId = null;
+                        }
+
                         skeleton._hasWaitingData = null;
                     }
                 }
