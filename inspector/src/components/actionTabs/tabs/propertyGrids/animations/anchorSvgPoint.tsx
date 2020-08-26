@@ -40,16 +40,47 @@ export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visi
         const visibleCircleClass = `draggable control-point ${this.props.active ? "active" : ""}`;
         const nonVisibleCircleClass = `control-point ${this.props.active ? "active" : ""}`;
         const strokeVisibleCircle = this.props.selected ? 1 : 0;
-        const visibleCircle = this.props.selected ? "red" : "#e9db1e";
+        const visibleCircle = this.props.selected ? "#ffc017" : "black";
         return (
             <>
-                <svg x={this.state.visiblePoint.x} y={this.state.visiblePoint.y} style={{ overflow: "visible" }} onClick={this.select}>
-                    <circle type={this.props.type} data-id={this.props.index} className={visibleCircleClass} cx="0" cy="0" r="0.75%" stroke="aqua" strokeWidth={strokeVisibleCircle} fill={visibleCircle} />
+                <line
+                    className={`control-point ${this.props.active ? "active" : ""}`}
+                    x1={this.props.anchor.x}
+                    y1={this.props.anchor.y}
+                    x2={this.state.visiblePoint.x}
+                    y2={this.state.visiblePoint.y}
+                    strokeWidth="0.8%"
+                />
+                <svg
+                    x={this.state.visiblePoint.x}
+                    y={this.state.visiblePoint.y}
+                    style={{ overflow: "visible" }}
+                    onClick={this.select}>
+                    <circle
+                        type={this.props.type}
+                        data-id={this.props.index}
+                        className={visibleCircleClass}
+                        cx="0"
+                        cy="0"
+                        r="0.75%"
+                        stroke="aqua"
+                        strokeWidth={strokeVisibleCircle}
+                        fill={visibleCircle}
+                    />
                 </svg>
                 <svg x={this.props.control.x} y={this.props.control.y} style={{ overflow: "visible", display: "none" }}>
-                    <circle type={this.props.type} data-id={this.props.index} className={nonVisibleCircleClass} cx="0" cy="0" r="0.7%" stroke="white" strokeWidth={0} fill={"white"} />
+                    <circle
+                        type={this.props.type}
+                        data-id={this.props.index}
+                        className={nonVisibleCircleClass}
+                        cx="0"
+                        cy="0"
+                        r="0.7%"
+                        stroke="white"
+                        strokeWidth={0}
+                        fill={"white"}
+                    />
                 </svg>
-                <line className={`control-point ${this.props.active ? "active" : ""}`} x1={this.props.anchor.x} y1={this.props.anchor.y} x2={this.state.visiblePoint.x} y2={this.state.visiblePoint.y} strokeWidth="0.8%" />
             </>
         );
     }

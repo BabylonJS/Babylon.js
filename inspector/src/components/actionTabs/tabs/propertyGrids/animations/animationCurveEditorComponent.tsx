@@ -789,6 +789,10 @@ export class AnimationCurveEditorComponent extends React.Component<
                         this.forceFrameZeroToExist(updatedKeys);
                         this.state.selected.setKeys(updatedKeys);
                         this.selectAnimation(animation);
+                        this.setCanvasPosition({
+                            frame: this.state.actionableKeyframe.frame as number,
+                            value: this.state.actionableKeyframe.value,
+                        });
                     }
                 }
             }
@@ -894,8 +898,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                 const recentlyCreated = {
                     frame: x,
                     value: actualValue,
-                    inTangent: emptyValue,
-                    outTangent: emptyValue,
                 };
 
                 keys.push(recentlyCreated);
@@ -1298,6 +1300,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                 };
                 if (outTangent !== null) {
                     data += ` C${outTangent.x} ${outTangent.y} `;
+                } else {
+                    data += ` C${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} `;
                 }
             } else {
                 svgKeyframe = {
@@ -1315,8 +1319,6 @@ export class AnimationCurveEditorComponent extends React.Component<
 
                 if (outTangent !== null && inTangent !== null) {
                     data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y} C${outTangent.x} ${outTangent.y}`;
-                } else if (inTangent !== null) {
-                    data += ` ${inTangent.x} ${inTangent.y} ${svgKeyframe.keyframePoint.x} ${svgKeyframe.keyframePoint.y}`;
                 }
 
                 if (outTangent === null && inTangent !== null) {
@@ -1566,15 +1568,11 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.setMainAnimatable();
         if (this.state.selected) {
             const lastKeyframe = this.state.selected.getHighestFrame();
-            let limit = 120;
-            if (lastKeyframe === 0) {
-                limit = 120;
-            } else if (lastKeyframe < 50) {
-                limit = 50;
-            } else {
-                limit = lastKeyframe;
+            const currentLimit = this.state.animationLimit;
+
+            if (currentLimit < lastKeyframe) {
+                this.changeAnimationLimit(lastKeyframe);
             }
-            this.changeAnimationLimit(limit);
         }
     };
 
@@ -1762,50 +1760,45 @@ export class AnimationCurveEditorComponent extends React.Component<
                 this.props.scene.stopAnimation(target);
                 this.setState({ isPlaying: false });
                 this._isPlaying = false;
-                this.props.playOrPause && this.props.playOrPause();
-                //this.forceUpdate();
+                this.forceUpdate();
             } else {
                 if (this.state.isPlaying) {
                     this.props.scene.stopAnimation(target);
                 }
                 this.props.scene.stopAllAnimations();
                 let keys = this.state.selected.getKeys();
-                // if (keys.length !== 0) {
-                //     let firstFrame = keys[0].frame;
-                //     let LastFrame = this.state.selected.getHighestFrame();
-                //     if (direction === 1) {
-                //         this._mainAnimatable = this.props.scene.beginAnimation(
-                //             target,
-                //             firstFrame,
-                //             LastFrame,
-                //             this.state.isLooping
-                //         );
-                //     }
-                //     if (direction === -1) {
-                //         this._mainAnimatable = this.props.scene.beginAnimation(
-                //             target,
-                //             LastFrame,
-                //             firstFrame,
-                //             this.state.isLooping
-                //         );
-                //     }
-                //     if (!this.state.isLooping && this._mainAnimatable) {
-                //         this._mainAnimatable.onAnimationEnd = () => this.playPause(0);
-                //     }
-                // }
-
                 if (keys.length !== 0) {
-                    this.props.playOrPause && this.props.playOrPause();
-                    const zeroFrames = keys.filter((x) => x.frame === 0);
-                    if (zeroFrames !== undefined) {
-                        keys.shift();
+                    let firstFrame = keys[0].frame;
+                    let LastFrame = this.state.selected.getHighestFrame();
+                    if (direction === 1) {
+                        this._mainAnimatable = this.props.scene.beginAnimation(
+                            target,
+                            firstFrame,
+                            LastFrame,
+                            this.state.isLooping
+                        );
                     }
-                    keys.sort((a, b) => a.frame - b.frame);
-                    this._isPlaying = true;
-                    this.setState({ isPlaying: true });
+                    if (direction === -1) {
+                        this._mainAnimatable = this.props.scene.beginAnimation(
+                            target,
+                            LastFrame,
+                            firstFrame,
+                            this.state.isLooping
+                        );
+                    }
+                    if (!this.state.isLooping && this._mainAnimatable) {
+                        this._mainAnimatable.onAnimationEnd = () => this.playPause(0);
+                    }
                 }
+                const zeroFrames = keys.filter((x) => x.frame === 0);
+                if (zeroFrames.length > 1) {
+                    keys.shift();
+                }
+                keys.sort((a, b) => a.frame - b.frame);
 
-                //this.forceUpdate();
+                this._isPlaying = true;
+                this.setState({ isPlaying: true });
+                this.forceUpdate();
             }
         }
     };
