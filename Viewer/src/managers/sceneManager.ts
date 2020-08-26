@@ -98,7 +98,7 @@ export class SceneManager {
     /**
      * Babylon's scene optimizer
      */
-    public sceneOptimizer: SceneOptimizer;
+    public sceneOptimizer?: SceneOptimizer;
     /**
      * Models displayed in this viewer.
      */
@@ -741,7 +741,7 @@ export class SceneManager {
 
         this.onSceneOptimizerConfiguredObservable.notifyObservers({
             sceneManager: this,
-            object: this.sceneOptimizer,
+            object: this.sceneOptimizer!,
             newConfiguration: optimizerConfig
         });
     }
