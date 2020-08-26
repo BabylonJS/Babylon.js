@@ -70,7 +70,7 @@ export class KTX2Decoder {
         const kfr = new KTX2FileReader(data);
 
         if (!kfr.isValid) {
-            return null;
+            throw new Error("Invalid KT2 file: wrong signature");
         }
 
         kfr.parse();
@@ -100,7 +100,7 @@ export class KTX2Decoder {
         if (caps.astc) {
             targetFormat = transcodeTarget.ASTC_4x4_RGBA;
             transcodedFormat = COMPRESSED_RGBA_ASTC_4x4_KHR;
-        } else if (caps.bptc && srcTexFormat === sourceTextureFormat.UASTC4x4) {
+        } else if (caps.bptc) {
             targetFormat = transcodeTarget.BC7_M5_RGBA;
             transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
         } else if (caps.s3tc) {
@@ -138,16 +138,17 @@ export class KTX2Decoder {
                 firstImageDescIndex += Math.max(kfr.header.layerCount, 1) * kfr.header.faceCount * Math.max(kfr.header.pixelDepth >> (level - 1), 1);
             }
 
-            const levelWidth = width / Math.pow(2, level);
-            const levelHeight = height / Math.pow(2, level);
+            const levelWidth = Math.ceil(width / (1 << level));
+            const levelHeight = Math.ceil(height / (1 << level));
 
             const numImagesInLevel = kfr.header.faceCount; // note that cubemap are not supported yet (see KTX2FileReader), so faceCount == 1
             const levelImageByteLength = ((levelWidth + 3) >> 2) * ((levelHeight + 3) >> 2) * kfr.dfdBlock.bytesPlane[0];
 
             const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
 
-            let levelDataBuffer = kfr.data.buffer;
-            let levelDataOffset = kfr.levels[level].byteOffset;
+            let levelDataBuffer = kfr.data.buffer.slice(0);
+
+            let levelDataOffset = kfr.levels[level].byteOffset;// + kfr.data.byteOffset;
             let imageOffsetInLevel = 0;
 
             if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
