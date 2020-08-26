@@ -183,8 +183,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public environmentBRDFTexture: BaseTexture;
 
-    /** @hidden */
-    protected _environmentTexture: Nullable<BaseTexture>;
     /**
      * Texture used in all pbr material as the reflection texture.
      * As in the majority of the scene they are the same (exception for multi room and so on),
@@ -4638,6 +4636,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
         return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+    }
+
+    /**
+     * Get a list of transform nodes by tags
+     * @param tagsQuery defines the tags query to use
+     * @param forEach defines a predicate used to filter results
+     * @returns an array of TransformNode
+     */
+    public getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => void): TransformNode[] {
+        return this._getByTags(this.transformNodes, tagsQuery, forEach);
     }
 
     /**
