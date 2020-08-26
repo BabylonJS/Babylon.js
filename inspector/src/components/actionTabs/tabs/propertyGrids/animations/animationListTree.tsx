@@ -99,18 +99,24 @@ export class AnimationListTree extends React.Component<
             if (animations) {
                 if ((this.props.entity as IAnimatable).animations !== null) {
                     let updatedAnimations = animations.filter((anim) => anim !== currentSelected);
+
                     const store = (this.props.entity as IAnimatable).animations!;
                     this.raiseOnPropertyChanged(updatedAnimations, store);
                     (this.props.entity as IAnimatable).animations = updatedAnimations as Nullable<Animation[]>;
-                    this.setState(
-                        {
-                            animationList: this.generateList(),
-                            animations: (this.props.entity as IAnimatable).animations,
-                        },
-                        () => {
-                            this.props.deselectAnimation();
-                        }
-                    );
+                    if (updatedAnimations.length !== 0) {
+                        this.setState(
+                            {
+                                animationList: this.generateList(),
+                                animations: (this.props.entity as IAnimatable).animations,
+                            },
+                            () => {
+                                this.props.deselectAnimation();
+                            }
+                        );
+                    } else {
+                        this.props.deselectAnimation();
+                        this.props.empty();
+                    }
                 }
             }
         }
