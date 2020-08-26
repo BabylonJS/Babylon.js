@@ -6863,6 +6863,7 @@ var Image = /** @class */ (function (_super) {
         configurable: true
     });
     Image.prototype._onImageLoaded = function () {
+        this._imageDataCache.data = null;
         this._imageWidth = this._domImage.width;
         this._imageHeight = this._domImage.height;
         this._loaded = true;
@@ -7106,6 +7107,7 @@ var Image = /** @class */ (function (_super) {
             var canvas = this._workingCanvas;
             var context_1 = canvas.getContext("2d");
             this._imageDataCache.data = imageData = context_1.getImageData(0, 0, width, height).data;
+            this._imageDataCache.key = key;
         }
         x = (x - this._currentMeasure.left) | 0;
         y = (y - this._currentMeasure.top) | 0;
@@ -16726,10 +16728,6 @@ var FluentMaterial = /** @class */ (function (_super) {
          */
         _this.innerGlowColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1.0, 1.0, 1.0);
         /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        _this.alpha = 1.0;
-        /**
          * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
          */
         _this.albedoColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.3, 0.35, 0.4);
@@ -16923,9 +16921,6 @@ var FluentMaterial = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "innerGlowColor", void 0);
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
-    ], FluentMaterial.prototype, "alpha", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "albedoColor", void 0);

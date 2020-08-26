@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-interface BottomBarProps {
+interface IBottomBarProps {
     name: string;
     mipLevel: number;
     hasMips: boolean;
 }
 
-export class BottomBar extends React.Component<BottomBarProps> {
+export class BottomBar extends React.PureComponent<IBottomBarProps> {
     render() {
         return <div id='bottom-bar'>
             <span id='file-url'>{this.props.name}</span>
