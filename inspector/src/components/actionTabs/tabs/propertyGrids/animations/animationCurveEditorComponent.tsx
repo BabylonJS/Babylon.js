@@ -1497,15 +1497,20 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     deselectAnimation = () => {
-        this.setState(
-            {
-                selected: null,
-                svgKeyframes: [],
-                selectedPathData: undefined,
-                selectedCoordinate: 0,
-            },
-            () => console.log(this.state)
-        );
+        const animations = (this.props.entity as IAnimatable).animations;
+        if (animations && animations.length === 0) {
+            setTimeout(() => this.cleanCanvas(), 0);
+        }
+        this.cleanCanvas();
+    };
+
+    cleanCanvas = () => {
+        this.setState({
+            selected: null,
+            svgKeyframes: [],
+            selectedPathData: undefined,
+            selectedCoordinate: 0,
+        });
     };
 
     /**
@@ -1517,9 +1522,8 @@ export class AnimationCurveEditorComponent extends React.Component<
         let updatedPath;
         let filteredSvgKeys;
         let selectedCurve = 0;
-
+        this.stopAnimation();
         if (coordinate === undefined) {
-            this.stopAnimation();
             updatedPath = this.getPathData(animation);
         } else {
             let curves = this.getPathData(animation);
@@ -1619,6 +1623,10 @@ export class AnimationCurveEditorComponent extends React.Component<
         this._isPlaying = this.props.scene.getAllAnimatablesByTarget(target).length > 0;
         if (this._isPlaying) {
             this.props.playOrPause && this.props.playOrPause();
+            if (this.state !== undefined) {
+                this.setState({ isPlaying: false });
+            }
+            this._isPlaying = false;
         }
     }
 
@@ -1728,6 +1736,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     };
 
     changeAnimationLimit = (limit: number) => {
+        this.stopAnimation();
         const doubleLimit = limit * 2;
         this.setState({
             animationLimit: limit,
@@ -1811,7 +1820,18 @@ export class AnimationCurveEditorComponent extends React.Component<
         if (CTM) {
             position = new Vector2((e.clientX - CTM.e) / CTM.a, (e.clientY - CTM.f) / CTM.d);
             let selectedFrame = Math.round(position.x / this._pixelFrameUnit);
-            this.setState({ currentFrame: selectedFrame, isPlaying: false });
+            this.setState({ currentFrame: selectedFrame, isPlaying: false }, () => {
+                if (this.state.selected) {
+                    const index = this.state.selected.getKeys().findIndex((x) => x.frame === selectedFrame);
+                    const keyframe = this.state.selected.getKeys().find((x) => x.frame === selectedFrame);
+                    if (index !== undefined && keyframe !== undefined) {
+                        const animationName = `${this.state.selected.name}_${this.state.selected.targetProperty}_${this.state.selectedCoordinate}`;
+                        const id = this.encodeCurveId(animationName, index);
+                        this.selectKeyframeFromId(id, keyframe);
+                        this.setCanvasPosition(keyframe);
+                    }
+                }
+            });
         }
     }
 
