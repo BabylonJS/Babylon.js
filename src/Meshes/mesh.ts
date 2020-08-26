@@ -394,6 +394,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Gets the list of clones of this mesh
+     * The scene must have been constructed with useClonedMeshMap=true for this to work!
+     * Note that useClonedMeshMap=true is the default setting
+     */
+    public get cloneMeshMap(): Nullable<{ [id: string]: Mesh | undefined }> {
+        return this._internalMeshDataInfo.meshMap;
+    }
+
+    /**
      * Gets or sets a boolean indicating that this mesh does not use index buffer
      */
     public get isUnIndexed(): boolean {
