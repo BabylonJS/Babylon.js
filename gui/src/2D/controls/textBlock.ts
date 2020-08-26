@@ -198,14 +198,14 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets an boolean indicating that text must have underline
+     * Gets or sets a boolean indicating that text must have underline
      */
     public get underline(): boolean {
         return this._underline;
     }
 
     /**
-     * Gets or setsan boolean indicating that text must have underline
+     * Gets or sets a boolean indicating that text must have underline
      */
     public set underline(value: boolean) {
         if (this._underline === value) {
@@ -347,7 +347,6 @@ export class TextBlock extends Control {
         }
         context.fillText(text, this._currentMeasure.left + x, y);
     
-
         if (this._underline) {
             context.beginPath();
             context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
