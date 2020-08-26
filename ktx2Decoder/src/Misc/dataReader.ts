@@ -25,7 +25,7 @@ export class DataReader {
      */
     constructor(buffer: ArrayBuffer | ArrayBufferView, byteOffset?: number, byteLength?: number) {
         if ((buffer as  ArrayBufferView).buffer) {
-            this._dataView = new DataView((buffer as ArrayBufferView).buffer, byteOffset ?? (buffer as ArrayBufferView).byteOffset, byteLength ?? (buffer as ArrayBufferView).byteLength);
+            this._dataView = new DataView((buffer as ArrayBufferView).buffer, (buffer as ArrayBufferView).byteOffset + (byteOffset ?? 0), byteLength ?? (buffer as ArrayBufferView).byteLength);
         } else {
             this._dataView = new DataView(buffer as ArrayBuffer, byteOffset ?? 0, byteLength ?? (buffer as ArrayBuffer).byteLength);
         }
