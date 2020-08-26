@@ -367,6 +367,12 @@
             "referenceImage": "advancedShadows.png"
         },
         {
+            "title": "Advanced shadows (right handed)",
+            "renderCount": 20,
+            "playgroundId": "#B48X7G#32",
+            "referenceImage": "advancedShadows2.png"
+        },
+        {
             "title": "point light shadows",
             "playgroundId": "#XDNVAY#1",
             "referenceImage": "pointLightShadows.png"
