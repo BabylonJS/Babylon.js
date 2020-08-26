@@ -216,9 +216,9 @@ export class GLTFLoader implements IGLTFLoader {
             delete this._extensions[name];
         }
 
-        delete this._gltf;
-        delete this._babylonScene;
-        delete this._rootBabylonMesh;
+        (this._gltf as any) = null;
+        (this._babylonScene as any) = null;
+        (this._rootBabylonMesh as any) = null;
 
         this._parent.dispose();
     }

@@ -39,6 +39,8 @@ export class TextBlock extends Control {
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
+    private _underline: boolean = false;
+    private _lineThrough: boolean = false;
     /**
     * An event triggered after the text is changed
     */
@@ -196,6 +198,42 @@ export class TextBlock extends Control {
     }
 
     /**
+     * Gets or sets a boolean indicating that text must have underline
+     */
+    public get underline(): boolean {
+        return this._underline;
+    }
+
+    /**
+     * Gets or sets a boolean indicating that text must have underline
+     */
+    public set underline(value: boolean) {
+        if (this._underline === value) {
+            return;
+        }
+        this._underline = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets an boolean indicating that text must be crossed out
+     */
+    public get lineThrough(): boolean {
+        return this._lineThrough;
+    }
+
+    /**
+     * Gets or sets an boolean indicating that text must be crossed out
+     */
+    public set lineThrough(value: boolean) {
+        if (this._lineThrough === value) {
+            return;
+        }
+        this._lineThrough = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Gets or sets outlineColor of the text to display
      */
     public get outlineColor(): string {
@@ -308,6 +346,24 @@ export class TextBlock extends Control {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
         context.fillText(text, this._currentMeasure.left + x, y);
+
+        if (this._underline) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y + 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
+            context.stroke();
+            context.closePath();
+        }
+
+        if (this._lineThrough) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
+            context.stroke();
+            context.closePath();
+        }
     }
 
     /** @hidden */

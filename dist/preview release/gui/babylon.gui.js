@@ -12502,6 +12502,8 @@ var TextBlock = /** @class */ (function (_super) {
         _this._lineSpacing = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         _this._outlineWidth = 0;
         _this._outlineColor = "white";
+        _this._underline = false;
+        _this._lineThrough = false;
         /**
         * An event triggered after the text is changed
         */
@@ -12666,6 +12668,46 @@ var TextBlock = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(TextBlock.prototype, "underline", {
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get: function () {
+            return this._underline;
+        },
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set: function (value) {
+            if (this._underline === value) {
+                return;
+            }
+            this._underline = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(TextBlock.prototype, "lineThrough", {
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get: function () {
+            return this._lineThrough;
+        },
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set: function (value) {
+            if (this._lineThrough === value) {
+                return;
+            }
+            this._lineThrough = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(TextBlock.prototype, "outlineColor", {
         /**
          * Gets or sets outlineColor of the text to display
@@ -12753,6 +12795,22 @@ var TextBlock = /** @class */ (function (_super) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
         context.fillText(text, this._currentMeasure.left + x, y);
+        if (this._underline) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y + 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
+            context.stroke();
+            context.closePath();
+        }
+        if (this._lineThrough) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
+            context.stroke();
+            context.closePath();
+        }
     };
     /** @hidden */
     TextBlock.prototype._draw = function (context, invalidatedRectangle) {
@@ -16728,10 +16786,6 @@ var FluentMaterial = /** @class */ (function (_super) {
          */
         _this.innerGlowColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1.0, 1.0, 1.0);
         /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        _this.alpha = 1.0;
-        /**
          * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
          */
         _this.albedoColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.3, 0.35, 0.4);
@@ -16925,9 +16979,6 @@ var FluentMaterial = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "innerGlowColor", void 0);
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
-    ], FluentMaterial.prototype, "alpha", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "albedoColor", void 0);

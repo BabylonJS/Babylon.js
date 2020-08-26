@@ -26,7 +26,7 @@ export const Floodfill : IToolData = {
         setup () {
             this.pointerObserver = this.getParameters().scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.pickInfo?.hit) {
-                    if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+                    if (pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.button === 0) {
                         this.fill();
                     }
                 }
