@@ -49,12 +49,6 @@ export class FluentMaterial extends PushMaterial {
     public innerGlowColor = new Color3(1.0, 1.0, 1.0);
 
     /**
-     * Gets or sets alpha value (default is 1.0)
-     */
-    @serialize()
-    public alpha = 1.0;
-
-    /**
      * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
      */
     @serializeAsColor3()

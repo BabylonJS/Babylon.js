@@ -26,30 +26,28 @@ class paintbrushTool implements IToolType {
             x -= metadata.select.x1;
             y -= metadata.select.y1;
         }
+        const {ctx} = this;
+        let numSteps, stepVector;
+        stepVector = new Vector2();
         if (this.mousePos == null) {
             this.mousePos = new Vector2(x, y);
+            numSteps = 1;
+        } else {
+            const maxDistance = this.width / 4;
+            const diffVector = new Vector2(x - this.mousePos.x, y - this.mousePos.y);
+            numSteps = Math.ceil(diffVector.length() / maxDistance);
+            const trueDistance = diffVector.length() / numSteps;
+            stepVector = diffVector.normalize().multiplyByFloats(trueDistance, trueDistance);
         }
-        const {ctx} = this;
-        let xx = this.mousePos.x;
-        let yy = this.mousePos.y;
-        let stepCount = 0;
-        const distance = this.width / 4;
-        const step = new Vector2(x - this.mousePos.x, y - this.mousePos.y).normalize().multiplyByFloats(distance, distance);
-        const numSteps = new Vector2(x - this.mousePos.x, y - this.mousePos.y).length() / distance;
-        while(stepCount < numSteps) {
+        let paintVector = this.mousePos.clone();
+        for(let stepCount = 0; stepCount < numSteps; stepCount++) {
             ctx.globalAlpha = 1.0;
             ctx.globalCompositeOperation = 'destination-out';
-            ctx.drawImage(this.circleCanvas, Math.floor(xx - this.width / 2), Math.floor(yy - this.width / 2));
+            ctx.drawImage(this.circleCanvas, Math.ceil(paintVector.x - this.width / 2), Math.ceil(paintVector.y - this.width / 2));
             ctx.globalAlpha = metadata.alpha;
             ctx.globalCompositeOperation = 'source-over';
-            ctx.drawImage(this.circleCanvas, Math.floor(xx - this.width / 2), Math.floor(yy - this.width / 2));
-            xx += step.x;
-            yy += step.y;
-            stepCount++;
-            if (numSteps - stepCount < 1) {
-                xx = x;
-                yy = y;
-            }
+            ctx.drawImage(this.circleCanvas, Math.ceil(paintVector.x - this.width / 2), Math.ceil(paintVector.y - this.width / 2));
+            paintVector.addInPlace(stepVector);
         }
         updatePainting();
         this.mousePos = new Vector2(x,y);
@@ -80,8 +78,8 @@ class paintbrushTool implements IToolType {
                         const g = Math.floor(rgb.g * 255);
                         const b = Math.floor(rgb.b * 255);
                         let idx = 0;
-                        for(let y = -Math.ceil(this.width / 2); y < Math.floor(this.width / 2); y++) {
-                            for (let x = -Math.ceil(this.width / 2); x < Math.floor(this.width / 2); x++) {
+                        for(let y = -Math.floor(this.width / 2); y < Math.ceil(this.width / 2); y++) {
+                            for (let x = -Math.floor(this.width / 2); x < Math.ceil(this.width / 2); x++) {
                                 pixels[idx++] = r;
                                 pixels[idx++] = g;
                                 pixels[idx++] = b;

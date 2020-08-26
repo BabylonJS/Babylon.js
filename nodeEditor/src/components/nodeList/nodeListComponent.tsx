@@ -223,7 +223,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
         
         // Block types used to create the menu from
-        const allBlocks = {
+        const allBlocks: any = {
             Custom_Frames: customFrameNames,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
