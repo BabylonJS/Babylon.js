@@ -40,7 +40,7 @@ export class TextBlock extends Control {
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
     private _underline: boolean = false;
-    private _strikethrough: boolean = false;
+    private _lineThrough: boolean = false;
     /**
     * An event triggered after the text is changed
     */
@@ -215,21 +215,21 @@ export class TextBlock extends Control {
         this._markAsDirty();
     }
 
-        /**
-     * Gets or sets an boolean indicating that text must have underline
+    /**
+     * Gets or sets an boolean indicating that text must be crossed out
      */
-    public get strikethrough(): boolean {
-        return this._strikethrough;
+    public get lineThrough(): boolean {
+        return this._lineThrough;
     }
 
     /**
-     * Gets or setsan boolean indicating that text must be strikethrough
+     * Gets or sets an boolean indicating that text must be crossed out
      */
-    public set strikethrough(value: boolean) {
-        if (this._strikethrough === value) {
+    public set lineThrough(value: boolean) {
+        if (this._lineThrough === value) {
             return;
         }
-        this._strikethrough = value;
+        this._lineThrough = value;
         this._markAsDirty();
     }
     
@@ -357,7 +357,7 @@ export class TextBlock extends Control {
             context.closePath();
         }
 
-        if (this._strikethrough) {
+        if (this._lineThrough) {
             context.beginPath();
             context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
             context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
