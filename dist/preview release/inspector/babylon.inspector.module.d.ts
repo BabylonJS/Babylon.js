@@ -1521,17 +1521,19 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         activeToolIndex: number;
         metadata: IMetadata;
         setMetadata(data: any): void;
+        pickerOpen: boolean;
+        setPickerOpen(open: boolean): void;
+        pickerRef: React.RefObject<HTMLDivElement>;
+        hasAlpha: boolean;
     }
     interface IToolBarState {
         toolURL: string;
-        pickerOpen: boolean;
         addOpen: boolean;
     }
     export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
-        private _addTool;
-        private _pickerRef;
         constructor(props: IToolBarProps);
         computeRGBAColor(): string;
+        shouldComponentUpdate(nextProps: IToolBarProps): boolean;
         render(): JSX.Element;
     }
 }
@@ -1551,6 +1553,18 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
         render(): JSX.Element;
     }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/canvasShader" {
+    export const canvasShader: {
+        path: {
+            vertexSource: string;
+            fragmentSource: string;
+        };
+        options: {
+            attributes: string[];
+            uniforms: string[];
+        };
+    };
 }
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager" {
     import { Scene } from 'babylonjs/scene';
@@ -1605,8 +1619,11 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private static PAN_SPEED;
         private static PAN_MOUSE_BUTTON;
         private static MIN_SCALE;
+        private static GRID_SCALE;
         private static MAX_SCALE;
         private static SELECT_ALL_KEY;
+        private static SAVE_KEY;
+        private static RESET_KEY;
         private static DESELECT_KEY;
         private _tool;
         private _setPixelData;
@@ -1628,7 +1645,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private updateDisplay;
         set channels(channels: IChannel[]);
         static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
-        grabOriginalTexture(adjustZoom?: boolean): void;
+        grabOriginalTexture(): void;
         getMouseCoordinates(pointerInfo: PointerInfo): Vector2;
         get scene(): Scene;
         get canvas2D(): HTMLCanvasElement;
@@ -1643,8 +1660,9 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private makePlane;
         reset(): void;
         resize(newSize: ISize): Promise<void>;
-        setSize(size: ISize, adjustZoom?: boolean): void;
+        setSize(size: ISize): void;
         upload(file: File): void;
+        saveTexture(): void;
         dispose(): void;
     }
 }
@@ -1652,8 +1670,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import * as React from 'react';
     import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
     import { IPixelData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager";
+    import { ISize } from 'babylonjs/Maths/math.size';
     interface IPropertiesBarProps {
         texture: BaseTexture;
+        size: ISize;
         saveTexture(): void;
         pixelData: IPixelData;
         face: number;
@@ -1680,6 +1700,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         constructor(props: IPropertiesBarProps);
         private pixelData;
         private getNewDimension;
+        componentWillUpdate(nextProps: IPropertiesBarProps): void;
         render(): JSX.Element;
     }
 }
@@ -1767,6 +1788,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         pixelData: IPixelData;
         face: number;
         mipLevel: number;
+        pickerOpen: boolean;
     }
     export interface IToolParameters {
         /** The visible scene in the editor. Useful for adding pointer and keyboard events. */
@@ -1842,6 +1864,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         private _UICanvas;
         private _2DCanvas;
         private _3DCanvas;
+        private _pickerRef;
         private _timer;
         private static PREVIEW_UPDATE_DELAY_MS;
         constructor(props: ITextureEditorComponentProps);
@@ -1854,6 +1877,8 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         getToolParameters(): IToolParameters;
         changeTool(index: number): void;
         setMetadata(newMetadata: any): void;
+        setPickerOpen(open: boolean): void;
+        onPointerDown(evt: React.PointerEvent): void;
         saveTexture(): void;
         resetTexture(): void;
         resizeTexture(width: number, height: number): void;
@@ -5505,17 +5530,19 @@ declare module INSPECTOR {
         activeToolIndex: number;
         metadata: IMetadata;
         setMetadata(data: any): void;
+        pickerOpen: boolean;
+        setPickerOpen(open: boolean): void;
+        pickerRef: React.RefObject<HTMLDivElement>;
+        hasAlpha: boolean;
     }
     interface IToolBarState {
         toolURL: string;
-        pickerOpen: boolean;
         addOpen: boolean;
     }
     export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
-        private _addTool;
-        private _pickerRef;
         constructor(props: IToolBarProps);
         computeRGBAColor(): string;
+        shouldComponentUpdate(nextProps: IToolBarProps): boolean;
         render(): JSX.Element;
     }
 }
@@ -5534,6 +5561,18 @@ declare module INSPECTOR {
     export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    export const canvasShader: {
+        path: {
+            vertexSource: string;
+            fragmentSource: string;
+        };
+        options: {
+            attributes: string[];
+            uniforms: string[];
+        };
+    };
 }
 declare module INSPECTOR {
     export interface IPixelData {
@@ -5579,8 +5618,11 @@ declare module INSPECTOR {
         private static PAN_SPEED;
         private static PAN_MOUSE_BUTTON;
         private static MIN_SCALE;
+        private static GRID_SCALE;
         private static MAX_SCALE;
         private static SELECT_ALL_KEY;
+        private static SAVE_KEY;
+        private static RESET_KEY;
         private static DESELECT_KEY;
         private _tool;
         private _setPixelData;
@@ -5602,7 +5644,7 @@ declare module INSPECTOR {
         private updateDisplay;
         set channels(channels: IChannel[]);
         static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
-        grabOriginalTexture(adjustZoom?: boolean): void;
+        grabOriginalTexture(): void;
         getMouseCoordinates(pointerInfo: BABYLON.PointerInfo): BABYLON.Vector2;
         get scene(): BABYLON.Scene;
         get canvas2D(): HTMLCanvasElement;
@@ -5617,14 +5659,16 @@ declare module INSPECTOR {
         private makePlane;
         reset(): void;
         resize(newSize: BABYLON.ISize): Promise<void>;
-        setSize(size: BABYLON.ISize, adjustZoom?: boolean): void;
+        setSize(size: BABYLON.ISize): void;
         upload(file: File): void;
+        saveTexture(): void;
         dispose(): void;
     }
 }
 declare module INSPECTOR {
     interface IPropertiesBarProps {
         texture: BABYLON.BaseTexture;
+        size: BABYLON.ISize;
         saveTexture(): void;
         pixelData: IPixelData;
         face: number;
@@ -5651,6 +5695,7 @@ declare module INSPECTOR {
         constructor(props: IPropertiesBarProps);
         private pixelData;
         private getNewDimension;
+        componentWillUpdate(nextProps: IPropertiesBarProps): void;
         render(): JSX.Element;
     }
 }
@@ -5718,6 +5763,7 @@ declare module INSPECTOR {
         pixelData: IPixelData;
         face: number;
         mipLevel: number;
+        pickerOpen: boolean;
     }
     export interface IToolParameters {
         /** The visible scene in the editor. Useful for adding pointer and keyboard events. */
@@ -5793,6 +5839,7 @@ declare module INSPECTOR {
         private _UICanvas;
         private _2DCanvas;
         private _3DCanvas;
+        private _pickerRef;
         private _timer;
         private static PREVIEW_UPDATE_DELAY_MS;
         constructor(props: ITextureEditorComponentProps);
@@ -5805,6 +5852,8 @@ declare module INSPECTOR {
         getToolParameters(): IToolParameters;
         changeTool(index: number): void;
         setMetadata(newMetadata: any): void;
+        setPickerOpen(open: boolean): void;
+        onPointerDown(evt: React.PointerEvent): void;
         saveTexture(): void;
         resetTexture(): void;
         resizeTexture(width: number, height: number): void;

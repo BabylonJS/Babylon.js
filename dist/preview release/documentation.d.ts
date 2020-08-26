@@ -28280,6 +28280,14 @@ declare module BABYLON {
          */
         get source(): Nullable<Mesh>;
         /**
+         * Gets the list of clones of this mesh
+         * The scene must have been constructed with useClonedMeshMap=true for this to work!
+         * Note that useClonedMeshMap=true is the default setting
+         */
+        get cloneMeshMap(): Nullable<{
+            [id: string]: Mesh | undefined;
+        }>;
+        /**
          * Gets or sets a boolean indicating that this mesh does not use index buffer
          */
         get isUnIndexed(): boolean;
@@ -77536,6 +77544,8 @@ declare module BABYLON.GUI {
         private _lineSpacing;
         private _outlineWidth;
         private _outlineColor;
+        private _underline;
+        private _lineThrough;
         /**
         * An event triggered after the text is changed
         */
@@ -77608,6 +77618,22 @@ declare module BABYLON.GUI {
          * Gets or sets outlineWidth of the text to display
          */
         set outlineWidth(value: number);
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get underline(): boolean;
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set underline(value: boolean);
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get lineThrough(): boolean;
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set lineThrough(value: boolean);
         /**
          * Gets or sets outlineColor of the text to display
          */

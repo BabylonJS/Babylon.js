@@ -12502,6 +12502,8 @@ var TextBlock = /** @class */ (function (_super) {
         _this._lineSpacing = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         _this._outlineWidth = 0;
         _this._outlineColor = "white";
+        _this._underline = false;
+        _this._lineThrough = false;
         /**
         * An event triggered after the text is changed
         */
@@ -12666,6 +12668,46 @@ var TextBlock = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(TextBlock.prototype, "underline", {
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get: function () {
+            return this._underline;
+        },
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set: function (value) {
+            if (this._underline === value) {
+                return;
+            }
+            this._underline = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(TextBlock.prototype, "lineThrough", {
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get: function () {
+            return this._lineThrough;
+        },
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set: function (value) {
+            if (this._lineThrough === value) {
+                return;
+            }
+            this._lineThrough = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(TextBlock.prototype, "outlineColor", {
         /**
          * Gets or sets outlineColor of the text to display
@@ -12753,6 +12795,22 @@ var TextBlock = /** @class */ (function (_super) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
         context.fillText(text, this._currentMeasure.left + x, y);
+        if (this._underline) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y + 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
+            context.stroke();
+            context.closePath();
+        }
+        if (this._lineThrough) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
+            context.stroke();
+            context.closePath();
+        }
     };
     /** @hidden */
     TextBlock.prototype._draw = function (context, invalidatedRectangle) {

@@ -48,8 +48,8 @@ class contrastTool implements IToolType {
     cleanup() {
     }
     onReset() {
-        this.contrast = 0;
-        this.exposure = 0;
+        this.setExposure(0);
+        this.setContrast(0);
     }
 };
 

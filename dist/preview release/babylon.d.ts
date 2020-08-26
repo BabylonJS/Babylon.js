@@ -28280,6 +28280,14 @@ declare module BABYLON {
          */
         get source(): Nullable<Mesh>;
         /**
+         * Gets the list of clones of this mesh
+         * The scene must have been constructed with useClonedMeshMap=true for this to work!
+         * Note that useClonedMeshMap=true is the default setting
+         */
+        get cloneMeshMap(): Nullable<{
+            [id: string]: Mesh | undefined;
+        }>;
+        /**
          * Gets or sets a boolean indicating that this mesh does not use index buffer
          */
         get isUnIndexed(): boolean;
