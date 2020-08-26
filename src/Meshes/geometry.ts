@@ -1217,9 +1217,22 @@ export class Geometry implements IGetSetVerticesData {
                     floatIndices.push(index & 0x000000FF);
                     floatIndices.push((index & 0x0000FF00) >> 8);
                     floatIndices.push((index & 0x00FF0000) >> 16);
-                    floatIndices.push(index >> 24);
+                    floatIndices.push((index >> 24) & 0xFF); // & 0xFF to convert to v + 256 if v < 0
                 }
                 mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, false);
+            }
+
+            if (binaryInfo.matricesIndicesExtraAttrDesc && binaryInfo.matricesIndicesExtraAttrDesc.count > 0) {
+                var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesExtraAttrDesc.offset, binaryInfo.matricesIndicesExtraAttrDesc.count);
+                var floatIndices = [];
+                for (var i = 0; i < matricesIndicesData.length; i++) {
+                    var index = matricesIndicesData[i];
+                    floatIndices.push(index & 0x000000FF);
+                    floatIndices.push((index & 0x0000FF00) >> 8);
+                    floatIndices.push((index & 0x00FF0000) >> 16);
+                    floatIndices.push((index >> 24) & 0xFF); // & 0xFF to convert to v + 256 if v < 0
+                }
+                mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, false);
             }
 
             if (binaryInfo.matricesWeightsAttrDesc && binaryInfo.matricesWeightsAttrDesc.count > 0) {
@@ -1293,7 +1306,7 @@ export class Geometry implements IGetSetVerticesData {
                         floatIndices.push(matricesIndex & 0x000000FF);
                         floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
                         floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
+                        floatIndices.push((matricesIndex >> 24) & 0xFF); // & 0xFF to convert to v + 256 if v < 0
                     }
 
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, parsedGeometry.matricesIndices._updatable);
@@ -1313,7 +1326,7 @@ export class Geometry implements IGetSetVerticesData {
                         floatIndices.push(matricesIndex & 0x000000FF);
                         floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
                         floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
+                        floatIndices.push((matricesIndex >> 24) & 0xFF); // & 0xFF to convert to v + 256 if v < 0
                     }
 
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, parsedGeometry.matricesIndicesExtra._updatable);
