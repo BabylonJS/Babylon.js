@@ -35,12 +35,12 @@ export class TextBlock extends Control {
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 
     private _lines: any[];
-	private _resizeToFit: boolean = false;
+    private _resizeToFit: boolean = false;
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
-	private _outlineColor: string = "white";
-	private _underline: boolean = false;
-	private _strikethrough: boolean = false;
+    private _outlineColor: string = "white";
+    private _underline: boolean = false;
+    private _strikethrough: boolean = false;
     /**
     * An event triggered after the text is changed
     */
@@ -213,9 +213,9 @@ export class TextBlock extends Control {
         }
         this._underline = value;
         this._markAsDirty();
-	}
+    }
 
-	    /**
+        /**
      * Gets or sets an boolean indicating that text must have underline
      */
     public get strikethrough(): boolean {
@@ -231,9 +231,9 @@ export class TextBlock extends Control {
         }
         this._strikethrough = value;
         this._markAsDirty();
-	}
-	
-	/**
+    }
+    
+    /**
      * Gets or sets outlineColor of the text to display
      */
     public get outlineColor(): string {
@@ -345,27 +345,27 @@ export class TextBlock extends Control {
         if (this.outlineWidth) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
-		context.fillText(text, this._currentMeasure.left + x, y);
-	
+        context.fillText(text, this._currentMeasure.left + x, y);
+    
 
-		if (this._underline) {
-			context.beginPath();
-			context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
-			context.moveTo(this._currentMeasure.left + x, y + 3);
-			context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
-			context.stroke();
-			context.closePath();
-		}
+        if (this._underline) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y + 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
+            context.stroke();
+            context.closePath();
+        }
 
-		if (this._strikethrough) {
-			context.beginPath();
-			context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
-			context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
-			context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
-			context.stroke();
-			context.closePath();
-		}
-	}
+        if (this._strikethrough) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
+            context.stroke();
+            context.closePath();
+        }
+    }
 
     /** @hidden */
     public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
