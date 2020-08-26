@@ -351,11 +351,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public enablePointerMoveEvents = false;
 
+    private _renderingGroupId = 0;
+
     /**
      * Specifies the rendering group id for this mesh (0 by default)
      * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
-    public renderingGroupId = 0;
+    public get renderingGroupId() {
+        return this._renderingGroupId;
+    }
+
+    public set renderingGroupId(value: number) {
+        this._renderingGroupId = value;
+    }
     private _material: Nullable<Material> = null;
 
     /** Gets or sets current material */

@@ -76,9 +76,6 @@ export class ArcRotateCamera extends TargetCamera {
         this.setPosition(newPosition);
     }
 
-    @serializeAsVector3("upVector")
-    protected _upVector = Vector3.Up();
-
     protected _upToYMatrix: Matrix;
     protected _YToUpMatrix: Matrix;
 

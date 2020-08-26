@@ -9414,7 +9414,7 @@ declare module BABYLON {
          * Internal only - manager for action
          * @hidden
          */
-        _actionManager: AbstractActionManager;
+        _actionManager: Nullable<AbstractActionManager>;
         /**
          * Adds action to chain of actions, may be a DoNothingAction
          * @param action defines the next action to execute
@@ -11663,7 +11663,6 @@ declare module BABYLON {
      * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures
      */
     export class ProceduralTexture extends Texture {
-        isCube: boolean;
         /**
          * Define if the texture is enabled or not (disabled texture will not render)
          */
@@ -16021,6 +16020,8 @@ declare module BABYLON {
         _numBonesWithLinkedTransformNode: number;
         /** @hidden */
         _hasWaitingData: Nullable<boolean>;
+        /** @hidden */
+        _waitingOverrideMeshId: Nullable<string>;
         /**
          * Specifies if the skeleton should be serialized
          */
@@ -23287,6 +23288,8 @@ declare module BABYLON {
         private _delayedOnLoad;
         private _delayedOnError;
         private _mimeType?;
+        /** Returns the texture mime type if it was defined by a loader (undefined else) */
+        get mimeType(): string | undefined;
         /**
          * Observable triggered once the texture has been loaded.
          */
@@ -23468,7 +23471,6 @@ declare module BABYLON {
      * Actually, It is the base of lot of effects in the framework like post process, shadows, effect layers and rendering pipelines...
      */
     export class RenderTargetTexture extends Texture {
-        isCube: boolean;
         /**
          * The texture will only be rendered once which can be useful to improve performance if everything in your render is static for instance.
          */
@@ -23512,10 +23514,6 @@ declare module BABYLON {
          * Define if sprites should be rendered in your texture.
          */
         renderSprites: boolean;
-        /**
-         * Override the default coordinates mode to projection for RTT as it is the most common case for rendered textures.
-         */
-        coordinatesMode: number;
         /**
          * Define the camera used to render the texture.
          */
@@ -23607,7 +23605,7 @@ declare module BABYLON {
         _generateMipMaps: boolean;
         protected _renderingManager: RenderingManager;
         /** @hidden */
-        _waitingRenderList: string[];
+        _waitingRenderList?: string[];
         protected _doNotChangeAspectRatio: boolean;
         protected _currentRefreshId: number;
         protected _refreshRate: number;
@@ -29374,11 +29372,13 @@ declare module BABYLON {
          */
         get position(): Vector3;
         set position(newPosition: Vector3);
+        protected _upVector: Vector3;
         /**
          * The vector the camera should consider as up.
          * (default is Vector3(0, 1, 0) aka Vector3.Up())
          */
-        upVector: Vector3;
+        set upVector(vec: Vector3);
+        get upVector(): Vector3;
         /**
          * Define the current limit on the left side for an orthographic camera
          * In scene unit
@@ -32122,11 +32122,13 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that pointer move events must be supported on this mesh (false by default)
          */
         enablePointerMoveEvents: boolean;
+        private _renderingGroupId;
         /**
          * Specifies the rendering group id for this mesh (0 by default)
          * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
          */
-        renderingGroupId: number;
+        get renderingGroupId(): number;
+        set renderingGroupId(value: number);
         private _material;
         /** Gets or sets current material */
         get material(): Nullable<Material>;
@@ -33858,7 +33860,7 @@ declare module BABYLON {
          * This is part of the texture as textures usually maps to one uv set.
          */
         coordinatesIndex: number;
-        private _coordinatesMode;
+        protected _coordinatesMode: number;
         /**
         * How a texture is mapped.
         *
@@ -33877,6 +33879,7 @@ declare module BABYLON {
         */
         set coordinatesMode(value: number);
         get coordinatesMode(): number;
+        private _wrapU;
         /**
         * | Value | Type               | Description |
         * | ----- | ------------------ | ----------- |
@@ -33884,7 +33887,9 @@ declare module BABYLON {
         * | 1     | WRAP_ADDRESSMODE   |             |
         * | 2     | MIRROR_ADDRESSMODE |             |
         */
-        wrapU: number;
+        get wrapU(): number;
+        set wrapU(value: number);
+        private _wrapV;
         /**
         * | Value | Type               | Description |
         * | ----- | ------------------ | ----------- |
@@ -33892,7 +33897,8 @@ declare module BABYLON {
         * | 1     | WRAP_ADDRESSMODE   |             |
         * | 2     | MIRROR_ADDRESSMODE |             |
         */
-        wrapV: number;
+        get wrapV(): number;
+        set wrapV(value: number);
         /**
         * | Value | Type               | Description |
         * | ----- | ------------------ | ----------- |
@@ -39353,8 +39359,6 @@ declare module BABYLON {
          * The material properties need to be setup according to the type of texture in use.
          */
         environmentBRDFTexture: BaseTexture;
-        /** @hidden */
-        protected _environmentTexture: Nullable<BaseTexture>;
         /**
          * Texture used in all pbr material as the reflection texture.
          * As in the majority of the scene they are the same (exception for multi room and so on),
@@ -41132,6 +41136,13 @@ declare module BABYLON {
          */
         getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[];
         /**
+         * Get a list of transform nodes by tags
+         * @param tagsQuery defines the tags query to use
+         * @param forEach defines a predicate used to filter results
+         * @returns an array of TransformNode
+         */
+        getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => void): TransformNode[];
+        /**
          * Overrides the default sort function applied in the renderging group to prepare the meshes.
          * This allowed control for front to back rendering or reversly depending of the special needs.
          *
@@ -41390,10 +41401,15 @@ declare module BABYLON {
          * Textures to keep.
          */
         textures: BaseTexture[];
+        /** @hidden */
+        protected _environmentTexture: Nullable<BaseTexture>;
         /**
-         * Environment texture for the scene
+         * Texture used in all pbr material as the reflection texture.
+         * As in the majority of the scene they are the same (exception for multi room and so on),
+         * this is easier to reference from here than from all the materials.
          */
-        environmentTexture: Nullable<BaseTexture>;
+        get environmentTexture(): Nullable<BaseTexture>;
+        set environmentTexture(value: Nullable<BaseTexture>);
         /**
          * The list of postprocesses added to the scene
          */
@@ -42812,7 +42828,6 @@ declare module BABYLON {
          */
         get position(): Vector3;
         set position(newPosition: Vector3);
-        protected _upVector: Vector3;
         protected _upToYMatrix: Matrix;
         protected _YToUpMatrix: Matrix;
         /**
@@ -50277,7 +50292,12 @@ declare module BABYLON {
         /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
-        scaleRatio: number;
+        protected _scaleRatio: number;
+        /**
+         * Ratio for the scale of the gizmo (Default: 1)
+         */
+        set scaleRatio(value: number);
+        get scaleRatio(): number;
         /**
          * If a custom mesh has been set (Default: false)
          */
@@ -50299,10 +50319,12 @@ declare module BABYLON {
          * @param mesh The mesh to replace the default mesh of the gizmo
          */
         setCustomMesh(mesh: Mesh): void;
+        protected _updateGizmoRotationToMatchAttachedMesh: boolean;
         /**
          * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
          */
-        updateGizmoRotationToMatchAttachedMesh: boolean;
+        set updateGizmoRotationToMatchAttachedMesh(value: boolean);
+        get updateGizmoRotationToMatchAttachedMesh(): boolean;
         /**
          * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
          */
@@ -50422,9 +50444,7 @@ declare module BABYLON {
          */
         private _meshAttached;
         private _nodeAttached;
-        private _updateGizmoRotationToMatchAttachedMesh;
         private _snapDistance;
-        private _scaleRatio;
         /** Fires an event when any of it's sub gizmos are dragged */
         onDragStartObservable: Observable<unknown>;
         /** Fires an event when any of it's sub gizmos are released from dragging */
@@ -50535,7 +50555,7 @@ declare module BABYLON.Debug {
         /**
          * Gets the hosting scene
          */
-        scene: Scene;
+        scene: Nullable<Scene>;
         /**
          * Gets or sets a number used to scale line length
          */
@@ -53384,9 +53404,7 @@ declare module BABYLON {
         uniformScaleGizmo: AxisScaleGizmo;
         private _meshAttached;
         private _nodeAttached;
-        private _updateGizmoRotationToMatchAttachedMesh;
         private _snapDistance;
-        private _scaleRatio;
         private _uniformScalingMesh;
         private _octahedron;
         private _sensitivity;
@@ -60234,10 +60252,6 @@ declare module BABYLON {
          * The texture URL.
          */
         url: string;
-        /**
-         * The texture coordinates mode. As this texture is stored in a cube format, please modify carefully.
-         */
-        coordinatesMode: number;
         protected _isBlocking: boolean;
         /**
          * Sets wether or not the texture is blocking during loading.
@@ -61342,8 +61356,6 @@ declare module BABYLON {
         private _height;
         /** The URL to the image. */
         url: string;
-        /** The texture coordinates mode. As this texture is stored in a cube format, please modify carefully. */
-        coordinatesMode: number;
         /**
          * Instantiates an EquiRectangularCubeTexture from the following parameters.
          * @param url The location of the image
@@ -79978,10 +79990,6 @@ declare module BABYLON.GUI {
          */
         innerGlowColor: BABYLON.Color3;
         /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        alpha: number;
-        /**
          * Gets or sets the albedo color (Default is BABYLON.Color3(0.3, 0.35, 0.4))
          */
         albedoColor: BABYLON.Color3;
@@ -83282,6 +83290,7 @@ declare module BABYLON.GLTF2.Exporter {
         static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
         static _NormalizeTangentFromRef(tangent: Vector4): void;
         static _GetRightHandedMatrixFromRef(matrix: Matrix): void;
+        static _GetDataAccessorElementCount(accessorType: AccessorType): 1 | 3 | 2 | 4 | 9 | 16;
     }
 }
 declare module BABYLON.GLTF2.Exporter {
@@ -83502,6 +83511,16 @@ declare module BABYLON.GLTF2.Exporter {
          */
         writeAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, babylonTransformNode: TransformNode): void;
         /**
+         * Writes mesh attribute data to a data buffer
+         * Returns the bytelength of the data
+         * @param vertexBufferKind Indicates what kind of vertex data is being passed in
+         * @param meshAttributeArray Array containing the attribute data
+         * @param byteStride Specifies the space between data
+         * @param binaryWriter The buffer to write the binary data to
+         * @param convertToRightHandedSystem Converts the values to right-handed
+         */
+        writeMorphTargetAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshPrimitive: SubMesh, morphTarget: MorphTarget, meshAttributeArray: FloatArray, morphTargetAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, minMax?: any): void;
+        /**
          * Generates glTF json data
          * @param shouldUseGlb Indicates whether the json should be written for a glb file
          * @param glTFPrefix Text to use when prefixing a glTF file
@@ -83548,6 +83567,14 @@ declare module BABYLON.GLTF2.Exporter {
          * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private createBufferViewKind;
+        /**
+     * Creates a bufferview based on the vertices type for the Babylon mesh
+     * @param babylonSubMesh The Babylon submesh that the morph target is applied to
+     * @param babylonMorphTarget the morph target to be exported
+     * @param binaryWriter The buffer to write the bufferview data to
+     * @param convertToRightHandedSystem Converts the values to right-handed
+     */
+        private setMorphTargetAttributes;
         /**
          * The primitive mode of the Babylon mesh
          * @param babylonMesh The BabylonJS mesh
@@ -83724,7 +83751,7 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * The glTF accessor type for the data.
          */
-        dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4;
+        dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4 | AccessorType.SCALAR;
         /**
          * Specifies if quaternions should be used.
          */
@@ -83766,8 +83793,25 @@ declare module BABYLON.GLTF2.Exporter {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
         /**
+     * @ignore
+     * Create individual morph animations from the mesh's morph target animation tracks
+     * @param babylonNode
+     * @param runtimeGLTFAnimation
+     * @param idleGLTFAnimations
+     * @param nodeMap
+     * @param nodes
+     * @param binaryWriter
+     * @param bufferViews
+     * @param accessors
+     * @param convertToRightHandedSystem
+     * @param animationSampleRate
+     */
+        static _CreateMorphTargetAnimationFromMorphTargets(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
+            [key: number]: number;
+        }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
+        /**
          * @ignore
-         * Create node animations from the animation groups
+         * Create node and morph animations from the animation groups
          * @param babylonScene
          * @param glTFAnimations
          * @param nodeMap
@@ -85062,7 +85106,7 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IKHRMaterialVariants_Mapping extends IProperty {
-        mapping: Array<{
+        mappings: Array<{
             variants: number[];
             material: number;
         }>;

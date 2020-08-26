@@ -1550,7 +1550,7 @@ declare module 'babylonjs-viewer/managers/sceneManager' {
             /**
                 * Babylon's scene optimizer
                 */
-            sceneOptimizer: SceneOptimizer;
+            sceneOptimizer?: SceneOptimizer;
             /**
                 * Models displayed in this viewer.
                 */
