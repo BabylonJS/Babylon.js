@@ -4530,9 +4530,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Force the value of meshUnderPointer
      * @param mesh defines the mesh to use
+     * @param pointerId optional pointer id when using more than one pointer
      */
-    public setPointerOverMesh(mesh: Nullable<AbstractMesh>): void {
-        this._inputManager.setPointerOverMesh(mesh);
+    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void {
+        this._inputManager.setPointerOverMesh(mesh, pointerId);
     }
 
     /**
@@ -4636,6 +4637,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
         return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+    }
+
+    /**
+     * Get a list of transform nodes by tags
+     * @param tagsQuery defines the tags query to use
+     * @param forEach defines a predicate used to filter results
+     * @returns an array of TransformNode
+     */
+    public getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => void): TransformNode[] {
+        return this._getByTags(this.transformNodes, tagsQuery, forEach);
     }
 
     /**
