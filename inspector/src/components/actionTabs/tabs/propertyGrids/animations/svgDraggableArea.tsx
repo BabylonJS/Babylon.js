@@ -1,14 +1,12 @@
 import * as React from "react";
 import { Vector2 } from "babylonjs/Maths/math.vector";
-import { KeyframeSvgPoint, IKeyframeSvgPoint } from "./keyframeSvgPoint";
+import { IKeyframeSvgPoint } from "./keyframeSvgPoint";
 
 interface ISvgDraggableAreaProps {
     keyframeSvgPoints: IKeyframeSvgPoint[];
     updatePosition: (updatedKeyframe: IKeyframeSvgPoint, id: string) => void;
     scale: number;
     viewBoxScale: number;
-    selectKeyframe: (id: string, multiselect: boolean) => void;
-    selectedControlPoint: (type: string, id: string) => void;
     deselectKeyframes: () => void;
     removeSelectedKeyframes: (points: IKeyframeSvgPoint[]) => void;
     panningY: (panningY: number) => void;
@@ -291,16 +289,6 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         return (
             <>
                 <svg
-                    style={{
-                        width: 30,
-                        height: 364,
-                        position: "absolute",
-                        zIndex: 1,
-                        pointerEvents: "none",
-                    }}>
-                    <rect x="0" y="0" width="38px" height="100%" fill="rgb(188 188 188 / 11%)"></rect>
-                </svg>
-                <svg
                     className="linear pannable"
                     ref={this._draggableArea}
                     tabIndex={0}
@@ -310,7 +298,8 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                     onMouseLeave={this.dragEnd}
                     onClick={this.focus}
                     viewBox={viewBoxScaling}>
-                    {this.props.keyframeSvgPoints.map((keyframe, i) => (
+                    {this.props.children}
+                    {/* {this.props.keyframeSvgPoints.map((keyframe, i) => (
                         <KeyframeSvgPoint
                             key={`${keyframe.id}_${i}`}
                             id={keyframe.id}
@@ -323,9 +312,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                             selectedControlPoint={this.props.selectedControlPoint}
                             selectKeyframe={this.props.selectKeyframe}
                         />
-                    ))}
-
-                    {this.props.children}
+                    ))} */}
                 </svg>
             </>
         );
