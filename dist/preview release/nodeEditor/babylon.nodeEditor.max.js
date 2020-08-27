@@ -66857,17 +66857,25 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);
             return;
         }
+        var linksToNotifyForDispose = null;
         if (pointB.isConnected) {
             var links = nodeB.getLinksForConnectionPoint(pointB);
+            linksToNotifyForDispose = links.slice();
             links.forEach(function (link) {
-                link.dispose();
+                link.dispose(false);
             });
         }
         if (pointB.ownerBlock.inputsAreExclusive) { // Disconnect all inputs if block has exclusive inputs
             pointB.ownerBlock.inputs.forEach(function (i) {
                 var links = nodeB.getLinksForConnectionPoint(i);
+                if (!linksToNotifyForDispose) {
+                    linksToNotifyForDispose = links.slice();
+                }
+                else {
+                    linksToNotifyForDispose.push.apply(linksToNotifyForDispose, links.slice());
+                }
                 links.forEach(function (link) {
-                    link.dispose();
+                    link.dispose(false);
                 });
             });
         }
@@ -66905,6 +66913,10 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         else {
             nodeB.refresh();
         }
+        linksToNotifyForDispose === null || linksToNotifyForDispose === void 0 ? void 0 : linksToNotifyForDispose.forEach(function (link) {
+            link.onDisposedObservable.notifyObservers(link);
+            link.onDisposedObservable.clear();
+        });
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     };
     GraphCanvasComponent.prototype.processEditorData = function (editorData) {
@@ -68793,7 +68805,8 @@ var NodeLink = /** @class */ (function () {
     NodeLink.prototype.onClick = function () {
         this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
     };
-    NodeLink.prototype.dispose = function () {
+    NodeLink.prototype.dispose = function (notify) {
+        if (notify === void 0) { notify = true; }
         this._graphCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         if (this._path.parentElement) {
             this._path.parentElement.removeChild(this._path);
@@ -68807,8 +68820,10 @@ var NodeLink = /** @class */ (function () {
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
             this._portA.connectionPoint.disconnectFrom(this._portB.connectionPoint);
         }
-        this.onDisposedObservable.notifyObservers(this);
-        this.onDisposedObservable.clear();
+        if (notify) {
+            this.onDisposedObservable.notifyObservers(this);
+            this.onDisposedObservable.clear();
+        }
     };
     return NodeLink;
 }());

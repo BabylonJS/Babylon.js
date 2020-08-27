@@ -38935,6 +38935,7 @@ declare module BABYLON {
         private _startingPointerTime;
         private _previousStartingPointerTime;
         private _pointerCaptures;
+        private _meshUnderPointerId;
         private _onKeyDown;
         private _onKeyUp;
         private _onCanvasFocusObserver;
@@ -38946,9 +38947,15 @@ declare module BABYLON {
          */
         constructor(scene: Scene);
         /**
-        * Gets the mesh that is currently under the pointer
-        */
+         * Gets the mesh that is currently under the pointer
+         */
         get meshUnderPointer(): Nullable<AbstractMesh>;
+        /**
+         * When using more than one pointer (for example in XR) you can get the mesh under the specific pointer
+         * @param pointerId the pointer id to use
+         * @returns The mesh under this pointer id or null if not found
+         */
+        getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh>;
         /**
          * Gets the pointer coordinates in 2D without any translation (ie. straight out of the pointer event)
          */
@@ -39000,12 +39007,12 @@ declare module BABYLON {
          */
         isPointerCaptured(pointerId?: number): boolean;
         /**
-        * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
-        * @param attachUp defines if you want to attach events to pointerup
-        * @param attachDown defines if you want to attach events to pointerdown
-        * @param attachMove defines if you want to attach events to pointermove
-        * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
-        */
+         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
+         * @param attachUp defines if you want to attach events to pointerup
+         * @param attachDown defines if you want to attach events to pointerdown
+         * @param attachMove defines if you want to attach events to pointermove
+         * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
+         */
         attachControl(attachUp?: boolean, attachDown?: boolean, attachMove?: boolean, elementToAttachTo?: Nullable<HTMLElement>): void;
         /**
          * Detaches all event handlers
@@ -39014,8 +39021,9 @@ declare module BABYLON {
         /**
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use
+         * @param pointerId optional pointer id when using more than one pointer. Defaults to 0
          */
-        setPointerOverMesh(mesh: Nullable<AbstractMesh>): void;
+        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void;
         /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
@@ -41103,8 +41111,9 @@ declare module BABYLON {
         /**
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use
+         * @param pointerId optional pointer id when using more than one pointer
          */
-        setPointerOverMesh(mesh: Nullable<AbstractMesh>): void;
+        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void;
         /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer

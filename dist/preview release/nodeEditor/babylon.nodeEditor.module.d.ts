@@ -426,7 +426,7 @@ declare module "babylonjs-node-editor/diagram/nodeLink" {
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
-        dispose(): void;
+        dispose(notify?: boolean): void;
     }
 }
 declare module "babylonjs-node-editor/diagram/graphCanvas" {
@@ -2211,7 +2211,7 @@ declare module NODEEDITOR {
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
-        dispose(): void;
+        dispose(notify?: boolean): void;
     }
 }
 declare module NODEEDITOR {
