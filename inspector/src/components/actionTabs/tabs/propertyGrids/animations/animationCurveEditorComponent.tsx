@@ -21,6 +21,7 @@ import { GlobalState } from "../../../../globalState";
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
 import { ScaleLabel } from "./scale-label";
+import { KeyframeSvgPoint } from "./keyframeSvgPoint";
 
 require("./curveEditor.scss");
 
@@ -526,7 +527,14 @@ export class AnimationCurveEditorComponent extends React.Component<
     forceFrameZeroToExist(keys: IAnimationKey[]) {
         const zeroFrame = keys.find((x) => Math.abs(x.frame) === 0);
         if (zeroFrame === undefined) {
-            const frame: IAnimationKey = { frame: 0, value: keys[0].value };
+            const prevToZero = keys.filter((x) => Math.sign(x.frame) === -1).sort((a, b) => b.frame - a.frame);
+            let value;
+            if (prevToZero.length !== 0) {
+                value = prevToZero[0].value;
+            } else {
+                value = 1;
+            }
+            const frame: IAnimationKey = { frame: 0, value };
             keys.push(frame);
             keys.sort((a, b) => a.frame - b.frame);
         }
@@ -542,7 +550,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         let newFrame = 0;
         if (updatedSvgKeyFrame.keyframePoint.x !== 0) {
             if (updatedSvgKeyFrame.keyframePoint.x > 0 && updatedSvgKeyFrame.keyframePoint.x < 1) {
-                newFrame = 1;
+                newFrame = 0;
             } else {
                 newFrame = Math.round(updatedSvgKeyFrame.keyframePoint.x / this._pixelFrameUnit);
             }
@@ -852,6 +860,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             let currentAnimation = this.state.selected;
 
             let keys = currentAnimation.getKeys();
+
             let x = this.state.currentFrame;
 
             let existValue = keys.find((k) => k.frame === x);
@@ -906,6 +915,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                 const id = `${currentAnimation.name}_${currentAnimation.targetProperty}_${this.state.selectedCoordinate}`;
                 const curvedId = this.encodeCurveId(id, newIndex);
                 this.setState({ lastKeyframeCreated: curvedId });
+
+                this.forceFrameZeroToExist(keys);
 
                 currentAnimation.setKeys(keys);
 
@@ -1799,6 +1810,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                         this._mainAnimatable.onAnimationEnd = () => this.playPause(0);
                     }
                 }
+
                 const zeroFrames = keys.filter((x) => x.frame === 0);
                 if (zeroFrames.length > 1) {
                     keys.shift();
@@ -1932,12 +1944,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                             {this.state.svgKeyframes && (
                                 <SvgDraggableArea
                                     ref={this._svgCanvas}
-                                    selectKeyframe={this.selectKeyframe}
                                     viewBoxScale={this.state.frameAxisLength.length}
                                     scale={this.state.scale}
-                                    keyframeSvgPoints={this.state.svgKeyframes}
                                     removeSelectedKeyframes={this.removeKeyframes}
-                                    selectedControlPoint={this.selectedControlPoint}
                                     deselectKeyframes={this.deselectKeyframes}
                                     updatePosition={this.renderPoints}
                                     panningY={this.setPanningY}
@@ -1946,22 +1955,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     positionCanvas={new Vector2(this.state.panningX, this.state.panningY)}
                                     repositionCanvas={this.state.repositionCanvas}
                                     canvasPositionEnded={this.canvasPositionEnded}
+                                    keyframeSvgPoints={this.state.svgKeyframes}
                                     resetActionableKeyframe={this.resetActionableKeyframe}>
-                                    {/* Multiple Curves  */}
-                                    {this.state.selectedPathData?.map((curve, i) => (
-                                        <path
-                                            key={i}
-                                            ref={curve.domCurve}
-                                            pathLength={curve.pathLength}
-                                            id="curve"
-                                            d={curve.pathData}
-                                            style={{
-                                                stroke: curve.color,
-                                                fill: "none",
-                                                strokeWidth: "0.5",
-                                            }}></path>
-                                    ))}
-
                                     {this.setValueLines(this.state.valueScale).map((line, i) => {
                                         return (
                                             <text
@@ -1991,6 +1986,36 @@ export class AnimationCurveEditorComponent extends React.Component<
                                                 y2={line.value}></line>
                                         );
                                     })}
+
+                                    {/* Multiple Curves  */}
+                                    {this.state.selectedPathData?.map((curve, i) => (
+                                        <path
+                                            key={i}
+                                            ref={curve.domCurve}
+                                            pathLength={curve.pathLength}
+                                            id="curve"
+                                            d={curve.pathData}
+                                            style={{
+                                                stroke: curve.color,
+                                                fill: "none",
+                                                strokeWidth: "0.5",
+                                            }}></path>
+                                    ))}
+
+                                    {this.state.svgKeyframes.map((keyframe, i) => (
+                                        <KeyframeSvgPoint
+                                            key={`${keyframe.id}_${i}`}
+                                            id={keyframe.id}
+                                            keyframePoint={keyframe.keyframePoint}
+                                            leftControlPoint={keyframe.leftControlPoint}
+                                            rightControlPoint={keyframe.rightControlPoint}
+                                            isLeftActive={keyframe.isLeftActive}
+                                            isRightActive={keyframe.isRightActive}
+                                            selected={keyframe.selected}
+                                            selectedControlPoint={this.selectedControlPoint}
+                                            selectKeyframe={this.selectKeyframe}
+                                        />
+                                    ))}
 
                                     <rect
                                         onClick={(e) => this.moveFrameTo(e)}
@@ -2028,7 +2053,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                                         x2={f.value}
                                                         y2="-100%"
                                                         style={{
-                                                            stroke: "white",
+                                                            stroke: "#a4a4a4",
                                                             strokeWidth: 0.4,
                                                         }}
                                                     />
@@ -2058,6 +2083,16 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     ))}
                                 </SvgDraggableArea>
                             )}
+                            <div
+                                style={{
+                                    width: 30,
+                                    height: "inherit",
+                                    position: "absolute",
+                                    zIndex: 1,
+                                    pointerEvents: "none",
+                                    backgroundColor: "rgb(188 188 188 / 11%)",
+                                    top: 40,
+                                }}></div>
                             <ScaleLabel current={this.state.valueScale} />
                         </div>
                     </div>
