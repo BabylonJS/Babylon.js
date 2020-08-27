@@ -125,8 +125,9 @@ export class InputManager {
     /**
      * When using more than one pointer (for example in XR) you can get the mesh under the specific pointer
      * @param pointerId the pointer id to use
+     * @returns The mesh under this pointer id or null if not found
      */
-    public getMeshUnderPointerByPointerId(pointerId: number) {
+    public getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh> {
         return this._meshUnderPointerId[pointerId];
     }
 
