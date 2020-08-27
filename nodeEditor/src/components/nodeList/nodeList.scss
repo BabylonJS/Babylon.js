@@ -88,23 +88,31 @@
                 }
 
                 .withButton {
-                    height: 40px;
+                    height: 30px;
                     position: relative;
                     .icon {
                         position: absolute;
-                        right: 10px;
-                        top: 10px;
-
+                        right: 4px;
+                        top: 5px;
                         &:hover {
                             cursor: pointer;
+                        }
+
+                        .img {
+                            height: 17px;
+                            width: 17px;
                         }
                     }
 
                     .buttonLine {
-                       
+                        height: 30px;
+                        display: grid;
+                        align-items: center;
+                        justify-items: stretch;
+                        padding-bottom: 5px;
                         position: absolute;
-                        right: 10px;
-                        top: 10px;
+                        right: 0px;
+                        top: 2px;
                         input[type="file"] {
                             display: none;
                         }
@@ -112,9 +120,7 @@
                         .file-upload {            
                             background: transparent;
                             border: transparent;
-                            margin: 0px 0px;
-                            color:white;
-                            padding: 0px 0px 5px 20px;
+                            padding: 15px 200px;
                             opacity: 0.9;
                             cursor: pointer;
                             text-align: center;

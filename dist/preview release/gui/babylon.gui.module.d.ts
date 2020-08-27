@@ -1444,7 +1444,7 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
     import { Observable } from "babylonjs/Misc/observable";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Control } from "babylonjs-gui/2D/controls/control";
-    import { Nullable } from 'babylonjs/types';
+    import { Nullable } from "babylonjs/types";
     /**
      * Enum that determines the text-wrapping mode to use.
      */
@@ -1479,13 +1479,15 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         private _lineSpacing;
         private _outlineWidth;
         private _outlineColor;
+        private _underline;
+        private _lineThrough;
         /**
-        * An event triggered after the text is changed
-        */
+         * An event triggered after the text is changed
+         */
         onTextChangedObservable: Observable<TextBlock>;
         /**
-        * An event triggered after the text was broken up into lines
-        */
+         * An event triggered after the text was broken up into lines
+         */
         onLinesReadyObservable: Observable<TextBlock>;
         /**
          * Function used to split a string into words. By default, a string is split at each space character found
@@ -1551,6 +1553,22 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
          * Gets or sets outlineWidth of the text to display
          */
         set outlineWidth(value: number);
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get underline(): boolean;
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set underline(value: boolean);
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get lineThrough(): boolean;
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set lineThrough(value: boolean);
         /**
          * Gets or sets outlineColor of the text to display
          */
@@ -5838,13 +5856,15 @@ declare module BABYLON.GUI {
         private _lineSpacing;
         private _outlineWidth;
         private _outlineColor;
+        private _underline;
+        private _lineThrough;
         /**
-        * An event triggered after the text is changed
-        */
+         * An event triggered after the text is changed
+         */
         onTextChangedObservable: BABYLON.Observable<TextBlock>;
         /**
-        * An event triggered after the text was broken up into lines
-        */
+         * An event triggered after the text was broken up into lines
+         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
         /**
          * Function used to split a string into words. By default, a string is split at each space character found
@@ -5910,6 +5930,22 @@ declare module BABYLON.GUI {
          * Gets or sets outlineWidth of the text to display
          */
         set outlineWidth(value: number);
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get underline(): boolean;
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set underline(value: boolean);
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get lineThrough(): boolean;
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set lineThrough(value: boolean);
         /**
          * Gets or sets outlineColor of the text to display
          */

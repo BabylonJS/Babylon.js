@@ -2,8 +2,8 @@ import { Observable } from "babylonjs/Misc/observable";
 import { Measure } from "../measure";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Control } from "./control";
-import { _TypeStore } from 'babylonjs/Misc/typeStore';
-import { Nullable } from 'babylonjs/types';
+import { _TypeStore } from "babylonjs/Misc/typeStore";
+import { Nullable } from "babylonjs/types";
 
 /**
  * Enum that determines the text-wrapping mode to use.
@@ -39,14 +39,16 @@ export class TextBlock extends Control {
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
     private _outlineColor: string = "white";
+    private _underline: boolean = false;
+    private _lineThrough: boolean = false;
     /**
-    * An event triggered after the text is changed
-    */
+     * An event triggered after the text is changed
+     */
     public onTextChangedObservable = new Observable<TextBlock>();
 
     /**
-    * An event triggered after the text was broken up into lines
-    */
+     * An event triggered after the text was broken up into lines
+     */
     public onLinesReadyObservable = new Observable<TextBlock>();
 
     /**
@@ -196,6 +198,42 @@ export class TextBlock extends Control {
     }
 
     /**
+     * Gets or sets a boolean indicating that text must have underline
+     */
+    public get underline(): boolean {
+        return this._underline;
+    }
+
+    /**
+     * Gets or sets a boolean indicating that text must have underline
+     */
+    public set underline(value: boolean) {
+        if (this._underline === value) {
+            return;
+        }
+        this._underline = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets an boolean indicating that text must be crossed out
+     */
+    public get lineThrough(): boolean {
+        return this._lineThrough;
+    }
+
+    /**
+     * Gets or sets an boolean indicating that text must be crossed out
+     */
+    public set lineThrough(value: boolean) {
+        if (this._lineThrough === value) {
+            return;
+        }
+        this._lineThrough = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Gets or sets outlineColor of the text to display
      */
     public get outlineColor(): string {
@@ -223,7 +261,8 @@ export class TextBlock extends Control {
          * Defines the name of the control
          */
         public name?: string,
-        text: string = "") {
+        text: string = ""
+    ) {
         super(name);
 
         this.text = text;
@@ -269,7 +308,7 @@ export class TextBlock extends Control {
                 if (this._lineSpacing.isPixel) {
                     lineSpacing = this._lineSpacing.getValue(this._host);
                 } else {
-                    lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
 
                 newHeight += (this._lines.length - 1) * lineSpacing;
@@ -308,6 +347,24 @@ export class TextBlock extends Control {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
         context.fillText(text, this._currentMeasure.left + x, y);
+
+        if (this._underline) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y + 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
+            context.stroke();
+            context.closePath();
+        }
+
+        if (this._lineThrough) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
+            context.stroke();
+            context.closePath();
+        }
     }
 
     /** @hidden */
@@ -351,29 +408,39 @@ export class TextBlock extends Control {
         return lines;
     }
 
-    protected _parseLine(line: string = '', context: CanvasRenderingContext2D): object {
+    protected _parseLine(line: string = "", context: CanvasRenderingContext2D): object {
         return { text: line, width: context.measureText(line).width };
     }
 
-    protected _parseLineEllipsis(line: string = '', width: number,
-        context: CanvasRenderingContext2D): object {
+    protected _parseLineEllipsis(line: string = "", width: number, context: CanvasRenderingContext2D): object {
         var lineWidth = context.measureText(line).width;
 
         if (lineWidth > width) {
-            line += '…';
+            line += "…";
         }
-        while (line.length > 2 && lineWidth > width) {
-            line = line.slice(0, -2) + '…';
-            lineWidth = context.measureText(line).width;
+        // unicode support. split('') does not work with unicode!
+        // make sure Array.from is available
+        const characters = Array.from && Array.from(line);
+        if (!characters) {
+            // no array.from, use the old method
+            while (line.length > 2 && lineWidth > width) {
+                line = line.slice(0, -2) + "…";
+                lineWidth = context.measureText(line).width;
+            }
+        } else {
+            while (characters.length && lineWidth > width) {
+                characters.pop();
+                line = `${characters.join()}...`;
+                lineWidth = context.measureText(line).width;
+            }
         }
 
         return { text: line, width: lineWidth };
     }
 
-    protected _parseLineWordWrap(line: string = '', width: number,
-        context: CanvasRenderingContext2D): object[] {
+    protected _parseLineWordWrap(line: string = "", width: number, context: CanvasRenderingContext2D): object[] {
         var lines = [];
-        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(' ');
+        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
         var lineWidth = 0;
 
         for (var n = 0; n < words.length; n++) {
@@ -384,8 +451,7 @@ export class TextBlock extends Control {
                 lines.push({ text: line, width: lineWidth });
                 line = words[n];
                 lineWidth = context.measureText(line).width;
-            }
-            else {
+            } else {
                 lineWidth = testWidth;
                 line = testLine;
             }
@@ -416,11 +482,10 @@ export class TextBlock extends Control {
             const line = this._lines[i];
 
             if (i !== 0 && this._lineSpacing.internalValue !== 0) {
-
                 if (this._lineSpacing.isPixel) {
                     rootY += this._lineSpacing.getValue(this._host);
                 } else {
-                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    rootY = rootY + this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
             }
 
@@ -435,14 +500,13 @@ export class TextBlock extends Control {
      */
     public computeExpectedHeight(): number {
         if (this.text && this.widthInPixels) {
-            const context = document.createElement('canvas').getContext('2d');
+            const context = document.createElement("canvas").getContext("2d");
             if (context) {
                 this._applyStates(context);
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font);
                 }
-                const lines = this._lines ? this._lines : this._breakLines(
-                    this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
+                const lines = this._lines ? this._lines : this._breakLines(this.widthInPixels - this.paddingLeftInPixels - this.paddingRightInPixels, context);
 
                 let newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * lines.length;
 
@@ -451,7 +515,7 @@ export class TextBlock extends Control {
                     if (this._lineSpacing.isPixel) {
                         lineSpacing = this._lineSpacing.getValue(this._host);
                     } else {
-                        lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                        lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                     }
 
                     newHeight += (lines.length - 1) * lineSpacing;

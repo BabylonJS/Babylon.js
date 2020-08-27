@@ -16020,6 +16020,8 @@ declare module BABYLON {
         _numBonesWithLinkedTransformNode: number;
         /** @hidden */
         _hasWaitingData: Nullable<boolean>;
+        /** @hidden */
+        _waitingOverrideMeshId: Nullable<string>;
         /**
          * Specifies if the skeleton should be serialized
          */
@@ -28278,6 +28280,14 @@ declare module BABYLON {
          */
         get source(): Nullable<Mesh>;
         /**
+         * Gets the list of clones of this mesh
+         * The scene must have been constructed with useClonedMeshMap=true for this to work!
+         * Note that useClonedMeshMap=true is the default setting
+         */
+        get cloneMeshMap(): Nullable<{
+            [id: string]: Mesh | undefined;
+        }>;
+        /**
          * Gets or sets a boolean indicating that this mesh does not use index buffer
          */
         get isUnIndexed(): boolean;
@@ -38925,6 +38935,7 @@ declare module BABYLON {
         private _startingPointerTime;
         private _previousStartingPointerTime;
         private _pointerCaptures;
+        private _meshUnderPointerId;
         private _onKeyDown;
         private _onKeyUp;
         private _onCanvasFocusObserver;
@@ -38936,9 +38947,15 @@ declare module BABYLON {
          */
         constructor(scene: Scene);
         /**
-        * Gets the mesh that is currently under the pointer
-        */
+         * Gets the mesh that is currently under the pointer
+         */
         get meshUnderPointer(): Nullable<AbstractMesh>;
+        /**
+         * When using more than one pointer (for example in XR) you can get the mesh under the specific pointer
+         * @param pointerId the pointer id to use
+         * @returns The mesh under this pointer id or null if not found
+         */
+        getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh>;
         /**
          * Gets the pointer coordinates in 2D without any translation (ie. straight out of the pointer event)
          */
@@ -38990,12 +39007,12 @@ declare module BABYLON {
          */
         isPointerCaptured(pointerId?: number): boolean;
         /**
-        * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
-        * @param attachUp defines if you want to attach events to pointerup
-        * @param attachDown defines if you want to attach events to pointerdown
-        * @param attachMove defines if you want to attach events to pointermove
-        * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
-        */
+         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
+         * @param attachUp defines if you want to attach events to pointerup
+         * @param attachDown defines if you want to attach events to pointerdown
+         * @param attachMove defines if you want to attach events to pointermove
+         * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
+         */
         attachControl(attachUp?: boolean, attachDown?: boolean, attachMove?: boolean, elementToAttachTo?: Nullable<HTMLElement>): void;
         /**
          * Detaches all event handlers
@@ -39004,8 +39021,9 @@ declare module BABYLON {
         /**
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use
+         * @param pointerId optional pointer id when using more than one pointer. Defaults to 0
          */
-        setPointerOverMesh(mesh: Nullable<AbstractMesh>): void;
+        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void;
         /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
@@ -41093,8 +41111,9 @@ declare module BABYLON {
         /**
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use
+         * @param pointerId optional pointer id when using more than one pointer
          */
-        setPointerOverMesh(mesh: Nullable<AbstractMesh>): void;
+        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void;
         /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
@@ -41133,6 +41152,13 @@ declare module BABYLON {
          * @returns an array of Material
          */
         getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[];
+        /**
+         * Get a list of transform nodes by tags
+         * @param tagsQuery defines the tags query to use
+         * @param forEach defines a predicate used to filter results
+         * @returns an array of TransformNode
+         */
+        getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => void): TransformNode[];
         /**
          * Overrides the default sort function applied in the renderging group to prepare the meshes.
          * This allowed control for front to back rendering or reversly depending of the special needs.
@@ -77527,13 +77553,15 @@ declare module BABYLON.GUI {
         private _lineSpacing;
         private _outlineWidth;
         private _outlineColor;
+        private _underline;
+        private _lineThrough;
         /**
-        * An event triggered after the text is changed
-        */
+         * An event triggered after the text is changed
+         */
         onTextChangedObservable: BABYLON.Observable<TextBlock>;
         /**
-        * An event triggered after the text was broken up into lines
-        */
+         * An event triggered after the text was broken up into lines
+         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
         /**
          * Function used to split a string into words. By default, a string is split at each space character found
@@ -77599,6 +77627,22 @@ declare module BABYLON.GUI {
          * Gets or sets outlineWidth of the text to display
          */
         set outlineWidth(value: number);
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get underline(): boolean;
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set underline(value: boolean);
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get lineThrough(): boolean;
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set lineThrough(value: boolean);
         /**
          * Gets or sets outlineColor of the text to display
          */
@@ -83362,6 +83406,10 @@ declare module BABYLON.GLTF2.Exporter {
                 mimeType: ImageMimeType;
             };
         };
+        protected _orderedImageData: Array<{
+            data: Uint8Array;
+            mimeType: ImageMimeType;
+        }>;
         /**
          * Stores a map of the unique id of a node to its index in the node array
          */
