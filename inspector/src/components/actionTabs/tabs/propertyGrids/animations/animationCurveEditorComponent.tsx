@@ -1668,24 +1668,28 @@ export class AnimationCurveEditorComponent extends React.Component<
      */
     changeCurrentFrame = (frame: number) => {
         this.stopAnimation();
-        const currentValue = this.calculateCurrentPointInCurve(frame);
-        const value = currentValue ?? 0;
-        const keyframe: IAnimationKey = { frame, value };
-        this.setState(
-            {
-                currentFrame: frame,
-                isPlaying: false,
-            },
-            () => {
-                if (this.state.selected) {
-                    const index = this.state.selected.getKeys().findIndex((x) => x.frame === keyframe.frame);
-                    const animationName = `${this.state.selected.name}_${this.state.selected.targetProperty}_${this.state.selectedCoordinate}`;
+        const animation = this.state.selected;
+        if (animation) {
+            const hasKeyframe = animation.getKeys().find((x) => x.frame === frame);
+            const currentValue = this.calculateCurrentPointInCurve(frame);
+            const value = hasKeyframe
+                ? this.getValueAsArray(animation.dataType, hasKeyframe.value)[this.state.selectedCoordinate]
+                : currentValue ?? 0;
+            const keyframe: IAnimationKey = { frame, value };
+            this.setState(
+                {
+                    currentFrame: frame,
+                    isPlaying: false,
+                },
+                () => {
+                    const index = animation.getKeys().findIndex((x) => x.frame === keyframe.frame);
+                    const animationName = `${animation.name}_${animation.targetProperty}_${this.state.selectedCoordinate}`;
                     const id = this.encodeCurveId(animationName, index);
                     this.selectKeyframeFromId(id, keyframe);
+                    this.setCanvasPosition(keyframe);
                 }
-                this.setCanvasPosition(keyframe);
-            }
-        );
+            );
+        }
     };
 
     calculateCurrentPointInCurve = (frame: number): number | undefined => {
