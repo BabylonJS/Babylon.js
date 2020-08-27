@@ -517,7 +517,7 @@ export class _GLTFMaterialExporter {
                 // Read data from WebGL
                 const canvas0 = engine.getRenderingCanvas();
 
-                const canvas = document.createElement("canvas");
+                let canvas: Nullable<HTMLCanvasElement> = document.createElement("canvas");
 
                 canvas.width = canvas0?.width ?? 0;
                 canvas.height = canvas0?.height ?? 0;
@@ -532,6 +532,7 @@ export class _GLTFMaterialExporter {
                     }
                     else {
                         Tools.ToBlob(canvas, (blob) => {
+                            canvas = null;
                             if (blob) {
                                 let fileReader = new FileReader();
                                 fileReader.onload = (event: any) => {
