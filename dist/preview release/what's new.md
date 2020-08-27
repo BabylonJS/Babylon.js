@@ -294,6 +294,7 @@
 - Fix an issue with sound updateOptions not updating the underlying sound buffer/html element ([RaananW](https://github.com/RaananW))
 - Fixed bug in sphereBuilder where top and bottom segments added 6 indices per triangle instead of 3. ([aWeirdo](https://github.com/aWeirdo))
 - Fixed issue with Babylon scene export of loaded glTF meshes.([Drigax]/(https://github.com/drigax))
+- Fixed an issue with text block wrap and unicode strings (not working in IE11) ([#8822](https://github.com/BabylonJS/Babylon.js/issues/8822)) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 - `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))
