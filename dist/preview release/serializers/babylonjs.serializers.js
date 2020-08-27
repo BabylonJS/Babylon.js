@@ -985,7 +985,8 @@ var KHR_texture_transform = /** @class */ (function () {
         configurable: true
     });
     KHR_texture_transform.prototype.postExportTexture = function (context, textureInfo, babylonTexture) {
-        if (babylonTexture && babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+        var canUseExtension = babylonTexture && ((babylonTexture.uAng === 0 && babylonTexture.wAng === 0 && babylonTexture.vAng === 0) || (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0));
+        if (canUseExtension) {
             var textureTransform = {};
             var transformIsRequired = false;
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
@@ -2095,6 +2096,7 @@ var _Exporter = /** @class */ (function () {
         this._skins = [];
         this._animations = [];
         this._imageData = {};
+        this._orderedImageData = [];
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
         this._includeCoordinateSystemConversionNodes = options && options.includeCoordinateSystemConversionNodes ? true : false;
@@ -2818,6 +2820,7 @@ var _Exporter = /** @class */ (function () {
                 this._images.forEach(function (image) {
                     if (image.uri) {
                         imageData = _this._imageData[image.uri];
+                        _this._orderedImageData.push(imageData);
                         imageName = image.uri.split('.')[0] + " image";
                         bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                         byteOffset += imageData.data.buffer.byteLength;
@@ -2909,8 +2912,8 @@ var _Exporter = /** @class */ (function () {
             var chunkLengthPrefix = 8;
             var jsonLength = jsonText.length;
             var imageByteLength = 0;
-            for (var key in _this._imageData) {
-                imageByteLength += _this._imageData[key].data.byteLength;
+            for (var i = 0; i < _this._orderedImageData.length; ++i) {
+                imageByteLength += _this._orderedImageData[i].data.byteLength;
             }
             var jsonPadding = _this._getPadding(jsonLength);
             var binPadding = _this._getPadding(binaryBuffer.byteLength);
@@ -2955,8 +2958,8 @@ var _Exporter = /** @class */ (function () {
             }
             var glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer];
             // binary data
-            for (var key in _this._imageData) {
-                glbData.push(_this._imageData[key].data.buffer);
+            for (var i = 0; i < _this._orderedImageData.length; ++i) {
+                glbData.push(_this._orderedImageData[i].data.buffer);
             }
             glbData.push(binPaddingBuffer);
             glbData.push(imagePaddingBuffer);
@@ -4302,6 +4305,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             var tempTexture = engine.createRawTexture(buffer, width, height, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTUREFORMAT_RGBA, false, true, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, null, textureType);
             var postProcess = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("pass", "pass", null, null, 1, null, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, undefined, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
             postProcess.getEffect().executeWhenCompiled(function () {
+                var _a, _b;
                 postProcess.onApply = function (effect) {
                     effect._bindTexture("textureSampler", tempTexture);
                 };
@@ -4311,7 +4315,12 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 postProcess.dispose();
                 tempTexture.dispose();
                 // Read data from WebGL
-                var canvas = engine.getRenderingCanvas();
+                var canvas0 = engine.getRenderingCanvas();
+                var canvas = document.createElement("canvas");
+                canvas.width = (_a = canvas0 === null || canvas0 === void 0 ? void 0 : canvas0.width) !== null && _a !== void 0 ? _a : 0;
+                canvas.height = (_b = canvas0 === null || canvas0 === void 0 ? void 0 : canvas0.height) !== null && _b !== void 0 ? _b : 0;
+                var destCtx = canvas.getContext('2d');
+                destCtx.drawImage(canvas0, 0, 0);
                 if (canvas) {
                     if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
                         var dataURL = canvas.toDataURL();
@@ -4319,6 +4328,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                     }
                     else {
                         babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToBlob(canvas, function (blob) {
+                            canvas = null;
                             if (blob) {
                                 var fileReader = new FileReader();
                                 fileReader.onload = function (event) {

@@ -129,6 +129,8 @@ export class _Exporter {
      */
     public _imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } };
 
+    protected _orderedImageData: Array<{ data: Uint8Array, mimeType: ImageMimeType }>;
+
     /**
      * Stores a map of the unique id of a node to its index in the node array
      */
@@ -301,6 +303,7 @@ export class _Exporter {
         this._skins = [];
         this._animations = [];
         this._imageData = {};
+        this._orderedImageData = [];
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
         this._includeCoordinateSystemConversionNodes = options && options.includeCoordinateSystemConversionNodes ? true : false;
@@ -950,6 +953,7 @@ export class _Exporter {
                 this._images.forEach((image) => {
                     if (image.uri) {
                         imageData = this._imageData[image.uri];
+                        this._orderedImageData.push(imageData);
                         imageName = image.uri.split('.')[0] + " image";
                         bufferView = _GLTFUtilities._CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                         byteOffset += imageData.data.buffer.byteLength;
@@ -1052,8 +1056,8 @@ export class _Exporter {
             const jsonLength = jsonText.length;
             let imageByteLength = 0;
 
-            for (let key in this._imageData) {
-                imageByteLength += this._imageData[key].data.byteLength;
+            for (let i = 0; i < this._orderedImageData.length; ++i) {
+                imageByteLength += this._orderedImageData[i].data.byteLength;
             }
             const jsonPadding = this._getPadding(jsonLength);
             const binPadding = this._getPadding(binaryBuffer.byteLength);
@@ -1108,9 +1112,10 @@ export class _Exporter {
             const glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer];
 
             // binary data
-            for (let key in this._imageData) {
-                glbData.push(this._imageData[key].data.buffer);
+            for (let i = 0; i < this._orderedImageData.length; ++i) {
+                glbData.push(this._orderedImageData[i].data.buffer);
             }
+
             glbData.push(binPaddingBuffer);
 
             glbData.push(imagePaddingBuffer);

@@ -12505,12 +12505,12 @@ var TextBlock = /** @class */ (function (_super) {
         _this._underline = false;
         _this._lineThrough = false;
         /**
-        * An event triggered after the text is changed
-        */
+         * An event triggered after the text is changed
+         */
         _this.onTextChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
-        * An event triggered after the text was broken up into lines
-        */
+         * An event triggered after the text was broken up into lines
+         */
         _this.onLinesReadyObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         _this.text = text;
         return _this;
@@ -12761,7 +12761,7 @@ var TextBlock = /** @class */ (function (_super) {
                     lineSpacing = this._lineSpacing.getValue(this._host);
                 }
                 else {
-                    lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
                 newHeight += (this._lines.length - 1) * lineSpacing;
             }
@@ -12851,25 +12851,38 @@ var TextBlock = /** @class */ (function (_super) {
         return lines;
     };
     TextBlock.prototype._parseLine = function (line, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         return { text: line, width: context.measureText(line).width };
     };
     TextBlock.prototype._parseLineEllipsis = function (line, width, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         var lineWidth = context.measureText(line).width;
         if (lineWidth > width) {
-            line += '…';
+            line += "…";
         }
-        while (line.length > 2 && lineWidth > width) {
-            line = line.slice(0, -2) + '…';
-            lineWidth = context.measureText(line).width;
+        // unicode support. split('') does not work with unicode!
+        // make sure Array.from is available
+        var characters = Array.from && Array.from(line);
+        if (!characters) {
+            // no array.from, use the old method
+            while (line.length > 2 && lineWidth > width) {
+                line = line.slice(0, -2) + "…";
+                lineWidth = context.measureText(line).width;
+            }
+        }
+        else {
+            while (characters.length && lineWidth > width) {
+                characters.pop();
+                line = characters.join() + "...";
+                lineWidth = context.measureText(line).width;
+            }
         }
         return { text: line, width: lineWidth };
     };
     TextBlock.prototype._parseLineWordWrap = function (line, width, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         var lines = [];
-        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(' ');
+        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
         var lineWidth = 0;
         for (var n = 0; n < words.length; n++) {
             var testLine = n > 0 ? line + " " + words[n] : words[0];
@@ -12910,7 +12923,7 @@ var TextBlock = /** @class */ (function (_super) {
                     rootY += this._lineSpacing.getValue(this._host);
                 }
                 else {
-                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    rootY = rootY + this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
             }
             this._drawText(line.text, line.width, rootY, context);
@@ -12923,7 +12936,7 @@ var TextBlock = /** @class */ (function (_super) {
      */
     TextBlock.prototype.computeExpectedHeight = function () {
         if (this.text && this.widthInPixels) {
-            var context_1 = document.createElement('canvas').getContext('2d');
+            var context_1 = document.createElement("canvas").getContext("2d");
             if (context_1) {
                 this._applyStates(context_1);
                 if (!this._fontOffset) {
@@ -12937,7 +12950,7 @@ var TextBlock = /** @class */ (function (_super) {
                         lineSpacing = this._lineSpacing.getValue(this._host);
                     }
                     else {
-                        lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                        lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                     }
                     newHeight += (lines.length - 1) * lineSpacing;
                 }
