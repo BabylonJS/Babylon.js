@@ -515,7 +515,15 @@ export class _GLTFMaterialExporter {
                 tempTexture.dispose();
 
                 // Read data from WebGL
-                const canvas = engine.getRenderingCanvas();
+                const canvas0 = engine.getRenderingCanvas();
+
+                let canvas: Nullable<HTMLCanvasElement> = document.createElement("canvas");
+
+                canvas.width = canvas0?.width ?? 0;
+                canvas.height = canvas0?.height ?? 0;
+
+                var destCtx = canvas.getContext('2d');
+                destCtx!.drawImage(canvas0!, 0, 0);
 
                 if (canvas) {
                     if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
@@ -524,6 +532,7 @@ export class _GLTFMaterialExporter {
                     }
                     else {
                         Tools.ToBlob(canvas, (blob) => {
+                            canvas = null;
                             if (blob) {
                                 let fileReader = new FileReader();
                                 fileReader.onload = (event: any) => {
