@@ -117,7 +117,7 @@ export interface IKTX2_SupercompressionGlobalData {
 
 export class KTX2FileReader {
 
-    private _data: ArrayBufferView;
+    private _data: Uint8Array;
     private _header: IKTX2_Header;
     private _levels: Array<IKTX2_Level>;
     private _dfdBlock: IKTX2_DFD;
@@ -126,11 +126,11 @@ export class KTX2FileReader {
     /**
      * Will throw an exception if the file can't be parsed
      */
-    constructor(data: ArrayBufferView) {
+    constructor(data: Uint8Array) {
         this._data = data;
     }
 
-    public get data(): ArrayBufferView {
+    public get data(): Uint8Array {
         return this._data;
     }
 
