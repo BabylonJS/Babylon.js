@@ -20,26 +20,18 @@ export class MaterialTreeItemComponent extends React.Component<IMaterialTreeItem
 
     render() {
 
-        if(this.props.material.getClassName() === "NodeMaterial") { 
-        
-            return (
-                <div className="materialTools">
-                    <TreeItemLabelComponent label={this.props.material.name} onClick={() => this.props.onClick()} icon={faBrush} color="orange" />
-                    {
-                        <ExtensionsComponent target={this.props.material} extensibilityGroups={this.props.extensibilityGroups} />
-                    }
-                    <div className="icon" onClick={() => {(this.props.material as NodeMaterial).edit()}} title="Node Material Editor" color="white">
-                        <FontAwesomeIcon icon={faPen} />
-                    </div>
-                </div>
-            )
-        }
+        const nmeIcon = this.props.material.getClassName() === "NodeMaterial" ?
+            <div className="icon" onClick={() => {(this.props.material as NodeMaterial).edit()}} title="Node Material Editor" color="white">
+            <FontAwesomeIcon icon={faPen} />
+            </div> : null;
+
         return (
             <div className="materialTools">
                 <TreeItemLabelComponent label={this.props.material.name} onClick={() => this.props.onClick()} icon={faBrush} color="orange" />
                 {
-                    <ExtensionsComponent target={this.props.material} extensibilityGroups={this.props.extensibilityGroups} />
+                   <ExtensionsComponent target={this.props.material} extensibilityGroups={this.props.extensibilityGroups} />
                 }
+                {nmeIcon}
             </div>
         )
     }
