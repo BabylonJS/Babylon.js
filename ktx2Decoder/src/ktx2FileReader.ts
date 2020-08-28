@@ -305,10 +305,10 @@ export class KTX2FileReader {
             const tablesByteOffset = selectorsByteOffset + sgd.selectorsByteLength;
             const extendedByteOffset = tablesByteOffset + sgd.tablesByteLength;
 
-            sgd.endpointsData = new Uint8Array(this._data.buffer, endpointsByteOffset, sgd.endpointsByteLength);
-            sgd.selectorsData = new Uint8Array(this._data.buffer, selectorsByteOffset, sgd.selectorsByteLength);
-            sgd.tablesData = new Uint8Array(this._data.buffer, tablesByteOffset, sgd.tablesByteLength);
-            sgd.extendedData = new Uint8Array(this._data.buffer, extendedByteOffset, sgd.extendedByteLength);
+            sgd.endpointsData = new Uint8Array(this._data.buffer, this._data.byteOffset + endpointsByteOffset, sgd.endpointsByteLength);
+            sgd.selectorsData = new Uint8Array(this._data.buffer, this._data.byteOffset + selectorsByteOffset, sgd.selectorsByteLength);
+            sgd.tablesData = new Uint8Array(this._data.buffer, this._data.byteOffset + tablesByteOffset, sgd.tablesByteLength);
+            sgd.extendedData = new Uint8Array(this._data.buffer, this._data.byteOffset + extendedByteOffset, sgd.extendedByteLength);
         }
 
     }
