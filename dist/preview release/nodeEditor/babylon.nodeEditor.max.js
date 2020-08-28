@@ -63809,7 +63809,7 @@ var NodeListComponent = /** @class */ (function (_super) {
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: NodeListComponent._Tooltips[block] || "" });
             });
             if (key === "Custom_Frames") {
-                var line = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { title: "Add Custom Frame", closed: false, label: "Add...", uploadName: 'custom-frame-upload', iconImage: addButton, accept: ".json", onIconClick: function (file) {
+                var line = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { key: "add...", title: "Add Custom Frame", closed: false, label: "Add...", uploadName: 'custom-frame-upload', iconImage: addButton, accept: ".json", onIconClick: function (file) {
                         _this.loadCustomFrame(file);
                     } });
                 blockList.push(line);

@@ -3701,8 +3701,9 @@ declare module "babylonjs-inspector/components/sceneExplorer/entities/materialTr
     import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
     import { Material } from "babylonjs/Materials/material";
     import * as React from 'react';
+    import { NodeMaterial } from 'babylonjs/Materials/Node/nodeMaterial';
     interface IMaterialTreeItemComponentProps {
-        material: Material;
+        material: Material | NodeMaterial;
         extensibilityGroups?: IExplorerExtensibilityGroup[];
         onClick: () => void;
     }
@@ -7233,7 +7234,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IMaterialTreeItemComponentProps {
-        material: BABYLON.Material;
+        material: BABYLON.Material | BABYLON.NodeMaterial;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
     }
