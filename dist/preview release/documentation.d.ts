@@ -51566,7 +51566,7 @@ declare module BABYLON {
          * @param inputIndex index of specific input on device
          * @returns Input value from DeviceInputSystem
          */
-        getInput(inputIndex: DeviceInput<T>): Nullable<number>;
+        getInput(inputIndex: DeviceInput<T>): number;
     }
     /**
      * Class to keep track of devices
