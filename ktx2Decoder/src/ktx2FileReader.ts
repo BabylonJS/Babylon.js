@@ -29,6 +29,11 @@ const enum dfdChannel_UASTC {
     RRRG = 5
 }
 
+const enum dfdTransferFunction {
+    linear = 1,
+    sRGB = 2
+}
+
 /** @hidden */
 export interface IKTX2_Header {
     vkFormat: number;
@@ -337,6 +342,10 @@ export class KTX2FileReader {
 
     public get needZSTDDecoder(): boolean {
         return this._header.supercompressionScheme === supercompressionScheme.ZStandard;
+    }
+
+    public get isInGammaSpace(): boolean {
+        return this._dfdBlock.transferFunction === dfdTransferFunction.sRGB;
     }
 
     public static IsValid(data: ArrayBufferView): boolean {

@@ -32,6 +32,7 @@ export interface IDecodedData {
     height: number;
     transcodedFormat: number;
     mipmaps: Array<IMipmap>;
+    isInGammaSpace: boolean;
     errors?: string;
 }
 
@@ -129,7 +130,7 @@ export class KTX2Decoder {
         const mipmaps: Array<IMipmap> = [];
         const dataPromises: Array<Promise<Nullable<Uint8Array>>> = [];
         const mipmapBuffers: Array<ArrayBuffer> = [];
-        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps };
+        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace };
 
         let firstImageDescIndex = 0;
 
