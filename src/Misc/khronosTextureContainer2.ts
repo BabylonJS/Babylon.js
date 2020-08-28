@@ -20,7 +20,7 @@ export class KhronosTextureContainer2 {
     public static JSModuleURL = "https://preview.babylonjs.com/ktx2Decoder/babylon.ktx2Decoder.js";
 
     /**
-     * Default number of workers to create when creating the draco compression object.
+     * Default number of workers used to handle data decoding
      */
     public static DefaultNumWorkers = KhronosTextureContainer2.GetDefaultNumWorkers();
 
