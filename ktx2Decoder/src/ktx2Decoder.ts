@@ -1,10 +1,10 @@
 /**
  * Resources used for the implementation:
+ *  - 3js KTX2 loader: https://github.com/mrdoob/three.js/blob/dfb5c23ce126ec845e4aa240599915fef5375797/examples/jsm/loaders/KTX2Loader.js
  *  - KTX2 specification: http://github.khronos.org/KTX-Specification/
  *  - KTX2 binaries to convert files: https://github.com/KhronosGroup/KTX-Software/releases
  *  - KTX specification: https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html
  *  - KTX-Software: https://github.com/KhronosGroup/KTX-Software
- *  - 3js KTX2 loader: https://github.com/mrdoob/three.js/blob/dfb5c23ce126ec845e4aa240599915fef5375797/examples/jsm/loaders/KTX2Loader.js
  */
 
 import { KTX2FileReader, supercompressionScheme, IKTX2_ImageDesc } from './ktx2FileReader';
@@ -147,9 +147,9 @@ export class KTX2Decoder {
 
             const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
 
-            let levelDataBuffer = kfr.data.buffer.slice(0);
+            let levelDataBuffer = kfr.data.buffer;
 
-            let levelDataOffset = kfr.levels[level].byteOffset;// + kfr.data.byteOffset;
+            let levelDataOffset = kfr.levels[level].byteOffset + kfr.data.byteOffset;
             let imageOffsetInLevel = 0;
 
             if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
