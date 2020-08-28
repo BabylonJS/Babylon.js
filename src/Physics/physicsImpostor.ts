@@ -10,7 +10,7 @@ import { Bone } from "../Bones/bone";
 import { BoundingInfo } from "../Culling/boundingInfo";
 import { IPhysicsEngine } from "./IPhysicsEngine";
 import { PhysicsJoint, PhysicsJointData } from "./physicsJoint";
-import { Space } from '../Maths/math.axis';
+import { Space } from "../Maths/math.axis";
 
 /**
  * The interface for the physics imposter parameters
@@ -183,12 +183,17 @@ export interface IPhysicsEnabledObject {
     getClassName(): string;
 }
 
-Mesh._PhysicsImpostorParser = function(scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
-    return new PhysicsImpostor(physicObject, jsonObject.physicsImpostor, {
-        mass: jsonObject.physicsMass,
-        friction: jsonObject.physicsFriction,
-        restitution: jsonObject.physicsRestitution
-    }, scene);
+Mesh._PhysicsImpostorParser = function (scene: Scene, physicObject: IPhysicsEnabledObject, jsonObject: any): PhysicsImpostor {
+    return new PhysicsImpostor(
+        physicObject,
+        jsonObject.physicsImpostor,
+        {
+            mass: jsonObject.physicsMass,
+            friction: jsonObject.physicsFriction,
+            restitution: jsonObject.physicsRestitution,
+        },
+        scene
+    );
 };
 
 /**
@@ -196,7 +201,6 @@ Mesh._PhysicsImpostorParser = function(scene: Scene, physicObject: IPhysicsEnabl
  * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsImpostor {
-
     /**
      * The default object size of the imposter
      */
@@ -218,7 +222,7 @@ export class PhysicsImpostor {
     private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     /** @hidden */
-    public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void, otherImpostors: Array<PhysicsImpostor> }> = [];
+    public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void; otherImpostors: Array<PhysicsImpostor> }> = [];
 
     private _deltaPosition: Vector3 = Vector3.Zero();
     private _deltaRotation: Quaternion;
@@ -416,8 +420,8 @@ export class PhysicsImpostor {
     public segments: number = 0;
 
     private _joints: Array<{
-        joint: PhysicsJoint,
-        otherImpostor: PhysicsImpostor
+        joint: PhysicsJoint;
+        otherImpostor: PhysicsImpostor;
     }>;
 
     /**
@@ -435,8 +439,10 @@ export class PhysicsImpostor {
         /**
          * The type of the physics imposter
          */
-        public type: number, private _options: PhysicsImpostorParameters = { mass: 0 }, private _scene?: Scene) {
-
+        public type: number,
+        private _options: PhysicsImpostorParameters = { mass: 0 },
+        private _scene?: Scene
+    ) {
         //sanity check!
         if (!this.object) {
             Logger.Error("No object was provided. A physics object is obligatory");
@@ -470,24 +476,23 @@ export class PhysicsImpostor {
                 } else {
                     this.object.rotationQuaternion = new Quaternion();
                 }
-
             }
             //default options params
-            this._options.mass = (_options.mass === void 0) ? 0 : _options.mass;
-            this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction;
-            this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution;
+            this._options.mass = _options.mass === void 0 ? 0 : _options.mass;
+            this._options.friction = _options.friction === void 0 ? 0.2 : _options.friction;
+            this._options.restitution = _options.restitution === void 0 ? 0.2 : _options.restitution;
             if (this.soft) {
                 //softbody mass must be above 0;
                 this._options.mass = this._options.mass > 0 ? this._options.mass : 1;
-                this._options.pressure = (_options.pressure === void 0) ? 200 : _options.pressure;
-                this._options.stiffness = (_options.stiffness === void 0) ? 1 : _options.stiffness;
-                this._options.velocityIterations = (_options.velocityIterations === void 0) ? 20 : _options.velocityIterations;
-                this._options.positionIterations = (_options.positionIterations === void 0) ? 20 : _options.positionIterations;
-                this._options.fixedPoints = (_options.fixedPoints === void 0) ? 0 : _options.fixedPoints;
-                this._options.margin = (_options.margin === void 0) ? 0 : _options.margin;
-                this._options.damping = (_options.damping === void 0) ? 0 : _options.damping;
-                this._options.path = (_options.path === void 0) ? null : _options.path;
-                this._options.shape = (_options.shape === void 0) ? null : _options.shape;
+                this._options.pressure = _options.pressure === void 0 ? 200 : _options.pressure;
+                this._options.stiffness = _options.stiffness === void 0 ? 1 : _options.stiffness;
+                this._options.velocityIterations = _options.velocityIterations === void 0 ? 20 : _options.velocityIterations;
+                this._options.positionIterations = _options.positionIterations === void 0 ? 20 : _options.positionIterations;
+                this._options.fixedPoints = _options.fixedPoints === void 0 ? 0 : _options.fixedPoints;
+                this._options.margin = _options.margin === void 0 ? 0 : _options.margin;
+                this._options.damping = _options.damping === void 0 ? 0 : _options.damping;
+                this._options.path = _options.path === void 0 ? null : _options.path;
+                this._options.shape = _options.shape === void 0 ? null : _options.shape;
             }
             this._joints = [];
             //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
@@ -562,7 +567,7 @@ export class PhysicsImpostor {
      * Gets the body that holds this impostor. Either its own, or its parent.
      */
     public get physicsBody(): any {
-        return (this._parent && !this._options.ignoreParent) ? this._parent.physicsBody : this._physicsBody;
+        return this._parent && !this._options.ignoreParent ? this._parent.physicsBody : this._physicsBody;
     }
 
     /**
@@ -609,9 +614,9 @@ export class PhysicsImpostor {
             this.object.rotationQuaternion = PhysicsImpostor.IDENTITY_QUATERNION;
             //calculate the world matrix with no rotation
             this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-            let boundingInfo = this.object.getBoundingInfo();
-            let size = boundingInfo.boundingBox.extendSizeWorld.scale(2);
-
+            const boundingInfo = this.object.getBoundingInfo();
+            const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(this.object.scaling);
+            console.log(size, q);
             //bring back the rotation
             this.object.rotationQuaternion = q;
             //calculate the world matrix with the new rotation
@@ -846,7 +851,7 @@ export class PhysicsImpostor {
         this._onBeforePhysicsStepCallbacks.forEach((func) => {
             func(this);
         });
-    }
+    };
 
     /**
      * this function is executed by the physics engine
@@ -871,7 +876,7 @@ export class PhysicsImpostor {
         this.object.setAbsolutePosition(this.object.position);
         this._deltaRotation && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
         this.object.translate(this._deltaPosition, 1);
-    }
+    };
 
     /**
      * Legacy collision detection event support
@@ -888,7 +893,6 @@ export class PhysicsImpostor {
 
         if (!this._physicsEngine) {
             return;
-
         }
         var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
         if (otherImpostor) {
@@ -896,13 +900,15 @@ export class PhysicsImpostor {
             if (this.onCollideEvent) {
                 this.onCollideEvent(this, otherImpostor);
             }
-            this._onPhysicsCollideCallbacks.filter((obj) => {
-                return obj.otherImpostors.indexOf((<PhysicsImpostor>otherImpostor)) !== -1;
-            }).forEach((obj) => {
-                obj.callback(this, <PhysicsImpostor>otherImpostor);
-            });
+            this._onPhysicsCollideCallbacks
+                .filter((obj) => {
+                    return obj.otherImpostors.indexOf(<PhysicsImpostor>otherImpostor) !== -1;
+                })
+                .forEach((obj) => {
+                    obj.callback(this, <PhysicsImpostor>otherImpostor);
+                });
         }
-    }
+    };
 
     /**
      * Apply a force
@@ -954,7 +960,7 @@ export class PhysicsImpostor {
     public addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor {
         this._joints.push({
             otherImpostor: otherImpostor,
-            joint: joint
+            joint: joint,
         });
 
         if (this._physicsEngine) {
@@ -1039,7 +1045,9 @@ export class PhysicsImpostor {
      * @returns A nullable physics imposter
      */
     public clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor> {
-        if (!newObject) { return null; }
+        if (!newObject) {
+            return null;
+        }
         return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
     }
 
@@ -1125,7 +1133,6 @@ export class PhysicsImpostor {
      * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
      */
     public syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion) {
-
         var tempVec = PhysicsImpostor._tmpVecs[0];
         var mesh = <AbstractMesh>this.object;
 
@@ -1168,7 +1175,6 @@ export class PhysicsImpostor {
             boneMesh.position.y -= tempVec.y;
             boneMesh.position.z -= tempVec.z;
         }
-
     }
 
     /**
@@ -1181,7 +1187,6 @@ export class PhysicsImpostor {
      * @param boneAxis Optional vector3 axis the bone is aligned with
      */
     public syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3) {
-
         var mesh = <AbstractMesh>this.object;
 
         if (mesh.rotationQuaternion) {
@@ -1218,7 +1223,6 @@ export class PhysicsImpostor {
         }
 
         mesh.setAbsolutePosition(pos);
-
     }
 
     //Impostor types
