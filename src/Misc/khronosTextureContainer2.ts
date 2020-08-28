@@ -192,11 +192,11 @@ export class KhronosTextureContainer2 {
             internalTexture.format = data.transcodedFormat;
         }
 
+        internalTexture._gammaSpace = data.isInGammaSpace;
+
         if (data.errors) {
             throw new Error("KTX2 container - could not transcode the data. " + data.errors);
         }
-
-        internalTexture._gammaSpace = data.isInGammaSpace;
 
         for (let t = 0; t < data.mipmaps.length; ++t) {
             let mipmap = data.mipmaps[t];
