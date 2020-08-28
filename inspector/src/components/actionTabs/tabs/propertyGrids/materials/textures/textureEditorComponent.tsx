@@ -314,7 +314,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
             <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
             <ToolSettings tool={currentTool} />
-            <BottomBar name={this.props.url} mipLevel={this.state.mipLevel} hasMips={!this.props.texture.noMipmap}/>
+            <BottomBar texture={this.props.texture} mipLevel={this.state.mipLevel}/>
         </div>
     }
 }

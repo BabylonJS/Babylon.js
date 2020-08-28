@@ -82,7 +82,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
 
     render() {
         const {mipLevel, setMipLevel, pixelData, resizeTexture, texture, face, setFace, saveTexture, resetTexture, uploadTexture} = this.props;
-        const maxLevels = 1 + Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
+        const maxLevels = Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
         return <div id='properties'>
                 <div className='tab' id='logo-tab'>
                     <img className='icon' src={this._babylonLogo}/>
