@@ -38,7 +38,7 @@ export class DeviceSource<T extends DeviceType> {
      * @param inputIndex index of specific input on device
      * @returns Input value from DeviceInputSystem
      */
-    public getInput(inputIndex: DeviceInput<T>): Nullable<number> {
+    public getInput(inputIndex: DeviceInput<T>): number {
         return this._deviceInputSystem.pollInput(this.deviceType, this.deviceSlot, inputIndex);
     }
 }
@@ -137,6 +137,10 @@ export class DeviceSourceManager implements IDisposable {
      * Dispose of DeviceInputSystem and other parts
      */
     public dispose() {
+        this.onBeforeDeviceConnectedObservable.clear();
+        this.onBeforeDeviceDisconnectedObservable.clear();
+        this.onAfterDeviceConnectedObservable.clear();
+        this.onAfterDeviceDisconnectedObservable.clear();
         this._deviceInputSystem.dispose();
     }
 
