@@ -124,16 +124,6 @@ export class PrePassRenderer {
      */
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
-    /**
-     * Should materials render their geometry on the MRT
-     */
-    public materialsShouldRenderGeometry: boolean = false;
-
-    /**
-     * Should materials render the irradiance information on the MRT
-     */
-    public materialsShouldRenderIrradiance: boolean = false;
-
     private _mrtFormats: number[] = [];
     private _mrtLayout: number[];
 
