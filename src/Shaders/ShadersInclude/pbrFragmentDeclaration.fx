@@ -134,8 +134,20 @@ uniform mat4 view;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+#endif
 
-    #ifdef SS_SCATTERING
+#ifdef PREPASS
+    #ifdef PREPASS_IRRADIANCE
         uniform float scatteringDiffusionProfile;
+    #endif
+
+    #ifdef PREPASS_VELOCITY
+        uniform mat4 previousWorld;
+        uniform mat4 previousViewProjection;
+        #ifdef BONES_VELOCITY_ENABLED
+            #if NUM_BONE_INFLUENCERS > 0
+                uniform mat4 mPreviousBones[BonesPerMesh];
+            #endif
+        #endif
     #endif
 #endif

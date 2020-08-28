@@ -234,7 +234,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (cameras) {
             scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
         }
-
     }
 
     // Public Methods

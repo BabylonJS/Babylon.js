@@ -309,6 +309,22 @@ export class MaterialHelper {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
 
+            const positionIndex = scene.prePassRenderer.getIndex(PrePassRenderer.POSITION_TEXTURE_TYPE);
+            if (positionIndex !== -1) {
+                defines.PREPASS_POSITION = true;
+                defines.PREPASS_POSITION_INDEX = positionIndex;
+            } else {
+                defines.PREPASS_POSITION = false;
+            }
+
+            const velocityIndex = scene.prePassRenderer.getIndex(PrePassRenderer.VELOCITY_TEXTURE_TYPE);
+            if (velocityIndex !== -1) {
+                defines.PREPASS_VELOCITY = true;
+                defines.PREPASS_VELOCITY_INDEX = velocityIndex;
+            } else {
+                defines.PREPASS_VELOCITY = false;
+            }
+
             const irradianceIndex = scene.prePassRenderer.getIndex(PrePassRenderer.IRRADIANCE_TEXTURE_TYPE);
             if (irradianceIndex !== -1) {
                 defines.PREPASS_IRRADIANCE = true;

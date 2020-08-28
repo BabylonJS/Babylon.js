@@ -16,6 +16,7 @@ import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrA
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
+import { PBRPrePassConfiguration } from "./pbrPrePassConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
 import { Scalar } from "../../Maths/math.scalar";
 
@@ -170,6 +171,10 @@ export class PBRMaterialDefines extends MaterialDefines
     public PREPASS_ALBEDO_INDEX = -1;
     public PREPASS_DEPTHNORMAL = false;
     public PREPASS_DEPTHNORMAL_INDEX = -1;
+    public PREPASS_POSITION = false;
+    public PREPASS_POSITION_INDEX = -1;
+    public PREPASS_VELOCITY = false;
+    public PREPASS_VELOCITY_INDEX = -1;
     public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;
@@ -817,6 +822,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly subSurface: PBRSubSurfaceConfiguration;
 
     /**
+     * Defines the PrePass parameters for the material.
+     */
+    public readonly prePass: PBRPrePassConfiguration;
+
+    /**
      * Defines the detail map parameters for the material.
      */
     public readonly detailMap = new DetailMapConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this));
@@ -849,6 +859,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
         this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
+        this.prePass = new PBRPrePassConfiguration();
     }
 
     /**
@@ -1281,6 +1292,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.AddUniforms(uniforms);
         PBRSheenConfiguration.AddSamplers(samplers);
 
+        PBRPrePassConfiguration.AddUniforms(uniforms);
+        PBRPrePassConfiguration.AddSamplers(uniforms);
+
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
             ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
@@ -1693,6 +1707,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
+        PBRPrePassConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -2002,6 +2017,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
             this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.prePass.bindForSubMesh(ubo, scene, world, this.isFrozen);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);

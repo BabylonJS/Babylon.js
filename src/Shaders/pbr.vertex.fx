@@ -35,7 +35,13 @@ attribute vec4 color;
 #include<instancesDeclaration>
 
 #ifdef PREPASS
-varying vec3 vViewPos;
+#ifdef PREPASS_DEPTHNORMAL
+    varying vec3 vViewPos;
+#endif
+#ifdef PREPASS_VELOCITY
+    varying vec4 vCurrentPosition;
+    varying vec4 vPreviousPosition;
+#endif
 #endif
 
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0
@@ -178,7 +184,15 @@ void main(void) {
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
 #ifdef PREPASS
-    vViewPos = (view * worldPos).rgb;
+    #ifdef PREPASS_DEPTHNORMAL
+        vViewPos = (view * worldPos).rgb;
+    #endif
+    #if defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
+        // Compute velocity before bones computation
+        vCurrentPosition = viewProjection * worldPos;
+        vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+    #endif
+
 #endif
 
 #ifdef NORMAL

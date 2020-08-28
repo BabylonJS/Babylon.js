@@ -484,24 +484,4 @@ export class Constants {
      * Detailled logging while loading
      */
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
-
-    /**
-     * Prepass texture index for color
-     */
-    public static readonly PREPASS_COLOR_INDEX = 0;
-
-    /**
-     * Prepass texture index for irradiance
-     */
-    public static readonly PREPASS_IRRADIANCE_INDEX = 1;
-
-    /**
-     * Prepass texture index for depth + normal
-     */
-    public static readonly PREPASS_DEPTHNORMAL_INDEX = 2;
-
-    /**
-     * Prepass texture index for albedo
-     */
-    public static readonly PREPASS_ALBEDO_INDEX = 3;
 }

@@ -30,5 +30,11 @@ varying vec3 vPositionW;
 #endif
 
 #ifdef PREPASS
-	varying vec3 vViewPos;
+    #ifdef PREPASS_DEPTHNORMAL
+        varying vec3 vViewPos;
+    #endif
+    #ifdef PREPASS_VELOCITY
+        varying vec4 vCurrentPosition;
+        varying vec4 vPreviousPosition;
+    #endif
 #endif
