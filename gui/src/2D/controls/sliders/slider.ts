@@ -54,17 +54,17 @@ export class Slider extends BaseSlider {
         this._background = value;
         this._markAsDirty();
     }
-    
+
     /** Gets or sets thumb's color */
     public get thumbColor(): string {
         return this._thumbColor;
     }
-    
+
     public set thumbColor(value: string) {
         if (this._thumbColor === value) {
             return;
         }
-    
+
         this._thumbColor = value;
         this._markAsDirty();
     }
