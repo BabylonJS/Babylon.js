@@ -137,7 +137,8 @@ export class KhronosTextureContainer2 {
                         worker.addEventListener("error", onError);
                         worker.addEventListener("message", onMessage);
 
-                        worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps }, [data.buffer]);
+                        // note: we can't transfer the ownership of data.buffer because if using a fallback texture the data.buffer buffer will be used by the current thread
+                        worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps }/*, [data.buffer]*/);
                     });
                 });
             });
@@ -157,8 +158,8 @@ export class KhronosTextureContainer2 {
                             buffers.push(mipmap.data.buffer);
                         }
                     }
-                    resolve();
                     this._createTexture(data, internalTexture);
+                    resolve();
                 }).catch((reason: any) => {
                     reject({ message: reason });
                 });
