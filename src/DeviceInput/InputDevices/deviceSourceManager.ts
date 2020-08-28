@@ -130,7 +130,7 @@ export class DeviceSourceManager implements IDisposable {
      * @returns Array of DeviceSource objects
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
-        return this._devices[deviceType];
+        return this._devices[deviceType].filter(source => !!source);
     }
 
     /**
