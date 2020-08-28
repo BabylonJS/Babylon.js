@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
@@ -239,8 +239,20 @@ export class BaseTexture implements IAnimatable {
      * This only impacts the PBR and Background materials
      */
     @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public gammaSpace = true;
+    public get gammaSpace(): boolean {
+        return this._texture?._gammaSpace ?? true;
+    }
+
+    public set gammaSpace(gamma: boolean) {
+        if ((this._texture?._gammaSpace ?? gamma) === gamma) {
+            return;
+        }
+
+        if (this._texture) {
+            this._texture._gammaSpace = gamma;
+            this._markAllSubMeshesAsTexturesDirty();
+        }
+    }
 
     /**
      * Gets or sets whether or not the texture contains RGBD data.
