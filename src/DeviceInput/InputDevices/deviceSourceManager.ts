@@ -38,7 +38,7 @@ export class DeviceSource<T extends DeviceType> {
      * @param inputIndex index of specific input on device
      * @returns Input value from DeviceInputSystem
      */
-    public getInput(inputIndex: DeviceInput<T>): Nullable<number> {
+    public getInput(inputIndex: DeviceInput<T>): number {
         return this._deviceInputSystem.pollInput(this.deviceType, this.deviceSlot, inputIndex);
     }
 }
@@ -130,13 +130,17 @@ export class DeviceSourceManager implements IDisposable {
      * @returns Array of DeviceSource objects
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
-        return this._devices[deviceType];
+        return this._devices[deviceType].filter((source) => { return !!source; });
     }
 
     /**
      * Dispose of DeviceInputSystem and other parts
      */
     public dispose() {
+        this.onBeforeDeviceConnectedObservable.clear();
+        this.onBeforeDeviceDisconnectedObservable.clear();
+        this.onAfterDeviceConnectedObservable.clear();
+        this.onAfterDeviceDisconnectedObservable.clear();
         this._deviceInputSystem.dispose();
     }
 
