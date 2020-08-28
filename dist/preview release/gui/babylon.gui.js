@@ -11945,6 +11945,7 @@ var Slider = /** @class */ (function (_super) {
         _this.name = name;
         _this._background = "black";
         _this._borderColor = "white";
+        _this._thumbColor = "";
         _this._isThumbCircle = false;
         _this._displayValueBar = true;
         return _this;
@@ -11989,6 +11990,21 @@ var Slider = /** @class */ (function (_super) {
                 return;
             }
             this._background = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider.prototype, "thumbColor", {
+        /** Gets or sets thumb's color */
+        get: function () {
+            return this._thumbColor;
+        },
+        set: function (value) {
+            if (this._thumbColor === value) {
+                return;
+            }
+            this._thumbColor = value;
             this._markAsDirty();
         },
         enumerable: false,
@@ -12115,6 +12131,7 @@ var Slider = /** @class */ (function (_super) {
             }
         }
         // Thumb
+        context.fillStyle = this._thumbColor || this.color;
         if (this.displayThumb) {
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;

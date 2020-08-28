@@ -47,9 +47,6 @@ export class PlaneDragGizmo extends Gizmo {
         var dragPlane = PlaneBuilder.CreatePlane("dragPlane", { width: .1375, height: .1375, sideOrientation: 2 }, scene);
         dragPlane.material = material;
         dragPlane.parent = plane;
-
-        // Position plane pointing normal to dragPlane normal
-        dragPlane.material = material;
         return plane;
     }
 

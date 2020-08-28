@@ -3047,7 +3047,7 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IMaterialTreeItemComponentProps {
-        material: BABYLON.Material;
+        material: BABYLON.Material | BABYLON.NodeMaterial;
         extensibilityGroups?: BABYLON.IExplorerExtensibilityGroup[];
         onClick: () => void;
     }
