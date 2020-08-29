@@ -387,16 +387,25 @@ export class SkeletonViewer {
         options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit ?? 2;
         options.displayOptions.sphereFactor = options.displayOptions.sphereFactor ?? 0.865;
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
+        options.useAllBones = options.useAllBones ?? true;
 
         const boneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
         const boneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
         this._boneIndices = new Set();
 
-        if (boneIndices && boneWeights) {
-            for (let i = 0; i < boneIndices.length; ++i) {
-                const index = boneIndices[i], weight = boneWeights[i];
-                if (weight !== 0) {
-                    this._boneIndices.add(index);
+        if (options.useAllBones) {
+            if (boneIndices) {
+                for (let i = 0; i < boneIndices.length; ++i) {
+                    this._boneIndices.add(boneIndices[i]);
+                }
+            }
+        }else {
+            if (boneIndices && boneWeights) {
+                for (let i = 0; i < boneIndices.length; ++i) {
+                    const index = boneIndices[i], weight = boneWeights[i];
+                    if (weight !== 0) {
+                        this._boneIndices.add(index);
+                    }
                 }
             }
         }
@@ -594,9 +603,11 @@ export class SkeletonViewer {
 
             for (let i = 0; i < bones.length; i++) {
                 let bone = bones[i];
-
-                if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())) {
-                    continue;
+                
+                if(!this.options.useAllBones){
+                    if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())) {
+                        continue;
+                    }
                 }
 
                 let boneAbsoluteRestTransform = new Matrix();
