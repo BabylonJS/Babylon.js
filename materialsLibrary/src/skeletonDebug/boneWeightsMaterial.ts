@@ -1,43 +1,62 @@
-
 import { Matrix } from "babylonjs/Maths/math.vector";
-import { Nullable } from "babylonjs/types";
+import { Color3 } from "babylonjs/Maths/math.color";
+import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { IEffectCreationOptions } from "babylonjs/Materials/effect";
-
+import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
-
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { SubMesh } from "babylonjs/Meshes/subMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Scene } from "babylonjs/scene";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
+import { Skeleton } from 'babylonjs/Bones/skeleton';
 
 import "./boneWeights.fragment";
 import "./boneWeights.vertex";
 import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
-import { IBoneWeightsMaterialOptions } from "./IBoneWeightsMaterial";
-import { Skeleton, Color3, Effect } from 'babylonjs';
 
-const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
-export class BoneWeightsMaterial extends PushMaterial {   
+import { IBoneWeightsMaterialOptions } from "./IBoneWeightsMaterial";
+
+
+class BoneWeightsMaterialDefines extends MaterialDefines {
+    public ALPHATEST = false;
+    public NORMAL = false; 
+    public NUM_BONE_INFLUENCERS = 0;
+    public BonesPerMesh = 0; 
+    constructor() {
+        super();
+        this.rebuild();
+    }
+}
+
+
+export class BoneWeightsMaterial extends PushMaterial{  
 
     public skeleton: Skeleton;
-    public colorBase: Color3;
-    public colorZero: Color3;
-    public colorQuarter: Color3;
-    public colorHalf: Color3;
-    public colorFull: Color3;
-    public targetBoneIndex: number;  
-    private _renderId: number;
-    private _multiview: boolean = false;
-    private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _cachedWorldViewMatrix = new Matrix();
-    private _cachedDefines: string;
-    public uniforms : string[];   
 
-    constructor(name: string, options:IBoneWeightsMaterialOptions, scene: Scene) {
-        super(name, scene);
+    public colorBase: Color3;
+
+    public colorZero: Color3;
+
+    public colorQuarter: Color3;
+
+    public colorHalf: Color3;
+
+    public colorFull: Color3;
+
+    public targetBoneIndex: number; 
+
+    private _disableLighting = true;
+    public disableLighting: boolean;
+
+    private _maxSimultaneousLights = 0;
+    public maxSimultaneousLights: number;
+    
+    constructor(name: string, options:IBoneWeightsMaterialOptions, scene: Scene) {     
+        super(name, scene)
         this.skeleton = options.skeleton;
         this.colorBase = options.colorBase ?? Color3.Black();
         this.colorZero = options.colorZero ?? Color3.Blue();
@@ -47,20 +66,7 @@ export class BoneWeightsMaterial extends PushMaterial {
         this.targetBoneIndex = options.targetBoneIndex ?? 0;
     }
 
-    public needAlphaBlending(): boolean {
-        return (this.alpha < 1.0);
-    }
-
-    public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        return this.needAlphaBlending() || (mesh.visibility < 1.0);
-    }
-
-    public needAlphaTesting(): boolean {
-        return false;
-    } 
-
-    // Methods
-    /*public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
             if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
@@ -78,10 +84,14 @@ export class BoneWeightsMaterial extends PushMaterial {
             return true;
         }
 
-        var engine = scene.getEngine();
+        var engine = scene.getEngine();    
+
+        // Lights
+        defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
@@ -89,8 +99,14 @@ export class BoneWeightsMaterial extends PushMaterial {
         if (defines.isDirty) {
             defines.markAsProcessed();
             scene.resetCachedMaterial();
+
             // Fallbacks
-            var fallbacks = new EffectFallbacks(); 
+            var fallbacks = new EffectFallbacks();
+            if (defines.FOG) {
+                fallbacks.addFallback(1, "FOG");
+            }
+
+            MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
 
             if (defines.NUM_BONE_INFLUENCERS > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
@@ -105,35 +121,36 @@ export class BoneWeightsMaterial extends PushMaterial {
 
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-
+   
             var shaderName = "boneWeights";
             var join = defines.toString();
-
             var uniforms = [
                 'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
-                'colorBase', 'colorZero', 'colorQuarter', 'colorHalf', 'colorFull', 'targetBoneIndex'
-            ]
+                'colorBase', 'colorZero', 'colorQuarter', 'colorHalf', 'colorFull', 'targetBoneIndex',  "mBones"
+            ];
+            var samplers:string[] = [];
             var uniformBuffers = new Array<string>();
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
                 defines: defines,
-                maxSimultaneousLights: 4
+                maxSimultaneousLights: this.maxSimultaneousLights
             });
-
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                 <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: [],
+                    samplers: samplers,
                     defines: join,
                     fallbacks: fallbacks,
-                    onCompiled: this.onCompiled2,
-                    onError: this.onError2,
-                    indexParameters: { maxSimultaneousLights: 4 }
+                    onCompiled: this.onCompiled,
+                    onError: this.onError,
+                    indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 }
                 }, engine), defines);
+
         }
         if (!subMesh.effect || !subMesh.effect.isReady()) {
             return false;
@@ -143,252 +160,45 @@ export class BoneWeightsMaterial extends PushMaterial {
         subMesh.effect._wasPreviouslyReady = true;
 
         return true;
-    }*/
-
-    private _checkCache(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        if (!mesh) {
-            return true;
-        }
-
-        if (this._effect && (this._effect.defines.indexOf("#define INSTANCES") !== -1) !== useInstances) {
-            return false;
-        }
-
-        return true;
     }
 
-    /**
-     * Specifies that the submesh is ready to be used
-     * @param mesh defines the mesh to check
-     * @param subMesh defines which submesh to check
-     * @param useInstances specifies that instances should be used
-     * @returns a boolean indicating that the submesh is ready or not
-     */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        return this.isReady(mesh, useInstances);
-    }
-
-    /**
-     * Checks if the material is ready to render the requested mesh
-     * @param mesh Define the mesh to render
-     * @param useInstances Define whether or not the material is used with instances
-     * @returns true if ready, otherwise false
-     */
-    public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
-        if (this._effect && this.isFrozen) {
-            if (this._effect._wasPreviouslyReady) {
-                return true;
-            }
-        }
-
-        var scene = this.getScene();
-        var engine = scene.getEngine();
-
-        if (!this.checkReadyOnEveryCall) {
-            if (this._renderId === scene.getRenderId()) {
-                if (this._checkCache(mesh, useInstances)) {
-                    return true;
-                }
-            }
-        }
-
-        // Instances
-        let defines = [];
-        let attribs = [];
-        let shaderUniforms:string[] = [
-            'world', 'worldView', 'worldViewProjection', 'view', 'projection', 'viewProjection',
-            'colorBase', 'colorZero', 'colorQuarter', 'colorHalf', 'colorFull', 'targetBoneIndex'
-        ]
-        let shaderSamplers:string[] = []
-        var fallbacks = new EffectFallbacks();       
-
-        attribs.push("position", "normal", "uv");  
-
-        if (useInstances) {
-            defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
-            if (mesh?.hasThinInstances) {
-                defines.push("#define THIN_INSTANCES");
-            }
-        }
-
-        // Bones
-        let numInfluencers = 0;
-
-        if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            attribs.push(VertexBuffer.MatricesIndicesKind);
-            attribs.push(VertexBuffer.MatricesWeightsKind);
-            if (mesh.numBoneInfluencers > 4) {
-                attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-            }
-
-            const skeleton = mesh.skeleton;
-            numInfluencers = mesh.numBoneInfluencers;
-
-            defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
-            fallbacks.addCPUSkinningFallback(0, mesh);
-
-            if (skeleton.isUsingTextureForMatrices) {
-                defines.push("#define BONETEXTURE");
-
-                if (shaderUniforms.indexOf("boneTextureWidth") === -1) {
-                    shaderUniforms.push("boneTextureWidth");
-                }
-
-                if (shaderSamplers.indexOf("boneSampler") === -1) {
-                    shaderSamplers.push("boneSampler");
-                }
-            } else {
-                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
-
-                if (shaderUniforms.indexOf("mBones") === -1) {
-                    shaderUniforms.push("mBones");
-                }
-            }
-
-        } else {
-            defines.push("#define NUM_BONE_INFLUENCERS 0");
-        }
-    
-        // Alpha test
-        if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
-            defines.push("#define ALPHATEST");
-        }
-
-        let shaderName = 'boneWeights',
-            uniforms = shaderUniforms,
-            uniformBuffers:string[] = [],
-            samplers = shaderSamplers;
-
-        var previousEffect = this._effect;
-        var join = defines.join("\n");
-
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-
-            this._effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
-                attributes: attribs,
-                uniformsNames: uniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: samplers,
-                defines: join,
-                fallbacks: fallbacks,
-                onCompiled: this.onCompiled,
-                onError: this.onError,
-                indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
-            }, engine);
-
-            if (this._onEffectCreatedObservable) {
-                onCreatedEffectParameters.effect = this._effect;
-                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
-            }
-        }
-
-        this.uniforms = uniforms
-
-        if (!this._effect?.isReady() ?? true) {
-            return false;
-        }
-
-        if (previousEffect !== this._effect) {
-            scene.resetCachedMaterial();
-        }
-
-        this._renderId = scene.getRenderId();
-        this._effect._wasPreviouslyReady = true;
-
-        return true;
-    }
-
-    /**
-     * Binds the world matrix to the material
-     * @param world defines the world transformation matrix
-     * @param effectOverride - If provided, use this effect instead of internal effect
-     */
-    public bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         var scene = this.getScene();
 
-        const effect = effectOverride ?? this._effect;
-
-        if (!effect) {
+        var defines = <BoneWeightsMaterialDefines>subMesh._materialDefines;
+        if (!defines) {
             return;
         }
 
-        if (this.uniforms.indexOf("world") !== -1) {
-            effect.setMatrix("world", world);
+        var effect = subMesh.effect;
+        if (!effect) {
+            return;
         }
+        this._activeEffect = effect;
 
-        if (this.uniforms.indexOf("worldView") !== -1) {
-            world.multiplyToRef(scene.getViewMatrix(), this._cachedWorldViewMatrix);
-            effect.setMatrix("worldView", this._cachedWorldViewMatrix);
-        }
+        // Matrices
+        this.bindOnlyWorldMatrix(world);
+        this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-        if (this.uniforms.indexOf("worldViewProjection") !== -1) {
-            world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
-            effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
-        }
+        // Bones
+        MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
+        
+        this._afterBind(mesh, this._activeEffect);
     }
 
-    /**
-     * Binds the submesh to this material by preparing the effect and shader to draw
-     * @param world defines the world transformation matrix
-     * @param mesh defines the mesh containing the submesh
-     * @param subMesh defines the submesh to bind the material to
-     */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        this.bind(world, mesh, subMesh._effectOverride);
+    public getAnimatables(): IAnimatable[] { 
+        return [];
     }
 
-    /**
-     * Binds the material to the mesh
-     * @param world defines the world transformation matrix
-     * @param mesh defines the mesh to bind the material to
-     * @param effectOverride - If provided, use this effect instead of internal effect
-     */
-    public bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>): void {
-        // Std values
-        this.bindOnlyWorldMatrix(world, effectOverride);
+    public getActiveTextures(): BaseTexture[] {
+        return [];
+    }
 
-        const effect = effectOverride ?? this._effect;
-
-        if (effect && this.getScene().getCachedMaterial() !== this) {
-            if (this.uniforms.indexOf("view") !== -1) {
-                effect.setMatrix("view", this.getScene().getViewMatrix());
-            }
-
-            if (this.uniforms.indexOf("projection") !== -1) {
-                effect.setMatrix("projection", this.getScene().getProjectionMatrix());
-            }
-
-            if (this.uniforms.indexOf("viewProjection") !== -1) {
-                effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
-                if (this._multiview) {
-                    effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
-                }
-            }
-
-            if (this.getScene().activeCamera && this.uniforms.indexOf("cameraPosition") !== -1) {
-                effect.setVector3("cameraPosition", this.getScene().activeCamera!.globalPosition);
-            }
+    public hasTexture(texture: BaseTexture): boolean {
+        if (super.hasTexture(texture)) {
+            return true;
         }
-
-            // Bones
-            if(effect){
-                MaterialHelper.BindBonesParameters(mesh, effect);
-            }
-            const seffect = this._effect;
-
-            this._effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
-            if(mesh){
-                this._afterBind(mesh);
-            }
-            this._effect = seffect;        
-    }   
-
-    protected _afterBind(mesh: Mesh): void {
-        super._afterBind(mesh);
-        this.getScene()._cachedEffect = this._effect;
+        return false;
     }
 
     public dispose(forceDisposeEffect?: boolean): void {
