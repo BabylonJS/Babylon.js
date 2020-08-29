@@ -14,6 +14,7 @@ import { StandardMaterial } from '../Materials/standardMaterial';
 import { ShaderMaterial } from '../Materials/shaderMaterial';
 import { DynamicTexture } from '../Materials/Textures/dynamicTexture';
 import { VertexBuffer } from '../Meshes/buffer';
+import { Effect } from '../Materials/effect';
 
 import { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot } from './ISkeletonViewer';
 import { Observer } from '../Misc/observable';
@@ -37,6 +38,7 @@ export class SkeletonViewer {
      * @param options The constructor options
      * @param scene The scene that the shader is scoped to
      * @returns The created ShaderMaterial
+     * @see http://www.babylonjs-playground.com/#1BZJVJ#395
      */
     static CreateBoneWeightShader(options: IBoneWeightShaderOptions, scene: Scene): ShaderMaterial {
 
@@ -48,71 +50,62 @@ export class SkeletonViewer {
         let colorFull: Color3 = options.colorFull ?? Color3.Red();
         let targetBoneIndex: number = options.targetBoneIndex ?? 0;
 
-<<<<<<< HEAD
-        let shader: ShaderMaterial = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
-        {
-            vertexSource:
-            `precision highp float;
-
-            attribute vec3 position;
-            attribute vec2 uv;
-=======
-        console.log(colorBase, colorZero, colorQuarter, colorHalf, colorFull, targetBoneIndex);
-
         Effect.ShadersStore['boneWeights:' + skeleton.name + "VertexShader"] =
         `precision highp float;
->>>>>>> 503851a... inspector access to the BoneWeightShader
 
-            uniform mat4 view;
-            uniform mat4 projection;
-            uniform mat4 worldViewProjection;
+        attribute vec3 position;
+        attribute vec2 uv;
 
-            #include<bonesDeclaration>
-            #include<instancesDeclaration>
+        uniform mat4 view;
+        uniform mat4 projection;
+        uniform mat4 worldViewProjection;
 
-            varying vec3 vColor;
+        #include<bonesDeclaration>
+        #include<instancesDeclaration>
 
-            uniform vec3 colorBase;
-            uniform vec3 colorZero;
-            uniform vec3 colorQuarter;
-            uniform vec3 colorHalf;
-            uniform vec3 colorFull;
+        varying vec3 vColor;
 
-            uniform float targetBoneIndex;
+        uniform vec3 colorBase;
+        uniform vec3 colorZero;
+        uniform vec3 colorQuarter;
+        uniform vec3 colorHalf;
+        uniform vec3 colorFull;
 
-            void main() {
-                vec3 positionUpdated = position;
+        uniform float targetBoneIndex;
 
-                #include<instancesVertex>
-                #include<bonesVertex>
+        void main() {
+            vec3 positionUpdated = position;
 
-                vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+            #include<instancesVertex>
+            #include<bonesVertex>
 
-                vec3 color = colorBase;
-                float totalWeight = 0.;
-                if(matricesIndices[0] == targetBoneIndex && matricesWeights[0] > 0.){
-                    totalWeight += matricesWeights[0];
-                }
-                if(matricesIndices[1] == targetBoneIndex && matricesWeights[1] > 0.){
-                    totalWeight += matricesWeights[1];
-                }
-                if(matricesIndices[2] == targetBoneIndex && matricesWeights[2] > 0.){
-                    totalWeight += matricesWeights[2];
-                }
-                if(matricesIndices[3] == targetBoneIndex && matricesWeights[3] > 0.){
-                    totalWeight += matricesWeights[3];
-                }
+            vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 
-                color = mix(color, colorZero, smoothstep(0., 0.25, totalWeight));
-                color = mix(color, colorQuarter, smoothstep(0.25, 0.5, totalWeight));
-                color = mix(color, colorHalf, smoothstep(0.5, 0.75, totalWeight));
-                color = mix(color, colorFull, smoothstep(0.75, 1.0, totalWeight));
+            vec3 color = colorBase;
+            float totalWeight = 0.;
+            if(matricesIndices[0] == targetBoneIndex && matricesWeights[0] > 0.){
+                totalWeight += matricesWeights[0];
+            }
+            if(matricesIndices[1] == targetBoneIndex && matricesWeights[1] > 0.){
+                totalWeight += matricesWeights[1];
+            }
+            if(matricesIndices[2] == targetBoneIndex && matricesWeights[2] > 0.){
+                totalWeight += matricesWeights[2];
+            }
+            if(matricesIndices[3] == targetBoneIndex && matricesWeights[3] > 0.){
+                totalWeight += matricesWeights[3];
+            }
 
+            color = mix(color, colorZero, smoothstep(0., 0.25, totalWeight));
+            color = mix(color, colorQuarter, smoothstep(0.25, 0.5, totalWeight));
+            color = mix(color, colorHalf, smoothstep(0.5, 0.75, totalWeight));
+            color = mix(color, colorFull, smoothstep(0.75, 1.0, totalWeight));
+            vColor = color;
 
-                gl_Position = projection * view * worldPos;
-            }`,
-            fragmentSource:
-            `
+        gl_Position = projection * view * worldPos;
+        }`;
+        Effect.ShadersStore['boneWeights:' + skeleton.name + "FragmentShader"] =
+        `
             precision highp float;
             varying vec3 vPosition;
 
@@ -122,15 +115,11 @@ export class SkeletonViewer {
                 vec4 color = vec4(vColor, 1.0);
                 gl_FragColor = color;
             }
-<<<<<<< HEAD
-            `
-=======
         `;
         let shader: ShaderMaterial = new ShaderMaterial('boneWeight:' + skeleton.name, scene,
         {
             vertex: 'boneWeights:' + skeleton.name,
             fragment: 'boneWeights:' + skeleton.name
->>>>>>> 503851a... inspector access to the BoneWeightShader
         },
         {
             attributes: ['position', 'normal'],
@@ -146,14 +135,11 @@ export class SkeletonViewer {
         shader.setColor3('colorHalf', colorHalf);
         shader.setColor3('colorFull', colorFull);
         shader.setFloat('targetBoneIndex', targetBoneIndex);
-<<<<<<< HEAD
-=======
 
         shader.getClassName = (): string => {
             return "BoneWeightShader";
         };
 
->>>>>>> 503851a... inspector access to the BoneWeightShader
         shader.transparencyMode = Material.MATERIAL_OPAQUE;
 
         return shader;
@@ -196,13 +182,8 @@ export class SkeletonViewer {
 
         let bufferWidth: number = skeleton.bones.length + 1;
         let colorMapBuffer: number[] = SkeletonViewer._CreateBoneMapColorBuffer(bufferWidth, colorMap, scene);
-<<<<<<< HEAD
-        colorMapBuffer.forEach((v, idx) => colorMapBuffer[idx] = v / 255);
-
-=======
         //colorMapBuffer.forEach((v, idx) => colorMapBuffer[idx] = v / 255);
         console.log(colorMapBuffer);
->>>>>>> 503851a... inspector access to the BoneWeightShader
         let shader = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
         {
             vertexSource:
@@ -271,9 +252,7 @@ export class SkeletonViewer {
             ]
         });
 
-        shader.onBindObservable.add(() => {
-            shader.setFloats('colorMap', colorMapBuffer);
-        });
+        shader.setFloats('colorMap', colorMapBuffer);
 
         shader.transparencyMode = Material.MATERIAL_OPAQUE;
 
@@ -643,29 +622,19 @@ export class SkeletonViewer {
             let displayOptions = this.options.displayOptions || {};
 
             for (let i = 0; i < bones.length; i++) {
-<<<<<<< HEAD
-                let bone = bones[i]; 
-                
-                if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())){
-                    continue;
-=======
                 let bone = bones[i];
 
                 if (!this.options.useAllBones) {
                     if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())) {
                         continue;
                     }
->>>>>>> 503851a... inspector access to the BoneWeightShader
                 }
 
                 let boneAbsoluteRestTransform = new Matrix();
                 getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
 
                 let anchorPoint = new Vector3();
-<<<<<<< HEAD
-=======
 
->>>>>>> 503851a... inspector access to the BoneWeightShader
                 boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
 
                 bone.children.forEach((bc, i) => {
@@ -810,9 +779,7 @@ export class SkeletonViewer {
         } else {
             this._getLinesForBonesWithLength(this.skeleton.bones, mesh.getWorldMatrix());
         }
-
-        console.log(this._debugLines)
-
+        //console.log(this._debugLines)
         const targetScene = this._utilityLayer.utilityLayerScene;
 
         if (targetScene) {
