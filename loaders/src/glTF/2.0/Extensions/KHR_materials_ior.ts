@@ -44,7 +44,7 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */

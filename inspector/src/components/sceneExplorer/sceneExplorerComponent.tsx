@@ -25,6 +25,7 @@ import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/P
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { TargetCamera } from 'babylonjs/Cameras/targetCamera';
 
 require("./sceneExplorer.scss");
 
@@ -320,6 +321,15 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             label: "Add new free camera",
             action: () => {
                 let newFreeCamera = new FreeCamera("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new Vector3(0, 0, -5), scene);
+
+                if (scene.activeCamera) {
+                    newFreeCamera.minZ = scene.activeCamera.minZ;
+                    newFreeCamera.maxZ = scene.activeCamera.maxZ;
+                    if ((scene.activeCamera as any).getTarget) {
+                        newFreeCamera.setTarget((scene.activeCamera as TargetCamera).getTarget());
+                    }
+                }
+    
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
