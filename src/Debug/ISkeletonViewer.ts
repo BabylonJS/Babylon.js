@@ -19,6 +19,9 @@ export interface ISkeletonViewerOptions{
 
    /** Flag to toggle if the Viewer should use the CPU for animations or not? */
    computeBonesUsingShaders : boolean;
+
+   /** Flag ignore non weighted bones */
+   useAllBones: boolean;
 }
 
 /**
@@ -39,6 +42,32 @@ export interface ISkeletonViewerDisplayOptions{
 
    /** Ratio for the Sphere Size */
    sphereFactor? : number;
+}
+
+/**
+ * Defines the constructor options for the BoneWeight Shader.
+ */
+export interface IBoneWeightShaderOptions{
+   /** Skeleton to Map */
+   skeleton: Skeleton;
+
+   /** Colors for Uninfluenced bones */
+   colorBase? : Color3;
+
+   /** Colors for 0.0-0.25 Weight bones */
+   colorZero? : Color3;
+
+   /** Color for 0.25-0.5 Weight Influence */
+   colorQuarter? : Color3;
+
+   /** Color for 0.5-0.75 Weight Influence */
+   colorHalf? : Color3;
+
+   /** Color for 0.75-1 Weight Influence */
+   colorFull? : Color3;
+
+   /** Color for Zero Weight Influence */
+   targetBoneIndex? : number;
 }
 
 /**

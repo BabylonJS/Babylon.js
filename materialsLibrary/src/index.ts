@@ -13,4 +13,3 @@ export * from "./sky";
 export * from "./terrain";
 export * from "./triPlanar";
 export * from "./water";
-export * from "./skeletonDebug";
