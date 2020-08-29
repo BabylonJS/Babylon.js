@@ -48,6 +48,7 @@ export class SkeletonViewer {
         let colorFull: Color3 = options.colorFull ?? Color3.Red();
         let targetBoneIndex: number = options.targetBoneIndex ?? 0;
 
+<<<<<<< HEAD
         let shader: ShaderMaterial = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
         {
             vertexSource:
@@ -55,6 +56,12 @@ export class SkeletonViewer {
 
             attribute vec3 position;
             attribute vec2 uv;
+=======
+        console.log(colorBase, colorZero, colorQuarter, colorHalf, colorFull, targetBoneIndex);
+
+        Effect.ShadersStore['boneWeights:' + skeleton.name + "VertexShader"] =
+        `precision highp float;
+>>>>>>> 503851a... inspector access to the BoneWeightShader
 
             uniform mat4 view;
             uniform mat4 projection;
@@ -115,7 +122,15 @@ export class SkeletonViewer {
                 vec4 color = vec4(vColor, 1.0);
                 gl_FragColor = color;
             }
+<<<<<<< HEAD
             `
+=======
+        `;
+        let shader: ShaderMaterial = new ShaderMaterial('boneWeight:' + skeleton.name, scene,
+        {
+            vertex: 'boneWeights:' + skeleton.name,
+            fragment: 'boneWeights:' + skeleton.name
+>>>>>>> 503851a... inspector access to the BoneWeightShader
         },
         {
             attributes: ['position', 'normal'],
@@ -131,6 +146,14 @@ export class SkeletonViewer {
         shader.setColor3('colorHalf', colorHalf);
         shader.setColor3('colorFull', colorFull);
         shader.setFloat('targetBoneIndex', targetBoneIndex);
+<<<<<<< HEAD
+=======
+
+        shader.getClassName = (): string => {
+            return "BoneWeightShader";
+        };
+
+>>>>>>> 503851a... inspector access to the BoneWeightShader
         shader.transparencyMode = Material.MATERIAL_OPAQUE;
 
         return shader;
@@ -173,8 +196,13 @@ export class SkeletonViewer {
 
         let bufferWidth: number = skeleton.bones.length + 1;
         let colorMapBuffer: number[] = SkeletonViewer._CreateBoneMapColorBuffer(bufferWidth, colorMap, scene);
+<<<<<<< HEAD
         colorMapBuffer.forEach((v, idx) => colorMapBuffer[idx] = v / 255);
 
+=======
+        //colorMapBuffer.forEach((v, idx) => colorMapBuffer[idx] = v / 255);
+        console.log(colorMapBuffer);
+>>>>>>> 503851a... inspector access to the BoneWeightShader
         let shader = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
         {
             vertexSource:
@@ -379,7 +407,7 @@ export class SkeletonViewer {
         //Defaults
         options.pauseAnimations = options.pauseAnimations ?? true;
         options.currentStateIsRestPose = options.currentStateIsRestPose ?? false;
-        options.returnToRest = ( options.currentStateIsRestPose) ? false : options.returnToRest ?? ( options.currentStateIsRestPose) ? false : true;
+        options.returnToRest = (options.currentStateIsRestPose) ? false : options.returnToRest ?? (options.currentStateIsRestPose) ? false : true;
         options.displayMode = options.displayMode ?? SkeletonViewer.DISPLAY_LINES;
         options.displayOptions = options.displayOptions ?? {};
         options.displayOptions.midStep = options.displayOptions.midStep ?? 0.235;
@@ -388,20 +416,20 @@ export class SkeletonViewer {
         options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit ?? 2;
         options.displayOptions.sphereFactor = options.displayOptions.sphereFactor ?? 0.865;
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
-        options.useAllBones = options.useAllBones ?? true;        
-                
-        const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
-        const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);        
-        const baseNodeBoneIndices = []
-        this._boneIndices = new Set(); 
+        options.useAllBones = options.useAllBones ?? true;
 
-        if (options.useAllBones) {   
-            for (let i = 0; i < skeleton.bones.length; ++i){
-                baseNodeBoneIndices.push(skeleton.bones[i].getIndex(), 0, 0, 0)
-            }                    
+        const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+        const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
+        const baseNodeBoneIndices = [];
+        this._boneIndices = new Set();
+
+        if (options.useAllBones) {
+            for (let i = 0; i < skeleton.bones.length; ++i) {
+                baseNodeBoneIndices.push(skeleton.bones[i].getIndex(), 0, 0, 0);
+            }
             for (let i = 0; i < baseNodeBoneIndices.length; ++i) {
-                this._boneIndices.add(baseNodeBoneIndices[i]);   
-            }            
+                this._boneIndices.add(baseNodeBoneIndices[i]);
+            }
         }else {
             if (initialMeshBoneIndices && initialMeshBoneWeights) {
                 for (let i = 0; i < initialMeshBoneIndices.length; ++i) {
@@ -583,15 +611,15 @@ export class SkeletonViewer {
                 scene.animationsEnabled = false;
             }
 
-            if(this.options.currentStateIsRestPose){
-                let _s = Vector3.Zero()
-                let _r = Quaternion.Identity()
-                let _t = Vector3.Zero()                
-                this.skeleton.bones.forEach( b =>{                    
-                    b.getLocalMatrix().decompose(_s, _r, _t)
-                    b.setRestPose(Matrix.Compose(_s, _r, _t))
-                 })
-            }else{
+            if (this.options.currentStateIsRestPose) {
+                let _s = Vector3.Zero();
+                let _r = Quaternion.Identity();
+                let _t = Vector3.Zero();
+                this.skeleton.bones.forEach((b) => {
+                    b.getLocalMatrix().decompose(_s, _r, _t);
+                    b.setRestPose(Matrix.Compose(_s, _r, _t));
+                 });
+            }else {
                 if (this.options.returnToRest) {
                     this.skeleton.returnToRest();
                 }
@@ -599,12 +627,12 @@ export class SkeletonViewer {
 
             if (this.autoUpdateBonesMatrices) {
                 this.skeleton.computeAbsoluteTransforms();
-            }           
+            }
 
             let longestBoneLength = Number.NEGATIVE_INFINITY;
             let getAbsoluteRestPose = function(bone: Nullable<Bone>, matrix: Matrix) {
                 if (bone === null || bone._index === -1) {
-                    matrix.copyFrom(Matrix.Identity());                    
+                    matrix.copyFrom(Matrix.Identity());
                     return;
                 }
                 getAbsoluteRestPose(bone.getParent(), matrix);
@@ -615,16 +643,29 @@ export class SkeletonViewer {
             let displayOptions = this.options.displayOptions || {};
 
             for (let i = 0; i < bones.length; i++) {
+<<<<<<< HEAD
                 let bone = bones[i]; 
                 
                 if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())){
                     continue;
+=======
+                let bone = bones[i];
+
+                if (!this.options.useAllBones) {
+                    if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())) {
+                        continue;
+                    }
+>>>>>>> 503851a... inspector access to the BoneWeightShader
                 }
 
                 let boneAbsoluteRestTransform = new Matrix();
                 getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
 
                 let anchorPoint = new Vector3();
+<<<<<<< HEAD
+=======
+
+>>>>>>> 503851a... inspector access to the BoneWeightShader
                 boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
 
                 bone.children.forEach((bc, i) => {
@@ -710,7 +751,7 @@ export class SkeletonViewer {
 
                 sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
                 sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
-                console.log('Anchor Point', anchorPoint)
+                console.log('Anchor Point', anchorPoint);
                 sphere.position = anchorPoint.clone();
                 spheres.push([sphere, bone]);
             }
