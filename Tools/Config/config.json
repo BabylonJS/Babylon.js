@@ -231,6 +231,11 @@
                 "output": "babylon.waterMaterial.min.js",
                 "entry": "./legacy/legacy-water.ts",
                 "preventLoadLibrary": true
+            },
+            {
+                "output": "babylon.boneWeightsMaterial.min.js",
+                "entry": "./legacy/legacy-boneWeights.ts",
+                "preventLoadLibrary": true
             }
         ],
         "build": {
