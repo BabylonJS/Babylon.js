@@ -77,7 +77,9 @@ export interface IBoneWeightShaderOptions{
  * Simple structure of the gradient steps for the Color Map.
  */
 export interface ISkeletonMapShaderColorMapKnot{
+   /** Color of the Knot */
    color : Color3;
+   /** Location of the Knot */
    location : number;
 }
 
@@ -87,5 +89,6 @@ export interface ISkeletonMapShaderColorMapKnot{
 export interface ISkeletonMapShaderOptions{
    /** Skeleton to Map */
    skeleton: Skeleton;
+   /** Array of ColorMapKnots that make the gradient must be ordered with knot[i].location < knot[i+1].location*/
    colorMap? : ISkeletonMapShaderColorMapKnot[];
 }
