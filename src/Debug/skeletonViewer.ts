@@ -15,7 +15,7 @@ import { ShaderMaterial } from '../Materials/shaderMaterial';
 import { DynamicTexture } from '../Materials/Textures/dynamicTexture';
 import { VertexBuffer } from '../Meshes/buffer';
 
-import { ISkeletonViewerOptions, IBoneWeightShaderOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot } from './ISkeletonViewer';
+import { ISkeletonViewerOptions, ISkeletonMapShaderOptions, ISkeletonMapShaderColorMapKnot } from './ISkeletonViewer';
 import { Observer } from '../Misc/observable';
 
 import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
@@ -38,7 +38,7 @@ export class SkeletonViewer {
      * @param scene The scene that the shader is scoped to
      * @returns The created ShaderMaterial
      */
-    static CreateBoneWeightShader(options: IBoneWeightShaderOptions, scene: Scene): ShaderMaterial {
+    /*static CreateBoneWeightShader(options: IBoneWeightShaderOptions, scene: Scene): ShaderMaterial {
 
         let skeleton: Skeleton = options.skeleton;
         let colorBase: Color3 = options.colorBase ?? Color3.Black();
@@ -134,7 +134,7 @@ export class SkeletonViewer {
         shader.transparencyMode = Material.MATERIAL_OPAQUE;
 
         return shader;
-    }
+    }*/
 
     /** public static method to create a BoneWeight Shader
      * @param options The constructor options
