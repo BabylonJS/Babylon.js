@@ -182,8 +182,6 @@ export class SkeletonViewer {
 
         let bufferWidth: number = skeleton.bones.length + 1;
         let colorMapBuffer: number[] = SkeletonViewer._CreateBoneMapColorBuffer(bufferWidth, colorMap, scene);
-        //colorMapBuffer.forEach((v, idx) => colorMapBuffer[idx] = v / 255);
-        console.log(colorMapBuffer);
         let shader = new ShaderMaterial('boneWeights:' + skeleton.name, scene,
         {
             vertexSource:
@@ -253,6 +251,10 @@ export class SkeletonViewer {
         });
 
         shader.setFloats('colorMap', colorMapBuffer);
+
+        shader.getClassName = (): string => {
+            return "SkeletonMapShader";
+        };
 
         shader.transparencyMode = Material.MATERIAL_OPAQUE;
 
@@ -720,7 +722,7 @@ export class SkeletonViewer {
 
                 sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
                 sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
-                console.log('Anchor Point', anchorPoint);
+
                 sphere.position = anchorPoint.clone();
                 spheres.push([sphere, bone]);
             }
@@ -779,7 +781,7 @@ export class SkeletonViewer {
         } else {
             this._getLinesForBonesWithLength(this.skeleton.bones, mesh.getWorldMatrix());
         }
-        //console.log(this._debugLines)
+
         const targetScene = this._utilityLayer.utilityLayerScene;
 
         if (targetScene) {

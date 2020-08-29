@@ -48,7 +48,8 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
     displayNormals: boolean,
     displayVertexColors: boolean,
     displayBoneWeights: boolean,
-    displayBoneIndex: number
+    displayBoneIndex: number,
+    displaySkeletonMap:boolean
 }> {
     constructor(props: IMeshPropertyGridComponentProps) {
         super(props);
@@ -57,6 +58,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             displayVertexColors: false,
             displayBoneWeights: false,
             displayBoneIndex: 0,
+            displaySkeletonMap: false
         };
     }
 
@@ -243,6 +245,31 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         }
     }
 
+    displaySkeletonMap() {
+        const mesh = this.props.mesh;
+        const scene = mesh.getScene();
+
+        if (mesh.material && mesh.material.getClassName() === "SkeletonMapShader") {
+            mesh.material.dispose();
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
+            this.setState({ displaySkeletonMap: false });
+        } else {          
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
+            }
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }  
+            if(mesh.skeleton){
+                const skeletonMapShader = SkeletonViewer.CreateSkeletonMapShader({skeleton:mesh.skeleton}, scene)
+                skeletonMapShader.reservedDataStore = { hidden: true };
+                mesh.material = skeletonMapShader;
+                this.setState({ displaySkeletonMap: true });
+            }            
+        }
+    }
+
     onBoneDisplayIndexChange(value:number):void{
         let mesh = this.props.mesh
         mesh.reservedDataStore.displayBoneIndex = value
@@ -318,6 +345,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
         const renderNormalVectors = (mesh.reservedDataStore && mesh.reservedDataStore.normalLines) ? true : false;
         const renderWireframeOver = (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) ? true : false;
         const displayBoneWeights = mesh.material != null && mesh.material.getClassName() === "BoneWeightShader";
+        const displaySkeletonMap = mesh.material != null && mesh.material.getClassName() === "SkeletonMapShader";
 
         var morphTargets: MorphTarget[] = [];
 
@@ -534,6 +562,11 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                         <SliderLineComponent label="Target Bone" decimalCount={0} target={mesh.reservedDataStore} propertyName="displayBoneIndex" minimum={0} maximum={mesh.skeleton.bones.length-1 || 0} step={1} onChange={(value)=>{this.onBoneDisplayIndexChange(value)}} />
                         
                     }
+                    {
+                        !mesh.isAnInstance && mesh.skeleton &&
+                        <CheckBoxLineComponent label="Display SkeletonMap" isSelected={() => displaySkeletonMap } onSelect={() => this.displaySkeletonMap()} />
+                    }                
+
                 </LineContainerComponent>
             </div>
         );

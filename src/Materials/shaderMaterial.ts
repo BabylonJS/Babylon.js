@@ -540,42 +540,47 @@ export class ShaderMaterial extends Material {
 
         // Bones
         let numInfluencers = 0;
-
-        if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            attribs.push(VertexBuffer.MatricesIndicesKind);
-            attribs.push(VertexBuffer.MatricesWeightsKind);
-            if (mesh.numBoneInfluencers > 4) {
-                attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-            }
-
-            const skeleton = mesh.skeleton;
-
-            numInfluencers = mesh.numBoneInfluencers;
-
-            defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
-            fallbacks.addCPUSkinningFallback(0, mesh);
-
-            if (skeleton.isUsingTextureForMatrices) {
-                defines.push("#define BONETEXTURE");
-
-                if (this._options.uniforms.indexOf("boneTextureWidth") === -1) {
-                    this._options.uniforms.push("boneTextureWidth");
+        if (mesh) {
+            if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
 
-                if (this._options.samplers.indexOf("boneSampler") === -1) {
-                    this._options.samplers.push("boneSampler");
+                const skeleton = mesh.skeleton;
+
+                numInfluencers = mesh.numBoneInfluencers;
+                defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
+                fallbacks.addCPUSkinningFallback(0, mesh);
+
+                if (skeleton.isUsingTextureForMatrices) {
+                    defines.push("#define BONETEXTURE");
+
+                    if (this._options.uniforms.indexOf("boneTextureWidth") === -1) {
+                        this._options.uniforms.push("boneTextureWidth");
+                    }
+
+                    if (this._options.samplers.indexOf("boneSampler") === -1) {
+                        this._options.samplers.push("boneSampler");
+                    }
+                } else {
+                    defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+
+                    if (this._options.uniforms.indexOf("mBones") === -1) {
+                        this._options.uniforms.push("mBones");
+                    }
                 }
+
             } else {
-                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
-
-                if (this._options.uniforms.indexOf("mBones") === -1) {
-                    this._options.uniforms.push("mBones");
+                if (mesh && this.getClassName() == "BoneWeightShader" || this.getClassName() == "SkeletonMapShader") {
+                    numInfluencers = mesh.numBoneInfluencers;
+                    defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
+                }else {
+                    defines.push("#define NUM_BONE_INFLUENCERS 0");
                 }
             }
-
-        } else {
-            defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
 
         // Textures
