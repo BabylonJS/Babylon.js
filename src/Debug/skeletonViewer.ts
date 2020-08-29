@@ -1,4 +1,4 @@
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Scene } from "../scene";
 import { Nullable } from "../types";
@@ -378,7 +378,8 @@ export class SkeletonViewer {
 
         //Defaults
         options.pauseAnimations = options.pauseAnimations ?? true;
-        options.returnToRest = options.returnToRest ?? true;
+        options.currentStateIsRestPose = options.currentStateIsRestPose ?? false;
+        options.returnToRest = ( options.currentStateIsRestPose) ? false : options.returnToRest ?? ( options.currentStateIsRestPose) ? false : true;
         options.displayMode = options.displayMode ?? SkeletonViewer.DISPLAY_LINES;
         options.displayOptions = options.displayOptions ?? {};
         options.displayOptions.midStep = options.displayOptions.midStep ?? 0.235;
@@ -387,22 +388,24 @@ export class SkeletonViewer {
         options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit ?? 2;
         options.displayOptions.sphereFactor = options.displayOptions.sphereFactor ?? 0.865;
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
-        options.useAllBones = options.useAllBones ?? true;
+        options.useAllBones = options.useAllBones ?? true;        
+                
+        const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+        const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);        
+        const baseNodeBoneIndices = []
+        this._boneIndices = new Set(); 
 
-        const boneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
-        const boneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
-        this._boneIndices = new Set();
-
-        if (options.useAllBones) {
-            if (boneIndices) {
-                for (let i = 0; i < boneIndices.length; ++i) {
-                    this._boneIndices.add(boneIndices[i]);
-                }
-            }
+        if (options.useAllBones) {   
+            for (let i = 0; i < skeleton.bones.length; ++i){
+                baseNodeBoneIndices.push(skeleton.bones[i].getIndex(), 0, 0, 0)
+            }                    
+            for (let i = 0; i < baseNodeBoneIndices.length; ++i) {
+                this._boneIndices.add(baseNodeBoneIndices[i]);   
+            }            
         }else {
-            if (boneIndices && boneWeights) {
-                for (let i = 0; i < boneIndices.length; ++i) {
-                    const index = boneIndices[i], weight = boneWeights[i];
+            if (initialMeshBoneIndices && initialMeshBoneWeights) {
+                for (let i = 0; i < initialMeshBoneIndices.length; ++i) {
+                    const index = initialMeshBoneIndices[i], weight = initialMeshBoneWeights[i];
                     if (weight !== 0) {
                         this._boneIndices.add(index);
                     }
@@ -580,18 +583,28 @@ export class SkeletonViewer {
                 scene.animationsEnabled = false;
             }
 
-            if (this.options.returnToRest) {
-                this.skeleton.returnToRest();
+            if(this.options.currentStateIsRestPose){
+                let _s = Vector3.Zero()
+                let _r = Quaternion.Identity()
+                let _t = Vector3.Zero()                
+                this.skeleton.bones.forEach( b =>{                    
+                    b.getLocalMatrix().decompose(_s, _r, _t)
+                    b.setRestPose(Matrix.Compose(_s, _r, _t))
+                 })
+            }else{
+                if (this.options.returnToRest) {
+                    this.skeleton.returnToRest();
+                }
             }
 
             if (this.autoUpdateBonesMatrices) {
                 this.skeleton.computeAbsoluteTransforms();
-            }
+            }           
 
             let longestBoneLength = Number.NEGATIVE_INFINITY;
             let getAbsoluteRestPose = function(bone: Nullable<Bone>, matrix: Matrix) {
                 if (bone === null || bone._index === -1) {
-                    matrix.copyFrom(Matrix.Identity());
+                    matrix.copyFrom(Matrix.Identity());                    
                     return;
                 }
                 getAbsoluteRestPose(bone.getParent(), matrix);
@@ -602,12 +615,10 @@ export class SkeletonViewer {
             let displayOptions = this.options.displayOptions || {};
 
             for (let i = 0; i < bones.length; i++) {
-                let bone = bones[i];
+                let bone = bones[i]; 
                 
-                if(!this.options.useAllBones){
-                    if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())) {
-                        continue;
-                    }
+                if (bone._index === -1 || !this._boneIndices.has(bone.getIndex())){
+                    continue;
                 }
 
                 let boneAbsoluteRestTransform = new Matrix();
@@ -621,9 +632,7 @@ export class SkeletonViewer {
                     bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
                     let childPoint = new Vector3();
                     childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);
-
                     let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
-
                     if (distanceFromParent > longestBoneLength) {
                         longestBoneLength = distanceFromParent;
                     }
@@ -640,7 +649,7 @@ export class SkeletonViewer {
 
                     let up0 = up.scale(midStep);
 
-                    let spur = ShapeBuilder.ExtrudeShapeCustom(bc.name + ':spur',
+                    let spur = ShapeBuilder.ExtrudeShapeCustom('skeletonViewer',
                     {
                         shape:  [
                                     new Vector3(1, -1,  0),
@@ -684,10 +693,10 @@ export class SkeletonViewer {
 
                 let sphereBaseSize = displayOptions.sphereBaseSize || 0.2;
 
-                let sphere = SphereBuilder.CreateSphere(bone.name + ':sphere', {
+                let sphere = SphereBuilder.CreateSphere('skeletonViewer', {
                     segments: 6,
                     diameter: sphereBaseSize,
-                    updatable: false
+                    updatable: true
                 }, scene);
 
                 const numVertices = sphere.getTotalVertices();
@@ -701,7 +710,7 @@ export class SkeletonViewer {
 
                 sphere.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
                 sphere.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
-
+                console.log('Anchor Point', anchorPoint)
                 sphere.position = anchorPoint.clone();
                 spheres.push([sphere, bone]);
             }
@@ -760,6 +769,8 @@ export class SkeletonViewer {
         } else {
             this._getLinesForBonesWithLength(this.skeleton.bones, mesh.getWorldMatrix());
         }
+
+        console.log(this._debugLines)
 
         const targetScene = this._utilityLayer.utilityLayerScene;
 

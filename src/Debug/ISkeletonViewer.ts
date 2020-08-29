@@ -22,6 +22,9 @@ export interface ISkeletonViewerOptions{
 
    /** Flag ignore non weighted bones */
    useAllBones: boolean;
+
+   /** Flag to say that the current pose of the bones is the rest pose */
+   currentStateIsRestPose: boolean;
 }
 
 /**
