@@ -394,6 +394,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Gets the list of clones of this mesh
+     * The scene must have been constructed with useClonedMeshMap=true for this to work!
+     * Note that useClonedMeshMap=true is the default setting
+     */
+    public get cloneMeshMap(): Nullable<{ [id: string]: Mesh | undefined }> {
+        return this._internalMeshDataInfo.meshMap;
+    }
+
+    /**
      * Gets or sets a boolean indicating that this mesh does not use index buffer
      */
     public get isUnIndexed(): boolean {
@@ -449,7 +458,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 "hasInstances", "source", "worldMatrixInstancedBuffer", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
                 "facetNb", "isFacetDataEnabled", "lightSources", "useBones", "isAnInstance", "collider", "edgesRenderer", "forward",
                 "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion", "isWorldMatrixFrozen",
-                "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances"
+                "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances", "cloneMeshMap"
             ], ["_poseMatrix"]);
 
             // Source mesh
@@ -765,6 +774,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (level.distance < distanceToCamera) {
                 if (level.mesh) {
+                    if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+                        level.mesh._checkDelayState();
+                        return this;
+                    }
+
+                    if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+                        return this;
+                    }
+
                     level.mesh._preActivate();
                     level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                 }
@@ -3076,6 +3094,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Skeleton
         if (this.skeleton) {
             serializationObject.skeletonId = this.skeleton.id;
+            serializationObject.numBoneInfluencers = this.numBoneInfluencers;
         }
 
         // Physics
@@ -3106,6 +3125,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var serializationInstance: any = {
                 name: instance.name,
                 id: instance.id,
+                isEnabled: instance.isEnabled(false),
+                isVisible: instance.isVisible,
                 isPickable: instance.isPickable,
                 checkCollisions: instance.checkCollisions,
                 position: instance.position.asArray(),
@@ -3443,7 +3464,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Skeleton
-        if (parsedMesh.skeletonId > -1) {
+        if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
             mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
@@ -3513,6 +3534,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 if (parsedInstance.parentId) {
                     instance._waitingParentId = parsedInstance.parentId;
+                }
+
+                if (parsedInstance.isEnabled !== undefined && parsedInstance.isEnabled !== null) {
+                    instance.setEnabled(parsedInstance.isEnabled);
+                }
+
+                if (parsedInstance.isVisible !== undefined && parsedInstance.isVisible !== null) {
+                    instance.isVisible = parsedInstance.isVisible;
                 }
 
                 if (parsedInstance.isPickable !== undefined && parsedInstance.isPickable !== null) {

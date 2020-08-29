@@ -21,10 +21,22 @@ export class Gizmo implements IDisposable {
     public _rootMesh: Mesh;
     private _attachedMesh: Nullable<AbstractMesh> = null;
     private _attachedNode: Nullable<Node> = null;
+
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
-    public scaleRatio = 1;
+    protected _scaleRatio = 1;
+
+    /**
+     * Ratio for the scale of the gizmo (Default: 1)
+     */
+    public set scaleRatio(value: number) {
+        this._scaleRatio = value;
+    }
+
+    public get scaleRatio() {
+        return this._scaleRatio;
+    }
     /**
      * If a custom mesh has been set (Default: false)
      */
@@ -73,10 +85,17 @@ export class Gizmo implements IDisposable {
         this._customMeshSet = true;
     }
 
+    protected _updateGizmoRotationToMatchAttachedMesh = true;
+
     /**
      * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
      */
-    public updateGizmoRotationToMatchAttachedMesh = true;
+    public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
+        this._updateGizmoRotationToMatchAttachedMesh = value;
+    }
+    public get updateGizmoRotationToMatchAttachedMesh() {
+        return this._updateGizmoRotationToMatchAttachedMesh;
+    }
     /**
      * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
      */
