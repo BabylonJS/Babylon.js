@@ -281,15 +281,13 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function(forceRefreshParentInfo
     const matrixData = this._thinInstanceDataStorage.matrixData;
 
     if (vectors.length === 0) {
-        const worldMatrix = this.getWorldMatrix();
         for (let v = 0; v < boundingInfo.boundingBox.vectors.length; ++v) {
             vectors.push(boundingInfo.boundingBox.vectors[v].clone());
-            Vector3.TransformCoordinatesToRef(vectors[v], worldMatrix, vectors[v]);
         }
     }
 
-    TmpVectors.Vector3[0].setAll(Number.MAX_VALUE); // min
-    TmpVectors.Vector3[1].setAll(Number.MIN_VALUE); // max
+    TmpVectors.Vector3[0].setAll(Number.POSITIVE_INFINITY); // min
+    TmpVectors.Vector3[1].setAll(Number.NEGATIVE_INFINITY); // max
 
     for (let i = 0; i < this._thinInstanceDataStorage.instancesCount; ++i) {
         Matrix.FromArrayToRef(matrixData, i * 16, TmpVectors.Matrix[0]);
@@ -301,7 +299,9 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function(forceRefreshParentInfo
         }
     }
 
-    boundingInfo.reConstruct(TmpVectors.Vector3[0], TmpVectors.Vector3[1], this.getWorldMatrix());
+    boundingInfo.reConstruct(TmpVectors.Vector3[0], TmpVectors.Vector3[1]);
+
+    this._updateBoundingInfo();
 };
 
 Mesh.prototype._thinInstanceUpdateBufferSize = function(kind: string, numInstances: number = 1) {
