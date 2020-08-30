@@ -616,7 +616,6 @@ export class PhysicsImpostor {
             this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
             const boundingInfo = this.object.getBoundingInfo();
             const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(this.object.scaling);
-            console.log(size, q);
             //bring back the rotation
             this.object.rotationQuaternion = q;
             //calculate the world matrix with the new rotation
