@@ -6,11 +6,27 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/filter.fragment";
+import { _TypeStore } from '../Misc/typeStore';
+import { serializeAsMatrix, SerializationHelper } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * Applies a kernel filter to the image
  */
 export class FilterPostProcess extends PostProcess {
+    /** The matrix to be applied to the image */
+    @serializeAsMatrix()
+    public kernelMatrix: Matrix;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "FilterPostProcess" string
+     */
+    public getClassName(): string {
+        return "FilterPostProcess";
+    }
+
     /**
      *
      * @param name The name of the effect.
@@ -22,8 +38,7 @@ export class FilterPostProcess extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
     constructor(name: string,
-        /** The matrix to be applied to the image */
-        public kernelMatrix: Matrix,
+        kernelMatrix: Matrix,
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
@@ -31,9 +46,23 @@ export class FilterPostProcess extends PostProcess {
         reusable?: boolean
     ) {
         super(name, "filter", ["kernelMatrix"], null, options, camera, samplingMode, engine, reusable);
+        this.kernelMatrix = kernelMatrix;
 
         this.onApply = (effect: Effect) => {
             effect.setMatrix("kernelMatrix", this.kernelMatrix);
         };
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<FilterPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new FilterPostProcess(
+                parsedPostProcess.name, parsedPostProcess.kernelMatrix,
+                parsedPostProcess.options, targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.FilterPostProcess"] = FilterPostProcess;

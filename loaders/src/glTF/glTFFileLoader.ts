@@ -240,12 +240,18 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public alwaysComputeBoundingBox = false;
 
     /**
+     * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+     */
+    public loadAllMaterials = false;
+
+    /**
      * Function called before loading a url referenced by the asset.
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
     /**
      * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+     * Note that the observable is raised as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
     public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
 
@@ -253,6 +259,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /**
      * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+     * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
     public set onMeshLoaded(callback: (mesh: AbstractMesh) => void) {
         if (this._onMeshLoadedObserver) {

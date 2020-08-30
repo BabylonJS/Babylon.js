@@ -6,7 +6,7 @@ import { Material } from 'babylonjs/Materials/material';
 import { Mesh } from 'babylonjs/Meshes/mesh';
 import { AbstractMesh } from 'babylonjs/Meshes/abstractMesh';
 import { INode, IMeshPrimitive, IMesh } from '../glTFLoaderInterfaces';
-import { IKHRMaterialVariants } from 'babylonjs-gltf2interface';
+import { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_variants";
 
@@ -37,6 +37,8 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
+    private _variants?: Array<IKHRMaterialVariants_Variant>;
+
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -45,11 +47,11 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /**
-     * Gets the list of available variant tag names for this asset.
+     * Gets the list of available variant names for this asset.
      * @param rootMesh The glTF root mesh
      * @returns the list of all the variant names for this model
      */
@@ -63,7 +65,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets the list of available variant tag names for this asset.
+     * Gets the list of available variant names for this asset.
      * @param rootMesh The glTF root mesh
      * @returns the list of all the variant names for this model
      */
@@ -72,7 +74,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Select a variant given a variant tag name or a list of variant tag names.
+     * Select a variant given a variant name or a list of variant names.
      * @param rootMesh The glTF root mesh
      * @param variantName The variant name(s) to select.
      */
@@ -103,7 +105,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Select a variant given a variant tag name or a list of variant tag names.
+     * Select a variant given a variant name or a list of variant names.
      * @param rootMesh The glTF root mesh
      * @param variantName The variant name(s) to select.
      */
@@ -137,9 +139,9 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets the last selected variant tag name(s) or null if original.
+     * Gets the last selected variant name(s) or null if original.
      * @param rootMesh The glTF root mesh
-     * @returns The selected variant tag name(s).
+     * @returns The selected variant name(s).
      */
     public static GetLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
         const extensionMetadata = this._GetExtensionMetadata(rootMesh);
@@ -151,9 +153,9 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets the last selected variant tag name(s) or null if original.
+     * Gets the last selected variant name(s) or null if original.
      * @param rootMesh The glTF root mesh
-     * @returns The selected variant tag name(s).
+     * @returns The selected variant name(s).
      */
     public getLastSelectedVariant(rootMesh: Mesh): Nullable<string | string[]> {
         return KHR_materials_variants.GetLastSelectedVariant(rootMesh);
@@ -164,8 +166,17 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
+    public onLoading(): void {
+        const extensions = this._loader.gltf.extensions;
+        if (extensions && extensions[this.name]) {
+            const extension = extensions[this.name] as IKHRMaterialVariants_Variants;
+            this._variants = extension.variants;
+        }
+    }
+
+    /** @hidden */
     public _loadMeshPrimitiveAsync(context: string, name: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, assign: (babylonMesh: AbstractMesh) => void): Nullable<Promise<AbstractMesh>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialVariants_Mapping, AbstractMesh>(context, primitive, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, (babylonMesh) => {
                 assign(babylonMesh);
@@ -181,14 +192,15 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                     // Store the original material.
                     extensionMetadata.original.push({ mesh: babylonMesh, material: babylonMesh.material });
 
-                    // For each mapping, look at the tags and make a new entry for them.
+                    // For each mapping, look at the variants and make a new entry for them.
                     const variants = extensionMetadata.variants;
-                    for (const mapping of extension.mapping) {
-                        for (const tag of mapping.tags) {
+                    for (const mapping of extension.mappings) {
+                        for (const variantIndex of mapping.variants) {
+                            const variant = ArrayItem.Get(`${extensionContext}/mapping/${variantIndex}`, this._variants, variantIndex);
                             const material = ArrayItem.Get(`#/materials/`, this._loader.gltf.materials, mapping.material);
                             promises.push(this._loader._loadMaterialAsync(`#/materials/${mapping.material}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
-                                variants[tag] = variants[tag] || [];
-                                variants[tag].push({
+                                variants[variant.name] = variants[variant.name] || [];
+                                variants[variant.name].push({
                                     mesh: babylonMesh,
                                     material: babylonMaterial
                                 });

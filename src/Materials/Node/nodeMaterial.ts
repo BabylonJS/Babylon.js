@@ -836,7 +836,7 @@ export class NodeMaterial extends PushMaterial {
         return postProcess;
     }
 
-    private _createEffectForParticles(particleSystem: IParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>) {
+    private _createEffectForParticles(particleSystem: IParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>, particleSystemDefinesJoined_ = "") {
         let tempName = this.name + this._buildId + "_" + blendMode;
 
         if (!defines) {
@@ -853,7 +853,7 @@ export class NodeMaterial extends PushMaterial {
         let buildId = this._buildId;
 
         let particleSystemDefines: Array<string> = [];
-        let particleSystemDefinesJoined = "";
+        let particleSystemDefinesJoined = particleSystemDefinesJoined_;
 
         if (!effect) {
             const result = this._processDefines(dummyMesh, defines);
@@ -898,7 +898,7 @@ export class NodeMaterial extends PushMaterial {
 
                 effect = this.getScene().getEngine().createEffectForParticles(tempName, this._fragmentCompilationState.uniforms, this._fragmentCompilationState.samplers, defines!.toString() + "\n" + particleSystemDefinesJoined, result?.fallbacks, onCompiled, onError, particleSystem);
                 particleSystem.setCustomEffect(effect, blendMode);
-                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, dummyMesh); // add the effect.onBindObservable observer
+                this._createEffectForParticles(particleSystem, blendMode, onCompiled, onError, effect, defines, dummyMesh, particleSystemDefinesJoined); // add the effect.onBindObservable observer
                 return;
             }
 
@@ -1627,20 +1627,19 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        // Connections
-        if (!merge) {
-            // Starts with input blocks only
-            for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
-                let parsedBlock = source.blocks[blockIndex];
-                let block = map[parsedBlock.id];
+        // Connections - Starts with input blocks only (except if in "merge" mode where we scan all blocks)
+        for (var blockIndex = 0; blockIndex < source.blocks.length; blockIndex++) {
+            let parsedBlock = source.blocks[blockIndex];
+            let block = map[parsedBlock.id];
 
-                if (block.inputs.length) {
-                    continue;
-                }
-                this._restoreConnections(block, source, map);
+            if (block.inputs.length && !merge) {
+                continue;
             }
+            this._restoreConnections(block, source, map);
+        }
 
-            // Outputs
+        // Outputs
+        if (source.outputNodes) {
             for (var outputNodeId of source.outputNodes) {
                 this.addOutputNode(map[outputNodeId]);
             }
@@ -1658,6 +1657,10 @@ export class NodeMaterial extends PushMaterial {
                 if (map[location.blockId]) {
                     location.blockId = map[location.blockId].uniqueId;
                 }
+            }
+
+            if (merge && this.editorData && this.editorData.locations) {
+                locations.concat(this.editorData.locations);
             }
 
             if (source.locations) {

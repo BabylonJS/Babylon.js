@@ -131,13 +131,13 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /** @hidden */
     public smooth = /^s /;
     /** @hidden */
-    public vertexPattern = /v( +[\d|\.|\+|\-|e|E]+){3,7}/;
+    public vertexPattern = /v(\s+[\d|\.|\+|\-|e|E]+){3,7}/;
     // vn float float float
     /** @hidden */
-    public normalPattern = /vn( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+    public normalPattern = /vn(\s+[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
     // vt float float
     /** @hidden */
-    public uvPattern = /vt( +[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
+    public uvPattern = /vt(\s+[\d|\.|\+|\-|e|E]+)( +[\d|\.|\+|\-|e|E]+)/;
     // f vertex vertex vertex ...
     /** @hidden */
     public facePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;

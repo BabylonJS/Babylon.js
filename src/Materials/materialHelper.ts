@@ -16,10 +16,10 @@ import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
 import { Color3 } from '../Maths/math.color';
 import { EffectFallbacks } from './effectFallbacks';
+import { ThinMaterialHelper } from './thinMaterialHelper';
 
 /**
- * "Static Class" containing the most commonly used helper while dealing with material for
- * rendering purpose.
+ * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
  *
  * It contains the basic tools to help defining defines, binding uniform for the common part of the materials.
  *
@@ -299,12 +299,12 @@ export class MaterialHelper {
      * Prepares the defines related to the prepass
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
-     * @param shouldRenderToMRT Indicates if this material renders to several textures in the prepass
+     * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
      */
-    public static PrepareDefinesForPrePass(scene: Scene, defines: any, shouldRenderToMRT: boolean) {
+    public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
         var previousPrePass = defines.PREPASS;
 
-        if (scene.prePassRenderer && shouldRenderToMRT) {
+        if (scene.prePassRenderer && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
         } else {
@@ -835,29 +835,6 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      */
     public static BindClipPlane(effect: Effect, scene: Scene): void {
-        if (scene.clipPlane) {
-            let clipPlane = scene.clipPlane;
-            effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane2) {
-            let clipPlane = scene.clipPlane2;
-            effect.setFloat4("vClipPlane2", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane3) {
-            let clipPlane = scene.clipPlane3;
-            effect.setFloat4("vClipPlane3", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane4) {
-            let clipPlane = scene.clipPlane4;
-            effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane5) {
-            let clipPlane = scene.clipPlane5;
-            effect.setFloat4("vClipPlane5", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane6) {
-            let clipPlane = scene.clipPlane6;
-            effect.setFloat4("vClipPlane6", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
+        ThinMaterialHelper.BindClipPlane(effect, scene);
     }
 }

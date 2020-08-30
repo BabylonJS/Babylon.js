@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Vector3, Matrix } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
@@ -41,10 +41,10 @@ export class AxisDragGizmo extends Gizmo {
     private _hoverMaterial: StandardMaterial;
 
     /** @hidden */
-    public static _CreateArrow(scene: Scene, material: StandardMaterial): TransformNode {
+    public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1): TransformNode {
         var arrow = new TransformNode("arrow", scene);
-        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375, tessellation: 96 }, scene);
-        var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005, height: 0.275, diameterBottom: 0.005, tessellation: 96 }, scene);
+        var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375 * (1 + (thickness - 1) / 4), tessellation: 96 }, scene);
+        var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, scene);
         line.material = material;
         cylinder.parent = arrow;
         line.parent = arrow;
@@ -73,8 +73,9 @@ export class AxisDragGizmo extends Gizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param dragAxis The axis which the gizmo will be able to drag on
      * @param color The color of the gizmo
+     * @param thickness display gizmo axis thickness
      */
-    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null) {
+    constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null, thickness: number = 1) {
         super(gizmoLayer);
         this._parent = parent;
         // Create Material
@@ -86,7 +87,7 @@ export class AxisDragGizmo extends Gizmo {
         this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
 
         // Build mesh on root node
-        this._arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial);
+        this._arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness);
 
         this._arrow.lookAt(this._rootMesh.position.add(dragAxis));
         this._arrow.scaling.scaleInPlace(1 / 3);
@@ -103,10 +104,10 @@ export class AxisDragGizmo extends Gizmo {
         var localDelta = new Vector3();
         var tmpMatrix = new Matrix();
         this.dragBehavior.onDragObservable.add((event) => {
-            if (this.attachedMesh) {
+            if (this.attachedNode) {
                 // Convert delta to local translation if it has a parent
-                if (this.attachedMesh.parent) {
-                    this.attachedMesh.parent.computeWorldMatrix().invertToRef(tmpMatrix);
+                if (this.attachedNode.parent) {
+                    this.attachedNode.parent.getWorldMatrix().invertToRef(tmpMatrix);
                     tmpMatrix.setTranslationFromFloats(0, 0, 0);
                     Vector3.TransformCoordinatesToRef(event.delta, tmpMatrix, localDelta);
                 } else {
@@ -114,7 +115,11 @@ export class AxisDragGizmo extends Gizmo {
                 }
                 // Snapping logic
                 if (this.snapDistance == 0) {
-                    this.attachedMesh.position.addInPlace(localDelta);
+                    if ((this.attachedNode as any).position) { // Required for nodes like lights
+                        (this.attachedNode as any).position.addInPlaceFromFloats(localDelta.x, localDelta.y, localDelta.z);
+                    }
+                    this.attachedNode.getWorldMatrix().addTranslationFromFloats(localDelta.x, localDelta.y, localDelta.z);
+                    this.attachedNode.updateCache();
                 } else {
                     currentSnapDragDistance += event.dragDistance;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
@@ -122,11 +127,13 @@ export class AxisDragGizmo extends Gizmo {
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                         localDelta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
-                        this.attachedMesh.position.addInPlace(tmpVector);
+                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
+                        this.attachedNode.updateCache();
                         tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
                         this.onSnapObservable.notifyObservers(tmpSnapEvent);
                     }
                 }
+                this._matrixChanged();
             }
         });
 
@@ -147,7 +154,7 @@ export class AxisDragGizmo extends Gizmo {
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
     }
-    protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
+    protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
         }
@@ -160,10 +167,12 @@ export class AxisDragGizmo extends Gizmo {
         this._isEnabled = value;
         if (!value) {
             this.attachedMesh = null;
+            this.attachedNode = null;
         }
         else {
             if (this._parent) {
                 this.attachedMesh = this._parent.attachedMesh;
+                this.attachedNode = this._parent.attachedNode;
             }
         }
     }

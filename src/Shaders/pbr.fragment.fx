@@ -130,6 +130,8 @@ void main(void) {
         aoOut
     );
 
+    #include<pbrBlockLightmapInit>
+
 #ifdef UNLIT
     vec3 diffuseBase = vec3(1., 1., 1.);
 #else

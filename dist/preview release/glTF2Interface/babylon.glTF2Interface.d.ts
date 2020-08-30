@@ -1061,14 +1061,21 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @hidden */
-    interface IKHRMaterialVariants_Mapping {
-        tags: string[];
-        material: number;
+    interface IKHRMaterialVariants_Mapping extends IProperty {
+        mappings: Array<{
+            variants: number[];
+            material: number;
+        }>;
     }
 
     /** @hidden */
-    interface IKHRMaterialVariants {
-        mapping: IKHRMaterialVariants_Mapping[];
+    interface IKHRMaterialVariants_Variant extends IProperty {
+        name: string;
+    }
+
+    /** @hidden */
+    interface IKHRMaterialVariants_Variants extends IChildRootProperty {
+        variants: Array<IKHRMaterialVariants_Variant>;
     }
 
     /**
@@ -1078,6 +1085,15 @@ declare module BABYLON.GLTF2 {
 
     /** @hidden */
     interface IKHRTextureBasisU {
+        source: number;
+    }
+
+    /**
+     * Interfaces from the EXT_texture_webp extension
+     */
+
+    /** @hidden */
+    interface IEXTTextureWebP {
         source: number;
     }
 

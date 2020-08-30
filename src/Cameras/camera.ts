@@ -119,12 +119,20 @@ export class Camera extends Node {
         this._position = newPosition;
     }
 
+    @serializeAsVector3("upVector")
+    protected _upVector = Vector3.Up();
+
     /**
      * The vector the camera should consider as up.
      * (default is Vector3(0, 1, 0) aka Vector3.Up())
      */
-    @serializeAsVector3()
-    public upVector = Vector3.Up();
+    public set upVector(vec: Vector3) {
+        this._upVector = vec;
+    }
+
+    public get upVector() {
+        return this._upVector;
+    }
 
     /**
      * Define the current limit on the left side for an orthographic camera
@@ -849,6 +857,18 @@ export class Camera extends Node {
      * @returns the forward ray
      */
     public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
+        throw _DevTools.WarnImport("Ray");
+    }
+
+    /**
+     * Gets a ray in the forward direction from the camera.
+     * @param refRay the ray to (re)use when setting the values
+     * @param length Defines the length of the ray to create
+     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param origin Defines the start point of the ray which defaults to the camera position
+     * @returns the forward ray
+     */
+    public getForwardRayToRef(refRay: Ray, length = 100, transform?: Matrix, origin?: Vector3): Ray {
         throw _DevTools.WarnImport("Ray");
     }
 

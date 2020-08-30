@@ -6,16 +6,16 @@ import { Observable, Observer } from "babylonjs/Misc/observable";
 import { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
 import { Light } from "babylonjs/Lights/light";
+import { Camera } from "babylonjs/Cameras/camera";
 import { LightGizmo } from "babylonjs/Gizmos/lightGizmo";
+import { CameraGizmo } from "babylonjs/Gizmos/cameraGizmo";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from './replayRecorder';
 import { DataStorage } from 'babylonjs/Misc/dataStorage';
-import { CodeChangedEvent } from './codeChangedEvent';
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
     public onPropertyChangedObservable: Observable<PropertyChangedEvent>;
-    public onCodeChangedObservable = new Observable<CodeChangedEvent>();
     public onInspectorClosedObservable = new Observable<Scene>();
     public onTabChangedObservable = new Observable<number>();
     public onSelectionRenamedObservable = new Observable<void>();
@@ -72,16 +72,8 @@ export class GlobalState {
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
         this.onPropertyChangedObservable = propertyChangedObservable;
 
-        propertyChangedObservable.add(event => {
-            this.recorder.record(event);
-
-            if (event.property === "name") {
-                this.onSelectionRenamedObservable.notifyObservers();
-            }
-        });
-
-        this.onCodeChangedObservable.add(code => {
-            this.recorder.recordCode(code);
+        this.onNewSceneObservable.add(scene => {
+            this.recorder.cancel();
         });
     }
 
@@ -138,6 +130,25 @@ export class GlobalState {
             this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo), 1);
             light.reservedDataStore.lightGizmo.dispose();
             light.reservedDataStore.lightGizmo = null;
+        }
+    }
+    // Camera gizmos
+    public cameraGizmos: Array<CameraGizmo> = [];
+    public enableCameraGizmo(camera: Camera, enable = true) {
+        if (enable) {
+            if (!camera.reservedDataStore) {
+                camera.reservedDataStore = {}
+            }
+            if (!camera.reservedDataStore.cameraGizmo) {
+                camera.reservedDataStore.cameraGizmo = new CameraGizmo();
+                this.cameraGizmos.push(camera.reservedDataStore.cameraGizmo)
+                camera.reservedDataStore.cameraGizmo.camera = camera;
+                camera.reservedDataStore.cameraGizmo.material.reservedDataStore = {hidden: true};
+            }
+        } else if (camera.reservedDataStore && camera.reservedDataStore.cameraGizmo) {
+            this.cameraGizmos.splice(this.cameraGizmos.indexOf(camera.reservedDataStore.cameraGizmo), 1);
+            camera.reservedDataStore.cameraGizmo.dispose();
+            camera.reservedDataStore.cameraGizmo = null;
         }
     }
 }

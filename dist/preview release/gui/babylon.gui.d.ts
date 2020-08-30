@@ -281,14 +281,24 @@ declare module BABYLON.GUI {
         /**
          * Computes the axis aligned bounding box of the measure after it is modified by a given transform
          * @param transform the matrix to transform the measure before computing the AABB
+         * @param addX number to add to left
+         * @param addY number to add to top
+         * @param addWidth number to add to width
+         * @param addHeight number to add to height
+         * @param result the resulting AABB
+         */
+        addAndTransformToRef(transform: Matrix2D, addX: number, addY: number, addWidth: number, addHeight: number, result: Measure): void;
+        /**
+         * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+         * @param transform the matrix to transform the measure before computing the AABB
          * @param result the resulting AABB
          */
         transformToRef(transform: Matrix2D, result: Measure): void;
         /**
-         * Check equality between this measure and another one
-         * @param other defines the other measures
-         * @returns true if both measures are equals
-         */
+     * Check equality between this measure and another one
+     * @param other defines the other measures
+     * @returns true if both measures are equals
+     */
         isEqualsTo(other: Measure): boolean;
         /**
          * Creates an empty measure
@@ -333,6 +343,7 @@ declare module BABYLON.GUI {
         private _pointerMoveObserver;
         private _pointerObserver;
         private _canvasPointerOutObserver;
+        private _canvasBlurObserver;
         private _background;
         /** @hidden */
         _rootContainer: Container;
@@ -600,6 +611,7 @@ declare module BABYLON.GUI {
         moveFocusToControl(control: IFocusableControl): void;
         private _manageFocus;
         private _attachToOnPointerOut;
+        private _attachToOnBlur;
         /**
          * Creates a new AdvancedDynamicTexture in projected mode (ie. attached to a mesh)
          * @param mesh defines the mesh which will receive the texture
@@ -885,6 +897,14 @@ declare module BABYLON.GUI {
          */
         get verticalAlignment(): number;
         set verticalAlignment(value: number);
+        /**
+         * Gets or sets a fixed ratio for this control.
+         * When different from 0, the ratio is used to compute the "second" dimension.
+         * The first dimension used in the computation is the last one set (by setting width / widthInPixels or height / heightInPixels), and the
+         * second dimension is computed as first dimension * fixedRatio
+         */
+        fixedRatio: number;
+        private _fixedRatioMasterIsWidth;
         /**
          * Gets or sets control width
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1201,6 +1221,8 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onWheelScroll(deltaX?: number, deltaY?: number): void;
         /** @hidden */
+        _onCanvasBlur(): void;
+        /** @hidden */
         _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
@@ -1416,13 +1438,15 @@ declare module BABYLON.GUI {
         private _lineSpacing;
         private _outlineWidth;
         private _outlineColor;
+        private _underline;
+        private _lineThrough;
         /**
-        * An event triggered after the text is changed
-        */
+         * An event triggered after the text is changed
+         */
         onTextChangedObservable: BABYLON.Observable<TextBlock>;
         /**
-        * An event triggered after the text was broken up into lines
-        */
+         * An event triggered after the text was broken up into lines
+         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
         /**
          * Function used to split a string into words. By default, a string is split at each space character found
@@ -1489,6 +1513,22 @@ declare module BABYLON.GUI {
          */
         set outlineWidth(value: number);
         /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get underline(): boolean;
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set underline(value: boolean);
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get lineThrough(): boolean;
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set lineThrough(value: boolean);
+        /**
          * Gets or sets outlineColor of the text to display
          */
         get outlineColor(): string;
@@ -1554,6 +1594,7 @@ declare module BABYLON.GUI {
         private _sliceTop;
         private _sliceBottom;
         private _detectPointerOnOpaqueOnly;
+        private _imageDataCache;
         /**
          * BABYLON.Observable notified when the content is loaded
          */
@@ -2315,6 +2356,7 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onCanvasBlur(): void;
         /**
          * This function expands the color picker by creating a color picker dialog with manual
          * color value input and the ability to save colors into an array to be used later in
@@ -2661,6 +2703,7 @@ declare module BABYLON.GUI {
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onCanvasBlur(): void;
     }
 }
 declare module BABYLON.GUI {
@@ -2671,6 +2714,7 @@ declare module BABYLON.GUI {
         name?: string | undefined;
         private _background;
         private _borderColor;
+        private _thumbColor;
         private _isThumbCircle;
         protected _displayValueBar: boolean;
         /** Gets or sets a boolean indicating if the value bar must be rendered */
@@ -2682,6 +2726,9 @@ declare module BABYLON.GUI {
         /** Gets or sets background color */
         get background(): string;
         set background(value: string);
+        /** Gets or sets thumb's color */
+        get thumbColor(): string;
+        set thumbColor(value: string);
         /** Gets or sets a boolean indicating if the thumb should be round or square */
         get isThumbCircle(): boolean;
         set isThumbCircle(value: boolean);
@@ -3866,10 +3913,6 @@ declare module BABYLON.GUI {
          * Gets or sets the inner glow color (white by default)
          */
         innerGlowColor: BABYLON.Color3;
-        /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        alpha: number;
         /**
          * Gets or sets the albedo color (Default is BABYLON.Color3(0.3, 0.35, 0.4))
          */

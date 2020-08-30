@@ -28,6 +28,7 @@ import { IOfflineProvider } from '../Offline/IOfflineProvider';
 import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
+import { PerformanceConfigurator } from './performanceConfigurator';
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -58,6 +59,16 @@ class BufferPointer {
     public stride: number;
     public offset: number;
     public buffer: WebGLBuffer;
+}
+
+/**
+ * Information about the current host
+ */
+export interface HostInformation {
+    /**
+     * Defines if the current host is a mobile
+     */
+    isMobile: boolean;
 }
 
 /** Interface defining initialization parameters for Engine class */
@@ -110,6 +121,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Make the canvas XR Compatible for XR sessions
      */
     xrCompatible?: boolean;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -136,14 +152,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-alpha.23";
+        return "babylonjs@4.2.0-alpha.35";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-alpha.23";
+        return "4.2.0-alpha.35";
     }
 
     /**
@@ -389,6 +405,13 @@ export class ThinEngine {
     /** @hidden */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
 
+    /**
+     * Gets information about the current host
+     */
+    public hostInformation: HostInformation = {
+        isMobile: false
+    };
+
     protected get _supportsHardwareTextureRescaling() {
         return false;
     }
@@ -484,6 +507,8 @@ export class ThinEngine {
 
         options = options || {};
 
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
             this._renderingCanvas = canvas;
@@ -529,6 +554,8 @@ export class ThinEngine {
             // Exceptions
             if (navigator && navigator.userAgent) {
                 let ua = navigator.userAgent;
+
+                this.hostInformation.isMobile = ua.indexOf("Mobile") !== -1;
 
                 for (var exception of ThinEngine.ExceptionList) {
                     let key = exception.key;
@@ -674,6 +701,15 @@ export class ThinEngine {
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
+
+        // Starting with iOS 14, we can trust the browser
+        let matches = navigator.userAgent.match(/Version\/(\d+)/);
+
+        if (matches && matches.length === 2) {
+            if (parseInt(matches[1]) >= 14) {
+                this._badOS = false;
+            }
+        }
 
         // Detect if we are running on a faulty buggy desktop OS.
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -924,7 +960,7 @@ export class ThinEngine {
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "Engine" string
      */
     public getClassName(): string {
@@ -1546,6 +1582,9 @@ export class ThinEngine {
 
     private _vertexAttribPointer(buffer: DataBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
         var pointer = this._currentBufferPointers[indx];
+        if (!pointer) {
+            return;
+        }
 
         var changed = false;
         if (!pointer.active) {
@@ -2801,8 +2840,15 @@ export class ThinEngine {
 
         // establish the file extension, if possible
         const lastDot = url.lastIndexOf('.');
-        const extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
+        let extension = forcedExtension ? forcedExtension : (lastDot > -1 ? url.substring(lastDot).toLowerCase() : "");
         let loader: Nullable<IInternalTextureLoader> = null;
+
+        // Remove query string
+        let queryStringIndex = extension.indexOf("?");
+
+        if (queryStringIndex > -1) {
+            extension = extension.split("?")[0];
+        }
 
         for (const availableLoader of ThinEngine._TextureLoaders) {
             if (availableLoader.canLoad(extension, mimeType)) {

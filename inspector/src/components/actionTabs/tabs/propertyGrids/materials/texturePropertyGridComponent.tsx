@@ -27,7 +27,6 @@ import { ButtonLineComponent } from '../../../lines/buttonLineComponent';
 import { TextInputLineComponent } from '../../../lines/textInputLineComponent';
 import { AnimationGridComponent } from '../animations/animationPropertyGridComponent';
 
-import { Engine } from 'babylonjs/Engines/engine';
 import { PopupComponent } from '../../../../popupComponent';
 import { TextureEditorComponent } from './textures/textureEditorComponent';
 
@@ -38,20 +37,31 @@ interface ITexturePropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>
 }
 
-export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps> {
+interface ITexturePropertyGridComponentState {
+    isTextureEditorOpen : boolean,
+    textureEditing : Nullable<BaseTexture>
+}
+
+export class TexturePropertyGridComponent extends React.Component<ITexturePropertyGridComponentProps,ITexturePropertyGridComponentState> {
 
     private _adtInstrumentation: Nullable<AdvancedDynamicTextureInstrumentation>;
+    private popoutWindowRef : React.RefObject<PopupComponent>;
     private textureLineRef: React.RefObject<TextureLineComponent>;
 
-    private _isTextureEditorOpen = false;
-    
+    private _textureInspectorSize = {width: 1024, height: 490};
+
 
     constructor(props: ITexturePropertyGridComponentProps) {
         super(props);
 
+        this.state = {
+            isTextureEditorOpen: false,
+            textureEditing: null
+        }
         const texture = this.props.texture;
 
         this.textureLineRef = React.createRef();
+        this.popoutWindowRef = React.createRef();
 
         if (!texture || !(texture as any).rootContainer) {
             return;
@@ -62,6 +72,9 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         this._adtInstrumentation = new AdvancedDynamicTextureInstrumentation(adt);
         this._adtInstrumentation!.captureRenderTime = true;
         this._adtInstrumentation!.captureLayoutTime = true;
+        
+        this.onOpenTextureEditor.bind(this);
+        this.onCloseTextureEditor.bind(this);
     }
 
     componentWillUnmount() {
@@ -98,15 +111,24 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         }, undefined, true);
     }
 
-    onOpenTextureEditor() {
-        this._isTextureEditorOpen = true;
-    }
-    
-    onCloseTextureEditor(window: Window | null) {
-        this._isTextureEditorOpen = false;
-        if (window !== null) {
-            window.close();
+    openTextureEditor() {
+        if (this.state.isTextureEditorOpen && this.state.textureEditing !== this.props.texture) {
+            this.onCloseTextureEditor(null, () => this.openTextureEditor());
+            return;
         }
+        this.setState({
+            isTextureEditorOpen: true,
+            textureEditing: this.props.texture
+        });
+    }
+
+    onOpenTextureEditor(window: Window) {}
+    
+    onCloseTextureEditor(window: Window | null, callback?: {() : void}) {
+        this.setState({
+            isTextureEditorOpen: false,
+            textureEditing: null
+        }, callback);
     }
 
     forceRefresh() {
@@ -149,34 +171,31 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             }
         }
 
-        const editable = texture.textureType != Engine.TEXTURETYPE_FLOAT && texture.textureType != Engine.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV && texture.textureType !== Engine.TEXTURETYPE_HALF_FLOAT;
-
         return (
             <div className="pane">
                 <LineContainerComponent globalState={this.props.globalState} title="PREVIEW">
                     <TextureLineComponent ref={this.textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
-                    {editable &&
-                        <ButtonLineComponent label="View" onClick={() => this.onOpenTextureEditor()} />
-                    }
+                    <ButtonLineComponent label="Edit" onClick={() => this.openTextureEditor()} />
                     <TextInputLineComponent label="URL" value={textureUrl} lockObject={this.props.lockObject} onChange={url => {
                         (texture as Texture).updateURL(url);
                         this.forceRefresh();
                     }} />
                 </LineContainerComponent>
-                {this._isTextureEditorOpen && (
+                {this.state.isTextureEditorOpen && (
                 <PopupComponent
                   id='texture-editor'
-                  title='Texture Editor'
-                  size={{ width: 1024, height: 490 }}
-                  onOpen={(window: Window) => {}}
-                  onClose={(window: Window) =>
-                    this.onCloseTextureEditor(window)
-                  }
+                  title='Texture Inspector'
+                  size={this._textureInspectorSize}
+                  onOpen={this.onOpenTextureEditor}
+                  onClose={this.onCloseTextureEditor}
+                  ref={this.popoutWindowRef}
                 >
                     <TextureEditorComponent
-                        globalState={this.props.globalState}
                         texture={this.props.texture}
+                        url={textureUrl}
+                        window={this.popoutWindowRef}
+                        onUpdate={() => this.forceRefresh()}
                     />
                 </PopupComponent>)}
                 <CustomPropertyGridComponent globalState={this.props.globalState} target={texture}
@@ -234,7 +253,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     <AnimationGridComponent globalState={this.props.globalState} animatable={texture} scene={texture.getScene()!} lockObject={this.props.lockObject} />
                 }
                 {
-                    (texture as any).rootContainer &&
+                    (texture as any).rootContainer && this._adtInstrumentation &&
                     <LineContainerComponent globalState={this.props.globalState} title="ADVANCED TEXTURE PROPERTIES">
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />

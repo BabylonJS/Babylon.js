@@ -675,7 +675,14 @@ export abstract class EffectLayer {
         }
 
         // Culling
-        engine.setState(material.backFaceCulling);
+        let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
+        const mainDeterminant = renderingMesh._getWorldMatrixDeterminant();
+        if (mainDeterminant < 0) {
+            sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+        }
+
+        const reverse = sideOrientation === Material.ClockWiseSideOrientation;
+        engine.setState(material.backFaceCulling, material.zOffset, undefined, reverse);
 
         // Managing instances
         var batch = renderingMesh._getInstancesRenderList(subMesh._id, !!replacementMesh);
@@ -702,6 +709,8 @@ export abstract class EffectLayer {
             renderingMesh._bind(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode);
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+
+            this._effectLayerMapGenerationEffect.setMatrix("world", effectiveMesh.getWorldMatrix());
 
             this._effectLayerMapGenerationEffect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,
