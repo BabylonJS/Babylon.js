@@ -204,6 +204,7 @@ export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
+    private _boundBuffersVertexArray: any = null;
 
     public getHardwareScalingLevel(): number {
         return 1.0;
@@ -235,7 +236,7 @@ export class NativeEngine extends Engine {
             etc1: null,
             etc2: null,
             maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
-            uintIndices: false,
+            uintIndices: true,
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
@@ -275,6 +276,9 @@ export class NativeEngine extends Engine {
 
     public dispose(): void {
         super.dispose();
+        if (this._boundBuffersVertexArray) {
+            this._native.deleteVertexArray(this._boundBuffersVertexArray);
+        }
         this._native.dispose();
     }
 
@@ -343,9 +347,13 @@ export class NativeEngine extends Engine {
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
         buffer.is32Bits = (data.BYTES_PER_ELEMENT === 4);
-        buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
-        if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
-            throw new Error("Could not create a native index buffer.");
+        if (data.length) {
+            buffer.nativeIndexBuffer = this._native.createIndexBuffer(data, updateable ?? false);
+            if (buffer.nativeVertexBuffer === this.INVALID_HANDLE) {
+                throw new Error("Could not create a native index buffer.");
+            }
+        } else {
+            buffer.nativeVertexBuffer = this.INVALID_HANDLE;
         }
         return buffer;
     }
@@ -360,9 +368,7 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
-        const vertexArray = this._native.createVertexArray();
-
+    protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (indexBuffer) {
             this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
         }
@@ -389,7 +395,20 @@ export class NativeEngine extends Engine {
                 }
             }
         }
+    }
 
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+        if (this._boundBuffersVertexArray) {
+            this._native.deleteVertexArray(this._boundBuffersVertexArray);
+        }
+        this._boundBuffersVertexArray = this._native.createVertexArray();
+        this._recordVertexArrayObject(this._boundBuffersVertexArray, vertexBuffers, indexBuffer, effect);
+        this._native.bindVertexArray(this._boundBuffersVertexArray);
+    }
+
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
+        const vertexArray = this._native.createVertexArray();
+        this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect);
         return vertexArray;
     }
 
@@ -1181,6 +1200,10 @@ export class NativeEngine extends Engine {
                 return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_NEAREST:
                 return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+                return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
             default:
                 throw new Error("Unexpected sampling mode: " + samplingMode + ".");
         }

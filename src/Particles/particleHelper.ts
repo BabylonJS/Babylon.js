@@ -159,13 +159,17 @@ export class ParticleHelper {
 
     /**
      * Creates a particle system from a snippet saved by the particle system editor
-     * @param snippetId defines the snippet to load
+     * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new particle system
      */
     public static CreateFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = ""): Promise<IParticleSystem> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve(this.CreateDefault(null));
+        }
+
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
             request.addEventListener("readystatechange", () => {

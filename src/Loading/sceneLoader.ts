@@ -352,20 +352,26 @@ export class SceneLoader {
 
     private static _registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 
-    private static _getDefaultPlugin(): IRegisteredPlugin {
+    private static _showingLoadingScreen = false;
+
+    /**
+     * Gets the default plugin (used to load Babylon files)
+     * @returns the .babylon plugin
+     */
+    public static GetDefaultPlugin(): IRegisteredPlugin {
         return SceneLoader._registeredPlugins[".babylon"];
     }
 
-    private static _getPluginForExtension(extension: string): IRegisteredPlugin {
+    private static _GetPluginForExtension(extension: string): IRegisteredPlugin {
         var registeredPlugin = SceneLoader._registeredPlugins[extension];
         if (registeredPlugin) {
             return registeredPlugin;
         }
         Logger.Warn("Unable to find a plugin to load " + extension + " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: https://doc.babylonjs.com/how_to/load_from_any_file_type");
-        return SceneLoader._getDefaultPlugin();
+        return SceneLoader.GetDefaultPlugin();
     }
 
-    private static _getPluginForDirectLoad(data: string): IRegisteredPlugin {
+    private static _GetPluginForDirectLoad(data: string): IRegisteredPlugin {
         for (var extension in SceneLoader._registeredPlugins) {
             var plugin = SceneLoader._registeredPlugins[extension].plugin;
 
@@ -374,10 +380,10 @@ export class SceneLoader {
             }
         }
 
-        return SceneLoader._getDefaultPlugin();
+        return SceneLoader.GetDefaultPlugin();
     }
 
-    private static _getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
+    private static _GetPluginForFilename(sceneFilename: string): IRegisteredPlugin {
         var queryStringPosition = sceneFilename.indexOf("?");
 
         if (queryStringPosition !== -1) {
@@ -387,10 +393,10 @@ export class SceneLoader {
         var dotPosition = sceneFilename.lastIndexOf(".");
 
         var extension = sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
-        return SceneLoader._getPluginForExtension(extension);
+        return SceneLoader._GetPluginForExtension(extension);
     }
 
-    private static _getDirectLoad(sceneFilename: string): Nullable<string> {
+    private static _GetDirectLoad(sceneFilename: string): Nullable<string> {
         if (sceneFilename.substr(0, 5) === "data:") {
             return sceneFilename.substr(5);
         }
@@ -398,9 +404,9 @@ export class SceneLoader {
         return null;
     }
 
-    private static _loadData(fileInfo: IFileInfo, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void, onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined, onError: (message: string, exception?: any) => void, onDispose: () => void, pluginExtension: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
-        const directLoad = SceneLoader._getDirectLoad(fileInfo.name);
-        const registeredPlugin = pluginExtension ? SceneLoader._getPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._getPluginForDirectLoad(fileInfo.name) : SceneLoader._getPluginForFilename(fileInfo.name));
+    private static _LoadData(fileInfo: IFileInfo, scene: Scene, onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void, onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined, onError: (message: string, exception?: any) => void, onDispose: () => void, pluginExtension: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        const directLoad = SceneLoader._GetDirectLoad(fileInfo.name);
+        const registeredPlugin = pluginExtension ? SceneLoader._GetPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._GetPluginForDirectLoad(fileInfo.name) : SceneLoader._GetPluginForFilename(fileInfo.name));
 
         let plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
         if ((registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin !== undefined) {
@@ -523,7 +529,7 @@ export class SceneLoader {
         return plugin;
     }
 
-    private static _getFileInfo(rootUrl: string, sceneFilename: string | File): Nullable<IFileInfo> {
+    private static _GetFileInfo(rootUrl: string, sceneFilename: string | File): Nullable<IFileInfo> {
         let url: string;
         let name: string;
         let file: Nullable<File> = null;
@@ -566,7 +572,7 @@ export class SceneLoader {
      * @returns a plugin or null if none works
      */
     public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory {
-        return SceneLoader._getPluginForExtension(extension).plugin;
+        return SceneLoader._GetPluginForExtension(extension).plugin;
     }
 
     /**
@@ -619,7 +625,7 @@ export class SceneLoader {
             return null;
         }
 
-        const fileInfo = SceneLoader._getFileInfo(rootUrl, sceneFilename);
+        const fileInfo = SceneLoader._GetFileInfo(rootUrl, sceneFilename);
         if (!fileInfo) {
             return null;
         }
@@ -668,7 +674,7 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        return SceneLoader._loadData(fileInfo, scene, (plugin, data, responseURL) => {
+        return SceneLoader._LoadData(fileInfo, scene, (plugin, data, responseURL) => {
             if (plugin.rewriteRootURL) {
                 fileInfo.rootUrl = plugin.rewriteRootURL(fileInfo.rootUrl, responseURL);
             }
@@ -780,13 +786,18 @@ export class SceneLoader {
             return null;
         }
 
-        const fileInfo = SceneLoader._getFileInfo(rootUrl, sceneFilename);
+        const fileInfo = SceneLoader._GetFileInfo(rootUrl, sceneFilename);
         if (!fileInfo) {
             return null;
         }
 
-        if (SceneLoader.ShowLoadingScreen) {
+        if (SceneLoader.ShowLoadingScreen && !this._showingLoadingScreen) {
+            this._showingLoadingScreen = true;
             scene.getEngine().displayLoadingUI();
+            scene.executeWhenReady(() => {
+                scene.getEngine().hideLoadingUI();
+                this._showingLoadingScreen = false;
+            });
         }
 
         var loadingToken = {};
@@ -794,9 +805,6 @@ export class SceneLoader {
 
         var disposeHandler = () => {
             scene._removePendingData(loadingToken);
-            if (SceneLoader.ShowLoadingScreen) {
-                scene.getEngine().hideLoadingUI();
-            }
         };
 
         var errorHandler = (message: Nullable<string>, exception?: any) => {
@@ -833,7 +841,7 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        return SceneLoader._loadData(fileInfo, scene, (plugin, data) => {
+        return SceneLoader._LoadData(fileInfo, scene, (plugin, data) => {
             if ((<any>plugin).load) {
                 var syncedPlugin = <ISceneLoaderPlugin>plugin;
                 if (!syncedPlugin.load(scene, data, fileInfo.rootUrl, errorHandler)) {
@@ -849,12 +857,6 @@ export class SceneLoader {
                     successHandler();
                 }).catch((error) => {
                     errorHandler(error.message, error);
-                });
-            }
-
-            if (SceneLoader.ShowLoadingScreen) {
-                scene.executeWhenReady(() => {
-                    scene.getEngine().hideLoadingUI();
                 });
             }
         }, progressHandler, errorHandler, disposeHandler, pluginExtension);
@@ -904,7 +906,7 @@ export class SceneLoader {
             return null;
         }
 
-        const fileInfo = SceneLoader._getFileInfo(rootUrl, sceneFilename);
+        const fileInfo = SceneLoader._GetFileInfo(rootUrl, sceneFilename);
         if (!fileInfo) {
             return null;
         }
@@ -955,7 +957,7 @@ export class SceneLoader {
             scene._removePendingData(loadingToken);
         };
 
-        return SceneLoader._loadData(fileInfo, scene, (plugin, data) => {
+        return SceneLoader._LoadData(fileInfo, scene, (plugin, data) => {
             if ((<any>plugin).loadAssetContainer) {
                 var syncedPlugin = <ISceneLoaderPlugin>plugin;
                 var assetContainer = syncedPlugin.loadAssetContainer(scene, data, fileInfo.rootUrl, errorHandler);
@@ -975,12 +977,6 @@ export class SceneLoader {
                 });
             } else {
                 errorHandler("LoadAssetContainer is not supported by this plugin. Plugin did not provide a loadAssetContainer or loadAssetContainerAsync method.");
-            }
-
-            if (SceneLoader.ShowLoadingScreen) {
-                scene.executeWhenReady(() => {
-                    scene.getEngine().hideLoadingUI();
-                });
             }
         }, progressHandler, errorHandler, disposeHandler, pluginExtension);
     }

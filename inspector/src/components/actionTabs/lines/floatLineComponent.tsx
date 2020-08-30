@@ -13,7 +13,6 @@ interface IFloatLineComponentProps {
     lockObject?: LockObject;
     onChange?: (newValue: number) => void;
     isInteger?: boolean;
-    replaySourceReplacement?: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
     step?: string,
@@ -63,7 +62,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
         this.props.onPropertyChangedObservable.notifyObservers({
-            object: this.props.replaySourceReplacement ?? this.props.target,
+            object: this.props.target,
             property: this.props.propertyName,
             value: newValue,
             initialValue: previousValue

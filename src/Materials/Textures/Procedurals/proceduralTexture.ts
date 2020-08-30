@@ -18,6 +18,7 @@ import "../../../Engines/Extensions/engine.renderTarget";
 import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Meshes/dataBuffer';
+import { _TypeStore } from '../../../Misc/typeStore';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -101,7 +102,7 @@ export class ProceduralTexture extends Texture {
      * @param generateMipMaps Define if the texture should creates mip maps or not
      * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
      */
-    constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
+    constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false) {
         super(null, scene, !generateMipMaps);
 
         scene = this.getScene()!;
@@ -634,3 +635,5 @@ export class ProceduralTexture extends Texture {
         super.dispose();
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ProceduralTexture"] = ProceduralTexture;

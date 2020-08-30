@@ -30,6 +30,7 @@ import { Epsilon } from '../Maths/math.constants';
 import { Plane } from '../Maths/math.plane';
 import { Axis } from '../Maths/math.axis';
 import { IParticleSystem } from '../Particles/IParticleSystem';
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -350,11 +351,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public enablePointerMoveEvents = false;
 
+    private _renderingGroupId = 0;
+
     /**
      * Specifies the rendering group id for this mesh (0 by default)
      * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
-    public renderingGroupId = 0;
+    public get renderingGroupId() {
+        return this._renderingGroupId;
+    }
+
+    public set renderingGroupId(value: number) {
+        this._renderingGroupId = value;
+    }
     private _material: Nullable<Material> = null;
 
     /** Gets or sets current material */
@@ -1485,10 +1494,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param fastCheck defines if fast mode (but less precise) must be used (false by default)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
+     * @param worldToUse defines the world matrix to use to get the world coordinate of the intersection point
      * @returns the picking info
      * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
      */
-    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false): PickingInfo {
+    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false, worldToUse?: Matrix): PickingInfo {
         var pickingInfo = new PickingInfo();
         const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
         const boundingInfo = this._boundingInfo;
@@ -1538,7 +1548,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         if (intersectInfo) {
             // Get picked point
-            const world = this.getWorldMatrix();
+            const world = worldToUse ?? (this.skeleton && this.skeleton.overrideMesh ? this.skeleton.overrideMesh.getWorldMatrix() : this.getWorldMatrix());
             const worldOrigin = TmpVectors.Vector3[0];
             const direction = TmpVectors.Vector3[1];
             Vector3.TransformCoordinatesToRef(ray.origin, world, worldOrigin);
@@ -2184,5 +2194,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public getConnectedParticleSystems(): IParticleSystem[] {
         return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
     }
-
 }
+
+_TypeStore.RegisteredTypes["BABYLON.AbstractMesh"] = AbstractMesh;

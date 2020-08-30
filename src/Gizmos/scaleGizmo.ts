@@ -9,6 +9,7 @@ import { Gizmo } from "./gizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Mesh } from "../Meshes/mesh";
+import { Node } from "../node";
 /**
  * Gizmo that enables scaling a mesh along 3 axis
  */
@@ -32,9 +33,8 @@ export class ScaleGizmo extends Gizmo {
     public uniformScaleGizmo: AxisScaleGizmo;
 
     private _meshAttached: Nullable<AbstractMesh> = null;
-    private _updateGizmoRotationToMatchAttachedMesh: boolean;
+    private _nodeAttached: Nullable<Node> = null;
     private _snapDistance: number;
-    private _scaleRatio: number;
     private _uniformScalingMesh: Mesh;
     private _octahedron: Mesh;
     private _sensitivity: number = 1;
@@ -49,6 +49,7 @@ export class ScaleGizmo extends Gizmo {
     }
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
+        this._nodeAttached = mesh;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
@@ -58,15 +59,33 @@ export class ScaleGizmo extends Gizmo {
             }
         });
     }
+
+    public get attachedNode() {
+        return this._nodeAttached;
+    }
+    public set attachedNode(node: Nullable<Node>) {
+        this._meshAttached = null;
+        this._nodeAttached = node;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+            if (gizmo.isEnabled) {
+                gizmo.attachedNode = node;
+            }
+            else {
+                gizmo.attachedNode = null;
+            }
+        });
+    }
+
     /**
      * Creates a ScaleGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
+     * @param thickness display gizmo axis thickness
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1) {
         super(gizmoLayer);
-        this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this);
-        this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this);
-        this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this);
+        this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
+        this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
+        this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this, thickness);
 
         // Create uniform scale gizmo
         this.uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Yellow().scale(0.5), gizmoLayer, this);
@@ -93,6 +112,7 @@ export class ScaleGizmo extends Gizmo {
         });
 
         this.attachedMesh = null;
+        this.attachedNode = null;
     }
 
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {

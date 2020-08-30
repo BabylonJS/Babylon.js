@@ -2,16 +2,19 @@ import { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ImageProcessingConfiguration, ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
-import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import { RawTexture } from "../Materials/Textures/rawTexture";
-import { Scene } from "../scene";
 import { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
 import { BoxParticleEmitter, IParticleEmitterType, PointParticleEmitter, HemisphericParticleEmitter, SphereParticleEmitter, SphereDirectedParticleEmitter, CylinderParticleEmitter, CylinderDirectedParticleEmitter, ConeParticleEmitter } from "../Particles/EmitterTypes/index";
 import { Constants } from "../Engines/constants";
-import { Texture } from '../Materials/Textures/texture';
+import { BaseTexture } from '../Materials/Textures/baseTexture';
 import { Color4 } from '../Maths/math.color';
+import { ThinEngine } from '../Engines/thinEngine';
+
+import "../Engines/Extensions/engine.dynamicBuffer";
 
 declare type Animation = import("../Animations/animation").Animation;
+declare type Scene = import("../scene").Scene;
+declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
+declare type RawTexture = import("../Materials/Textures/rawTexture").RawTexture;
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -168,7 +171,7 @@ export class BaseParticleSystem {
     /**
      * The texture used to render each particle. (this can be a spritesheet)
      */
-    public particleTexture: Nullable<Texture>;
+    public particleTexture: Nullable<BaseTexture>;
 
     /**
      * The layer mask we are rendering the particles through.
@@ -307,7 +310,7 @@ export class BaseParticleSystem {
      * Get hosting scene
      * @returns the scene
      */
-    public getScene(): Scene {
+    public getScene(): Nullable<Scene> {
         return this._scene;
     }
 
@@ -567,7 +570,12 @@ export class BaseParticleSystem {
     /**
      * The scene the particle system belongs to.
      */
-    protected _scene: Scene;
+    protected _scene: Nullable<Scene>;
+
+    /**
+     * The engine the particle system belongs to.
+     */
+    protected _engine: ThinEngine;
 
     /**
      * Local cache of defines for image processing.
@@ -577,12 +585,12 @@ export class BaseParticleSystem {
     /**
      * Default configuration related to image processing available in the standard Material.
      */
-    protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+    protected _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
 
     /**
      * Gets the image processing configuration used either in this material.
      */
-    public get imageProcessingConfiguration(): ImageProcessingConfiguration {
+    public get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration> {
         return this._imageProcessingConfiguration;
     }
 
@@ -591,7 +599,7 @@ export class BaseParticleSystem {
      *
      * If sets to null, the scene one is in use.
      */
-    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+    public set imageProcessingConfiguration(value: Nullable<ImageProcessingConfiguration>) {
         this._attachImageProcessingConfiguration(value);
     }
 
@@ -605,7 +613,7 @@ export class BaseParticleSystem {
         }
 
         // Pick the scene configuration if needed.
-        if (!configuration) {
+        if (!configuration && this._scene) {
             this._imageProcessingConfiguration = this._scene.imageProcessingConfiguration;
         }
         else {

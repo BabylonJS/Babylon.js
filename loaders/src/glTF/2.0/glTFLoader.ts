@@ -216,9 +216,9 @@ export class GLTFLoader implements IGLTFLoader {
             delete this._extensions[name];
         }
 
-        delete this._gltf;
-        delete this._babylonScene;
-        delete this._rootBabylonMesh;
+        (this._gltf as any) = null;
+        (this._babylonScene as any) = null;
+        (this._rootBabylonMesh as any) = null;
 
         this._parent.dispose();
     }
@@ -307,6 +307,16 @@ export class GLTFLoader implements IGLTFLoader {
             else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
                 const scene = ArrayItem.Get(`/scene`, this._gltf.scenes, this._gltf.scene || 0);
                 promises.push(this.loadSceneAsync(`/scenes/${scene.index}`, scene));
+            }
+
+            if (this.parent.loadAllMaterials && this._gltf.materials) {
+                for (let m = 0; m < this._gltf.materials.length; ++m) {
+                    const material = this._gltf.materials[m];
+                    const context = "/materials/" + m;
+                    const babylonDrawMode = Material.TriangleFillMode;
+
+                    promises.push(this._loadMaterialAsync(context, material, null, babylonDrawMode, (material) => { }));
+                }
             }
 
             // Restore the blocking of material dirty.
@@ -1125,6 +1135,8 @@ export class GLTFLoader implements IGLTFLoader {
                 baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
             }
 
+            babylonBone.setBindPose(baseMatrix);
+
             babylonBone.updateMatrix(baseMatrix, false, false);
             babylonBone._updateDifferenceMatrix(undefined, false);
         }
@@ -1692,7 +1704,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void = () => { }): Promise<Material> {
+    public _loadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void = () => { }): Promise<Material> {
         const extensionPromise = this._extensionsLoadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign);
         if (extensionPromise) {
             return extensionPromise;
@@ -1719,14 +1731,16 @@ export class GLTFLoader implements IGLTFLoader {
             this.logClose();
         }
 
-        babylonData.babylonMeshes.push(babylonMesh);
+        if (babylonMesh) {
+            babylonData.babylonMeshes.push(babylonMesh);
 
-        babylonMesh.onDisposeObservable.addOnce(() => {
-            const index = babylonData.babylonMeshes.indexOf(babylonMesh);
-            if (index !== -1) {
-                babylonData.babylonMeshes.splice(index, 1);
-            }
-        });
+            babylonMesh.onDisposeObservable.addOnce(() => {
+                const index = babylonData.babylonMeshes.indexOf(babylonMesh);
+                if (index !== -1) {
+                    babylonData.babylonMeshes.splice(index, 1);
+                }
+            });
+        }
 
         assign(babylonData.babylonMaterial);
 
@@ -2291,7 +2305,7 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(primitive, "loadMeshPrimitive", (extension) => extension._loadMeshPrimitiveAsync && extension._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assign));
     }
 
-    private _extensionsLoadMaterialAsync(context: string, material: IMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
+    private _extensionsLoadMaterialAsync(context: string, material: IMaterial, babylonMesh: Nullable<Mesh>, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<Material>> {
         return this._applyExtensions(material, "loadMaterial", (extension) => extension._loadMaterialAsync && extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign));
     }
 

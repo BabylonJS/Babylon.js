@@ -25,6 +25,7 @@ import { SSAO2RenderingPipeline } from 'babylonjs/PostProcesses/RenderPipeline/P
 import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { PBRMaterial } from 'babylonjs/Materials/PBR/pbrMaterial';
 import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
+import { TargetCamera } from 'babylonjs/Cameras/targetCamera';
 
 require("./sceneExplorer.scss");
 
@@ -215,6 +216,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             }
             keyEvent.preventDefault();
             return;
+        } else if (keyEvent.keyCode === 46) { // delete
+            this.state.selectedEntity.dispose();
         }
 
         if (!search) {
@@ -272,7 +275,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new Default Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, [scene.activeCamera!]);
+                        let newPipeline = new DefaultRenderingPipeline("Default rendering pipeline", true, scene, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
@@ -282,7 +285,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new SSAO Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        let newPipeline = new SSAORenderingPipeline("SSAO rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
@@ -292,7 +295,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 pipelineContextMenus.push({
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: () => {
-                        let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, [scene.activeCamera!]);
+                        let newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     }
                 });
@@ -318,6 +321,15 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             label: "Add new free camera",
             action: () => {
                 let newFreeCamera = new FreeCamera("free camera", scene.activeCamera ? scene.activeCamera.globalPosition : new Vector3(0, 0, -5), scene);
+
+                if (scene.activeCamera) {
+                    newFreeCamera.minZ = scene.activeCamera.minZ;
+                    newFreeCamera.maxZ = scene.activeCamera.maxZ;
+                    if ((scene.activeCamera as any).getTarget) {
+                        newFreeCamera.setTarget((scene.activeCamera as TargetCamera).getTarget());
+                    }
+                }
+    
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             }
         });
@@ -451,7 +463,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     render() {
         if (this.props.popupMode) {
             return (
-                <div id="sceneExplorer">
+                <div id="sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
                     {
                         !this.props.noHeader &&
                         <HeaderComponent title="SCENE EXPLORER" noClose={this.props.noClose} noExpand={this.props.noExpand} noCommands={this.props.noCommands} onClose={() => this.onClose()} onPopup={() => this.onPopup()} />
