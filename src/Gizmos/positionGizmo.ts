@@ -44,9 +44,7 @@ export class PositionGizmo extends Gizmo {
      */
     private _meshAttached: Nullable<AbstractMesh> = null;
     private _nodeAttached: Nullable<Node> = null;
-    private _updateGizmoRotationToMatchAttachedMesh: boolean;
     private _snapDistance: number;
-    private _scaleRatio: number;
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();

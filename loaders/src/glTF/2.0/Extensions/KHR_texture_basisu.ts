@@ -28,7 +28,7 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */

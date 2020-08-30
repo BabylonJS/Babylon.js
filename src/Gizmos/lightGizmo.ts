@@ -149,11 +149,6 @@ export class LightGizmo extends Gizmo {
                 this._cachedForward.copyFrom(this.attachedMesh!.forward);
             }
         }
-        if (!this._light.isEnabled()) {
-            this._material.diffuseColor.set(0, 0, 0);
-        } else {
-            this._material.diffuseColor.set(this._light.diffuse.r / 3, this._light.diffuse.g / 3, this._light.diffuse.b / 3);
-        }
     }
 
     // Static helper methods
