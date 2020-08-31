@@ -75,6 +75,15 @@ declare module "./mesh" {
         thinInstanceBufferUpdated(kind: string): void;
 
         /**
+         * Applies a partial update to a buffer directly on the GPU
+         * Note that the buffer located on the CPU is NOT updated! It's up to you to update it (or not) with the same data you pass to this method
+         * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
+         * @param data the data to set in the GPU buffer
+         * @param offset the offset in the GPU buffer where to update the data
+         */
+        thinInstancePartialBufferUpdate(kind: string, data: Float32Array, offset: number): void;
+
+        /**
          * Refreshes the bounding info, taking into account all the thin instances defined
          * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
          */
@@ -245,6 +254,16 @@ Mesh.prototype.thinInstanceBufferUpdated = function(kind: string): void {
         }
     } else if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
         this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(this._userThinInstanceBuffersStorage.data[kind], 0);
+    }
+};
+
+Mesh.prototype.thinInstancePartialBufferUpdate = function(kind: string, data: Float32Array, offset: number): void {
+    if (kind === "matrix") {
+        if (this._thinInstanceDataStorage.matrixBuffer) {
+            this._thinInstanceDataStorage.matrixBuffer.updateDirectly(data, offset);
+        }
+    } else if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
+        this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(data, offset);
     }
 };
 
