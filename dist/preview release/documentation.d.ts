@@ -42031,6 +42031,8 @@ declare module BABYLON {
      * in a given scene.
      */
     export class AudioSceneComponent implements ISceneSerializableComponent {
+        private static _CameraDirectionLH;
+        private static _CameraDirectionRH;
         /**
          * The component name helpfull to identify the component in the list of scene components.
          */
