@@ -77,7 +77,7 @@ class TransmissionHelper {
         if (!newValues.length) {
             return;
         }
-        
+
         const newOptions = {
             ...this._options,
             ...options
