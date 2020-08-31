@@ -44,8 +44,6 @@ class TransmissionHelper {
     private _opaqueMeshesCache: Mesh[] = [];
     private _transparentMeshesCache: Mesh[] = [];
 
-    private enabled: boolean = true;
-
     /**
      * This observable will be notified with any error during the creation of the environment,
      * mainly texture creation errors.
@@ -79,10 +77,7 @@ class TransmissionHelper {
         if (!newValues.length) {
             return;
         }
-        if (!this.enabled) {
-            return;
-        }
-
+        
         const newOptions = {
             ...this._options,
             ...options
@@ -120,11 +115,6 @@ class TransmissionHelper {
                 this._opaqueMeshesCache.push(mesh);
             }
         }
-        if (this._transparentMeshesCache.length == 0) {
-            this.enabled = false;
-        } else {
-            this.enabled = true;
-        }
     }
 
     private _removeMesh(mesh: AbstractMesh): void {
@@ -138,11 +128,6 @@ class TransmissionHelper {
             if (idx !== -1) {
                 this._opaqueMeshesCache.splice(idx, 1);
             }
-        }
-        if (this._transparentMeshesCache.length == 0) {
-            this.enabled = false;
-        } else {
-            this.enabled = true;
         }
     }
 
@@ -181,11 +166,6 @@ class TransmissionHelper {
                     this._opaqueMeshesCache.push(mesh);
                 }
             }
-        }
-        if (this._transparentMeshesCache.length == 0) {
-            this.enabled = false;
-        } else {
-            this.enabled = true;
         }
     }
 
