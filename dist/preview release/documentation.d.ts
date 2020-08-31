@@ -61985,7 +61985,8 @@ declare module BABYLON {
      * Class used to generate noise procedural textures
      */
     export class NoiseProceduralTexture extends ProceduralTexture {
-        private _time;
+        /** Gets or sets the start time (default is 0) */
+        time: number;
         /** Gets or sets a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
         brightness: number;
         /** Defines the number of octaves to process */
@@ -66634,6 +66635,14 @@ declare module BABYLON {
              * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
              */
             thinInstanceBufferUpdated(kind: string): void;
+            /**
+             * Applies a partial update to a buffer directly on the GPU
+             * Note that the buffer located on the CPU is NOT updated! It's up to you to update it (or not) with the same data you pass to this method
+             * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
+             * @param data the data to set in the GPU buffer
+             * @param offset the offset in the GPU buffer where to update the data
+             */
+            thinInstancePartialBufferUpdate(kind: string, data: Float32Array, offset: number): void;
             /**
              * Refreshes the bounding info, taking into account all the thin instances defined
              * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
