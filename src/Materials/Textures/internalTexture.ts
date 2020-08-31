@@ -254,7 +254,7 @@ export class InternalTexture {
     public _references: number = 1;
 
     /** @hidden */
-    public _gammaSpace = true;
+    public _gammaSpace: Nullable<boolean> = null;
 
     private _engine: ThinEngine;
 
