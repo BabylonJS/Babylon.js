@@ -9,7 +9,7 @@ import { Matrix, Vector3 } from "../Maths/math.vector";
  */
 export namespace Levenshtein {
     /**
-     * Alphabet from which to construct sequences to be compared using Levenshtein 
+     * Alphabet from which to construct sequences to be compared using Levenshtein
      * distance.
      */
     export class Alphabet<T> {
@@ -57,7 +57,7 @@ export namespace Levenshtein {
          * @param characters characters of the alphabet
          * @param charToInsertionCost function mapping characters to insertion costs
          * @param charToDeletionCost function mapping characters to deletion costs
-         * @param charsToSubstitutionCost: function mapping character pairs to substitution costs
+         * @param charsToSubstitutionCost function mapping character pairs to substitution costs
          */
         public constructor(
             characters: Array<T>,
@@ -91,7 +91,7 @@ export namespace Levenshtein {
         /**
          * Get the index (internally-assigned number) for a character.
          * @param char character
-         * @param returns index
+         * @returns index
          */
         public getCharacterIdx(char: T): number {
             return this._characterToIdx.get(char)!;
@@ -149,7 +149,7 @@ export namespace Levenshtein {
 
         /**
          * Serialize to JSON string. JSON representation does NOT include the Alphabet
-         * from which this Sequence was created; Alphabet must be independently 
+         * from which this Sequence was created; Alphabet must be independently
          * serialized.
          * @returns JSON string
          */
@@ -171,7 +171,7 @@ export namespace Levenshtein {
             return sequence;
         }
 
-        /** 
+        /**
          * Create a new Sequence.
          * @param characters characters in the new Sequence
          * @param alphabet Alphabet, which must include all used characters
@@ -237,7 +237,7 @@ export namespace Levenshtein {
 }
 
 /**
- * A 3D trajectory consisting of an order list of vectors describing a 
+ * A 3D trajectory consisting of an order list of vectors describing a
  * path of motion through 3D space.
  */
 export class Trajectory {
@@ -277,12 +277,13 @@ export class Trajectory {
 
     /**
      * Get the length of the Trajectory.
+     * @returns length of the Trajectory
      */
     public getLength(): number {
         return this._points.length * this._segmentLength;
     }
 
-    /** 
+    /**
      * Append a new point to the Trajectory.
      * NOTE: This implementation has many allocations.
      * @param point point to append to the Trajectory
@@ -304,7 +305,7 @@ export class Trajectory {
     }
 
     /**
-     * Create a new Trajectory with a segment length chosen to make it 
+     * Create a new Trajectory with a segment length chosen to make it
      * probable that the new Trajectory will have a specified number of
      * segments. This operation is imprecise.
      * @param targetResolution number of segments desired
@@ -392,7 +393,7 @@ export class Trajectory {
     private static _bestScore: number;
 
     /**
-     * Determine which token vector is most similar to the 
+     * Determine which token vector is most similar to the
      * segment vector.
      * @param segment segment vector
      * @param tokens token vector list
@@ -423,12 +424,20 @@ export class Trajectory {
  * Vector3Alphabet will resemble a "spikeball" of vectors distributed
  * roughly evenly over the surface of the unit sphere.
  */
-export class Vector3Alphabet extends Array<Vector3> {
+export class Vector3Alphabet {
 
     /**
-     * Helper method to create new "spikeball" Vector3Alphabets. Uses a naive 
-     * optimize-from-random strategy to space points around the unit sphere 
-     * surface as a simple alternative to really doing the math to tile the 
+     * Characters in the alphabet.
+     * NOTE: There is no reason for this property to exist and this class should just extend
+     * Array<Vector3>, except that doing so produces bizarre build-time errors indicating that
+     * the ES5 library itself fails its own TypeDoc validation.
+     */
+    public chars: Vector3[];
+
+    /**
+     * Helper method to create new "spikeball" Vector3Alphabets. Uses a naive
+     * optimize-from-random strategy to space points around the unit sphere
+     * surface as a simple alternative to really doing the math to tile the
      * sphere.
      * @param alphabetSize size of the desired alphabet
      * @param iterations number of iterations over which to optimize the "spikeball"
@@ -449,15 +458,15 @@ export class Vector3Alphabet extends Array<Vector3> {
 
         let alphabet = new Vector3Alphabet(alphabetSize);
         for (let idx = 0; idx < alphabetSize; ++idx) {
-            alphabet[idx] = new Vector3(
+            alphabet.chars[idx] = new Vector3(
                 Math.random() - 0.5,
                 Math.random() - 0.5,
                 Math.random() - 0.5);
-            alphabet[idx].normalize();
+            alphabet.chars[idx].normalize();
         }
 
         for (let idx = 0; idx < fixedValues.length; ++idx) {
-            alphabet[idx].copyFrom(fixedValues[idx]);
+            alphabet.chars[idx].copyFrom(fixedValues[idx]);
         }
 
         let stepSize: number;
@@ -467,18 +476,18 @@ export class Vector3Alphabet extends Array<Vector3> {
         const lerp = (l: number, r: number, t: number) => (1.0 - t) * l + t * r;
         for (let iteration = 0; iteration < iterations; ++iteration) {
             stepSize = lerp(startingStepSize, endingStepSize, iteration / (iterations - 1));
-            for (let idx = fixedValues.length; idx < alphabet.length; ++idx) {
+            for (let idx = fixedValues.length; idx < alphabet.chars.length; ++idx) {
                 force.copyFromFloats(0, 0, 0);
-                alphabet.forEach((pt) => {
-                    alphabet[idx].subtractToRef(pt, scratch);
+                alphabet.chars.forEach((pt) => {
+                    alphabet.chars[idx].subtractToRef(pt, scratch);
                     distSq = scratch.lengthSquared();
                     if (distSq > EPSILON_SQUARED) {
                         scratch.scaleAndAddToRef(1 / (scratch.lengthSquared() * distSq), force);
                     }
                 });
                 force.scaleInPlace(stepSize);
-                alphabet[idx].addInPlace(force);
-                alphabet[idx].normalize();
+                alphabet.chars[idx].addInPlace(force);
+                alphabet.chars[idx].normalize();
             }
         }
 
@@ -502,7 +511,7 @@ export class Vector3Alphabet extends Array<Vector3> {
         let jsonObject = JSON.parse(json);
         let alphabet = new Vector3Alphabet(jsonObject.length);
         for (let idx = 0; idx < jsonObject.length; ++idx) {
-            alphabet[idx] = new Vector3(
+            alphabet.chars[idx] = new Vector3(
                 jsonObject[idx]["_x"],
                 jsonObject[idx]["_y"],
                 jsonObject[idx]["_z"]);
@@ -511,13 +520,13 @@ export class Vector3Alphabet extends Array<Vector3> {
     }
 
     private constructor(size: number) {
-        super(size);
+        this.chars = new Array(size);
     }
 }
 
 /**
- * Class which formalizes the manner in which a Vector3Alphabet is used to tokenize and 
- * describe a Trajectory. This class houses the functionality which determines what 
+ * Class which formalizes the manner in which a Vector3Alphabet is used to tokenize and
+ * describe a Trajectory. This class houses the functionality which determines what
  * attributes of Trajectories are and are not considered important, such as scale.
  */
 export class TrajectoryDescriptor {
@@ -550,7 +559,7 @@ export class TrajectoryDescriptor {
     }
 
     /**
-     * Create a new TrajectoryDescriptor to describe a provided Trajectory according 
+     * Create a new TrajectoryDescriptor to describe a provided Trajectory according
      * to the provided alphabets.
      * @param trajectory Trajectory to be described
      * @param vector3Alphabet Vector3Alphabet to be used to tokenize the Trajectory
@@ -591,7 +600,7 @@ export class TrajectoryDescriptor {
     /**
      * Create the tokenization pyramid for the provided Trajectory according to the given
      * Vector3Alphabet.
-     * @param trajectory Trajectory to be tokenized 
+     * @param trajectory Trajectory to be tokenized
      * @param alphabet Vector3Alphabet containing tokens
      * @param targetResolution finest resolution of descriptor
      * @returns tokenization pyramid for Trajectory
@@ -603,14 +612,14 @@ export class TrajectoryDescriptor {
 
         let pyramid: number[][] = [];
         for (let res = targetResolution; res > 2; res = Math.floor(res / 2)) {
-            pyramid.push(trajectory.resampleAtTargetResolution(res).tokenize(alphabet));
+            pyramid.push(trajectory.resampleAtTargetResolution(res).tokenize(alphabet.chars));
         }
         return pyramid;
     }
 
     /**
      * Calculate a distance metric between this TrajectoryDescriptor and another. This is
-     * essentially a similarity score and does not directly represent Euclidean distance, 
+     * essentially a similarity score and does not directly represent Euclidean distance,
      * edit distance, or any other formal distance metric.
      * @param other TrajectoryDescriptor from which to determine distance
      * @returns distance, a nonnegative similarity score where larger values indicate dissimilarity
@@ -679,7 +688,7 @@ export class DescribedTrajectory {
     }
 
     /**
-     * Add a new TrajectoryDescriptor to the list of descriptors known to describe 
+     * Add a new TrajectoryDescriptor to the list of descriptors known to describe
      * this same DescribedTrajectory.
      * @param descriptor descriptor to be added
      */
@@ -700,7 +709,7 @@ export class DescribedTrajectory {
     }
 
     /**
-     * Compute the minimum distance between the queried TrajectoryDescriptor and a 
+     * Compute the minimum distance between the queried TrajectoryDescriptor and a
      * descriptor which is a member of this collection. This is an alternative way of
      * conceptualizing match cost from getMatchCost(), and it serves a different function.
      * @param descriptor the descriptor to find the minimum distance to
@@ -795,10 +804,10 @@ export class TrajectorySet {
         let vecs = Vector3Alphabet.Generate(64, 256, 0.1, 0.001, [Vector3.Forward()]);
 
         let alphabet = new Levenshtein.Alphabet<number>(
-            Array.from(Array(vecs.length), (_, idx) => idx),
+            Array.from(Array(vecs.chars.length), (_, idx) => idx),
             (_) => 1,
             (_) => 1,
-            (a, b) => Math.min(1.1 - Vector3.Dot(vecs[a], vecs[b]), 1)
+            (a, b) => Math.min(1.1 - Vector3.Dot(vecs.chars[a], vecs.chars[b]), 1)
         );
 
         let trajectorySet = new TrajectorySet();
