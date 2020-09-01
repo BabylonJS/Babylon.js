@@ -110,6 +110,11 @@ export class CameraGizmo extends Gizmo {
         this._cameraLinesMesh.scaling.x = 1 / this._rootMesh.scaling.x;
         this._cameraLinesMesh.scaling.y = 1 / this._rootMesh.scaling.y;
         this._cameraLinesMesh.scaling.z = 1 / this._rootMesh.scaling.z;
+
+        // take care of coordinate system in camera scene to properly display the mesh with the good Y axis orientation in this scene
+        this._cameraMesh.parent = null;
+        this._cameraMesh.rotation.y = Math.PI * 0.5 * (this._camera.getScene().useRightHandedSystem ? 1 : -1);
+        this._cameraMesh.parent = this._rootMesh;
     }
 
     // Static helper methods
@@ -158,7 +163,6 @@ export class CameraGizmo extends Gizmo {
         cyl3.rotation.z = Math.PI * 0.5;
 
         root.scaling.scaleInPlace(CameraGizmo._Scale);
-        root.rotation.y = -Math.PI * 0.5;
         mesh.position.x = -0.9;
 
         return root;
