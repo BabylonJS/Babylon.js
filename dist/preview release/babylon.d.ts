@@ -50358,6 +50358,9 @@ declare module BABYLON {
         private _tempQuaternion;
         private _tempVector;
         private _tempVector2;
+        private _tempMatrix1;
+        private _tempMatrix2;
+        private _rightHandtoLeftHandMatrix;
         /**
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
