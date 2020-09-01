@@ -203,4 +203,5 @@ gui/dist/
 # Local Netlify folder
 .netlify
 Playground/dist/
+Playground/temp/
 Sandbox/public/dist/
