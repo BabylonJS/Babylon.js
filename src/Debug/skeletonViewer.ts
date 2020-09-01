@@ -402,15 +402,17 @@ export class SkeletonViewer {
         const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
         const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
         this._boneIndices = new Set();        
-  
-        if (initialMeshBoneIndices && initialMeshBoneWeights) {
-            for (let i = 0; i < initialMeshBoneIndices.length; ++i) {
-                const index = initialMeshBoneIndices[i], weight = initialMeshBoneWeights[i];
-                if (weight !== 0) {
-                    this._boneIndices.add(index);
+        
+        if (!options.useAllBones) {
+            if (initialMeshBoneIndices && initialMeshBoneWeights) {
+                for (let i = 0; i < initialMeshBoneIndices.length; ++i) {
+                    const index = initialMeshBoneIndices[i], weight = initialMeshBoneWeights[i];
+                    if (weight !== 0) {
+                        this._boneIndices.add(index);
+                    }
                 }
             }
-        }        
+        }       
 
         /* Create Utility Layer */
         this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
