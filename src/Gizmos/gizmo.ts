@@ -114,7 +114,8 @@ export class Gizmo implements IDisposable {
     private _tempVector2 = new Vector3();
     private _tempMatrix1 = new Matrix();
     private _tempMatrix2 = new Matrix();
-
+    private _rightHandtoLeftHandMatrix = Matrix.RotationY(Math.PI);
+    
     /**
      * Creates a gizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
@@ -202,7 +203,7 @@ export class Gizmo implements IDisposable {
 
             if (camera.getScene().useRightHandedSystem) {
                 // avoid desync with RH matrix computation. Otherwise, rotation of PI around Y axis happens each frame resulting in axis flipped because worldMatrix is computed as inverse of viewMatrix.
-                Matrix.RotationY(Math.PI).multiplyToRef(worldMatrix, this._tempMatrix2);
+                this._rightHandtoLeftHandMatrix.multiplyToRef(worldMatrix, this._tempMatrix2);
                 worldMatrixUC = this._tempMatrix2;
             } else {
                 worldMatrixUC = worldMatrix;
