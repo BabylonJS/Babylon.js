@@ -401,8 +401,8 @@ export class SkeletonViewer {
 
         const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
         const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
-        this._boneIndices = new Set();        
-        
+        this._boneIndices = new Set();
+
         if (!options.useAllBones) {
             if (initialMeshBoneIndices && initialMeshBoneWeights) {
                 for (let i = 0; i < initialMeshBoneIndices.length; ++i) {
@@ -412,7 +412,7 @@ export class SkeletonViewer {
                     }
                 }
             }
-        }       
+        }
 
         /* Create Utility Layer */
         this._utilityLayer = new UtilityLayerRenderer(this._scene, false);
@@ -516,7 +516,6 @@ export class SkeletonViewer {
             var bone = bones[i];
             var points = this._debugLines[idx];
 
-            
             if (bone._index === -1 || (!this._boneIndices.has(bone.getIndex()) && !this.options.useAllBones)) {
                 continue;
             }
@@ -619,7 +618,7 @@ export class SkeletonViewer {
 
             for (let i = 0; i < bones.length; i++) {
                 let bone = bones[i];
-      
+
                 if (bone._index === -1 || (!this._boneIndices.has(bone.getIndex()) && !this.options.useAllBones)) {
                     continue;
                 }
