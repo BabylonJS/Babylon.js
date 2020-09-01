@@ -115,7 +115,7 @@ export class Gizmo implements IDisposable {
     private _tempMatrix1 = new Matrix();
     private _tempMatrix2 = new Matrix();
     private _rightHandtoLeftHandMatrix = Matrix.RotationY(Math.PI);
-    
+
     /**
      * Creates a gizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
@@ -195,7 +195,7 @@ export class Gizmo implements IDisposable {
             if (camera.parent) {
                 var parentInv = this._tempMatrix2;
                 camera.parent._worldMatrix.invertToRef(parentInv);
-                this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, this._tempMatrix1);
+                this._attachedNode._worldMatrix.multiplyToRef(parentInv, this._tempMatrix1);
                 worldMatrix = this._tempMatrix1;
             } else {
                 worldMatrix = this._attachedNode._worldMatrix;
