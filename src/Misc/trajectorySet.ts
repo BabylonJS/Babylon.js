@@ -499,7 +499,7 @@ export class Vector3Alphabet {
      * @returns JSON serialization
      */
     public serialize(): string {
-        return JSON.stringify(this);
+        return JSON.stringify(this.chars);
     }
 
     /**
@@ -789,7 +789,7 @@ export class TrajectorySet {
         for (let idx = 0; idx < jsonObject.nameToDescribedTrajectory.length; idx += 2) {
             trajectorySet._nameToDescribedTrajectory.set(
                 jsonObject.nameToDescribedTrajectory[idx],
-                jsonObject.nameToDescribedTrajectory[idx + 1]);
+                DescribedTrajectory.Deserialize(jsonObject.nameToDescribedTrajectory[idx + 1], trajectorySet._levenshteinAlphabet));
         }
         return trajectorySet;
     }
@@ -805,10 +805,9 @@ export class TrajectorySet {
 
         let alphabet = new Levenshtein.Alphabet<number>(
             Array.from(Array(vecs.chars.length), (_, idx) => idx),
-            (_) => 1,
-            (_) => 1,
-            (a, b) => Math.min(1.1 - Vector3.Dot(vecs.chars[a], vecs.chars[b]), 1)
-        );
+            (idx) => idx === 0 ? 0 : 1,
+            (idx) => idx === 0 ? 0 : 1,
+            (a, b) => Math.min(1 - Vector3.Dot(vecs.chars[a], vecs.chars[b]), 1));
 
         let trajectorySet = new TrajectorySet();
         trajectorySet._vector3Alphabet = vecs;
