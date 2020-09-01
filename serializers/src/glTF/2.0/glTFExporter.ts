@@ -13,6 +13,7 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { LinesMesh } from "babylonjs/Meshes/linesMesh";
 import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
+import { Bone } from "babylonjs/Bones/bone";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Material } from "babylonjs/Materials/material";
@@ -1889,17 +1890,26 @@ export class _Exporter {
             let inverseBindMatrices: Matrix[] = [];
             let skeletonMesh = babylonScene.meshes.find((mesh) => { mesh.skeleton === skeleton; });
             skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
+            let boneIndexMap: Map<number, Bone> = new Map();
+            let boneIndexMax: number = -1;
+            let boneIndex: number = -1;
             for (let bone of skeleton.bones) {
-                if (bone._index != -1) {
-                    let transformNode = bone.getTransformNode();
-                    if (transformNode) {
-                        let boneMatrix = bone.getInvertedAbsoluteTransform();
-                        if (this._convertToRightHandedSystem) {
-                            _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
-                        }
-                        inverseBindMatrices.push(boneMatrix);
-                        skin.joints.push(nodeMap[transformNode.uniqueId]);
+                boneIndex = bone.getIndex();
+                if (boneIndex > -1) {
+                    boneIndexMap.set(boneIndex, bone);
+                }
+                boneIndexMax = Math.max(boneIndexMax, boneIndex);
+            }
+            for (let i = 0; i <= boneIndexMax; ++i) {
+                let bone = boneIndexMap.get(i)!;
+                let transformNode = bone.getTransformNode();
+                if (transformNode) {
+                    let boneMatrix = bone.getInvertedAbsoluteTransform();
+                    if (this._convertToRightHandedSystem) {
+                        _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
                     }
+                    inverseBindMatrices.push(boneMatrix);
+                    skin.joints.push(nodeMap[transformNode.uniqueId]);
                 }
             }
             // create buffer view for inverse bind matrices
