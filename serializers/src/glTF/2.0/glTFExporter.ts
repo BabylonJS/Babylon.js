@@ -1904,7 +1904,7 @@ export class _Exporter {
                 const bone = boneIndexMap[i]!;
                 const transformNode = bone.getTransformNode();
                 if (transformNode) {
-                    let boneMatrix = bone.getInvertedAbsoluteTransform();
+                    const boneMatrix = bone.getInvertedAbsoluteTransform();
                     if (this._convertToRightHandedSystem) {
                         _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
                     }
