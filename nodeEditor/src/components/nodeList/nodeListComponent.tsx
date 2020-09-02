@@ -278,7 +278,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             });
 
             if(key === "Custom_Frames") {
-                let line =  <LineWithFileButtonComponent title={"Add Custom Frame"} closed={false}
+                let line =  <LineWithFileButtonComponent key="add..."title={"Add Custom Frame"} closed={false}
                 label="Add..." uploadName={'custom-frame-upload'} iconImage={addButton} accept=".json" onIconClick={(file) => {
                     this.loadCustomFrame(file);
                 }}/>;
