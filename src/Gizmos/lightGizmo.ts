@@ -48,18 +48,16 @@ export class LightGizmo extends Gizmo {
         this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
 
-        if (gizmoLayer) {
-            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-                if (!this._light) {
-                    return;
-                }
+        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (!this._light) {
+                return;
+            }
 
-                var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-                if (isHovered && pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.button === 0) {
-                    this.onClickedObservable.notifyObservers(this._light);
-                }
-            });
-        }
+            var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
+            if (isHovered && pointerInfo.event.button === 0) {
+                this.onClickedObservable.notifyObservers(this._light);
+            }
+        }, PointerEventTypes.POINTERDOWN);
     }
     private _light: Nullable<Light> = null;
 
@@ -239,6 +237,7 @@ export class LightGizmo extends Gizmo {
      * Disposes of the light gizmo
      */
     public dispose() {
+        this.onClickedObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this._material.dispose();
         super.dispose();
