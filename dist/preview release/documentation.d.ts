@@ -49384,6 +49384,10 @@ declare module BABYLON {
          * Babylon XR Input class for controller
          */
         xrInput: WebXRInput;
+        /**
+         * Meshes that the teleportation ray cannot go through
+         */
+        pickBlockerMeshes?: AbstractMesh[];
     }
     /**
      * This is a teleportation feature to be used with WebXR-enabled motion controllers.
@@ -49402,6 +49406,7 @@ declare module BABYLON {
         private _teleportationRingMaterial?;
         private _tmpRay;
         private _tmpVector;
+        private _tmpQuaternion;
         /**
          * The module's name
          */
@@ -54157,6 +54162,11 @@ declare module BABYLON {
         private _cachedPosition;
         private _cachedForward;
         private _attachedMeshParent;
+        private _pointerObserver;
+        /**
+         * Event that fires each time the gizmo is clicked
+         */
+        onClickedObservable: Observable<Light>;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -54200,6 +54210,11 @@ declare module BABYLON {
         private _cameraMesh;
         private _cameraLinesMesh;
         private _material;
+        private _pointerObserver;
+        /**
+         * Event that fires each time the gizmo is clicked
+         */
+        onClickedObservable: Observable<Camera>;
         /**
          * Creates a CameraGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to

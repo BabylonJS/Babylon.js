@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \***********************************************************/
+/*!*****************************************************************!*\
+  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*****************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3458,18 +3458,27 @@ var _Exporter = /** @class */ (function () {
             var inverseBindMatrices = [];
             var skeletonMesh = babylonScene.meshes.find(function (mesh) { mesh.skeleton === skeleton; });
             skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
+            var boneIndexMap = {};
+            var boneIndexMax = -1;
+            var boneIndex = -1;
             for (var _i = 0, _a = skeleton.bones; _i < _a.length; _i++) {
                 var bone = _a[_i];
-                if (bone._index != -1) {
-                    var transformNode = bone.getTransformNode();
-                    if (transformNode) {
-                        var boneMatrix = bone.getInvertedAbsoluteTransform();
-                        if (this_2._convertToRightHandedSystem) {
-                            _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedMatrixFromRef(boneMatrix);
-                        }
-                        inverseBindMatrices.push(boneMatrix);
-                        skin.joints.push(nodeMap[transformNode.uniqueId]);
+                boneIndex = bone.getIndex();
+                if (boneIndex > -1) {
+                    boneIndexMap[boneIndex] = bone;
+                }
+                boneIndexMax = Math.max(boneIndexMax, boneIndex);
+            }
+            for (var i = 0; i <= boneIndexMax; ++i) {
+                var bone = boneIndexMap[i];
+                var transformNode = bone.getTransformNode();
+                if (transformNode) {
+                    var boneMatrix = bone.getInvertedAbsoluteTransform();
+                    if (this_2._convertToRightHandedSystem) {
+                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedMatrixFromRef(boneMatrix);
                     }
+                    inverseBindMatrices.push(boneMatrix);
+                    skin.joints.push(nodeMap[transformNode.uniqueId]);
                 }
             }
             // create buffer view for inverse bind matrices
