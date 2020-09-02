@@ -13,6 +13,7 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { LinesMesh } from "babylonjs/Meshes/linesMesh";
 import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
+import { Bone } from "babylonjs/Bones/bone";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Material } from "babylonjs/Materials/material";
@@ -1881,36 +1882,45 @@ export class _Exporter {
      * @returns Node mapping of unique id to index
      */
     private createSkinsAsync(babylonScene: Scene, nodeMap: { [key: number]: number }, binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
-        let promiseChain = Promise.resolve();
+        const promiseChain = Promise.resolve();
         const skinMap: { [key: number]: number } = {};
         for (let skeleton of babylonScene.skeletons) {
             // create skin
             const skin: ISkin = { joints: [] };
-            let inverseBindMatrices: Matrix[] = [];
-            let skeletonMesh = babylonScene.meshes.find((mesh) => { mesh.skeleton === skeleton; });
+            const inverseBindMatrices: Matrix[] = [];
+            const skeletonMesh = babylonScene.meshes.find((mesh) => { mesh.skeleton === skeleton; });
             skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
+            const boneIndexMap: {[index: number]: Bone} = {};
+            let boneIndexMax: number = -1;
+            let boneIndex: number = -1;
             for (let bone of skeleton.bones) {
-                if (bone._index != -1) {
-                    let transformNode = bone.getTransformNode();
-                    if (transformNode) {
-                        let boneMatrix = bone.getInvertedAbsoluteTransform();
-                        if (this._convertToRightHandedSystem) {
-                            _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
-                        }
-                        inverseBindMatrices.push(boneMatrix);
-                        skin.joints.push(nodeMap[transformNode.uniqueId]);
+                boneIndex = bone.getIndex();
+                if (boneIndex > -1) {
+                    boneIndexMap[boneIndex] = bone;
+                }
+                boneIndexMax = Math.max(boneIndexMax, boneIndex);
+            }
+            for (let i = 0; i <= boneIndexMax; ++i) {
+                const bone = boneIndexMap[i]!;
+                const transformNode = bone.getTransformNode();
+                if (transformNode) {
+                    const boneMatrix = bone.getInvertedAbsoluteTransform();
+                    if (this._convertToRightHandedSystem) {
+                        _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
                     }
+                    inverseBindMatrices.push(boneMatrix);
+                    skin.joints.push(nodeMap[transformNode.uniqueId]);
                 }
             }
             // create buffer view for inverse bind matrices
-            let byteStride = 64; // 4 x 4 matrix of 32 bit float
-            let byteLength = inverseBindMatrices.length * byteStride;
-            let bufferViewOffset = binaryWriter.getByteOffset();
-            let bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, byteStride, "InverseBindMatrices" + " - " + skeleton.name);
+            const byteStride = 64; // 4 x 4 matrix of 32 bit float
+            const byteLength = inverseBindMatrices.length * byteStride;
+            const bufferViewOffset = binaryWriter.getByteOffset();
+            const bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, byteStride, "InverseBindMatrices" + " - " + skeleton.name);
             this._bufferViews.push(bufferView);
-            let bufferViewIndex = this._bufferViews.length - 1;
-            let bindMatrixAccessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, "InverseBindMatrices" + " - " + skeleton.name, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length, null, null, null);
-            let inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
+            const bufferViewIndex = this._bufferViews.length - 1;
+            const bindMatrixAccessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, "InverseBindMatrices" + " - " + skeleton.name, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length, null, null, null);
+            const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
             skin.inverseBindMatrices = inverseBindAccessorIndex;
             this._skins.push(skin);
             skinMap[skeleton.uniqueId] = this._skins.length - 1;
