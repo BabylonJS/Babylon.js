@@ -7,6 +7,7 @@ import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent'
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
@@ -62,9 +63,42 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     render() {
         let gradientBlock = this.props.block as GradientBlock;
       
+        var typeOptions = [
+            { label: "None", value: 0 },
+            { label: "Visible in the inspector", value: 1 },
+        ];
+
         return (
             <div>
                 <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <LineContainerComponent title="PROPERTIES">
+                <OptionsLineComponent label="Type" options={typeOptions} target={this.props.block} 
+                            noDirectUpdate={true}
+                            getSelection={(block) => {
+                                if (block.visibleInInspector) {
+                                    return 1;
+                                }
+
+                                if (block.isConstant) {
+                                    return 2;
+                                }
+
+                                return 0;
+                            }}
+                            onSelect={(value: any) => {
+                                switch (value) {
+                                    case 0:
+                                        this.props.block.visibleInInspector = false;
+                                        break;
+                                    case 1:
+                                        this.props.block.visibleInInspector = true;
+                                        break;
+                                }
+                                this.forceUpdate();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            }} />                        
+                </LineContainerComponent>
                 <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                     {

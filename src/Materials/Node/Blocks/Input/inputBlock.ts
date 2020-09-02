@@ -60,12 +60,9 @@ export class InputBlock extends NodeMaterialBlock {
     /** @hidden */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
-    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-    public visibleInInspector = false;
-
     /** Gets or sets a boolean indicating that the value of this input will not change after a build */
     public isConstant = false;
-
+    
     /** Gets or sets the group to use to display this block in the Inspector */
     public groupInInspector = "";
 
