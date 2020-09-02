@@ -11,6 +11,8 @@ import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { CylinderBuilder } from '../Meshes/Builders/cylinderBuilder';
 import { Matrix } from '../Maths/math';
 import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
+import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
+import { Observer, Observable } from "../Misc/observable";
 
 /**
  * Gizmo that enables viewing a camera
@@ -19,17 +21,36 @@ export class CameraGizmo extends Gizmo {
     private _cameraMesh: Mesh;
     private _cameraLinesMesh: Mesh;
     private _material: StandardMaterial;
+    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+
+    /**
+     * Event that fires each time the gizmo is clicked
+     */
+    public onClickedObservable = new Observable<Camera>();
 
     /**
      * Creates a CameraGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      */
-    constructor(gizmoLayer?: UtilityLayerRenderer) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         super(gizmoLayer);
 
         this._material = new StandardMaterial("cameraGizmoMaterial", this.gizmoLayer.utilityLayerScene);
         this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
+
+        if (gizmoLayer) {
+            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+                if (!this._camera) {
+                    return;
+                }
+
+                var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
+                if (isHovered && pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.button === 0) {
+                    this.onClickedObservable.notifyObservers(this._camera);
+                }
+            });
+        }
     }
     private _camera: Nullable<Camera> = null;
 
@@ -120,6 +141,7 @@ export class CameraGizmo extends Gizmo {
      * Disposes of the camera gizmo
      */
     public dispose() {
+        this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         if (this._cameraMesh) {
             this._cameraMesh.dispose();
         }

@@ -15,6 +15,8 @@ import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
 import { HemisphereBuilder } from '../Meshes/Builders/hemisphereBuilder';
 import { SpotLight } from '../Lights/spotLight';
 import { TransformNode } from '../Meshes/transformNode';
+import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
+import { Observer, Observable } from "../Misc/observable";
 
 /**
  * Gizmo that enables viewing a light
@@ -25,12 +27,18 @@ export class LightGizmo extends Gizmo {
     private _cachedPosition = new Vector3();
     private _cachedForward = new Vector3(0, 0, 1);
     private _attachedMeshParent: TransformNode;
+    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+
+    /**
+     * Event that fires each time the gizmo is clicked
+     */
+    public onClickedObservable = new Observable<Light>();
 
     /**
      * Creates a LightGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      */
-    constructor(gizmoLayer?: UtilityLayerRenderer) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         super(gizmoLayer);
         this.attachedMesh = new AbstractMesh("", this.gizmoLayer.utilityLayerScene);
         this._attachedMeshParent = new TransformNode("parent", this.gizmoLayer.utilityLayerScene);
@@ -39,6 +47,19 @@ export class LightGizmo extends Gizmo {
         this._material = new StandardMaterial("light", this.gizmoLayer.utilityLayerScene);
         this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
+
+        if (gizmoLayer) {
+            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+                if (!this._light) {
+                    return;
+                }
+
+                var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
+                if (isHovered && pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.button === 0) {
+                    this.onClickedObservable.notifyObservers(this._light);
+                }
+            });
+        }
     }
     private _light: Nullable<Light> = null;
 
@@ -218,6 +239,7 @@ export class LightGizmo extends Gizmo {
      * Disposes of the light gizmo
      */
     public dispose() {
+        this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this._material.dispose();
         super.dispose();
         this._attachedMeshParent.dispose();
