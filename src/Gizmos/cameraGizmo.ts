@@ -39,18 +39,16 @@ export class CameraGizmo extends Gizmo {
         this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
 
-        if (gizmoLayer) {
-            this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-                if (!this._camera) {
-                    return;
-                }
+        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (!this._camera) {
+                return;
+            }
 
-                var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-                if (isHovered && pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.button === 0) {
-                    this.onClickedObservable.notifyObservers(this._camera);
-                }
-            });
-        }
+            var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
+            if (isHovered && pointerInfo.event.button === 0) {
+                this.onClickedObservable.notifyObservers(this._camera);
+            }
+        }, PointerEventTypes.POINTERDOWN);
     }
     private _camera: Nullable<Camera> = null;
 
@@ -141,6 +139,7 @@ export class CameraGizmo extends Gizmo {
      * Disposes of the camera gizmo
      */
     public dispose() {
+        this.onClickedObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         if (this._cameraMesh) {
             this._cameraMesh.dispose();
