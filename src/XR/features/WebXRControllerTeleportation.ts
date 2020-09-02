@@ -110,6 +110,9 @@ export interface IWebXRTeleportationOptions {
      */
     xrInput: WebXRInput;
 
+    /**
+     * Meshes that the teleportation ray cannot go through
+     */
     pickBlockerMeshes?: AbstractMesh[];
 }
 
@@ -362,10 +365,13 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     }
                     // check for mesh-blockers
                     if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
-                        return false;
+                        return true;
                     }
                     return this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.position.y;
                 });
+                if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
+                    return;
+                }
                 if (pick && pick.pickedPoint) {
                     hitPossible = true;
                     this._setTargetMeshPosition(pick.pickedPoint);
@@ -387,10 +393,13 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         let pick = scene.pickWithRay(this._tmpRay, (o) => {
                             // check for mesh-blockers
                             if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
-                                return false;
+                                return true;
                             }
                             return this._floorMeshes.indexOf(o) !== -1;
                         });
+                        if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
+                            return;
+                        }
                         if (pick && pick.pickedPoint) {
                             hitPossible = true;
                             this._setTargetMeshPosition(pick.pickedPoint);
