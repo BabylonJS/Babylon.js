@@ -469,6 +469,13 @@
                 width: 20px;
                 grid-column: 2;
             }
+            
+            .icon {
+                display: grid;
+                align-items: center;   
+                justify-items: center;
+                cursor: pointer;
+            }
         }
 
         .particleSystemTools {

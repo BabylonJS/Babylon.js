@@ -38935,6 +38935,7 @@ declare module BABYLON {
         private _startingPointerTime;
         private _previousStartingPointerTime;
         private _pointerCaptures;
+        private _meshUnderPointerId;
         private _onKeyDown;
         private _onKeyUp;
         private _onCanvasFocusObserver;
@@ -38946,9 +38947,15 @@ declare module BABYLON {
          */
         constructor(scene: Scene);
         /**
-        * Gets the mesh that is currently under the pointer
-        */
+         * Gets the mesh that is currently under the pointer
+         */
         get meshUnderPointer(): Nullable<AbstractMesh>;
+        /**
+         * When using more than one pointer (for example in XR) you can get the mesh under the specific pointer
+         * @param pointerId the pointer id to use
+         * @returns The mesh under this pointer id or null if not found
+         */
+        getMeshUnderPointerByPointerId(pointerId: number): Nullable<AbstractMesh>;
         /**
          * Gets the pointer coordinates in 2D without any translation (ie. straight out of the pointer event)
          */
@@ -39000,12 +39007,12 @@ declare module BABYLON {
          */
         isPointerCaptured(pointerId?: number): boolean;
         /**
-        * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
-        * @param attachUp defines if you want to attach events to pointerup
-        * @param attachDown defines if you want to attach events to pointerdown
-        * @param attachMove defines if you want to attach events to pointermove
-        * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
-        */
+         * Attach events to the canvas (To handle actionManagers triggers and raise onPointerMove, onPointerDown and onPointerUp
+         * @param attachUp defines if you want to attach events to pointerup
+         * @param attachDown defines if you want to attach events to pointerdown
+         * @param attachMove defines if you want to attach events to pointermove
+         * @param elementToAttachTo defines the target DOM element to attach to (will use the canvas by default)
+         */
         attachControl(attachUp?: boolean, attachDown?: boolean, attachMove?: boolean, elementToAttachTo?: Nullable<HTMLElement>): void;
         /**
          * Detaches all event handlers
@@ -39014,8 +39021,9 @@ declare module BABYLON {
         /**
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use
+         * @param pointerId optional pointer id when using more than one pointer. Defaults to 0
          */
-        setPointerOverMesh(mesh: Nullable<AbstractMesh>): void;
+        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void;
         /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
@@ -41103,8 +41111,9 @@ declare module BABYLON {
         /**
          * Force the value of meshUnderPointer
          * @param mesh defines the mesh to use
+         * @param pointerId optional pointer id when using more than one pointer
          */
-        setPointerOverMesh(mesh: Nullable<AbstractMesh>): void;
+        setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void;
         /**
          * Gets the mesh under the pointer
          * @returns a Mesh or null if no mesh is under the pointer
@@ -42022,6 +42031,8 @@ declare module BABYLON {
      * in a given scene.
      */
     export class AudioSceneComponent implements ISceneSerializableComponent {
+        private static _CameraDirectionLH;
+        private static _CameraDirectionRH;
         /**
          * The component name helpfull to identify the component in the list of scene components.
          */
@@ -49373,6 +49384,10 @@ declare module BABYLON {
          * Babylon XR Input class for controller
          */
         xrInput: WebXRInput;
+        /**
+         * Meshes that the teleportation ray cannot go through
+         */
+        pickBlockerMeshes?: AbstractMesh[];
     }
     /**
      * This is a teleportation feature to be used with WebXR-enabled motion controllers.
@@ -49391,6 +49406,7 @@ declare module BABYLON {
         private _teleportationRingMaterial?;
         private _tmpRay;
         private _tmpVector;
+        private _tmpQuaternion;
         /**
          * The module's name
          */
@@ -50347,6 +50363,9 @@ declare module BABYLON {
         private _tempQuaternion;
         private _tempVector;
         private _tempVector2;
+        private _tempMatrix1;
+        private _tempMatrix2;
+        private _rightHandtoLeftHandMatrix;
         /**
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -51557,7 +51576,7 @@ declare module BABYLON {
          * @param inputIndex index of specific input on device
          * @returns Input value from DeviceInputSystem
          */
-        getInput(inputIndex: DeviceInput<T>): Nullable<number>;
+        getInput(inputIndex: DeviceInput<T>): number;
     }
     /**
      * Class to keep track of devices
@@ -54143,6 +54162,11 @@ declare module BABYLON {
         private _cachedPosition;
         private _cachedForward;
         private _attachedMeshParent;
+        private _pointerObserver;
+        /**
+         * Event that fires each time the gizmo is clicked
+         */
+        onClickedObservable: Observable<Light>;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -54186,6 +54210,11 @@ declare module BABYLON {
         private _cameraMesh;
         private _cameraLinesMesh;
         private _material;
+        private _pointerObserver;
+        /**
+         * Event that fires each time the gizmo is clicked
+         */
+        onClickedObservable: Observable<Camera>;
         /**
          * Creates a CameraGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -61976,7 +62005,8 @@ declare module BABYLON {
      * Class used to generate noise procedural textures
      */
     export class NoiseProceduralTexture extends ProceduralTexture {
-        private _time;
+        /** Gets or sets the start time (default is 0) */
+        time: number;
         /** Gets or sets a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
         brightness: number;
         /** Defines the number of octaves to process */
@@ -66625,6 +66655,14 @@ declare module BABYLON {
              * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
              */
             thinInstanceBufferUpdated(kind: string): void;
+            /**
+             * Applies a partial update to a buffer directly on the GPU
+             * Note that the buffer located on the CPU is NOT updated! It's up to you to update it (or not) with the same data you pass to this method
+             * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
+             * @param data the data to set in the GPU buffer
+             * @param offset the offset in the GPU buffer where to update the data
+             */
+            thinInstancePartialBufferUpdate(kind: string, data: Float32Array, offset: number): void;
             /**
              * Refreshes the bounding info, taking into account all the thin instances defined
              * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
@@ -77547,12 +77585,12 @@ declare module BABYLON.GUI {
         private _underline;
         private _lineThrough;
         /**
-        * An event triggered after the text is changed
-        */
+         * An event triggered after the text is changed
+         */
         onTextChangedObservable: BABYLON.Observable<TextBlock>;
         /**
-        * An event triggered after the text was broken up into lines
-        */
+         * An event triggered after the text was broken up into lines
+         */
         onLinesReadyObservable: BABYLON.Observable<TextBlock>;
         /**
          * Function used to split a string into words. By default, a string is split at each space character found
@@ -78820,6 +78858,7 @@ declare module BABYLON.GUI {
         name?: string | undefined;
         private _background;
         private _borderColor;
+        private _thumbColor;
         private _isThumbCircle;
         protected _displayValueBar: boolean;
         /** Gets or sets a boolean indicating if the value bar must be rendered */
@@ -78831,6 +78870,9 @@ declare module BABYLON.GUI {
         /** Gets or sets background color */
         get background(): string;
         set background(value: string);
+        /** Gets or sets thumb's color */
+        get thumbColor(): string;
+        set thumbColor(value: string);
         /** Gets or sets a boolean indicating if the thumb should be round or square */
         get isThumbCircle(): boolean;
         set isThumbCircle(value: boolean);
@@ -83397,6 +83439,10 @@ declare module BABYLON.GLTF2.Exporter {
                 mimeType: ImageMimeType;
             };
         };
+        protected _orderedImageData: Array<{
+            data: Uint8Array;
+            mimeType: ImageMimeType;
+        }>;
         /**
          * Stores a map of the unique id of a node to its index in the node array
          */
