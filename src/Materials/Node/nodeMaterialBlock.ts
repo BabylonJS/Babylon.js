@@ -156,6 +156,9 @@ export class NodeMaterialBlock {
         return null;
     }
 
+     /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+     public visibleInInspector = false;
+     
     /**
      * Creates a new NodeMaterialBlock
      * @param name defines the block name

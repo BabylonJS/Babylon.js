@@ -20,6 +20,7 @@ import { SliderLineComponent } from '../../../lines/sliderLineComponent';
 import { NodeMaterialBlockConnectionPointTypes } from 'babylonjs/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes';
 import { InputBlock } from 'babylonjs/Materials/Node/Blocks/Input/inputBlock';
 import { Color4LineComponent } from '../../../lines/color4LineComponent';
+import { GradientPropertyTabComponent } from '../../gradientNodePropertyComponent';
 
 interface INodeMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -118,6 +119,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 )
             }
+            
         return null;
     }
 
@@ -128,12 +130,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
             return a.name.localeCompare(b.name);
         });
 
-        if (configurableInputBlocks.length === 0) {
-            return null;
-        }
-
         let namedGroups: string[] = [];
-
         configurableInputBlocks.forEach(block => {
             if (!block.groupInInspector) {
                 return;
@@ -143,18 +140,26 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 namedGroups.push(block.groupInInspector);
             }
         });
-
         namedGroups.sort();
+        
+
+        let gradiantNodeMaterialBlocks = this.props.material.attachedBlocks.filter(block => {
+            return block.visibleInInspector && block.getClassName() === 'GradientBlock'
+        }).sort( (a, b) => {
+            return a.name.localeCompare(b.name);
+        });
+
+        let inputBlockContainer = configurableInputBlocks.length > 0 ?
+            <LineContainerComponent globalState={this.props.globalState} title="INPUTS"> {
+                configurableInputBlocks.filter(block => !block.groupInInspector).map(block => {
+                    return this.renderInputBlock(block);
+                })
+            }
+            </LineContainerComponent> : null;
 
         return (           
             <>
-                <LineContainerComponent globalState={this.props.globalState} title="INPUTS">
-                    {
-                        configurableInputBlocks.filter(block => !block.groupInInspector).map(block => {
-                            return this.renderInputBlock(block);
-                        })
-                    }           
-                </LineContainerComponent>
+                {inputBlockContainer}
                 {
                     namedGroups.map((name, i) => {
                         return (
@@ -166,7 +171,18 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                             }
                             </LineContainerComponent>
                         )
-                    })
+                    })   
+                }
+                {
+                    gradiantNodeMaterialBlocks.map((block,i) => {
+                        return (
+                            <LineContainerComponent key={block.name +i} globalState={this.props.globalState} title={block.name.toUpperCase()}>
+                            {
+                                <GradientPropertyTabComponent globalState={this.props.globalState} block={block}/>
+                            }
+                            </LineContainerComponent>
+                        )
+                    })   
                 }
           </>
         );
