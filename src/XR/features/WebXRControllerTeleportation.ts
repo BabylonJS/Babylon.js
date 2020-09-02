@@ -109,6 +109,8 @@ export interface IWebXRTeleportationOptions {
      * Babylon XR Input class for controller
      */
     xrInput: WebXRInput;
+
+    pickBlockerMeshes?: AbstractMesh[];
 }
 
 /**
@@ -141,6 +143,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _teleportationRingMaterial?: StandardMaterial;
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     private _tmpVector = new Vector3();
+    private _tmpQuaternion = new Quaternion();
 
     /**
      * The module's name
@@ -357,6 +360,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     if (index === -1) {
                         return false;
                     }
+                    // check for mesh-blockers
+                    if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
+                        return false;
+                    }
                     return this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.position.y;
                 });
                 if (pick && pick.pickedPoint) {
@@ -378,6 +385,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         this._tmpRay.direction.normalize();
 
                         let pick = scene.pickWithRay(this._tmpRay, (o) => {
+                            // check for mesh-blockers
+                            if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
+                                return false;
+                            }
                             return this._floorMeshes.indexOf(o) !== -1;
                         });
                         if (pick && pick.pickedPoint) {
@@ -461,23 +472,37 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             }
                             if (axesData.y > 0.7 && !controllerData.teleportationState.forward && this.backwardsMovementEnabled && !this.snapPointsOnly) {
                                 // teleport backwards
+
+                                // General gist: Go Back N units, cast a ray towards the floor. If collided, move.
                                 if (!controllerData.teleportationState.backwards) {
                                     controllerData.teleportationState.backwards = true;
                                     // teleport backwards ONCE
-                                    this._tmpVector.set(0, 0, this.backwardsTeleportationDistance * (this._xrSessionManager.scene.useRightHandedSystem ? -1.0 : 1.0));
-                                    this._tmpVector.rotateByQuaternionToRef(this._options.xrInput.xrCamera.rotationQuaternion!, this._tmpVector);
+                                    this._tmpQuaternion.copyFrom(this._options.xrInput.xrCamera.rotationQuaternion!);
+                                    this._tmpQuaternion.toEulerAnglesToRef(this._tmpVector);
+                                    // get only the y rotation
+                                    this._tmpVector.x = 0;
+                                    this._tmpVector.z = 0;
+                                    // get the quaternion
+                                    Quaternion.FromEulerVectorToRef(this._tmpVector, this._tmpQuaternion);
+                                    this._tmpVector.set(0, 0, this.backwardsTeleportationDistance * (this._xrSessionManager.scene.useRightHandedSystem ? 1.0 : -1.0));
+                                    this._tmpVector.rotateByQuaternionToRef(this._tmpQuaternion, this._tmpVector);
                                     this._tmpVector.addInPlace(this._options.xrInput.xrCamera.position);
-                                    this._options.xrInput.xrCamera.position.subtractToRef(this._tmpVector, this._tmpVector);
                                     this._tmpRay.origin.copyFrom(this._tmpVector);
-                                    this._tmpRay.direction.set(0, this._xrSessionManager.scene.useRightHandedSystem ? 1 : -1, 0);
+                                    // This will prevent the user from "falling" to a lower platform!
+                                    // TODO - should this be a flag? 'allow falling to lower platforms'?
+                                    this._tmpRay.length = this._options.xrInput.xrCamera.realWorldHeight + 0.1;
+                                    // Right handed system had here "1" instead of -1. This is unneeded.
+                                    this._tmpRay.direction.set(0, -1, 0);
                                     let pick = this._xrSessionManager.scene.pickWithRay(this._tmpRay, (o) => {
                                         return this._floorMeshes.indexOf(o) !== -1;
                                     });
 
                                     // pick must exist, but stay safe
                                     if (pick && pick.pickedPoint) {
-                                        // Teleport the users feet to where they targeted
-                                        this._options.xrInput.xrCamera.position.addInPlace(pick.pickedPoint);
+                                        // Teleport the users feet to where they targeted. Ignore the Y axis.
+                                        // If the "falling to lower platforms" feature is implemented the Y axis should be set here as well
+                                        this._options.xrInput.xrCamera.position.x = pick.pickedPoint.x;
+                                        this._options.xrInput.xrCamera.position.z = pick.pickedPoint.z;
                                     }
                                 }
                             }
