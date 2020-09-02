@@ -62,6 +62,9 @@ class TransmissionHelper {
         };
         this._scene = scene;
         this.onErrorObservable = new Observable();
+        this._scene.onDisposeObservable.addOnce((scene) => {
+            this.dispose();
+        });
 
         this._parseScene();
         this._setupRenderTargets();
