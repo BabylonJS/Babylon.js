@@ -9,11 +9,6 @@ export class DataReader {
         return this._dataByteOffset;
     }
 
-    /**
-     * Indicates the endianness of the data in the buffer
-     */
-    public littleEndian = true;
-
     private _dataView: DataView;
     private _dataByteOffset: number;
 
@@ -58,7 +53,7 @@ export class DataReader {
      * @returns The 16-bit integer read
      */
     public readUint16(): number {
-        const value = this._dataView.getUint16(this._dataByteOffset, this.littleEndian);
+        const value = this._dataView.getUint16(this._dataByteOffset, true);
         this._dataByteOffset += 2;
         return value;
     }
@@ -68,7 +63,7 @@ export class DataReader {
      * @returns The 16-bit integer read
      */
     public readInt16(): number {
-        const value = this._dataView.getInt16(this._dataByteOffset, this.littleEndian);
+        const value = this._dataView.getInt16(this._dataByteOffset, true);
         this._dataByteOffset += 2;
         return value;
     }
@@ -78,7 +73,7 @@ export class DataReader {
      * @returns The 32-bit integer read
      */
     public readUint32(): number {
-        const value = this._dataView.getUint32(this._dataByteOffset, this.littleEndian);
+        const value = this._dataView.getUint32(this._dataByteOffset, true);
         this._dataByteOffset += 4;
         return value;
     }
@@ -88,7 +83,7 @@ export class DataReader {
      * @returns The 32-bit integer read
      */
     public readInt32(): number {
-        const value = this._dataView.getInt32(this._dataByteOffset, this.littleEndian);
+        const value = this._dataView.getInt32(this._dataByteOffset, true);
         this._dataByteOffset += 4;
         return value;
     }
@@ -99,11 +94,11 @@ export class DataReader {
      */
     public readUint64(): number {
         // split 64-bit number into two 32-bit (4-byte) parts
-        const left = this._dataView.getUint32(this._dataByteOffset, this.littleEndian);
-        const right = this._dataView.getUint32(this._dataByteOffset + 4, this.littleEndian);
+        const left = this._dataView.getUint32(this._dataByteOffset, true);
+        const right = this._dataView.getUint32(this._dataByteOffset + 4, true);
 
         // combine the two 32-bit values
-        const combined = this.littleEndian ? left + (2 ** 32 * right) : (2 ** 32 * left) + right;
+        const combined = true ? left + (2 ** 32 * right) : (2 ** 32 * left) + right;
 
         /*if (!Number.isSafeInteger(combined)) {
             console.warn('DataReader: ' + combined + ' exceeds MAX_SAFE_INTEGER. Precision may be lost.');
