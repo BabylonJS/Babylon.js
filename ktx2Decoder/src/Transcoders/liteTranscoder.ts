@@ -17,18 +17,12 @@ export class LiteTranscoder extends Transcoder {
             return this._modulePromise;
         }
 
-        this._modulePromise = new Promise((resolve, reject) => {
-            WASMMemoryManager.LoadWASM(this._modulePath)
-                .then((wasmBinary) => {
-                    WebAssembly.instantiate(wasmBinary as ArrayBuffer, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
-                        resolve({ module: moduleWrapper.instance.exports });
-                    });
-                }, (reason) => {
-                    reject(reason);
-                })
-                .catch((reason) => {
-                    reject(reason);
+        this._modulePromise = WASMMemoryManager.LoadWASM(this._modulePath).then((wasmBinary) => {
+            return new Promise((resolve) => {
+                WebAssembly.instantiate(wasmBinary as ArrayBuffer, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
+                    resolve({ module: moduleWrapper.instance.exports });
                 });
+            });
         });
 
         return this._modulePromise;
