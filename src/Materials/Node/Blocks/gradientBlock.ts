@@ -31,13 +31,17 @@ export class GradientBlockColorStep {
     }
 
     private _color: Color3;
+
     /**
-     * Gets or sets the color associated with this step
+     * Gets the color associated with this step
      */
     public get color(): Color3 {
         return this._color;
     }
 
+    /**
+     * Sets the color associated with this step
+     */
     public set color(val: Color3) {
         this._color = val;
         this._parent.onValueChangedObservable?.notifyObservers(this._parent);
@@ -45,6 +49,7 @@ export class GradientBlockColorStep {
 
     /**
      * Creates a new GradientBlockColorStep
+     * @param parent defines the parent gradient for this block
      * @param step defines a value indicating which step this color is associated with (between 0 and 1)
      * @param color defines the color associated with this step
      */

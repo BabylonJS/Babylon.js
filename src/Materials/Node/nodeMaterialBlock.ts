@@ -158,7 +158,7 @@ export class NodeMaterialBlock {
 
      /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
      public visibleInInspector = false;
-    
+
     /**
      * Creates a new NodeMaterialBlock
      * @param name defines the block name
@@ -587,7 +587,7 @@ export class NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         let variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector}`
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector}`;
     }
 
     /** @hidden */
