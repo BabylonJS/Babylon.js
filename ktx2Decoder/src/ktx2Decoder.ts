@@ -14,7 +14,6 @@ import { LiteTranscoder_UASTC_ASTC } from './Transcoders/liteTranscoder_UASTC_AS
 import { LiteTranscoder_UASTC_BC7 } from './Transcoders/liteTranscoder_UASTC_BC7';
 import { MSCTranscoder } from './Transcoders/mscTranscoder';
 import { transcodeTarget, sourceTextureFormat } from './transcoder';
-import { Nullable } from './types';
 import { ZSTDDecoder } from './zstddec';
 
 const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
@@ -38,7 +37,7 @@ export interface IDecodedData {
 }
 
 export interface IMipmap {
-    data: Nullable<Uint8Array>;
+    data: Uint8Array | null;
     width: number;
     height: number;
 }
@@ -68,7 +67,7 @@ export class KTX2Decoder {
         this._transcoderMgr = new TranscoderManager();
     }
 
-    public decode(data: Uint8Array, caps: ICompressedFormatCapabilities): Nullable<Promise<IDecodedData>> {
+    public decode(data: Uint8Array, caps: ICompressedFormatCapabilities): Promise<IDecodedData | null> {
         const kfr = new KTX2FileReader(data);
 
         if (!kfr.isValid()) {
@@ -129,7 +128,7 @@ export class KTX2Decoder {
         }
 
         const mipmaps: Array<IMipmap> = [];
-        const dataPromises: Array<Promise<Nullable<Uint8Array>>> = [];
+        const dataPromises: Array<Promise<Uint8Array | null>> = [];
         const mipmapBuffers: Array<ArrayBuffer> = [];
         const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace };
 
@@ -165,7 +164,7 @@ export class KTX2Decoder {
 
             for (let imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {
                 let encodedData: Uint8Array;
-                let imageDesc: Nullable<IKTX2_ImageDesc> = null;
+                let imageDesc: IKTX2_ImageDesc | null = null;
 
                 if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ) {
                     imageDesc = kfr.supercompressionGlobalData.imageDescs![firstImageDescIndex + imageIndex];
