@@ -7,7 +7,7 @@
  *  - KTX-Software: https://github.com/KhronosGroup/KTX-Software
  */
 
-import { KTX2FileReader, supercompressionScheme, IKTX2_ImageDesc } from './ktx2FileReader';
+import { KTX2FileReader, SupercompressionScheme, IKTX2_ImageDesc } from './ktx2FileReader';
 import { TranscoderManager } from './transcoderManager';
 import { LiteTranscoder_UASTC_ASTC } from './Transcoders/liteTranscoder_UASTC_ASTC';
 import { LiteTranscoder_UASTC_BC7 } from './Transcoders/liteTranscoder_UASTC_BC7';
@@ -70,7 +70,7 @@ export class KTX2Decoder {
     public decode(data: Uint8Array, caps: ICompressedFormatCapabilities): Nullable<Promise<IDecodedData>> {
         const kfr = new KTX2FileReader(data);
 
-        if (!kfr.isValid) {
+        if (!kfr.isValid()) {
             throw new Error("Invalid KT2 file: wrong signature");
         }
 
@@ -152,7 +152,7 @@ export class KTX2Decoder {
             let levelDataOffset = kfr.levels[level].byteOffset + kfr.data.byteOffset;
             let imageOffsetInLevel = 0;
 
-            if (kfr.header.supercompressionScheme === supercompressionScheme.ZStandard) {
+            if (kfr.header.supercompressionScheme === SupercompressionScheme.ZStandard) {
                 levelDataBuffer = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
                 levelDataOffset = 0;
             }
@@ -166,7 +166,7 @@ export class KTX2Decoder {
                 let encodedData: Uint8Array;
                 let imageDesc: Nullable<IKTX2_ImageDesc> = null;
 
-                if (kfr.header.supercompressionScheme === supercompressionScheme.BasisLZ) {
+                if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ) {
                     imageDesc = kfr.supercompressionGlobalData.imageDescs![firstImageDescIndex + imageIndex];
 
                     encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageDesc.rgbSliceByteOffset, imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength);
@@ -209,6 +209,6 @@ export class KTX2Decoder {
 }
 
 // Put in the order you want the transcoders to be used in priority
-TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_ASTC);
-TranscoderManager.registerTranscoder(LiteTranscoder_UASTC_BC7);
-TranscoderManager.registerTranscoder(MSCTranscoder); // catch all transcoder - will throw an error if the format can't be transcoded
+TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_ASTC);
+TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_BC7);
+TranscoderManager.RegisterTranscoder(MSCTranscoder); // catch all transcoder - will throw an error if the format can't be transcoded

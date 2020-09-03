@@ -2,19 +2,19 @@ import { DataReader } from './Misc/dataReader';
 import { sourceTextureFormat } from './transcoder';
 
 /** @hidden */
-export enum supercompressionScheme {
+export enum SupercompressionScheme {
     None = 0,
     BasisLZ = 1,
     ZStandard = 2,
     ZLib = 3
 }
 
-const enum dfdModel {
+const enum DFDModel {
     ETC1S = 163,
     UASTC = 166
 }
 
-const enum dfdChannel_ETC1S {
+const enum DFDChannel_ETC1S {
     RGB = 0,
     RRR = 3,
     GGG = 4,
@@ -22,14 +22,14 @@ const enum dfdChannel_ETC1S {
 
 }
 
-const enum dfdChannel_UASTC {
+const enum DFDChannel_UASTC {
     RGB  = 0,
     RGBA = 3,
     RRR  = 4,
     RRRG = 5
 }
 
-const enum dfdTransferFunction {
+const enum DFDTransferFunction {
     linear = 1,
     sRGB = 2
 }
@@ -323,7 +323,7 @@ export class KTX2FileReader {
     }
 
     public get textureFormat(): sourceTextureFormat {
-        return this._dfdBlock.colorModel === dfdModel.UASTC ? sourceTextureFormat.UASTC4x4 : sourceTextureFormat.ETC1S;
+        return this._dfdBlock.colorModel === DFDModel.UASTC ? sourceTextureFormat.UASTC4x4 : sourceTextureFormat.ETC1S;
     }
 
     public get hasAlpha(): boolean {
@@ -331,21 +331,21 @@ export class KTX2FileReader {
 
         switch (tformat) {
             case sourceTextureFormat.ETC1S:
-                return this._dfdBlock.numSamples === 2 && (this._dfdBlock.samples[0].channelType === dfdChannel_ETC1S.AAA || this._dfdBlock.samples[1].channelType === dfdChannel_ETC1S.AAA);
+                return this._dfdBlock.numSamples === 2 && (this._dfdBlock.samples[0].channelType === DFDChannel_ETC1S.AAA || this._dfdBlock.samples[1].channelType === DFDChannel_ETC1S.AAA);
 
             case sourceTextureFormat.UASTC4x4:
-                return this._dfdBlock.samples[0].channelType === dfdChannel_UASTC.RGBA;
+                return this._dfdBlock.samples[0].channelType === DFDChannel_UASTC.RGBA;
         }
 
         return false;
     }
 
     public get needZSTDDecoder(): boolean {
-        return this._header.supercompressionScheme === supercompressionScheme.ZStandard;
+        return this._header.supercompressionScheme === SupercompressionScheme.ZStandard;
     }
 
     public get isInGammaSpace(): boolean {
-        return this._dfdBlock.transferFunction === dfdTransferFunction.sRGB;
+        return this._dfdBlock.transferFunction === DFDTransferFunction.sRGB;
     }
 
     public static IsValid(data: ArrayBufferView): boolean {
