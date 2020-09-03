@@ -67534,6 +67534,7 @@ var GraphFrame = /** @class */ (function () {
                 return;
             }
             else {
+                node.enclosingFrameId = -1;
                 _this_1._nodes.splice(index, 1);
             }
         });
@@ -67888,6 +67889,7 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.removeNode = function (node) {
         var index = this.nodes.indexOf(node);
         if (index > -1) {
+            node.enclosingFrameId = -1;
             this.nodes.splice(index, 1);
         }
     };
@@ -68105,6 +68107,9 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.dispose = function () {
         var _a;
         this.isCollapsed = false;
+        this._nodes.forEach(function (node) {
+            node.enclosingFrameId = -1;
+        });
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -68226,6 +68231,7 @@ var GraphNode = /** @class */ (function () {
         this._mouseStartPointY = null;
         this._displayManager = null;
         this._isVisible = true;
+        this._enclosingFrameId = -1;
         this._globalState = globalState;
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (node) {
             if (node === _this) {
@@ -69849,7 +69855,7 @@ var NodePortPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
-                    this.props.nodePort.node.enclosingFrameId !== undefined && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
+                    this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
     };
     return NodePortPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
