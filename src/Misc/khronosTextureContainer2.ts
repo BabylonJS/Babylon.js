@@ -269,7 +269,6 @@ export function workerFunc(): void {
                     }
                     postMessage({ action: "decoded", success: true, decodedData: data }, buffers);
                 }).catch((reason: any) => {
-                    console.log("here");
                     postMessage({ action: "decoded", success: false, msg: reason });
                 });
                 break;
