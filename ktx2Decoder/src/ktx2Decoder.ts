@@ -102,7 +102,7 @@ export class KTX2Decoder {
             targetFormat = transcodeTarget.ASTC_4x4_RGBA;
             transcodedFormat = COMPRESSED_RGBA_ASTC_4x4_KHR;
         } else if (caps.bptc) {
-            targetFormat = transcodeTarget.BC7_M5_RGBA;
+            targetFormat = transcodeTarget.BC7_RGBA;
             transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
         } else if (caps.s3tc) {
             targetFormat = kfr.hasAlpha ? transcodeTarget.BC3_RGBA : transcodeTarget.BC1_RGB;

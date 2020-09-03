@@ -15,7 +15,7 @@ export enum sourceTextureFormat {
  */
 export enum transcodeTarget {
     ASTC_4x4_RGBA,
-    BC7_M5_RGBA,
+    BC7_RGBA,
     BC3_RGBA,
     BC1_RGB,
     PVRTC1_4_RGBA,
