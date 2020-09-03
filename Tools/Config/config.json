@@ -674,7 +674,7 @@
                     "readme.md"
                 ],
                 "typings": "babylon.ktx2Decoder.module.d.ts",
-                "index": "babylon.ktx2Decoder+.max.js"
+                "index": "babylon.ktx2Decoder.max.js"
             }
         }
     },
