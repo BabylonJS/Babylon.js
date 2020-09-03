@@ -56,11 +56,11 @@ export class TextureCanvasManager {
 
     private _size : ISize;
 
-    /* The canvas we paint onto using the canvas API */
+    /** The canvas we paint onto using the canvas API */
     private _2DCanvas : HTMLCanvasElement;
-    /* The canvas we apply post processes to */
+    /** The canvas we apply post processes to */
     private _3DCanvas : HTMLCanvasElement;
-    /* The canvas which handles channel filtering */
+    /** The canvas which handles channel filtering */
     private _channelsTexture : HtmlElementTexture;
 
     private _3DEngine : Engine;
@@ -72,19 +72,19 @@ export class TextureCanvasManager {
     private _face : number = 0;
     private _mipLevel : number = 0;
 
-    /* The texture from the original engine that we invoked the editor on */
+    /** The texture from the original engine that we invoked the editor on */
     private _originalTexture: BaseTexture;
-    /* This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
+    /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
     private _target : HtmlElementTexture | RawCubeTexture;
-    /* The internal texture representation of the original texture */
+    /** The internal texture representation of the original texture */
     private _originalInternalTexture : Nullable<InternalTexture> = null;
-    /* Keeps track of whether we have modified the texture */
+    /** Keeps track of whether we have modified the texture */
     private _didEdit : boolean = false;
 
     private _plane : Mesh;
     private _planeMaterial : ShaderMaterial;
 
-    /* Tracks which keys are currently pressed */
+    /** Tracks which keys are currently pressed */
     private _keyMap : any = {};
 
     private static ZOOM_MOUSE_SPEED : number = 0.001;
@@ -92,7 +92,7 @@ export class TextureCanvasManager {
     private static ZOOM_IN_KEY : string = '+';
     private static ZOOM_OUT_KEY : string = '-';
 
-    private static PAN_SPEED : number = 0.002;
+    private static PAN_SPEED : number = 0.003;
     private static PAN_MOUSE_BUTTON : number = 1; // MMB
 
     private static MIN_SCALE : number = 0.01;
@@ -104,9 +104,13 @@ export class TextureCanvasManager {
     private static RESET_KEY = 'KeyR';
     private static DESELECT_KEY = 'Escape'
 
+    /** The number of milliseconds between texture updates */
+    private static PUSH_FREQUENCY = 32;
+
     private _tool : Nullable<ITool>;
 
     private _setPixelData : (pixelData : IPixelData) => void;
+    private _setMipLevel: (mipLevel: number) => void;
 
     private _window : Window;
 
@@ -118,8 +122,8 @@ export class TextureCanvasManager {
     private _setMetadata : (metadata: any) => void;
 
     private _imageData : Uint8Array | Uint8ClampedArray;
-    private _canUpdate : boolean = true;
-    private _shouldUpdate : boolean = false;
+    private _canPush : boolean = true;
+    private _shouldPush : boolean = false;
     private _paintCanvas: HTMLCanvasElement;
 
     public constructor(
@@ -131,7 +135,8 @@ export class TextureCanvasManager {
         setPixelData: (pixelData : IPixelData) => void,
         metadata: IMetadata,
         onUpdate: () => void,
-        setMetadata: (metadata: any) => void
+        setMetadata: (metadata: any) => void,
+        setMipLevel: (level: number) => void
     ) {
         this._window = window;
 
@@ -143,6 +148,7 @@ export class TextureCanvasManager {
         this._metadata = metadata;
         this._onUpdate = onUpdate;
         this._setMetadata = setMetadata;
+        this._setMipLevel = setMipLevel;
 
         this._size = texture.getSize();
         this._originalTexture = texture;
@@ -240,7 +246,6 @@ export class TextureCanvasManager {
             this._engine.resize();
             this._scene.render();
             this._planeMaterial.setInt('time', new Date().getTime());
-            
         });
 
         this._scale =  1.5 / Math.max(this._size.width, this._size.height);
@@ -282,8 +287,8 @@ export class TextureCanvasManager {
                     break;
                 case PointerEventTypes.POINTERMOVE:
                     if (this._isPanning) {
-                        this._cameraPos.x -= (pointerInfo.event.x - this._mouseX) / this._scale * TextureCanvasManager.PAN_SPEED;
-                        this._cameraPos.y += (pointerInfo.event.y - this._mouseY) / this._scale * TextureCanvasManager.PAN_SPEED;
+                        this._cameraPos.x -= (pointerInfo.event.x - this._mouseX) * TextureCanvasManager.PAN_SPEED / this._scale;
+                        this._cameraPos.y += (pointerInfo.event.y - this._mouseY) * TextureCanvasManager.PAN_SPEED / this._scale;
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
                     }
@@ -336,13 +341,14 @@ export class TextureCanvasManager {
                     {
                         engine: this._originalTexture.getScene()?.getEngine()!,
                         scene: null,
-                        samplingMode: (this._originalTexture as Texture).samplingMode
+                        samplingMode: (this._originalTexture as Texture).samplingMode,
+                        generateMipMaps: this._originalInternalTexture?.generateMipMaps
                     }
                 );
             } else {
                 (this._target as HtmlElementTexture).element = element;
             }
-            this.queueTextureUpdate();
+            this.pushTexture();
         }
         this._originalTexture._texture = this._target._texture;
         this._channelsTexture.element = element;
@@ -350,8 +356,8 @@ export class TextureCanvasManager {
         this._onUpdate();
     }
 
-    private queueTextureUpdate() {
-        if (this._canUpdate) {
+    private pushTexture() {
+        if (this._canPush) {
             (this._target as HtmlElementTexture).update((this._originalTexture as Texture).invertY);
             this._target._texture?.updateSize(this._size.width, this._size.height);
             if (this._editing3D) {
@@ -359,20 +365,21 @@ export class TextureCanvasManager {
             } else {
                 this._imageData = this._2DCanvas.getContext('2d')!.getImageData(0, 0, this._size.width, this._size.height).data;
             }
-            this._canUpdate = false;
-            this._shouldUpdate = false;
+            this._canPush = false;
+            this._shouldPush = false;
             setTimeout(() => {
-                this._canUpdate = true;
-                if (this._shouldUpdate) {
-                    this.queueTextureUpdate();
+                this._canPush = true;
+                if (this._shouldPush) {
+                    this.pushTexture();
                 }
-            }, 32);
+            }, TextureCanvasManager.PUSH_FREQUENCY);
         } else {
-            this._shouldUpdate = true;
+            this._shouldPush = true;
         }
     }
 
-    public startPainting() : CanvasRenderingContext2D {
+    public async startPainting() : Promise<CanvasRenderingContext2D> {
+        if (this._mipLevel != 0) await this._setMipLevel(0);
         let x = 0, y = 0, w = this._size.width, h = this._size.height;
         if (this._metadata.select.x1 != -1) {
             x = this._metadata.select.x1;
@@ -472,10 +479,10 @@ export class TextureCanvasManager {
         ctx.putImageData(imgData, 0, 0);
     }
 
-    public grabOriginalTexture() {
+    public async grabOriginalTexture() {
         // Grab image data from original texture and paint it onto the context of a DynamicTexture
         this.setSize(this._originalTexture.getSize());
-        TextureHelper.GetTextureDataAsync(
+        const data = await TextureHelper.GetTextureDataAsync(
             this._originalTexture,
             this._size.width,
             this._size.height,
@@ -483,13 +490,13 @@ export class TextureCanvasManager {
             {R:true, G:true, B:true, A:true},
             undefined,
             this._mipLevel
-        ).then(data => {
-            this._imageData = data;
-            TextureCanvasManager.paintPixelsOnCanvas(data, this._2DCanvas);
-            this._3DCanvasTexture.update();
-            this.updateDisplay();
-        })
-    }
+        );
+        this._imageData = data;
+        TextureCanvasManager.paintPixelsOnCanvas(data, this._2DCanvas);
+        this._3DCanvasTexture.update();
+        this.updateDisplay();
+        return data;
+}
 
     public getMouseCoordinates(pointerInfo : PointerInfo) {
         if (pointerInfo.pickInfo?.hit) {
@@ -634,14 +641,15 @@ export class TextureCanvasManager {
                         Texture.NEAREST_SAMPLINGMODE,
                         () => {
                             TextureHelper.GetTextureDataAsync(texture, texture.getSize().width, texture.getSize().height, 0, {R: true, G: true, B: true, A: true})
-                                .then((pixels) => {
+                                .then(async (pixels) => {
                                     if (this._tool && this._tool.instance.onReset) {
                                         this._tool.instance.onReset();
                                     }
+                                    texture.dispose();
                                     this.setSize(texture.getSize());
                                     TextureCanvasManager.paintPixelsOnCanvas(pixels, this._2DCanvas);
-                                    this.updateTexture();
-                                    texture.dispose();
+                                    await this.updateTexture();
+                                    this._setMipLevel(0);
                                 });
                         }
                     );

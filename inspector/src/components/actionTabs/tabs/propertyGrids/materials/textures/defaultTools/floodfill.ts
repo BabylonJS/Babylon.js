@@ -12,9 +12,9 @@ export const Floodfill : IToolData = {
             this.getParameters = getParameters;
         }
 
-        fill() {
+        async fill() {
             const {metadata, startPainting, updatePainting, stopPainting} = this.getParameters();
-            const ctx = startPainting();
+            const ctx = await startPainting();
             ctx.fillStyle = metadata.color;
             ctx.globalAlpha = metadata.alpha;
             ctx.globalCompositeOperation = 'copy';
