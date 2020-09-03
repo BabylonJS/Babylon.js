@@ -13,13 +13,11 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
 import { Observable } from "babylonjs/Misc/observable";
 
-declare module "babylonjs/scene" {
-    interface Scene {
-        /**
-         * @hidden
-         */
-        _transmissionHelper: TransmissionHelper | undefined;
-    }
+interface TransmissionHelperHolder {
+    /**
+     * @hidden
+     */
+    _transmissionHelper: TransmissionHelper | undefined;
 }
 
 interface ITransmissionHelperOptions {
@@ -46,7 +44,8 @@ class TransmissionHelper {
     /**
      * Stores the creation options.
      */
-    private readonly _scene: Scene;
+    private readonly _scene: Scene & TransmissionHelperHolder;
+
     private _options: ITransmissionHelperOptions;
 
     private _opaqueRenderTarget: Nullable<RenderTargetTexture> = null;
@@ -69,8 +68,9 @@ class TransmissionHelper {
             ...TransmissionHelper._getDefaultOptions(),
             ...options
         };
-        this._scene = scene;
+        this._scene = scene as any;
         this._scene._transmissionHelper = this;
+
         this.onErrorObservable = new Observable();
         this._scene.onDisposeObservable.addOnce((scene) => {
             this.dispose();
@@ -313,7 +313,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
 
         if (extension.transmissionFactor !== undefined) {
             pbrMaterial.subSurface.refractionIntensity = extension.transmissionFactor;
-            const scene = pbrMaterial.getScene();
+            const scene = pbrMaterial.getScene() as unknown as TransmissionHelperHolder;
             if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper) {
                 new TransmissionHelper({}, pbrMaterial.getScene());
             }
