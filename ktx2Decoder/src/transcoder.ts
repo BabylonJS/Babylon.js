@@ -1,4 +1,3 @@
-import { Nullable } from './types';
 import { WASMMemoryManager } from './wasmMemoryManager';
 import { KTX2FileReader, IKTX2_ImageDesc } from './ktx2FileReader';
 
@@ -44,7 +43,7 @@ export class Transcoder {
     public setMemoryManager(memoryMgr: WASMMemoryManager): void {
     }
 
-    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, uncompressedByteLength: number, ktx2Reader: KTX2FileReader, imageDesc: Nullable<IKTX2_ImageDesc>, encodedData: Uint8Array): Promise<Nullable<Uint8Array>> {
+    public transcode(src: sourceTextureFormat, dst: transcodeTarget, level: number, width: number, height: number, uncompressedByteLength: number, ktx2Reader: KTX2FileReader, imageDesc: IKTX2_ImageDesc | null, encodedData: Uint8Array): Promise<Uint8Array | null> {
         return Promise.resolve(null);
     }
 }

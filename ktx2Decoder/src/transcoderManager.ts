@@ -1,5 +1,4 @@
 import { transcodeTarget, sourceTextureFormat, Transcoder } from './transcoder';
-import { Nullable } from './types';
 import { WASMMemoryManager } from './wasmMemoryManager';
 
 /**
@@ -17,8 +16,8 @@ export class TranscoderManager {
 
     private _wasmMemoryManager: WASMMemoryManager;
 
-    public findTranscoder(src: sourceTextureFormat, dst: transcodeTarget): Nullable<Transcoder> {
-        let transcoder: Nullable<Transcoder> = null;
+    public findTranscoder(src: sourceTextureFormat, dst: transcodeTarget): Transcoder | null {
+        let transcoder: Transcoder | null = null;
 
         for (let i = 0; i < TranscoderManager._Transcoders.length; ++i) {
             if (TranscoderManager._Transcoders[i].CanTranscode(src, dst)) {
