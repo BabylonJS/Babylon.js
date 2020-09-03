@@ -25,26 +25,22 @@ export class MSCTranscoder extends Transcoder {
     private _mscBasisTranscoderPromise: Promise<any>;
     private _mscBasisModule: any;
 
-    private _getMSCBasisTranscoder() {
+    private _getMSCBasisTranscoder(): Promise<any> {
         if (this._mscBasisTranscoderPromise) {
             return this._mscBasisTranscoderPromise;
         }
 
-        this._mscBasisTranscoderPromise = new Promise((resolve, reject) => {
+        this._mscBasisTranscoderPromise = WASMMemoryManager.LoadWASM(MSCTranscoder.WasmModuleURL).then((wasmBinary) => {
             if (MSCTranscoder.UseFromWorkerThread) {
                 importScripts(MSCTranscoder.JSModuleURL);
             }
-            WASMMemoryManager.LoadWASM(MSCTranscoder.WasmModuleURL)
-                .then((wasmBinary) => {
-                    MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
-                        basisModule.initTranscoders();
-                        this._mscBasisModule = basisModule;
-                        resolve();
-                    });
-                })
-                .catch((reason) => {
-                    reject(reason);
+            return new Promise((resolve) => {
+                MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
+                    basisModule.initTranscoders();
+                    this._mscBasisModule = basisModule;
+                    resolve();
                 });
+            });
         });
 
         return this._mscBasisTranscoderPromise;
