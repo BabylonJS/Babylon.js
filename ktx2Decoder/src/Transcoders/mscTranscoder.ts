@@ -60,16 +60,12 @@ export class MSCTranscoder extends Transcoder {
         return this._getMSCBasisTranscoder().then(() => {
             const basisModule = this._mscBasisModule;
 
-            const TranscodeTarget: any = basisModule.TranscodeTarget;
-            const TextureFormat: any = basisModule.TextureFormat;
-            const ImageInfo: any = basisModule.ImageInfo;
-
             const transcoder = src === sourceTextureFormat.UASTC4x4 ? new basisModule.UastcImageTranscoder() : new basisModule.BasisLzEtc1sImageTranscoder();
-            const texFormat = src === sourceTextureFormat.UASTC4x4 ? TextureFormat.UASTC4x4 : TextureFormat.ETC1S;
+            const texFormat = src === sourceTextureFormat.UASTC4x4 ? basisModule.TextureFormat.UASTC4x4 : basisModule.TextureFormat.ETC1S;
 
-            const imageInfo = new ImageInfo(texFormat, width, height, level);
+            const imageInfo = new basisModule.ImageInfo(texFormat, width, height, level);
 
-            const targetFormat = TranscodeTarget[transcodeTarget[dst]]; // works because the labels of the sourceTextureFormat enum are the same than the property names used in TranscodeTarget!
+            const targetFormat = basisModule.TranscodeTarget[transcodeTarget[dst]]; // works because the labels of the sourceTextureFormat enum are the same than the property names used in TranscodeTarget!
 
             if (!basisModule.isFormatSupported(targetFormat, texFormat)) {
                 throw new Error(`MSCTranscoder: Transcoding from "${sourceTextureFormat[src]}" to "${transcodeTarget[dst]}" not supported by current transcoder build.`);
