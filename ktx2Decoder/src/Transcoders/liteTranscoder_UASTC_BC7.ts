@@ -11,7 +11,7 @@ export class LiteTranscoder_UASTC_BC7 extends LiteTranscoder {
     public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_bc7.wasm";
 
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget): boolean {
-        return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.BC7_M5_RGBA;
+        return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.BC7_RGBA;
     }
 
     public initialize(): void {
