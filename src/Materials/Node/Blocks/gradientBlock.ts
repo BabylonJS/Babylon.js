@@ -16,12 +16,15 @@ export class GradientBlockColorStep {
 
     private _step: number;
     /**
-     * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
+     * Gets value indicating which step this color is associated with (between 0 and 1)
      */
     public get step(): number {
         return this._step;
     }
 
+    /**
+     * Sets a value indicating which step this color is associated with (between 0 and 1)
+    */
     public set step(val: number) {
         this._step = val;
         this._parent.onValueChangedObservable?.notifyObservers(this._parent);
@@ -68,6 +71,7 @@ export class GradientBlock extends NodeMaterialBlock {
     /** Gets an observable raised when the value is changed */
     public onValueChangedObservable = new Observable<GradientBlock>();
 
+    /** calls observable when the value is changed*/
     public colorStepsUpdated() {
         this.onValueChangedObservable.notifyObservers(this);
     }

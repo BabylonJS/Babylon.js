@@ -62,7 +62,7 @@ export class InputBlock extends NodeMaterialBlock {
 
     /** Gets or sets a boolean indicating that the value of this input will not change after a build */
     public isConstant = false;
-    
+
     /** Gets or sets the group to use to display this block in the Inspector */
     public groupInInspector = "";
 
@@ -673,7 +673,6 @@ export class InputBlock extends NodeMaterialBlock {
             // Common Property "Type"
             codes.push(
                 `${variableName}.isConstant = ${this.isConstant}`,
-                `${variableName}.visibleInInspector = ${this.visibleInInspector}`
             );
 
             codes.push('');
