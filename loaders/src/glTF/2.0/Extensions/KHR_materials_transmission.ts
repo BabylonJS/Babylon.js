@@ -13,6 +13,15 @@ import { Texture } from "babylonjs/Materials/Textures/texture";
 import { RenderTargetTexture } from "babylonjs/Materials/Textures/renderTargetTexture";
 import { Observable } from "babylonjs/Misc/observable";
 
+declare module "babylonjs/scene" {
+    interface Scene {
+        /**
+         * @hidden
+         */
+        _transmissionHelper: TransmissionHelper | undefined;
+    }
+}
+
 interface ITransmissionHelperOptions {
     /**
      * The size of the render buffers
@@ -61,7 +70,11 @@ class TransmissionHelper {
             ...options
         };
         this._scene = scene;
+        this._scene._transmissionHelper = this;
         this.onErrorObservable = new Observable();
+        this._scene.onDisposeObservable.addOnce((scene) => {
+            this.dispose();
+        });
 
         this._parseScene();
         this._setupRenderTargets();
@@ -224,6 +237,7 @@ class TransmissionHelper {
      * Dispose all the elements created by the Helper.
      */
     public dispose(): void {
+        this._scene._transmissionHelper = undefined;
         if (this._opaqueRenderTarget) {
             this._opaqueRenderTarget.dispose();
             this._opaqueRenderTarget = null;
@@ -233,7 +247,6 @@ class TransmissionHelper {
     }
 }
 
-let _transmissionHelper: TransmissionHelper;
 const NAME = "KHR_materials_transmission";
 
 /**
@@ -300,8 +313,9 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
 
         if (extension.transmissionFactor !== undefined) {
             pbrMaterial.subSurface.refractionIntensity = extension.transmissionFactor;
-            if (pbrMaterial.subSurface.refractionIntensity && _transmissionHelper == undefined) {
-                _transmissionHelper = new TransmissionHelper({}, pbrMaterial.getScene());
+            const scene = pbrMaterial.getScene();
+            if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper) {
+                new TransmissionHelper({}, pbrMaterial.getScene());
             }
         } else {
             pbrMaterial.subSurface.refractionIntensity = 0.0;
