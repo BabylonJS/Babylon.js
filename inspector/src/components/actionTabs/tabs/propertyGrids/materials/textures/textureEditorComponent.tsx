@@ -57,7 +57,7 @@ export interface IToolParameters {
     /** Provides access to the BABYLON namespace */
     BABYLON: any;
     /** Provides a canvas that you can use the canvas API to paint on. */
-    startPainting: () => CanvasRenderingContext2D;
+    startPainting: () => Promise<CanvasRenderingContext2D>;
     /** After you have painted on your canvas, call this method to push the updates back to the texture. */
     updatePainting: () => void;
     /** Call this when you are finished painting. */
@@ -76,10 +76,9 @@ export interface IToolData {
     type: IToolConstructable;
     /**  An SVG icon encoded in Base64 */
     icon: string;
-    /** Whether the tool uses the draggable GUI window */
-    usesWindow? : boolean;
     /** Whether the tool uses postprocesses */
-    is3D? : boolean;
+    is3D?: boolean;
+    cursor?: string;
     settingsComponent? : React.ComponentType<IToolGUIProps>;
 }
 
@@ -174,7 +173,8 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             (data : IPixelData) => {this.setState({pixelData: data})},
             this.state.metadata,
             () => this.textureDidUpdate(),
-            data => this.setMetadata(data)
+            data => this.setMetadata(data),
+            mipLevel => this.setState({mipLevel})
         );
         this.addTools(defaultTools);
     }
@@ -284,8 +284,12 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
 
     render() {
         const currentTool : ITool | undefined = this.state.tools[this.state.activeToolIndex];
+        let cursor = `initial`;
+        if (currentTool && currentTool.cursor) {
+            cursor = `url(data:image/png;base64,${currentTool.cursor}) 10 10, auto`;
+        }
 
-        return <div id="texture-editor" onPointerDown={this.onPointerDown}>
+        return <div id="texture-editor" onPointerDown={this.onPointerDown} style={{cursor}}>
             <PropertiesBar
                 texture={this.props.texture}
                 saveTexture={this.saveTexture}
