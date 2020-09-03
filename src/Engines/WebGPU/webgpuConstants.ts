@@ -180,7 +180,6 @@ export class WebGPUConstants {
     public static readonly GPUBindingType_sampler: GPUBindingType = "sampler";
     public static readonly GPUBindingType_comparisonSampler: GPUBindingType = "comparison-sampler";
     public static readonly GPUBindingType_sampledTexture: GPUBindingType = "sampled-texture";
-    public static readonly GPUBindingType_storageTexture: GPUBindingType = "storage-texture";
     public static readonly GPUBindingType_readonlyStorageTexture: GPUBindingType = "readonly-storage-texture";
     public static readonly GPUBindingType_writeonlyStorageTexture: GPUBindingType = "writeonly-storage-texture";
 

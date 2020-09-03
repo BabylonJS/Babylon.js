@@ -38,6 +38,11 @@ export interface IWebGPUPipelineContextVertexInputsCache {
     vertexOffsets: number[];
 }
 
+export interface IWebGPURenderPipelineStageDescriptor {
+    vertexStage: GPUProgrammableStageDescriptor;
+    fragmentStage?: GPUProgrammableStageDescriptor;
+}
+
 /** @hidden */
 export class WebGPUPipelineContext implements IPipelineContext {
     public engine: WebGPUEngine;
@@ -57,7 +62,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         fragment: string,
     };
 
-    public stages: Nullable<GPURenderPipelineStageDescriptor>;
+    public stages: Nullable<IWebGPURenderPipelineStageDescriptor>;
 
     public samplers: { [name: string]: Nullable<IWebGPUPipelineContextSamplerCache> } = { };
 

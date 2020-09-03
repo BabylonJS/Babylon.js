@@ -13,7 +13,7 @@ import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
 import { WebGPUConstants } from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Meshes/buffer";
-import { WebGPUPipelineContext, IWebGPUPipelineContextVertexInputsCache } from './WebGPU/webgpuPipelineContext';
+import { WebGPUPipelineContext, IWebGPUPipelineContextVertexInputsCache, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { WebGPUDataBuffer } from '../Meshes/WebGPU/webgpuDataBuffer';
@@ -153,7 +153,7 @@ export class WebGPUEngine extends Engine {
 
     // Caches
     private _compiledShaders: { [key: string]: {
-        stages: GPURenderPipelineStageDescriptor,
+        stages: IWebGPURenderPipelineStageDescriptor,
         availableAttributes: { [key: string]: number },
         availableUBOs: { [key: string]: { setIndex: number, bindingIndex: number} },
         availableSamplers: { [key: string]: { setIndex: number, bindingIndex: number} },
@@ -253,11 +253,11 @@ export class WebGPUEngine extends Engine {
                 this._glslang = glslang;
                 return navigator.gpu!.requestAdapter(this._options);
             })
-            .then((adapter: GPUAdapter) => {
-                this._adapter = adapter;
+            .then((adapter: GPUAdapter | null) => {
+                this._adapter = adapter!;
                 return this._adapter.requestDevice(this._options.deviceDescriptor);
             })
-            .then((device: GPUDevice) => this._device = device)
+            .then((device: GPUDevice | null) => this._device = device!)
             .then(() => {
                 this._initializeLimits();
                 this._initializeContextAndSwapChain();
@@ -781,7 +781,7 @@ export class WebGPUEngine extends Engine {
         return this._compileRawShaderToSpirV(shaderVersion + (defines ? defines + "\n" : "") + source, type);
     }
 
-    private _createPipelineStageDescriptor(vertexShader: Uint32Array, fragmentShader: Uint32Array): GPURenderPipelineStageDescriptor {
+    private _createPipelineStageDescriptor(vertexShader: Uint32Array, fragmentShader: Uint32Array): IWebGPURenderPipelineStageDescriptor {
         return {
             vertexStage: {
                 module: this._device.createShaderModule({
@@ -798,14 +798,14 @@ export class WebGPUEngine extends Engine {
         };
     }
 
-    private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string): GPURenderPipelineStageDescriptor {
+    private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string): IWebGPURenderPipelineStageDescriptor {
         var vertexShader = this._compileRawShaderToSpirV(vertexCode, "vertex");
         var fragmentShader = this._compileRawShaderToSpirV(fragmentCode, "fragment");
 
         return this._createPipelineStageDescriptor(vertexShader, fragmentShader);
     }
 
-    private _compilePipelineStageDescriptor(vertexCode: string, fragmentCode: string, defines: Nullable<string>): GPURenderPipelineStageDescriptor {
+    private _compilePipelineStageDescriptor(vertexCode: string, fragmentCode: string, defines: Nullable<string>): IWebGPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         var shaderVersion = "#version 450\n";
@@ -1495,6 +1495,12 @@ export class WebGPUEngine extends Engine {
     //                              Render
     //------------------------------------------------------------------------------
 
+    private _indexFormatInRenderPass(topology: GPUPrimitiveTopology): boolean {
+        return  topology === WebGPUConstants.GPUPrimitiveTopology_pointList ||
+                topology === WebGPUConstants.GPUPrimitiveTopology_lineList ||
+                topology === WebGPUConstants.GPUPrimitiveTopology_triangleList;
+    }
+
     private _getTopology(fillMode: number): GPUPrimitiveTopology {
         switch (fillMode) {
             // Triangle views
@@ -1819,7 +1825,7 @@ export class WebGPUEngine extends Engine {
         }];
     }
 
-    private _getStages(): GPURenderPipelineStageDescriptor {
+    private _getStages(): IWebGPURenderPipelineStageDescriptor {
         const gpuPipeline = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
         return gpuPipeline.stages!;
     }
@@ -1897,7 +1903,7 @@ export class WebGPUEngine extends Engine {
         throw new Error("Invalid Format '" + kind + "'");
     }
 
-    private _getVertexInputDescriptor(): GPUVertexStateDescriptor {
+    private _getVertexInputDescriptor(topology: GPUPrimitiveTopology): GPUVertexStateDescriptor {
         const descriptors: GPUVertexBufferLayoutDescriptor[] = [];
         const effect = this._currentEffect!;
         const attributes = effect.getAttributesNames();
@@ -1935,9 +1941,13 @@ export class WebGPUEngine extends Engine {
         }
 
         const inputStateDescriptor: GPUVertexStateDescriptor = {
-            indexFormat: this._currentIndexBuffer!.is32Bits ? WebGPUConstants.GPUIndexFormat_uint32 : WebGPUConstants.GPUIndexFormat_uint16,
             vertexBuffers: descriptors
         };
+
+        if (!this._indexFormatInRenderPass(topology)) {
+            inputStateDescriptor.indexFormat = this._currentIndexBuffer!.is32Bits ? WebGPUConstants.GPUIndexFormat_uint32 : WebGPUConstants.GPUIndexFormat_uint16;
+        }
+
         return inputStateDescriptor;
     }
 
@@ -2003,7 +2013,7 @@ export class WebGPUEngine extends Engine {
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
 
-    private _getRenderPipeline(fillMode: number): GPURenderPipeline {
+    private _getRenderPipeline(topology: GPUPrimitiveTopology): GPURenderPipeline {
         // This is wrong to cache this way but workarounds the need of cache in the simple demo context.
         const gpuPipeline = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
         if (gpuPipeline.renderPipeline) {
@@ -2011,12 +2021,11 @@ export class WebGPUEngine extends Engine {
         }
 
         // Unsupported at the moment but needs to be extracted from the MSAA param.
-        const topology = this._getTopology(fillMode);
         const rasterizationStateDescriptor = this._getRasterizationStateDescriptor();
         const depthStateDescriptor = this._getDepthStencilStateDescriptor();
         const colorStateDescriptors = this._getColorStateDescriptors();
         const stages = this._getStages();
-        const inputStateDescriptor = this._getVertexInputDescriptor();
+        const inputStateDescriptor = this._getVertexInputDescriptor(topology);
         const pipelineLayout = this._getPipelineLayout();
 
         gpuPipeline.renderPipeline = this._device.createRenderPipeline({
@@ -2186,12 +2195,16 @@ export class WebGPUEngine extends Engine {
         return bindGroups;
     }
 
-    private _bindVertexInputs(vertexInputs: IWebGPUPipelineContextVertexInputsCache): void {
+    private _bindVertexInputs(vertexInputs: IWebGPUPipelineContextVertexInputsCache, setIndexFormat: boolean): void {
         const renderPass = this._bundleEncoder || this._currentRenderPass!;
 
         if (vertexInputs.indexBuffer) {
             // TODO WEBGPU. Check if cache would be worth it.
-            renderPass.setIndexBuffer(vertexInputs.indexBuffer, vertexInputs.indexOffset);
+            if (setIndexFormat) {
+                renderPass.setIndexBuffer(vertexInputs.indexBuffer, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.GPUIndexFormat_uint32 : WebGPUConstants.GPUIndexFormat_uint16, vertexInputs.indexOffset);
+            } else {
+                renderPass.setIndexBuffer(vertexInputs.indexBuffer, vertexInputs.indexOffset);
+            }
         }
 
         // TODO WEBGPU. Optimize buffer reusability and types as more are now allowed.
@@ -2214,11 +2227,14 @@ export class WebGPUEngine extends Engine {
     private _setRenderPipeline(fillMode: number): void {
         const renderPass = this._bundleEncoder || this._currentRenderPass!;
 
-        const pipeline = this._getRenderPipeline(fillMode);
+        const topology = this._getTopology(fillMode);
+        const setIndexFormatInRenderPass = this._indexFormatInRenderPass(topology);
+
+        const pipeline = this._getRenderPipeline(topology);
         renderPass.setPipeline(pipeline);
 
         const vertexInputs = this._getVertexInputsToRender();
-        this._bindVertexInputs(vertexInputs);
+        this._bindVertexInputs(vertexInputs, setIndexFormatInRenderPass);
 
         const bindGroups = this._getBindGroupsToRender();
         this._setRenderBindGroups(bindGroups);
