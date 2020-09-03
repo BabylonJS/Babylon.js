@@ -1,6 +1,7 @@
 /**
  * Resources used for the implementation:
  *  - 3js KTX2 loader: https://github.com/mrdoob/three.js/blob/dfb5c23ce126ec845e4aa240599915fef5375797/examples/jsm/loaders/KTX2Loader.js
+ *  - Universal Texture Transcoders: https://github.com/KhronosGroup/Universal-Texture-Transcoders
  *  - KTX2 specification: http://github.khronos.org/KTX-Specification/
  *  - KTX2 binaries to convert files: https://github.com/KhronosGroup/KTX-Software/releases
  *  - KTX specification: https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html
