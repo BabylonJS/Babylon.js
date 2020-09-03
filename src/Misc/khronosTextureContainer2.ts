@@ -259,22 +259,19 @@ export function workerFunc(): void {
                 postMessage({ action: "init" });
                 break;
             case "decode":
-                try {
-                    ktx2Decoder.decode(event.data.data, event.data.caps).then((data: any) => {
-                        const buffers = [];
-                        for (let mip = 0; mip < data.mipmaps.length; ++mip) {
-                            const mipmap = data.mipmaps[mip];
-                            if (mipmap && mipmap.data) {
-                                buffers.push(mipmap.data.buffer);
-                            }
+                ktx2Decoder.decode(event.data.data, event.data.caps).then((data: any) => {
+                    const buffers = [];
+                    for (let mip = 0; mip < data.mipmaps.length; ++mip) {
+                        const mipmap = data.mipmaps[mip];
+                        if (mipmap && mipmap.data) {
+                            buffers.push(mipmap.data.buffer);
                         }
-                        postMessage({ action: "decoded", success: true, decodedData: data }, buffers);
-                    }).catch((reason: any) => {
-                        postMessage({ action: "decoded", success: false, msg: reason });
-                    });
-                } catch (err) {
-                    postMessage({ action: "decoded", success: false, msg: err });
-                }
+                    }
+                    postMessage({ action: "decoded", success: true, decodedData: data }, buffers);
+                }).catch((reason: any) => {
+                    console.log("here");
+                    postMessage({ action: "decoded", success: false, msg: reason });
+                });
                 break;
         }
     };

@@ -68,23 +68,25 @@ export class KTX2Decoder {
     }
 
     public decode(data: Uint8Array, caps: ICompressedFormatCapabilities): Promise<IDecodedData | null> {
-        const kfr = new KTX2FileReader(data);
+        return Promise.resolve().then(() => {
+            const kfr = new KTX2FileReader(data);
 
-        if (!kfr.isValid()) {
-            throw new Error("Invalid KT2 file: wrong signature");
-        }
+            if (!kfr.isValid()) {
+                throw new Error("Invalid KT2 file: wrong signature");
+            }
 
-        kfr.parse();
+            kfr.parse();
 
-        if (kfr.needZSTDDecoder && !this._zstdDecoder) {
-            this._zstdDecoder = new ZSTDDecoder();
+            if (kfr.needZSTDDecoder && !this._zstdDecoder) {
+                this._zstdDecoder = new ZSTDDecoder();
 
-            return this._zstdDecoder.init().then(() => {
-                return this._decodeData(kfr, caps);
-            });
-        }
+                return this._zstdDecoder.init().then(() => {
+                    return this._decodeData(kfr, caps);
+                });
+            }
 
-        return this._decodeData(kfr, caps);
+            return this._decodeData(kfr, caps);
+        });
     }
 
     private _decodeData(kfr: KTX2FileReader, caps: ICompressedFormatCapabilities): Promise<IDecodedData> {
