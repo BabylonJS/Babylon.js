@@ -9,7 +9,7 @@ export class TranscoderManager {
 
     public static _Transcoders: Array<typeof Transcoder> = [];
 
-    public static registerTranscoder(transcoder: typeof Transcoder) {
+    public static RegisterTranscoder(transcoder: typeof Transcoder) {
         TranscoderManager._Transcoders.push(transcoder);
     }
 
