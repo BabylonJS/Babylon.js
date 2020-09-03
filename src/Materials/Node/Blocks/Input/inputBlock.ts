@@ -696,7 +696,6 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.mode = this._mode;
         serializationObject.systemValue = this._systemValue;
         serializationObject.animationType = this._animationType;
-        serializationObject.visibleInInspector = this.visibleInInspector;
         serializationObject.min = this.min;
         serializationObject.max = this.max;
         serializationObject.isBoolean = this.isBoolean;
@@ -725,7 +724,6 @@ export class InputBlock extends NodeMaterialBlock {
 
         this._systemValue = serializationObject.systemValue || serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
-        this.visibleInInspector = serializationObject.visibleInInspector;
         this.min = serializationObject.min || 0;
         this.max = serializationObject.max || 0;
         this.isBoolean = !!serializationObject.isBoolean;

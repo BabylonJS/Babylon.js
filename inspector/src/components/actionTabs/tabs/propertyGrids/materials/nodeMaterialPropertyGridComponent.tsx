@@ -182,7 +182,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                             }
                             </LineContainerComponent>
                         )
-                    })   
+                    })
                 }
           </>
         );

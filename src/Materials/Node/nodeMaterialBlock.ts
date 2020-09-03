@@ -706,6 +706,7 @@ export class NodeMaterialBlock {
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
         serializationObject.comments = this.comments;
+        serializationObject.visibleInInspector = this.visibleInInspector;
 
         serializationObject.inputs = [];
         serializationObject.outputs = [];
@@ -725,6 +726,7 @@ export class NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
+        this.visibleInInspector = !!serializationObject.visibleInInspector;
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }
 

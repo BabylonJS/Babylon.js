@@ -15,9 +15,8 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     forceRebuild() {
-        //this.props.globalState.onUpdateRequiredObservable.notifyObservers();
-        //this.props.globalState.onRebuildRequiredObservable.notifyObservers();
-
+        let gradientBlock = this.props.block as GradientBlock;
+        gradientBlock.colorStepsUpdated();
         this.forceUpdate();
     }
 
@@ -35,12 +34,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
     addNewStep() {
         let gradientBlock = this.props.block as GradientBlock;
-
-        let newStep = new GradientBlockColorStep(1.0, Color3.White());
+        let newStep = new GradientBlockColorStep(gradientBlock, 1.0, Color3.White());
         gradientBlock.colorSteps.push(newStep);
-
         this.forceRebuild();
-        this.forceUpdate();
     }
 
     checkForReOrder() {
@@ -57,7 +53,6 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
             return -1;
         });
 
-        //this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.forceUpdate();
     }
 
