@@ -98,8 +98,6 @@ export class MSCTranscoder extends Transcoder {
             }
 
             return null;
-        }, (reason) => {
-            throw new Error(reason);
         });
     }
 }
