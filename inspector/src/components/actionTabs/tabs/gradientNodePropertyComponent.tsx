@@ -6,8 +6,6 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 import { ButtonLineComponent } from '../lines/buttonLineComponent';
 import { IPropertyComponentProps } from './propertyComponentProps';
 
-
-
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
     constructor(props: IPropertyComponentProps) {
