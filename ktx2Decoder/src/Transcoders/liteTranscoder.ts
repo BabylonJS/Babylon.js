@@ -56,8 +56,6 @@ export class LiteTranscoder extends Transcoder {
             textureView.set(encodedData);
 
             return transcoder.transcode(nBlocks) === 0 ? textureView.slice() : null;
-        }, (reason) => {
-            throw new Error(reason);
         });
     }
 }
