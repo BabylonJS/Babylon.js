@@ -1797,11 +1797,11 @@ export class _Exporter {
                                 nodeIndex = this._nodes.length - 1;
                                 nodeMap[babylonNode.uniqueId] = nodeIndex;
 
-                                if (!babylonScene.animationGroups.length){
-                                    _GLTFAnimation._CreateMorphTargetAnimationFromNode(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                if (!babylonScene.animationGroups.length) {
+                                    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
                                     if (babylonNode.animations.length) {
                                         _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
-                                }
+                                    }
                                 }
                             });
                         }
@@ -1824,7 +1824,7 @@ export class _Exporter {
             });
 
             if (babylonScene.animationGroups.length) {
-                _GLTFAnimation._CreateNodeAnimationFromAnimationGroups(babylonScene, this._animations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystemMap, this._animationSampleRate);
+                _GLTFAnimation._CreateNodeAndMorphAnimationFromAnimationGroups(babylonScene, this._animations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystemMap, this._animationSampleRate);
             }
 
             return nodeMap;
