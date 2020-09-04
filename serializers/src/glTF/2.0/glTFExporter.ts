@@ -1797,9 +1797,11 @@ export class _Exporter {
                                 nodeIndex = this._nodes.length - 1;
                                 nodeMap[babylonNode.uniqueId] = nodeIndex;
 
-                                if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
-                                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
-                                    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargets(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                if (!babylonScene.animationGroups.length){
+                                    _GLTFAnimation._CreateMorphTargetAnimationFromNode(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                    if (babylonNode.animations.length) {
+                                        _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                }
                                 }
                             });
                         }
