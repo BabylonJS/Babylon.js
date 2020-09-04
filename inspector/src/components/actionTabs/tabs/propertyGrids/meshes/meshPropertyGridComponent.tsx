@@ -236,7 +236,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             if (!mesh.reservedDataStore.displayBoneIndex) {
                 mesh.reservedDataStore.displayBoneIndex = this.state.displayBoneIndex;
             }
-            if(mesh.skeleton){
+            if (mesh.skeleton){
                 const boneWeightsShader = SkeletonViewer.CreateBoneWeightShader({skeleton:mesh.skeleton}, scene)
                 boneWeightsShader.reservedDataStore = { hidden: true };
                 mesh.material = boneWeightsShader;
@@ -261,7 +261,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             if (!mesh.reservedDataStore.originalMaterial) {
                 mesh.reservedDataStore.originalMaterial = mesh.material;
             }  
-            if(mesh.skeleton){
+            if (mesh.skeleton){
                 const skeletonMapShader = SkeletonViewer.CreateSkeletonMapShader({skeleton:mesh.skeleton}, scene)
                 skeletonMapShader.reservedDataStore = { hidden: true };
                 mesh.material = skeletonMapShader;
