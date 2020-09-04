@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BaseTexture } from 'babylonjs';
+import { BaseTexture } from 'babylonjs/Materials/Textures/baseTexture';
 
 interface IBottomBarProps {
     texture: BaseTexture;
