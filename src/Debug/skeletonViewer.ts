@@ -1,4 +1,4 @@
-import { Vector3, Matrix, TmpVectors, Quaternion } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { Scene } from "../scene";
 import { Nullable } from "../types";
@@ -387,8 +387,7 @@ export class SkeletonViewer {
 
         //Defaults
         options.pauseAnimations = options.pauseAnimations ?? true;
-        options.currentStateIsRestPose = options.currentStateIsRestPose ?? false;
-        options.returnToRest = (options.currentStateIsRestPose) ? false : options.returnToRest ?? (options.currentStateIsRestPose) ? false : true;
+        options.returnToRest = options.returnToRest ?? true;
         options.displayMode = options.displayMode ?? SkeletonViewer.DISPLAY_LINES;
         options.displayOptions = options.displayOptions ?? {};
         options.displayOptions.midStep = options.displayOptions.midStep ?? 0.235;
@@ -585,18 +584,8 @@ export class SkeletonViewer {
                 scene.animationsEnabled = false;
             }
 
-            if (this.options.currentStateIsRestPose) {
-                let _s = Vector3.Zero();
-                let _r = Quaternion.Identity();
-                let _t = Vector3.Zero();
-                this.skeleton.bones.forEach((b) => {
-                    b.getLocalMatrix().decompose(_s, _r, _t);
-                    b.setRestPose(Matrix.Compose(_s, _r, _t));
-                 });
-            }else {
-                if (this.options.returnToRest) {
-                    this.skeleton.returnToRest();
-                }
+            if (this.options.returnToRest) {
+                this.skeleton.returnToRest();
             }
 
             if (this.autoUpdateBonesMatrices) {
