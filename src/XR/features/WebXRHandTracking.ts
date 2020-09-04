@@ -96,23 +96,21 @@ export class WebXRHand implements IDisposable {
     /**
      * Hand-parts definition (key is HandPart)
      */
-    public static HandPartsDefinition: { [key: string]: number[] };
+    public handPartsDefinition: { [key: string]: number[] };
 
     /**
      * Populate the HandPartsDefinition object.
      * This is called as a side effect since certain browsers don't have XRHand defined.
      */
-    public static _PopulateHandPartsDefinition() {
-        if (typeof XRHand !== "undefined") {
-            WebXRHand.HandPartsDefinition = {
-                [HandPart.WRIST]: [XRHand.WRIST],
-                [HandPart.THUMB]: [XRHand.THUMB_METACARPAL, XRHand.THUMB_PHALANX_PROXIMAL, XRHand.THUMB_PHALANX_DISTAL, XRHand.THUMB_PHALANX_TIP],
-                [HandPart.INDEX]: [XRHand.INDEX_METACARPAL, XRHand.INDEX_PHALANX_PROXIMAL, XRHand.INDEX_PHALANX_INTERMEDIATE, XRHand.INDEX_PHALANX_DISTAL, XRHand.INDEX_PHALANX_TIP],
-                [HandPart.MIDDLE]: [XRHand.MIDDLE_METACARPAL, XRHand.MIDDLE_PHALANX_PROXIMAL, XRHand.MIDDLE_PHALANX_INTERMEDIATE, XRHand.MIDDLE_PHALANX_DISTAL, XRHand.MIDDLE_PHALANX_TIP],
-                [HandPart.RING]: [XRHand.RING_METACARPAL, XRHand.RING_PHALANX_PROXIMAL, XRHand.RING_PHALANX_INTERMEDIATE, XRHand.RING_PHALANX_DISTAL, XRHand.RING_PHALANX_TIP],
-                [HandPart.LITTLE]: [XRHand.LITTLE_METACARPAL, XRHand.LITTLE_PHALANX_PROXIMAL, XRHand.LITTLE_PHALANX_INTERMEDIATE, XRHand.LITTLE_PHALANX_DISTAL, XRHand.LITTLE_PHALANX_TIP],
-            };
-        }
+    private generateHandPartsDefinition(hand: XRHand) {
+        return {
+            [HandPart.WRIST]: [hand.WRIST],
+            [HandPart.THUMB]: [hand.THUMB_METACARPAL, hand.THUMB_PHALANX_PROXIMAL, hand.THUMB_PHALANX_DISTAL, hand.THUMB_PHALANX_TIP],
+            [HandPart.INDEX]: [hand.INDEX_METACARPAL, hand.INDEX_PHALANX_PROXIMAL, hand.INDEX_PHALANX_INTERMEDIATE, hand.INDEX_PHALANX_DISTAL, hand.INDEX_PHALANX_TIP],
+            [HandPart.MIDDLE]: [hand.MIDDLE_METACARPAL, hand.MIDDLE_PHALANX_PROXIMAL, hand.MIDDLE_PHALANX_INTERMEDIATE, hand.MIDDLE_PHALANX_DISTAL, hand.MIDDLE_PHALANX_TIP],
+            [HandPart.RING]: [hand.RING_METACARPAL, hand.RING_PHALANX_PROXIMAL, hand.RING_PHALANX_INTERMEDIATE, hand.RING_PHALANX_DISTAL, hand.RING_PHALANX_TIP],
+            [HandPart.LITTLE]: [hand.LITTLE_METACARPAL, hand.LITTLE_PHALANX_PROXIMAL, hand.LITTLE_PHALANX_INTERMEDIATE, hand.LITTLE_PHALANX_DISTAL, hand.LITTLE_PHALANX_TIP],
+        };
     }
 
     /**
@@ -124,7 +122,10 @@ export class WebXRHand implements IDisposable {
         /** the controller to which the hand correlates */
         public readonly xrController: WebXRInputSource,
         /** the meshes to be used to track the hand joints */
-        public readonly trackedMeshes: AbstractMesh[]) {}
+        public readonly trackedMeshes: AbstractMesh[]
+    ) {
+        this.handPartsDefinition = this.generateHandPartsDefinition(xrController.inputSource.hand!);
+    }
 
     /**
      * Update this hand from the latest xr frame
@@ -133,7 +134,7 @@ export class WebXRHand implements IDisposable {
      * @param scaleFactor optional scale factor for the meshes
      */
     public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, scaleFactor: number = 2) {
-        const hand = this.xrController.inputSource.hand as XRJointSpace[];
+        const hand = this.xrController.inputSource.hand;
         if (!hand) {
             return;
         }
@@ -168,7 +169,7 @@ export class WebXRHand implements IDisposable {
      * @returns An array of meshes that correlate to the hand part requested
      */
     public getHandPartMeshes(part: HandPart): AbstractMesh[] {
-        return WebXRHand.HandPartsDefinition[part].map((idx) => this.trackedMeshes[idx]);
+        return this.handPartsDefinition[part].map((idx) => this.trackedMeshes[idx]);
     }
 
     /**
@@ -178,9 +179,6 @@ export class WebXRHand implements IDisposable {
         this.trackedMeshes.forEach((mesh) => mesh.dispose());
     }
 }
-
-// Populate the hand parts definition
-WebXRHand._PopulateHandPartsDefinition();
 
 /**
  * WebXR Hand Joint tracking feature, available for selected browsers and devices
@@ -235,7 +233,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
      */
     public isCompatible(): boolean {
-        return typeof XRHand !== "undefined";
+        return (globalThis && typeof ((<any>globalThis)['XRHand']) !== 'undefined');
     }
 
     /**
