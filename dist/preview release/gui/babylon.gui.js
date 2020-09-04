@@ -12890,7 +12890,7 @@ var TextBlock = /** @class */ (function (_super) {
         else {
             while (characters.length && lineWidth > width) {
                 characters.pop();
-                line = characters.join() + "...";
+                line = characters.join("") + "...";
                 lineWidth = context.measureText(line).width;
             }
         }
