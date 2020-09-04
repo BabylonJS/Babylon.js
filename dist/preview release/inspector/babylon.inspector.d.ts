@@ -1982,12 +1982,18 @@ declare module INSPECTOR {
     export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
         displayNormals: boolean;
         displayVertexColors: boolean;
+        displayBoneWeights: boolean;
+        displayBoneIndex: number;
+        displaySkeletonMap: boolean;
     }> {
         constructor(props: IMeshPropertyGridComponentProps);
         renderWireframeOver(): void;
         renderNormalVectors(): void;
         displayNormals(): void;
         displayVertexColors(): void;
+        displayBoneWeights(): void;
+        displaySkeletonMap(): void;
+        onBoneDisplayIndexChange(value: number): void;
         onMaterialLink(): void;
         onSourceMeshLink(): void;
         onSkeletonLink(): void;
