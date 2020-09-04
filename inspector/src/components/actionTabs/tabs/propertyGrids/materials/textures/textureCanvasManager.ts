@@ -87,25 +87,25 @@ export class TextureCanvasManager {
     /** Tracks which keys are currently pressed */
     private _keyMap : any = {};
 
-    private static ZOOM_MOUSE_SPEED : number = 0.001;
-    private static ZOOM_KEYBOARD_SPEED : number = 0.4;
-    private static ZOOM_IN_KEY : string = '+';
-    private static ZOOM_OUT_KEY : string = '-';
+    private readonly ZOOM_MOUSE_SPEED : number = 0.001;
+    private readonly ZOOM_KEYBOARD_SPEED : number = 0.4;
+    private readonly ZOOM_IN_KEY : string = '+';
+    private readonly ZOOM_OUT_KEY : string = '-';
 
-    private static PAN_SPEED : number = 0.003;
-    private static PAN_MOUSE_BUTTON : number = 1; // MMB
+    private readonly PAN_SPEED : number = 0.003;
+    private readonly PAN_MOUSE_BUTTON : number = 1; // MMB
 
-    private static MIN_SCALE : number = 0.01;
-    private static GRID_SCALE : number = 0.047;
-    private static MAX_SCALE : number = 10;
+    private readonly MIN_SCALE : number = 0.01;
+    private readonly GRID_SCALE : number = 0.047;
+    private readonly MAX_SCALE : number = 10;
 
-    private static SELECT_ALL_KEY = 'KeyA';
-    private static SAVE_KEY ='KeyS';
-    private static RESET_KEY = 'KeyR';
-    private static DESELECT_KEY = 'Escape'
+    private readonly SELECT_ALL_KEY = 'KeyA';
+    private readonly SAVE_KEY ='KeyS';
+    private readonly RESET_KEY = 'KeyR';
+    private readonly DESELECT_KEY = 'Escape'
 
     /** The number of milliseconds between texture updates */
-    private static PUSH_FREQUENCY = 32;
+    private readonly PUSH_FREQUENCY = 32;
 
     private _tool : Nullable<ITool>;
 
@@ -207,7 +207,7 @@ export class TextureCanvasManager {
         
         this._window.addEventListener('keydown', evt => {
             this._keyMap[evt.code] = true;
-            if (evt.code === TextureCanvasManager.SELECT_ALL_KEY && evt.ctrlKey) {
+            if (evt.code === this.SELECT_ALL_KEY && evt.ctrlKey) {
                 this._setMetadata({
                     select: {
                         x1: 0,
@@ -218,15 +218,15 @@ export class TextureCanvasManager {
                 });
                 evt.preventDefault();
             }
-            if (evt.code === TextureCanvasManager.SAVE_KEY && evt.ctrlKey) {
+            if (evt.code === this.SAVE_KEY && evt.ctrlKey) {
                 this.saveTexture();
                 evt.preventDefault();
             }
-            if (evt.code === TextureCanvasManager.RESET_KEY && evt.ctrlKey) {
+            if (evt.code === this.RESET_KEY && evt.ctrlKey) {
                 this.reset();
                 evt.preventDefault();
             }
-            if (evt.code === TextureCanvasManager.DESELECT_KEY) {
+            if (evt.code === this.DESELECT_KEY) {
                 this._setMetadata({
                     select: {
                         x1: -1,
@@ -252,8 +252,8 @@ export class TextureCanvasManager {
         this._isPanning = false;
 
         this._scene.onBeforeRenderObservable.add(() => {
-            this._scale = Math.min(Math.max(this._scale, TextureCanvasManager.MIN_SCALE / Math.log2(Math.min(this._size.width, this._size.height))), TextureCanvasManager.MAX_SCALE);
-            if (this._scale > TextureCanvasManager.GRID_SCALE) {
+            this._scale = Math.min(Math.max(this._scale, this.MIN_SCALE / Math.log2(Math.min(this._size.width, this._size.height))), this.MAX_SCALE);
+            if (this._scale > this.GRID_SCALE) {
                 this._planeMaterial.setFloat('showGrid', 1.0);
             } else {
                 this._planeMaterial.setFloat('showGrid', 0.0);
@@ -270,10 +270,10 @@ export class TextureCanvasManager {
             switch (pointerInfo.type) {
                 case PointerEventTypes.POINTERWHEEL:
                     const event = pointerInfo.event as MouseWheelEvent;
-                    this._scale -= (event.deltaY * TextureCanvasManager.ZOOM_MOUSE_SPEED * this._scale);
+                    this._scale -= (event.deltaY * this.ZOOM_MOUSE_SPEED * this._scale);
                     break;
                 case PointerEventTypes.POINTERDOWN:
-                    if (pointerInfo.event.button === TextureCanvasManager.PAN_MOUSE_BUTTON) {
+                    if (pointerInfo.event.button === this.PAN_MOUSE_BUTTON) {
                         this._isPanning = true;
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
@@ -281,14 +281,14 @@ export class TextureCanvasManager {
                     }
                     break;
                 case PointerEventTypes.POINTERUP:
-                    if (pointerInfo.event.button === TextureCanvasManager.PAN_MOUSE_BUTTON) {
+                    if (pointerInfo.event.button === this.PAN_MOUSE_BUTTON) {
                         this._isPanning = false;
                     }
                     break;
                 case PointerEventTypes.POINTERMOVE:
                     if (this._isPanning) {
-                        this._cameraPos.x -= (pointerInfo.event.x - this._mouseX) * TextureCanvasManager.PAN_SPEED / this._scale;
-                        this._cameraPos.y += (pointerInfo.event.y - this._mouseY) * TextureCanvasManager.PAN_SPEED / this._scale;
+                        this._cameraPos.x -= (pointerInfo.event.x - this._mouseX) * this.PAN_SPEED / this._scale;
+                        this._cameraPos.y += (pointerInfo.event.y - this._mouseY) * this.PAN_SPEED / this._scale;
                         this._mouseX = pointerInfo.event.x;
                         this._mouseY = pointerInfo.event.y;
                     }
@@ -308,11 +308,11 @@ export class TextureCanvasManager {
                 case KeyboardEventTypes.KEYDOWN:
                     this._keyMap[kbInfo.event.key] = true;
                     switch (kbInfo.event.key) {
-                        case TextureCanvasManager.ZOOM_IN_KEY:
-                            this._scale += TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                        case this.ZOOM_IN_KEY:
+                            this._scale += this.ZOOM_KEYBOARD_SPEED * this._scale;
                             break;
-                        case TextureCanvasManager.ZOOM_OUT_KEY:
-                            this._scale -= TextureCanvasManager.ZOOM_KEYBOARD_SPEED * this._scale;
+                        case this.ZOOM_OUT_KEY:
+                            this._scale -= this.ZOOM_KEYBOARD_SPEED * this._scale;
                             break;
                     }
                     break;
@@ -373,7 +373,7 @@ export class TextureCanvasManager {
                 if (this._shouldPush) {
                     this.pushTexture();
                 }
-            }, TextureCanvasManager.PUSH_FREQUENCY);
+            }, this.PUSH_FREQUENCY);
         } else {
             this._shouldPush = true;
         }
@@ -473,7 +473,7 @@ export class TextureCanvasManager {
         }
     }
 
-    public static paintPixelsOnCanvas(pixelData : Uint8Array, canvas: HTMLCanvasElement) {
+    public paintPixelsOnCanvas(pixelData : Uint8Array, canvas: HTMLCanvasElement) {
         const ctx = canvas.getContext('2d')!;
         const imgData = ctx.createImageData(canvas.width, canvas.height);
         imgData.data.set(pixelData);
@@ -493,7 +493,7 @@ export class TextureCanvasManager {
             this._mipLevel
         );
         this._imageData = data;
-        TextureCanvasManager.paintPixelsOnCanvas(data, this._2DCanvas);
+        this.paintPixelsOnCanvas(data, this._2DCanvas);
         this._3DCanvasTexture.update();
         this.updateDisplay();
         return data;
@@ -595,7 +595,7 @@ export class TextureCanvasManager {
     public async resize(newSize : ISize) {
         const data = await TextureHelper.GetTextureDataAsync(this._originalTexture, newSize.width, newSize.height, this._face, {R: true,G: true,B: true,A: true});
         this.setSize(newSize);
-        TextureCanvasManager.paintPixelsOnCanvas(data, this._2DCanvas);
+        this.paintPixelsOnCanvas(data, this._2DCanvas);
         this.updateTexture();
         this._didEdit = true;
     }
@@ -648,7 +648,7 @@ export class TextureCanvasManager {
                                     }
                                     texture.dispose();
                                     this.setSize(texture.getSize());
-                                    TextureCanvasManager.paintPixelsOnCanvas(pixels, this._2DCanvas);
+                                    this.paintPixelsOnCanvas(pixels, this._2DCanvas);
                                     await this.updateTexture();
                                     this._setMipLevel(0);
                                 });
