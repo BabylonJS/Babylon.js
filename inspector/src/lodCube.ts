@@ -2,9 +2,7 @@ import { Effect } from "babylonjs/Materials/effect";
 
 let name = 'lodCubePixelShader';
 let shader = `
-#ifdef GL_ES
 precision highp float;
-#endif
 
 varying vec2 vUV;
 uniform samplerCube textureSampler;

@@ -2,9 +2,9 @@ import { Effect } from "babylonjs/Materials/effect";
 
 let name = 'lodPixelShader';
 let shader = `
-#ifdef GL_ES
+#extension GL_EXT_shader_texture_lod : enable
+
 precision highp float;
-#endif
 
 varying vec2 vUV;
 uniform sampler2D textureSampler;

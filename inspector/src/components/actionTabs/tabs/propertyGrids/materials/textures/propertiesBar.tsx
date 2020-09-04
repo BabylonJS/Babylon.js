@@ -83,6 +83,8 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
     render() {
         const {mipLevel, setMipLevel, pixelData, resizeTexture, texture, face, setFace, saveTexture, resetTexture, uploadTexture} = this.props;
         const maxLevels = Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
+        const engine = texture.getScene()!.getEngine();
+        const mipsEnabled = (!texture.noMipmap && (engine.webGLVersion == 2 || engine._gl.getExtension('EXT_shader_texture_lod')));
         return <div id='properties'>
                 <div className='tab' id='logo-tab'>
                     <img className='icon' src={this._babylonLogo}/>
@@ -123,7 +125,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps,IProp
                             />)}
                         </div>
                     }
-                    {!texture.noMipmap &&
+                    {mipsEnabled &&
                         <div className='tab' id='mip-tab'>
                             <img title='Mip Preview Up' className='icon button' src={this._mipUp} onClick={() => mipLevel > 0 && setMipLevel(mipLevel - 1)} />
                             <img title='Mip Preview Down' className='icon button' src={this._mipDown} onClick={() => mipLevel < maxLevels && setMipLevel(mipLevel + 1)} />
