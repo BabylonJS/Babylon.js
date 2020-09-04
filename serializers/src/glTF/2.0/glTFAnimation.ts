@@ -236,7 +236,7 @@ export class _GLTFAnimation {
  * @param convertToRightHandedSystem
  * @param animationSampleRate
  */
-    public static _CreateMorphTargetAnimationFromMorphTargets(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
+    public static _CreateMorphTargetAnimationFromNode(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: { [key: number]: number }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number) {
         let glTFAnimation: IAnimation;
         if (babylonNode instanceof Mesh) {
             let morphTargetManager = babylonNode.morphTargetManager;
@@ -260,7 +260,7 @@ export class _GLTFAnimation {
                                 if (l == i) {
                                     combinedAnimationKeys.push(animationKey);
                                 } else {
-                                    combinedAnimationKeys.push({ frame: animationKey.frame, value: morphTargetManager.getTarget(l).influence });
+                                    combinedAnimationKeys.push({ frame: animationKey.frame, value: 0 });
                                 }
                             }
                         }
@@ -275,7 +275,7 @@ export class _GLTFAnimation {
                             _GLTFAnimation.AddAnimation(`${animation.name}`,
                                 animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
                                 babylonNode,
-                                animation,
+                                combinedAnimation,
                                 animationInfo.dataAccessorType,
                                 animationInfo.animationChannelTargetPath,
                                 nodeMap,
