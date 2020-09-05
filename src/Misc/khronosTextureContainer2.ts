@@ -149,23 +149,12 @@ export class KhronosTextureContainer2 {
                 KhronosTextureContainer2._Ktx2Decoder = new KTX2DECODER.KTX2Decoder();
             }
 
-            try {
-                KhronosTextureContainer2._Ktx2Decoder.decode(data, caps).then((data: any) => {
-                    const buffers = [];
-                    for (let mip = 0; mip < data.mipmaps.length; ++mip) {
-                        const mipmap = data.mipmaps[mip];
-                        if (mipmap) {
-                            buffers.push(mipmap.data.buffer);
-                        }
-                    }
-                    this._createTexture(data, internalTexture);
-                    resolve();
-                }).catch((reason: any) => {
-                    reject({ message: reason });
-                });
-            } catch (err) {
-                reject({ message: err });
-            }
+            KhronosTextureContainer2._Ktx2Decoder.decode(data, caps).then((data: any) => {
+                this._createTexture(data, internalTexture);
+                resolve();
+            }).catch((reason: any) => {
+                reject({ message: reason });
+            });
         });
     }
 
