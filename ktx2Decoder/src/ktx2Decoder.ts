@@ -77,8 +77,10 @@ export class KTX2Decoder {
 
             kfr.parse();
 
-            if (kfr.needZSTDDecoder && !this._zstdDecoder) {
-                this._zstdDecoder = new ZSTDDecoder();
+            if (kfr.needZSTDDecoder) {
+                if (!this._zstdDecoder) {
+                    this._zstdDecoder = new ZSTDDecoder();
+                }
 
                 return this._zstdDecoder.init().then(() => {
                     return this._decodeData(kfr, caps);
