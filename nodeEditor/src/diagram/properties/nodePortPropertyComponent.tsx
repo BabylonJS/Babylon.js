@@ -45,7 +45,7 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
                 <div>
                     <LineContainerComponent title="GENERAL">
                         {this.props.nodePort.hasLabel() && <TextInputLineComponent globalState={this.props.globalState} label="Port Label" propertyName="portName" target={this.props.nodePort} />}
-                        {this.props.nodePort.node.enclosingFrameId !== undefined && <CheckBoxLineComponent label= "Expose Port on Frame" target={this.props.nodePort} isSelected={() => this.props.nodePort.exposedOnFrame} onSelect={(value: boolean) => this.toggleExposeOnFrame(value)}  propertyName="exposedOnFrame" disabled={this.props.nodePort.disabled} />}
+                        {this.props.nodePort.node.enclosingFrameId !== -1 && <CheckBoxLineComponent label= "Expose Port on Frame" target={this.props.nodePort} isSelected={() => this.props.nodePort.exposedOnFrame} onSelect={(value: boolean) => this.toggleExposeOnFrame(value)}  propertyName="exposedOnFrame" disabled={this.props.nodePort.disabled} />}
                     </LineContainerComponent>
                 </div>
             </div>
