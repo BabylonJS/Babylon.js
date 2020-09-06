@@ -4,6 +4,18 @@ const babylonWebpackConfig = require('../Tools/WebpackPlugins/babylonWebpackConf
 
 var config = babylonWebpackConfig({
     module: "ktx2Decoder",
+    entry: "./legacy/legacy.ts",
+    output: {
+        globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)',
+        filename: "babylon.ktx2Decoder.js",
+        path: path.resolve(__dirname, "../dist/preview release"),
+        publicPath: "/dist/",
+        libraryTarget: 'umd',
+        library: {
+           root: ["KTX2DECODER"],
+        },
+        umdNamedDefine: true
+    },
     resolve: {
         extensions: [".js", '.ts', ".tsx"],
     },
@@ -16,22 +28,23 @@ var config = babylonWebpackConfig({
                 "css-loader",
                 "sass-loader"
             ]
-        },
+        }, 
         {
             test: /\.css$/,
             use: ['style-loader', 'css-loader']
         },
-    {
-        test: /\.svg$/,
-        use: [
-          {
-            loader: 'svg-url-loader',
-            options: {
-              limit: 10000,
-            },
-          },
-        ],
-      }],
+        {
+            test: /\.svg$/,
+            use: [
+              {
+                loader: 'svg-url-loader',
+                options: {
+                  limit: 10000,
+                },
+              },
+            ],
+          }
+    ],
     plugins: [
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output

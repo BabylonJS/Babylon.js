@@ -642,11 +642,11 @@
         }
     },
     "ktx2Decoder": {
-        "distFile": "/ktx2Decoder/dist/babylon.ktx2Decoder.js",
+        "distFile": "/dist/preview release/babylon.ktx2Decoder.js",
         "build": {
             "ignoreInWorkerMode": true,
             "ignoreInTestMode": true,
-            "distOutputDirectory": "../../ktx2Decoder/dist/",
+            "distOutputDirectory": "../../dist/preview release/",
             "mainFolder": "./ktx2Decoder/"
         }
     },
