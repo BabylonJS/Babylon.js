@@ -1,7 +1,7 @@
 {
     "extends": "../tsconfigRules",
     "compilerOptions": {
-        "types": [],
+        "types": ["@webgpu/types"],
         "baseUrl": "./",
         "rootDir": "./"
     }
