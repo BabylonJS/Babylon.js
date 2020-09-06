@@ -1768,6 +1768,12 @@ export class AnimationCurveEditorComponent extends React.Component<
         });
     };
 
+    setCurrentFrame2 = (frame: number) => {
+        this.setState({
+            currentFrame: frame,
+        });
+    };
+
     changeAnimationLimit = (limit: number) => {
         this.stopAnimation();
         const doubleLimit = limit * 2;
@@ -1986,7 +1992,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     updatePosition={this.renderPoints}
                                     panningY={this.setPanningY}
                                     panningX={this.setPanningX}
-                                    setCurrentFrame={this.setCurrentFrame}
+                                    setCurrentFrame={this.setCurrentFrame2}
                                     positionCanvas={new Vector2(this.state.panningX, this.state.panningY)}
                                     repositionCanvas={this.state.repositionCanvas}
                                     canvasPositionEnded={this.canvasPositionEnded}
