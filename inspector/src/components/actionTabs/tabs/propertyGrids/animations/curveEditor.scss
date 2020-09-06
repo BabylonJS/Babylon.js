@@ -1143,6 +1143,7 @@
             background-color: rgb(17, 17, 17);
             height: 364px;
             width: 782px;
+            width: calc(100vw - 247px);
 
             .switch-button {
                 background-color: black;
