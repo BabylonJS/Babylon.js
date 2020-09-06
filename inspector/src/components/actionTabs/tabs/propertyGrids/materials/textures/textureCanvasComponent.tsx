@@ -8,10 +8,7 @@ interface ITextureCanvasComponentProps {
     texture: BaseTexture;
 }
 
-export class TextureCanvasComponent extends React.PureComponent<ITextureCanvasComponentProps> {
-    shouldComponentUpdate(nextProps : ITextureCanvasComponentProps) {
-        return (nextProps.texture !== this.props.texture);
-    }
+export class TextureCanvasComponent extends React.Component<ITextureCanvasComponentProps> {
 
     render() {
         return <div>
