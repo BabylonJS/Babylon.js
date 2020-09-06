@@ -33937,12 +33937,14 @@ declare module BABYLON {
          */
         get is2DArray(): boolean;
         set is2DArray(value: boolean);
+        private _gammaSpace;
         /**
          * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
          * HDR texture are usually stored in linear space.
          * This only impacts the PBR and Background materials
          */
-        gammaSpace: boolean;
+        get gammaSpace(): boolean;
+        set gammaSpace(gamma: boolean);
         /**
          * Gets or sets whether or not the texture contains RGBD data.
          */
@@ -34794,6 +34796,8 @@ declare module BABYLON {
         etc2: any;
         /** Defines if astc texture compression is supported */
         astc: any;
+        /** Defines if bptc texture compression is supported */
+        bptc: any;
         /** Defines if float textures are supported */
         textureFloat: boolean;
         /** Defines if vertex array objects are supported */
@@ -36689,6 +36693,8 @@ declare module BABYLON {
         _webGLTexture: Nullable<WebGLTexture>;
         /** @hidden */
         _references: number;
+        /** @hidden */
+        _gammaSpace: Nullable<boolean>;
         private _engine;
         /**
          * Gets the Engine the texture belongs to.
@@ -57734,16 +57740,60 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Helper class to push actions to a pool of workers.
+     */
+    export class WorkerPool implements IDisposable {
+        private _workerInfos;
+        private _pendingActions;
+        /**
+         * Constructor
+         * @param workers Array of workers to use for actions
+         */
+        constructor(workers: Array<Worker>);
+        /**
+         * Terminates all workers and clears any pending actions.
+         */
+        dispose(): void;
+        /**
+         * Pushes an action to the worker pool. If all the workers are active, the action will be
+         * pended until a worker has completed its action.
+         * @param action The action to perform. Call onComplete when the action is complete.
+         */
+        push(action: (worker: Worker, onComplete: () => void) => void): void;
+        private _execute;
+    }
+}
+declare module BABYLON {
+    /**
      * Class for loading KTX2 files
-     * !!! Experimental Extension Subject to Changes !!!
      * @hidden
      */
     export class KhronosTextureContainer2 {
-        private static _ModulePromise;
-        private static _TranscodeFormat;
-        constructor(engine: ThinEngine);
+        private static _WorkerPoolPromise?;
+        private static _Initialized;
+        private static _Ktx2Decoder;
+        /**
+         * URL to use when loading the KTX2 decoder module
+         */
+        static JSModuleURL: string;
+        /**
+         * Default number of workers used to handle data decoding
+         */
+        static DefaultNumWorkers: number;
+        private static GetDefaultNumWorkers;
+        private _engine;
+        private static _CreateWorkerPool;
+        /**
+         * Constructor
+         * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
+         */
+        constructor(engine: ThinEngine, numWorkers?: number);
         uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void>;
-        private _determineTranscodeFormat;
+        /**
+         * Stop all async operations and release resources.
+         */
+        dispose(): void;
+        protected _createTexture(data: any, internalTexture: InternalTexture): void;
         /**
          * Checks if the given data starts with a KTX2 file identifier.
          * @param data the data to check
@@ -57751,6 +57801,7 @@ declare module BABYLON {
          */
         static IsValid(data: ArrayBufferView): boolean;
     }
+    export function workerFunc(): void;
 }
 declare module BABYLON {
     /**
@@ -64990,31 +65041,6 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class to push actions to a pool of workers.
-     */
-    export class WorkerPool implements IDisposable {
-        private _workerInfos;
-        private _pendingActions;
-        /**
-         * Constructor
-         * @param workers Array of workers to use for actions
-         */
-        constructor(workers: Array<Worker>);
-        /**
-         * Terminates all workers and clears any pending actions.
-         */
-        dispose(): void;
-        /**
-         * Pushes an action to the worker pool. If all the workers are active, the action will be
-         * pended until a worker has completed its action.
-         * @param action The action to perform. Call onComplete when the action is complete.
-         */
-        push(action: (worker: Worker, onComplete: () => void) => void): void;
-        private _execute;
     }
 }
 declare module BABYLON {
