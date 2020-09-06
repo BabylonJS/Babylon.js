@@ -17,6 +17,7 @@ declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
 declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
 declare type Animation = import("../Animations/animation").Animation;
+declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 
 /**
  * Size options for a post process
@@ -654,6 +655,16 @@ export class PostProcess {
             }
         }
         this._textures.dispose();
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup.
+     * @returns true if the pre pass is needed.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        // Do Nothing by default
+        return false;
     }
 
     /**

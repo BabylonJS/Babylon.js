@@ -444,6 +444,13 @@ export class PrePassRenderer {
             }
         }
 
+        const postProcesses = this._scene.postProcesses;
+        for (let i = 0; i < postProcesses.length; i++) {
+            if (postProcesses[i].setPrePassRenderer(this)) {
+                enablePrePass = true;
+            }
+        }
+
         this._isDirty = false;
 
         if (enablePrePass) {

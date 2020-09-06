@@ -8,6 +8,8 @@ import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
+import { PrePassRenderer } from "../Rendering/prePassRenderer";
 
 import "../Animations/animatable";
 import '../Rendering/geometryBufferRendererSceneComponent';
@@ -51,8 +53,16 @@ export class MotionBlurPostProcess extends PostProcess {
         }
     }
 
+    /**
+     * Force rendering the geometry through geometry buffer
+     */
+    private _forceGeometryBuffer: boolean = false;
+
     private _motionBlurSamples: number = 32;
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+
+    private _prePassRenderer: PrePassRenderer;
+    private _motionBlurConfiguration: MotionBlurConfiguration;
 
     /**
      * Creates a new instance MotionBlurPostProcess
@@ -66,19 +76,28 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = false) {
         super(name, "motionBlur", ["motionStrength", "motionScale", "screenSize"], ["velocitySampler"], options, camera, samplingMode, engine, reusable, "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0", textureType, undefined, null, blockCompilation);
 
-        this._geometryBufferRenderer = scene.enableGeometryBufferRenderer();
+        this._forceGeometryBuffer = forceGeometryBuffer;
 
-        if (!this._geometryBufferRenderer) {
-            // Geometry buffer renderer is not supported. So, work as a passthrough.
+        // Set up assets
+        if (this._forceGeometryBuffer) {
+            this._geometryBufferRenderer = scene.enableGeometryBufferRenderer();
+
+            if (this._geometryBufferRenderer) {
+                this._geometryBufferRenderer.enableVelocity = true;
+            }
+        } else {
+            this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
+            this._prePassRenderer.markAsDirty();
+        }
+
+        if (!this._geometryBufferRenderer && !this._prePassRenderer) {
+            // We can't get a velocity texture. So, work as a passthrough.
             Logger.Warn("Multiple Render Target support needed to compute object based motion blur");
             this.updateEffect();
         } else {
-            // Geometry buffer renderer is supported.
-            this._geometryBufferRenderer.enableVelocity = true;
-
             this.onApply = (effect: Effect) => {
                 effect.setVector2("screenSize", new Vector2(this.width, this.height));
 
@@ -88,6 +107,9 @@ export class MotionBlurPostProcess extends PostProcess {
                 if (this._geometryBufferRenderer) {
                     const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE);
                     effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
+                } else {
+                    const velocityIndex = this._prePassRenderer.getIndex(PrePassRenderer.VELOCITY_TEXTURE_TYPE);
+                    effect.setTexture("velocitySampler", this._prePassRenderer.prePassRT.textures[velocityIndex]);
                 }
             };
         }
@@ -131,5 +153,21 @@ export class MotionBlurPostProcess extends PostProcess {
         }
 
         super.dispose(camera);
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup
+     * @returns true if the pre pass is needed.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        let cfg = this._motionBlurConfiguration;
+        if (!cfg) {
+            cfg = new MotionBlurConfiguration();
+        }
+
+        cfg.enabled = true;
+        this._motionBlurConfiguration = prePassRenderer.addEffectConfiguration(cfg);
+        return true;
     }
 }
