@@ -143,6 +143,7 @@ void main(void) {
 
 #if defined(REFLECTIVITY)
     vec4 surfaceMetallicOrReflectivityColorMap = texture2D(reflectivitySampler, vReflectivityUV + uvOffset);
+    vec4 baseReflectivity = surfaceMetallicOrReflectivityColorMap;
     #ifndef METALLICWORKFLOW
         surfaceMetallicOrReflectivityColorMap = toLinearSpace(surfaceMetallicOrReflectivityColorMap);
         surfaceMetallicOrReflectivityColorMap.rgb *= vReflectivityInfos.y;
@@ -538,6 +539,14 @@ void main(void) {
 
     #ifdef PREPASS_ALBEDO
         gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(sqAlbedo, 1.0); // albedo, for pre and post scatter
+    #endif
+
+    #ifdef PREPASS_REFLECTIVITY
+        #if defined(REFLECTIVITY)
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = baseReflectivity;
+        #else
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0);
+        #endif
     #endif
 #endif
 

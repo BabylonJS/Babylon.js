@@ -16,7 +16,7 @@ import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrA
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
-import { PBRPrePassConfiguration } from "./pbrPrePassConfiguration";
+import { PBRAdditionnalPrePassConfiguration } from "./pbrAdditionnalPrePassConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
 import { Scalar } from "../../Maths/math.scalar";
 
@@ -175,6 +175,8 @@ export class PBRMaterialDefines extends MaterialDefines
     public PREPASS_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;
     public PREPASS_VELOCITY_INDEX = -1;
+    public PREPASS_REFLECTIVITY = false;
+    public PREPASS_REFLECTIVITY_INDEX = -1;
     public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;
@@ -822,9 +824,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public readonly subSurface: PBRSubSurfaceConfiguration;
 
     /**
-     * Defines the PrePass parameters for the material.
+     * Defines additionnal PrePass parameters for the material.
      */
-    public readonly prePass: PBRPrePassConfiguration;
+    public readonly additionnalPrePass: PBRAdditionnalPrePassConfiguration;
 
     /**
      * Defines the detail map parameters for the material.
@@ -859,7 +861,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
         this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
-        this.prePass = new PBRPrePassConfiguration();
+        this.additionnalPrePass = new PBRAdditionnalPrePassConfiguration();
     }
 
     /**
@@ -1292,8 +1294,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.AddUniforms(uniforms);
         PBRSheenConfiguration.AddSamplers(samplers);
 
-        PBRPrePassConfiguration.AddUniforms(uniforms);
-        PBRPrePassConfiguration.AddSamplers(uniforms);
+        PBRAdditionnalPrePassConfiguration.AddUniforms(uniforms);
+        PBRAdditionnalPrePassConfiguration.AddSamplers(uniforms);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1707,7 +1709,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
-        PBRPrePassConfiguration.PrepareUniformBuffer(ubo);
+        PBRAdditionnalPrePassConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -2017,7 +2019,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
             this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.prePass.bindForSubMesh(ubo, scene, world, this.isFrozen);
+            this.additionnalPrePass.bindForSubMesh(ubo, scene, world, this.isFrozen);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);

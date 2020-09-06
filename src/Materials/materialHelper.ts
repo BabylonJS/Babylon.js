@@ -303,51 +303,53 @@ export class MaterialHelper {
      * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
      */
     public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
-        var previousPrePass = defines.PREPASS;
+        const previousPrePass = defines.PREPASS;
+        const texturesList = [
+        {
+            type: PrePassRenderer.POSITION_TEXTURE_TYPE,
+            define: "PREPASS_POSITION",
+            index: "POSITION_TEXTURE_TYPE",
+        },
+        {
+            type: PrePassRenderer.VELOCITY_TEXTURE_TYPE,
+            define: "PREPASS_VELOCITY",
+            index: "PREPASS_VELOCITY_INDEX",
+        },
+        {
+            type: PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE,
+            define: "PREPASS_REFLECTIVITY",
+            index: "PREPASS_REFLECTIVITY_INDEX",
+        },
+        {
+            type: PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
+            define: "PREPASS_IRRADIANCE",
+            index: "PREPASS_IRRADIANCE_INDEX",
+        },
+        {
+            type: PrePassRenderer.ALBEDO_TEXTURE_TYPE,
+            define: "PREPASS_ALBEDO",
+            index: "PREPASS_ALBEDO_INDEX",
+        },
+        {
+            type: PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+            define: "PREPASS_DEPTHNORMAL",
+            index: "PREPASS_DEPTHNORMAL_INDEX",
+        }];
 
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
 
-            const positionIndex = scene.prePassRenderer.getIndex(PrePassRenderer.POSITION_TEXTURE_TYPE);
-            if (positionIndex !== -1) {
-                defines.PREPASS_POSITION = true;
-                defines.PREPASS_POSITION_INDEX = positionIndex;
-            } else {
-                defines.PREPASS_POSITION = false;
+            for (let i = 0; i < texturesList.length; i++) {
+                const index = scene.prePassRenderer.getIndex(texturesList[i].type);
+                if (index !== -1) {
+                    defines[texturesList[i].define] = true;
+                    defines[texturesList[i].index] = index;
+                } else {
+                    defines[texturesList[i].define] = false;
+                }
             }
 
-            const velocityIndex = scene.prePassRenderer.getIndex(PrePassRenderer.VELOCITY_TEXTURE_TYPE);
-            if (velocityIndex !== -1) {
-                defines.PREPASS_VELOCITY = true;
-                defines.PREPASS_VELOCITY_INDEX = velocityIndex;
-            } else {
-                defines.PREPASS_VELOCITY = false;
-            }
-
-            const irradianceIndex = scene.prePassRenderer.getIndex(PrePassRenderer.IRRADIANCE_TEXTURE_TYPE);
-            if (irradianceIndex !== -1) {
-                defines.PREPASS_IRRADIANCE = true;
-                defines.PREPASS_IRRADIANCE_INDEX = irradianceIndex;
-            } else {
-                defines.PREPASS_IRRADIANCE = false;
-            }
-
-            const albedoIndex = scene.prePassRenderer.getIndex(PrePassRenderer.ALBEDO_TEXTURE_TYPE);
-            if (albedoIndex !== -1) {
-                defines.PREPASS_ALBEDO = true;
-                defines.PREPASS_ALBEDO_INDEX = albedoIndex;
-            } else {
-                defines.PREPASS_ALBEDO = false;
-            }
-
-            const depthNormalIndex = scene.prePassRenderer.getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE);
-            if (depthNormalIndex !== -1) {
-                defines.PREPASS_DEPTHNORMAL = true;
-                defines.PREPASS_DEPTHNORMAL_INDEX = depthNormalIndex;
-            } else {
-                defines.PREPASS_DEPTHNORMAL = false;
-            }
         } else {
             defines.PREPASS = false;
         }
