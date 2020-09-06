@@ -136,15 +136,17 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                 ) {
                     const moving = e.clientX - e.currentTarget.getBoundingClientRect().left;
 
-                    const distance = moving - this._playheadDrag;
                     const draggableAreaWidth = e.currentTarget.clientWidth;
-                    const framesInCavas = 20;
-                    const unit = draggableAreaWidth / framesInCavas;
 
-                    if (Math.abs(distance) >= unit / 1.25) {
-                        this.props.setCurrentFrame(Math.sign(distance));
-                        this._playheadDrag = this._playheadDrag + distance;
-                    }
+                    const framesInDefaultCavas = 20;
+
+                    const unit = 39;
+
+                    const maxFrames = draggableAreaWidth / unit;
+                    const differentFrames = Math.round((Math.round(maxFrames) - framesInDefaultCavas) / 2);
+
+                    const newFrame = Math.round(moving / unit) - differentFrames;
+                    this.props.setCurrentFrame(newFrame);
                 } else {
                     var newPoints = [...this.props.keyframeSvgPoints];
 
