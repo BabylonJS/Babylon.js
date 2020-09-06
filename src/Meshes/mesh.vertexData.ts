@@ -1041,6 +1041,30 @@ export class VertexData {
         throw _DevTools.WarnImport("polyhedronBuilder");
     }
 
+    // 
+    /**
+     * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
+     * @param options an object used to set the following optional parameters for the capsule, required but can be empty
+     * type provided types are:    
+     * @returns the VertexData of the Capsule
+     */
+    public static CreateCapsule(options: {
+            orientation: Vector3,
+            subdivisions: number,
+            tessellation: number,
+            height: number,
+            radius: number,
+            capSubdivisions: number,
+            radiusTop:number,
+            radiusBottom: number,
+            thetaStart:number,
+            thetaLength:number,
+            topCapSubdivisions:number,
+            bottomCapSubdivisions:number
+        }): VertexData {
+        throw _DevTools.WarnImport("capsuleBuilder");
+    }
+
     // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473
     /**
      * Creates the VertexData for a TorusKnot

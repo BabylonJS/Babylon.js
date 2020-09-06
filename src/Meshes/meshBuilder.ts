@@ -17,6 +17,7 @@ import { TubeBuilder } from "./Builders/tubeBuilder";
 import { PolyhedronBuilder } from "./Builders/polyhedronBuilder";
 import { IcoSphereBuilder } from "./Builders/icoSphereBuilder";
 import { DecalBuilder } from "./Builders/decalBuilder";
+import { CapsuleBuilder } from "./Builders/capsuleBuilder";
 
 import { Vector4, Vector3, Vector2 } from "../Maths/math.vector";
 import { Nullable } from "../types";
@@ -545,5 +546,37 @@ export class MeshBuilder {
      */
     public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number }): Mesh {
         return DecalBuilder.CreateDecal(name, sourceMesh, options);
+    }
+
+
+    /**
+     * Creates a decal mesh.
+     * A decal is a mesh usually applied as a model onto the surface of another mesh. So don't forget the parameter `sourceMesh` depicting the decal
+     * * The parameter `position` (Vector3, default `(0, 0, 0)`) sets the position of the decal in World coordinates
+     * * The parameter `normal` (Vector3, default `Vector3.Up`) sets the normal of the mesh where the decal is applied onto in World coordinates
+     * * The parameter `size` (Vector3, default `(1, 1, 1)`) sets the decal scaling
+     * * The parameter `angle` (float in radian, default 0) sets the angle to rotate the decal
+     * @param name defines the name of the mesh
+     * @param sourceMesh defines the mesh where the decal must be applied
+     * @param options defines the options used to create the mesh
+     * @param scene defines the hosting scene
+     * @returns the decal mesh
+     * @see https://doc.babylonjs.com/how_to/decals
+     */
+    public static CreateCapsule(name: string, options: {
+        orientation: Vector3,
+        subdivisions: number,
+        tessellation: number,
+        height: number,
+        radius: number,
+        capSubdivisions: number,
+        radiusTop:number,
+        radiusBottom: number,
+        thetaStart:number,
+        thetaLength:number,
+        topCapSubdivisions:number,
+        bottomCapSubdivisions:number
+    }, scene: Nullable<Scene> = null): Mesh {
+        return CapsuleBuilder.CreateCapsule(name, options, scene);
     }
 }
