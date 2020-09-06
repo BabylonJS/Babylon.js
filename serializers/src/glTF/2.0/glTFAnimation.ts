@@ -243,7 +243,7 @@ export class _GLTFAnimation {
             if (morphTargetManager) {
                 for (let i = 0; i < morphTargetManager.numTargets; ++i) {
                     const morphTarget = morphTargetManager.getTarget(i);
-                    for (let animation of morphTarget.animations) {
+                    for (const animation of morphTarget.animations) {
                         const combinedAnimation = new Animation(`${animation.name}`,
                             "influence",
                             animation.framePerSecond,
