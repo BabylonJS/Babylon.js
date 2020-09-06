@@ -201,3 +201,4 @@ gui/dist/
 .netlify
 Playground/dist/
 Sandbox/public/dist/
+ktx2Decoder/dist/
