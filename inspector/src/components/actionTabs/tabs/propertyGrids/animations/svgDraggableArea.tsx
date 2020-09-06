@@ -65,9 +65,15 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             this.props.positionCanvas !== undefined &&
             this.props.repositionCanvas
         ) {
-            this.setState({ panX: this.props.positionCanvas.x, panY: this.props.positionCanvas.y }, () => {
-                this.props.canvasPositionEnded();
-            });
+            this.setState(
+                {
+                    panX: this.props.positionCanvas.x,
+                    panY: this.props.positionCanvas.y,
+                },
+                () => {
+                    this.props.canvasPositionEnded();
+                }
+            );
         }
     }
 
@@ -297,22 +303,9 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                     onMouseUp={this.dragEnd}
                     onMouseLeave={this.dragEnd}
                     onClick={this.focus}
-                    viewBox={viewBoxScaling}>
+                    viewBox={viewBoxScaling}
+                >
                     {this.props.children}
-                    {/* {this.props.keyframeSvgPoints.map((keyframe, i) => (
-                        <KeyframeSvgPoint
-                            key={`${keyframe.id}_${i}`}
-                            id={keyframe.id}
-                            keyframePoint={keyframe.keyframePoint}
-                            leftControlPoint={keyframe.leftControlPoint}
-                            rightControlPoint={keyframe.rightControlPoint}
-                            isLeftActive={keyframe.isLeftActive}
-                            isRightActive={keyframe.isRightActive}
-                            selected={keyframe.selected}
-                            selectedControlPoint={this.props.selectedControlPoint}
-                            selectKeyframe={this.props.selectKeyframe}
-                        />
-                    ))} */}
                 </svg>
             </>
         );
