@@ -17,7 +17,7 @@ export class KhronosTextureContainer2 {
     /**
      * URL to use when loading the KTX2 decoder module
      */
-    public static JSModuleURL = "https://preview.babylonjs.com/ktx2Decoder/babylon.ktx2Decoder.js";
+    public static JSModuleURL = "https://preview.babylonjs.com/babylon.ktx2Decoder.js";
 
     /**
      * Default number of workers used to handle data decoding
