@@ -2,7 +2,7 @@ import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
-import { WebGPUConstants } from './webgpuConstants';
+import * as WebGPUConstants from '@webgpu/types/dist/constants';
 import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
@@ -36,8 +36,8 @@ const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
 };
 
 const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
-    "textureCube": WebGPUConstants.GPUTextureViewDimension_cube,
-    "texture2D": WebGPUConstants.GPUTextureViewDimension_2d,
+    "textureCube": WebGPUConstants.TextureViewDimension.Cube,
+    "texture2D": WebGPUConstants.TextureViewDimension.E2d,
 };
 
 /** @hidden */

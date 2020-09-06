@@ -11,7 +11,7 @@ import { IEffectCreationOptions, Effect } from "../Materials/effect";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
-import { WebGPUConstants } from "./WebGPU/webgpuConstants";
+import * as WebGPUConstants from '@webgpu/types/dist/constants';
 import { VertexBuffer } from "../Meshes/buffer";
 import { WebGPUPipelineContext, IWebGPUPipelineContextVertexInputsCache, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
@@ -191,7 +191,7 @@ export class WebGPUEngine extends Engine {
         super(null);
 
         options.deviceDescriptor = options.deviceDescriptor || { };
-        options.swapChainFormat = options.swapChainFormat || WebGPUConstants.GPUTextureFormat_bgra8unorm;
+        options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
 
         this._decodeEngine.getCaps().textureFloat = false;
@@ -344,7 +344,7 @@ export class WebGPUEngine extends Engine {
         this._swapChain = this._context.configureSwapChain({
             device: this._device,
             format: this._options.swapChainFormat!,
-            usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT | WebGPUConstants.GPUTextureUsage_COPY_SRC,
+            usage: WebGPUConstants.TextureUsage.OutputAttachment | WebGPUConstants.TextureUsage.CopySrc,
         });
     }
 
@@ -361,9 +361,9 @@ export class WebGPUEngine extends Engine {
                 size: this._mainTextureExtends,
                 mipLevelCount: 1,
                 sampleCount: this._mainPassSampleCount,
-                dimension: WebGPUConstants.GPUTextureDimension_2d,
-                format: WebGPUConstants.GPUTextureFormat_bgra8unorm,
-                usage: WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT,
+                dimension: WebGPUConstants.TextureDimension.E2d,
+                format: WebGPUConstants.TextureFormat.BGRA8Unorm,
+                usage: WebGPUConstants.TextureUsage.OutputAttachment,
             };
 
             if (this._mainTexture) {
@@ -373,14 +373,14 @@ export class WebGPUEngine extends Engine {
             this._mainColorAttachments = [{
                 attachment: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.GPUStoreOp_store
+                storeOp: WebGPUConstants.StoreOp.Store
             }];
         }
         else {
             this._mainColorAttachments = [{
                 attachment: this._swapChain.getCurrentTexture().createView(),
                 loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.GPUStoreOp_store
+                storeOp: WebGPUConstants.StoreOp.Store
             }];
         }
 
@@ -388,9 +388,9 @@ export class WebGPUEngine extends Engine {
             size: this._mainTextureExtends,
             mipLevelCount: 1,
             sampleCount: this._mainPassSampleCount,
-            dimension: WebGPUConstants.GPUTextureDimension_2d,
-            format: WebGPUConstants.GPUTextureFormat_depth24plusStencil8,
-            usage:  WebGPUConstants.GPUTextureUsage_OUTPUT_ATTACHMENT
+            dimension: WebGPUConstants.TextureDimension.E2d,
+            format: WebGPUConstants.TextureFormat.Depth24PlusStencil8,
+            usage:  WebGPUConstants.TextureUsage.OutputAttachment
         };
 
         if (this._depthTexture) {
@@ -401,9 +401,9 @@ export class WebGPUEngine extends Engine {
             attachment: this._depthTexture.createView(),
 
             depthLoadValue: this._clearDepthValue,
-            depthStoreOp: WebGPUConstants.GPUStoreOp_store,
+            depthStoreOp: WebGPUConstants.StoreOp.Store,
             stencilLoadValue: this._clearStencilValue,
-            stencilStoreOp: WebGPUConstants.GPUStoreOp_store,
+            stencilStoreOp: WebGPUConstants.StoreOp.Store,
         };
     }
 
@@ -501,10 +501,10 @@ export class WebGPUEngine extends Engine {
         if (color.a === undefined) {
             color.a = 1;
         }
-        this._mainColorAttachments[0].loadValue = backBuffer ? color : WebGPUConstants.GPULoadOp_load;
+        this._mainColorAttachments[0].loadValue = backBuffer ? color : WebGPUConstants.LoadOp.Load;
 
-        this._mainDepthAttachment.depthLoadValue = depth ? this._clearDepthValue : WebGPUConstants.GPULoadOp_load;
-        this._mainDepthAttachment.stencilLoadValue = stencil ? this._clearStencilValue : WebGPUConstants.GPULoadOp_load;
+        this._mainDepthAttachment.depthLoadValue = depth ? this._clearDepthValue : WebGPUConstants.LoadOp.Load;
+        this._mainDepthAttachment.stencilLoadValue = stencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
 
         this._startMainRenderPass();
     }
@@ -580,7 +580,7 @@ export class WebGPUEngine extends Engine {
             view = data;
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_VERTEX | WebGPUConstants.GPUBufferUsage_COPY_DST);
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst);
         return dataBuffer;
     }
 
@@ -642,7 +642,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_INDEX | WebGPUConstants.GPUBufferUsage_COPY_DST);
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst);
         dataBuffer.is32Bits = is32Bits;
         return dataBuffer;
     }
@@ -717,7 +717,7 @@ export class WebGPUEngine extends Engine {
             view = elements;
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.GPUBufferUsage_UNIFORM | WebGPUConstants.GPUBufferUsage_COPY_DST);
+        const dataBuffer = this._createBuffer(view, WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst);
         return dataBuffer;
     }
 
@@ -986,7 +986,7 @@ export class WebGPUEngine extends Engine {
 
         let dataBuffer: DataBuffer;
         if (bytesPerRow == width * 4) {
-            dataBuffer = this._createBuffer(pixels, WebGPUConstants.GPUBufferUsage_COPY_SRC | WebGPUConstants.GPUBufferUsage_COPY_DST);
+            dataBuffer = this._createBuffer(pixels, WebGPUConstants.BufferUsage.CopySrc | WebGPUConstants.BufferUsage.CopyDst);
             const bufferView: GPUBufferCopyView = {
                 buffer: dataBuffer.underlyingResource,
                 bytesPerRow: bytesPerRow,
@@ -1008,7 +1008,7 @@ export class WebGPUEngine extends Engine {
                     pixelsIndex += 4;
                 }
             }
-            dataBuffer = this._createBuffer(alignedPixels, WebGPUConstants.GPUBufferUsage_COPY_SRC | WebGPUConstants.GPUBufferUsage_COPY_DST);
+            dataBuffer = this._createBuffer(alignedPixels, WebGPUConstants.BufferUsage.CopySrc | WebGPUConstants.BufferUsage.CopyDst);
             const bufferView: GPUBufferCopyView = {
                 buffer: dataBuffer.underlyingResource,
                 bytesPerRow: bytesPerRow,
@@ -1031,69 +1031,69 @@ export class WebGPUEngine extends Engine {
         let magFilter: GPUFilterMode, minFilter: GPUFilterMode, mipmapFilter: GPUFilterMode;
         switch (internalTexture.samplingMode) {
             case Engine.TEXTURE_BILINEAR_SAMPLINGMODE:
-                magFilter = WebGPUConstants.GPUFilterMode_linear;
-                minFilter = WebGPUConstants.GPUFilterMode_linear;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             case Engine.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                magFilter = WebGPUConstants.GPUFilterMode_linear;
-                minFilter = WebGPUConstants.GPUFilterMode_linear;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
             case Engine.TEXTURE_NEAREST_SAMPLINGMODE:
-                magFilter = WebGPUConstants.GPUFilterMode_nearest;
-                minFilter = WebGPUConstants.GPUFilterMode_nearest;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
             case Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                magFilter = WebGPUConstants.GPUFilterMode_nearest;
-                minFilter = WebGPUConstants.GPUFilterMode_nearest;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             case Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                magFilter = WebGPUConstants.GPUFilterMode_nearest;
-                minFilter = WebGPUConstants.GPUFilterMode_linear;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             case Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                magFilter = WebGPUConstants.GPUFilterMode_nearest;
-                minFilter = WebGPUConstants.GPUFilterMode_linear;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
             case Engine.TEXTURE_NEAREST_LINEAR:
-                magFilter = WebGPUConstants.GPUFilterMode_nearest;
-                minFilter = WebGPUConstants.GPUFilterMode_linear;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             case Engine.TEXTURE_NEAREST_NEAREST:
-                magFilter = WebGPUConstants.GPUFilterMode_nearest;
-                minFilter = WebGPUConstants.GPUFilterMode_nearest;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                magFilter = WebGPUConstants.FilterMode.Nearest;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             case Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                magFilter = WebGPUConstants.GPUFilterMode_linear;
-                minFilter = WebGPUConstants.GPUFilterMode_nearest;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             case Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                magFilter = WebGPUConstants.GPUFilterMode_linear;
-                minFilter = WebGPUConstants.GPUFilterMode_nearest;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
             case Engine.TEXTURE_LINEAR_LINEAR:
-                magFilter = WebGPUConstants.GPUFilterMode_linear;
-                minFilter = WebGPUConstants.GPUFilterMode_linear;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             case Engine.TEXTURE_LINEAR_NEAREST:
-                magFilter = WebGPUConstants.GPUFilterMode_linear;
-                minFilter = WebGPUConstants.GPUFilterMode_nearest;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_nearest;
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Nearest;
+                mipmapFilter = WebGPUConstants.FilterMode.Nearest;
                 break;
             default:
-                magFilter = WebGPUConstants.GPUFilterMode_linear;
-                minFilter = WebGPUConstants.GPUFilterMode_linear;
-                mipmapFilter = WebGPUConstants.GPUFilterMode_linear;
+                magFilter = WebGPUConstants.FilterMode.Linear;
+                minFilter = WebGPUConstants.FilterMode.Linear;
+                mipmapFilter = WebGPUConstants.FilterMode.Linear;
                 break;
         }
 
@@ -1107,13 +1107,13 @@ export class WebGPUEngine extends Engine {
     private _getWrappingMode(mode: number): GPUAddressMode {
         switch (mode) {
             case Engine.TEXTURE_WRAP_ADDRESSMODE:
-                return WebGPUConstants.GPUAddressMode_repeat;
+                return WebGPUConstants.AddressMode.Repeat;
             case Engine.TEXTURE_CLAMP_ADDRESSMODE:
-                return WebGPUConstants.GPUAddressMode_clampToEdge;
+                return WebGPUConstants.AddressMode.ClampToEdge;
             case Engine.TEXTURE_MIRROR_ADDRESSMODE:
-                return WebGPUConstants.GPUAddressMode_mirrorRepeat;
+                return WebGPUConstants.AddressMode.MirrorRepeat;
         }
-        return WebGPUConstants.GPUAddressMode_repeat;
+        return WebGPUConstants.AddressMode.Repeat;
     }
 
     private _getSamplerWrappingDescriptor(internalTexture: InternalTexture): {
@@ -1173,12 +1173,12 @@ export class WebGPUEngine extends Engine {
                 depth: 1
             };
             const textureDescriptor: GPUTextureDescriptor = {
-                dimension: WebGPUConstants.GPUTextureDimension_2d,
-                format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
+                dimension: WebGPUConstants.TextureDimension.E2d,
+                format: WebGPUConstants.TextureFormat.RGBA8Unorm,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 sampleCount: 1,
                 size: textureExtent,
-                usage: WebGPUConstants.GPUTextureUsage_COPY_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
+                usage: WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled
             };
 
             const gpuTexture = this._device.createTexture(textureDescriptor);
@@ -1251,12 +1251,12 @@ export class WebGPUEngine extends Engine {
                 depth: depth * 6,
             };
             const textureDescriptor: GPUTextureDescriptor = {
-                dimension: WebGPUConstants.GPUTextureDimension_2d,
-                format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
+                dimension: WebGPUConstants.TextureDimension.E2d,
+                format: WebGPUConstants.TextureFormat.RGBA8Unorm,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 sampleCount: 1,
                 size: textureExtent,
-                usage: WebGPUConstants.GPUTextureUsage_COPY_DST | WebGPUConstants.GPUTextureUsage_SAMPLED
+                usage: WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled
             };
 
             const gpuTexture = this._device.createTexture(textureDescriptor);
@@ -1272,12 +1272,12 @@ export class WebGPUEngine extends Engine {
                 }
             }
             texture._webGPUTextureView = gpuTexture.createView({
-                dimension: WebGPUConstants.GPUTextureViewDimension_cube,
-                format: WebGPUConstants.GPUTextureFormat_rgba8unorm,
+                dimension: WebGPUConstants.TextureViewDimension.Cube,
+                format: WebGPUConstants.TextureFormat.RGBA8Unorm,
                 mipLevelCount: noMipmap ? 1 : mipMaps + 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
-                aspect: WebGPUConstants.GPUTextureAspect_all
+                aspect: WebGPUConstants.TextureAspect.All
             } as any);
             webglEngineTexture.dispose();
 
@@ -1496,83 +1496,83 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     private _indexFormatInRenderPass(topology: GPUPrimitiveTopology): boolean {
-        return  topology === WebGPUConstants.GPUPrimitiveTopology_pointList ||
-                topology === WebGPUConstants.GPUPrimitiveTopology_lineList ||
-                topology === WebGPUConstants.GPUPrimitiveTopology_triangleList;
+        return  topology === WebGPUConstants.PrimitiveTopology.PointList ||
+                topology === WebGPUConstants.PrimitiveTopology.LineList ||
+                topology === WebGPUConstants.PrimitiveTopology.TriangleList;
     }
 
     private _getTopology(fillMode: number): GPUPrimitiveTopology {
         switch (fillMode) {
             // Triangle views
             case Constants.MATERIAL_TriangleFillMode:
-                return WebGPUConstants.GPUPrimitiveTopology_triangleList;
+                return WebGPUConstants.PrimitiveTopology.TriangleList;
             case Constants.MATERIAL_PointFillMode:
-                return WebGPUConstants.GPUPrimitiveTopology_pointList;
+                return WebGPUConstants.PrimitiveTopology.PointList;
             case Constants.MATERIAL_WireFrameFillMode:
-                return WebGPUConstants.GPUPrimitiveTopology_lineList;
+                return WebGPUConstants.PrimitiveTopology.LineList;
             // Draw modes
             case Constants.MATERIAL_PointListDrawMode:
-                return WebGPUConstants.GPUPrimitiveTopology_pointList;
+                return WebGPUConstants.PrimitiveTopology.PointList;
             case Constants.MATERIAL_LineListDrawMode:
-                return WebGPUConstants.GPUPrimitiveTopology_lineList;
+                return WebGPUConstants.PrimitiveTopology.LineList;
             case Constants.MATERIAL_LineLoopDrawMode:
                 // return this._gl.LINE_LOOP;
                 // TODO WEBGPU. Line Loop Mode Fallback at buffer load time.
                 throw "LineLoop is an unsupported fillmode in WebGPU";
             case Constants.MATERIAL_LineStripDrawMode:
-                return WebGPUConstants.GPUPrimitiveTopology_lineStrip;
+                return WebGPUConstants.PrimitiveTopology.LineStrip;
             case Constants.MATERIAL_TriangleStripDrawMode:
-                return WebGPUConstants.GPUPrimitiveTopology_triangleStrip;
+                return WebGPUConstants.PrimitiveTopology.TriangleStrip;
             case Constants.MATERIAL_TriangleFanDrawMode:
                 // return this._gl.TRIANGLE_FAN;
                 // TODO WEBGPU. Triangle Fan Mode Fallback at buffer load time.
                 throw "TriangleFan is an unsupported fillmode in WebGPU";
             default:
-                return WebGPUConstants.GPUPrimitiveTopology_triangleList;
+                return WebGPUConstants.PrimitiveTopology.TriangleList;
         }
     }
 
     private _getCompareFunction(compareFunction: Nullable<number>): GPUCompareFunction {
         switch (compareFunction) {
             case Constants.ALWAYS:
-                return WebGPUConstants.GPUCompareFunction_always;
+                return WebGPUConstants.CompareFunction.Always;
             case Constants.EQUAL:
-                return WebGPUConstants.GPUCompareFunction_equal;
+                return WebGPUConstants.CompareFunction.Equal;
             case Constants.GREATER:
-                return WebGPUConstants.GPUCompareFunction_greater;
+                return WebGPUConstants.CompareFunction.Greater;
             case Constants.GEQUAL:
-                return WebGPUConstants.GPUCompareFunction_greaterEqual;
+                return WebGPUConstants.CompareFunction.GreaterEqual;
             case Constants.LESS:
-                return WebGPUConstants.GPUCompareFunction_less;
+                return WebGPUConstants.CompareFunction.Less;
             case Constants.LEQUAL:
-                return WebGPUConstants.GPUCompareFunction_lessEqual;
+                return WebGPUConstants.CompareFunction.LessEqual;
             case Constants.NEVER:
-                return WebGPUConstants.GPUCompareFunction_never;
+                return WebGPUConstants.CompareFunction.Never;
             case Constants.NOTEQUAL:
-                return WebGPUConstants.GPUCompareFunction_notEqual;
+                return WebGPUConstants.CompareFunction.NotEqual;
             default:
-                return WebGPUConstants.GPUCompareFunction_less;
+                return WebGPUConstants.CompareFunction.Less;
         }
     }
 
     private _getOpFunction(operation: Nullable<number>, defaultOp: GPUStencilOperation): GPUStencilOperation {
         switch (operation) {
             case Constants.KEEP:
-                return WebGPUConstants.GPUStencilOperation_keep;
+                return WebGPUConstants.StencilOperation.Keep;
             case Constants.ZERO:
-                return WebGPUConstants.GPUStencilOperation_zero;
+                return WebGPUConstants.StencilOperation.Zero;
             case Constants.REPLACE:
-                return WebGPUConstants.GPUStencilOperation_replace;
+                return WebGPUConstants.StencilOperation.Replace;
             case Constants.INVERT:
-                return WebGPUConstants.GPUStencilOperation_invert;
+                return WebGPUConstants.StencilOperation.Invert;
             case Constants.INCR:
-                return WebGPUConstants.GPUStencilOperation_incrementClamp;
+                return WebGPUConstants.StencilOperation.IncrementClamp;
             case Constants.DECR:
-                return WebGPUConstants.GPUStencilOperation_decrementClamp;
+                return WebGPUConstants.StencilOperation.DecrementClamp;
             case Constants.INCR_WRAP:
-                return WebGPUConstants.GPUStencilOperation_incrementWrap;
+                return WebGPUConstants.StencilOperation.IncrementWrap;
             case Constants.DECR_WRAP:
-                return WebGPUConstants.GPUStencilOperation_decrementWrap;
+                return WebGPUConstants.StencilOperation.DecrementWrap;
             default:
                 return defaultOp;
         }
@@ -1583,15 +1583,15 @@ export class WebGPUEngine extends Engine {
         // And the current render pass attachment setup.
         const stencilFrontBack: GPUStencilStateFaceDescriptor = {
             compare: this._getCompareFunction(this._stencilState.stencilFunc),
-            depthFailOp: this._getOpFunction(this._stencilState.stencilOpDepthFail, WebGPUConstants.GPUStencilOperation_keep),
-            failOp: this._getOpFunction(this._stencilState.stencilOpStencilFail, WebGPUConstants.GPUStencilOperation_keep),
-            passOp: this._getOpFunction(this._stencilState.stencilOpStencilDepthPass, WebGPUConstants.GPUStencilOperation_replace)
+            depthFailOp: this._getOpFunction(this._stencilState.stencilOpDepthFail, WebGPUConstants.StencilOperation.Keep),
+            failOp: this._getOpFunction(this._stencilState.stencilOpStencilFail, WebGPUConstants.StencilOperation.Keep),
+            passOp: this._getOpFunction(this._stencilState.stencilOpStencilDepthPass, WebGPUConstants.StencilOperation.Replace)
         };
 
         return {
             depthWriteEnabled: this.getDepthWrite(),
             depthCompare: this._getCompareFunction(this.getDepthFunction()),
-            format: WebGPUConstants.GPUTextureFormat_depth24plusStencil8,
+            format: WebGPUConstants.TextureFormat.Depth24PlusStencil8,
             stencilFront: stencilFrontBack,
             stencilBack: stencilFrontBack,
             stencilReadMask: this._stencilState.stencilFuncMask,
@@ -1633,22 +1633,22 @@ export class WebGPUEngine extends Engine {
     private _getFrontFace(): GPUFrontFace {
         switch (this._depthCullingState.frontFace) {
             case 1:
-                return WebGPUConstants.GPUFrontFace_ccw;
+                return WebGPUConstants.FrontFace.CCW;
             default:
-                return WebGPUConstants.GPUFrontFace_cw;
+                return WebGPUConstants.FrontFace.CW;
         }
     }
 
     private _getCullMode(): GPUCullMode {
         if (this._depthCullingState.cull === false) {
-            return WebGPUConstants.GPUCullMode_none;
+            return WebGPUConstants.CullMode.None;
         }
 
         if (this._depthCullingState.cullFace === 2) {
-            return WebGPUConstants.GPUCullMode_front;
+            return WebGPUConstants.CullMode.Front;
         }
         else {
-            return WebGPUConstants.GPUCullMode_back;
+            return WebGPUConstants.CullMode.Back;
         }
     }
 
@@ -1664,9 +1664,9 @@ export class WebGPUEngine extends Engine {
 
     private _getWriteMask(): number {
         if (this.__colorWrite) {
-            return WebGPUConstants.GPUColorWriteBits_ALL;
+            return WebGPUConstants.ColorWrite.All;
         }
-        return WebGPUConstants.GPUColorWriteBits_NONE;
+        return 0;
     }
 
     /**
@@ -1744,50 +1744,50 @@ export class WebGPUEngine extends Engine {
     private _getAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
         switch (operation) {
             case 0x8006:
-                return WebGPUConstants.GPUBlendOperation_add;
+                return WebGPUConstants.BlendOperation.Add;
             case 0x800A:
-                return WebGPUConstants.GPUBlendOperation_substract;
+                return WebGPUConstants.BlendOperation.Subtract;
             case 0x800B:
-                return WebGPUConstants.GPUBlendOperation_reverseSubtract;
+                return WebGPUConstants.BlendOperation.ReverseSubtract;
             default:
-                return WebGPUConstants.GPUBlendOperation_add;
+                return WebGPUConstants.BlendOperation.Add;
         }
     }
 
     private _getAphaBlendFactor(factor: Nullable<number>): GPUBlendFactor {
         switch (factor) {
             case 0:
-                return WebGPUConstants.GPUBlendFactor_zero;
+                return WebGPUConstants.BlendFactor.Zero;
             case 1:
-                return WebGPUConstants.GPUBlendFactor_one;
+                return WebGPUConstants.BlendFactor.One;
             case 0x0300:
-                return WebGPUConstants.GPUBlendFactor_srcColor;
+                return WebGPUConstants.BlendFactor.SrcColor;
             case 0x0301:
-                return WebGPUConstants.GPUBlendFactor_oneMinusSrcColor;
+                return WebGPUConstants.BlendFactor.OneMinusSrcColor;
             case 0x0302:
-                return WebGPUConstants.GPUBlendFactor_srcAlpha;
+                return WebGPUConstants.BlendFactor.SrcAlpha;
             case 0x0303:
-                return WebGPUConstants.GPUBlendFactor_oneMinusSrcAlpha;
+                return WebGPUConstants.BlendFactor.OneMinusSrcAlpha;
             case 0x0304:
-                return WebGPUConstants.GPUBlendFactor_dstAlpha;
+                return WebGPUConstants.BlendFactor.DstAlpha;
             case 0x0305:
-                return WebGPUConstants.GPUBlendFactor_oneMinusDstAlpha;
+                return WebGPUConstants.BlendFactor.OneMinusDstAlpha;
             case 0x0306:
-                return WebGPUConstants.GPUBlendFactor_dstColor;
+                return WebGPUConstants.BlendFactor.DstColor;
             case 0x0307:
-                return WebGPUConstants.GPUBlendFactor_oneMinusDstColor;
+                return WebGPUConstants.BlendFactor.OneMinusDstColor;
             case 0x0308:
-                return WebGPUConstants.GPUBlendFactor_srcAlphaSaturated;
+                return WebGPUConstants.BlendFactor.SrcAlphaSaturated;
             case 0x8001:
-                return WebGPUConstants.GPUBlendFactor_blendColor;
+                return WebGPUConstants.BlendFactor.BlendColor;
             case 0x8002:
-                return WebGPUConstants.GPUBlendFactor_oneMinusBlendColor;
+                return WebGPUConstants.BlendFactor.OneMinusBlendColor;
             case 0x8003:
-                return WebGPUConstants.GPUBlendFactor_blendColor;
+                return WebGPUConstants.BlendFactor.BlendColor;
             case 0x8004:
-                return WebGPUConstants.GPUBlendFactor_oneMinusBlendColor;
+                return WebGPUConstants.BlendFactor.OneMinusBlendColor;
             default:
-                return WebGPUConstants.GPUBlendFactor_one;
+                return WebGPUConstants.BlendFactor.One;
         }
     }
 
@@ -1840,63 +1840,63 @@ export class WebGPUEngine extends Engine {
             case VertexBuffer.BYTE:
                 switch (size) {
                     case 2:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_char2norm : WebGPUConstants.GPUVertexFormat_char2;
+                        return normalized ? WebGPUConstants.VertexFormat.Char2Norm : WebGPUConstants.VertexFormat.Char2;
                     case 4:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_char4norm : WebGPUConstants.GPUVertexFormat_char4;
+                        return normalized ? WebGPUConstants.VertexFormat.Char4Norm : WebGPUConstants.VertexFormat.Char4;
                 }
             case VertexBuffer.UNSIGNED_BYTE:
                 switch (size) {
                     case 2:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_uchar2norm : WebGPUConstants.GPUVertexFormat_uchar2;
+                        return normalized ? WebGPUConstants.VertexFormat.Uchar2Norm : WebGPUConstants.VertexFormat.Uchar2;
                     case 4:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_uchar4norm : WebGPUConstants.GPUVertexFormat_uchar4;
+                        return normalized ? WebGPUConstants.VertexFormat.Uchar4Norm : WebGPUConstants.VertexFormat.Uchar4;
                 }
             case VertexBuffer.SHORT:
                 switch (size) {
                     case 2:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_short2norm : WebGPUConstants.GPUVertexFormat_short2;
+                        return normalized ? WebGPUConstants.VertexFormat.Short2Norm : WebGPUConstants.VertexFormat.Short2;
                     case 4:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_short4norm : WebGPUConstants.GPUVertexFormat_short4;
+                        return normalized ? WebGPUConstants.VertexFormat.Short4Norm : WebGPUConstants.VertexFormat.Short4;
                 }
             case VertexBuffer.UNSIGNED_SHORT:
                 switch (size) {
                     case 2:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_ushort2norm : WebGPUConstants.GPUVertexFormat_ushort2;
+                        return normalized ? WebGPUConstants.VertexFormat.Ushort2Norm : WebGPUConstants.VertexFormat.Ushort2;
                     case 4:
-                        return normalized ? WebGPUConstants.GPUVertexFormat_ushort4norm : WebGPUConstants.GPUVertexFormat_ushort4;
+                        return normalized ? WebGPUConstants.VertexFormat.Ushort4Norm : WebGPUConstants.VertexFormat.Ushort4;
                 }
             case VertexBuffer.INT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.GPUVertexFormat_int;
+                        return WebGPUConstants.VertexFormat.Int;
                     case 2:
-                        return WebGPUConstants.GPUVertexFormat_int2;
+                        return WebGPUConstants.VertexFormat.Int2;
                     case 3:
-                        return WebGPUConstants.GPUVertexFormat_int3;
+                        return WebGPUConstants.VertexFormat.Int3;
                     case 4:
-                        return WebGPUConstants.GPUVertexFormat_int4;
+                        return WebGPUConstants.VertexFormat.Int4;
                 }
             case VertexBuffer.UNSIGNED_INT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.GPUVertexFormat_uint;
+                        return WebGPUConstants.VertexFormat.Uint;
                     case 2:
-                        return WebGPUConstants.GPUVertexFormat_uint2;
+                        return WebGPUConstants.VertexFormat.Uint2;
                     case 3:
-                        return WebGPUConstants.GPUVertexFormat_uint3;
+                        return WebGPUConstants.VertexFormat.Uint3;
                     case 4:
-                        return WebGPUConstants.GPUVertexFormat_uint4;
+                        return WebGPUConstants.VertexFormat.Uint4;
                 }
             case VertexBuffer.FLOAT:
                 switch (size) {
                     case 1:
-                        return WebGPUConstants.GPUVertexFormat_float;
+                        return WebGPUConstants.VertexFormat.Float;
                     case 2:
-                        return WebGPUConstants.GPUVertexFormat_float2;
+                        return WebGPUConstants.VertexFormat.Float2;
                     case 3:
-                        return WebGPUConstants.GPUVertexFormat_float3;
+                        return WebGPUConstants.VertexFormat.Float3;
                     case 4:
-                        return WebGPUConstants.GPUVertexFormat_float4;
+                        return WebGPUConstants.VertexFormat.Float4;
                 }
         }
 
@@ -1925,7 +1925,7 @@ export class WebGPUEngine extends Engine {
                 // TODO WEBGPU. Factorize the one with the same underlying buffer.
                 const vertexBufferDescriptor: GPUVertexBufferLayoutDescriptor = {
                     arrayStride: vertexBuffer.byteStride,
-                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.GPUInputStepMode_instance : WebGPUConstants.GPUInputStepMode_vertex,
+                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
                     attributes: [positionAttributeDescriptor]
                 };
 
@@ -1935,7 +1935,7 @@ export class WebGPUEngine extends Engine {
 
         if (!this._currentIndexBuffer) {
             return {
-                indexFormat: WebGPUConstants.GPUIndexFormat_uint32,
+                indexFormat: WebGPUConstants.IndexFormat.Uint32,
                 vertexBuffers: descriptors
             };
         }
@@ -1945,7 +1945,7 @@ export class WebGPUEngine extends Engine {
         };
 
         if (!this._indexFormatInRenderPass(topology)) {
-            inputStateDescriptor.indexFormat = this._currentIndexBuffer!.is32Bits ? WebGPUConstants.GPUIndexFormat_uint32 : WebGPUConstants.GPUIndexFormat_uint16;
+            inputStateDescriptor.indexFormat = this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
         }
 
         return inputStateDescriptor;
@@ -1977,8 +1977,8 @@ export class WebGPUEngine extends Engine {
                 if (bindingDefinition.isSampler) {
                     entries.push({
                         binding: j,
-                        visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
-                        type: WebGPUConstants.GPUBindingType_sampledTexture,
+                        visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
+                        type: WebGPUConstants.BindingType.SampledTexture,
                         viewDimension: bindingDefinition.textureDimension,
                         // TODO WEBGPU. Handle texture component type properly.
                         // textureComponentType?: GPUTextureComponentType,
@@ -1988,15 +1988,15 @@ export class WebGPUEngine extends Engine {
                     }, {
                         // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
                         binding: j + 1,
-                        visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
-                        type: WebGPUConstants.GPUBindingType_sampler
+                        visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
+                        type: WebGPUConstants.BindingType.Sampler
                     });
                 }
                 else {
                     entries.push({
                         binding: j,
-                        visibility: WebGPUConstants.GPUShaderStageBit_VERTEX | WebGPUConstants.GPUShaderStageBit_FRAGMENT,
-                        type: WebGPUConstants.GPUBindingType_uniformBuffer,
+                        visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
+                        type: WebGPUConstants.BindingType.UniformBuffer,
                     });
                 }
             }
@@ -2201,7 +2201,7 @@ export class WebGPUEngine extends Engine {
         if (vertexInputs.indexBuffer) {
             // TODO WEBGPU. Check if cache would be worth it.
             if (setIndexFormat) {
-                renderPass.setIndexBuffer(vertexInputs.indexBuffer, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.GPUIndexFormat_uint32 : WebGPUConstants.GPUIndexFormat_uint16, vertexInputs.indexOffset);
+                renderPass.setIndexBuffer(vertexInputs.indexBuffer, this._currentIndexBuffer!.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16, vertexInputs.indexOffset);
             } else {
                 renderPass.setIndexBuffer(vertexInputs.indexBuffer, vertexInputs.indexOffset);
             }
@@ -2290,8 +2290,8 @@ export class WebGPUEngine extends Engine {
     public startRecordBundle(): void {
         // TODO. WebGPU. options should be dynamic.
         this._bundleEncoder = this._device.createRenderBundleEncoder({
-            colorFormats: [ WebGPUConstants.GPUTextureFormat_bgra8unorm ],
-            depthStencilFormat: WebGPUConstants.GPUTextureFormat_depth24plusStencil8,
+            colorFormats: [ WebGPUConstants.TextureFormat.BGRA8Unorm ],
+            depthStencilFormat: WebGPUConstants.TextureFormat.Depth24PlusStencil8,
             sampleCount: this._mainPassSampleCount,
         });
     }
