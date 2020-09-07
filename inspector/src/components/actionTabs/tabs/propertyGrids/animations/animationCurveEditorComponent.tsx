@@ -88,7 +88,8 @@ export class AnimationCurveEditorComponent extends React.Component<
         panningX: number;
         repositionCanvas: boolean;
         actionableKeyframe: IActionableKeyFrame;
-        valueScale: CurveScale;
+        valueScaleType: CurveScale;
+        valueScale: number;
         canvasLength: number;
         lastKeyframeCreated: Nullable<string>;
         canvasWidthScale: number;
@@ -190,7 +191,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             panningX: 0,
             repositionCanvas: false,
             actionableKeyframe: { frame: undefined, value: undefined },
-            valueScale: CurveScale.default,
+            valueScaleType: CurveScale.default,
+            valueScale: 2,
             lastKeyframeCreated: null,
             canvasWidthScale: 200,
             valuesPositionResize: 2,
@@ -257,28 +259,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         return [...halfNegative, ...halfPositive];
     }
 
-    setValueLines(type: CurveScale) {
-        switch (type) {
-            case CurveScale.default:
-                this._heightScale = 100;
-                this._scaleFactor = 2;
-                break;
-            case CurveScale.float:
-                this._scaleFactor = 2.5;
-                this._heightScale = 120;
-                break;
-            case CurveScale.degrees:
-                this._scaleFactor = 50;
-                this._heightScale = 200;
-                break;
-            case CurveScale.integers:
-                this._scaleFactor = 320;
-                break;
-            case CurveScale.radians:
-                this._scaleFactor = 0.8;
-                break;
-        }
-
+    setValueLines() {
         const lineV = this._heightScale / 10;
 
         const initialValues = new Array(this._currentScale).fill(0).map((_, i) => {
@@ -297,11 +278,11 @@ export class AnimationCurveEditorComponent extends React.Component<
             return sign === -1
                 ? {
                       value: -i * lineV,
-                      label: (i + this._currentScale) / (this._currentScale / this._scaleFactor),
+                      label: ((i + this._currentScale) / (this._currentScale / this._scaleFactor)).toFixed(2),
                   }
                 : {
                       value: (i + lineV) * this._currentScale,
-                      label: (i * -1) / (this._currentScale / this._scaleFactor),
+                      label: ((i * -1) / (this._currentScale / this._scaleFactor)).toFixed(2),
                   };
         });
 
@@ -1756,7 +1737,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             }
 
             const valueScale = this._heightScale / this._scaleFactor;
-            const positionY = value === 0 ? 50 : valueScale - value * valueScale;
+            const middleCanvas = this._heightScale / 2;
+            const positionY = value === 0 ? middleCanvas : middleCanvas - value * valueScale;
 
             this.setState({ panningX: positionX, panningY: positionY, repositionCanvas: true });
         }
@@ -1918,12 +1900,85 @@ export class AnimationCurveEditorComponent extends React.Component<
     };
 
     frameSelectedKeyframes = () => {
-        // get selected keyframes
-        // get adjacent keyframes
-        // found canvas boundaries
-        // zoom to fit
-        // if not selected keyframes
-        // remove zoom
+        const animation = this.state.selected;
+        const coordinate = this.state.selectedCoordinate;
+        if (animation) {
+            let highest, lowest, middleFrame;
+            const keysCopy = [...animation.getKeys()];
+            // calculate scale factor for Value Axis //
+            const selectedKeyframes = this.state.svgKeyframes?.filter((x) => x.selected);
+            if (selectedKeyframes?.length === 0) {
+                // If not selected get all keyframes
+                keysCopy.sort(
+                    (a, b) =>
+                        this.getValueAsArray(animation.dataType, a.value)[coordinate] -
+                        this.getValueAsArray(animation.dataType, b.value)[coordinate]
+                );
+                lowest = keysCopy[0];
+                highest = keysCopy[keysCopy.length - 1];
+                keysCopy.sort((a, b) => a.frame - b.frame);
+                middleFrame =
+                    Math.round((keysCopy[keysCopy.length - 1].frame - keysCopy[0].frame) / 2) + keysCopy[0].frame;
+            } else {
+                // If selected get keys
+                const keysInRange = keysCopy.filter((kf, i) => {
+                    return selectedKeyframes?.find((a: IKeyframeSvgPoint) => {
+                        const { order } = this.decodeCurveId(a.id);
+                        return i === order ? kf : undefined;
+                    });
+                });
+
+                // Sort to get first and last frame
+                keysInRange.sort((a, b) => a.frame - b.frame);
+
+                // Get previous and next non selected keyframe in range
+                const prevKey = keysCopy[keysCopy.indexOf(keysInRange[0]) - 1];
+                const nextKey = keysCopy[keysCopy.indexOf(keysInRange[keysInRange.length - 1]) + 1];
+
+                // Insert keys in range
+                if (prevKey) {
+                    keysInRange.push(prevKey);
+                }
+                if (nextKey) {
+                    keysInRange.push(nextKey);
+                }
+
+                // Sort to get lowest and highest values for scale
+                keysInRange.sort(
+                    (a, b) =>
+                        this.getValueAsArray(animation.dataType, a.value)[coordinate] -
+                        this.getValueAsArray(animation.dataType, b.value)[coordinate]
+                );
+
+                lowest = keysInRange[0];
+                highest = keysInRange[keysInRange.length - 1];
+
+                keysInRange.sort((a, b) => a.frame - b.frame);
+                middleFrame =
+                    Math.round((keysInRange[keysInRange.length - 1].frame - keysInRange[0].frame) / 2) +
+                    keysInRange[0].frame;
+            }
+
+            // calculate scale...
+            const scale =
+                this.getValueAsArray(animation.dataType, highest?.value)[coordinate] -
+                this.getValueAsArray(animation.dataType, lowest?.value)[coordinate];
+
+            // Render new points
+            this.selectAnimation(animation, coordinate);
+
+            // Scale Frames to fit width of canvas
+            // reposition canvas to middle value of scale
+            const canvasMargin = 1.5;
+            this._scaleFactor = isNaN(scale) || scale === 0 ? 2 : scale * canvasMargin;
+
+            // Set a new scale factor but for Frames
+            // ****
+
+            // Need to center and reposition canvas
+            const canvasValue = isNaN(scale) || scale === 0 ? 1 : scale / 2 + lowest?.value;
+            this.setCanvasPosition({ frame: middleFrame, value: canvasValue });
+        }
     };
 
     onWindowResizeWidth = () => {
@@ -1999,7 +2054,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     keyframeSvgPoints={this.state.svgKeyframes}
                                     resetActionableKeyframe={this.resetActionableKeyframe}
                                 >
-                                    {this.setValueLines(this.state.valueScale).map((line, i) => {
+                                    {this.setValueLines().map((line, i) => {
                                         return (
                                             <text
                                                 key={`value_inline_${i}`}
@@ -2019,7 +2074,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                         );
                                     })}
 
-                                    {this.setValueLines(this.state.valueScale).map((line, i) => {
+                                    {this.setValueLines().map((line, i) => {
                                         return (
                                             <line
                                                 key={i}
@@ -2143,7 +2198,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     top: 40,
                                 }}
                             ></div>
-                            <ScaleLabel current={this.state.valueScale} />
+                            <ScaleLabel current={this.state.valueScaleType} />
                         </div>
                     </div>
                     <div className="row-bottom">
