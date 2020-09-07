@@ -23,6 +23,7 @@ import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
+import "@webgpu/types";
 
 /**
  * Options to load the associated Glslang library
