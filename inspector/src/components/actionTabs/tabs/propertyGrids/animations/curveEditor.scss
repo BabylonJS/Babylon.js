@@ -540,6 +540,7 @@
                     padding-left: 10px;
                     padding-right: 10px;
                     width: calc(100vw - 246px);
+                    min-width: 786px;
                     &:focus {
                         outline: none;
                     }
@@ -592,6 +593,7 @@
 
                     .scroll-handle {
                         width: calc(100vw - 326px);
+                        min-width: 714px;
                         background-color: #222222;
                         height: 25px;
                         display: flex;
