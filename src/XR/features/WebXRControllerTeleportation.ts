@@ -140,7 +140,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _currentTeleportationControllerId: string;
     private _floorMeshes: AbstractMesh[];
     private _quadraticBezierCurve: AbstractMesh;
-    private _selectionFeature: IWebXRFeature;
+    private _selectionFeature: Nullable<IWebXRFeature>;
     private _snapToPositions: Vector3[];
     private _snappedToPoint: boolean = false;
     private _teleportationRingMaterial?: StandardMaterial;
@@ -330,7 +330,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
      * This is used to remove the selection rays when moving.
      * @param selectionFeature the feature to disable when forward movement is enabled
      */
-    public setSelectionFeature(selectionFeature: IWebXRFeature) {
+    public setSelectionFeature(selectionFeature: Nullable<IWebXRFeature>) {
         this._selectionFeature = selectionFeature;
     }
 
