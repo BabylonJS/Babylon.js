@@ -2016,6 +2016,7 @@ export class Control {
         block.style.verticalAlign = "bottom";
 
         var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
         div.appendChild(text);
         div.appendChild(block);
 
