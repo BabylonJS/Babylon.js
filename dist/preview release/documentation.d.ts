@@ -47122,6 +47122,10 @@ declare module BABYLON {
          */
         isCompatible(): boolean;
         /**
+         * Was this feature disposed;
+         */
+        isDisposed: boolean;
+        /**
          * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
          */
         xrNativeFeatureName?: string;
@@ -48677,6 +48681,10 @@ declare module BABYLON {
         private _attached;
         private _removeOnDetach;
         /**
+         * Is this feature disposed?
+         */
+        isDisposed: boolean;
+        /**
          * Should auto-attach be disabled?
          */
         disableAutoAttach: boolean;
@@ -49504,7 +49512,7 @@ declare module BABYLON {
          * This is used to remove the selection rays when moving.
          * @param selectionFeature the feature to disable when forward movement is enabled
          */
-        setSelectionFeature(selectionFeature: IWebXRFeature): void;
+        setSelectionFeature(selectionFeature: Nullable<IWebXRFeature>): void;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachController;
         private _createDefaultTargetMesh;
