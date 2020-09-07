@@ -115,6 +115,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     private _isTargetedAnimation: boolean;
 
     private _pixelFrameUnit: number;
+    private _resizedTimeline: number;
 
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _mainAnimatable: Nullable<Animatable>;
@@ -1991,6 +1992,17 @@ export class AnimationCurveEditorComponent extends React.Component<
             const percentResize = (this._graphCanvas.current.clientWidth * 100) / defaultWidth;
             const value = (percentResize - 100) * -1;
             this.setState({ valuesPositionResize: value - width + proportionResized });
+            this.onTimelineResize();
+        }
+    };
+
+    onTimelineResize = () => {
+        if (this._editor.current) {
+            const scrollHandle = this._editor.current.getElementsByClassName("scroll-handle")[0].clientWidth;
+            //const handle = this._editor.current.getElementsByClassName("handle")[0].clientWidth;
+            //const currentProportion = handle / scrollHandle;
+
+            this._resizedTimeline = scrollHandle;
         }
     };
 
@@ -2214,6 +2226,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                             selected={this.state.selected && this.state.selected.getKeys()[0]}
                             fps={this.state.fps}
                             repositionCanvas={this.setCanvasPosition}
+                            resizeWindowProportion={this._resizedTimeline}
                         ></Timeline>
                     </div>
                 </div>

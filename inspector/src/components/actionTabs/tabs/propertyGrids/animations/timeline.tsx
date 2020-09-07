@@ -14,6 +14,7 @@ interface ITimelineProps {
     animationLimit: number;
     fps: number;
     repositionCanvas: (keyframe: IAnimationKey) => void;
+    resizeWindowProportion: number;
 }
 
 export class Timeline extends React.Component<
@@ -80,6 +81,11 @@ export class Timeline extends React.Component<
         if (prevProps.animationLimit !== this.props.animationLimit) {
             this.setState({ limitValue: this.props.animationLimit });
         }
+        if (prevProps.resizeWindowProportion !== this.props.resizeWindowProportion) {
+            if (this.state.scrollWidth !== undefined) {
+                this.setState({ scrollWidth: this.calculateScrollWidth(this.state.start, this.state.end) });
+            }
+        }
     }
 
     componentWillUnmount() {
@@ -113,7 +119,9 @@ export class Timeline extends React.Component<
                     scrollWidth: this.calculateScrollWidth(0, newEnd),
                 });
                 if (this._scrollbarHandle.current && this._scrollContainer.current) {
-                    this._scrollbarHandle.current.style.left = `${this._scrollContainer.current.getBoundingClientRect().left + this._marginScrollbar}px`;
+                    this._scrollbarHandle.current.style.left = `${
+                        this._scrollContainer.current.getBoundingClientRect().left + this._marginScrollbar
+                    }px`;
                 }
             }
         );
@@ -231,12 +239,12 @@ export class Timeline extends React.Component<
 
         if ((e.target as HTMLDivElement).className === "left-draggable" && this._scrollbarHandle.current) {
             this._active = "leftDraggable";
-            this._shiftX = e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
+            this._shiftX = e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left - 3;
         }
 
         if ((e.target as HTMLDivElement).className === "right-draggable" && this._scrollbarHandle.current) {
             this._active = "rightDraggable";
-            this._shiftX = e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left;
+            this._shiftX = e.clientX - this._scrollbarHandle.current.getBoundingClientRect().left + 3;
         }
     };
 
@@ -332,7 +340,10 @@ export class Timeline extends React.Component<
             }
 
             if (!(framesTo >= this.state.end - 20)) {
-                let toleft = framesTo * unit + this._scrollContainer.current.getBoundingClientRect().left + this._marginScrollbar * 2;
+                let toleft =
+                    framesTo * unit +
+                    this._scrollContainer.current.getBoundingClientRect().left +
+                    this._marginScrollbar * 2;
                 if (this._scrollbarHandle.current) {
                     this._scrollbarHandle.current.style.left = toleft + "px";
                 }
@@ -382,7 +393,12 @@ export class Timeline extends React.Component<
                         scrollable={this._scrollable}
                     />
                     <div className="timeline-wrapper">
-                        <div ref={this._scrollable} className="display-line" onClick={this.setCurrentFrame} tabIndex={50}>
+                        <div
+                            ref={this._scrollable}
+                            className="display-line"
+                            onClick={this.setCurrentFrame}
+                            tabIndex={50}
+                        >
                             <svg
                                 style={{
                                     width: "100%",
@@ -399,16 +415,35 @@ export class Timeline extends React.Component<
                                         <svg key={`tl_${frame}`}>
                                             {
                                                 <>
-                                                    {frame % Math.round(this.state.selectionLength.length / 20) === 0 ? (
+                                                    {frame % Math.round(this.state.selectionLength.length / 20) ===
+                                                    0 ? (
                                                         <>
-                                                            <text x={(i * 100) / this.state.selectionLength.length + "%"} y="18" style={{ fontSize: 10, fill: "#555555" }}>
+                                                            <text
+                                                                x={(i * 100) / this.state.selectionLength.length + "%"}
+                                                                y="18"
+                                                                style={{ fontSize: 10, fill: "#555555" }}
+                                                            >
                                                                 {frame}
                                                             </text>
-                                                            <line x1={(i * 100) / this.state.selectionLength.length + "%"} y1="22" x2={(i * 100) / this.state.selectionLength.length + "%"} y2="40" style={{ stroke: "#555555", strokeWidth: 0.5 }} />
+                                                            <line
+                                                                x1={(i * 100) / this.state.selectionLength.length + "%"}
+                                                                y1="22"
+                                                                x2={(i * 100) / this.state.selectionLength.length + "%"}
+                                                                y2="40"
+                                                                style={{ stroke: "#555555", strokeWidth: 0.5 }}
+                                                            />
                                                         </>
                                                     ) : null}
                                                     {this.getCurrentFrame(frame) ? (
-                                                        <svg x={this._scrollable.current ? this._scrollable.current.clientWidth / this.state.selectionLength.length / 2 : 1}>
+                                                        <svg
+                                                            x={
+                                                                this._scrollable.current
+                                                                    ? this._scrollable.current.clientWidth /
+                                                                      this.state.selectionLength.length /
+                                                                      2
+                                                                    : 1
+                                                            }
+                                                        >
                                                             <line
                                                                 x1={(i * 100) / this.state.selectionLength.length + "%"}
                                                                 y1="0"
@@ -416,7 +451,10 @@ export class Timeline extends React.Component<
                                                                 y2="40"
                                                                 style={{
                                                                     stroke: "rgba(18, 80, 107, 0.26)",
-                                                                    strokeWidth: this._scrollable.current ? this._scrollable.current.clientWidth / this.state.selectionLength.length : 1,
+                                                                    strokeWidth: this._scrollable.current
+                                                                        ? this._scrollable.current.clientWidth /
+                                                                          this.state.selectionLength.length
+                                                                        : 1,
                                                                 }}
                                                             />
                                                         </svg>
@@ -424,7 +462,14 @@ export class Timeline extends React.Component<
 
                                                     {this.getKeyframe(frame) ? (
                                                         <svg key={`kf_${i}`} tabIndex={i + 40}>
-                                                            <line id={`kf_${i.toString()}`} x1={(i * 100) / this.state.selectionLength.length + "%"} y1="0" x2={(i * 100) / this.state.selectionLength.length + "%"} y2="40" style={{ stroke: "#ffc017", strokeWidth: 1 }} />
+                                                            <line
+                                                                id={`kf_${i.toString()}`}
+                                                                x1={(i * 100) / this.state.selectionLength.length + "%"}
+                                                                y1="0"
+                                                                x2={(i * 100) / this.state.selectionLength.length + "%"}
+                                                                y2="40"
+                                                                style={{ stroke: "#ffc017", strokeWidth: 1 }}
+                                                            />
                                                         </svg>
                                                     ) : null}
                                                 </>
@@ -435,9 +480,20 @@ export class Timeline extends React.Component<
                             </svg>
                         </div>
 
-                        <div className="timeline-scroll-handle" onMouseMove={this.scrollDrag} onMouseDown={this.scrollDragStart} onMouseUp={this.scrollDragEnd} onMouseLeave={this.scrollDragEnd} onDragStart={this.dragDomFalse}>
+                        <div
+                            className="timeline-scroll-handle"
+                            onMouseMove={this.scrollDrag}
+                            onMouseDown={this.scrollDragStart}
+                            onMouseUp={this.scrollDragEnd}
+                            onMouseLeave={this.scrollDragEnd}
+                            onDragStart={this.dragDomFalse}
+                        >
                             <div className="scroll-handle" ref={this._scrollContainer} tabIndex={60}>
-                                <div className="handle" ref={this._scrollbarHandle} style={{ width: this.state.scrollWidth }}>
+                                <div
+                                    className="handle"
+                                    ref={this._scrollbarHandle}
+                                    style={{ width: this.state.scrollWidth }}
+                                >
                                     <div className="left-grabber">
                                         <div className="left-draggable">
                                             <div className="grabber"></div>
@@ -461,7 +517,13 @@ export class Timeline extends React.Component<
                         </div>
 
                         <div className="input-frame">
-                            <input ref={this._inputAnimationLimit} type="number" value={this.state.limitValue} onChange={(e) => this.handleLimitChange(e)} onBlur={(e) => this.onInputBlur(e)}></input>
+                            <input
+                                ref={this._inputAnimationLimit}
+                                type="number"
+                                value={this.state.limitValue}
+                                onChange={(e) => this.handleLimitChange(e)}
+                                onBlur={(e) => this.onInputBlur(e)}
+                            ></input>
                         </div>
                     </div>
                 </div>
