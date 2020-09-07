@@ -1965,9 +1965,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                 this.getValueAsArray(animation.dataType, highest?.value)[coordinate] -
                 this.getValueAsArray(animation.dataType, lowest?.value)[coordinate];
 
-            // Render new points
-            this.selectAnimation(animation, coordinate);
-
             // Scale Frames to fit width of canvas
             // reposition canvas to middle value of scale
             const canvasMargin = 1.5;
@@ -1979,6 +1976,9 @@ export class AnimationCurveEditorComponent extends React.Component<
             // Need to center and reposition canvas
             const canvasValue = isNaN(scale) || scale === 0 ? 1 : scale / 2 + lowest?.value;
             this.setCanvasPosition({ frame: middleFrame, value: canvasValue });
+
+            // Render new points
+            this.selectAnimation(animation, coordinate);
         }
     };
 
@@ -1999,9 +1999,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     onTimelineResize = () => {
         if (this._editor.current) {
             const scrollHandle = this._editor.current.getElementsByClassName("scroll-handle")[0].clientWidth;
-            //const handle = this._editor.current.getElementsByClassName("handle")[0].clientWidth;
-            //const currentProportion = handle / scrollHandle;
-
             this._resizedTimeline = scrollHandle;
         }
     };
