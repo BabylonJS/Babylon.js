@@ -890,6 +890,12 @@
             "playgroundId": "#SYQW69#311",
             "referenceImage": "objTestLoader.png",
             "renderCount": 10
+        },
+        {
+            "title": "KTX2 decoder test",
+            "playgroundId": "#EIJH8L#1",
+            "referenceImage": "ktx2decoder.png",
+            "excludeFromAutomaticTesting": true
         }
     ]
 }
