@@ -330,8 +330,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
      * This is used to remove the selection rays when moving.
      * @param selectionFeature the feature to disable when forward movement is enabled
      */
-    public setSelectionFeature(selectionFeature?: IWebXRFeature) {
-        this._selectionFeature = selectionFeature || null;
+    public setSelectionFeature(selectionFeature: Nullable<IWebXRFeature>) {
+        this._selectionFeature = selectionFeature;
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
