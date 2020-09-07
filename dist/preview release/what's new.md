@@ -181,7 +181,7 @@
 - WebXR hit test can now define different entity type for the results ([#8687](https://github.com/BabylonJS/Babylon.js/issues/8687)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue with stencil not enabled per default ([#8720](https://github.com/BabylonJS/Babylon.js/issues/8720)) ([RaananW](https://github.com/RaananW))
 - Expose the overlay to which the XR Enter/Exit buttons are added to ([#8754](https://github.com/BabylonJS/Babylon.js/issues/8754)) ([RaananW](https://github.com/RaananW))
-- WebXR hand-tracking module is available, able to track hand-joints on selected devices including physics interactions ([RaananW](https://github.com/RaananW))
+- WebXR hand-tracking module is available, able to track hand-joints on selected devices including optional physics interactions ([RaananW](https://github.com/RaananW))
 - Fixed an issue with moving backwards in XR ([#8854](https://github.com/BabylonJS/Babylon.js/issues/8854)) ([RaananW](https://github.com/RaananW))
 ### Collisions
 
