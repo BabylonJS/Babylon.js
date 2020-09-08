@@ -7,11 +7,32 @@ import { ButtonLineComponent } from '../../sharedComponents/buttonLineComponent'
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { IPropertyComponentProps } from './propertyComponentProps';
 import { GeneralPropertyTabComponent } from './genericNodePropertyComponent';
+import { OptionsLineComponent } from '../../sharedComponents/optionsLineComponent';
+import { Nullable } from 'babylonjs/types';
+import { Observer } from 'babylonjs/Misc/observable';
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
+    private onValueChangedObserver: Nullable<Observer<GradientBlock>>;
+
     constructor(props: IPropertyComponentProps) {
-        super(props)
+        super(props);
+    }
+
+    componentDidMount() {
+        let gradientBlock = this.props.block as GradientBlock;
+        this.onValueChangedObserver = gradientBlock.onValueChangedObservable.add(() => {
+            this.forceUpdate();
+            this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        });
+    }
+
+    componentWillUnmount() {
+        let gradientBlock = this.props.block as GradientBlock;
+        if (this.onValueChangedObserver) {
+            gradientBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
+            this.onValueChangedObserver = null;
+        }
     }
 
     forceRebuild() {
@@ -26,6 +47,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
         if (index > -1) {
             gradientBlock.colorSteps.splice(index, 1);
+            gradientBlock.colorStepsUpdated();
             this.forceRebuild();
             this.forceUpdate();
         }
@@ -34,8 +56,9 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     addNewStep() {
         let gradientBlock = this.props.block as GradientBlock;
 
-        let newStep = new GradientBlockColorStep(1.0, Color3.White());
+        let newStep = new GradientBlockColorStep(gradientBlock, 1.0, Color3.White());
         gradientBlock.colorSteps.push(newStep);
+        gradientBlock.colorStepsUpdated();
 
         this.forceRebuild();
         this.forceUpdate();
@@ -54,6 +77,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
             return -1;
         });
+        gradientBlock.colorStepsUpdated();
 
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.forceUpdate();
@@ -61,20 +85,53 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
     render() {
         let gradientBlock = this.props.block as GradientBlock;
-      
+
+        var typeOptions = [
+            { label: "None", value: 0 },
+            { label: "Visible in the inspector", value: 1 },
+        ];
+
         return (
             <div>
                 <GeneralPropertyTabComponent globalState={this.props.globalState} block={this.props.block}/>
+                <LineContainerComponent title="PROPERTIES">
+                <OptionsLineComponent label="Type" options={typeOptions} target={this.props.block}
+                            noDirectUpdate={true}
+                            getSelection={(block) => {
+                                if (block.visibleInInspector) {
+                                    return 1;
+                                }
+
+                                if (block.isConstant) {
+                                    return 2;
+                                }
+
+                                return 0;
+                            }}
+                            onSelect={(value: any) => {
+                                switch (value) {
+                                    case 0:
+                                        this.props.block.visibleInInspector = false;
+                                        break;
+                                    case 1:
+                                        this.props.block.visibleInInspector = true;
+                                        break;
+                                }
+                                this.forceUpdate();
+                                this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                                this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                            }} />
+                </LineContainerComponent>
                 <LineContainerComponent title="STEPS">
                     <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                     {
                         gradientBlock.colorSteps.map((c, i) => {
                             return (
-                                <GradientStepComponent globalState={this.props.globalState} 
+                                <GradientStepComponent globalState={this.props.globalState}
                                 onCheckForReOrder={() => this.checkForReOrder()}
                                 onUpdateStep={() => this.forceRebuild()}
                                 key={"step-" + i} lineIndex={i} step={c} onDelete={() => this.deleteStep(c)}/>
-                            )
+                            );
                         })
                     }
                 </LineContainerComponent>
