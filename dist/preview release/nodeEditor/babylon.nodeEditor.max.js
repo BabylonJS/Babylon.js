@@ -68134,7 +68134,7 @@ var GraphFrame = /** @class */ (function () {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: this.isCollapsed,
+            isCollapsed: false,
             blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
             comments: this._comments
         };

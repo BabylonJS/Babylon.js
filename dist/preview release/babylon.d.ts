@@ -74463,6 +74463,7 @@ declare module BABYLON {
         autoCloneTransformation: boolean;
         /**
          * Triggered when new babylon (transformed) hit test results are available
+         * Note - this will be called when results come back from the device. It can be an empty array!!
          */
         onHitTestResultObservable: Observable<IWebXRHitResult[]>;
         /**
