@@ -1,7 +1,7 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Vector3, Matrix } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
@@ -92,27 +92,21 @@ export class PlaneDragGizmo extends Gizmo {
         this.dragBehavior.moveAttached = false;
         this._rootMesh.addBehavior(this.dragBehavior);
 
-        var localDelta = new Vector3();
-        var tmpMatrix = new Matrix();
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
-                // Convert delta to local translation if it has a parent
-                if (this.attachedNode.parent) {
-                    this.attachedNode.parent.computeWorldMatrix().invertToRef(tmpMatrix);
-                    tmpMatrix.setTranslationFromFloats(0, 0, 0);
-                    Vector3.TransformCoordinatesToRef(event.delta, tmpMatrix, localDelta);
-                } else {
-                    localDelta.copyFrom(event.delta);
-                }
+                // Keep world translation and use it to update world transform
+                // if the node has parent, the local transform properties (position, rotation, scale)
+                // will be recomputed in _matrixChanged function
+
                 // Snapping logic
                 if (this.snapDistance == 0) {
-                    this.attachedNode.getWorldMatrix().addTranslationFromFloats(localDelta.x, localDelta.y, localDelta.z);
+                    this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
                 } else {
                     currentSnapDragDistance += event.dragDistance;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
                         var dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                        localDelta.normalizeToRef(tmpVector);
+                        event.delta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
                         this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
                         tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
