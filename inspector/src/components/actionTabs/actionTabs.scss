@@ -127,7 +127,6 @@ $line-padding-left: 2px;
 
         .panes {
             grid-row: 2;
-
             display: grid;
             grid-template-rows: 100%;
 
@@ -138,6 +137,120 @@ $line-padding-left: 2px;
                 color: white;
                 margin: 15px 5px 0px 5px;
                                 
+            }
+
+            .gradient-step {
+                display: grid;
+                grid-template-rows: 100%;
+                grid-template-columns: 25px 50px 55px 40px auto 20px 5px;
+                padding-top: 5px;
+                padding-left: 5px;
+                padding-bottom: 5px;    
+                align-items: center;
+        
+                .step {
+                    grid-row: 1;
+                    grid-column: 1;
+                }
+
+                .color1 {
+                    height: 100%;
+                }
+
+                .color2{
+                    height: 100%;
+                    padding-left: 5px;
+                }
+                    
+                .factor1 {
+                    grid-row: 1;
+                    grid-column: 2;
+                    cursor: pointer;
+                }
+
+                .factor2 {
+                    padding-left: 5px;
+                    grid-row: 1;
+                    grid-column: 3;
+                    cursor: pointer;
+
+                    .grayed {
+                        background: gray;
+                        border-color: gray;
+                    }
+                }
+
+                .numeric-input {
+                    width: calc(100% - 5px);
+                }
+
+                .icon{
+                    cursor: pointer;
+                }
+        
+                .step-value {       
+                    margin-left: 5px;     
+                    grid-row: 1;
+                    grid-column: 4;
+                    text-align: right;
+                    margin-right: 5px;
+                }
+        
+                .step-slider {            
+                    grid-row: 1;
+                    grid-column: 5;
+                    display: grid;
+                    justify-content: stretch;
+                    align-content: center;
+                    margin-right: 12px;
+        
+                    input {
+                        width: 100%;
+                    }
+                    .range:hover {
+                        opacity: 1;
+                    }
+
+                    .range {
+                        -webkit-appearance: none;
+                        height: 6px;
+                        background: #d3d3d3;
+                        border-radius: 5px;
+                        outline: none;
+                        opacity: 0.7;
+                        -webkit-transition: .2s;
+                        transition: opacity .2s;
+                    }
+                    .range::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        appearance: none;
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        background: rgb(51, 122, 183);
+                        cursor: pointer;
+                    }
+                    
+                    .range::-moz-range-thumb {
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        background: rgb(51, 122, 183);
+                        cursor: pointer;
+                    }
+
+                  
+
+                }
+               
+        
+                .gradient-delete {            
+                    grid-row: 1;
+                    grid-column: 6;
+                    display: grid;
+                    align-content: center;
+                    justify-content: center;
+                }
             }
 
             .pane {
