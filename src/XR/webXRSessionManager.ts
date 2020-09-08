@@ -244,7 +244,7 @@ export class WebXRSessionManager implements IDisposable {
         }
 
         // Stop window's animation frame and trigger sessions animation frame
-        if (window.cancelAnimationFrame) {
+        if (typeof window !== "undefined" && window.cancelAnimationFrame) {
             window.cancelAnimationFrame(engine._frameHandler);
         }
         engine._renderLoop();
@@ -274,7 +274,7 @@ export class WebXRSessionManager implements IDisposable {
                         },
                         (rejectionReason) => {
                             Logger.Error(rejectionReason);
-                            throw "XR initialization failed: required \"viewer\" reference space type not supported.";
+                            throw 'XR initialization failed: required "viewer" reference space type not supported.';
                         }
                     );
                 }
