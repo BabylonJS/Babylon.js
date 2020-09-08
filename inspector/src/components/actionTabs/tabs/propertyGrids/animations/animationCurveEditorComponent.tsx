@@ -249,6 +249,7 @@ export class AnimationCurveEditorComponent extends React.Component<
     };
 
     setFrameAxis(currentLength: number) {
+        //const factor = 10 / this._pixelFrameUnit;
         let halfNegative = new Array(currentLength).fill(0).map((s, i) => {
             return { value: -i * 10, label: -i };
         });
@@ -1904,11 +1905,13 @@ export class AnimationCurveEditorComponent extends React.Component<
         const animation = this.state.selected;
         const coordinate = this.state.selectedCoordinate;
         if (animation) {
-            let highest, lowest, middleFrame;
+            let highest, lowest, middleFrame, firstFrame, lastFrame;
             const keysCopy = [...animation.getKeys()];
             // calculate scale factor for Value Axis //
             const selectedKeyframes = this.state.svgKeyframes?.filter((x) => x.selected);
             if (selectedKeyframes?.length === 0) {
+                firstFrame = keysCopy[0].frame;
+                lastFrame = keysCopy[keysCopy.length - 1].frame;
                 // If not selected get all keyframes
                 keysCopy.sort(
                     (a, b) =>
@@ -1935,6 +1938,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                 // Get previous and next non selected keyframe in range
                 const prevKey = keysCopy[keysCopy.indexOf(keysInRange[0]) - 1];
                 const nextKey = keysCopy[keysCopy.indexOf(keysInRange[keysInRange.length - 1]) + 1];
+
+                firstFrame = prevKey.frame;
+                lastFrame = nextKey.frame;
 
                 // Insert keys in range
                 if (prevKey) {
@@ -1972,6 +1978,18 @@ export class AnimationCurveEditorComponent extends React.Component<
 
             // Set a new scale factor but for Frames
             // ****
+            // get client width of canvas
+            // how many frames are in canvas ... get the pixelFrameUnit?
+            // get frames needed (last frame - first frame)
+            let currentSpace = 780;
+            const frameUnit = 39;
+            if (this._graphCanvas.current) {
+                currentSpace = this._graphCanvas.current?.clientWidth;
+            }
+            const availableSpaceForFrames = currentSpace / frameUnit;
+            // with client width divide the number of frames needed
+            const frameDistance = lastFrame - firstFrame;
+            this._pixelFrameUnit = availableSpaceForFrames / (frameDistance / 10); // Update scale here...
 
             // Need to center and reposition canvas
             const canvasValue = isNaN(scale) || scale === 0 ? 1 : scale / 2 + lowest?.value;
@@ -2144,7 +2162,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                                 dx="2px"
                                                 style={{ fontSize: `${0.2 * this.state.scale}em` }}
                                             >
-                                                {f.label}
+                                                {Math.round((f.label * 10) / this._pixelFrameUnit)}
                                             </text>
                                             <line x1={f.value} y1="0" x2={f.value} y2="5%"></line>
 
