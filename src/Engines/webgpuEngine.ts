@@ -11,7 +11,7 @@ import { IEffectCreationOptions, Effect } from "../Materials/effect";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
-import * as WebGPUConstants from '@webgpu/types/dist/constants';
+import * as WebGPUConstants from './webGPU/webgpuConstants';
 import { VertexBuffer } from "../Meshes/buffer";
 import { WebGPUPipelineContext, IWebGPUPipelineContextVertexInputsCache, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
@@ -23,7 +23,6 @@ import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
-import "@webgpu/types";
 
 /**
  * Options to load the associated Glslang library
