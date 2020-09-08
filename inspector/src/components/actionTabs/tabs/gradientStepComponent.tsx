@@ -26,7 +26,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
 
     updateColor(color: string) {
         this.props.step.color = Color3.FromHexString(color);
-
+        
         this.props.onUpdateStep();
         this.forceUpdate();
     }    
@@ -52,7 +52,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                     {`#${this.props.lineIndex}`}
                 </div>
                 <div className="color">
-                    <ColorPickerLineComponent value={step.color} disableAlpha={true} //globalState={this.props.globalState} 
+                    <ColorPickerLineComponent value={step.color} disableAlpha={true}
                             onColorChanged={color => {
                                     this.updateColor(color);
                             }} 

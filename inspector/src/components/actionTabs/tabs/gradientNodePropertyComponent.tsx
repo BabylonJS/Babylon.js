@@ -8,61 +8,47 @@ import { IPropertyComponentProps } from './propertyComponentProps';
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
 
+    private _gradientBlock: GradientBlock;
     constructor(props: IPropertyComponentProps) {
         super(props)
+        this._gradientBlock =  this.props.block as GradientBlock;
     }
 
     forceRebuild() {
-        let gradientBlock = this.props.block as GradientBlock;
-        gradientBlock.colorStepsUpdated();
+        this._gradientBlock.colorStepsUpdated();
         this.forceUpdate();
     }
 
     deleteStep(step: GradientBlockColorStep) {
-        let gradientBlock = this.props.block as GradientBlock;
-
-        let index = gradientBlock.colorSteps.indexOf(step);
+        let index =  this._gradientBlock.colorSteps.indexOf(step);
 
         if (index > -1) {
-            gradientBlock.colorSteps.splice(index, 1);
+            this._gradientBlock.colorSteps.splice(index, 1);
             this.forceRebuild();
-            this.forceUpdate();
         }
     }
 
     addNewStep() {
-        let gradientBlock = this.props.block as GradientBlock;
-        let newStep = new GradientBlockColorStep(gradientBlock, 1.0, Color3.White());
-        gradientBlock.colorSteps.push(newStep);
+        let newStep = new GradientBlockColorStep( this._gradientBlock, 1.0, Color3.White());
+        this._gradientBlock.colorSteps.push(newStep);
         this.forceRebuild();
     }
 
     checkForReOrder() {
-        let gradientBlock = this.props.block as GradientBlock;
-        gradientBlock.colorSteps.sort((a, b) => {
-            if (a.step === b.step) {
-                return 0;
-            }
-
-            if (a.step > b.step) {
-                return 1;
-            }
-
-            return -1;
+       
+        this._gradientBlock.colorSteps.sort((a, b) => {
+            return a.step - b.step;
         });
 
         this.forceUpdate();
     }
 
     render() {
-        let gradientBlock = this.props.block as GradientBlock;
-
         return (
             <div>
-               
                 <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />
                 {
-                    gradientBlock.colorSteps.map((c, i) => {
+                     this._gradientBlock.colorSteps.map((c, i) => {
                         return (
                             <GradientStepComponent globalState={this.props.globalState} 
                             onCheckForReOrder={() => this.checkForReOrder()}
