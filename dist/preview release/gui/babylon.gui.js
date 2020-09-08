@@ -3640,12 +3640,14 @@ var Container = /** @class */ (function (_super) {
                     }
                 }
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
@@ -12356,6 +12358,8 @@ var StackPanel = /** @class */ (function (_super) {
                 }
             }
         }
+        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
         this._doNotTrackManualChanges = true;
         // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
         // User can now define their own height and width for stack panel.
