@@ -35,6 +35,7 @@ import { Path3D } from '../Maths/math.path';
 import { Plane } from '../Maths/math.plane';
 import { TransformNode } from './transformNode';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
+import { ICreateCapsuleOptions } from './Builders/capsuleBuilder';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -4019,6 +4020,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw _DevTools.WarnImport("MeshBuilder");
     }
 
+    /** Creates a Capsule Mesh
+     * @param name defines the name of the mesh.
+     * @param options the constructors options used to shape the mesh.
+     * @param scene defines the scene the mesh is scoped to.
+     * @returns the capsule mesh
+     * @see https://doc.babylonjs.com/how_to/capsule_shape
+     */
+    public static CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh {
+        throw _DevTools.WarnImport("MeshBuilder");
+    }
     // Skeletons
 
     /**
