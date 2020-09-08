@@ -2,7 +2,7 @@ import { Nullable } from '../../types';
 import { IShaderProcessor } from '../Processors/iShaderProcessor';
 import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
-import * as WebGPUConstants from '@webgpu/types/dist/constants';
+import * as WebGPUConstants from './webgpuConstants';
 import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
