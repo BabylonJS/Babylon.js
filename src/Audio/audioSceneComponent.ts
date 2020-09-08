@@ -249,6 +249,9 @@ Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
  * in a given scene.
  */
 export class AudioSceneComponent implements ISceneSerializableComponent {
+    private static _CameraDirectionLH = new Vector3(0, 0, -1);
+    private static _CameraDirectionRH = new Vector3(0, 0, 1);
+
     /**
      * The component name helpfull to identify the component in the list of scene components.
      */
@@ -526,7 +529,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
                         listeningCamera = listeningCamera.rigCameras[0];
                     }
                     var mat = Matrix.Invert(listeningCamera.getViewMatrix());
-                    var cameraDirection = Vector3.TransformNormal(new Vector3(0, 0, -1), mat);
+                    var cameraDirection = Vector3.TransformNormal(scene.useRightHandedSystem ? AudioSceneComponent._CameraDirectionRH : AudioSceneComponent._CameraDirectionLH, mat);
                     cameraDirection.normalize();
                     // To avoid some errors on GearVR
                     if (!isNaN(cameraDirection.x) && !isNaN(cameraDirection.y) && !isNaN(cameraDirection.z)) {

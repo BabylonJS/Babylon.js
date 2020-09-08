@@ -77,6 +77,7 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingTextDiv.style.fontSize = "14px";
         this._loadingTextDiv.style.color = "white";
         this._loadingTextDiv.style.textAlign = "center";
+        this._loadingTextDiv.style.zIndex = "1";
         this._loadingTextDiv.innerHTML = "Loading";
 
         this._loadingDiv.appendChild(this._loadingTextDiv);
@@ -110,9 +111,17 @@ export class DefaultLoadingScreen implements ILoadingScreen {
 
         imgBack.style.position = "absolute";
         imgBack.style.left = "40%";
-        imgBack.style.top = "40%";
+        imgBack.style.top = "50%";
         imgBack.style.width = "20%";
-        imgBack.style.height = "20%";
+        imgBack.style.height = "height";
+        imgBack.style.transform = "translateY(-50%)";
+
+        const imageSpinnerContainer = document.createElement("div");
+        imageSpinnerContainer.style.position = "absolute";
+        imageSpinnerContainer.style.left = "30%";
+        imageSpinnerContainer.style.top = "50%";
+        imageSpinnerContainer.style.width = "40%";
+        imageSpinnerContainer.style.transform = "translateY(-50%)";
 
         // Loading spinner
         var imgSpinner = new Image();
@@ -123,11 +132,6 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             imgSpinner.src = DefaultLoadingScreen.DefaultSpinnerUrl;
         }
 
-        imgSpinner.style.position = "absolute";
-        imgSpinner.style.left = "30%";
-        imgSpinner.style.top = "30%";
-        imgSpinner.style.width = "40%";
-        imgSpinner.style.height = "40%";
         imgSpinner.style.animation = "spin1 0.75s infinite linear";
         imgSpinner.style.webkitAnimation = "spin1 0.75s infinite linear";
         imgSpinner.style.transformOrigin = "50% 50%";
@@ -148,8 +152,10 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             imgSpinner.style.top = `calc(50% - ${loadingSize.h / 2}vh)`;
         }
 
+        imageSpinnerContainer.appendChild(imgSpinner);
+
         this._loadingDiv.appendChild(imgBack);
-        this._loadingDiv.appendChild(imgSpinner);
+        this._loadingDiv.appendChild(imageSpinnerContainer);
 
         this._resizeLoadingUI();
 
