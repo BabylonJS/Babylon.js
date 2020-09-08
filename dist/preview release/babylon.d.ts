@@ -14696,7 +14696,8 @@ declare module BABYLON {
         private _absoluteRotationQuaternion;
         private _pivotMatrix;
         private _pivotMatrixInverse;
-        protected _postMultiplyPivotMatrix: boolean;
+        /** @hidden */
+        _postMultiplyPivotMatrix: boolean;
         protected _isWorldMatrixFrozen: boolean;
         /** @hidden */
         _indexInSceneTransformNodesArray: number;
@@ -33936,12 +33937,14 @@ declare module BABYLON {
          */
         get is2DArray(): boolean;
         set is2DArray(value: boolean);
+        private _gammaSpace;
         /**
          * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
          * HDR texture are usually stored in linear space.
          * This only impacts the PBR and Background materials
          */
-        gammaSpace: boolean;
+        get gammaSpace(): boolean;
+        set gammaSpace(gamma: boolean);
         /**
          * Gets or sets whether or not the texture contains RGBD data.
          */
@@ -34793,6 +34796,8 @@ declare module BABYLON {
         etc2: any;
         /** Defines if astc texture compression is supported */
         astc: any;
+        /** Defines if bptc texture compression is supported */
+        bptc: any;
         /** Defines if float textures are supported */
         textureFloat: boolean;
         /** Defines if vertex array objects are supported */
@@ -36688,6 +36693,8 @@ declare module BABYLON {
         _webGLTexture: Nullable<WebGLTexture>;
         /** @hidden */
         _references: number;
+        /** @hidden */
+        _gammaSpace: Nullable<boolean>;
         private _engine;
         /**
          * Gets the Engine the texture belongs to.
@@ -42031,6 +42038,8 @@ declare module BABYLON {
      * in a given scene.
      */
     export class AudioSceneComponent implements ISceneSerializableComponent {
+        private static _CameraDirectionLH;
+        private static _CameraDirectionRH;
         /**
          * The component name helpfull to identify the component in the list of scene components.
          */
@@ -43397,6 +43406,7 @@ declare module BABYLON {
         private static _OldPivotPoint;
         private static _PivotTranslation;
         private static _PivotTmpVector;
+        private static _PivotPostMultiplyPivotMatrix;
         /** @hidden */
         static _RemoveAndStorePivotPoint(mesh: AbstractMesh): void;
         /** @hidden */
@@ -47112,6 +47122,10 @@ declare module BABYLON {
          */
         isCompatible(): boolean;
         /**
+         * Was this feature disposed;
+         */
+        isDisposed: boolean;
+        /**
          * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
          */
         xrNativeFeatureName?: string;
@@ -48667,6 +48681,10 @@ declare module BABYLON {
         private _attached;
         private _removeOnDetach;
         /**
+         * Is this feature disposed?
+         */
+        isDisposed: boolean;
+        /**
          * Should auto-attach be disabled?
          */
         disableAutoAttach: boolean;
@@ -49382,6 +49400,10 @@ declare module BABYLON {
          * Babylon XR Input class for controller
          */
         xrInput: WebXRInput;
+        /**
+         * Meshes that the teleportation ray cannot go through
+         */
+        pickBlockerMeshes?: AbstractMesh[];
     }
     /**
      * This is a teleportation feature to be used with WebXR-enabled motion controllers.
@@ -49400,6 +49422,7 @@ declare module BABYLON {
         private _teleportationRingMaterial?;
         private _tmpRay;
         private _tmpVector;
+        private _tmpQuaternion;
         /**
          * The module's name
          */
@@ -49489,7 +49512,7 @@ declare module BABYLON {
          * This is used to remove the selection rays when moving.
          * @param selectionFeature the feature to disable when forward movement is enabled
          */
-        setSelectionFeature(selectionFeature: IWebXRFeature): void;
+        setSelectionFeature(selectionFeature: Nullable<IWebXRFeature>): void;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachController;
         private _createDefaultTargetMesh;
@@ -50356,6 +50379,9 @@ declare module BABYLON {
         private _tempQuaternion;
         private _tempVector;
         private _tempVector2;
+        private _tempMatrix1;
+        private _tempMatrix2;
+        private _rightHandtoLeftHandMatrix;
         /**
          * Creates a gizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -50989,6 +51015,8 @@ declare module BABYLON {
         displayOptions: ISkeletonViewerDisplayOptions;
         /** Flag to toggle if the Viewer should use the CPU for animations or not? */
         computeBonesUsingShaders: boolean;
+        /** Flag ignore non weighted bones */
+        useAllBones: boolean;
     }
     /**
      * Defines how to display the various bone meshes for the viewer.
@@ -51004,6 +51032,43 @@ declare module BABYLON {
         sphereScaleUnit?: number;
         /** Ratio for the Sphere Size */
         sphereFactor?: number;
+    }
+    /**
+     * Defines the constructor options for the BoneWeight Shader.
+     */
+    export interface IBoneWeightShaderOptions {
+        /** Skeleton to Map */
+        skeleton: Skeleton;
+        /** Colors for Uninfluenced bones */
+        colorBase?: Color3;
+        /** Colors for 0.0-0.25 Weight bones */
+        colorZero?: Color3;
+        /** Color for 0.25-0.5 Weight Influence */
+        colorQuarter?: Color3;
+        /** Color for 0.5-0.75 Weight Influence */
+        colorHalf?: Color3;
+        /** Color for 0.75-1 Weight Influence */
+        colorFull?: Color3;
+        /** Color for Zero Weight Influence */
+        targetBoneIndex?: number;
+    }
+    /**
+     * Simple structure of the gradient steps for the Color Map.
+     */
+    export interface ISkeletonMapShaderColorMapKnot {
+        /** Color of the Knot */
+        color: Color3;
+        /** Location of the Knot */
+        location: number;
+    }
+    /**
+     * Defines the constructor options for the SkeletonMap Shader.
+     */
+    export interface ISkeletonMapShaderOptions {
+        /** Skeleton to Map */
+        skeleton: Skeleton;
+        /** Array of ColorMapKnots that make the gradient must be ordered with knot[i].location < knot[i+1].location*/
+        colorMap?: ISkeletonMapShaderColorMapKnot[];
     }
 }
 declare module BABYLON {
@@ -51154,6 +51219,26 @@ declare module BABYLON.Debug {
         static readonly DISPLAY_SPHERES: number;
         /** public Display constants BABYLON.SkeletonViewer.DISPLAY_SPHERE_AND_SPURS */
         static readonly DISPLAY_SPHERE_AND_SPURS: number;
+        /** public static method to create a BoneWeight Shader
+         * @param options The constructor options
+         * @param scene The scene that the shader is scoped to
+         * @returns The created ShaderMaterial
+         * @see http://www.babylonjs-playground.com/#1BZJVJ#395
+         */
+        static CreateBoneWeightShader(options: IBoneWeightShaderOptions, scene: Scene): ShaderMaterial;
+        /** public static method to create a BoneWeight Shader
+         * @param options The constructor options
+         * @param scene The scene that the shader is scoped to
+         * @returns The created ShaderMaterial
+         */
+        static CreateSkeletonMapShader(options: ISkeletonMapShaderOptions, scene: Scene): ShaderMaterial;
+        /** private static method to create a BoneWeight Shader
+         * @param size The size of the buffer to create (usually the bone count)
+         * @param colorMap The gradient data to generate
+         * @param scene The scene that the shader is scoped to
+         * @returns an Array of floats from the color gradient values
+         */
+        private static _CreateBoneMapColorBuffer;
         /** If SkeletonViewer scene scope. */
         private _scene;
         /** Gets or sets the color used to render the skeleton */
@@ -54152,6 +54237,11 @@ declare module BABYLON {
         private _cachedPosition;
         private _cachedForward;
         private _attachedMeshParent;
+        private _pointerObserver;
+        /**
+         * Event that fires each time the gizmo is clicked
+         */
+        onClickedObservable: Observable<Light>;
         /**
          * Creates a LightGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -54195,6 +54285,11 @@ declare module BABYLON {
         private _cameraMesh;
         private _cameraLinesMesh;
         private _material;
+        private _pointerObserver;
+        /**
+         * Event that fires each time the gizmo is clicked
+         */
+        onClickedObservable: Observable<Camera>;
         /**
          * Creates a CameraGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -57653,16 +57748,60 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Helper class to push actions to a pool of workers.
+     */
+    export class WorkerPool implements IDisposable {
+        private _workerInfos;
+        private _pendingActions;
+        /**
+         * Constructor
+         * @param workers Array of workers to use for actions
+         */
+        constructor(workers: Array<Worker>);
+        /**
+         * Terminates all workers and clears any pending actions.
+         */
+        dispose(): void;
+        /**
+         * Pushes an action to the worker pool. If all the workers are active, the action will be
+         * pended until a worker has completed its action.
+         * @param action The action to perform. Call onComplete when the action is complete.
+         */
+        push(action: (worker: Worker, onComplete: () => void) => void): void;
+        private _execute;
+    }
+}
+declare module BABYLON {
+    /**
      * Class for loading KTX2 files
-     * !!! Experimental Extension Subject to Changes !!!
      * @hidden
      */
     export class KhronosTextureContainer2 {
-        private static _ModulePromise;
-        private static _TranscodeFormat;
-        constructor(engine: ThinEngine);
+        private static _WorkerPoolPromise?;
+        private static _Initialized;
+        private static _Ktx2Decoder;
+        /**
+         * URL to use when loading the KTX2 decoder module
+         */
+        static JSModuleURL: string;
+        /**
+         * Default number of workers used to handle data decoding
+         */
+        static DefaultNumWorkers: number;
+        private static GetDefaultNumWorkers;
+        private _engine;
+        private static _CreateWorkerPool;
+        /**
+         * Constructor
+         * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
+         */
+        constructor(engine: ThinEngine, numWorkers?: number);
         uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void>;
-        private _determineTranscodeFormat;
+        /**
+         * Stop all async operations and release resources.
+         */
+        dispose(): void;
+        protected _createTexture(data: any, internalTexture: InternalTexture): void;
         /**
          * Checks if the given data starts with a KTX2 file identifier.
          * @param data the data to check
@@ -57670,6 +57809,7 @@ declare module BABYLON {
          */
         static IsValid(data: ArrayBufferView): boolean;
     }
+    export function workerFunc(): void;
 }
 declare module BABYLON {
     /**
@@ -61985,7 +62125,8 @@ declare module BABYLON {
      * Class used to generate noise procedural textures
      */
     export class NoiseProceduralTexture extends ProceduralTexture {
-        private _time;
+        /** Gets or sets the start time (default is 0) */
+        time: number;
         /** Gets or sets a value between 0 and 1 indicating the overall brightness of the texture (default is 0.2) */
         brightness: number;
         /** Defines the number of octaves to process */
@@ -64912,31 +65053,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Helper class to push actions to a pool of workers.
-     */
-    export class WorkerPool implements IDisposable {
-        private _workerInfos;
-        private _pendingActions;
-        /**
-         * Constructor
-         * @param workers Array of workers to use for actions
-         */
-        constructor(workers: Array<Worker>);
-        /**
-         * Terminates all workers and clears any pending actions.
-         */
-        dispose(): void;
-        /**
-         * Pushes an action to the worker pool. If all the workers are active, the action will be
-         * pended until a worker has completed its action.
-         * @param action The action to perform. Call onComplete when the action is complete.
-         */
-        push(action: (worker: Worker, onComplete: () => void) => void): void;
-        private _execute;
-    }
-}
-declare module BABYLON {
-    /**
      * Configuration for Draco compression
      */
     export interface IDracoCompressionConfiguration {
@@ -66634,6 +66750,14 @@ declare module BABYLON {
              * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
              */
             thinInstanceBufferUpdated(kind: string): void;
+            /**
+             * Applies a partial update to a buffer directly on the GPU
+             * Note that the buffer located on the CPU is NOT updated! It's up to you to update it (or not) with the same data you pass to this method
+             * @param kind name of the attribute to update. Use "matrix" to update the buffer of matrices
+             * @param data the data to set in the GPU buffer
+             * @param offset the offset in the GPU buffer where to update the data
+             */
+            thinInstancePartialBufferUpdate(kind: string, data: Float32Array, offset: number): void;
             /**
              * Refreshes the bounding info, taking into account all the thin instances defined
              * @param forceRefreshParentInfo true to force recomputing the mesh bounding info and use it to compute the aggregated bounding info
@@ -75002,14 +75126,14 @@ declare module BABYLON {
         /**
          * Hand-parts definition (key is HandPart)
          */
-        static HandPartsDefinition: {
+        handPartsDefinition: {
             [key: string]: number[];
         };
         /**
          * Populate the HandPartsDefinition object.
          * This is called as a side effect since certain browsers don't have XRHand defined.
          */
-        static _PopulateHandPartsDefinition(): void;
+        private generateHandPartsDefinition;
         /**
          * Construct a new hand object
          * @param xrController the controller to which the hand correlates
@@ -76055,39 +76179,43 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
-declare class XRHand extends Array<XRJointSpace> {
+interface XRHand /*extends Iterablele<XRJointSpace>*/ {
     readonly length: number;
 
-    static readonly WRIST = 0;
+    [index: number]: XRJointSpace;
 
-    static readonly THUMB_METACARPAL = 1;
-    static readonly THUMB_PHALANX_PROXIMAL = 2;
-    static readonly THUMB_PHALANX_DISTAL = 3;
-    static readonly THUMB_PHALANX_TIP = 4;
+    // Specs have the function 'joint(idx: number)', but chrome doesn't support it yet.
 
-    static readonly INDEX_METACARPAL = 5;
-    static readonly INDEX_PHALANX_PROXIMAL = 6;
-    static readonly INDEX_PHALANX_INTERMEDIATE = 7;
-    static readonly INDEX_PHALANX_DISTAL = 8;
-    static readonly INDEX_PHALANX_TIP = 9;
+    readonly WRIST: number;
 
-    static readonly MIDDLE_METACARPAL = 10;
-    static readonly MIDDLE_PHALANX_PROXIMAL = 11;
-    static readonly MIDDLE_PHALANX_INTERMEDIATE = 12;
-    static readonly MIDDLE_PHALANX_DISTAL = 13;
-    static readonly MIDDLE_PHALANX_TIP = 14;
+    readonly THUMB_METACARPAL: number;
+    readonly THUMB_PHALANX_PROXIMAL: number;
+    readonly THUMB_PHALANX_DISTAL: number;
+    readonly THUMB_PHALANX_TIP: number;
 
-    static readonly RING_METACARPAL = 15;
-    static readonly RING_PHALANX_PROXIMAL = 16;
-    static readonly RING_PHALANX_INTERMEDIATE = 17;
-    static readonly RING_PHALANX_DISTAL = 18;
-    static readonly RING_PHALANX_TIP = 19;
+    readonly INDEX_METACARPAL: number;
+    readonly INDEX_PHALANX_PROXIMAL: number;
+    readonly INDEX_PHALANX_INTERMEDIATE: number;
+    readonly INDEX_PHALANX_DISTAL: number;
+    readonly INDEX_PHALANX_TIP: number;
 
-    static readonly LITTLE_METACARPAL = 20;
-    static readonly LITTLE_PHALANX_PROXIMAL = 21;
-    static readonly LITTLE_PHALANX_INTERMEDIATE = 22;
-    static readonly LITTLE_PHALANX_DISTAL = 23;
-    static readonly LITTLE_PHALANX_TIP = 24;
+    readonly MIDDLE_METACARPAL: number;
+    readonly MIDDLE_PHALANX_PROXIMAL: number;
+    readonly MIDDLE_PHALANX_INTERMEDIATE: number;
+    readonly MIDDLE_PHALANX_DISTAL: number;
+    readonly MIDDLE_PHALANX_TIP: number;
+
+    readonly RING_METACARPAL: number;
+    readonly RING_PHALANX_PROXIMAL: number;
+    readonly RING_PHALANX_INTERMEDIATE: number;
+    readonly RING_PHALANX_DISTAL: number;
+    readonly RING_PHALANX_TIP: number;
+
+    readonly LITTLE_METACARPAL: number;
+    readonly LITTLE_PHALANX_PROXIMAL: number;
+    readonly LITTLE_PHALANX_INTERMEDIATE: number;
+    readonly LITTLE_PHALANX_DISTAL: number;
+    readonly LITTLE_PHALANX_TIP: number;
 }
 
 // This file contains native only extensions for WebXR  These APIs are not supported in the browser yet.

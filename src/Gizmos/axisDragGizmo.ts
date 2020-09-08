@@ -112,7 +112,9 @@ export class AxisDragGizmo extends Gizmo {
                     if ((this.attachedNode as any).position) { // Required for nodes like lights
                         (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
                     }
-                    this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
+
+                    // use _worldMatrix to not force a matrix update when calling GetWorldMatrix especialy with Cameras
+                    this.attachedNode._worldMatrix.addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
                     this.attachedNode.updateCache();
                 } else {
                     currentSnapDragDistance += event.dragDistance;
@@ -121,7 +123,7 @@ export class AxisDragGizmo extends Gizmo {
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                         event.delta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
-                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
+                        this.attachedNode._worldMatrix.addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
                         this.attachedNode.updateCache();
                         tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
                         this.onSnapObservable.notifyObservers(tmpSnapEvent);

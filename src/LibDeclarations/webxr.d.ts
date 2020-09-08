@@ -207,37 +207,41 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
-declare class XRHand extends Array<XRJointSpace> {
+interface XRHand /*extends Iterablele<XRJointSpace>*/ {
     readonly length: number;
 
-    static readonly WRIST = 0;
+    [index: number]: XRJointSpace;
 
-    static readonly THUMB_METACARPAL = 1;
-    static readonly THUMB_PHALANX_PROXIMAL = 2;
-    static readonly THUMB_PHALANX_DISTAL = 3;
-    static readonly THUMB_PHALANX_TIP = 4;
+    // Specs have the function 'joint(idx: number)', but chrome doesn't support it yet.
 
-    static readonly INDEX_METACARPAL = 5;
-    static readonly INDEX_PHALANX_PROXIMAL = 6;
-    static readonly INDEX_PHALANX_INTERMEDIATE = 7;
-    static readonly INDEX_PHALANX_DISTAL = 8;
-    static readonly INDEX_PHALANX_TIP = 9;
+    readonly WRIST: number;
 
-    static readonly MIDDLE_METACARPAL = 10;
-    static readonly MIDDLE_PHALANX_PROXIMAL = 11;
-    static readonly MIDDLE_PHALANX_INTERMEDIATE = 12;
-    static readonly MIDDLE_PHALANX_DISTAL = 13;
-    static readonly MIDDLE_PHALANX_TIP = 14;
+    readonly THUMB_METACARPAL: number;
+    readonly THUMB_PHALANX_PROXIMAL: number;
+    readonly THUMB_PHALANX_DISTAL: number;
+    readonly THUMB_PHALANX_TIP: number;
 
-    static readonly RING_METACARPAL = 15;
-    static readonly RING_PHALANX_PROXIMAL = 16;
-    static readonly RING_PHALANX_INTERMEDIATE = 17;
-    static readonly RING_PHALANX_DISTAL = 18;
-    static readonly RING_PHALANX_TIP = 19;
+    readonly INDEX_METACARPAL: number;
+    readonly INDEX_PHALANX_PROXIMAL: number;
+    readonly INDEX_PHALANX_INTERMEDIATE: number;
+    readonly INDEX_PHALANX_DISTAL: number;
+    readonly INDEX_PHALANX_TIP: number;
 
-    static readonly LITTLE_METACARPAL = 20;
-    static readonly LITTLE_PHALANX_PROXIMAL = 21;
-    static readonly LITTLE_PHALANX_INTERMEDIATE = 22;
-    static readonly LITTLE_PHALANX_DISTAL = 23;
-    static readonly LITTLE_PHALANX_TIP = 24;
+    readonly MIDDLE_METACARPAL: number;
+    readonly MIDDLE_PHALANX_PROXIMAL: number;
+    readonly MIDDLE_PHALANX_INTERMEDIATE: number;
+    readonly MIDDLE_PHALANX_DISTAL: number;
+    readonly MIDDLE_PHALANX_TIP: number;
+
+    readonly RING_METACARPAL: number;
+    readonly RING_PHALANX_PROXIMAL: number;
+    readonly RING_PHALANX_INTERMEDIATE: number;
+    readonly RING_PHALANX_DISTAL: number;
+    readonly RING_PHALANX_TIP: number;
+
+    readonly LITTLE_METACARPAL: number;
+    readonly LITTLE_PHALANX_PROXIMAL: number;
+    readonly LITTLE_PHALANX_INTERMEDIATE: number;
+    readonly LITTLE_PHALANX_DISTAL: number;
+    readonly LITTLE_PHALANX_TIP: number;
 }
