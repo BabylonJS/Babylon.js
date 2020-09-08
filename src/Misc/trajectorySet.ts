@@ -611,7 +611,7 @@ export class TrajectoryDescriptor {
         targetResolution: number = TrajectoryDescriptor.FINEST_DESCRIPTOR_RESOLUTION): number[][] {
 
         let pyramid: number[][] = [];
-        for (let res = targetResolution; res > 2; res = Math.floor(res / 2)) {
+        for (let res = targetResolution; res > 4; res = Math.floor(res / 2)) {
             pyramid.push(trajectory.resampleAtTargetResolution(res).tokenize(alphabet.chars));
         }
         return pyramid;
@@ -834,6 +834,15 @@ export class TrajectorySet {
                 trajectory,
                 this._vector3Alphabet,
                 this._levenshteinAlphabet));
+    }
+
+    /**
+     * Remove a known named trajectory and all Trajectories associated with it.
+     * @param name name to remove
+     * @returns whether anything was removed
+     */
+    public delete(name: string): boolean {
+        return this._nameToDescribedTrajectory.delete(name);
     }
 
     /**
