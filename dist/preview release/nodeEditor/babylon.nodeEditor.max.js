@@ -69322,6 +69322,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradientStepComponent */ "./diagram/properties/gradientStepComponent.tsx");
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
 /* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+
 
 
 
@@ -69335,6 +69337,21 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
     function GradientPropertyTabComponent(props) {
         return _super.call(this, props) || this;
     }
+    GradientPropertyTabComponent.prototype.componentDidMount = function () {
+        var _this = this;
+        var gradientBlock = this.props.block;
+        this.onValueChangedObserver = gradientBlock.onValueChangedObservable.add(function () {
+            _this.forceUpdate();
+            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        });
+    };
+    GradientPropertyTabComponent.prototype.componentWillUnmount = function () {
+        var gradientBlock = this.props.block;
+        if (this.onValueChangedObserver) {
+            gradientBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
+            this.onValueChangedObserver = null;
+        }
+    };
     GradientPropertyTabComponent.prototype.forceRebuild = function () {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
@@ -69344,14 +69361,16 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
         var index = gradientBlock.colorSteps.indexOf(step);
         if (index > -1) {
             gradientBlock.colorSteps.splice(index, 1);
+            gradientBlock.colorStepsUpdated();
             this.forceRebuild();
             this.forceUpdate();
         }
     };
     GradientPropertyTabComponent.prototype.addNewStep = function () {
         var gradientBlock = this.props.block;
-        var newStep = new babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["GradientBlockColorStep"](1.0, babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["Color3"].White());
+        var newStep = new babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["GradientBlockColorStep"](gradientBlock, 1.0, babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["Color3"].White());
         gradientBlock.colorSteps.push(newStep);
+        gradientBlock.colorStepsUpdated();
         this.forceRebuild();
         this.forceUpdate();
     };
@@ -69366,14 +69385,41 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
             }
             return -1;
         });
+        gradientBlock.colorStepsUpdated();
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.forceUpdate();
     };
     GradientPropertyTabComponent.prototype.render = function () {
         var _this = this;
         var gradientBlock = this.props.block;
+        var typeOptions = [
+            { label: "None", value: 0 },
+            { label: "Visible in the inspector", value: 1 },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: this.props.block, noDirectUpdate: true, getSelection: function (block) {
+                        if (block.visibleInInspector) {
+                            return 1;
+                        }
+                        if (block.isConstant) {
+                            return 2;
+                        }
+                        return 0;
+                    }, onSelect: function (value) {
+                        switch (value) {
+                            case 0:
+                                _this.props.block.visibleInInspector = false;
+                                break;
+                            case 1:
+                                _this.props.block.visibleInInspector = true;
+                                break;
+                        }
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "STEPS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
                 gradientBlock.colorSteps.map(function (c, i) {

@@ -20445,8 +20445,6 @@ declare module BABYLON {
         matrixMode: number;
         /** @hidden */
         _systemValue: Nullable<NodeMaterialSystemValues>;
-        /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-        visibleInInspector: boolean;
         /** Gets or sets a boolean indicating that the value of this input will not change after a build */
         isConstant: boolean;
         /** Gets or sets the group to use to display this block in the Inspector */
@@ -21609,6 +21607,8 @@ declare module BABYLON {
          * @returns the output or null if not found
          */
         getOutputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
+        /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+        visibleInInspector: boolean;
         /**
          * Creates a new NodeMaterialBlock
          * @param name defines the block name
@@ -63929,28 +63929,32 @@ declare module BABYLON {
      * Class used to store a color step for the GradientBlock
      */
     export class GradientBlockColorStep {
+        private _parent;
+        private _step;
         /**
-         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
+         * Gets value indicating which step this color is associated with (between 0 and 1)
          */
-        step: number;
+        get step(): number;
         /**
-         * Gets or sets the color associated with this step
+         * Sets a value indicating which step this color is associated with (between 0 and 1)
+        */
+        set step(val: number);
+        private _color;
+        /**
+         * Gets the color associated with this step
          */
-        color: Color3;
+        get color(): Color3;
+        /**
+         * Sets the color associated with this step
+         */
+        set color(val: Color3);
         /**
          * Creates a new GradientBlockColorStep
+         * @param parent defines the parent gradient for this block
          * @param step defines a value indicating which step this color is associated with (between 0 and 1)
          * @param color defines the color associated with this step
          */
-        constructor(
-        /**
-         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
-         */
-        step: number, 
-        /**
-         * Gets or sets the color associated with this step
-         */
-        color: Color3);
+        constructor(parent: GradientBlock, step: number, color: Color3);
     }
     /**
      * Block used to return a color from a gradient based on an input value between 0 and 1
@@ -63960,6 +63964,10 @@ declare module BABYLON {
          * Gets or sets the list of color steps
          */
         colorSteps: GradientBlockColorStep[];
+        /** Gets an observable raised when the value is changed */
+        onValueChangedObservable: Observable<GradientBlock>;
+        /** calls observable when the value is changed*/
+        colorStepsUpdated(): void;
         /**
          * Creates a new GradientBlock
          * @param name defines the block name
