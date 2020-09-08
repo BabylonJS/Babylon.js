@@ -158,6 +158,9 @@ export class StackPanel extends Container {
             }
         }
 
+        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
+
         this._doNotTrackManualChanges = true;
 
         // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
