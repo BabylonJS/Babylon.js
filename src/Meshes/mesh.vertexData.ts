@@ -8,6 +8,8 @@ import { Logger } from '../Misc/logger';
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
+import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+
 /**
  * Define an interface for all classes that will get and set the data on vertices
  */
@@ -1041,27 +1043,21 @@ export class VertexData {
         throw _DevTools.WarnImport("polyhedronBuilder");
     }
 
-    // 
+    //
     /**
      * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
      * @param options an object used to set the following optional parameters for the capsule, required but can be empty
-     * type provided types are:    
+     * type provided types are:
      * @returns the VertexData of the Capsule
      */
-    public static CreateCapsule(options: {
-            orientation: Vector3,
-            subdivisions: number,
-            tessellation: number,
-            height: number,
-            radius: number,
-            capSubdivisions: number,
-            radiusTop:number,
-            radiusBottom: number,
-            thetaStart:number,
-            thetaLength:number,
-            topCapSubdivisions:number,
-            bottomCapSubdivisions:number
-        }): VertexData {
+    public static CreateCapsule(options: ICreateCapsuleOptions = {
+        orientation : Vector3.Up(),
+        subdivisions: 2,
+        tessellation: 16,
+        height: 1,
+        radius: 0.25,
+        capSubdivisions: 6
+    }): VertexData {
         throw _DevTools.WarnImport("capsuleBuilder");
     }
 
