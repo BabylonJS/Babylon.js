@@ -75,6 +75,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         
         this.onOpenTextureEditor.bind(this);
         this.onCloseTextureEditor.bind(this);
+        this.openTextureEditor.bind(this);
     }
 
     componentWillUnmount() {
@@ -112,8 +113,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
     }
 
     openTextureEditor() {
-        if (this.state.isTextureEditorOpen && this.state.textureEditing !== this.props.texture) {
-            this.onCloseTextureEditor(null, () => this.openTextureEditor());
+        if (this.state.isTextureEditorOpen) {
+            this.onCloseTextureEditor(() => this.openTextureEditor());
             return;
         }
         this.setState({
@@ -124,7 +125,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
 
     onOpenTextureEditor(window: Window) {}
     
-    onCloseTextureEditor(window: Window | null, callback?: {() : void}) {
+    onCloseTextureEditor(callback?: {() : void}) {
         this.setState({
             isTextureEditorOpen: false,
             textureEditing: null
@@ -188,7 +189,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                   title='Texture Inspector'
                   size={this._textureInspectorSize}
                   onOpen={this.onOpenTextureEditor}
-                  onClose={this.onCloseTextureEditor}
+                  onClose={() => this.onCloseTextureEditor}
                   ref={this.popoutWindowRef}
                 >
                     <TextureEditorComponent

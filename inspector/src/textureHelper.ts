@@ -25,7 +25,7 @@ export class TextureHelper {
         let lodPostProcess: PostProcess;
 
         if (!texture.isCube) {
-            lodPostProcess = new PostProcess("lod", "lod", ["lod"], null, 1.0, null, Texture.NEAREST_SAMPLINGMODE, engine);
+            lodPostProcess = new PostProcess("lod", "lod", ["lod"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine);
         } else {
             const faceDefines = [
                 "#define POSITIVEX",
@@ -35,7 +35,7 @@ export class TextureHelper {
                 "#define POSITIVEZ",
                 "#define NEGATIVEZ",
             ];
-            lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod"], null, 1.0, null, Texture.NEAREST_SAMPLINGMODE, engine, false, faceDefines[face]);
+            lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
         }
 
         
@@ -68,7 +68,10 @@ export class TextureHelper {
         let internalTexture = rtt.getInternalTexture();
 
         if (internalTexture) {
+            const samplingMode = (texture as Texture).samplingMode;
+            texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
             scene.postProcessManager.directRender([lodPostProcess], internalTexture);
+            texture.updateSamplingMode(samplingMode);
 
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;

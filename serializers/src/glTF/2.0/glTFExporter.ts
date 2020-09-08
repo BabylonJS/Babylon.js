@@ -13,6 +13,7 @@ import { Mesh } from "babylonjs/Meshes/mesh";
 import { MorphTarget } from "babylonjs/Morph/morphTarget";
 import { LinesMesh } from "babylonjs/Meshes/linesMesh";
 import { InstancedMesh } from "babylonjs/Meshes/instancedMesh";
+import { Bone } from "babylonjs/Bones/bone";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Material } from "babylonjs/Materials/material";
@@ -128,6 +129,8 @@ export class _Exporter {
      * is the image data
      */
     public _imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } };
+
+    protected _orderedImageData: Array<{ data: Uint8Array, mimeType: ImageMimeType }>;
 
     /**
      * Stores a map of the unique id of a node to its index in the node array
@@ -301,6 +304,7 @@ export class _Exporter {
         this._skins = [];
         this._animations = [];
         this._imageData = {};
+        this._orderedImageData = [];
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
         this._includeCoordinateSystemConversionNodes = options && options.includeCoordinateSystemConversionNodes ? true : false;
@@ -950,6 +954,7 @@ export class _Exporter {
                 this._images.forEach((image) => {
                     if (image.uri) {
                         imageData = this._imageData[image.uri];
+                        this._orderedImageData.push(imageData);
                         imageName = image.uri.split('.')[0] + " image";
                         bufferView = _GLTFUtilities._CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                         byteOffset += imageData.data.buffer.byteLength;
@@ -1052,8 +1057,8 @@ export class _Exporter {
             const jsonLength = jsonText.length;
             let imageByteLength = 0;
 
-            for (let key in this._imageData) {
-                imageByteLength += this._imageData[key].data.byteLength;
+            for (let i = 0; i < this._orderedImageData.length; ++i) {
+                imageByteLength += this._orderedImageData[i].data.byteLength;
             }
             const jsonPadding = this._getPadding(jsonLength);
             const binPadding = this._getPadding(binaryBuffer.byteLength);
@@ -1108,9 +1113,10 @@ export class _Exporter {
             const glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer];
 
             // binary data
-            for (let key in this._imageData) {
-                glbData.push(this._imageData[key].data.buffer);
+            for (let i = 0; i < this._orderedImageData.length; ++i) {
+                glbData.push(this._orderedImageData[i].data.buffer);
             }
+
             glbData.push(binPaddingBuffer);
 
             glbData.push(imagePaddingBuffer);
@@ -1791,9 +1797,11 @@ export class _Exporter {
                                 nodeIndex = this._nodes.length - 1;
                                 nodeMap[babylonNode.uniqueId] = nodeIndex;
 
-                                if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
-                                    _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
-                                    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargets(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                if (!babylonScene.animationGroups.length) {
+                                    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                    if (babylonNode.animations.length) {
+                                        _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, convertToRightHandedSystem, this._animationSampleRate);
+                                    }
                                 }
                             });
                         }
@@ -1816,7 +1824,7 @@ export class _Exporter {
             });
 
             if (babylonScene.animationGroups.length) {
-                _GLTFAnimation._CreateNodeAnimationFromAnimationGroups(babylonScene, this._animations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystemMap, this._animationSampleRate);
+                _GLTFAnimation._CreateNodeAndMorphAnimationFromAnimationGroups(babylonScene, this._animations, nodeMap, this._nodes, binaryWriter, this._bufferViews, this._accessors, this._convertToRightHandedSystemMap, this._animationSampleRate);
             }
 
             return nodeMap;
@@ -1876,36 +1884,45 @@ export class _Exporter {
      * @returns Node mapping of unique id to index
      */
     private createSkinsAsync(babylonScene: Scene, nodeMap: { [key: number]: number }, binaryWriter: _BinaryWriter): Promise<{ [key: number]: number }> {
-        let promiseChain = Promise.resolve();
+        const promiseChain = Promise.resolve();
         const skinMap: { [key: number]: number } = {};
         for (let skeleton of babylonScene.skeletons) {
             // create skin
             const skin: ISkin = { joints: [] };
-            let inverseBindMatrices: Matrix[] = [];
-            let skeletonMesh = babylonScene.meshes.find((mesh) => { mesh.skeleton === skeleton; });
+            const inverseBindMatrices: Matrix[] = [];
+            const skeletonMesh = babylonScene.meshes.find((mesh) => { mesh.skeleton === skeleton; });
             skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
+            const boneIndexMap: {[index: number]: Bone} = {};
+            let boneIndexMax: number = -1;
+            let boneIndex: number = -1;
             for (let bone of skeleton.bones) {
-                if (bone._index != -1) {
-                    let transformNode = bone.getTransformNode();
-                    if (transformNode) {
-                        let boneMatrix = bone.getInvertedAbsoluteTransform();
-                        if (this._convertToRightHandedSystem) {
-                            _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
-                        }
-                        inverseBindMatrices.push(boneMatrix);
-                        skin.joints.push(nodeMap[transformNode.uniqueId]);
+                boneIndex = bone.getIndex();
+                if (boneIndex > -1) {
+                    boneIndexMap[boneIndex] = bone;
+                }
+                boneIndexMax = Math.max(boneIndexMax, boneIndex);
+            }
+            for (let i = 0; i <= boneIndexMax; ++i) {
+                const bone = boneIndexMap[i]!;
+                const transformNode = bone.getTransformNode();
+                if (transformNode) {
+                    const boneMatrix = bone.getInvertedAbsoluteTransform();
+                    if (this._convertToRightHandedSystem) {
+                        _GLTFUtilities._GetRightHandedMatrixFromRef(boneMatrix);
                     }
+                    inverseBindMatrices.push(boneMatrix);
+                    skin.joints.push(nodeMap[transformNode.uniqueId]);
                 }
             }
             // create buffer view for inverse bind matrices
-            let byteStride = 64; // 4 x 4 matrix of 32 bit float
-            let byteLength = inverseBindMatrices.length * byteStride;
-            let bufferViewOffset = binaryWriter.getByteOffset();
-            let bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, byteStride, "InverseBindMatrices" + " - " + skeleton.name);
+            const byteStride = 64; // 4 x 4 matrix of 32 bit float
+            const byteLength = inverseBindMatrices.length * byteStride;
+            const bufferViewOffset = binaryWriter.getByteOffset();
+            const bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, byteStride, "InverseBindMatrices" + " - " + skeleton.name);
             this._bufferViews.push(bufferView);
-            let bufferViewIndex = this._bufferViews.length - 1;
-            let bindMatrixAccessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, "InverseBindMatrices" + " - " + skeleton.name, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length, null, null, null);
-            let inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
+            const bufferViewIndex = this._bufferViews.length - 1;
+            const bindMatrixAccessor = _GLTFUtilities._CreateAccessor(bufferViewIndex, "InverseBindMatrices" + " - " + skeleton.name, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length, null, null, null);
+            const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
             skin.inverseBindMatrices = inverseBindAccessorIndex;
             this._skins.push(skin);
             skinMap[skeleton.uniqueId] = this._skins.length - 1;
