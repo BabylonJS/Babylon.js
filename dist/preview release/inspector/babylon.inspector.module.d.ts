@@ -3023,6 +3023,50 @@ declare module "babylonjs-inspector/components/actionTabs/lines/color4LineCompon
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/gradientStepComponent" {
+    import * as React from 'react';
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    interface IGradientStepComponentProps {
+        globalState: GlobalState;
+        step: GradientBlockColorStep;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateStep: () => void;
+        onCheckForReOrder: () => void;
+    }
+    export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
+        gradient: number;
+    }> {
+        constructor(props: IGradientStepComponentProps);
+        updateColor(color: string): void;
+        updateStep(gradient: number): void;
+        onPointerUp(): void;
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyComponentProps" {
+    import { GlobalState } from "babylonjs-inspector/components/globalState";
+    import { NodeMaterialBlock } from 'babylonjs/Materials/Node/nodeMaterialBlock';
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        block: NodeMaterialBlock;
+    }
+}
+declare module "babylonjs-inspector/components/actionTabs/tabs/gradientNodePropertyComponent" {
+    import * as React from "react";
+    import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
+    import { IPropertyComponentProps } from "babylonjs-inspector/components/actionTabs/tabs/propertyComponentProps";
+    export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private _gradientBlock;
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(): void;
+        deleteStep(step: GradientBlockColorStep): void;
+        addNewStep(): void;
+        checkForReOrder(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent" {
     import * as React from "react";
     import { Observable } from "babylonjs/Misc/observable";
@@ -3044,7 +3088,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
         edit(): void;
         renderTextures(): JSX.Element | null;
         renderInputBlock(block: InputBlock): JSX.Element | null;
-        renderInputValues(): JSX.Element | null;
+        renderInputValues(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -6711,6 +6755,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IGradientStepComponentProps {
+        globalState: GlobalState;
+        step: BABYLON.GradientBlockColorStep;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateStep: () => void;
+        onCheckForReOrder: () => void;
+    }
+    export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
+        gradient: number;
+    }> {
+        constructor(props: IGradientStepComponentProps);
+        updateColor(color: string): void;
+        updateStep(gradient: number): void;
+        onPointerUp(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        block: BABYLON.NodeMaterialBlock;
+    }
+}
+declare module INSPECTOR {
+    export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private _gradientBlock;
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(): void;
+        deleteStep(step: BABYLON.GradientBlockColorStep): void;
+        addNewStep(): void;
+        checkForReOrder(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.NodeMaterial;
@@ -6724,7 +6804,7 @@ declare module INSPECTOR {
         edit(): void;
         renderTextures(): JSX.Element | null;
         renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
-        renderInputValues(): JSX.Element | null;
+        renderInputValues(): JSX.Element;
         render(): JSX.Element;
     }
 }

@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!*****************************************************************!*\
-  !*** C:/Dev/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \*****************************************************************/
+/*!***********************************************************!*\
+  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -3640,12 +3640,14 @@ var Container = /** @class */ (function (_super) {
                     }
                 }
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
@@ -5630,6 +5632,7 @@ var Control = /** @class */ (function () {
         block.style.height = "0px";
         block.style.verticalAlign = "bottom";
         var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
         div.appendChild(text);
         div.appendChild(block);
         document.body.appendChild(div);
@@ -12355,6 +12358,8 @@ var StackPanel = /** @class */ (function (_super) {
                 }
             }
         }
+        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
         this._doNotTrackManualChanges = true;
         // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
         // User can now define their own height and width for stack panel.

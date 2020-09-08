@@ -13,6 +13,8 @@ import { WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { IDisposable } from "../../scene";
 import { Observable } from "../../Misc/observable";
 
+declare const XRHand: XRHand;
+
 /**
  * Configuration interface for the hand tracking feature
  */
@@ -233,7 +235,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
      */
     public isCompatible(): boolean {
-        return (globalThis && typeof ((<any>globalThis)['XRHand']) !== 'undefined');
+        return (typeof XRHand !== 'undefined');
     }
 
     /**
