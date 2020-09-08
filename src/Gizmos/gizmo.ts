@@ -112,6 +112,9 @@ export class Gizmo implements IDisposable {
     private _tempQuaternion = new Quaternion(0, 0, 0, 1);
     private _tempVector = new Vector3();
     private _tempVector2 = new Vector3();
+    private _tempMatrix1 = new Matrix();
+    private _tempMatrix2 = new Matrix();
+    private _rightHandtoLeftHandMatrix = Matrix.RotationY(Math.PI);
 
     /**
      * Creates a gizmo
@@ -187,15 +190,26 @@ export class Gizmo implements IDisposable {
 
         if  ((<Camera>this._attachedNode)._isCamera) {
             var camera = this._attachedNode as Camera;
+            var worldMatrix;
+            var worldMatrixUC;
             if (camera.parent) {
-                var parentInv = new Matrix();
-                var localMat = new Matrix();
-                camera.parent.getWorldMatrix().invertToRef(parentInv);
-                this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                localMat.decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
+                var parentInv = this._tempMatrix2;
+                camera.parent._worldMatrix.invertToRef(parentInv);
+                this._attachedNode._worldMatrix.multiplyToRef(parentInv, this._tempMatrix1);
+                worldMatrix = this._tempMatrix1;
             } else {
-                this._attachedNode.getWorldMatrix().decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
+                worldMatrix = this._attachedNode._worldMatrix;
             }
+
+            if (camera.getScene().useRightHandedSystem) {
+                // avoid desync with RH matrix computation. Otherwise, rotation of PI around Y axis happens each frame resulting in axis flipped because worldMatrix is computed as inverse of viewMatrix.
+                this._rightHandtoLeftHandMatrix.multiplyToRef(worldMatrix, this._tempMatrix2);
+                worldMatrixUC = this._tempMatrix2;
+            } else {
+                worldMatrixUC = worldMatrix;
+            }
+
+            worldMatrixUC.decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
 
             var inheritsTargetCamera = this._attachedNode.getClassName() === "FreeCamera"
             || this._attachedNode.getClassName() === "FlyCamera"
@@ -207,19 +221,20 @@ export class Gizmo implements IDisposable {
             if (inheritsTargetCamera) {
                 var targetCamera = this._attachedNode as TargetCamera;
                 targetCamera.rotation = this._tempQuaternion.toEulerAngles();
+
                 if (targetCamera.rotationQuaternion) {
                     targetCamera.rotationQuaternion.copyFrom(this._tempQuaternion);
                 }
             }
 
             camera.position.copyFrom(this._tempVector);
-        } else if ((<Mesh>this._attachedNode)._isMesh || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode") {
+        } else if ((<Mesh>this._attachedNode)._isMesh || this._attachedNode.getClassName() === "AbstractMesh" || this._attachedNode.getClassName() === "TransformNode" || this._attachedNode.getClassName() === "InstancedMesh") {
             var transform = this._attachedNode as TransformNode;
             if (transform.parent) {
-                var parentInv = new Matrix();
-                var localMat = new Matrix();
+                var parentInv = this._tempMatrix1;
+                var localMat = this._tempMatrix2;
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
-                this._attachedNode._worldMatrix.multiplyToRef(parentInv, localMat);
+                this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
                 localMat.decompose(transform.scaling, this._tempQuaternion, transform.position);
             } else {
                 this._attachedNode._worldMatrix.decompose(transform.scaling, this._tempQuaternion, transform.position);
@@ -234,8 +249,8 @@ export class Gizmo implements IDisposable {
             const parent = bone.getParent();
 
             if (parent) {
-                var invParent = new Matrix();
-                var boneLocalMatrix = new Matrix();
+                var invParent = this._tempMatrix1;
+                var boneLocalMatrix = this._tempMatrix2;
                 parent.getWorldMatrix().invertToRef(invParent);
                 bone.getWorldMatrix().multiplyToRef(invParent, boneLocalMatrix);
                 var lmat = bone.getLocalMatrix();

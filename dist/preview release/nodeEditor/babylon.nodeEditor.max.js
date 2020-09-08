@@ -63809,7 +63809,7 @@ var NodeListComponent = /** @class */ (function (_super) {
                 return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_draggableLineComponent__WEBPACK_IMPORTED_MODULE_3__["DraggableLineComponent"], { key: block, data: block, tooltip: NodeListComponent._Tooltips[block] || "" });
             });
             if (key === "Custom_Frames") {
-                var line = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { title: "Add Custom Frame", closed: false, label: "Add...", uploadName: 'custom-frame-upload', iconImage: addButton, accept: ".json", onIconClick: function (file) {
+                var line = react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineWithFileButtonComponent__WEBPACK_IMPORTED_MODULE_6__["LineWithFileButtonComponent"], { key: "add...", title: "Add Custom Frame", closed: false, label: "Add...", uploadName: 'custom-frame-upload', iconImage: addButton, accept: ".json", onIconClick: function (file) {
                         _this.loadCustomFrame(file);
                     } });
                 blockList.push(line);
@@ -66857,17 +66857,25 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
             this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers(message);
             return;
         }
+        var linksToNotifyForDispose = null;
         if (pointB.isConnected) {
             var links = nodeB.getLinksForConnectionPoint(pointB);
+            linksToNotifyForDispose = links.slice();
             links.forEach(function (link) {
-                link.dispose();
+                link.dispose(false);
             });
         }
         if (pointB.ownerBlock.inputsAreExclusive) { // Disconnect all inputs if block has exclusive inputs
             pointB.ownerBlock.inputs.forEach(function (i) {
                 var links = nodeB.getLinksForConnectionPoint(i);
+                if (!linksToNotifyForDispose) {
+                    linksToNotifyForDispose = links.slice();
+                }
+                else {
+                    linksToNotifyForDispose.push.apply(linksToNotifyForDispose, links.slice());
+                }
                 links.forEach(function (link) {
-                    link.dispose();
+                    link.dispose(false);
                 });
             });
         }
@@ -66905,6 +66913,10 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         else {
             nodeB.refresh();
         }
+        linksToNotifyForDispose === null || linksToNotifyForDispose === void 0 ? void 0 : linksToNotifyForDispose.forEach(function (link) {
+            link.onDisposedObservable.notifyObservers(link);
+            link.onDisposedObservable.clear();
+        });
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     };
     GraphCanvasComponent.prototype.processEditorData = function (editorData) {
@@ -67550,6 +67562,7 @@ var GraphFrame = /** @class */ (function () {
                 return;
             }
             else {
+                node.enclosingFrameId = -1;
                 _this_1._nodes.splice(index, 1);
             }
         });
@@ -67904,6 +67917,7 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.removeNode = function (node) {
         var index = this.nodes.indexOf(node);
         if (index > -1) {
+            node.enclosingFrameId = -1;
             this.nodes.splice(index, 1);
         }
     };
@@ -68121,6 +68135,9 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.dispose = function () {
         var _a;
         this.isCollapsed = false;
+        this._nodes.forEach(function (node) {
+            node.enclosingFrameId = -1;
+        });
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -68145,7 +68162,7 @@ var GraphFrame = /** @class */ (function () {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: this.isCollapsed,
+            isCollapsed: false,
             blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
             comments: this._comments
         };
@@ -68242,6 +68259,7 @@ var GraphNode = /** @class */ (function () {
         this._mouseStartPointY = null;
         this._displayManager = null;
         this._isVisible = true;
+        this._enclosingFrameId = -1;
         this._globalState = globalState;
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (node) {
             if (node === _this) {
@@ -68793,7 +68811,8 @@ var NodeLink = /** @class */ (function () {
     NodeLink.prototype.onClick = function () {
         this._graphCanvas.globalState.onSelectionChangedObservable.notifyObservers(this);
     };
-    NodeLink.prototype.dispose = function () {
+    NodeLink.prototype.dispose = function (notify) {
+        if (notify === void 0) { notify = true; }
         this._graphCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         if (this._path.parentElement) {
             this._path.parentElement.removeChild(this._path);
@@ -68807,8 +68826,10 @@ var NodeLink = /** @class */ (function () {
             this._graphCanvas.links.splice(this._graphCanvas.links.indexOf(this), 1);
             this._portA.connectionPoint.disconnectFrom(this._portB.connectionPoint);
         }
-        this.onDisposedObservable.notifyObservers(this);
-        this.onDisposedObservable.clear();
+        if (notify) {
+            this.onDisposedObservable.notifyObservers(this);
+            this.onDisposedObservable.clear();
+        }
     };
     return NodeLink;
 }());
@@ -69862,7 +69883,7 @@ var NodePortPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
-                    this.props.nodePort.node.enclosingFrameId !== undefined && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
+                    this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
     };
     return NodePortPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));

@@ -800,7 +800,8 @@ var KHR_texture_transform = /** @class */ (function () {
         configurable: true
     });
     KHR_texture_transform.prototype.postExportTexture = function (context, textureInfo, babylonTexture) {
-        if (babylonTexture && babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0) {
+        var canUseExtension = babylonTexture && ((babylonTexture.uAng === 0 && babylonTexture.wAng === 0 && babylonTexture.vAng === 0) || (babylonTexture.uRotationCenter === 0 && babylonTexture.vRotationCenter === 0));
+        if (canUseExtension) {
             var textureTransform = {};
             var transformIsRequired = false;
             if (babylonTexture.uOffset !== 0 || babylonTexture.vOffset !== 0) {
@@ -1101,39 +1102,39 @@ var _GLTFAnimation = /** @class */ (function () {
         }
     };
     /**
- * @ignore
- * Create individual morph animations from the mesh's morph target animation tracks
- * @param babylonNode
- * @param runtimeGLTFAnimation
- * @param idleGLTFAnimations
- * @param nodeMap
- * @param nodes
- * @param binaryWriter
- * @param bufferViews
- * @param accessors
- * @param convertToRightHandedSystem
- * @param animationSampleRate
- */
-    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargets = function (babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationSampleRate) {
+     * @ignore
+     * Create individual morph animations from the mesh's morph target animation tracks
+     * @param babylonNode
+     * @param runtimeGLTFAnimation
+     * @param idleGLTFAnimations
+     * @param nodeMap
+     * @param nodes
+     * @param binaryWriter
+     * @param bufferViews
+     * @param accessors
+     * @param convertToRightHandedSystem
+     * @param animationSampleRate
+     */
+    _GLTFAnimation._CreateMorphTargetAnimationFromMorphTargetAnimations = function (babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationSampleRate) {
         var glTFAnimation;
         if (babylonNode instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Mesh"]) {
             var morphTargetManager = babylonNode.morphTargetManager;
             if (morphTargetManager) {
                 for (var i = 0; i < morphTargetManager.numTargets; ++i) {
                     var morphTarget = morphTargetManager.getTarget(i);
-                    for (var j = 0; j < morphTarget.animations.length; ++j) {
-                        var animation = morphTarget.animations[j];
+                    for (var _i = 0, _a = morphTarget.animations; _i < _a.length; _i++) {
+                        var animation = _a[_i];
                         var combinedAnimation = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"]("" + animation.name, "influence", animation.framePerSecond, animation.dataType, animation.loopMode, animation.enableBlending);
                         var combinedAnimationKeys = [];
                         var animationKeys = animation.getKeys();
-                        for (var k = 0; k < animationKeys.length; ++k) {
-                            var animationKey = animationKeys[k];
-                            for (var l = 0; l < morphTargetManager.numTargets; ++l) {
-                                if (l == i) {
+                        for (var j = 0; j < animationKeys.length; ++j) {
+                            var animationKey = animationKeys[j];
+                            for (var k = 0; k < morphTargetManager.numTargets; ++k) {
+                                if (k == i) {
                                     combinedAnimationKeys.push(animationKey);
                                 }
                                 else {
-                                    combinedAnimationKeys.push({ frame: animationKey.frame, value: morphTargetManager.getTarget(l).influence });
+                                    combinedAnimationKeys.push({ frame: animationKey.frame, value: 0 });
                                 }
                             }
                         }
@@ -1145,7 +1146,7 @@ var _GLTFAnimation = /** @class */ (function () {
                                 samplers: [],
                                 channels: []
                             };
-                            _GLTFAnimation.AddAnimation("" + animation.name, animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation, babylonNode, animation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate, morphTargetManager.numTargets);
+                            _GLTFAnimation.AddAnimation(animation.name, animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation, babylonNode, combinedAnimation, animationInfo.dataAccessorType, animationInfo.animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, animationInfo.useQuaternion, animationSampleRate, morphTargetManager.numTargets);
                             if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
                                 idleGLTFAnimations.push(glTFAnimation);
                             }
@@ -1168,7 +1169,7 @@ var _GLTFAnimation = /** @class */ (function () {
      * @param convertToRightHandedSystemMap
      * @param animationSampleRate
      */
-    _GLTFAnimation._CreateNodeAnimationFromAnimationGroups = function (babylonScene, glTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystemMap, animationSampleRate) {
+    _GLTFAnimation._CreateNodeAndMorphAnimationFromAnimationGroups = function (babylonScene, glTFAnimations, nodeMap, nodes, binaryWriter, bufferViews, accessors, convertToRightHandedSystemMap, animationSampleRate) {
         var _a;
         var glTFAnimation;
         if (babylonScene.animationGroups) {
@@ -1229,30 +1230,39 @@ var _GLTFAnimation = /** @class */ (function () {
                     _loop_2(i);
                 }
                 morphAnimationMeshes.forEach(function (mesh) {
-                    // for each mesh that we want to export a Morph target animation track for...
                     var morphTargetManager = mesh.morphTargetManager;
                     var combinedAnimationGroup = null;
                     var animationKeys = [];
                     var sampleAnimation = sampleAnimations.get(mesh);
-                    var numAnimationKeys = sampleAnimation.getKeys().length;
-                    // for each frame of this mesh's animation group track
+                    var sampleAnimationKeys = sampleAnimation.getKeys();
+                    var numAnimationKeys = sampleAnimationKeys.length;
+                    /*
+                        Due to how glTF expects morph target animation data to be formatted, we need to rearrange the individual morph target animation tracks,
+                        such that we have a single animation, where a given keyframe input value has successive output values for each morph target belonging to the manager.
+                        See: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#animations
+
+                        We do this via constructing a new Animation track, and interleaving the frames of each morph target animation track in the current Animation Group
+                        We reuse the Babylon Animation data structure for ease of handling export of cubic spline animation keys, and to reuse the
+                        existing _GLTFAnimation.AddAnimation codepath with minimal modification, however the constructed Babylon Animation is NOT intended for use in-engine.
+                    */
                     for (var i = 0; i < numAnimationKeys; ++i) {
-                        // construct a new Animation track by interlacing the frames of each morph target animation track
-                        if (morphTargetManager) {
-                            for (var j = 0; j < morphTargetManager.numTargets; ++j) {
-                                var morphTarget = morphTargetManager.getTarget(j);
-                                var animationsByMorphTarget = morphAnimations.get(mesh);
-                                if (animationsByMorphTarget) {
-                                    var morphTargetAnimation = animationsByMorphTarget.get(morphTarget);
-                                    if (morphTargetAnimation) {
-                                        if (!combinedAnimationGroup) {
-                                            combinedAnimationGroup = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"](animationGroup.name + "_" + mesh.name + "_MorphWeightAnimation", "influence", morphTargetAnimation.framePerSecond, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"].ANIMATIONTYPE_FLOAT, morphTargetAnimation.loopMode, morphTargetAnimation.enableBlending);
-                                        }
-                                        animationKeys.push(morphTargetAnimation.getKeys()[i]);
+                        for (var j = 0; j < morphTargetManager.numTargets; ++j) {
+                            var morphTarget = morphTargetManager.getTarget(j);
+                            var animationsByMorphTarget = morphAnimations.get(mesh);
+                            if (animationsByMorphTarget) {
+                                var morphTargetAnimation = animationsByMorphTarget.get(morphTarget);
+                                if (morphTargetAnimation) {
+                                    if (!combinedAnimationGroup) {
+                                        combinedAnimationGroup = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"](animationGroup.name + "_" + mesh.name + "_MorphWeightAnimation", "influence", morphTargetAnimation.framePerSecond, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Animation"].ANIMATIONTYPE_FLOAT, morphTargetAnimation.loopMode, morphTargetAnimation.enableBlending);
                                     }
-                                    else {
-                                        animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i, value: morphTarget.influence });
-                                    }
+                                    animationKeys.push(morphTargetAnimation.getKeys()[i]);
+                                }
+                                else {
+                                    animationKeys.push({ frame: animationGroup.from + (animationGroupFrameDiff / numAnimationKeys) * i,
+                                        value: morphTarget.influence,
+                                        inTangent: sampleAnimationKeys[0].inTangent ? 0 : undefined,
+                                        outTangent: sampleAnimationKeys[0].outTangent ? 0 : undefined
+                                    });
                                 }
                             }
                         }
@@ -1274,8 +1284,7 @@ var _GLTFAnimation = /** @class */ (function () {
         }
     };
     _GLTFAnimation.AddAnimation = function (name, glTFAnimation, babylonTransformNode, animation, dataAccessorType, animationChannelTargetPath, nodeMap, binaryWriter, bufferViews, accessors, convertToRightHandedSystem, useQuaternion, animationSampleRate, morphAnimationChannels) {
-        var animationData;
-        animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate);
+        var animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, convertToRightHandedSystem, useQuaternion, animationSampleRate);
         var bufferView;
         var accessor;
         var keyframeAccessorIndex;
@@ -1284,6 +1293,11 @@ var _GLTFAnimation = /** @class */ (function () {
         var animationSampler;
         var animationChannel;
         if (animationData) {
+            /*
+            * Now that we have the glTF converted morph target animation data,
+            * we can remove redundant input data so that we have n input frames,
+            * and morphAnimationChannels * n output frames
+            */
             if (morphAnimationChannels) {
                 var index = 0;
                 var currentInput = 0;
@@ -1910,6 +1924,7 @@ var _Exporter = /** @class */ (function () {
         this._skins = [];
         this._animations = [];
         this._imageData = {};
+        this._orderedImageData = [];
         this._options = options || {};
         this._animationSampleRate = options && options.animationSampleRate ? options.animationSampleRate : 1 / 60;
         this._includeCoordinateSystemConversionNodes = options && options.includeCoordinateSystemConversionNodes ? true : false;
@@ -2633,6 +2648,7 @@ var _Exporter = /** @class */ (function () {
                 this._images.forEach(function (image) {
                     if (image.uri) {
                         imageData = _this._imageData[image.uri];
+                        _this._orderedImageData.push(imageData);
                         imageName = image.uri.split('.')[0] + " image";
                         bufferView = _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._CreateBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                         byteOffset += imageData.data.buffer.byteLength;
@@ -2724,8 +2740,8 @@ var _Exporter = /** @class */ (function () {
             var chunkLengthPrefix = 8;
             var jsonLength = jsonText.length;
             var imageByteLength = 0;
-            for (var key in _this._imageData) {
-                imageByteLength += _this._imageData[key].data.byteLength;
+            for (var i = 0; i < _this._orderedImageData.length; ++i) {
+                imageByteLength += _this._orderedImageData[i].data.byteLength;
             }
             var jsonPadding = _this._getPadding(jsonLength);
             var binPadding = _this._getPadding(binaryBuffer.byteLength);
@@ -2770,8 +2786,8 @@ var _Exporter = /** @class */ (function () {
             }
             var glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer];
             // binary data
-            for (var key in _this._imageData) {
-                glbData.push(_this._imageData[key].data.buffer);
+            for (var i = 0; i < _this._orderedImageData.length; ++i) {
+                glbData.push(_this._orderedImageData[i].data.buffer);
             }
             glbData.push(binPaddingBuffer);
             glbData.push(imagePaddingBuffer);
@@ -3363,9 +3379,11 @@ var _Exporter = /** @class */ (function () {
                                 _this._nodes.push(node);
                                 nodeIndex = _this._nodes.length - 1;
                                 nodeMap[babylonNode.uniqueId] = nodeIndex;
-                                if (!babylonScene.animationGroups.length && babylonNode.animations.length) {
-                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
-                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateMorphTargetAnimationFromMorphTargets(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
+                                if (!babylonScene.animationGroups.length) {
+                                    _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
+                                    if (babylonNode.animations.length) {
+                                        _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromNodeAnimations(babylonNode, runtimeGLTFAnimation, idleGLTFAnimations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, convertToRightHandedSystem, _this._animationSampleRate);
+                                    }
                                 }
                             });
                         }
@@ -3391,7 +3409,7 @@ var _Exporter = /** @class */ (function () {
                 }
             });
             if (babylonScene.animationGroups.length) {
-                _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAnimationFromAnimationGroups(babylonScene, _this._animations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystemMap, _this._animationSampleRate);
+                _glTFAnimation__WEBPACK_IMPORTED_MODULE_5__["_GLTFAnimation"]._CreateNodeAndMorphAnimationFromAnimationGroups(babylonScene, _this._animations, nodeMap, _this._nodes, binaryWriter, _this._bufferViews, _this._accessors, _this._convertToRightHandedSystemMap, _this._animationSampleRate);
             }
             return nodeMap;
         });
@@ -3455,18 +3473,27 @@ var _Exporter = /** @class */ (function () {
             var inverseBindMatrices = [];
             var skeletonMesh = babylonScene.meshes.find(function (mesh) { mesh.skeleton === skeleton; });
             skin.skeleton = skeleton.overrideMesh === null ? (skeletonMesh ? nodeMap[skeletonMesh.uniqueId] : undefined) : nodeMap[skeleton.overrideMesh.uniqueId];
+            var boneIndexMap = {};
+            var boneIndexMax = -1;
+            var boneIndex = -1;
             for (var _i = 0, _a = skeleton.bones; _i < _a.length; _i++) {
                 var bone = _a[_i];
-                if (bone._index != -1) {
-                    var transformNode = bone.getTransformNode();
-                    if (transformNode) {
-                        var boneMatrix = bone.getInvertedAbsoluteTransform();
-                        if (this_2._convertToRightHandedSystem) {
-                            _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedMatrixFromRef(boneMatrix);
-                        }
-                        inverseBindMatrices.push(boneMatrix);
-                        skin.joints.push(nodeMap[transformNode.uniqueId]);
+                boneIndex = bone.getIndex();
+                if (boneIndex > -1) {
+                    boneIndexMap[boneIndex] = bone;
+                }
+                boneIndexMax = Math.max(boneIndexMax, boneIndex);
+            }
+            for (var i = 0; i <= boneIndexMax; ++i) {
+                var bone = boneIndexMap[i];
+                var transformNode = bone.getTransformNode();
+                if (transformNode) {
+                    var boneMatrix = bone.getInvertedAbsoluteTransform();
+                    if (this_2._convertToRightHandedSystem) {
+                        _glTFUtilities__WEBPACK_IMPORTED_MODULE_3__["_GLTFUtilities"]._GetRightHandedMatrixFromRef(boneMatrix);
                     }
+                    inverseBindMatrices.push(boneMatrix);
+                    skin.joints.push(nodeMap[transformNode.uniqueId]);
                 }
             }
             // create buffer view for inverse bind matrices
@@ -4117,6 +4144,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
             var tempTexture = engine.createRawTexture(buffer, width, height, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTUREFORMAT_RGBA, false, true, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, null, textureType);
             var postProcess = new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["PostProcess"]("pass", "pass", null, null, 1, null, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Texture"].NEAREST_SAMPLINGMODE, engine, false, undefined, babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURETYPE_UNSIGNED_INT, undefined, null, false);
             postProcess.getEffect().executeWhenCompiled(function () {
+                var _a, _b;
                 postProcess.onApply = function (effect) {
                     effect._bindTexture("textureSampler", tempTexture);
                 };
@@ -4126,7 +4154,12 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                 postProcess.dispose();
                 tempTexture.dispose();
                 // Read data from WebGL
-                var canvas = engine.getRenderingCanvas();
+                var canvas0 = engine.getRenderingCanvas();
+                var canvas = document.createElement("canvas");
+                canvas.width = (_a = canvas0 === null || canvas0 === void 0 ? void 0 : canvas0.width) !== null && _a !== void 0 ? _a : 0;
+                canvas.height = (_b = canvas0 === null || canvas0 === void 0 ? void 0 : canvas0.height) !== null && _b !== void 0 ? _b : 0;
+                var destCtx = canvas.getContext('2d');
+                destCtx.drawImage(canvas0, 0, 0);
                 if (canvas) {
                     if (!canvas.toBlob) { // fallback for browsers without "canvas.toBlob"
                         var dataURL = canvas.toDataURL();
@@ -4134,6 +4167,7 @@ var _GLTFMaterialExporter = /** @class */ (function () {
                     }
                     else {
                         babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__["Tools"].ToBlob(canvas, function (blob) {
+                            canvas = null;
                             if (blob) {
                                 var fileReader = new FileReader();
                                 fileReader.onload = function (event) {
