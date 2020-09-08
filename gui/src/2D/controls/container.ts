@@ -340,12 +340,14 @@ export class Container extends Control {
                 }
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
