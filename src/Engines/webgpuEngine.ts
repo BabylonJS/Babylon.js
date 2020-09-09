@@ -299,7 +299,7 @@ export class WebGPUEngine extends Engine {
         // Init caps
         // TODO WEBGPU Real Capability check once limits will be working.
 
-        this._caps = this._caps = {
+        this._caps = {
             maxTexturesImageUnits: 16,
             maxVertexTextureImageUnits: 16,
             maxCombinedTexturesImageUnits: 32,
