@@ -32,6 +32,11 @@ export interface IWebXRHitTestOptions extends IWebXRLegacyHitTestOptions {
      * Instead of using viewer space for hit tests, use the reference space defined in the session manager
      */
     useReferenceSpace?: boolean;
+
+    /**
+     * Override the default entity type(s) of the hit-test result
+     */
+    entityTypes?: XRHitTestTrackableType[];
 }
 
 /**
@@ -80,15 +85,18 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             return;
         }
         const offsetRay = new XRRay(this.options.offsetRay || {});
-        const options: XRHitTestOptionsInit = {
+        const hitTestOptions: XRHitTestOptionsInit = {
             space: this.options.useReferenceSpace ? referenceSpace : this._xrSessionManager.viewerReferenceSpace,
             offsetRay: offsetRay,
         };
-        if (!options.space) {
+        if (this.options.entityTypes) {
+            hitTestOptions.entityTypes = this.options.entityTypes;
+        }
+        if (!hitTestOptions.space) {
             Tools.Warn("waiting for viewer reference space to initialize");
             return;
         }
-        this._xrSessionManager.session.requestHitTestSource(options).then((hitTestSource) => {
+        this._xrSessionManager.session.requestHitTestSource(hitTestOptions).then((hitTestSource) => {
             if (this._xrHitTestSource) {
                 this._xrHitTestSource.cancel();
             }
@@ -115,6 +123,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
     public autoCloneTransformation: boolean = false;
     /**
      * Triggered when new babylon (transformed) hit test results are available
+     * Note - this will be called when results come back from the device. It can be an empty array!!
      */
     public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
     /**
@@ -167,6 +176,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
                 .requestHitTestSourceForTransientInput({
                     profile: "generic-touchscreen",
                     offsetRay,
+                    entityTypes: this.options.entityTypes,
                 })
                 .then((hitSource) => {
                     this._transientXrHitTestSource = hitSource;
@@ -214,17 +224,13 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
 
         if (this._xrHitTestSource) {
             const results = frame.getHitTestResults(this._xrHitTestSource);
-            if (results.length) {
-                this._processWebXRHitTestResult(results);
-            }
+            this._processWebXRHitTestResult(results);
         }
         if (this._transientXrHitTestSource) {
             let hitTestResultsPerInputSource = frame.getHitTestResultsForTransientInput(this._transientXrHitTestSource);
 
             hitTestResultsPerInputSource.forEach((resultsPerInputSource) => {
-                if (resultsPerInputSource.results.length > 0) {
-                    this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
-                }
+                this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
             });
         }
     }
@@ -259,9 +265,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             results.push(result);
         });
 
-        if (results.length) {
-            this.onHitTestResultObservable.notifyObservers(results);
-        }
+        this.onHitTestResultObservable.notifyObservers(results);
     }
 }
 

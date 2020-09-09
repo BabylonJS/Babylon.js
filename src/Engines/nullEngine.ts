@@ -121,6 +121,7 @@ export class NullEngine extends Engine {
             pvrtc: null,
             etc1: null,
             etc2: null,
+            bptc: null,
             maxAnisotropy: 0,
             uintIndices: false,
             fragmentDepthSupported: false,

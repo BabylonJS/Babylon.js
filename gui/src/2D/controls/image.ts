@@ -384,6 +384,7 @@ export class Image extends Control {
     }
 
     private _onImageLoaded(): void {
+        this._imageDataCache.data = null;
         this._imageWidth = this._domImage.width;
         this._imageHeight = this._domImage.height;
         this._loaded = true;
@@ -652,6 +653,7 @@ export class Image extends Control {
             const context = canvas.getContext("2d")!;
 
             this._imageDataCache.data = imageData = context.getImageData(0, 0, width, height).data;
+            this._imageDataCache.key = key;
         }
 
         x = (x - this._currentMeasure.left) | 0;
