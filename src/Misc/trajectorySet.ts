@@ -7,7 +7,7 @@ import { Matrix, Vector3 } from "../Maths/math.vector";
 /**
  * Generic implementation of Levenshtein distance.
  */
-export namespace Levenshtein {
+namespace Levenshtein {
     /**
      * Alphabet from which to construct sequences to be compared using Levenshtein
      * distance.
@@ -424,7 +424,7 @@ export class Trajectory {
  * Vector3Alphabet will resemble a "spikeball" of vectors distributed
  * roughly evenly over the surface of the unit sphere.
  */
-export class Vector3Alphabet {
+class Vector3Alphabet {
 
     /**
      * Characters in the alphabet.
@@ -529,7 +529,7 @@ export class Vector3Alphabet {
  * describe a Trajectory. This class houses the functionality which determines what
  * attributes of Trajectories are and are not considered important, such as scale.
  */
-export class TrajectoryDescriptor {
+class TrajectoryDescriptor {
     private static readonly FINEST_DESCRIPTOR_RESOLUTION = 32;
 
     private _sequences: Levenshtein.Sequence<number>[];
@@ -636,10 +636,10 @@ export class TrajectoryDescriptor {
 }
 
 /**
- * A group of TrajectoryDescriptors defined to be "the same." This is essentially a helper
+ * A set of TrajectoryDescriptors defined to be "the same." This is essentially a helper
  * class to facilitate methods of Trajectory clustering.
  */
-export class DescribedTrajectory {
+class TrajectoryClass {
     private static readonly MIN_AVERAGE_DISTANCE = 1;
 
     private _descriptors: TrajectoryDescriptor[];
@@ -666,9 +666,9 @@ export class DescribedTrajectory {
      * @param alphabet Alphabet from which TrajectoryDescriptors were originally created
      * @returns deserialized TrajectoryDescriptor
      */
-    public static Deserialize(json: string, alphabet: Levenshtein.Alphabet<number>): DescribedTrajectory {
+    public static Deserialize(json: string, alphabet: Levenshtein.Alphabet<number>): TrajectoryClass {
         let jsonObject = JSON.parse(json);
-        let described = new DescribedTrajectory();
+        let described = new TrajectoryClass();
         described._descriptors = jsonObject.descriptors.map((s: string) => TrajectoryDescriptor.Deserialize(s, alphabet));
         described._centroidIdx = jsonObject.centroidIdx;
         described._averageDistance = jsonObject.averageDistance;
@@ -744,7 +744,7 @@ export class DescribedTrajectory {
             this._averageDistance += desc.distance(this._descriptors[this._centroidIdx]);
         });
         if (this._descriptors.length > 0) {
-            this._averageDistance = Math.min(this._averageDistance / this._descriptors.length, DescribedTrajectory.MIN_AVERAGE_DISTANCE);
+            this._averageDistance = Math.min(this._averageDistance / this._descriptors.length, TrajectoryClass.MIN_AVERAGE_DISTANCE);
         }
     }
 }
@@ -753,12 +753,11 @@ export class DescribedTrajectory {
  * Class representing a set of known, named trajectories to which Trajectories can be
  * added and using which Trajectories can be recognized.
  */
-export class TrajectorySet {
-    private static readonly MAXIMUM_ALLOWABLE_MATCH_COST = 4;
-
+export class TrajectoryClassifier {
+    private _maximumAllowableMatchCost: number = 4;
     private _vector3Alphabet: Vector3Alphabet;
     private _levenshteinAlphabet: Levenshtein.Alphabet<number>;
-    private _nameToDescribedTrajectory: Map<string, DescribedTrajectory>;
+    private _nameToDescribedTrajectory: Map<string, TrajectoryClass>;
 
     /**
      * Serialize to JSON.
@@ -766,6 +765,7 @@ export class TrajectorySet {
      */
     public serialize(): string {
         let jsonObject: any = {};
+        jsonObject.maximumAllowableMatchCost = this._maximumAllowableMatchCost;
         jsonObject.vector3Alphabet = this._vector3Alphabet.serialize();
         jsonObject.levenshteinAlphabet = this._levenshteinAlphabet.serialize();
         jsonObject.nameToDescribedTrajectory = [];
@@ -781,17 +781,18 @@ export class TrajectorySet {
      * @param json JSON serialization
      * @returns deserialized TrajectorySet
      */
-    public static Deserialize(json: string): TrajectorySet {
+    public static Deserialize(json: string): TrajectoryClassifier {
         let jsonObject = JSON.parse(json);
-        let trajectorySet = new TrajectorySet();
-        trajectorySet._vector3Alphabet = Vector3Alphabet.Deserialize(jsonObject.vector3Alphabet);
-        trajectorySet._levenshteinAlphabet = Levenshtein.Alphabet.Deserialize<number>(jsonObject.levenshteinAlphabet);
+        let classifier = new TrajectoryClassifier();
+        classifier._maximumAllowableMatchCost = jsonObject.maximumAllowableMatchCost;
+        classifier._vector3Alphabet = Vector3Alphabet.Deserialize(jsonObject.vector3Alphabet);
+        classifier._levenshteinAlphabet = Levenshtein.Alphabet.Deserialize<number>(jsonObject.levenshteinAlphabet);
         for (let idx = 0; idx < jsonObject.nameToDescribedTrajectory.length; idx += 2) {
-            trajectorySet._nameToDescribedTrajectory.set(
+            classifier._nameToDescribedTrajectory.set(
                 jsonObject.nameToDescribedTrajectory[idx],
-                DescribedTrajectory.Deserialize(jsonObject.nameToDescribedTrajectory[idx + 1], trajectorySet._levenshteinAlphabet));
+                TrajectoryClass.Deserialize(jsonObject.nameToDescribedTrajectory[idx + 1], classifier._levenshteinAlphabet));
         }
-        return trajectorySet;
+        return classifier;
     }
 
     /**
@@ -800,7 +801,7 @@ export class TrajectorySet {
      * sets. Better version later, probably eliminating this one.
      * @returns auto-generated TrajectorySet
      */
-    public static Generate(): TrajectorySet {
+    public static Generate(): TrajectoryClassifier {
         let vecs = Vector3Alphabet.Generate(64, 256, 0.1, 0.001, [Vector3.Forward()]);
 
         let alphabet = new Levenshtein.Alphabet<number>(
@@ -809,27 +810,27 @@ export class TrajectorySet {
             (idx) => idx === 0 ? 0 : 1,
             (a, b) => Math.min(1 - Vector3.Dot(vecs.chars[a], vecs.chars[b]), 1));
 
-        let trajectorySet = new TrajectorySet();
+        let trajectorySet = new TrajectoryClassifier();
         trajectorySet._vector3Alphabet = vecs;
         trajectorySet._levenshteinAlphabet = alphabet;
         return trajectorySet;
     }
 
     private constructor() {
-        this._nameToDescribedTrajectory = new Map<string, DescribedTrajectory>();
+        this._nameToDescribedTrajectory = new Map<string, TrajectoryClass>();
     }
 
     /**
      * Add a new Trajectory to the set with a given name.
      * @param trajectory new Trajectory to be added
-     * @param name name to which to add the Trajectory
+     * @param classification name to which to add the Trajectory
      */
-    public addTrajectoryWithName(trajectory: Trajectory, name: string): void {
-        if (!this._nameToDescribedTrajectory.has(name)) {
-            this._nameToDescribedTrajectory.set(name, new DescribedTrajectory());
+    public addTrajectoryToClassification(trajectory: Trajectory, classification: string): void {
+        if (!this._nameToDescribedTrajectory.has(classification)) {
+            this._nameToDescribedTrajectory.set(classification, new TrajectoryClass());
         }
 
-        this._nameToDescribedTrajectory.get(name)!.add(
+        this._nameToDescribedTrajectory.get(classification)!.add(
             TrajectoryDescriptor.CreateFromTrajectory(
                 trajectory,
                 this._vector3Alphabet,
@@ -838,29 +839,29 @@ export class TrajectorySet {
 
     /**
      * Remove a known named trajectory and all Trajectories associated with it.
-     * @param name name to remove
+     * @param classification name to remove
      * @returns whether anything was removed
      */
-    public delete(name: string): boolean {
-        return this._nameToDescribedTrajectory.delete(name);
+    public deleteClassification(classification: string): boolean {
+        return this._nameToDescribedTrajectory.delete(classification);
     }
 
     /**
-     * Attempt to recognize a Trajectory by name from among all the named Trajectories
-     * already known to the set.
+     * Attempt to recognize a Trajectory from among all the classifications
+     * already known to the classifier.
      * @param trajectory Trajectory to be recognized
-     * @returns name of Trajectory if recognized, null otherwise
+     * @returns classification of Trajectory if recognized, null otherwise
      */
-    public recognizeTrajectory(trajectory: Trajectory): Nullable<string> {
+    public classifyTrajectory(trajectory: Trajectory): Nullable<string> {
         let descriptor = TrajectoryDescriptor.CreateFromTrajectory(
             trajectory,
             this._vector3Alphabet,
             this._levenshteinAlphabet);
 
         let allowableMatches: string[] = [];
-        this._nameToDescribedTrajectory.forEach((described, name) => {
-            if (described.getMatchCost(descriptor) < TrajectorySet.MAXIMUM_ALLOWABLE_MATCH_COST) {
-                allowableMatches.push(name);
+        this._nameToDescribedTrajectory.forEach((trajectoryClass, classification) => {
+            if (trajectoryClass.getMatchCost(descriptor) < this._maximumAllowableMatchCost) {
+                allowableMatches.push(classification);
             }
         });
 
