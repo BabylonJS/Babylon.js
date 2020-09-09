@@ -60,9 +60,6 @@ export class InputBlock extends NodeMaterialBlock {
     /** @hidden */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
-    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-    public visibleInInspector = false;
-
     /** Gets or sets a boolean indicating that the value of this input will not change after a build */
     public isConstant = false;
 
@@ -676,7 +673,6 @@ export class InputBlock extends NodeMaterialBlock {
             // Common Property "Type"
             codes.push(
                 `${variableName}.isConstant = ${this.isConstant}`,
-                `${variableName}.visibleInInspector = ${this.visibleInInspector}`
             );
 
             codes.push('');
@@ -699,7 +695,6 @@ export class InputBlock extends NodeMaterialBlock {
         serializationObject.mode = this._mode;
         serializationObject.systemValue = this._systemValue;
         serializationObject.animationType = this._animationType;
-        serializationObject.visibleInInspector = this.visibleInInspector;
         serializationObject.min = this.min;
         serializationObject.max = this.max;
         serializationObject.isBoolean = this.isBoolean;
@@ -728,7 +723,6 @@ export class InputBlock extends NodeMaterialBlock {
 
         this._systemValue = serializationObject.systemValue || serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
-        this.visibleInInspector = serializationObject.visibleInInspector;
         this.min = serializationObject.min || 0;
         this.max = serializationObject.max || 0;
         this.isBoolean = !!serializationObject.isBoolean;

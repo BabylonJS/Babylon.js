@@ -826,6 +826,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         const world = mesh.getWorldMatrix();
 
+        effect.setMatrix(matriceNames?.world ?? "world", world);
+
         world.multiplyToRef(this.getCascadeTransformMatrix(this._currentLayer)!, tmpMatrix);
 
         effect.setMatrix(matriceNames?.worldViewProjection ?? "worldViewProjection", tmpMatrix);

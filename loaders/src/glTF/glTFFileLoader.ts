@@ -251,6 +251,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /**
      * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+     * Note that the observable is raised as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
     public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
 
@@ -258,6 +259,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /**
      * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+     * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
     public set onMeshLoaded(callback: (mesh: AbstractMesh) => void) {
         if (this._onMeshLoadedObserver) {

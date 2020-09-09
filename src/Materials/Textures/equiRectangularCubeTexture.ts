@@ -33,9 +33,6 @@ export class EquiRectangularCubeTexture extends BaseTexture {
     /** The URL to the image. */
     public url: string;
 
-    /** The texture coordinates mode. As this texture is stored in a cube format, please modify carefully. */
-    public coordinatesMode = Texture.CUBIC_MODE;
-
     /**
      * Instantiates an EquiRectangularCubeTexture from the following parameters.
      * @param url The location of the image
@@ -62,6 +59,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
             throw new Error('Image url is not set');
         }
 
+        this._coordinatesMode = Texture.CUBIC_MODE;
         this.name = url;
         this.url = url;
         this._size = size;
