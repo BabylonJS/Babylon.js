@@ -1758,10 +1758,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this._activeEffect = effect;
+        let ubo = this._uniformBuffer;
 
         // Matrices
         if (!defines.INSTANCES || defines.THIN_INSTANCES) {
             this.bindOnlyWorldMatrix(world);
+            this.additionnalPrePass.bindForSubMesh(ubo, scene, mesh, world, this.isFrozen);
         }
 
         // Normal Matrix
@@ -1776,7 +1778,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
         let reflectionTexture: Nullable<BaseTexture> = null;
-        let ubo = this._uniformBuffer;
         if (mustRebind) {
             var engine = scene.getEngine();
             ubo.bindToEffect(effect, "Material");
@@ -2019,7 +2020,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
             this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.additionnalPrePass.bindForSubMesh(ubo, scene, world, this.isFrozen);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
