@@ -10,7 +10,6 @@ import { LinesMesh } from "../Meshes/linesMesh";
 import { LinesBuilder } from "../Meshes/Builders/linesBuilder";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Material } from '../Materials/material';
-import { StandardMaterial } from '../Materials/standardMaterial';
 import { ShaderMaterial } from '../Materials/shaderMaterial';
 import { DynamicTexture } from '../Materials/Textures/dynamicTexture';
 import { VertexBuffer } from '../Meshes/buffer';
@@ -339,19 +338,11 @@ export class SkeletonViewer {
     set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>) {
          this._debugMesh = (value as any);
     }
-    /** Gets the material */
-    get material(): StandardMaterial {
-        return this.material;
-    }
-    /** Sets the material */
-    set material(value: StandardMaterial) {
-         this.material = value;
-    }
-    /** Gets the material */
+    /** Gets the displayMode */
     get displayMode(): number {
         return this.options.displayMode || SkeletonViewer.DISPLAY_LINES;
     }
-    /** Sets the material */
+    /** Sets the displayMode */
     set displayMode(value: number) {
         if (value > SkeletonViewer.DISPLAY_SPHERE_AND_SPURS) {
             value = SkeletonViewer.DISPLAY_LINES;
