@@ -29,7 +29,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     }
 
     addNewStep() {
-        let newStep = new GradientBlockColorStep( this._gradientBlock, 1.0, Color3.White());
+        let newStep = new GradientBlockColorStep(1.0, Color3.White());
         this._gradientBlock.colorSteps.push(newStep);
         this.forceRebuild();
     }
@@ -39,8 +39,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         this._gradientBlock.colorSteps.sort((a, b) => {
             return a.step - b.step;
         });
-
-        this.forceUpdate();
+        this.forceRebuild();
     }
 
     render() {
