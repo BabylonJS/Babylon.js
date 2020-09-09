@@ -69368,7 +69368,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
     };
     GradientPropertyTabComponent.prototype.addNewStep = function () {
         var gradientBlock = this.props.block;
-        var newStep = new babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["GradientBlockColorStep"](gradientBlock, 1.0, babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["Color3"].White());
+        var newStep = new babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["GradientBlockColorStep"](1.0, babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["Color3"].White());
         gradientBlock.colorSteps.push(newStep);
         gradientBlock.colorStepsUpdated();
         this.forceRebuild();

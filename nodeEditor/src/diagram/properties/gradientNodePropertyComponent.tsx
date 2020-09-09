@@ -56,7 +56,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
     addNewStep() {
         let gradientBlock = this.props.block as GradientBlock;
 
-        let newStep = new GradientBlockColorStep(gradientBlock, 1.0, Color3.White());
+        let newStep = new GradientBlockColorStep(1.0, Color3.White());
         gradientBlock.colorSteps.push(newStep);
         gradientBlock.colorStepsUpdated();
 

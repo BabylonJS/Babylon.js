@@ -290,7 +290,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         }
     }
 
-    private _startDrag(pointerId: number, fromRay?: Ray, startPickedPoint?: Vector3) {
+    protected _startDrag(pointerId: number, fromRay?: Ray, startPickedPoint?: Vector3) {
         if (!this._scene.activeCamera || this.dragging || !this.attachedNode) {
             return;
         }
@@ -330,7 +330,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     }
 
     private _dragDelta = new Vector3();
-    private _moveDrag(ray: Ray) {
+    protected _moveDrag(ray: Ray) {
         this._moving = true;
         var pickedPoint = this._pickWithRayOnDragPlane(ray);
 
