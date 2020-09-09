@@ -204,7 +204,7 @@ VertexData.CreateCapsule = function(
         // now save vertices of the row in our index array
         indexArray.push(indexRow);
     }
-    
+
     // generate indices
     for (x = 0; x < radialSegments; x ++) {
         for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y ++) {
