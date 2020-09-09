@@ -6816,6 +6816,46 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * The options Interface for creating a Capsule Mesh
+     */
+    export interface ICreateCapsuleOptions {
+        /** The Orientation of the capsule.  Default : Vector3.Up() */
+        orientation: Vector3;
+        /** Number of sub segments on the tube section of the capsule running parallel to orientation. */
+        subdivisions: number;
+        /** Number of cylindrical segments on the capsule. */
+        tessellation: number;
+        /** Height or Length of the capsule. */
+        height: number;
+        /** Radius of the capsule. */
+        radius: number;
+        /** Height or Length of the capsule. */
+        capSubdivisions: number;
+        /** Overwrite for the top radius. */
+        radiusTop?: number;
+        /** Overwrite for the bottom radius. */
+        radiusBottom?: number;
+        /** Overwrite for the top capSubdivisions. */
+        topCapSubdivisions?: number;
+        /** Overwrite for the bottom capSubdivisions. */
+        bottomCapSubdivisions?: number;
+    }
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class CapsuleBuilder {
+        /**
+         * Creates a capsule or a pill mesh
+         * @param name defines the name of the mesh
+         * @param options The constructors options.
+         * @param scene The scene the mesh is scoped to.
+         * @returns Capsule Mesh
+         */
+        static CreateCapsule(name: string, options: ICreateCapsuleOptions | undefined, scene: any): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
      * @hidden
      */
     export class IntersectionInfo {
@@ -26460,6 +26500,12 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
+         * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
+         * @param options an object used to set the following optional parameters for the capsule, required but can be empty
+         * @returns the VertexData of the Capsule
+         */
+        static CreateCapsule(options?: ICreateCapsuleOptions): VertexData;
+        /**
          * Creates the VertexData for a TorusKnot
          * @param options an object used to set the following optional parameters for the TorusKnot, required but can be empty
           * * radius the radius of the torus knot, optional, default 2
@@ -29249,6 +29295,14 @@ declare module BABYLON {
          * @returns a new Mesh
          */
         static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh;
+        /** Creates a Capsule Mesh
+         * @param name defines the name of the mesh.
+         * @param options the constructors options used to shape the mesh.
+         * @param scene defines the scene the mesh is scoped to.
+         * @returns the capsule mesh
+         * @see https://doc.babylonjs.com/how_to/capsule_shape
+         */
+        static CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh;
         /**
          * Prepare internal position array for software CPU skinning
          * @returns original positions used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh
@@ -43606,9 +43660,9 @@ declare module BABYLON {
          * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
          */
         startDrag(pointerId?: number, fromRay?: Ray, startPickedPoint?: Vector3): void;
-        private _startDrag;
+        protected _startDrag(pointerId: number, fromRay?: Ray, startPickedPoint?: Vector3): void;
         private _dragDelta;
-        private _moveDrag;
+        protected _moveDrag(ray: Ray): void;
         private _pickWithRayOnDragPlane;
         private _pointA;
         private _pointC;
@@ -63934,7 +63988,6 @@ declare module BABYLON {
      * Class used to store a color step for the GradientBlock
      */
     export class GradientBlockColorStep {
-        private _parent;
         private _step;
         /**
          * Gets value indicating which step this color is associated with (between 0 and 1)
@@ -63955,11 +64008,10 @@ declare module BABYLON {
         set color(val: Color3);
         /**
          * Creates a new GradientBlockColorStep
-         * @param parent defines the parent gradient for this block
          * @param step defines a value indicating which step this color is associated with (between 0 and 1)
          * @param color defines the color associated with this step
          */
-        constructor(parent: GradientBlock, step: number, color: Color3);
+        constructor(step: number, color: Color3);
     }
     /**
      * Block used to return a color from a gradient based on an input value between 0 and 1
@@ -66474,6 +66526,15 @@ declare module BABYLON {
             size?: Vector3;
             angle?: number;
         }): Mesh;
+        /**
+         * Creates a Capsule Mesh
+         * @param name defines the name of the mesh.
+         * @param options the constructors options used to shape the mesh.
+         * @param scene defines the scene the mesh is scoped to.
+         * @returns the capsule mesh
+         * @see https://doc.babylonjs.com/how_to/capsule_shape
+         */
+        static CreateCapsule(name: string, options?: ICreateCapsuleOptions, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {

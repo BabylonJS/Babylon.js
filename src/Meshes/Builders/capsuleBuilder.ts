@@ -1,12 +1,13 @@
 import { VertexData } from "../mesh.vertexData";
 import { Vector2, Vector3 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
-    /**
-     * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
-     * @param options the constructors options used to shape the mesh.
-     * @returns the capsule VertexData
-     * @see https://doc.babylonjs.com/how_to/capsule_shape
-     */
+
+/**
+ * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
+ * @param options the constructors options used to shape the mesh.
+ * @returns the capsule VertexData
+ * @see https://doc.babylonjs.com/how_to/capsule_shape
+ */
 VertexData.CreateCapsule = function(
     options: ICreateCapsuleOptions = {
         orientation : Vector3.Up(),
@@ -16,7 +17,7 @@ VertexData.CreateCapsule = function(
         radius: 0.25,
         capSubdivisions: 6
     }): VertexData {
-    //let path = options.orientation || Vector3.Up()
+
     let subdivisions = Math.max(options.subdivisions ? options.subdivisions : 2, 1);
     let tessellation = Math.max(options.tessellation ? options.tessellation : 16, 3);
     let height = Math.max(options.height ? options.height : 2, 0.);
@@ -43,7 +44,6 @@ VertexData.CreateCapsule = function(
     var uvs = [];
 
     var index = 0,
-        //indexOffset = 0,
         indexArray = [],
         halfHeight = height / 2;
 
@@ -51,191 +51,187 @@ VertexData.CreateCapsule = function(
     var normal = Vector3.Zero();
     var vertex = Vector3.Zero();
 
-        var cosAlpha = Math.cos(alpha);
-        var sinAlpha = Math.sin(alpha);
+    var cosAlpha = Math.cos(alpha);
+    var sinAlpha = Math.sin(alpha);
 
-        var cone_length =
-            new Vector2(
-                radiusTop * sinAlpha,
-                halfHeight + radiusTop * cosAlpha
-                ).subtract(new Vector2(
-                    radiusBottom * sinAlpha,
-                    -halfHeight + radiusBottom * cosAlpha
-                )
-            ).length();
+    var cone_length =
+        new Vector2(
+            radiusTop * sinAlpha,
+            halfHeight + radiusTop * cosAlpha
+            ).subtract(new Vector2(
+                radiusBottom * sinAlpha,
+                -halfHeight + radiusBottom * cosAlpha
+            )
+        ).length();
 
-        // Total length for v texture coord
-        var vl = radiusTop * alpha
-                 + cone_length
-                 + radiusBottom * (Math.PI / 2 - alpha);
+    // Total length for v texture coord
+    var vl = radiusTop * alpha
+                + cone_length
+                + radiusBottom * (Math.PI / 2 - alpha);
 
-        //var groupCount = 0;
+    // generate vertices, normals and uvs
+    var v = 0;
+    for (y = 0; y <= capsTopSegments; y++) {
 
-        // generate vertices, normals and uvs
+        var indexRow = [];
 
-        var v = 0;
-        for (y = 0; y <= capsTopSegments; y++) {
+        var a = Math.PI / 2 - alpha * (y / capsTopSegments);
 
-            var indexRow = [];
+        v += radiusTop * alpha / capsTopSegments;
 
-            var a = Math.PI / 2 - alpha * (y / capsTopSegments);
+        var cosA = Math.cos(a);
+        var sinA = Math.sin(a);
 
-            v += radiusTop * alpha / capsTopSegments;
+        // calculate the radius of the current row
+        var _radius = cosA * radiusTop;
 
-            var cosA = Math.cos(a);
-            var sinA = Math.sin(a);
+        for (x = 0; x <= radialSegments; x ++) {
 
-            // calculate the radius of the current row
-            var _radius = cosA * radiusTop;
+            var u = x / radialSegments;
 
-            for (x = 0; x <= radialSegments; x ++) {
+            var theta = u * thetaLength + thetaStart;
 
-                var u = x / radialSegments;
+            var sinTheta = Math.sin(theta);
+            var cosTheta = Math.cos(theta);
 
-                var theta = u * thetaLength + thetaStart;
+            // vertex
+            vertex.x = _radius * sinTheta;
+            vertex.y = halfHeight + sinA * radiusTop;
+            vertex.z = _radius * cosTheta;
+            vertices.push(vertex.x, vertex.y, vertex.z);
 
-                var sinTheta = Math.sin(theta);
-                var cosTheta = Math.cos(theta);
-
-                // vertex
-                vertex.x = _radius * sinTheta;
-                vertex.y = halfHeight + sinA * radiusTop;
-                vertex.z = _radius * cosTheta;
-                vertices.push(vertex.x, vertex.y, vertex.z);
-
-                // normal
-                normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
-                normals.push(normal.x, normal.y, normal.z);
-                // uv
-                uvs.push(u, 1 - v / vl);
-                // save index of vertex in respective row
-                indexRow.push(index);
-                // increase index
-                index ++;
-            }
-
-            // now save vertices of the row in our index array
-            indexArray.push(indexRow);
-
+            // normal
+            normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
+            normals.push(normal.x, normal.y, normal.z);
+            // uv
+            uvs.push(u, 1 - v / vl);
+            // save index of vertex in respective row
+            indexRow.push(index);
+            // increase index
+            index ++;
         }
 
-        var cone_height = height + cosAlpha * radiusTop - cosAlpha * radiusBottom;
-        var slope = sinAlpha * (radiusBottom - radiusTop) / cone_height;
-        for (y = 1; y <= heightSegments; y++) {
+        // now save vertices of the row in our index array
+        indexArray.push(indexRow);
 
-            var indexRow = [];
+    }
 
-            v += cone_length / heightSegments;
+    var cone_height = height + cosAlpha * radiusTop - cosAlpha * radiusBottom;
+    var slope = sinAlpha * (radiusBottom - radiusTop) / cone_height;
+    for (y = 1; y <= heightSegments; y++) {
 
-            // calculate the radius of the current row
-            var _radius = sinAlpha * (y * (radiusBottom - radiusTop) / heightSegments + radiusTop);
+        var indexRow = [];
 
-            for (x = 0; x <= radialSegments; x ++) {
+        v += cone_length / heightSegments;
 
-                var u = x / radialSegments;
+        // calculate the radius of the current row
+        var _radius = sinAlpha * (y * (radiusBottom - radiusTop) / heightSegments + radiusTop);
 
-                var theta = u * thetaLength + thetaStart;
+        for (x = 0; x <= radialSegments; x ++) {
 
-                var sinTheta = Math.sin(theta);
-                var cosTheta = Math.cos(theta);
+            var u = x / radialSegments;
 
-                // vertex
-                vertex.x = _radius * sinTheta;
-                vertex.y = halfHeight + cosAlpha * radiusTop - y * cone_height / heightSegments;
-                vertex.z = _radius * cosTheta;
-                vertices.push(vertex.x, vertex.y, vertex.z);
+            var theta = u * thetaLength + thetaStart;
 
-                // normal
-                normal.set(sinTheta, slope, cosTheta).normalize();
-                normals.push(normal.x, normal.y, normal.z);
+            var sinTheta = Math.sin(theta);
+            var cosTheta = Math.cos(theta);
 
-                // uv
-                uvs.push(u, 1 - v / vl);
+            // vertex
+            vertex.x = _radius * sinTheta;
+            vertex.y = halfHeight + cosAlpha * radiusTop - y * cone_height / heightSegments;
+            vertex.z = _radius * cosTheta;
+            vertices.push(vertex.x, vertex.y, vertex.z);
 
-                // save index of vertex in respective row
-                indexRow.push(index);
+            // normal
+            normal.set(sinTheta, slope, cosTheta).normalize();
+            normals.push(normal.x, normal.y, normal.z);
 
-                // increase index
-                index ++;
+            // uv
+            uvs.push(u, 1 - v / vl);
 
-            }
+            // save index of vertex in respective row
+            indexRow.push(index);
 
-            // now save vertices of the row in our index array
-            indexArray.push(indexRow);
-
+            // increase index
+            index ++;
         }
 
-        for (y = 1; y <= capsBottomSegments; y++) {
+        // now save vertices of the row in our index array
+        indexArray.push(indexRow);
+    }
 
-            var indexRow = [];
+    for (y = 1; y <= capsBottomSegments; y++) {
 
-            var a = (Math.PI / 2 - alpha) - (Math.PI - alpha) * (y / capsBottomSegments);
+        var indexRow = [];
 
-            v += radiusBottom * alpha / capsBottomSegments;
+        var a = (Math.PI / 2 - alpha) - (Math.PI - alpha) * (y / capsBottomSegments);
 
-            var cosA = Math.cos(a);
-            var sinA = Math.sin(a);
+        v += radiusBottom * alpha / capsBottomSegments;
 
-            // calculate the radius of the current row
-            var _radius = cosA * radiusBottom;
+        var cosA = Math.cos(a);
+        var sinA = Math.sin(a);
 
-            for (x = 0; x <= radialSegments; x ++) {
+        // calculate the radius of the current row
+        var _radius = cosA * radiusBottom;
 
-                var u = x / radialSegments;
+        for (x = 0; x <= radialSegments; x ++) {
 
-                var theta = u * thetaLength + thetaStart;
+            var u = x / radialSegments;
 
-                var sinTheta = Math.sin(theta);
-                var cosTheta = Math.cos(theta);
+            var theta = u * thetaLength + thetaStart;
 
-                // vertex
-                vertex.x = _radius * sinTheta;
-                vertex.y = -halfHeight + sinA * radiusBottom;
-                vertex.z = _radius * cosTheta;
-                vertices.push(vertex.x, vertex.y, vertex.z);
+            var sinTheta = Math.sin(theta);
+            var cosTheta = Math.cos(theta);
 
-                // normal
-                normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
-                normals.push(normal.x, normal.y, normal.z);
+            // vertex
+            vertex.x = _radius * sinTheta;
+            vertex.y = -halfHeight + sinA * radiusBottom;
+            vertex.z = _radius * cosTheta;
+            vertices.push(vertex.x, vertex.y, vertex.z);
 
-                // uv
-                uvs.push(u, 1 - v / vl);
+            // normal
+            normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
+            normals.push(normal.x, normal.y, normal.z);
 
-                // save index of vertex in respective row
-                indexRow.push(index);
-                // increase index
-                index ++;
-            }
-            // now save vertices of the row in our index array
-            indexArray.push(indexRow);
+            // uv
+            uvs.push(u, 1 - v / vl);
+
+            // save index of vertex in respective row
+            indexRow.push(index);
+            // increase index
+            index ++;
         }
-        // generate indices
-        for (x = 0; x < radialSegments; x ++) {
-            for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y ++) {
-                // we use the index array to access the correct indices
-                var i1 = indexArray[ y ][ x ];
-                var i2 = indexArray[ y + 1 ][ x ];
-                var i3 = indexArray[ y + 1 ][ x + 1 ];
-                var i4 = indexArray[ y ][ x + 1 ];
-                // face one
-                indices.push(i1);
-                indices.push(i2);
-                indices.push(i4);
-                // face two
-                indices.push(i2);
-                indices.push(i3);
-                indices.push(i4);
-            }
+        // now save vertices of the row in our index array
+        indexArray.push(indexRow);
+    }
+    
+    // generate indices
+    for (x = 0; x < radialSegments; x ++) {
+        for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y ++) {
+            // we use the index array to access the correct indices
+            var i1 = indexArray[ y ][ x ];
+            var i2 = indexArray[ y + 1 ][ x ];
+            var i3 = indexArray[ y + 1 ][ x + 1 ];
+            var i4 = indexArray[ y ][ x + 1 ];
+            // face one
+            indices.push(i1);
+            indices.push(i2);
+            indices.push(i4);
+            // face two
+            indices.push(i2);
+            indices.push(i3);
+            indices.push(i4);
         }
-        indices = indices.reverse();
+    }
+    indices = indices.reverse();
 
-       let vDat = new VertexData();
-       vDat.positions = vertices;
-       vDat.normals = normals;
-       vDat.uvs = uvs;
-       vDat.indices = indices;
+    let vDat = new VertexData();
+    vDat.positions = vertices;
+    vDat.normals = normals;
+    vDat.uvs = uvs;
+    vDat.indices = indices;
 
-       return vDat;
+    return vDat;
 };
 
 /**
@@ -284,6 +280,7 @@ export interface ICreateCapsuleOptions{
 Mesh.CreateCapsule = (name: string, options: ICreateCapsuleOptions, scene): Mesh => {
     return CapsuleBuilder.CreateCapsule(name, options, scene);
 };
+
 /**
  * Class containing static functions to help procedurally build meshes
  */
