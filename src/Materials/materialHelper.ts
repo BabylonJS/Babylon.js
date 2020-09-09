@@ -1,8 +1,6 @@
 import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -12,13 +10,15 @@ import { PrePassRenderer } from "../Rendering/prePassRenderer";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
-import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
-import { MaterialDefines } from "./materialDefines";
 import { Color3 } from '../Maths/math.color';
-import { EffectFallbacks } from './effectFallbacks';
 import { ThinMaterialHelper } from './thinMaterialHelper';
 
+declare type Engine = import("../Engines/engine").Engine;
+declare type Camera = import("../Cameras/camera").Camera;
+declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
+declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
+declare type MaterialDefines = import("./materialDefines").MaterialDefines;
+declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
  *
