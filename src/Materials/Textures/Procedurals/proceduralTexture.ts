@@ -19,6 +19,7 @@ import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Meshes/dataBuffer';
 import { _TypeStore } from '../../../Misc/typeStore';
+import { NodeMaterial } from '../../Node/nodeMaterial';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -47,6 +48,16 @@ export class ProceduralTexture extends Texture {
      * Event raised when the texture is generated
      */
     public onGeneratedObservable = new Observable<ProceduralTexture>();
+
+    /**
+     * Event raised before the texture is generated
+     */
+    public onBeforeGenerationObservable = new Observable<ProceduralTexture>();
+
+    /**
+     * Gets or sets the node material used to create this texture (null if the texture was manually created)
+     */
+    public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
     /** @hidden */
     @serialize()
@@ -152,6 +163,11 @@ export class ProceduralTexture extends Texture {
         return this._effect;
     }
 
+    /** @hidden */
+    public _setEffect(effect: Effect) {
+        this._effect = effect;
+    }
+
     /**
      * Gets texture content (Use this function wisely as reading from a texture can be slow)
      * @returns an ArrayBufferView (Uint8Array or Float32Array)
@@ -220,6 +236,10 @@ export class ProceduralTexture extends Texture {
     public isReady(): boolean {
         var engine = this._fullEngine;
         var shaders;
+
+        if (this.nodeMaterialSource) {
+            return this._effect.isReady();
+        }
 
         if (!this._fragment) {
             return false;
@@ -489,52 +509,55 @@ export class ProceduralTexture extends Texture {
 
         // Render
         engine.enableEffect(this._effect);
+        this.onBeforeGenerationObservable.notifyObservers(this);
         engine.setState(false);
 
-        // Texture
-        for (var name in this._textures) {
-            this._effect.setTexture(name, this._textures[name]);
-        }
+        if (!this.nodeMaterialSource) {
+            // Texture
+            for (var name in this._textures) {
+                this._effect.setTexture(name, this._textures[name]);
+            }
 
-        // Float
-        for (name in this._ints) {
-            this._effect.setInt(name, this._ints[name]);
-        }
+            // Float
+            for (name in this._ints) {
+                this._effect.setInt(name, this._ints[name]);
+            }
 
-        // Float
-        for (name in this._floats) {
-            this._effect.setFloat(name, this._floats[name]);
-        }
+            // Float
+            for (name in this._floats) {
+                this._effect.setFloat(name, this._floats[name]);
+            }
 
-        // Floats
-        for (name in this._floatsArrays) {
-            this._effect.setArray(name, this._floatsArrays[name]);
-        }
+            // Floats
+            for (name in this._floatsArrays) {
+                this._effect.setArray(name, this._floatsArrays[name]);
+            }
 
-        // Color3
-        for (name in this._colors3) {
-            this._effect.setColor3(name, this._colors3[name]);
-        }
+            // Color3
+            for (name in this._colors3) {
+                this._effect.setColor3(name, this._colors3[name]);
+            }
 
-        // Color4
-        for (name in this._colors4) {
-            var color = this._colors4[name];
-            this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
-        }
+            // Color4
+            for (name in this._colors4) {
+                var color = this._colors4[name];
+                this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
+            }
 
-        // Vector2
-        for (name in this._vectors2) {
-            this._effect.setVector2(name, this._vectors2[name]);
-        }
+            // Vector2
+            for (name in this._vectors2) {
+                this._effect.setVector2(name, this._vectors2[name]);
+            }
 
-        // Vector3
-        for (name in this._vectors3) {
-            this._effect.setVector3(name, this._vectors3[name]);
-        }
+            // Vector3
+            for (name in this._vectors3) {
+                this._effect.setVector3(name, this._vectors3[name]);
+            }
 
-        // Matrix
-        for (name in this._matrices) {
-            this._effect.setMatrix(name, this._matrices[name]);
+            // Matrix
+            for (name in this._matrices) {
+                this._effect.setMatrix(name, this._matrices[name]);
+            }
         }
 
         if (!this._texture) {
@@ -631,6 +654,9 @@ export class ProceduralTexture extends Texture {
         if (this._indexBuffer && this._fullEngine._releaseBuffer(this._indexBuffer)) {
             this._indexBuffer = null;
         }
+
+        this.onGeneratedObservable.clear();
+        this.onBeforeGenerationObservable.clear();
 
         super.dispose();
     }
