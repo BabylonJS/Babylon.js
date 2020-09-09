@@ -351,11 +351,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public enablePointerMoveEvents = false;
 
+    private _renderingGroupId = 0;
+
     /**
      * Specifies the rendering group id for this mesh (0 by default)
      * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
-    public renderingGroupId = 0;
+    public get renderingGroupId() {
+        return this._renderingGroupId;
+    }
+
+    public set renderingGroupId(value: number) {
+        this._renderingGroupId = value;
+    }
     private _material: Nullable<Material> = null;
 
     /** Gets or sets current material */
@@ -549,6 +557,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._meshCollisionData._collisionMask = !isNaN(mask) ? mask : -1;
     }
 
+    /**
+     * Gets or sets a collision response flag (default is true).
+     * when collisionResponse is false, events are still triggered but colliding entity has no response
+     * This helps creating trigger volume when user wants collision feedback events but not position/velocity
+     * to respond to the collision.
+     */
+    public get collisionResponse(): boolean {
+        return this._meshCollisionData._collisionResponse;
+    }
+
+    public set collisionResponse(response: boolean) {
+        this._meshCollisionData._collisionResponse = response;
+    }
     /**
      * Gets or sets the current collision group mask (-1 by default).
      * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0

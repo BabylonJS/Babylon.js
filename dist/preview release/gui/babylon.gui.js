@@ -1061,6 +1061,9 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         if (this._canvasPointerOutObserver) {
             scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
         }
+        if (this._canvasBlurObserver) {
+            scene.getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+        }
         if (this._layerToDispose) {
             this._layerToDispose.texture = null;
             this._layerToDispose.dispose();
@@ -1315,6 +1318,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
         });
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     };
     /**
     * Register the clipboard Events onto the canvas
@@ -1395,6 +1399,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         });
         mesh.enablePointerMoveEvents = supportPointerMove;
         this._attachToOnPointerOut(scene);
+        this._attachToOnBlur(scene);
     };
     /**
     * Move the focus to a specific control
@@ -1432,6 +1437,16 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 _this._lastControlDown[pointerEvent.pointerId]._forcePointerUp();
                 delete _this._lastControlDown[pointerEvent.pointerId];
             }
+        });
+    };
+    AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
+        var _this = this;
+        this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function (pointerEvent) {
+            Object.entries(_this._lastControlDown).forEach(function (_a) {
+                var key = _a[0], value = _a[1];
+                value._onCanvasBlur();
+            });
+            _this._lastControlDown = {};
         });
     };
     // Statics
@@ -2292,6 +2307,10 @@ var ColorPicker = /** @class */ (function (_super) {
         this._pointerIsDown = false;
         delete this._host._capturingControl[pointerId];
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+    };
+    ColorPicker.prototype._onCanvasBlur = function () {
+        this._forcePointerUp();
+        _super.prototype._onCanvasBlur.call(this);
     };
     /**
      * This function expands the color picker by creating a color picker dialog with manual
@@ -3621,12 +3640,14 @@ var Container = /** @class */ (function (_super) {
                     }
                 }
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
@@ -5091,7 +5112,7 @@ var Control = /** @class */ (function () {
         }
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             this.host._numLayoutCalls++;
-            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+            this._currentMeasure.addAndTransformToRef(this._transformMatrix, -this.paddingLeftInPixels | 0, -this.paddingTopInPixels | 0, this.paddingRightInPixels | 0, this.paddingBottomInPixels | 0, this._prevCurrentMeasureTransformedIntoGlobalSpace);
             context.save();
             this._applyStates(context);
             var rebuildCount = 0;
@@ -5467,6 +5488,8 @@ var Control = /** @class */ (function () {
         }
     };
     /** @hidden */
+    Control.prototype._onCanvasBlur = function () { };
+    /** @hidden */
     Control.prototype._processObservables = function (type, x, y, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled) {
             return false;
@@ -5609,6 +5632,7 @@ var Control = /** @class */ (function () {
         block.style.height = "0px";
         block.style.verticalAlign = "bottom";
         var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
         div.appendChild(text);
         div.appendChild(block);
         document.body.appendChild(div);
@@ -6842,6 +6866,7 @@ var Image = /** @class */ (function (_super) {
         configurable: true
     });
     Image.prototype._onImageLoaded = function () {
+        this._imageDataCache.data = null;
         this._imageWidth = this._domImage.width;
         this._imageHeight = this._domImage.height;
         this._loaded = true;
@@ -7085,6 +7110,7 @@ var Image = /** @class */ (function (_super) {
             var canvas = this._workingCanvas;
             var context_1 = canvas.getContext("2d");
             this._imageDataCache.data = imageData = context_1.getImageData(0, 0, width, height).data;
+            this._imageDataCache.key = key;
         }
         x = (x - this._currentMeasure.left) | 0;
         y = (y - this._currentMeasure.top) | 0;
@@ -11286,6 +11312,10 @@ var BaseSlider = /** @class */ (function (_super) {
         delete this._host._capturingControl[pointerId];
         _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
     };
+    BaseSlider.prototype._onCanvasBlur = function () {
+        this._forcePointerUp();
+        _super.prototype._onCanvasBlur.call(this);
+    };
     return BaseSlider;
 }(_control__WEBPACK_IMPORTED_MODULE_2__["Control"]));
 
@@ -11918,6 +11948,7 @@ var Slider = /** @class */ (function (_super) {
         _this.name = name;
         _this._background = "black";
         _this._borderColor = "white";
+        _this._thumbColor = "";
         _this._isThumbCircle = false;
         _this._displayValueBar = true;
         return _this;
@@ -11962,6 +11993,21 @@ var Slider = /** @class */ (function (_super) {
                 return;
             }
             this._background = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Slider.prototype, "thumbColor", {
+        /** Gets or sets thumb's color */
+        get: function () {
+            return this._thumbColor;
+        },
+        set: function (value) {
+            if (this._thumbColor === value) {
+                return;
+            }
+            this._thumbColor = value;
             this._markAsDirty();
         },
         enumerable: false,
@@ -12088,6 +12134,7 @@ var Slider = /** @class */ (function (_super) {
             }
         }
         // Thumb
+        context.fillStyle = this._thumbColor || this.color;
         if (this.displayThumb) {
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
@@ -12311,6 +12358,8 @@ var StackPanel = /** @class */ (function (_super) {
                 }
             }
         }
+        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
         this._doNotTrackManualChanges = true;
         // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
         // User can now define their own height and width for stack panel.
@@ -12475,13 +12524,15 @@ var TextBlock = /** @class */ (function (_super) {
         _this._lineSpacing = new _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"](0);
         _this._outlineWidth = 0;
         _this._outlineColor = "white";
+        _this._underline = false;
+        _this._lineThrough = false;
         /**
-        * An event triggered after the text is changed
-        */
+         * An event triggered after the text is changed
+         */
         _this.onTextChangedObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         /**
-        * An event triggered after the text was broken up into lines
-        */
+         * An event triggered after the text was broken up into lines
+         */
         _this.onLinesReadyObservable = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Observable"]();
         _this.text = text;
         return _this;
@@ -12639,6 +12690,46 @@ var TextBlock = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(TextBlock.prototype, "underline", {
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        get: function () {
+            return this._underline;
+        },
+        /**
+         * Gets or sets a boolean indicating that text must have underline
+         */
+        set: function (value) {
+            if (this._underline === value) {
+                return;
+            }
+            this._underline = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(TextBlock.prototype, "lineThrough", {
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        get: function () {
+            return this._lineThrough;
+        },
+        /**
+         * Gets or sets an boolean indicating that text must be crossed out
+         */
+        set: function (value) {
+            if (this._lineThrough === value) {
+                return;
+            }
+            this._lineThrough = value;
+            this._markAsDirty();
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(TextBlock.prototype, "outlineColor", {
         /**
          * Gets or sets outlineColor of the text to display
@@ -12679,20 +12770,20 @@ var TextBlock = /** @class */ (function (_super) {
         }
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip) {
-                var newWidth = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth;
+                var newWidth = (this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth) | 0;
                 if (newWidth !== this._width.internalValue) {
                     this._width.updateInPlace(newWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__["ValueAndUnit"].UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
             }
-            var newHeight = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length;
+            var newHeight = (this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length) | 0;
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 var lineSpacing = 0;
                 if (this._lineSpacing.isPixel) {
                     lineSpacing = this._lineSpacing.getValue(this._host);
                 }
                 else {
-                    lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
                 newHeight += (this._lines.length - 1) * lineSpacing;
             }
@@ -12726,6 +12817,22 @@ var TextBlock = /** @class */ (function (_super) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
         context.fillText(text, this._currentMeasure.left + x, y);
+        if (this._underline) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y + 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
+            context.stroke();
+            context.closePath();
+        }
+        if (this._lineThrough) {
+            context.beginPath();
+            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
+            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
+            context.stroke();
+            context.closePath();
+        }
     };
     /** @hidden */
     TextBlock.prototype._draw = function (context, invalidatedRectangle) {
@@ -12766,25 +12873,38 @@ var TextBlock = /** @class */ (function (_super) {
         return lines;
     };
     TextBlock.prototype._parseLine = function (line, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         return { text: line, width: context.measureText(line).width };
     };
     TextBlock.prototype._parseLineEllipsis = function (line, width, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         var lineWidth = context.measureText(line).width;
         if (lineWidth > width) {
-            line += '…';
+            line += "…";
         }
-        while (line.length > 2 && lineWidth > width) {
-            line = line.slice(0, -2) + '…';
-            lineWidth = context.measureText(line).width;
+        // unicode support. split('') does not work with unicode!
+        // make sure Array.from is available
+        var characters = Array.from && Array.from(line);
+        if (!characters) {
+            // no array.from, use the old method
+            while (line.length > 2 && lineWidth > width) {
+                line = line.slice(0, -2) + "…";
+                lineWidth = context.measureText(line).width;
+            }
+        }
+        else {
+            while (characters.length && lineWidth > width) {
+                characters.pop();
+                line = characters.join("") + "...";
+                lineWidth = context.measureText(line).width;
+            }
         }
         return { text: line, width: lineWidth };
     };
     TextBlock.prototype._parseLineWordWrap = function (line, width, context) {
-        if (line === void 0) { line = ''; }
+        if (line === void 0) { line = ""; }
         var lines = [];
-        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(' ');
+        var words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
         var lineWidth = 0;
         for (var n = 0; n < words.length; n++) {
             var testLine = n > 0 ? line + " " + words[n] : words[0];
@@ -12825,7 +12945,7 @@ var TextBlock = /** @class */ (function (_super) {
                     rootY += this._lineSpacing.getValue(this._host);
                 }
                 else {
-                    rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                    rootY = rootY + this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 }
             }
             this._drawText(line.text, line.width, rootY, context);
@@ -12838,7 +12958,7 @@ var TextBlock = /** @class */ (function (_super) {
      */
     TextBlock.prototype.computeExpectedHeight = function () {
         if (this.text && this.widthInPixels) {
-            var context_1 = document.createElement('canvas').getContext('2d');
+            var context_1 = document.createElement("canvas").getContext("2d");
             if (context_1) {
                 this._applyStates(context_1);
                 if (!this._fontOffset) {
@@ -12852,7 +12972,7 @@ var TextBlock = /** @class */ (function (_super) {
                         lineSpacing = this._lineSpacing.getValue(this._host);
                     }
                     else {
-                        lineSpacing = (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                        lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
                     }
                     newHeight += (lines.length - 1) * lineSpacing;
                 }
@@ -13583,13 +13703,21 @@ var Measure = /** @class */ (function () {
     /**
      * Computes the axis aligned bounding box of the measure after it is modified by a given transform
      * @param transform the matrix to transform the measure before computing the AABB
+     * @param addX number to add to left
+     * @param addY number to add to top
+     * @param addWidth number to add to width
+     * @param addHeight number to add to height
      * @param result the resulting AABB
      */
-    Measure.prototype.transformToRef = function (transform, result) {
-        tmpRect[0].copyFromFloats(this.left, this.top);
-        tmpRect[1].copyFromFloats(this.left + this.width, this.top);
-        tmpRect[2].copyFromFloats(this.left + this.width, this.top + this.height);
-        tmpRect[3].copyFromFloats(this.left, this.top + this.height);
+    Measure.prototype.addAndTransformToRef = function (transform, addX, addY, addWidth, addHeight, result) {
+        var left = this.left + addX;
+        var top = this.top + addY;
+        var width = this.width + addWidth;
+        var height = this.height + addHeight;
+        tmpRect[0].copyFromFloats(left, top);
+        tmpRect[1].copyFromFloats(left + width, top);
+        tmpRect[2].copyFromFloats(left + width, top + height);
+        tmpRect[3].copyFromFloats(left, top + height);
         tmpV1.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE);
         tmpV2.copyFromFloats(0, 0);
         for (var i = 0; i < 4; i++) {
@@ -13605,10 +13733,18 @@ var Measure = /** @class */ (function () {
         result.height = tmpV2.y - tmpV1.y;
     };
     /**
-     * Check equality between this measure and another one
-     * @param other defines the other measures
-     * @returns true if both measures are equals
+     * Computes the axis aligned bounding box of the measure after it is modified by a given transform
+     * @param transform the matrix to transform the measure before computing the AABB
+     * @param result the resulting AABB
      */
+    Measure.prototype.transformToRef = function (transform, result) {
+        this.addAndTransformToRef(transform, 0, 0, 0, 0, result);
+    };
+    /**
+ * Check equality between this measure and another one
+ * @param other defines the other measures
+ * @returns true if both measures are equals
+ */
     Measure.prototype.isEqualsTo = function (other) {
         if (this.left !== other.left) {
             return false;
@@ -16685,10 +16821,6 @@ var FluentMaterial = /** @class */ (function (_super) {
          */
         _this.innerGlowColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](1.0, 1.0, 1.0);
         /**
-         * Gets or sets alpha value (default is 1.0)
-         */
-        _this.alpha = 1.0;
-        /**
          * Gets or sets the albedo color (Default is Color3(0.3, 0.35, 0.4))
          */
         _this.albedoColor = new babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["Color3"](0.3, 0.35, 0.4);
@@ -16882,9 +17014,6 @@ var FluentMaterial = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "innerGlowColor", void 0);
-    Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
-        Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serialize"])()
-    ], FluentMaterial.prototype, "alpha", void 0);
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"])([
         Object(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__["serializeAsColor3"])()
     ], FluentMaterial.prototype, "albedoColor", void 0);

@@ -457,6 +457,8 @@ export class AssetContainer extends AbstractScene {
             }
         }
 
+        this.environmentTexture = this.scene.environmentTexture;
+
         this.removeAllFromScene();
     }
 

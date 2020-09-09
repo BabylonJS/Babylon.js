@@ -203,12 +203,16 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 var pointerId = (<PointerEvent>pointerInfo.event).pointerId;
 
                 // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
-                if (this.currentDraggingPointerID === PointerDragBehavior._AnyMouseID && pointerId !== PointerDragBehavior._AnyMouseID && (<PointerEvent>pointerInfo.event).pointerType == "mouse") {
-                    if (this._lastPointerRay[this.currentDraggingPointerID]) {
-                        this._lastPointerRay[pointerId] = this._lastPointerRay[this.currentDraggingPointerID];
-                        delete this._lastPointerRay[this.currentDraggingPointerID];
+                if (this.currentDraggingPointerID === PointerDragBehavior._AnyMouseID && pointerId !== PointerDragBehavior._AnyMouseID) {
+                    const evt = <PointerEvent>pointerInfo.event;
+                    const isMouseEvent = evt.pointerType === "mouse" || (!this._scene.getEngine().hostInformation.isMobile && evt instanceof MouseEvent);
+                    if (isMouseEvent) {
+                        if (this._lastPointerRay[this.currentDraggingPointerID]) {
+                            this._lastPointerRay[pointerId] = this._lastPointerRay[this.currentDraggingPointerID];
+                            delete this._lastPointerRay[this.currentDraggingPointerID];
+                        }
+                        this.currentDraggingPointerID = pointerId;
                     }
-                    this.currentDraggingPointerID = pointerId;
                 }
 
                 // Keep track of last pointer ray, this is used simulating the start of a drag in startDrag()
@@ -246,8 +250,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public releaseDrag() {
         if (this.dragging) {
-            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
             this.dragging = false;
+            this.onDragEndObservable.notifyObservers({ dragPlanePoint: this.lastDragPosition, pointerId: this.currentDraggingPointerID });
         }
 
         this.currentDraggingPointerID = -1;
@@ -286,7 +290,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         }
     }
 
-    private _startDrag(pointerId: number, fromRay?: Ray, startPickedPoint?: Vector3) {
+    protected _startDrag(pointerId: number, fromRay?: Ray, startPickedPoint?: Vector3) {
         if (!this._scene.activeCamera || this.dragging || !this.attachedNode) {
             return;
         }
@@ -326,7 +330,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     }
 
     private _dragDelta = new Vector3();
-    private _moveDrag(ray: Ray) {
+    protected _moveDrag(ray: Ray) {
         this._moving = true;
         var pickedPoint = this._pickWithRayOnDragPlane(ray);
 

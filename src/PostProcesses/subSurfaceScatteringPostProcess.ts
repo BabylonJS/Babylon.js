@@ -17,10 +17,13 @@ import "../Shaders/postprocess.vertex";
  * Sub surface scattering post process
  */
 export class SubSurfaceScatteringPostProcess extends PostProcess {
-    /** @hidden */
-    public texelWidth: number;
-    /** @hidden */
-    public texelHeight: number;
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "SubSurfaceScatteringPostProcess" string
+     */
+    public getClassName(): string {
+        return "SubSurfaceScatteringPostProcess";
+    }
 
     constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(name, "subSurfaceScattering", ["texelSize", "viewportSize", "metersPerUnit"], ["diffusionS", "diffusionD", "filterRadii", "irradianceSampler", "depthSampler", "albedoSampler"], options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "postprocess", undefined, true);
@@ -46,6 +49,5 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             effect.setArray("diffusionD", scene.subSurfaceConfiguration.ssDiffusionD);
             effect.setArray("filterRadii", scene.subSurfaceConfiguration.ssFilterRadii);
         });
-
     }
 }

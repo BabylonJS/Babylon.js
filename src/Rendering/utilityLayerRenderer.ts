@@ -174,7 +174,7 @@ export class UtilityLayerRenderer implements IDisposable {
                 // allow every non pointer down event to flow to the utility layer
                 if (this.onlyCheckPointerDownEvents && prePointerInfo.type != PointerEventTypes.POINTERDOWN) {
                     if (!prePointerInfo.skipOnPointerObservable) {
-                        this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick));
+                        this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick), prePointerInfo.type);
                     }
                     if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
                         this._pointerCaptures[pointerEvent.pointerId] = false;
@@ -187,7 +187,7 @@ export class UtilityLayerRenderer implements IDisposable {
                     if (utilityScenePick && utilityScenePick.hit) {
 
                         if (!prePointerInfo.skipOnPointerObservable) {
-                            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick));
+                            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick), prePointerInfo.type);
                         }
                         prePointerInfo.skipOnPointerObservable = true;
                     }
@@ -264,7 +264,7 @@ export class UtilityLayerRenderer implements IDisposable {
 
     private _notifyObservers(prePointerInfo: PointerInfoPre, pickInfo: PickingInfo, pointerEvent: PointerEvent) {
         if (!prePointerInfo.skipOnPointerObservable) {
-            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo));
+            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo), prePointerInfo.type);
             this._lastPointerEvents[pointerEvent.pointerId] = true;
         }
     }

@@ -1400,7 +1400,12 @@ export class Control {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             this.host._numLayoutCalls++;
 
-            this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
+            this._currentMeasure.addAndTransformToRef(this._transformMatrix,
+                -this.paddingLeftInPixels | 0,
+                -this.paddingTopInPixels | 0,
+                this.paddingRightInPixels | 0,
+                this.paddingBottomInPixels | 0,
+                this._prevCurrentMeasureTransformedIntoGlobalSpace);
 
             context.save();
 
@@ -1854,6 +1859,9 @@ export class Control {
     }
 
     /** @hidden */
+    public _onCanvasBlur(): void {}
+
+    /** @hidden */
     public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
@@ -2008,6 +2016,7 @@ export class Control {
         block.style.verticalAlign = "bottom";
 
         var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
         div.appendChild(text);
         div.appendChild(block);
 

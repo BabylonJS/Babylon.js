@@ -815,11 +815,15 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
+        let linksToNotifyForDispose: Nullable<NodeLink[]> = null;
+
         if (pointB.isConnected) {
             let links = nodeB.getLinksForConnectionPoint(pointB);
 
+            linksToNotifyForDispose = links.slice();
+
             links.forEach(link => {
-                link.dispose();
+                link.dispose(false);
             });
         }
 
@@ -827,8 +831,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             pointB.ownerBlock.inputs.forEach(i => {
                 let links = nodeB.getLinksForConnectionPoint(i);
 
+                if (!linksToNotifyForDispose) {
+                    linksToNotifyForDispose = links.slice();
+                } else {
+                    linksToNotifyForDispose.push(...links.slice());
+                }
+
                 links.forEach(link => {
-                    link.dispose();
+                    link.dispose(false);
                 });
             })
         }
@@ -875,6 +885,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         } else {
             nodeB.refresh();
         }
+
+        linksToNotifyForDispose?.forEach((link) => {
+            link.onDisposedObservable.notifyObservers(link);
+            link.onDisposedObservable.clear();
+        });
 
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
     }

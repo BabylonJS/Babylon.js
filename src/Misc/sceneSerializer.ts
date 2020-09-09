@@ -296,6 +296,12 @@ export class SceneSerializer {
             serializationObject.particleSystems.push(scene.particleSystems[index].serialize(false));
         }
 
+        // Post processes
+        serializationObject.postProcesses = [];
+        for (index = 0; index < scene.postProcesses.length; index++) {
+            serializationObject.postProcesses.push(scene.postProcesses[index].serialize());
+        }
+
         // Action Manager
         if (scene.actionManager) {
             serializationObject.actions = scene.actionManager.serialize("scene");
