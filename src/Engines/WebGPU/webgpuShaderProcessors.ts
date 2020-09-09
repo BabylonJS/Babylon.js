@@ -233,7 +233,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         if (!isFragment) {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
-            code += "gl_Position.y *= -1.; }";
+            code += "gl_Position.y *= -1.;\ngl_Position.z = (gl_Position.z + gl_Position.w) / 2.0; }";
         }
 
         let sci = new ShaderCodeInliner(code);
