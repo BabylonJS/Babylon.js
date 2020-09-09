@@ -122,6 +122,7 @@
 - Generator type used in `TrailMesh` constructor is now `TransformNode` instead of `AbstrachMesh` ([Popov72](https://github.com/Popov72))
 - Added the `useVertexAlpha` options to `MeshBuilder.CreateDashedLines` ([Popov72](https://github.com/Popov72))
 - Fixed a bug in `DracoCompression` when loading color attributes with VEC3. ([bghgary](https://github.com/bghgary))
+- Added `MeshBuilder.CreateCapsule` and `Mesh.CreateCapsule` for creation of. ([Pryme8](https://github.com/Pryme8))
 
 ### Physics
 
