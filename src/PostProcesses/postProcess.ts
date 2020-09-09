@@ -337,7 +337,7 @@ export class PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-     * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+     * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
