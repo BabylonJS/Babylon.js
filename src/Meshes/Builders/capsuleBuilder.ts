@@ -273,6 +273,7 @@ export interface ICreateCapsuleOptions{
 }
 
 /**
+ * Creates a capsule or a pill mesh
  * @param name defines the name of the mesh.
  * @param options the constructors options used to shape the mesh.
  * @param scene defines the scene the mesh is scoped to.
@@ -290,6 +291,8 @@ export class CapsuleBuilder {
      * Creates a capsule or a pill mesh
      * @param name defines the name of the mesh
      * @param options The constructors options.
+     * @param scene The scene the mesh is scoped to.
+     * @returns Capsule Mesh
      */
     public static CreateCapsule(name: string, options: ICreateCapsuleOptions = {
             orientation : Vector3.Up(),

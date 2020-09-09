@@ -1047,7 +1047,6 @@ export class VertexData {
     /**
      * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
      * @param options an object used to set the following optional parameters for the capsule, required but can be empty
-     * type provided types are:
      * @returns the VertexData of the Capsule
      */
     public static CreateCapsule(options: ICreateCapsuleOptions = {
