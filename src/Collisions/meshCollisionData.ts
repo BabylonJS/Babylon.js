@@ -18,4 +18,5 @@ export class _MeshCollisionData {
     public _diffPositionForCollisions = new Vector3(0, 0, 0);
     public _onCollideObserver: Nullable<Observer<AbstractMesh>>;
     public _onCollisionPositionChangeObserver: Nullable<Observer<Vector3>>;
+    public _collisionResponse = true;
 }

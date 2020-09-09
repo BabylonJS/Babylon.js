@@ -12,8 +12,6 @@ import { Observable } from '../../../Misc/observable';
  * Class used to store a color step for the GradientBlock
  */
 export class GradientBlockColorStep {
-    private _parent: GradientBlock;
-
     private _step: number;
     /**
      * Gets value indicating which step this color is associated with (between 0 and 1)
@@ -27,7 +25,6 @@ export class GradientBlockColorStep {
     */
     public set step(val: number) {
         this._step = val;
-        this._parent.onValueChangedObservable?.notifyObservers(this._parent);
     }
 
     private _color: Color3;
@@ -44,17 +41,14 @@ export class GradientBlockColorStep {
      */
     public set color(val: Color3) {
         this._color = val;
-        this._parent.onValueChangedObservable?.notifyObservers(this._parent);
     }
 
     /**
      * Creates a new GradientBlockColorStep
-     * @param parent defines the parent gradient for this block
      * @param step defines a value indicating which step this color is associated with (between 0 and 1)
      * @param color defines the color associated with this step
      */
-    public constructor(parent: GradientBlock, step: number, color: Color3) {
-        this._parent = parent;
+    public constructor(step: number, color: Color3) {
         this.step = step;
         this.color = color;
     }
@@ -69,8 +63,8 @@ export class GradientBlock extends NodeMaterialBlock {
      * Gets or sets the list of color steps
      */
     public colorSteps: GradientBlockColorStep[] = [
-        new GradientBlockColorStep(this, 0, Color3.Black()),
-        new GradientBlockColorStep(this, 1.0, Color3.White())
+        new GradientBlockColorStep(0, Color3.Black()),
+        new GradientBlockColorStep(1.0, Color3.White())
     ];
 
     /** Gets an observable raised when the value is changed */
@@ -182,7 +176,7 @@ export class GradientBlock extends NodeMaterialBlock {
         this.colorSteps = [];
 
         for (var step of serializationObject.colorSteps) {
-            this.colorSteps.push(new GradientBlockColorStep(this, step.step, new Color3(step.color.r, step.color.g, step.color.b)));
+            this.colorSteps.push(new GradientBlockColorStep(step.step, new Color3(step.color.r, step.color.g, step.color.b)));
         }
     }
 

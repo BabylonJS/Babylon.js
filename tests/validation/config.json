@@ -334,7 +334,8 @@
         },
         {
             "title": "Capsule",
-            "playgroundId": "#JAFIIU#0",
+            "renderCount": 10,
+            "playgroundId": "#JAFIIU#1",
             "referenceImage": "CreateCapsule.png"
         },
         {
