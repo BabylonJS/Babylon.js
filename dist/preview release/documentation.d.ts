@@ -31903,6 +31903,7 @@ declare module BABYLON {
         _diffPositionForCollisions: Vector3;
         _onCollideObserver: Nullable<Observer<AbstractMesh>>;
         _onCollisionPositionChangeObserver: Nullable<Observer<Vector3>>;
+        _collisionResponse: boolean;
     }
 }
 declare module BABYLON {
@@ -32215,6 +32216,14 @@ declare module BABYLON {
          */
         get collisionMask(): number;
         set collisionMask(mask: number);
+        /**
+         * Gets or sets a collision response flag (default is true).
+         * when collisionResponse is false, events are still triggered but colliding entity has no response
+         * This helps creating trigger volume when user wants collision feedback events but not position/velocity
+         * to respond to the collision.
+         */
+        get collisionResponse(): boolean;
+        set collisionResponse(response: boolean);
         /**
          * Gets or sets the current collision group mask (-1 by default).
          * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
@@ -51268,13 +51277,9 @@ declare module BABYLON.Debug {
         get debugMesh(): Nullable<AbstractMesh> | Nullable<LinesMesh>;
         /** Sets the debugMesh */
         set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>);
-        /** Gets the material */
-        get material(): StandardMaterial;
-        /** Sets the material */
-        set material(value: StandardMaterial);
-        /** Gets the material */
+        /** Gets the displayMode */
         get displayMode(): number;
-        /** Sets the material */
+        /** Sets the displayMode */
         set displayMode(value: number);
         /**
          * Creates a new SkeletonViewer
