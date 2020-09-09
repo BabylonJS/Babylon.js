@@ -10,7 +10,6 @@ import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 
-export type PrePassLayout = number[];
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -308,7 +307,11 @@ export class PrePassRenderer {
     }
 
     /**
-     * Adds an effect configuration
+     * Adds an effect configuration to the prepass.
+     * If an effect has already been added, it won't add it twice and will return the configuration
+     * already present.
+     * @param cfg the effect configuration
+     * @return the effect configuration now used by the prepass
      */
     public addEffectConfiguration(cfg: PrePassEffectConfiguration) : PrePassEffectConfiguration {
         // Do not add twice

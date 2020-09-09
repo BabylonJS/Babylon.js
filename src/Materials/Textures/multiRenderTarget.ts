@@ -241,7 +241,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     /**
      * Changes the number of render targets in this MRT
      * Be careful as it will recreate all the data in the new texture.
-     * @param size Defines
+     * @param count new texture count
      */
     public updateCount(count: number) {
         this._multiRenderTargetOptions.textureCount = count;

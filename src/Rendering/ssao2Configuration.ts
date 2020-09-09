@@ -32,7 +32,10 @@ export class SSAO2Configuration implements PrePassEffectConfiguration {
 
     }
 
+    /**
+     * Disposes the configuration
+     */
     public dispose() {
-
+        // pass
     }
 }
