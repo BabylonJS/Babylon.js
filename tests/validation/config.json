@@ -1,6 +1,11 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
-    "tests": [    
+    "tests": [   
+        {
+            "title": "Procedural texture with NME",
+            "playgroundId": "#8S19ZC#1",            
+            "referenceImage": "procedural_nme.png"
+        },   
         {
             "title": "EXT_texture_webp",
             "playgroundId": "#LSAUH2#2",            
