@@ -50,27 +50,21 @@ export class PBRAdditionnalPrePassConfiguration {
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (scene.prePassRenderer && scene.prePassRenderer.enabled) {
-                // TODO : cache for better performance
                 if (scene.prePassRenderer.getIndex(PrePassRenderer.VELOCITY_TEXTURE_TYPE) !== -1) {
                     if (!this.previousWorldMatrices[mesh.uniqueId]) {
                         this.previousWorldMatrices[mesh.uniqueId] = Matrix.Identity();
-                        // TODO move out in own test
+                    }
+
+                    if (!this.previousViewProjection) {
                         this.previousViewProjection = scene.getTransformMatrix();
                     }
+                    
                     uniformBuffer.updateMatrix("previousWorld", this.previousWorldMatrices[mesh.uniqueId]);
                     uniformBuffer.updateMatrix("previousViewProjection", this.previousViewProjection);
-                    
+
                     this.previousWorldMatrices[mesh.uniqueId] = world.clone();
                     this.previousViewProjection = scene.getTransformMatrix().clone();
                 }
-
-                // if (scene.prePassRenderer.getIndex(PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE) !== -1) {
-                //     // Roughness
-                //     if (material instanceof PBRMaterial && material.reflectivityTexture) {
-                //         this._effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
-                //         this._effect.setTexture("reflectivitySampler", material.reflectivityTexture);
-                //     }
-                // }
             }
         }
 
