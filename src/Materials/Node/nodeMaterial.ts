@@ -831,7 +831,7 @@ export class NodeMaterial extends PushMaterial {
         dummyMesh.reservedDataStore = {
             hidden: true
         };
-        
+
         const defines = new NodeMaterialDefines();
         let result = this._processDefines(dummyMesh, defines);
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
@@ -1494,11 +1494,11 @@ export class NodeMaterial extends PushMaterial {
         var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
 
         var vectorMerger = new VectorMergerBlock("VectorMerger");
-        vectorMerger.visibleInInspector = false
-        
+        vectorMerger.visibleInInspector = false;
+
         var cos = new TrigonometryBlock("Cos");
-        cos.operation = TrigonometryBlockOperations.Cos;   
-        
+        cos.operation = TrigonometryBlockOperations.Cos;
+
         position.connectTo(vectorMerger);
         time.output.connectTo(cos.input);
         cos.output.connectTo(vectorMerger.z);
