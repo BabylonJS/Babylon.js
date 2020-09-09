@@ -5,13 +5,15 @@ import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
-import { Scene } from "../scene";
 
 import '../Rendering/geometryBufferRendererSceneComponent';
 import "../Shaders/screenSpaceCurvature.fragment";
 import { EngineStore } from '../Engines/engineStore';
+import { _TypeStore } from '../Misc/typeStore';
+import { serialize, SerializationHelper } from '../Misc/decorators';
 
 declare type Engine = import("../Engines/engine").Engine;
+declare type Scene = import("../scene").Scene;
 
 /**
  * The Screen Space curvature effect can help highlighting ridge and valley of a model.
@@ -20,14 +22,24 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
     /**
      * Defines how much ridge the curvature effect displays.
      */
+    @serialize()
     public ridge: number = 1;
 
     /**
      * Defines how much valley the curvature effect displays.
      */
+    @serialize()
     public valley: number = 1;
 
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "ScreenSpaceCurvaturePostProcess" string
+     */
+    public getClassName(): string {
+        return "ScreenSpaceCurvaturePostProcess";
+    }
 
     /**
      * Creates a new instance ScreenSpaceCurvaturePostProcess
@@ -72,4 +84,17 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
 
         return engine.webGLVersion > 1 || engine.getCaps().drawBuffersExtension;
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+        return SerializationHelper.Parse(() => {
+            return new ScreenSpaceCurvaturePostProcess(
+                parsedPostProcess.name, scene,
+                parsedPostProcess.options, targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.textureType, parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ScreenSpaceCurvaturePostProcess"] = ScreenSpaceCurvaturePostProcess;

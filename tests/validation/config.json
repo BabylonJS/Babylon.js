@@ -367,6 +367,12 @@
             "referenceImage": "advancedShadows.png"
         },
         {
+            "title": "Advanced shadows (right handed)",
+            "renderCount": 20,
+            "playgroundId": "#B48X7G#32",
+            "referenceImage": "advancedShadows2.png"
+        },
+        {
             "title": "point light shadows",
             "playgroundId": "#XDNVAY#1",
             "referenceImage": "pointLightShadows.png"
@@ -601,6 +607,16 @@
             "title": "GLTF Serializer Skinning and Animation (Right Handed)",
             "playgroundId": "#DMZBX1#2",
             "referenceImage": "gltfSerializerSkinningAndAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer Morph Target Animation",
+            "playgroundId": "#84M2SR#23",
+            "referenceImage": "gltfSerializerMorphTargetAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer Morph Target Animation Group",
+            "playgroundId": "#T087A8#27",
+            "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
@@ -874,6 +890,12 @@
             "playgroundId": "#SYQW69#311",
             "referenceImage": "objTestLoader.png",
             "renderCount": 10
+        },
+        {
+            "title": "KTX2 decoder test",
+            "playgroundId": "#EIJH8L#1",
+            "referenceImage": "ktx2decoder.png",
+            "excludeFromAutomaticTesting": true
         }
     ]
 }

@@ -78,7 +78,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
 
         this._nodeIndexLOD = null;
         this._nodeSignalLODs.length = 0;

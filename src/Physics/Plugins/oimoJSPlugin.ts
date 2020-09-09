@@ -12,7 +12,6 @@ declare var OIMO: any;
 
 /** @hidden */
 export class OimoJSPlugin implements IPhysicsEnginePlugin {
-
     public world: any;
     public name: string = "OimoJSPlugin";
     public BJSOIMO: any;
@@ -22,7 +21,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     constructor(private _useDeltaForWorldStep: boolean = true, iterations?: number, oimoInjection = OIMO) {
         this.BJSOIMO = oimoInjection;
         this.world = new this.BJSOIMO.World({
-            iterations: iterations
+            iterations: iterations,
         });
         this.world.clear();
         this._raycastResult = new PhysicsRaycastResult();
@@ -43,8 +42,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     private _tmpImpostorsArray: Array<PhysicsImpostor> = [];
 
     public executeStep(delta: number, impostors: Array<PhysicsImpostor>) {
-
-        impostors.forEach(function(impostor) {
+        impostors.forEach(function (impostor) {
             impostor.beforeStep();
         });
 
@@ -78,7 +76,6 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             collidingImpostor.onCollide({ body: mainImpostor.physicsBody });
             contact = contact.next;
         }
-
     }
 
     public applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3) {
@@ -116,13 +113,15 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 friction: impostor.getParam("friction"),
                 restitution: impostor.getParam("restitution"),
                 //Supporting older versions of Oimo
-                world: this.world
+                world: this.world,
             };
 
             var impostors = [impostor];
             let addToArray = (parent: IPhysicsEnabledObject) => {
-                if (!parent.getChildMeshes) { return; }
-                parent.getChildMeshes().forEach(function(m) {
+                if (!parent.getChildMeshes) {
+                    return;
+                }
+                parent.getChildMeshes().forEach(function (m) {
                     if (m.physicsImpostor) {
                         impostors.push(m.physicsImpostor);
                         //m.physicsImpostor._init();
@@ -135,7 +134,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 return Math.max(value, PhysicsEngine.Epsilon);
             };
 
-            let globalQuaternion: Quaternion = new Quaternion();
+            const globalQuaternion: Quaternion = new Quaternion();
 
             impostors.forEach((i) => {
                 if (!i.object.rotationQuaternion) {
@@ -143,12 +142,12 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 }
                 //get the correct bounding box
                 var oldQuaternion = i.object.rotationQuaternion;
-                globalQuaternion = oldQuaternion.clone();
+                globalQuaternion.copyFrom(oldQuaternion);
 
                 i.object.rotationQuaternion.set(0, 0, 0, 1);
                 i.object.computeWorldMatrix(true);
 
-                var rot = oldQuaternion.toEulerAngles();
+                var rot = globalQuaternion.toEulerAngles();
                 var extendSize = i.getObjectExtendSize();
 
                 const radToDeg = 57.295779513082320876;
@@ -174,9 +173,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
 
                     // bodyConfig.pos.push(0, 0, 0);
 
-                    bodyConfig.rotShape.push(rot.x * radToDeg);
-                    bodyConfig.rotShape.push(rot.y * radToDeg);
-                    bodyConfig.rotShape.push(rot.z * radToDeg);
+                    bodyConfig.rotShape.push(rot.x * radToDeg, rot.y * radToDeg, rot.z * radToDeg);
                 }
 
                 i.object.rotationQuaternion.copyFrom(globalQuaternion);
@@ -190,12 +187,9 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                         var radiusY = extendSize.y;
                         var radiusZ = extendSize.z;
 
-                        var size = Math.max(
-                            checkWithEpsilon(radiusX),
-                            checkWithEpsilon(radiusY),
-                            checkWithEpsilon(radiusZ)) / 2;
+                        var size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
 
-                        bodyConfig.type.push('sphere');
+                        bodyConfig.type.push("sphere");
                         //due to the way oimo works with compounds, add 3 times
                         bodyConfig.size.push(size);
                         bodyConfig.size.push(size);
@@ -205,7 +199,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                     case PhysicsImpostor.CylinderImpostor:
                         var sizeX = checkWithEpsilon(extendSize.x) / 2;
                         var sizeY = checkWithEpsilon(extendSize.y);
-                        bodyConfig.type.push('cylinder');
+                        bodyConfig.type.push("cylinder");
                         bodyConfig.size.push(sizeX);
                         bodyConfig.size.push(sizeY);
                         //due to the way oimo works with compounds, add one more value.
@@ -219,7 +213,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                         var sizeY = checkWithEpsilon(extendSize.y);
                         var sizeZ = checkWithEpsilon(extendSize.z);
 
-                        bodyConfig.type.push('box');
+                        bodyConfig.type.push("box");
                         //if (i === impostor) {
                         bodyConfig.size.push(sizeX);
                         bodyConfig.size.push(sizeY);
@@ -236,9 +230,8 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             impostor.physicsBody = this.world.add(bodyConfig);
             // set the quaternion, ignoring the previously defined (euler) rotation
             impostor.physicsBody.resetQuaternion(globalQuaternion);
-            // update with delta 0, so the body will reveive the new rotation.
+            // update with delta 0, so the body will receive the new rotation.
             impostor.physicsBody.updatePosition(0);
-
         } else {
             this._tmpPositionVector.copyFromFloats(0, 0, 0);
         }
@@ -282,8 +275,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             spring: options.spring,
 
             //supporting older version of Oimo
-            world: this.world
-
+            world: this.world,
         };
         switch (impostorJoint.joint.type) {
             case PhysicsJoint.BallAndSocketJoint:
@@ -326,7 +318,6 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         } catch (e) {
             Logger.Warn(e);
         }
-
     }
 
     public isSupported(): boolean {

@@ -309,7 +309,7 @@ declare module NODEEDITOR {
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
-        dispose(): void;
+        dispose(notify?: boolean): void;
     }
 }
 declare module NODEEDITOR {
@@ -950,7 +950,10 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         forceRebuild(): void;
         deleteStep(step: BABYLON.GradientBlockColorStep): void;
         addNewStep(): void;
@@ -1267,6 +1270,39 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IDraggableLineWithButtonComponent {
+        data: string;
+        tooltip: string;
+        iconImage: any;
+        onIconClick: (value: string) => void;
+        iconTitle: string;
+    }
+    export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
+        constructor(props: IDraggableLineWithButtonComponent);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILineWithFileButtonComponentProps {
+        title: string;
+        closed?: boolean;
+        label: string;
+        iconImage: any;
+        onIconClick: (file: File) => void;
+        accept: string;
+        uploadName?: string;
+    }
+    export class LineWithFileButtonComponent extends React.Component<ILineWithFileButtonComponentProps, {
+        isExpanded: boolean;
+    }> {
+        private uploadRef;
+        constructor(props: ILineWithFileButtonComponentProps);
+        onChange(evt: any): void;
+        switchExpandedState(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface INodeListComponentProps {
         globalState: GlobalState;
     }
@@ -1275,9 +1311,12 @@ declare module NODEEDITOR {
     }> {
         private _onResetRequiredObserver;
         private static _Tooltips;
+        private _customFrameList;
         constructor(props: INodeListComponentProps);
         componentWillUnmount(): void;
         filterContent(filter: string): void;
+        loadCustomFrame(file: File): void;
+        removeItem(value: string): void;
         render(): JSX.Element;
     }
 }

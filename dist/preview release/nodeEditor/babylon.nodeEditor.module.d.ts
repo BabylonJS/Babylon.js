@@ -426,7 +426,7 @@ declare module "babylonjs-node-editor/diagram/nodeLink" {
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
-        dispose(): void;
+        dispose(notify?: boolean): void;
     }
 }
 declare module "babylonjs-node-editor/diagram/graphCanvas" {
@@ -1169,7 +1169,10 @@ declare module "babylonjs-node-editor/diagram/properties/gradientNodePropertyCom
     import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         forceRebuild(): void;
         deleteStep(step: GradientBlockColorStep): void;
         addNewStep(): void;
@@ -1544,6 +1547,41 @@ declare module "babylonjs-node-editor/sharedComponents/draggableLineComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/draggableLineWithButtonComponent" {
+    import * as React from "react";
+    export interface IDraggableLineWithButtonComponent {
+        data: string;
+        tooltip: string;
+        iconImage: any;
+        onIconClick: (value: string) => void;
+        iconTitle: string;
+    }
+    export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
+        constructor(props: IDraggableLineWithButtonComponent);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/lineWithFileButtonComponent" {
+    import * as React from "react";
+    interface ILineWithFileButtonComponentProps {
+        title: string;
+        closed?: boolean;
+        label: string;
+        iconImage: any;
+        onIconClick: (file: File) => void;
+        accept: string;
+        uploadName?: string;
+    }
+    export class LineWithFileButtonComponent extends React.Component<ILineWithFileButtonComponentProps, {
+        isExpanded: boolean;
+    }> {
+        private uploadRef;
+        constructor(props: ILineWithFileButtonComponentProps);
+        onChange(evt: any): void;
+        switchExpandedState(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1555,9 +1593,12 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
     }> {
         private _onResetRequiredObserver;
         private static _Tooltips;
+        private _customFrameList;
         constructor(props: INodeListComponentProps);
         componentWillUnmount(): void;
         filterContent(filter: string): void;
+        loadCustomFrame(file: File): void;
+        removeItem(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -2173,7 +2214,7 @@ declare module NODEEDITOR {
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
-        dispose(): void;
+        dispose(notify?: boolean): void;
     }
 }
 declare module NODEEDITOR {
@@ -2814,7 +2855,10 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         forceRebuild(): void;
         deleteStep(step: BABYLON.GradientBlockColorStep): void;
         addNewStep(): void;
@@ -3131,6 +3175,39 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IDraggableLineWithButtonComponent {
+        data: string;
+        tooltip: string;
+        iconImage: any;
+        onIconClick: (value: string) => void;
+        iconTitle: string;
+    }
+    export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
+        constructor(props: IDraggableLineWithButtonComponent);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILineWithFileButtonComponentProps {
+        title: string;
+        closed?: boolean;
+        label: string;
+        iconImage: any;
+        onIconClick: (file: File) => void;
+        accept: string;
+        uploadName?: string;
+    }
+    export class LineWithFileButtonComponent extends React.Component<ILineWithFileButtonComponentProps, {
+        isExpanded: boolean;
+    }> {
+        private uploadRef;
+        constructor(props: ILineWithFileButtonComponentProps);
+        onChange(evt: any): void;
+        switchExpandedState(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface INodeListComponentProps {
         globalState: GlobalState;
     }
@@ -3139,9 +3216,12 @@ declare module NODEEDITOR {
     }> {
         private _onResetRequiredObserver;
         private static _Tooltips;
+        private _customFrameList;
         constructor(props: INodeListComponentProps);
         componentWillUnmount(): void;
         filterContent(filter: string): void;
+        loadCustomFrame(file: File): void;
+        removeItem(value: string): void;
         render(): JSX.Element;
     }
 }
