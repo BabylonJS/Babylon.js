@@ -205,16 +205,16 @@ VertexData.CreateCapsule = function(
         }
         indices = indices.reverse();
 
-        if(options.orientation && !options.orientation.equals(Vector3.Up())){
-            let m = new Matrix();             
-            (options.orientation.clone().scale(Math.PI*0.5).cross(Vector3.Up()).toQuaternion()).toRotationMatrix(m);
+        if (options.orientation && !options.orientation.equals(Vector3.Up())) {
+            let m = new Matrix();
+            (options.orientation.clone().scale(Math.PI * 0.5).cross(Vector3.Up()).toQuaternion()).toRotationMatrix(m);
             let v = Vector3.Zero();
-            for(let i = 0; i < vertices.length; i+=3){
-                v.set(vertices[i], vertices[i+1], vertices[i+2]);
+            for (let i = 0; i < vertices.length; i += 3) {
+                v.set(vertices[i], vertices[i + 1], vertices[i + 2]);
                 Vector3.TransformCoordinatesToRef(v.clone(), m, v);
-                vertices[i] = v.x
-                vertices[i+1] = v.y
-                vertices[i+2] = v.z                
+                vertices[i] = v.x;
+                vertices[i + 1] = v.y;
+                vertices[i + 2] = v.z;
             }
         }
 
@@ -296,7 +296,7 @@ export class CapsuleBuilder {
 
         var capsule = new Mesh(name, scene);
         var vertexData = VertexData.CreateCapsule(options);
-        vertexData.applyToMesh(capsule);  
+        vertexData.applyToMesh(capsule);
         return capsule;
     }
 }
