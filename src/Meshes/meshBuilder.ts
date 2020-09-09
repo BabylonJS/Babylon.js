@@ -548,6 +548,7 @@ export class MeshBuilder {
     }
 
     /**
+     * Creates a Capsule Mesh
      * @param name defines the name of the mesh.
      * @param options the constructors options used to shape the mesh.
      * @param scene defines the scene the mesh is scoped to.

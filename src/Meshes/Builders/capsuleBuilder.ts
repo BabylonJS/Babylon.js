@@ -1,7 +1,8 @@
 import { VertexData } from "../mesh.vertexData";
 import { Vector2, Vector3 } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
-    /** based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
+    /**
+     * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
      * @param options the constructors options used to shape the mesh.
      * @returns the capsule VertexData
      * @see https://doc.babylonjs.com/how_to/capsule_shape
