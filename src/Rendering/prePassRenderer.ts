@@ -5,7 +5,6 @@ import { Constants } from "../Engines/constants";
 import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
-import { Logger } from '../Misc/logger';
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
@@ -287,16 +286,6 @@ export class PrePassRenderer {
         }
     }
 
-    private _checkTextureType(type: number) : boolean {
-        if (type < 0 || type >= this._textureFormats.length) {
-            Logger.Error("PrePassRenderer : Unknown texture type");
-            return false;
-        }
-
-        return true;
-
-    }
-
     /**
      * Adds an effect configuration
      */
@@ -318,10 +307,6 @@ export class PrePassRenderer {
      * @return The index
      */
     public getIndex(type: number) : number {
-        if (!this._checkTextureType(type)) {
-            return -1;
-        }
-
         return this._textureIndices[type];
     }
 
@@ -413,9 +398,6 @@ export class PrePassRenderer {
     private _enableTextures(types: number[]) {
         for (let i = 0; i < types.length; i++) {
             let type = types[i];
-            if (!this._checkTextureType(type)) {
-                return;
-            }
 
             if (this._textureIndices[type] === -1) {
                 this._textureIndices[type] = this._mrtLayout.length;
