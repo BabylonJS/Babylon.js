@@ -287,6 +287,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 case NodeMaterialModes.Particle:
                     this.props.globalState.nodeMaterial!.setToDefaultParticle();
                     break;
+                case NodeMaterialModes.ProceduralTexture:
+                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                    break;
             }
         }
 
@@ -350,6 +353,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Material", value: NodeMaterialModes.Material },
             { label: "Post Process", value: NodeMaterialModes.PostProcess },
             { label: "Particle", value: NodeMaterialModes.Particle },
+            { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
         ];
 
         return (
@@ -366,7 +370,20 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
-                            this.props.globalState.nodeMaterial!.setToDefault();
+                            switch (this.props.globalState.mode) {
+                                case NodeMaterialModes.Material:
+                                    this.props.globalState.nodeMaterial!.setToDefault();
+                                    break;
+                                case NodeMaterialModes.PostProcess:
+                                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
+                                    break;
+                                case NodeMaterialModes.Particle:
+                                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                                    break;
+                                case NodeMaterialModes.ProceduralTexture:
+                                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                                    break;
+                            }
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>

@@ -16,7 +16,7 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
 
     public updateShaderUniforms() {
         this.setTexture("baseSampler", this._baseTexture);
-        this.setFloat("size", this.getRenderSize());
+        this.setFloat("size", this.getRenderSize() as number);
     }
 
     public render(useCameraPostProcess?: boolean) {
