@@ -348,7 +348,7 @@ export class PrePassRenderer {
         }
 
         if (this.prePassRT && this.mrtCount !== previousMrtCount) {
-            this.prePassRT.updateCount(this.mrtCount);
+            this.prePassRT.updateCount(this.mrtCount, { types: this._mrtFormats });
         }
 
         this._resetPostProcessChain();
