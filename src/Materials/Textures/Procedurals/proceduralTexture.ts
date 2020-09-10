@@ -73,7 +73,7 @@ export class ProceduralTexture extends Texture {
     protected _fallbackTexture: Nullable<Texture>;
 
     @serialize()
-    private _size: number;
+    private _size: number | { width: number, height: number, layers?: number };
     private _currentRefreshId = -1;
     private _frameId = -1;
     private _refreshRate = 1;
@@ -113,7 +113,7 @@ export class ProceduralTexture extends Texture {
      * @param generateMipMaps Define if the texture should creates mip maps or not
      * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
      */
-    constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false) {
+    constructor(name: string, size: number | { width: number, height: number, layers?: number }, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false) {
         super(null, scene, !generateMipMaps);
 
         scene = this.getScene()!;
@@ -136,7 +136,7 @@ export class ProceduralTexture extends Texture {
         this._fallbackTexture = fallbackTexture;
 
         if (isCube) {
-            this._texture = this._fullEngine.createRenderTargetCubeTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
+            this._texture = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
             this.setFloat("face", 0);
         }
         else {
@@ -161,11 +161,6 @@ export class ProceduralTexture extends Texture {
      */
     public getEffect(): Effect {
         return this._effect;
-    }
-
-    /** @hidden */
-    public _setEffect(effect: Effect) {
-        this._effect = effect;
     }
 
     /**
@@ -345,9 +340,9 @@ export class ProceduralTexture extends Texture {
 
     /**
      * Get the size the texture is rendering at.
-     * @returns the size (texture is always squared)
+     * @returns the size (on cube texture it is always squared)
      */
-    public getRenderSize(): number {
+    public getRenderSize(): number | { width: number, height: number, layers?: number } {
         return this._size;
     }
 

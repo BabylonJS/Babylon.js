@@ -260,7 +260,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 break;
             case NodeMaterialModes.ProceduralTexture:
                 delete allBlocks["Animation"];
-                delete allBlocks["Mesh"];                
+                delete allBlocks["Mesh"];  
+                delete allBlocks["Particle"];              
                 delete allBlocks["PostProcess"];
                 break;
             case NodeMaterialModes.Particle:

@@ -818,11 +818,11 @@ export class NodeMaterial extends PushMaterial {
 
     /**
      * Create a new procedural texture based on this node material
-     * @param size defines the size of the texture (which will be squared)
+     * @param size defines the size of the texture
      * @param scene defines the hosting scene
      * @returns the new procedural texture attached to this node material
      */
-    public createProceduralTexture(size: number, scene: Scene): ProceduralTexture {
+    public createProceduralTexture(size: number | { width: number, height: number, layers?: number }, scene: Scene): ProceduralTexture {
         let tempName = this.name + this._buildId;
 
         let proceduralTexture = new ProceduralTexture(tempName, size, null, scene);
@@ -868,13 +868,15 @@ export class NodeMaterial extends PushMaterial {
 
                 TimingTools.SetImmediate(() => {
                     effect = this.getScene().getEngine().createEffect({
-                        vertexElement: tempName,
-                        fragmentElement: tempName
-                    },
-                    [VertexBuffer.PositionKind],
-                    this._fragmentCompilationState.uniforms,
-                    this._fragmentCompilationState.samplers,
-                    defines.toString(), result?.fallbacks, undefined);
+                            vertexElement: tempName,
+                            fragmentElement: tempName
+                        },
+                        [VertexBuffer.PositionKind],
+                        this._fragmentCompilationState.uniforms,
+                        this._fragmentCompilationState.samplers,
+                        defines.toString(), result?.fallbacks, undefined);
+
+                    proceduralTexture._effect = effect;
                 });
             }
 
@@ -1406,7 +1408,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Clear the current material and set it to a default state for procedural texture
+     * Clear the current material and set it to a default state for post process
      */
     public setToDefaultPostProcess() {
         this.clear();
@@ -1456,7 +1458,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Clear the current material and set it to a default state for post process
+     * Clear the current material and set it to a default state for procedural texture
      */
     public setToDefaultProceduralTexture() {
         this.clear();
