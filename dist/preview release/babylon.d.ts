@@ -6820,7 +6820,7 @@ declare module BABYLON {
      */
     export interface ICreateCapsuleOptions {
         /** The Orientation of the capsule.  Default : Vector3.Up() */
-        orientation: Vector3;
+        orientation?: Vector3;
         /** Number of sub segments on the tube section of the capsule running parallel to orientation. */
         subdivisions: number;
         /** Number of cylindrical segments on the capsule. */
@@ -8606,6 +8606,14 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /**
+     * Type used to define a render target texture size (either with a number or with a rect width and height)
+     */
+    export type RenderTargetTextureSize = number | {
+        width: number;
+        height: number;
+        layers?: number;
+    };
         interface ThinEngine {
             /**
              * Creates a new render target texture
@@ -8613,11 +8621,7 @@ declare module BABYLON {
              * @param options defines the options used to create the texture
              * @returns a new render target texture stored in an InternalTexture
              */
-            createRenderTargetTexture(size: number | {
-                width: number;
-                height: number;
-                layers?: number;
-            }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+            createRenderTargetTexture(size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture;
             /**
              * Creates a depth stencil texture.
              * This is only available in WebGL 2 or with the depth texture extension available.
@@ -8625,17 +8629,9 @@ declare module BABYLON {
              * @param options The options defining the texture.
              * @returns The texture
              */
-            createDepthStencilTexture(size: number | {
-                width: number;
-                height: number;
-                layers?: number;
-            }, options: DepthTextureCreationOptions): InternalTexture;
+            createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
             /** @hidden */
-            _createDepthStencilTexture(size: number | {
-                width: number;
-                height: number;
-                layers?: number;
-            }, options: DepthTextureCreationOptions): InternalTexture;
+            _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
         }
 }
 declare module BABYLON {
@@ -11719,6 +11715,14 @@ declare module BABYLON {
          * Event raised when the texture is generated
          */
         onGeneratedObservable: Observable<ProceduralTexture>;
+        /**
+         * Event raised before the texture is generated
+         */
+        onBeforeGenerationObservable: Observable<ProceduralTexture>;
+        /**
+         * Gets or sets the node material used to create this texture (null if the texture was manually created)
+         */
+        nodeMaterialSource: Nullable<NodeMaterial>;
         /** @hidden */
         _generateMipMaps: boolean;
         /** @hidden **/
@@ -11764,7 +11768,7 @@ declare module BABYLON {
          * @param generateMipMaps Define if the texture should creates mip maps or not
          * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
          */
-        constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean);
+        constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean);
         /**
          * The effect that is created when initializing the post process.
          * @returns The created effect corresponding the the postprocess.
@@ -11809,9 +11813,9 @@ declare module BABYLON {
         _shouldRender(): boolean;
         /**
          * Get the size the texture is rendering at.
-         * @returns the size (texture is always squared)
+         * @returns the size (on cube texture it is always squared)
          */
-        getRenderSize(): number;
+        getRenderSize(): RenderTargetTextureSize;
         /**
          * Resize the texture to new value.
          * @param size Define the new size the texture should have
@@ -20794,7 +20798,9 @@ declare module BABYLON {
         /** For post process */
         PostProcess = 1,
         /** For particle system */
-        Particle = 2
+        Particle = 2,
+        /** For procedural texture */
+        ProceduralTexture = 3
     }
 }
 declare module BABYLON {
@@ -22238,6 +22244,80 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Operations supported by the Trigonometry block
+     */
+    export enum TrigonometryBlockOperations {
+        /** Cos */
+        Cos = 0,
+        /** Sin */
+        Sin = 1,
+        /** Abs */
+        Abs = 2,
+        /** Exp */
+        Exp = 3,
+        /** Exp2 */
+        Exp2 = 4,
+        /** Round */
+        Round = 5,
+        /** Floor */
+        Floor = 6,
+        /** Ceiling */
+        Ceiling = 7,
+        /** Square root */
+        Sqrt = 8,
+        /** Log */
+        Log = 9,
+        /** Tangent */
+        Tan = 10,
+        /** Arc tangent */
+        ArcTan = 11,
+        /** Arc cosinus */
+        ArcCos = 12,
+        /** Arc sinus */
+        ArcSin = 13,
+        /** Fraction */
+        Fract = 14,
+        /** Sign */
+        Sign = 15,
+        /** To radians (from degrees) */
+        Radians = 16,
+        /** To degrees (from radians) */
+        Degrees = 17
+    }
+    /**
+     * Block used to apply trigonometry operation to floats
+     */
+    export class TrigonometryBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the operation applied by the block
+         */
+        operation: TrigonometryBlockOperations;
+        /**
+         * Creates a new TrigonometryBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        get input(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -22487,8 +22567,20 @@ declare module BABYLON {
          * @param postProcess The post process to create the effect for
          */
         createEffectForPostProcess(postProcess: PostProcess): void;
-        private _createEffectOrPostProcess;
+        private _createEffectForPostProcess;
+        /**
+         * Create a new procedural texture based on this node material
+         * @param size defines the size of the texture
+         * @param scene defines the hosting scene
+         * @returns the new procedural texture attached to this node material
+         */
+        createProceduralTexture(size: number | {
+            width: number;
+            height: number;
+            layers?: number;
+        }, scene: Scene): ProceduralTexture;
         private _createEffectForParticles;
+        private _checkInternals;
         /**
          * Create the effect to be used as the custom effect for a particle system
          * @param particleSystem Particle system to create the effect for
@@ -22565,6 +22657,10 @@ declare module BABYLON {
          * Clear the current material and set it to a default state for post process
          */
         setToDefaultPostProcess(): void;
+        /**
+         * Clear the current material and set it to a default state for procedural texture
+         */
+        setToDefaultProceduralTexture(): void;
         /**
          * Clear the current material and set it to a default state for particle
          */
@@ -22847,7 +22943,7 @@ declare module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-         * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+         * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
          * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
          */
         constructor(name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean, textureFormat?: number);
@@ -63181,80 +63277,6 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Operations supported by the Trigonometry block
-     */
-    export enum TrigonometryBlockOperations {
-        /** Cos */
-        Cos = 0,
-        /** Sin */
-        Sin = 1,
-        /** Abs */
-        Abs = 2,
-        /** Exp */
-        Exp = 3,
-        /** Exp2 */
-        Exp2 = 4,
-        /** Round */
-        Round = 5,
-        /** Floor */
-        Floor = 6,
-        /** Ceiling */
-        Ceiling = 7,
-        /** Square root */
-        Sqrt = 8,
-        /** Log */
-        Log = 9,
-        /** Tangent */
-        Tan = 10,
-        /** Arc tangent */
-        ArcTan = 11,
-        /** Arc cosinus */
-        ArcCos = 12,
-        /** Arc sinus */
-        ArcSin = 13,
-        /** Fraction */
-        Fract = 14,
-        /** Sign */
-        Sign = 15,
-        /** To radians (from degrees) */
-        Radians = 16,
-        /** To degrees (from radians) */
-        Degrees = 17
-    }
-    /**
-     * Block used to apply trigonometry operation to floats
-     */
-    export class TrigonometryBlock extends NodeMaterialBlock {
-        /**
-         * Gets or sets the operation applied by the block
-         */
-        operation: TrigonometryBlockOperations;
-        /**
-         * Creates a new TrigonometryBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the input component
-         */
-        get input(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        get output(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-        serialize(): any;
-        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        protected _dumpPropertiesCode(): string;
     }
 }
 declare module BABYLON {
