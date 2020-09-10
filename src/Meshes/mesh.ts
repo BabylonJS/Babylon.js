@@ -77,6 +77,7 @@ class _InstanceDataStorage {
     public hardwareInstancedRendering: boolean;
     public sideOrientation: number;
     public manualUpdate: boolean;
+    public previousRenderId: number;
 }
 
 /**
@@ -1127,6 +1128,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!this._instanceDataStorage.visibleInstances[renderId]) {
+            if (this._instanceDataStorage.previousRenderId !== undefined) {
+                this._instanceDataStorage.visibleInstances[this._instanceDataStorage.previousRenderId] = null;
+            }
+            this._instanceDataStorage.previousRenderId = renderId;
             this._instanceDataStorage.visibleInstances[renderId] = new Array<InstancedMesh>();
         }
 
