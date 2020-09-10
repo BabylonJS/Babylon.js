@@ -346,7 +346,7 @@ export class Trajectory {
     }
 
     private static _forwardDir = new Vector3();
-    private static _inverseFromDir = new Vector3();
+    private static _inverseFromVec = new Vector3();
     private static _upDir = new Vector3();
     private static _fromToVec = new Vector3();
     private static _lookMatrix = new Matrix();
@@ -372,14 +372,14 @@ export class Trajectory {
 
         fromVec.subtractToRef(priorVec, Trajectory._forwardDir);
         Trajectory._forwardDir.normalize();
-        fromVec.scaleToRef(-1, Trajectory._inverseFromDir);
-        Trajectory._inverseFromDir.normalize();
+        fromVec.scaleToRef(-1, Trajectory._inverseFromVec);
+        Trajectory._inverseFromVec.normalize();
 
-        if (Math.abs(Vector3.Dot(Trajectory._forwardDir, Trajectory._inverseFromDir)) > DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD) {
+        if (Math.abs(Vector3.Dot(Trajectory._forwardDir, Trajectory._inverseFromVec)) > DOT_PRODUCT_SAMPLE_REJECTION_THRESHOLD) {
             return false;
         }
 
-        Vector3.CrossToRef(Trajectory._forwardDir, Trajectory._inverseFromDir, Trajectory._upDir);
+        Vector3.CrossToRef(Trajectory._forwardDir, Trajectory._inverseFromVec, Trajectory._upDir);
         Trajectory._upDir.normalize();
         Matrix.LookAtLHToRef(priorVec, fromVec, Trajectory._upDir, Trajectory._lookMatrix);
         toVec.subtractToRef(fromVec, Trajectory._fromToVec);
@@ -744,7 +744,7 @@ class TrajectoryClass {
             this._averageDistance += desc.distance(this._descriptors[this._centroidIdx]);
         });
         if (this._descriptors.length > 0) {
-            this._averageDistance = Math.min(this._averageDistance / this._descriptors.length, TrajectoryClass.MIN_AVERAGE_DISTANCE);
+            this._averageDistance = Math.max(this._averageDistance / this._descriptors.length, TrajectoryClass.MIN_AVERAGE_DISTANCE);
         }
     }
 }
