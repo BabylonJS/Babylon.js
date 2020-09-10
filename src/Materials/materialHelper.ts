@@ -1,24 +1,24 @@
 import { Logger } from "../Misc/logger";
 import { Nullable } from "../types";
+import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
-import { PrePassRenderer } from "../Rendering/prePassRenderer";
+import { Constants } from "../Engines/constants";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
+import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
+import { MaterialDefines } from "./materialDefines";
 import { Color3 } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
 import { ThinMaterialHelper } from './thinMaterialHelper';
 
-declare type Engine = import("../Engines/engine").Engine;
-declare type Camera = import("../Cameras/camera").Camera;
-declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
-declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
-declare type MaterialDefines = import("./materialDefines").MaterialDefines;
-declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
  *
@@ -309,7 +309,7 @@ export class MaterialHelper {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
 
-            const irradianceIndex = scene.prePassRenderer.getIndex(PrePassRenderer.IRRADIANCE_TEXTURE_TYPE);
+            const irradianceIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE);
             if (irradianceIndex !== -1) {
                 defines.PREPASS_IRRADIANCE = true;
                 defines.PREPASS_IRRADIANCE_INDEX = irradianceIndex;
@@ -317,7 +317,7 @@ export class MaterialHelper {
                 defines.PREPASS_IRRADIANCE = false;
             }
 
-            const albedoIndex = scene.prePassRenderer.getIndex(PrePassRenderer.ALBEDO_TEXTURE_TYPE);
+            const albedoIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE);
             if (albedoIndex !== -1) {
                 defines.PREPASS_ALBEDO = true;
                 defines.PREPASS_ALBEDO_INDEX = albedoIndex;
@@ -325,7 +325,7 @@ export class MaterialHelper {
                 defines.PREPASS_ALBEDO = false;
             }
 
-            const depthNormalIndex = scene.prePassRenderer.getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE);
+            const depthNormalIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
             if (depthNormalIndex !== -1) {
                 defines.PREPASS_DEPTHNORMAL = true;
                 defines.PREPASS_DEPTHNORMAL_INDEX = depthNormalIndex;
