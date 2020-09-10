@@ -245,6 +245,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Changes the number of render targets in this MRT
      * Be careful as it will recreate all the data in the new texture.
      * @param count new texture count
+     * @param options Specifies texture types and sampling modes for new textures
      */
     public updateCount(count: number, options?: IMultiRenderTargetOptions) {
         this._multiRenderTargetOptions.textureCount = count;
