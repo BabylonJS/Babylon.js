@@ -20,6 +20,7 @@ import "../../../Shaders/procedural.vertex";
 import { DataBuffer } from '../../../Meshes/dataBuffer';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../../Node/nodeMaterial';
+import { RenderTargetTextureSize } from '../../../Engines/Extensions/engine.renderTarget';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -73,7 +74,7 @@ export class ProceduralTexture extends Texture {
     protected _fallbackTexture: Nullable<Texture>;
 
     @serialize()
-    private _size: number | { width: number, height: number, layers?: number };
+    private _size: RenderTargetTextureSize;
     private _currentRefreshId = -1;
     private _frameId = -1;
     private _refreshRate = 1;
@@ -113,7 +114,7 @@ export class ProceduralTexture extends Texture {
      * @param generateMipMaps Define if the texture should creates mip maps or not
      * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
      */
-    constructor(name: string, size: number | { width: number, height: number, layers?: number }, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false) {
+    constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false) {
         super(null, scene, !generateMipMaps);
 
         scene = this.getScene()!;
@@ -342,7 +343,7 @@ export class ProceduralTexture extends Texture {
      * Get the size the texture is rendering at.
      * @returns the size (on cube texture it is always squared)
      */
-    public getRenderSize(): number | { width: number, height: number, layers?: number } {
+    public getRenderSize(): RenderTargetTextureSize {
         return this._size;
     }
 
