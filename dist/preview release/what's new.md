@@ -90,7 +90,7 @@
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
 - View & edit textures in pop out inspector using tools such as brush and floodfill. Supports region selection, individual channel editing, mipmap previews, and resizing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 - Added mesh debug tools to display bone influence weights and bone indices maps. ([Pryme8](https://github.com/Pryme8))
-- Added more functionality an options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
+- Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
 
 ### Cameras
 
@@ -103,7 +103,7 @@
 
 ### Debug
 - Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))
-- Added static methods to create debug shaders materials for a mesh ith a skeleton. ([Pryme8](https://github.com/Pryme8))
+- Added static methods to create debug shaders materials for a mesh with a skeleton. ([Pryme8](https://github.com/Pryme8))
 
 ### Sprites
 
