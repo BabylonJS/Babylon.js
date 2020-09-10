@@ -333,6 +333,12 @@
             "replace": "updateVerticesDataDirectly, updateVerticesData"
         },
         {
+            "title": "Capsule",
+            "renderCount": 10,
+            "playgroundId": "#JAFIIU#1",
+            "referenceImage": "CreateCapsule.png"
+        },
+        {
             "title": "Bones",
             "scriptToRun": "/Demos/Bones/bones.js",
             "functionToCall": "CreateBonesTestScene",
