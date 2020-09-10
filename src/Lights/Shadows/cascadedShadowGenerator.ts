@@ -715,12 +715,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
      */
     constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean) {
-        super(mapSize, light, usefulFloatFirst);
-
         if (!CascadedShadowGenerator.IsSupported) {
             Logger.Error("CascadedShadowMap needs WebGL 2 support.");
             return;
         }
+
+        super(mapSize, light, usefulFloatFirst);
 
         this.usePercentageCloserFiltering = true;
     }

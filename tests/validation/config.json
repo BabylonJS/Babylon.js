@@ -333,6 +333,12 @@
             "replace": "updateVerticesDataDirectly, updateVerticesData"
         },
         {
+            "title": "Capsule",
+            "renderCount": 10,
+            "playgroundId": "#JAFIIU#1",
+            "referenceImage": "CreateCapsule.png"
+        },
+        {
             "title": "Bones",
             "scriptToRun": "/Demos/Bones/bones.js",
             "functionToCall": "CreateBonesTestScene",
@@ -610,8 +616,13 @@
         },
         {
             "title": "GLTF Serializer Morph Target Animation",
-            "playgroundId": "#T087A8#27",
+            "playgroundId": "#84M2SR#23",
             "referenceImage": "gltfSerializerMorphTargetAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer Morph Target Animation Group",
+            "playgroundId": "#T087A8#27",
+            "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
@@ -885,6 +896,12 @@
             "playgroundId": "#SYQW69#311",
             "referenceImage": "objTestLoader.png",
             "renderCount": 10
+        },
+        {
+            "title": "KTX2 decoder test",
+            "playgroundId": "#EIJH8L#1",
+            "referenceImage": "ktx2decoder.png",
+            "excludeFromAutomaticTesting": true
         }
     ]
 }

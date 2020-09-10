@@ -84,7 +84,7 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
         else if (KhronosTextureContainer2.IsValid(data)) {
             const ktx2 = new KhronosTextureContainer2(texture.getEngine());
             ktx2.uploadAsync(data, texture).then(() => {
-                callback(texture.width, texture.height, false, true, () => {}, false);
+                callback(texture.width, texture.height, texture.generateMipMaps, true, () => {}, false);
             }, (error) => {
                 Logger.Warn(`Failed to load KTX2 texture data: ${error.message}`);
                 callback(0, 0, false, false, () => {}, true);

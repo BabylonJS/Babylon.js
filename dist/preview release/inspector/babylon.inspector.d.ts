@@ -1408,8 +1408,11 @@ declare module INSPECTOR {
         private _mouseY;
         private _UICanvas;
         private _size;
+        /** The canvas we paint onto using the canvas API */
         private _2DCanvas;
+        /** The canvas we apply post processes to */
         private _3DCanvas;
+        /** The canvas which handles channel filtering */
         private _channelsTexture;
         private _3DEngine;
         private _3DPlane;
@@ -1418,47 +1421,55 @@ declare module INSPECTOR {
         private _channels;
         private _face;
         private _mipLevel;
+        /** The texture from the original engine that we invoked the editor on */
         private _originalTexture;
+        /** This is a hidden texture which is only responsible for holding the actual texture memory in the original engine */
         private _target;
+        /** The internal texture representation of the original texture */
         private _originalInternalTexture;
+        /** Keeps track of whether we have modified the texture */
         private _didEdit;
         private _plane;
         private _planeMaterial;
+        /** Tracks which keys are currently pressed */
         private _keyMap;
-        private static ZOOM_MOUSE_SPEED;
-        private static ZOOM_KEYBOARD_SPEED;
-        private static ZOOM_IN_KEY;
-        private static ZOOM_OUT_KEY;
-        private static PAN_SPEED;
-        private static PAN_MOUSE_BUTTON;
-        private static MIN_SCALE;
-        private static GRID_SCALE;
-        private static MAX_SCALE;
-        private static SELECT_ALL_KEY;
-        private static SAVE_KEY;
-        private static RESET_KEY;
-        private static DESELECT_KEY;
+        private readonly ZOOM_MOUSE_SPEED;
+        private readonly ZOOM_KEYBOARD_SPEED;
+        private readonly ZOOM_IN_KEY;
+        private readonly ZOOM_OUT_KEY;
+        private readonly PAN_SPEED;
+        private readonly PAN_MOUSE_BUTTON;
+        private readonly MIN_SCALE;
+        private readonly GRID_SCALE;
+        private readonly MAX_SCALE;
+        private readonly SELECT_ALL_KEY;
+        private readonly SAVE_KEY;
+        private readonly RESET_KEY;
+        private readonly DESELECT_KEY;
+        /** The number of milliseconds between texture updates */
+        private readonly PUSH_FREQUENCY;
         private _tool;
         private _setPixelData;
+        private _setMipLevel;
         private _window;
         private _metadata;
         private _editing3D;
         private _onUpdate;
         private _setMetadata;
         private _imageData;
-        private _canUpdate;
-        private _shouldUpdate;
+        private _canPush;
+        private _shouldPush;
         private _paintCanvas;
-        constructor(texture: BABYLON.BaseTexture, window: Window, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvas3D: HTMLCanvasElement, setPixelData: (pixelData: IPixelData) => void, metadata: IMetadata, onUpdate: () => void, setMetadata: (metadata: any) => void);
+        constructor(texture: BABYLON.BaseTexture, window: Window, canvasUI: HTMLCanvasElement, canvas2D: HTMLCanvasElement, canvas3D: HTMLCanvasElement, setPixelData: (pixelData: IPixelData) => void, metadata: IMetadata, onUpdate: () => void, setMetadata: (metadata: any) => void, setMipLevel: (level: number) => void);
         updateTexture(): Promise<void>;
-        private queueTextureUpdate;
-        startPainting(): CanvasRenderingContext2D;
+        private pushTexture;
+        startPainting(): Promise<CanvasRenderingContext2D>;
         updatePainting(): void;
         stopPainting(): void;
         private updateDisplay;
         set channels(channels: IChannel[]);
-        static paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
-        grabOriginalTexture(): void;
+        paintPixelsOnCanvas(pixelData: Uint8Array, canvas: HTMLCanvasElement): void;
+        grabOriginalTexture(): Promise<Uint8Array>;
         getMouseCoordinates(pointerInfo: BABYLON.PointerInfo): BABYLON.Vector2;
         get scene(): BABYLON.Scene;
         get canvas2D(): HTMLCanvasElement;
@@ -1515,9 +1526,8 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     interface IBottomBarProps {
-        name: string;
+        texture: BABYLON.BaseTexture;
         mipLevel: number;
-        hasMips: boolean;
     }
     export class BottomBar extends React.PureComponent<IBottomBarProps> {
         render(): JSX.Element;
@@ -1530,8 +1540,7 @@ declare module INSPECTOR {
         canvas3D: React.RefObject<HTMLCanvasElement>;
         texture: BABYLON.BaseTexture;
     }
-    export class TextureCanvasComponent extends React.PureComponent<ITextureCanvasComponentProps> {
-        shouldComponentUpdate(nextProps: ITextureCanvasComponentProps): boolean;
+    export class TextureCanvasComponent extends React.Component<ITextureCanvasComponentProps> {
         render(): JSX.Element;
     }
 }
@@ -1599,7 +1608,7 @@ declare module INSPECTOR {
         /** Provides access to the BABYLON namespace */
         BABYLON: any;
         /** Provides a canvas that you can use the canvas API to paint on. */
-        startPainting: () => CanvasRenderingContext2D;
+        startPainting: () => Promise<CanvasRenderingContext2D>;
         /** After you have painted on your canvas, call this method to push the updates back to the texture. */
         updatePainting: () => void;
         /** Call this when you are finished painting. */
@@ -1616,10 +1625,9 @@ declare module INSPECTOR {
         type: IToolConstructable;
         /**  An SVG icon encoded in Base64 */
         icon: string;
-        /** Whether the tool uses the draggable GUI window */
-        usesWindow?: boolean;
         /** Whether the tool uses postprocesses */
         is3D?: boolean;
+        cursor?: string;
         settingsComponent?: React.ComponentType<IToolGUIProps>;
     }
     export interface IToolType {
@@ -1696,7 +1704,7 @@ declare module INSPECTOR {
         updateTexture(file: File): void;
         openTextureEditor(): void;
         onOpenTextureEditor(window: Window): void;
-        onCloseTextureEditor(window: Window | null, callback?: {
+        onCloseTextureEditor(callback?: {
             (): void;
         }): void;
         forceRefresh(): void;
@@ -1982,12 +1990,18 @@ declare module INSPECTOR {
     export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGridComponentProps, {
         displayNormals: boolean;
         displayVertexColors: boolean;
+        displayBoneWeights: boolean;
+        displayBoneIndex: number;
+        displaySkeletonMap: boolean;
     }> {
         constructor(props: IMeshPropertyGridComponentProps);
         renderWireframeOver(): void;
         renderNormalVectors(): void;
         displayNormals(): void;
         displayVertexColors(): void;
+        displayBoneWeights(): void;
+        displaySkeletonMap(): void;
+        onBoneDisplayIndexChange(value: number): void;
         onMaterialLink(): void;
         onSourceMeshLink(): void;
         onSkeletonLink(): void;
@@ -2495,6 +2509,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IGradientStepComponentProps {
+        globalState: GlobalState;
+        step: BABYLON.GradientBlockColorStep;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateStep: () => void;
+        onCheckForReOrder: () => void;
+    }
+    export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
+        gradient: number;
+    }> {
+        constructor(props: IGradientStepComponentProps);
+        updateColor(color: string): void;
+        updateStep(gradient: number): void;
+        onPointerUp(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        block: BABYLON.NodeMaterialBlock;
+    }
+}
+declare module INSPECTOR {
+    export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private _gradientBlock;
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(): void;
+        deleteStep(step: BABYLON.GradientBlockColorStep): void;
+        addNewStep(): void;
+        checkForReOrder(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.NodeMaterial;
@@ -2508,7 +2558,7 @@ declare module INSPECTOR {
         edit(): void;
         renderTextures(): JSX.Element | null;
         renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
-        renderInputValues(): JSX.Element | null;
+        renderInputValues(): JSX.Element;
         render(): JSX.Element;
     }
 }
