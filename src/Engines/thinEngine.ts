@@ -2835,30 +2835,14 @@ export class ThinEngine {
         return texture;
     }
 
-    /**
-     * Usually called from Texture.ts.
-     * Passed information to create a WebGLTexture
-     * @param url defines a value which contains one of the following:
-     * * A conventional http URL, e.g. 'http://...' or 'file://...'
-     * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
-     * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
-     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-     * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
-     * @param scene needed for loading to the correct scene
-     * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
-     * @param onLoad optional callback to be called upon successful completion
-     * @param onError optional callback to be called upon failure
-     * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
-     * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
-     * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
-     * @param forcedExtension defines the extension to use to pick the right loader
-     * @param mimeType defines an optional mime type
-     * @returns a InternalTexture for assignment back into BABYLON.Texture
-     */
-    public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+    protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
+        prepareTexture: (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
+            processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => void,
+        prepareTextureProcessFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
+
         url = url || "";
         const fromData = url.substr(0, 5) === "data:";
         const fromBlob = url.substr(0, 5) === "blob:";
@@ -2921,7 +2905,7 @@ export class ThinEngine {
                 }
 
                 if (EngineStore.UseFallbackTexture) {
-                    this.createTexture(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, buffer, texture);
+                    this._createTextureBase(EngineStore.FallbackTexture, noMipmap, texture.invertY, scene, samplingMode, null, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture);
                 }
 
                 if (onError) {
@@ -2931,7 +2915,7 @@ export class ThinEngine {
             else {
                 // fall back to the original url if the transformed url fails to load
                 Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
-                this.createTexture(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, buffer, texture, format, forcedExtension, mimeType);
+                this._createTextureBase(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, prepareTexture, prepareTextureProcessFunction, buffer, texture, format, forcedExtension, mimeType);
             }
         };
 
@@ -2942,7 +2926,7 @@ export class ThinEngine {
                     if (loadFailed) {
                         onInternalError("TextureLoader failed to load data");
                     } else {
-                        this._prepareWebGLTexture(texture, scene, width, height, texture.invertY, !loadMipmap, isCompressed, () => {
+                        prepareTexture(texture, extension, scene, { width, height }, texture.invertY, !loadMipmap, isCompressed, () => {
                             done();
                             return false;
                         }, samplingMode);
@@ -2975,50 +2959,7 @@ export class ThinEngine {
                     texture._buffer = img;
                 }
 
-                this._prepareWebGLTexture(texture, scene, img.width, img.height, texture.invertY, noMipmap, false, (potWidth, potHeight, continuationCallback) => {
-                    let gl = this._gl;
-                    var isPot = (img.width === potWidth && img.height === potHeight);
-                    let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
-
-                    if (isPot) {
-                        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
-                        return false;
-                    }
-
-                    let maxTextureSize = this._caps.maxTextureSize;
-
-                    if (img.width > maxTextureSize || img.height > maxTextureSize || !this._supportsHardwareTextureRescaling) {
-                        this._prepareWorkingCanvas();
-                        if (!this._workingCanvas || !this._workingContext) {
-                            return false;
-                        }
-
-                        this._workingCanvas.width = potWidth;
-                        this._workingCanvas.height = potHeight;
-
-                        this._workingContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
-
-                        texture.width = potWidth;
-                        texture.height = potHeight;
-
-                        return false;
-                    } else {
-                        // Using shaders when possible to rescale because canvas.drawImage is lossy
-                        let source = new InternalTexture(this, InternalTextureSource.Temp);
-                        this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
-                        gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
-
-                        this._rescaleTexture(source, texture, scene, internalFormat, () => {
-                            this._releaseTexture(source);
-                            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
-
-                            continuationCallback();
-                        });
-                    }
-
-                    return true;
-                }, samplingMode);
+                prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcessFunction, samplingMode);
             };
 
             if (!fromData || isBase64) {
@@ -3037,6 +2978,82 @@ export class ThinEngine {
         }
 
         return texture;
+    }
+
+    /**
+     * Usually called from Texture.ts.
+     * Passed information to create a WebGLTexture
+     * @param url defines a value which contains one of the following:
+     * * A conventional http URL, e.g. 'http://...' or 'file://...'
+     * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+     * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
+     * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
+     * @param scene needed for loading to the correct scene
+     * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
+     * @param onLoad optional callback to be called upon successful completion
+     * @param onError optional callback to be called upon failure
+     * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
+     * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+     * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @param mimeType defines an optional mime type
+     * @returns a InternalTexture for assignment back into BABYLON.Texture
+     */
+    public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
+        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
+
+        return this._createTextureBase(
+            url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
+            this._prepareWebGLTexture,
+            (potWidth, potHeight, img, extension, texture, continuationCallback) => {
+                let gl = this._gl;
+                var isPot = (img.width === potWidth && img.height === potHeight);
+                let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
+
+                if (isPot) {
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img as any);
+                    return false;
+                }
+
+                let maxTextureSize = this._caps.maxTextureSize;
+
+                if (img.width > maxTextureSize || img.height > maxTextureSize || !this._supportsHardwareTextureRescaling) {
+                    this._prepareWorkingCanvas();
+                    if (!this._workingCanvas || !this._workingContext) {
+                        return false;
+                    }
+
+                    this._workingCanvas.width = potWidth;
+                    this._workingCanvas.height = potHeight;
+
+                    this._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, this._workingCanvas);
+
+                    texture.width = potWidth;
+                    texture.height = potHeight;
+
+                    return false;
+                } else {
+                    // Using shaders when possible to rescale because canvas.drawImage is lossy
+                    let source = new InternalTexture(this, InternalTextureSource.Temp);
+                    this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img as any);
+
+                    this._rescaleTexture(source, texture, scene, internalFormat, () => {
+                        this._releaseTexture(source);
+                        this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+
+                        continuationCallback();
+                    });
+                }
+
+                return true;
+            },
+            buffer, fallback, format, forcedExtension, mimeType
+        );
     }
 
     /**
@@ -3354,11 +3371,11 @@ export class ThinEngine {
         texture.onLoadedObservable.clear();
     }
 
-    private _prepareWebGLTexture(texture: InternalTexture, scene: Nullable<ISceneLike>, width: number, height: number, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
-        processFunction: (width: number, height: number, continuationCallback: () => void) => boolean, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
+    private _prepareWebGLTexture(texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
+        processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): void {
         var maxTextureSize = this.getCaps().maxTextureSize;
-        var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? ThinEngine.GetExponentOfTwo(width, maxTextureSize) : width);
-        var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? ThinEngine.GetExponentOfTwo(height, maxTextureSize) : height);
+        var potWidth = Math.min(maxTextureSize, this.needPOTTextures ? ThinEngine.GetExponentOfTwo(img.width, maxTextureSize) : img.width);
+        var potHeight = Math.min(maxTextureSize, this.needPOTTextures ? ThinEngine.GetExponentOfTwo(img.height, maxTextureSize) : img.height);
 
         var gl = this._gl;
         if (!gl) {
@@ -3377,13 +3394,13 @@ export class ThinEngine {
         this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
         this._unpackFlipY(invertY === undefined ? true : (invertY ? true : false));
 
-        texture.baseWidth = width;
-        texture.baseHeight = height;
+        texture.baseWidth = img.width;
+        texture.baseHeight = img.height;
         texture.width = potWidth;
         texture.height = potHeight;
         texture.isReady = true;
 
-        if (processFunction(potWidth, potHeight, () => {
+        if (processFunction(potWidth, potHeight, img, extension, texture, () => {
             this._prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
         })) {
             // Returning as texture needs extra async steps
