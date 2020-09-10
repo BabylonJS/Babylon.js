@@ -14,6 +14,7 @@ import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
 import { PrePassRenderer } from "../../../Rendering/prePassRenderer";
+import { Constants } from "../../../Engines/constants";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
@@ -295,7 +296,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             if (this._forceGeometryBuffer) {
                 effect.setTexture("depthNormalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE)]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
         };
@@ -313,7 +314,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             if (this._forceGeometryBuffer) {
                 effect.setTexture("depthNormalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE)]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
 
@@ -431,7 +432,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
                 effect.setTexture("normalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[1]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE)]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setTexture("randomSampler", this._randomTexture);
         };
