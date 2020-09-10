@@ -240,6 +240,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
+            Procedural__Texture: ["Position2DBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -249,16 +250,25 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             case NodeMaterialModes.Material:
                 delete allBlocks["PostProcess"];
                 delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
                 break;
             case NodeMaterialModes.PostProcess:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
+                break;
+            case NodeMaterialModes.ProceduralTexture:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];  
+                delete allBlocks["Particle"];              
+                delete allBlocks["PostProcess"];
                 break;
             case NodeMaterialModes.Particle:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
-                delete allBlocks["PostProcess"];
+                delete allBlocks["PostProcess"];            
+                delete allBlocks["Procedural__Texture"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }
