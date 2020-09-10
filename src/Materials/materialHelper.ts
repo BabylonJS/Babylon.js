@@ -841,6 +841,9 @@ export class MaterialHelper {
 
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
+                    if (mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer.getIndex()) {
+                        effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[renderingMesh.uniqueId]);
+                    }
                 }
             }
         }
