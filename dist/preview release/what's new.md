@@ -164,6 +164,10 @@
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 - Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
 
+### Meshes
+
+- Added `MeshBuilder.CreateCapsule` and `Mesh.CreateCapsule` for creation of a capsule shape mesh and VertexBuffers. ([Pryme8](https://github.com/Pryme8))
+
 ### WebXR
 
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))

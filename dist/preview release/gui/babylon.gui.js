@@ -10319,8 +10319,8 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
             if (child.verticalAlignment === _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER) {
                 child._offsetTop(this._currentMeasure.top - child._currentMeasure.top);
             }
-            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width);
-            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height);
+            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width + child.paddingRightInPixels);
+            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height + child.paddingBottomInPixels);
         }
         if (this._currentMeasure.width !== maxWidth) {
             this._width.updateInPlace(maxWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"].UNITMODE_PIXEL);

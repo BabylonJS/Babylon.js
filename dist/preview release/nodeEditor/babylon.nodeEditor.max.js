@@ -63776,6 +63776,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
+            Procedural__Texture: ["Position2DBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -63784,16 +63785,25 @@ var NodeListComponent = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Material:
                 delete allBlocks["PostProcess"];
                 delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].PostProcess:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
+                break;
+            case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].ProceduralTexture:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["Particle"];
+                delete allBlocks["PostProcess"];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Particle:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];
+                delete allBlocks["Procedural__Texture"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }
@@ -64238,7 +64248,8 @@ var PreviewManager = /** @class */ (function () {
                 this._handleAnimations();
                 break;
             }
-            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess: {
+            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess:
+            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].ProceduralTexture: {
                 this._camera.radius = 4;
                 this._camera.upperRadiusLimit = 10;
                 break;
@@ -64427,7 +64438,8 @@ var PreviewManager = /** @class */ (function () {
                 this._postprocess = null;
             }
             switch (this._globalState.mode) {
-                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess: {
+                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess:
+                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].ProceduralTexture: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
                     this._postprocess = tempMaterial_1.createPostProcess(this._camera, 1.0, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
                     var currentScreen_1 = tempMaterial_1.getBlockByPredicate(function (block) { return block instanceof babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]; });
@@ -65327,6 +65339,9 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle:
                     this.props.globalState.nodeMaterial.setToDefaultParticle();
                     break;
+                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].ProceduralTexture:
+                    this.props.globalState.nodeMaterial.setToDefaultProceduralTexture();
+                    break;
             }
         }
         switch (value) {
@@ -65368,6 +65383,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             { label: "Material", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material },
             { label: "Post Process", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess },
             { label: "Particle", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle },
+            { label: "Procedural", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].ProceduralTexture },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -65379,7 +65395,20 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
-                            _this.props.globalState.nodeMaterial.setToDefault();
+                            switch (_this.props.globalState.mode) {
+                                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material:
+                                    _this.props.globalState.nodeMaterial.setToDefault();
+                                    break;
+                                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess:
+                                    _this.props.globalState.nodeMaterial.setToDefaultPostProcess();
+                                    break;
+                                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle:
+                                    _this.props.globalState.nodeMaterial.setToDefaultParticle();
+                                    break;
+                                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].ProceduralTexture:
+                                    _this.props.globalState.nodeMaterial.setToDefaultProceduralTexture();
+                                    break;
+                            }
                             _this.props.globalState.onResetRequiredObservable.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
@@ -65576,7 +65605,7 @@ var inputNameToAttributeValue = {
     "particle_positionw": "positionW",
 };
 var inputNameToAttributeName = {
-    "position2d": "postprocess",
+    "position2d": "screen",
     "particle_uv": "particle",
     "particle_color": "particle",
     "particle_texturemask": "particle",
@@ -71320,6 +71349,7 @@ var NodeEditor = /** @class */ (function () {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(function (data) {
                 _serializationTools__WEBPACK_IMPORTED_MODULE_5__["SerializationTools"].Deserialize(data, globalState);
+                globalState.mode = options.nodeMaterial.mode;
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });
