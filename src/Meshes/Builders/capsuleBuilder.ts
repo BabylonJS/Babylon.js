@@ -1,7 +1,6 @@
 import { VertexData } from "../mesh.vertexData";
-import { Vector2, Vector3 } from "../../Maths/math.vector";
+import { Vector2, Vector3, Matrix } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
-
 /**
  * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
  * @param options the constructors options used to shape the mesh.
@@ -10,7 +9,6 @@ import { Mesh, _CreationDataStorage } from "../mesh";
  */
 VertexData.CreateCapsule = function(
     options: ICreateCapsuleOptions = {
-        orientation : Vector3.Up(),
         subdivisions: 2,
         tessellation: 16,
         height: 1,
@@ -44,8 +42,8 @@ VertexData.CreateCapsule = function(
     var uvs = [];
 
     var index = 0,
-        indexArray = [],
-        halfHeight = height / 2;
+    indexArray = [],
+    halfHeight = height / 2;
 
     var x, y;
     var normal = Vector3.Zero();
@@ -65,11 +63,8 @@ VertexData.CreateCapsule = function(
         ).length();
 
     // Total length for v texture coord
-    var vl = radiusTop * alpha
-                + cone_length
-                + radiusBottom * (Math.PI / 2 - alpha);
+    var vl = radiusTop * alpha + cone_length + radiusBottom * (Math.PI / 2 - alpha);
 
-    // generate vertices, normals and uvs
     var v = 0;
     for (y = 0; y <= capsTopSegments; y++) {
 
@@ -86,20 +81,15 @@ VertexData.CreateCapsule = function(
         var _radius = cosA * radiusTop;
 
         for (x = 0; x <= radialSegments; x ++) {
-
             var u = x / radialSegments;
-
             var theta = u * thetaLength + thetaStart;
-
             var sinTheta = Math.sin(theta);
             var cosTheta = Math.cos(theta);
-
             // vertex
             vertex.x = _radius * sinTheta;
             vertex.y = halfHeight + sinA * radiusTop;
             vertex.z = _radius * cosTheta;
             vertices.push(vertex.x, vertex.y, vertex.z);
-
             // normal
             normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
             normals.push(normal.x, normal.y, normal.z);
@@ -110,92 +100,64 @@ VertexData.CreateCapsule = function(
             // increase index
             index ++;
         }
-
         // now save vertices of the row in our index array
         indexArray.push(indexRow);
-
     }
 
     var cone_height = height + cosAlpha * radiusTop - cosAlpha * radiusBottom;
     var slope = sinAlpha * (radiusBottom - radiusTop) / cone_height;
     for (y = 1; y <= heightSegments; y++) {
-
         var indexRow = [];
-
         v += cone_length / heightSegments;
-
         // calculate the radius of the current row
         var _radius = sinAlpha * (y * (radiusBottom - radiusTop) / heightSegments + radiusTop);
-
         for (x = 0; x <= radialSegments; x ++) {
-
             var u = x / radialSegments;
-
             var theta = u * thetaLength + thetaStart;
-
             var sinTheta = Math.sin(theta);
             var cosTheta = Math.cos(theta);
-
             // vertex
             vertex.x = _radius * sinTheta;
             vertex.y = halfHeight + cosAlpha * radiusTop - y * cone_height / heightSegments;
             vertex.z = _radius * cosTheta;
             vertices.push(vertex.x, vertex.y, vertex.z);
-
             // normal
             normal.set(sinTheta, slope, cosTheta).normalize();
             normals.push(normal.x, normal.y, normal.z);
-
             // uv
             uvs.push(u, 1 - v / vl);
-
             // save index of vertex in respective row
             indexRow.push(index);
-
             // increase index
             index ++;
         }
-
         // now save vertices of the row in our index array
         indexArray.push(indexRow);
     }
 
     for (y = 1; y <= capsBottomSegments; y++) {
-
         var indexRow = [];
-
         var a = (Math.PI / 2 - alpha) - (Math.PI - alpha) * (y / capsBottomSegments);
-
         v += radiusBottom * alpha / capsBottomSegments;
-
         var cosA = Math.cos(a);
         var sinA = Math.sin(a);
-
         // calculate the radius of the current row
         var _radius = cosA * radiusBottom;
-
         for (x = 0; x <= radialSegments; x ++) {
-
             var u = x / radialSegments;
-
             var theta = u * thetaLength + thetaStart;
-
             var sinTheta = Math.sin(theta);
             var cosTheta = Math.cos(theta);
-
             // vertex
             vertex.x = _radius * sinTheta;
             vertex.y = -halfHeight + sinA * radiusBottom;
             vertex.z = _radius * cosTheta;
             vertices.push(vertex.x, vertex.y, vertex.z);
-
             // normal
             normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
             normals.push(normal.x, normal.y, normal.z);
-
             // uv
             uvs.push(u, 1 - v / vl);
-
             // save index of vertex in respective row
             indexRow.push(index);
             // increase index
@@ -204,7 +166,6 @@ VertexData.CreateCapsule = function(
         // now save vertices of the row in our index array
         indexArray.push(indexRow);
     }
-
     // generate indices
     for (x = 0; x < radialSegments; x ++) {
         for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y ++) {
@@ -223,7 +184,21 @@ VertexData.CreateCapsule = function(
             indices.push(i4);
         }
     }
+
     indices = indices.reverse();
+
+    if (options.orientation && !options.orientation.equals(Vector3.Up())) {
+        let m = new Matrix();
+        (options.orientation.clone().scale(Math.PI * 0.5).cross(Vector3.Up()).toQuaternion()).toRotationMatrix(m);
+        let v = Vector3.Zero();
+        for (let i = 0; i < vertices.length; i += 3) {
+            v.set(vertices[i], vertices[i + 1], vertices[i + 2]);
+            Vector3.TransformCoordinatesToRef(v.clone(), m, v);
+            vertices[i] = v.x;
+            vertices[i + 1] = v.y;
+            vertices[i + 2] = v.z;
+        }
+    }
 
     let vDat = new VertexData();
     vDat.positions = vertices;
@@ -239,7 +214,7 @@ VertexData.CreateCapsule = function(
  */
 export interface ICreateCapsuleOptions{
     /** The Orientation of the capsule.  Default : Vector3.Up() */
-    orientation: Vector3;
+    orientation?: Vector3;
 
     /** Number of sub segments on the tube section of the capsule running parallel to orientation. */
     subdivisions: number;
