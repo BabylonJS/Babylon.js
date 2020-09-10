@@ -1775,7 +1775,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
-        MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
+        MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.additionnalPrePass);
 
         let reflectionTexture: Nullable<BaseTexture> = null;
         if (mustRebind) {

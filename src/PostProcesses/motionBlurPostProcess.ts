@@ -116,7 +116,7 @@ export class MotionBlurPostProcess extends PostProcess {
                     const velocityIndex = this._geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE);
                     effect.setTexture("velocitySampler", this._geometryBufferRenderer.getGBuffer().textures[velocityIndex]);
                 } else {
-                    const velocityIndex = this._prePassRenderer.getIndex(PrePassRenderer.VELOCITY_TEXTURE_TYPE);
+                    const velocityIndex = this._prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
                     effect.setTexture("velocitySampler", this._prePassRenderer.prePassRT.textures[velocityIndex]);
                 }
             };

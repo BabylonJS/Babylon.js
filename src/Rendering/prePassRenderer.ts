@@ -8,8 +8,6 @@ import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
-
-export type PrePassLayout = number[];
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -22,69 +20,33 @@ export class PrePassRenderer {
         throw _DevTools.WarnImport("PrePassRendererSceneComponent");
     }
 
-    /**
-     * Constant used to retrieve the irradiance texture index in the textures array
-     * using getIndex(PrePassRenderer.IRRADIANCE_TEXTURE_TYPE)
-     */
-    public static readonly IRRADIANCE_TEXTURE_TYPE = 0;
-    /**
-     * Constant used to retrieve the position texture index in the textures array
-     * using getIndex(PrePassRenderer.POSITION_TEXTURE_INDEX)
-     */
-    public static readonly POSITION_TEXTURE_TYPE = 1;
-    /**
-     * Constant used to retrieve the velocity texture index in the textures array
-     * using getIndex(PrePassRenderer.VELOCITY_TEXTURE_INDEX)
-     */
-    public static readonly VELOCITY_TEXTURE_TYPE = 2;
-    /**
-     * Constant used to retrieve the reflectivity texture index in the textures array
-     * using the getIndex(PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE)
-     */
-    public static readonly REFLECTIVITY_TEXTURE_TYPE = 3;
-    /**
-     * Constant used to retrieve the lit color texture index in the textures array
-     * using the getIndex(PrePassRenderer.COLOR_TEXTURE_TYPE)
-     */
-    public static readonly COLOR_TEXTURE_TYPE = 4;
-    /**
-     * Constant used to retrieve depth + normal index in the textures array
-     * using the getIndex(PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE)
-     */
-    public static readonly DEPTHNORMAL_TEXTURE_TYPE = 5;
-    /**
-     * Constant used to retrieve albedo index in the textures array
-     * using the getIndex(PrePassRenderer.ALBEDO_TEXTURE_TYPE)
-     */
-    public static readonly ALBEDO_TEXTURE_TYPE = 6;
-
     private _textureFormats = [
         {
-            type: PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
+            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
         },
         {
-            type: PrePassRenderer.POSITION_TEXTURE_TYPE,
+            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
         },
         {
-            type: PrePassRenderer.VELOCITY_TEXTURE_TYPE,
+            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
         },
         {
-            type: PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE,
+            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
         },
         {
-            type: PrePassRenderer.COLOR_TEXTURE_TYPE,
+            type: Constants.PREPASS_COLOR_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
         },
         {
-            type: PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+            type: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
         },
         {
-            type: PrePassRenderer.ALBEDO_TEXTURE_TYPE,
+            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
         },
 ];
@@ -287,7 +249,11 @@ export class PrePassRenderer {
     }
 
     /**
-     * Adds an effect configuration
+     * Adds an effect configuration to the prepass.
+     * If an effect has already been added, it won't add it twice and will return the configuration
+     * already present.
+     * @param cfg the effect configuration
+     * @return the effect configuration now used by the prepass
      */
     public addEffectConfiguration(cfg: PrePassEffectConfiguration) : PrePassEffectConfiguration {
         // Do not add twice
@@ -320,7 +286,7 @@ export class PrePassRenderer {
         }
 
         if (this.prePassRT && this.mrtCount !== previousMrtCount) {
-            this.prePassRT.updateCount(this.mrtCount);
+            this.prePassRT.updateCount(this.mrtCount, { types: this._mrtFormats });
         }
 
         this._resetPostProcessChain();
@@ -362,8 +328,8 @@ export class PrePassRenderer {
             this._textureIndices[this._textureFormats[i].type] = -1;
         }
 
-        this._textureIndices[PrePassRenderer.COLOR_TEXTURE_TYPE] = 0;
-        this._mrtLayout = [PrePassRenderer.COLOR_TEXTURE_TYPE];
+        this._textureIndices[Constants.PREPASS_COLOR_TEXTURE_TYPE] = 0;
+        this._mrtLayout = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
         this._mrtFormats = [Constants.TEXTURETYPE_HALF_FLOAT];
         this.mrtCount = 1;
     }
