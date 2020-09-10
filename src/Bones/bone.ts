@@ -1140,4 +1140,11 @@ export class Bone extends Node {
 
         Vector3.TransformCoordinatesToRef(position, tmat, result);
     }
+
+    /**
+     * Set the current local matrix as the restPose for this bone.
+     */
+    public setCurrentPoseAsRest(): void {
+        this.setRestPose(this.getLocalMatrix());
+    }
 }
