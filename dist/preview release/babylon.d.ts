@@ -28134,6 +28134,7 @@ declare module BABYLON {
         hardwareInstancedRendering: boolean;
         sideOrientation: number;
         manualUpdate: boolean;
+        previousRenderId: number;
     }
     /**
      * @hidden
