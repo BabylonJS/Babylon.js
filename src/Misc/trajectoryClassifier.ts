@@ -362,7 +362,7 @@ export class Trajectory {
      * @param result reference to output variable
      * @returns whether or not transformation was successful
      */
-    public/*private*/ static _transformSegmentDirToRef(
+    private static _transformSegmentDirToRef(
         priorVec: DeepImmutable<Vector3>,
         fromVec: DeepImmutable<Vector3>,
         toVec: DeepImmutable<Vector3>,
@@ -399,7 +399,7 @@ export class Trajectory {
      * @param tokens token vector list
      * @returns index of the most similar token to the segment
      */
-    public/*private*/ static _tokenizeSegment(
+    private static _tokenizeSegment(
         segment: DeepImmutable<Vector3>,
         tokens: DeepImmutable<Vector3[]>): number {
 
