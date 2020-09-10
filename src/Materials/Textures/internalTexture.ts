@@ -448,6 +448,7 @@ export class InternalTexture {
     /** @hidden */
     public _swapAndDie(target: InternalTexture): void {
         target._webGLTexture = this._webGLTexture;
+        target._webGPUTexture = this._webGPUTexture;
         target._isRGBD = this._isRGBD;
 
         if (this._framebuffer) {
@@ -504,7 +505,7 @@ export class InternalTexture {
      * Dispose the current allocated resources
      */
     public dispose(): void {
-        if (!this._webGLTexture) {
+        if (!this._webGLTexture && !this._webGPUTexture) {
             return;
         }
 
