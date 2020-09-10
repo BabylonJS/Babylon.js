@@ -229,7 +229,8 @@ export class PreviewManager {
                 this._handleAnimations();
                 break;
             }
-            case NodeMaterialModes.PostProcess: {
+            case NodeMaterialModes.PostProcess: 
+            case NodeMaterialModes.ProceduralTexture: {
                 this._camera.radius = 4;
                 this._camera.upperRadiusLimit = 10;
                 break;
@@ -421,7 +422,8 @@ export class PreviewManager {
             }
 
             switch (this._globalState.mode) {
-                case NodeMaterialModes.PostProcess: {
+                case NodeMaterialModes.PostProcess: 
+                case NodeMaterialModes.ProceduralTexture: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
                     this._postprocess = tempMaterial.createPostProcess(this._camera, 1.0, Constants.TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
