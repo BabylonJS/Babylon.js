@@ -62,169 +62,151 @@ VertexData.CreateCapsule = function(
             )
         ).length();
 
-        // Total length for v texture coord
-    var vl = radiusTop * alpha
-                + cone_length
-                + radiusBottom * (Math.PI / 2 - alpha);
+    // Total length for v texture coord
+    var vl = radiusTop * alpha + cone_length + radiusBottom * (Math.PI / 2 - alpha);
 
-        //var groupCount = 0;
+    var v = 0;
+    for (y = 0; y <= capsTopSegments; y++) {
 
-        // generate vertices, normals and uvs
+        var indexRow = [];
 
-        var v = 0;
-        for (y = 0; y <= capsTopSegments; y++) {
+        var a = Math.PI / 2 - alpha * (y / capsTopSegments);
 
-            var indexRow = [];
+        v += radiusTop * alpha / capsTopSegments;
 
-            var a = Math.PI / 2 - alpha * (y / capsTopSegments);
+        var cosA = Math.cos(a);
+        var sinA = Math.sin(a);
 
-            v += radiusTop * alpha / capsTopSegments;
+        // calculate the radius of the current row
+        var _radius = cosA * radiusTop;
 
-            var cosA = Math.cos(a);
-            var sinA = Math.sin(a);
-
-            // calculate the radius of the current row
-            var _radius = cosA * radiusTop;
-
-            for (x = 0; x <= radialSegments; x ++) {
-                var u = x / radialSegments;
-                var theta = u * thetaLength + thetaStart;
-                var sinTheta = Math.sin(theta);
-                var cosTheta = Math.cos(theta);
-                // vertex
-                vertex.x = _radius * sinTheta;
-                vertex.y = halfHeight + sinA * radiusTop;
-                vertex.z = _radius * cosTheta;
-                vertices.push(vertex.x, vertex.y, vertex.z);
-                // normal
-                normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
-                normals.push(normal.x, normal.y, normal.z);
-                // uv
-                uvs.push(u, 1 - v / vl);
-                // save index of vertex in respective row
-                indexRow.push(index);
-                // increase index
-                index ++;
-            }
-            // now save vertices of the row in our index array
-            indexArray.push(indexRow);
+        for (x = 0; x <= radialSegments; x ++) {
+            var u = x / radialSegments;
+            var theta = u * thetaLength + thetaStart;
+            var sinTheta = Math.sin(theta);
+            var cosTheta = Math.cos(theta);
+            // vertex
+            vertex.x = _radius * sinTheta;
+            vertex.y = halfHeight + sinA * radiusTop;
+            vertex.z = _radius * cosTheta;
+            vertices.push(vertex.x, vertex.y, vertex.z);
+            // normal
+            normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
+            normals.push(normal.x, normal.y, normal.z);
+            // uv
+            uvs.push(u, 1 - v / vl);
+            // save index of vertex in respective row
+            indexRow.push(index);
+            // increase index
+            index ++;
         }
+        // now save vertices of the row in our index array
+        indexArray.push(indexRow);
+    }
 
-        var cone_height = height + cosAlpha * radiusTop - cosAlpha * radiusBottom;
-        var slope = sinAlpha * (radiusBottom - radiusTop) / cone_height;
-        for (y = 1; y <= heightSegments; y++) {
-            var indexRow = [];
-            v += cone_length / heightSegments;
-            // calculate the radius of the current row
-            var _radius = sinAlpha * (y * (radiusBottom - radiusTop) / heightSegments + radiusTop);
-            for (x = 0; x <= radialSegments; x ++) {
-                var u = x / radialSegments;
-                var theta = u * thetaLength + thetaStart;
-                var sinTheta = Math.sin(theta);
-                var cosTheta = Math.cos(theta);
-                // vertex
-                vertex.x = _radius * sinTheta;
-                vertex.y = halfHeight + cosAlpha * radiusTop - y * cone_height / heightSegments;
-                vertex.z = _radius * cosTheta;
-                vertices.push(vertex.x, vertex.y, vertex.z);
-                // normal
-                normal.set(sinTheta, slope, cosTheta).normalize();
-                normals.push(normal.x, normal.y, normal.z);
-                // uv
-                uvs.push(u, 1 - v / vl);
-                // save index of vertex in respective row
-                indexRow.push(index);
-                // increase index
-                index ++;
-            }
-            // now save vertices of the row in our index array
-            indexArray.push(indexRow);
+    var cone_height = height + cosAlpha * radiusTop - cosAlpha * radiusBottom;
+    var slope = sinAlpha * (radiusBottom - radiusTop) / cone_height;
+    for (y = 1; y <= heightSegments; y++) {
+        var indexRow = [];
+        v += cone_length / heightSegments;
+        // calculate the radius of the current row
+        var _radius = sinAlpha * (y * (radiusBottom - radiusTop) / heightSegments + radiusTop);
+        for (x = 0; x <= radialSegments; x ++) {
+            var u = x / radialSegments;
+            var theta = u * thetaLength + thetaStart;
+            var sinTheta = Math.sin(theta);
+            var cosTheta = Math.cos(theta);
+            // vertex
+            vertex.x = _radius * sinTheta;
+            vertex.y = halfHeight + cosAlpha * radiusTop - y * cone_height / heightSegments;
+            vertex.z = _radius * cosTheta;
+            vertices.push(vertex.x, vertex.y, vertex.z);
+            // normal
+            normal.set(sinTheta, slope, cosTheta).normalize();
+            normals.push(normal.x, normal.y, normal.z);
+            // uv
+            uvs.push(u, 1 - v / vl);
+            // save index of vertex in respective row
+            indexRow.push(index);
+            // increase index
+            index ++;
         }
+        // now save vertices of the row in our index array
+        indexArray.push(indexRow);
+    }
 
-        for (y = 1; y <= capsBottomSegments; y++) {
-
-            var indexRow = [];
-
-            var a = (Math.PI / 2 - alpha) - (Math.PI - alpha) * (y / capsBottomSegments);
-
-            v += radiusBottom * alpha / capsBottomSegments;
-
-            var cosA = Math.cos(a);
-            var sinA = Math.sin(a);
-
-            // calculate the radius of the current row
-            var _radius = cosA * radiusBottom;
-
-            for (x = 0; x <= radialSegments; x ++) {
-
-                var u = x / radialSegments;
-
-                var theta = u * thetaLength + thetaStart;
-
-                var sinTheta = Math.sin(theta);
-                var cosTheta = Math.cos(theta);
-
-                // vertex
-                vertex.x = _radius * sinTheta;
-                vertex.y = -halfHeight + sinA * radiusBottom;
-                vertex.z = _radius * cosTheta;
-                vertices.push(vertex.x, vertex.y, vertex.z);
-
-                // normal
-                normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
-                normals.push(normal.x, normal.y, normal.z);
-
-                // uv
-                uvs.push(u, 1 - v / vl);
-
-                // save index of vertex in respective row
-                indexRow.push(index);
-                // increase index
-                index ++;
-            }
-            // now save vertices of the row in our index array
-            indexArray.push(indexRow);
+    for (y = 1; y <= capsBottomSegments; y++) {
+        var indexRow = [];
+        var a = (Math.PI / 2 - alpha) - (Math.PI - alpha) * (y / capsBottomSegments);
+        v += radiusBottom * alpha / capsBottomSegments;
+        var cosA = Math.cos(a);
+        var sinA = Math.sin(a);
+        // calculate the radius of the current row
+        var _radius = cosA * radiusBottom;
+        for (x = 0; x <= radialSegments; x ++) {
+            var u = x / radialSegments;
+            var theta = u * thetaLength + thetaStart;
+            var sinTheta = Math.sin(theta);
+            var cosTheta = Math.cos(theta);
+            // vertex
+            vertex.x = _radius * sinTheta;
+            vertex.y = -halfHeight + sinA * radiusBottom;
+            vertex.z = _radius * cosTheta;
+            vertices.push(vertex.x, vertex.y, vertex.z);
+            // normal
+            normal.set(cosA * sinTheta, sinA, cosA * cosTheta);
+            normals.push(normal.x, normal.y, normal.z);
+            // uv
+            uvs.push(u, 1 - v / vl);
+            // save index of vertex in respective row
+            indexRow.push(index);
+            // increase index
+            index ++;
         }
-        // generate indices
-        for (x = 0; x < radialSegments; x ++) {
-            for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y ++) {
-                // we use the index array to access the correct indices
-                var i1 = indexArray[ y ][ x ];
-                var i2 = indexArray[ y + 1 ][ x ];
-                var i3 = indexArray[ y + 1 ][ x + 1 ];
-                var i4 = indexArray[ y ][ x + 1 ];
-                // face one
-                indices.push(i1);
-                indices.push(i2);
-                indices.push(i4);
-                // face two
-                indices.push(i2);
-                indices.push(i3);
-                indices.push(i4);
-            }
+        // now save vertices of the row in our index array
+        indexArray.push(indexRow);
+    }
+    // generate indices
+    for (x = 0; x < radialSegments; x ++) {
+        for (y = 0; y < capsTopSegments + heightSegments + capsBottomSegments; y ++) {
+            // we use the index array to access the correct indices
+            var i1 = indexArray[ y ][ x ];
+            var i2 = indexArray[ y + 1 ][ x ];
+            var i3 = indexArray[ y + 1 ][ x + 1 ];
+            var i4 = indexArray[ y ][ x + 1 ];
+            // face one
+            indices.push(i1);
+            indices.push(i2);
+            indices.push(i4);
+            // face two
+            indices.push(i2);
+            indices.push(i3);
+            indices.push(i4);
         }
-        indices = indices.reverse();
+    }
 
-        if (options.orientation && !options.orientation.equals(Vector3.Up())) {
-            let m = new Matrix();
-            (options.orientation.clone().scale(Math.PI * 0.5).cross(Vector3.Up()).toQuaternion()).toRotationMatrix(m);
-            let v = Vector3.Zero();
-            for (let i = 0; i < vertices.length; i += 3) {
-                v.set(vertices[i], vertices[i + 1], vertices[i + 2]);
-                Vector3.TransformCoordinatesToRef(v.clone(), m, v);
-                vertices[i] = v.x;
-                vertices[i + 1] = v.y;
-                vertices[i + 2] = v.z;
-            }
+    indices = indices.reverse();
+
+    if (options.orientation && !options.orientation.equals(Vector3.Up())) {
+        let m = new Matrix();
+        (options.orientation.clone().scale(Math.PI * 0.5).cross(Vector3.Up()).toQuaternion()).toRotationMatrix(m);
+        let v = Vector3.Zero();
+        for (let i = 0; i < vertices.length; i += 3) {
+            v.set(vertices[i], vertices[i + 1], vertices[i + 2]);
+            Vector3.TransformCoordinatesToRef(v.clone(), m, v);
+            vertices[i] = v.x;
+            vertices[i + 1] = v.y;
+            vertices[i + 2] = v.z;
         }
+    }
 
-        let vDat = new VertexData();
-        vDat.positions = vertices;
-        vDat.normals = normals;
-        vDat.uvs = uvs;
-        vDat.indices = indices;
+    let vDat = new VertexData();
+    vDat.positions = vertices;
+    vDat.normals = normals;
+    vDat.uvs = uvs;
+    vDat.indices = indices;
 
-        return vDat;
+    return vDat;
 };
 
 /**
