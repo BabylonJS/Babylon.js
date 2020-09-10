@@ -159,7 +159,7 @@
 
 ### Meshes
 
-- Added `MeshBuilder.CreateCapsule` and `Mesh.CreateCapsule` for creation of. ([Pryme8](https://github.com/Pryme8))
+- Added `MeshBuilder.CreateCapsule` and `Mesh.CreateCapsule` for creation of a Capsule Shape Mesh and VertexBuffers. ([Pryme8](https://github.com/Pryme8))
 
 ### WebXR
 
