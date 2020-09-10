@@ -2,11 +2,12 @@ import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { Matrix } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { Scene } from "../../scene";
-import { PrePassRenderer } from "../../Rendering/prePassRenderer";
+import { Constants } from "../../Engines/constants";
 
 export class PBRAdditionnalPrePassConfiguration {
     public previousWorldMatrices: { [index: number]: Matrix } = {};
     public previousViewProjection: Matrix;
+    public previousBones: { [index: number]: number[] } = {};
 
     constructor() {
 
@@ -50,7 +51,7 @@ export class PBRAdditionnalPrePassConfiguration {
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (scene.prePassRenderer && scene.prePassRenderer.enabled) {
-                if (scene.prePassRenderer.getIndex(PrePassRenderer.VELOCITY_TEXTURE_TYPE) !== -1) {
+                if (scene.prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE) !== -1) {
                     if (!this.previousWorldMatrices[mesh.uniqueId]) {
                         this.previousWorldMatrices[mesh.uniqueId] = Matrix.Identity();
                     }

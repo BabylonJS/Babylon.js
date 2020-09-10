@@ -1,4 +1,4 @@
-import { PrePassRenderer } from "./prePassRenderer";
+import { Constants } from "../Engines/constants";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { _DevTools } from '../Misc/devTools';
 
@@ -21,7 +21,7 @@ export class SSAO2Configuration implements PrePassEffectConfiguration {
      * Textures that should be present in the MRT for this effect to work
      */
     public readonly texturesRequired: number[] = [
-        PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE
+        Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE
     ];
 
     /**
@@ -32,7 +32,10 @@ export class SSAO2Configuration implements PrePassEffectConfiguration {
 
     }
 
+    /**
+     * Disposes the configuration
+     */
     public dispose() {
-
+        // pass
     }
 }

@@ -8,7 +8,8 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
-import { PrePassRenderer } from "../Rendering/prePassRenderer";
+import { Constants } from "../Engines/constants";
+import { PBRAdditionnalPrePassConfiguration } from "../Materials/PBR/pbrAdditionnalPrePassConfiguration";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
@@ -306,32 +307,32 @@ export class MaterialHelper {
         const previousPrePass = defines.PREPASS;
         const texturesList = [
         {
-            type: PrePassRenderer.POSITION_TEXTURE_TYPE,
+            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
             define: "PREPASS_POSITION",
             index: "POSITION_TEXTURE_TYPE",
         },
         {
-            type: PrePassRenderer.VELOCITY_TEXTURE_TYPE,
+            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
             define: "PREPASS_VELOCITY",
             index: "PREPASS_VELOCITY_INDEX",
         },
         {
-            type: PrePassRenderer.REFLECTIVITY_TEXTURE_TYPE,
+            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
             define: "PREPASS_REFLECTIVITY",
             index: "PREPASS_REFLECTIVITY_INDEX",
         },
         {
-            type: PrePassRenderer.IRRADIANCE_TEXTURE_TYPE,
+            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
             define: "PREPASS_IRRADIANCE",
             index: "PREPASS_IRRADIANCE_INDEX",
         },
         {
-            type: PrePassRenderer.ALBEDO_TEXTURE_TYPE,
+            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
             define: "PREPASS_ALBEDO",
             index: "PREPASS_ALBEDO_INDEX",
         },
         {
-            type: PrePassRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+            type: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
             define: "PREPASS_DEPTHNORMAL",
             index: "PREPASS_DEPTHNORMAL_INDEX",
         }];
@@ -821,7 +822,7 @@ export class MaterialHelper {
      * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      */
-    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
+    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PBRAdditionnalPrePassConfiguration): void {
         if (!effect || !mesh) {
             return;
         }
@@ -841,8 +842,8 @@ export class MaterialHelper {
 
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
-                    if (mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer.getIndex()) {
-                        effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[renderingMesh.uniqueId]);
+                    if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
+                        effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
                     }
                 }
             }
