@@ -8,7 +8,8 @@
 - Added HDR texture filtering tools to the sandbox ([Sebavan](https://github.com/sebavan/))
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added SubSurfaceScattering on PBR materials ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
-- Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
+- Added edition of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
+- Added edition of procedural texture in the node material editor ([Deltakosh](https://github.com/deltakosh))
 - Added Curve editor to manage entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
@@ -89,6 +90,8 @@
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
 - View & edit textures in pop out inspector using tools such as brush and floodfill. Supports region selection, individual channel editing, mipmap previews, and resizing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- Added mesh debug tools to display bone influence weights and bone indices maps. ([Pryme8](https://github.com/Pryme8))
+- Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
 
 ### Cameras
 
@@ -98,6 +101,10 @@
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 - Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
+
+### Debug
+- Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))
+- Added static methods to create debug shaders materials for a mesh with a skeleton. ([Pryme8](https://github.com/Pryme8))
 
 ### Sprites
 
@@ -156,6 +163,10 @@
 - Added the possibility to update the shader code before being compiled ([Popov72](https://github.com/Popov72))
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 - Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
+
+### Meshes
+
+- Added `MeshBuilder.CreateCapsule` and `Mesh.CreateCapsule` for creation of a capsule shape mesh and VertexBuffers. ([Pryme8](https://github.com/Pryme8))
 
 ### WebXR
 

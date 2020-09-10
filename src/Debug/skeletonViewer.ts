@@ -378,7 +378,7 @@ export class SkeletonViewer {
 
         //Defaults
         options.pauseAnimations = options.pauseAnimations ?? true;
-        options.returnToRest = options.returnToRest ?? true;
+        options.returnToRest = options.returnToRest ?? false;
         options.displayMode = options.displayMode ?? SkeletonViewer.DISPLAY_LINES;
         options.displayOptions = options.displayOptions ?? {};
         options.displayOptions.midStep = options.displayOptions.midStep ?? 0.235;

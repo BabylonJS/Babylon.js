@@ -134,6 +134,9 @@ if (BABYLON.Engine.isSupported()) {
                 break;
             case BABYLON.NodeMaterialModes.Particle:
                 nodeMaterial.setToDefaultParticle();
+                break;                
+            case BABYLON.NodeMaterialModes.ProceduralTexture:
+                nodeMaterial.setToDefaultProceduralTexture();
                 break;
         }
         nodeMaterial.build(true);
