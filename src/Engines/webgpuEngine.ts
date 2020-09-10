@@ -1080,7 +1080,9 @@ export class WebGPUEngine extends Engine {
                     texture.baseHeight = img.height;
                     texture.width = img.width;
                     texture.height = img.height;
-                    texture.isReady = true;
+                    if (format) {
+                        texture.format = format;
+                    }
 
                     const promise: Promise<Nullable<ImageBitmap>> =
                         img instanceof String ? Promise.resolve(null) :
@@ -1093,19 +1095,26 @@ export class WebGPUEngine extends Engine {
                                 });
                             });
 
-                    promise.then((img) => {
+                    promise.then(async (img) => {
                         if (img) {
+                            let gpuTexture: GPUTexture;
+
+                            // TODO WEBGPU: handle format if <> 0. Note that it seems "rgb" formats don't exist in WebGPU...
                             //let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
                             if (noMipmap) {
-                                this._gpuTextureHelper.generateTexture(img);
+                                gpuTexture = await this._gpuTextureHelper.generateTexture(img, invertY);
                             } else {
-                                this._gpuTextureHelper.generateMipmappedTexture(img);
+                                gpuTexture = await this._gpuTextureHelper.generateMipmappedTexture(img, invertY);
                             }
+                            texture._webGPUTexture = gpuTexture;
+                            texture._webGPUTextureView = gpuTexture.createView();
                         }
 
                         if (scene) {
                             scene._removePendingData(texture);
                         }
+
+                        texture.isReady = true;
 
                         texture.onLoadedObservable.notifyObservers(texture);
                         texture.onLoadedObservable.clear();

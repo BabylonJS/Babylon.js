@@ -82,12 +82,16 @@ export class GPUTextureHelper {
         });
     }
 
-    generateTexture(imageBitmap: ImageBitmap): GPUTexture {
+    async generateTexture(imageBitmap: ImageBitmap, invertY = false): Promise<GPUTexture> {
        let textureSize = {
             width: imageBitmap.width,
             height: imageBitmap.height,
             depth: 1,
         };
+
+        if (invertY) {
+            imageBitmap = await createImageBitmap(imageBitmap, { imageOrientation: "flipY" });
+        }
 
         // Populate the top level of the srcTexture with the imageBitmap.
         const srcTexture = this.device.createTexture({
@@ -102,7 +106,7 @@ export class GPUTextureHelper {
         return srcTexture;
     }
 
-    generateMipmappedTexture(imageBitmap: ImageBitmap): GPUTexture {
+    async generateMipmappedTexture(imageBitmap: ImageBitmap, invertY = false): Promise<GPUTexture> {
         let textureSize = {
             width: imageBitmap.width,
             height: imageBitmap.height,
@@ -115,9 +119,13 @@ export class GPUTextureHelper {
         const srcTexture = this.device.createTexture({
             size: textureSize,
             format: WebGPUConstants.TextureFormat.RGBA8Unorm,
-            usage: WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment,
+            usage: WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment,
             mipLevelCount
         });
+
+        if (invertY) {
+            imageBitmap = await createImageBitmap(imageBitmap, { imageOrientation: "flipY" });
+        }
 
         this.device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, { texture: srcTexture }, textureSize);
 

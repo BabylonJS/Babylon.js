@@ -3007,7 +3007,7 @@ export class ThinEngine {
 
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
-            this._prepareWebGLTexture,
+            this._prepareWebGLTexture.bind(this),
             (potWidth, potHeight, img, extension, texture, continuationCallback) => {
                 let gl = this._gl;
                 var isPot = (img.width === potWidth && img.height === potHeight);
