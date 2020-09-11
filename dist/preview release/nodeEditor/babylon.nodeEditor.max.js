@@ -64111,6 +64111,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 var PreviewManager = /** @class */ (function () {
     function PreviewManager(targetCanvas, globalState) {
         var _this = this;
@@ -64286,6 +64287,10 @@ var PreviewManager = /** @class */ (function () {
                 }
             }
             this._meshes = [];
+            if (this._layer) {
+                this._layer.dispose();
+                this._layer = null;
+            }
             var lights = this._scene.lights.slice(0);
             for (var _b = 0, lights_1 = lights; _b < lights_1.length; _b++) {
                 var light = lights_1[_b];
@@ -64344,6 +64349,9 @@ var PreviewManager = /** @class */ (function () {
                         });
                         return;
                 }
+            }
+            else if (this._globalState.mode === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].ProceduralTexture) {
+                this._layer = new babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Layer"]("proceduralLayer", null, this._scene);
             }
             else if (this._globalState.mode === babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Particle) {
                 switch (this._globalState.previewType) {
@@ -64448,9 +64456,12 @@ var PreviewManager = /** @class */ (function () {
                 this._postprocess.dispose(this._camera);
                 this._postprocess = null;
             }
+            if (this._proceduralTexture) {
+                this._proceduralTexture.dispose();
+                this._proceduralTexture = null;
+            }
             switch (this._globalState.mode) {
-                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess:
-                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].ProceduralTexture: {
+                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
                     this._postprocess = tempMaterial_1.createPostProcess(this._camera, 1.0, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
                     var currentScreen_1 = tempMaterial_1.getBlockByPredicate(function (block) { return block instanceof babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]; });
@@ -64463,6 +64474,17 @@ var PreviewManager = /** @class */ (function () {
                         this._material.dispose();
                     }
                     this._material = tempMaterial_1;
+                    break;
+                }
+                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].ProceduralTexture: {
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
+                    this._proceduralTexture = tempMaterial_1.createProceduralTexture(512, this._scene);
+                    if (this._material) {
+                        this._material.dispose();
+                    }
+                    if (this._layer) {
+                        this._layer.texture = this._proceduralTexture;
+                    }
                     break;
                 }
                 case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].Particle: {
@@ -65288,10 +65310,10 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                             replace: material.snippetId
                         });
                     }
-                    alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
+                    _this.props.globalState.hostDocument.defaultView.alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
                 }
                 else {
-                    alert("Unable to save your node material. It may be too large (" + (dataToSend.payload.length / 1024).toFixed(2) + " KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.");
+                    _this.props.globalState.hostDocument.defaultView.alert("Unable to save your node material. It may be too large (" + (dataToSend.payload.length / 1024).toFixed(2) + " KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.");
                 }
             }
         };
@@ -65322,7 +65344,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 _this.props.globalState.onResetRequiredObservable.notifyObservers();
             }
         }).catch(function (err) {
-            alert("Unable to load your node material: " + err);
+            _this.props.globalState.hostDocument.defaultView.alert("Unable to load your node material: " + err);
         });
     };
     PropertyTabComponent.prototype.changeMode = function (value, force, loadDefault) {
@@ -65332,7 +65354,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
         if (this.props.globalState.mode === value) {
             return false;
         }
-        if (!force && !confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
+        if (!force && !this.props.globalState.hostDocument.defaultView.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
             (_a = this._modeSelect.current) === null || _a === void 0 ? void 0 : _a.setValue(this.props.globalState.mode);
             return false;
         }
