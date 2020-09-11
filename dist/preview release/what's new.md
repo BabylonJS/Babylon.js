@@ -138,6 +138,7 @@
 - Fixed issue with loading screen hiding too early when loading multiple assets concurrently. ([bghgary](https://github.com/bghgary))
 - Added the `loadAllMaterials` property to the gLTF loader to load materials even if not used by any mesh ([Popov72](https://github.com/Popov72))
 - Added transmission prerender pass when using KHR_materials_transmission ([MiiBond](https://github.com/MiiBond/))
+- Fixed a bug when loading glTF with interleaved animation data. ([bghgary](https://github.com/bghgary))
 
 ### Serializers
 

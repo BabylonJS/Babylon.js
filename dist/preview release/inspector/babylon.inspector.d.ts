@@ -42,7 +42,7 @@ declare module INSPECTOR {
         glTFLoaderDefaults: {
             [key: string]: any;
         };
-        glTFLoaderExtenstions: {
+        glTFLoaderExtensions: {
             [key: string]: BABYLON.IGLTFLoaderExtension;
         };
         blockMutationUpdates: boolean;
@@ -2922,7 +2922,6 @@ declare module INSPECTOR {
     }
     export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         private _onValidationResultsUpdatedObserver;
-        constructor(props: IGLTFComponentProps);
         openValidationDetails(): void;
         prepareText(singularForm: string, count: number): string;
         componentDidMount(): void;

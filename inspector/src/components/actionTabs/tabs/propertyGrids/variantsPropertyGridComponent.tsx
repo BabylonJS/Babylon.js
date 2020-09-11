@@ -25,7 +25,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
     }
 
     private _getVariantsExtension(): Nullable<KHR_materials_variants> {
-        return this.props.globalState?.glTFLoaderExtenstions["KHR_materials_variants"] as KHR_materials_variants;
+        return this.props.globalState?.glTFLoaderExtensions["KHR_materials_variants"] as KHR_materials_variants;
     }
 
     render() {
