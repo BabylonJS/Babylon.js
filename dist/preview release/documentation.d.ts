@@ -15542,6 +15542,10 @@ declare module BABYLON {
          * @param result The vector3 that the local position should be copied to
          */
         getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Set the current local matrix as the restPose for this bone.
+         */
+        setCurrentPoseAsRest(): void;
     }
 }
 declare module BABYLON {
@@ -16266,6 +16270,10 @@ declare module BABYLON {
          */
         sortBones(): void;
         private _sortBones;
+        /**
+         * Set the current local matrix as the restPose for all bones in the skeleton.
+         */
+        setCurrentPoseAsRest(): void;
     }
 }
 declare module BABYLON {
