@@ -64,6 +64,11 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         this._loadingDiv.style.opacity = "0";
         this._loadingDiv.style.transition = "opacity 1.5s ease";
         this._loadingDiv.style.pointerEvents = "none";
+        this._loadingDiv.style.display = "grid";
+        this._loadingDiv.style.gridTemplateRows = "100%";
+        this._loadingDiv.style.gridTemplateColumns = "100%";
+        this._loadingDiv.style.justifyItems = "center";
+        this._loadingDiv.style.alignItems = "center";
 
         // Loading text
         this._loadingTextDiv = document.createElement("div");
@@ -109,19 +114,14 @@ export class DefaultLoadingScreen implements ILoadingScreen {
             imgBack.src = DefaultLoadingScreen.DefaultLogoUrl;
         }
 
-        imgBack.style.position = "absolute";
-        imgBack.style.left = "40%";
-        imgBack.style.top = "50%";
-        imgBack.style.width = "20%";
-        imgBack.style.height = "height";
-        imgBack.style.transform = "translateY(-50%)";
+        imgBack.style.width = "150px";
+        imgBack.style.gridColumn = "1";
+        imgBack.style.gridRow = "1";
 
         const imageSpinnerContainer = document.createElement("div");
-        imageSpinnerContainer.style.position = "absolute";
-        imageSpinnerContainer.style.left = "30%";
-        imageSpinnerContainer.style.top = "50%";
-        imageSpinnerContainer.style.width = "40%";
-        imageSpinnerContainer.style.transform = "translateY(-50%)";
+        imageSpinnerContainer.style.width = "300px";
+        imageSpinnerContainer.style.gridColumn = "1";
+        imageSpinnerContainer.style.gridRow = "1";
 
         // Loading spinner
         var imgSpinner = new Image();

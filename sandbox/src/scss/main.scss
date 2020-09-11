@@ -49,14 +49,15 @@ html, body, #root {
     width: 100%;   
     height: calc(100% - 70px);
     pointer-events: none;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    align-items: center;
+    justify-items: center;
 }
 
 #logo {
-    position: absolute;
-    width: 20%;
-    height: 20%;
-    top: 40%;
-    left: 40%;
+    width: 150px;
     pointer-events: none;
 }
 
