@@ -39,7 +39,7 @@ export class GraphNode {
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
     private _isVisible = true;
-    private _enclosingFrameId: number;
+    private _enclosingFrameId = -1;
 
     public get isVisible() {
         return this._isVisible;
