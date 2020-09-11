@@ -92,7 +92,6 @@ export class GPUTextureHelper {
         const mipLevelCount = generateMipmaps ? Math.floor(Scalar.Log2(Math.max(imageBitmap.width, imageBitmap.height))) + 1 : 1;
         const additionalUsages = generateMipmaps ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
-        // Populate the top level of the srcTexture with the imageBitmap.
         const srcTexture = this.device.createTexture({
             size: textureSize,
             dimension: WebGPUConstants.TextureDimension.E2d,
@@ -114,38 +113,7 @@ export class GPUTextureHelper {
 
         const commandEncoder = this.device.createCommandEncoder({});
 
-        const bindGroupLayout = this.mipmapPipeline.getBindGroupLayout(0);
-
-        for (let i = 1; i < mipLevelCount; ++i) {
-            const passEncoder = commandEncoder.beginRenderPass({
-                colorAttachments: [{
-                    attachment: srcTexture.createView({
-                        baseMipLevel: i,
-                        mipLevelCount: 1
-                    }),
-                    loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
-                }],
-            });
-
-            const bindGroup = this.device.createBindGroup({
-                layout: bindGroupLayout,
-                entries: [{
-                    binding: 0,
-                    resource: this.mipmapSampler,
-                }, {
-                    binding: 1,
-                    resource: srcTexture.createView({
-                        baseMipLevel: i - 1,
-                        mipLevelCount: 1
-                    }),
-                }],
-            });
-
-            passEncoder.setPipeline(this.mipmapPipeline);
-            passEncoder.setBindGroup(0, bindGroup);
-            passEncoder.draw(4, 1, 0, 0);
-            passEncoder.endPass();
-        }
+        this._generateMipmaps(srcTexture, commandEncoder, mipLevelCount);
 
         this.device.defaultQueue.submit([commandEncoder.finish()]);
 
@@ -153,17 +121,18 @@ export class GPUTextureHelper {
     }
 
     async generateCubeTexture(imageBitmaps: ImageBitmap[], generateMipmaps = false, invertY = false): Promise<GPUTexture> {
-        let textureSize = {
-            width: imageBitmaps[0].width,
-            height: imageBitmaps[0].height,
-            depth: 6,
-        };
+        const width = imageBitmaps[0].width;
+        const height = imageBitmaps[0].height;
 
-        const mipLevelCount = generateMipmaps ? Math.floor(Scalar.Log2(Math.max(textureSize.width, textureSize.height))) + 1 : 1;
+        const mipLevelCount = generateMipmaps ? Math.floor(Scalar.Log2(Math.max(width, height))) + 1 : 1;
         const additionalUsages = generateMipmaps ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
         const srcTexture = this.device.createTexture({
-            size: textureSize,
+            size: {
+                width,
+                height,
+                depth: 6,
+            },
             dimension: WebGPUConstants.TextureDimension.E2d,
             format: WebGPUConstants.TextureFormat.RGBA8Unorm,
             usage: WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled | additionalUsages,
@@ -172,8 +141,8 @@ export class GPUTextureHelper {
         });
 
         const textureSizeFace = {
-            width: imageBitmaps[0].width,
-            height: imageBitmaps[0].height,
+            width,
+            height,
             depth: 1,
         };
 
@@ -204,41 +173,8 @@ export class GPUTextureHelper {
         if (generateMipmaps) {
             const commandEncoder = this.device.createCommandEncoder({});
 
-            const bindGroupLayout = this.mipmapPipeline.getBindGroupLayout(0);
-
-            for (let i = 1; i < mipLevelCount; ++i) {
-                const passEncoder = commandEncoder.beginRenderPass({
-                    colorAttachments: [{
-                        attachment: srcTexture.createView({
-                            dimension: WebGPUConstants.TextureViewDimension.E2d,
-                            baseMipLevel: i,
-                            mipLevelCount: 1,
-                            arrayLayerCount: 1,
-                        }),
-                        loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
-                    }],
-                });
-
-                const bindGroup = this.device.createBindGroup({
-                    layout: bindGroupLayout,
-                    entries: [{
-                        binding: 0,
-                        resource: this.mipmapSampler,
-                    }, {
-                        binding: 1,
-                        resource: srcTexture.createView({
-                            dimension: WebGPUConstants.TextureViewDimension.E2d,
-                            baseMipLevel: i - 1,
-                            mipLevelCount: 1,
-                            arrayLayerCount: 1,
-                        }),
-                    }],
-                });
-
-                passEncoder.setPipeline(this.mipmapPipeline);
-                passEncoder.setBindGroup(0, bindGroup);
-                passEncoder.draw(4, 1, 0, 0);
-                passEncoder.endPass();
+            for (let f = 0; f < faces.length; ++f) {
+                this._generateMipmaps(srcTexture, commandEncoder, mipLevelCount, f);
             }
 
             this.device.defaultQueue.submit([commandEncoder.finish()]);
@@ -247,4 +183,44 @@ export class GPUTextureHelper {
         return srcTexture;
     }
 
+    private _generateMipmaps(srcTexture: GPUTexture, commandEncoder: GPUCommandEncoder, mipLevelCount: number, faceIndex= 0): void {
+        const bindGroupLayout = this.mipmapPipeline.getBindGroupLayout(0);
+
+        for (let i = 1; i < mipLevelCount; ++i) {
+            const passEncoder = commandEncoder.beginRenderPass({
+                colorAttachments: [{
+                    attachment: srcTexture.createView({
+                        dimension: WebGPUConstants.TextureViewDimension.E2d,
+                        baseMipLevel: i,
+                        mipLevelCount: 1,
+                        arrayLayerCount: 1,
+                        baseArrayLayer: faceIndex,
+                    }),
+                    loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 0.0 },
+                }],
+            });
+
+            const bindGroup = this.device.createBindGroup({
+                layout: bindGroupLayout,
+                entries: [{
+                    binding: 0,
+                    resource: this.mipmapSampler,
+                }, {
+                    binding: 1,
+                    resource: srcTexture.createView({
+                        dimension: WebGPUConstants.TextureViewDimension.E2d,
+                        baseMipLevel: i - 1,
+                        mipLevelCount: 1,
+                        arrayLayerCount: 1,
+                        baseArrayLayer: faceIndex,
+                    }),
+                }],
+            });
+
+            passEncoder.setPipeline(this.mipmapPipeline);
+            passEncoder.setBindGroup(0, bindGroup);
+            passEncoder.draw(4, 1, 0, 0);
+            passEncoder.endPass();
+        }
+    }
 }
