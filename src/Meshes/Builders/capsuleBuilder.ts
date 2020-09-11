@@ -43,7 +43,8 @@ VertexData.CreateCapsule = function(
 
     var index = 0,
     indexArray = [],
-    halfHeight = height / 2;
+    heightMinusCaps = height - (radiusTop+radiusBottom),
+    halfHeight = heightMinusCaps / 2;
 
     var x, y;
     var normal = Vector3.Zero();
@@ -104,7 +105,7 @@ VertexData.CreateCapsule = function(
         indexArray.push(indexRow);
     }
 
-    var cone_height = height + cosAlpha * radiusTop - cosAlpha * radiusBottom;
+    var cone_height = (height - radiusTop - radiusBottom) + cosAlpha * radiusTop - cosAlpha * radiusBottom;
     var slope = sinAlpha * (radiusBottom - radiusTop) / cone_height;
     for (y = 1; y <= heightSegments; y++) {
         var indexRow = [];
