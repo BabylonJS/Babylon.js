@@ -123,6 +123,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
     public autoCloneTransformation: boolean = false;
     /**
      * Triggered when new babylon (transformed) hit test results are available
+     * Note - this will be called when results come back from the device. It can be an empty array!!
      */
     public onHitTestResultObservable: Observable<IWebXRHitResult[]> = new Observable();
     /**
@@ -175,7 +176,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
                 .requestHitTestSourceForTransientInput({
                     profile: "generic-touchscreen",
                     offsetRay,
-                    entityTypes: this.options.entityTypes
+                    entityTypes: this.options.entityTypes,
                 })
                 .then((hitSource) => {
                     this._transientXrHitTestSource = hitSource;
@@ -223,17 +224,13 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
 
         if (this._xrHitTestSource) {
             const results = frame.getHitTestResults(this._xrHitTestSource);
-            if (results.length) {
-                this._processWebXRHitTestResult(results);
-            }
+            this._processWebXRHitTestResult(results);
         }
         if (this._transientXrHitTestSource) {
             let hitTestResultsPerInputSource = frame.getHitTestResultsForTransientInput(this._transientXrHitTestSource);
 
             hitTestResultsPerInputSource.forEach((resultsPerInputSource) => {
-                if (resultsPerInputSource.results.length > 0) {
-                    this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
-                }
+                this._processWebXRHitTestResult(resultsPerInputSource.results, resultsPerInputSource.inputSource);
             });
         }
     }
@@ -268,9 +265,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             results.push(result);
         });
 
-        if (results.length) {
-            this.onHitTestResultObservable.notifyObservers(results);
-        }
+        this.onHitTestResultObservable.notifyObservers(results);
     }
 }
 

@@ -40,6 +40,11 @@ export interface IWebXRFeature extends IDisposable {
     isCompatible(): boolean;
 
     /**
+     * Was this feature disposed;
+     */
+    isDisposed: boolean;
+
+    /**
      * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
      */
     xrNativeFeatureName?: string;

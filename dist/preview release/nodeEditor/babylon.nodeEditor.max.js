@@ -63776,6 +63776,7 @@ var NodeListComponent = /** @class */ (function (_super) {
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
             PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
+            Procedural__Texture: ["Position2DBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -63784,16 +63785,25 @@ var NodeListComponent = /** @class */ (function (_super) {
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Material:
                 delete allBlocks["PostProcess"];
                 delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].PostProcess:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
+                break;
+            case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].ProceduralTexture:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];
+                delete allBlocks["Particle"];
+                delete allBlocks["PostProcess"];
                 break;
             case babylonjs_Materials_Node_Enums_nodeMaterialModes__WEBPACK_IMPORTED_MODULE_4__["NodeMaterialModes"].Particle:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["PostProcess"];
+                delete allBlocks["Procedural__Texture"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }
@@ -64238,7 +64248,8 @@ var PreviewManager = /** @class */ (function () {
                 this._handleAnimations();
                 break;
             }
-            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess: {
+            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess:
+            case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].ProceduralTexture: {
                 this._camera.radius = 4;
                 this._camera.upperRadiusLimit = 10;
                 break;
@@ -64427,7 +64438,8 @@ var PreviewManager = /** @class */ (function () {
                 this._postprocess = null;
             }
             switch (this._globalState.mode) {
-                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess: {
+                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].PostProcess:
+                case babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["NodeMaterialModes"].ProceduralTexture: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
                     this._postprocess = tempMaterial_1.createPostProcess(this._camera, 1.0, babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["Constants"].TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
                     var currentScreen_1 = tempMaterial_1.getBlockByPredicate(function (block) { return block instanceof babylonjs_Materials_Node_nodeMaterial__WEBPACK_IMPORTED_MODULE_0__["CurrentScreenBlock"]; });
@@ -65327,6 +65339,9 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                 case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle:
                     this.props.globalState.nodeMaterial.setToDefaultParticle();
                     break;
+                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].ProceduralTexture:
+                    this.props.globalState.nodeMaterial.setToDefaultProceduralTexture();
+                    break;
             }
         }
         switch (value) {
@@ -65368,6 +65383,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             { label: "Material", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material },
             { label: "Post Process", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess },
             { label: "Particle", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle },
+            { label: "Procedural", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].ProceduralTexture },
         ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
@@ -65379,7 +65395,20 @@ var PropertyTabComponent = /** @class */ (function (_super) {
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Version", value: babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["Engine"].Version }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_12__["TextLineComponent"], { label: "Help", value: "doc.babylonjs.com", underline: true, onLink: function () { return window.open('https://doc.babylonjs.com/how_to/node_material', '_blank'); } }),
                     react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_2__["ButtonLineComponent"], { label: "Reset to default", onClick: function () {
-                            _this.props.globalState.nodeMaterial.setToDefault();
+                            switch (_this.props.globalState.mode) {
+                                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Material:
+                                    _this.props.globalState.nodeMaterial.setToDefault();
+                                    break;
+                                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].PostProcess:
+                                    _this.props.globalState.nodeMaterial.setToDefaultPostProcess();
+                                    break;
+                                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].Particle:
+                                    _this.props.globalState.nodeMaterial.setToDefaultParticle();
+                                    break;
+                                case babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_6__["NodeMaterialModes"].ProceduralTexture:
+                                    _this.props.globalState.nodeMaterial.setToDefaultProceduralTexture();
+                                    break;
+                            }
                             _this.props.globalState.onResetRequiredObservable.notifyObservers();
                         } })),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_3__["LineContainerComponent"], { title: "UI" },
@@ -65576,7 +65605,7 @@ var inputNameToAttributeValue = {
     "particle_positionw": "positionW",
 };
 var inputNameToAttributeName = {
-    "position2d": "postprocess",
+    "position2d": "screen",
     "particle_uv": "particle",
     "particle_color": "particle",
     "particle_texturemask": "particle",
@@ -67562,6 +67591,7 @@ var GraphFrame = /** @class */ (function () {
                 return;
             }
             else {
+                node.enclosingFrameId = -1;
                 _this_1._nodes.splice(index, 1);
             }
         });
@@ -67916,6 +67946,7 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.removeNode = function (node) {
         var index = this.nodes.indexOf(node);
         if (index > -1) {
+            node.enclosingFrameId = -1;
             this.nodes.splice(index, 1);
         }
     };
@@ -68133,6 +68164,9 @@ var GraphFrame = /** @class */ (function () {
     GraphFrame.prototype.dispose = function () {
         var _a;
         this.isCollapsed = false;
+        this._nodes.forEach(function (node) {
+            node.enclosingFrameId = -1;
+        });
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -68157,7 +68191,7 @@ var GraphFrame = /** @class */ (function () {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: this.isCollapsed,
+            isCollapsed: false,
             blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
             comments: this._comments
         };
@@ -68254,6 +68288,7 @@ var GraphNode = /** @class */ (function () {
         this._mouseStartPointY = null;
         this._displayManager = null;
         this._isVisible = true;
+        this._enclosingFrameId = -1;
         this._globalState = globalState;
         this._onSelectionChangedObserver = this._globalState.onSelectionChangedObservable.add(function (node) {
             if (node === _this) {
@@ -69316,6 +69351,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _gradientStepComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gradientStepComponent */ "./diagram/properties/gradientStepComponent.tsx");
 /* harmony import */ var _sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/buttonLineComponent */ "./sharedComponents/buttonLineComponent.tsx");
 /* harmony import */ var _genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./genericNodePropertyComponent */ "./diagram/properties/genericNodePropertyComponent.tsx");
+/* harmony import */ var _sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../sharedComponents/optionsLineComponent */ "./sharedComponents/optionsLineComponent.tsx");
+
 
 
 
@@ -69329,6 +69366,21 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
     function GradientPropertyTabComponent(props) {
         return _super.call(this, props) || this;
     }
+    GradientPropertyTabComponent.prototype.componentDidMount = function () {
+        var _this = this;
+        var gradientBlock = this.props.block;
+        this.onValueChangedObserver = gradientBlock.onValueChangedObservable.add(function () {
+            _this.forceUpdate();
+            _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+        });
+    };
+    GradientPropertyTabComponent.prototype.componentWillUnmount = function () {
+        var gradientBlock = this.props.block;
+        if (this.onValueChangedObserver) {
+            gradientBlock.onValueChangedObservable.remove(this.onValueChangedObserver);
+            this.onValueChangedObserver = null;
+        }
+    };
     GradientPropertyTabComponent.prototype.forceRebuild = function () {
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onRebuildRequiredObservable.notifyObservers();
@@ -69338,6 +69390,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
         var index = gradientBlock.colorSteps.indexOf(step);
         if (index > -1) {
             gradientBlock.colorSteps.splice(index, 1);
+            gradientBlock.colorStepsUpdated();
             this.forceRebuild();
             this.forceUpdate();
         }
@@ -69346,6 +69399,7 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
         var gradientBlock = this.props.block;
         var newStep = new babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["GradientBlockColorStep"](1.0, babylonjs_Materials_Node_Blocks_gradientBlock__WEBPACK_IMPORTED_MODULE_3__["Color3"].White());
         gradientBlock.colorSteps.push(newStep);
+        gradientBlock.colorStepsUpdated();
         this.forceRebuild();
         this.forceUpdate();
     };
@@ -69360,14 +69414,41 @@ var GradientPropertyTabComponent = /** @class */ (function (_super) {
             }
             return -1;
         });
+        gradientBlock.colorStepsUpdated();
         this.props.globalState.onUpdateRequiredObservable.notifyObservers();
         this.forceUpdate();
     };
     GradientPropertyTabComponent.prototype.render = function () {
         var _this = this;
         var gradientBlock = this.props.block;
+        var typeOptions = [
+            { label: "None", value: 0 },
+            { label: "Visible in the inspector", value: 1 },
+        ];
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_genericNodePropertyComponent__WEBPACK_IMPORTED_MODULE_6__["GeneralPropertyTabComponent"], { globalState: this.props.globalState, block: this.props.block }),
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "PROPERTIES" },
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_optionsLineComponent__WEBPACK_IMPORTED_MODULE_7__["OptionsLineComponent"], { label: "Type", options: typeOptions, target: this.props.block, noDirectUpdate: true, getSelection: function (block) {
+                        if (block.visibleInInspector) {
+                            return 1;
+                        }
+                        if (block.isConstant) {
+                            return 2;
+                        }
+                        return 0;
+                    }, onSelect: function (value) {
+                        switch (value) {
+                            case 0:
+                                _this.props.block.visibleInInspector = false;
+                                break;
+                            case 1:
+                                _this.props.block.visibleInInspector = true;
+                                break;
+                        }
+                        _this.forceUpdate();
+                        _this.props.globalState.onUpdateRequiredObservable.notifyObservers();
+                        _this.props.globalState.onRebuildRequiredObservable.notifyObservers();
+                    } })),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "STEPS" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_buttonLineComponent__WEBPACK_IMPORTED_MODULE_5__["ButtonLineComponent"], { label: "Add new step", onClick: function () { return _this.addNewStep(); } }),
                 gradientBlock.colorSteps.map(function (c, i) {
@@ -69877,7 +69958,7 @@ var NodePortPropertyTabComponent = /** @class */ (function (_super) {
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
                     this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
-                    this.props.nodePort.node.enclosingFrameId !== undefined && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
+                    this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
     };
     return NodePortPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -71268,6 +71349,7 @@ var NodeEditor = /** @class */ (function () {
         if (options.customLoadObservable) {
             options.customLoadObservable.add(function (data) {
                 _serializationTools__WEBPACK_IMPORTED_MODULE_5__["SerializationTools"].Deserialize(data, globalState);
+                globalState.mode = options.nodeMaterial.mode;
                 globalState.onResetRequiredObservable.notifyObservers();
                 globalState.onBuiltObservable.notifyObservers();
             });

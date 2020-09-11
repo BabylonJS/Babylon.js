@@ -3640,12 +3640,14 @@ var Container = /** @class */ (function (_super) {
                     }
                 }
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
@@ -5630,6 +5632,7 @@ var Control = /** @class */ (function () {
         block.style.height = "0px";
         block.style.verticalAlign = "bottom";
         var div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
         div.appendChild(text);
         div.appendChild(block);
         document.body.appendChild(div);
@@ -10316,8 +10319,8 @@ var _ScrollViewerWindow = /** @class */ (function (_super) {
             if (child.verticalAlignment === _control__WEBPACK_IMPORTED_MODULE_4__["Control"].VERTICAL_ALIGNMENT_CENTER) {
                 child._offsetTop(this._currentMeasure.top - child._currentMeasure.top);
             }
-            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width);
-            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height);
+            maxWidth = Math.max(maxWidth, child._currentMeasure.left - this._currentMeasure.left + child._currentMeasure.width + child.paddingRightInPixels);
+            maxHeight = Math.max(maxHeight, child._currentMeasure.top - this._currentMeasure.top + child._currentMeasure.height + child.paddingBottomInPixels);
         }
         if (this._currentMeasure.width !== maxWidth) {
             this._width.updateInPlace(maxWidth, _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__["ValueAndUnit"].UNITMODE_PIXEL);
@@ -12355,6 +12358,8 @@ var StackPanel = /** @class */ (function (_super) {
                 }
             }
         }
+        stackWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
+        stackHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
         this._doNotTrackManualChanges = true;
         // Let stack panel width or height default to stackHeight and stackWidth if dimensions are not specified.
         // User can now define their own height and width for stack panel.
@@ -12890,7 +12895,7 @@ var TextBlock = /** @class */ (function (_super) {
         else {
             while (characters.length && lineWidth > width) {
                 characters.pop();
-                line = characters.join() + "...";
+                line = characters.join("") + "...";
                 lineWidth = context.measureText(line).width;
             }
         }

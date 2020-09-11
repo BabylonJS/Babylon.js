@@ -8,7 +8,8 @@
 - Added HDR texture filtering tools to the sandbox ([Sebavan](https://github.com/sebavan/))
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added SubSurfaceScattering on PBR materials ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
-- Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
+- Added edition of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
+- Added edition of procedural texture in the node material editor ([Deltakosh](https://github.com/deltakosh))
 - Added Curve editor to manage entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
@@ -46,6 +47,7 @@
 - Added `getTransformNodesByTags` support to `Scene` class ([MackeyK24](https://github.com/MackeyK24))
 - Added support for multi-pointer mesh selection and pointer over/out triggers ([#8820](https://github.com/BabylonJS/Babylon.js/issues/8820)) ([RaananW](https://github.com/RaananW))
 - Changed DeviceSourceManager getInput contract to no longer return nullable values for reals this time. Also added proper cleanup for DeviceSourceManager observables ([Drigax](https://github.com/drigax))
+- Default Loading screen supports any image size and ratio ([#8845](https://github.com/BabylonJS/Babylon.js/issues/8845)) ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -87,7 +89,9 @@
 - Popup Window available (To be used in Curve Editor) ([pixelspace](https://github.com/devpixelspace))
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
-- View & edit textures in pop out inspector using tools such as brush and floodfill. Supports region selection, individual channel editing, and resizing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- View & edit textures in pop out inspector using tools such as brush and floodfill. Supports region selection, individual channel editing, mipmap previews, and resizing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- Added mesh debug tools to display bone influence weights and bone indices maps. ([Pryme8](https://github.com/Pryme8))
+- Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
 
 ### Cameras
 
@@ -98,6 +102,10 @@
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 - Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
 
+### Debug
+- Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))
+- Added static methods to create debug shaders materials for a mesh with a skeleton. ([Pryme8](https://github.com/Pryme8))
+
 ### Sprites
 
 - Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh))
@@ -107,6 +115,7 @@
 
 - Fixed time steps or delta time with sub time step for Oimo.js and Cannon.js ([cedricguillemet](https://github.com/cedricguillemet))
 - Ammo.js collision group and mask supported by impostor parameters ([cedricguillemet](https://github.com/cedricguillemet))
+- `collisionResponse` flag to disable response but still get onCollide events ([cedricguillemet](https://github.com/cedricguillemet))
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
 - Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
 - Added `scene.physicsEnabled` boolean ([Deltakosh](https://github.com/deltakosh))
@@ -128,6 +137,7 @@
 - Added support for .glb file loading through a base64 encoded filename ([Popov72](https://github.com/Popov72))
 - Fixed issue with loading screen hiding too early when loading multiple assets concurrently. ([bghgary](https://github.com/bghgary))
 - Added the `loadAllMaterials` property to the gLTF loader to load materials even if not used by any mesh ([Popov72](https://github.com/Popov72))
+- Added transmission prerender pass when using KHR_materials_transmission ([MiiBond](https://github.com/MiiBond/))
 
 ### Serializers
 
@@ -154,6 +164,10 @@
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 - Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
 
+### Meshes
+
+- Added `MeshBuilder.CreateCapsule` and `Mesh.CreateCapsule` for creation of a capsule shape mesh and VertexBuffers. ([Pryme8](https://github.com/Pryme8))
+
 ### WebXR
 
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
@@ -179,7 +193,9 @@
 - WebXR hit test can now define different entity type for the results ([#8687](https://github.com/BabylonJS/Babylon.js/issues/8687)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue with stencil not enabled per default ([#8720](https://github.com/BabylonJS/Babylon.js/issues/8720)) ([RaananW](https://github.com/RaananW))
 - Expose the overlay to which the XR Enter/Exit buttons are added to ([#8754](https://github.com/BabylonJS/Babylon.js/issues/8754)) ([RaananW](https://github.com/RaananW))
-- WebXR hand-tracking module is available, able to track hand-joints on selected devices including physics interactions ([RaananW](https://github.com/RaananW))
+- WebXR hand-tracking module is available, able to track hand-joints on selected devices including optional physics interactions ([RaananW](https://github.com/RaananW))
+- Fixed an issue with moving backwards in XR ([#8854](https://github.com/BabylonJS/Babylon.js/issues/8854)) ([RaananW](https://github.com/RaananW))
+- Hit-Test results can be an empty array ([#8887](https://github.com/BabylonJS/Babylon.js/issues/8887)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -298,6 +314,8 @@
 - Fixed an issue with text block wrap and unicode strings (not working in IE11) ([#8822](https://github.com/BabylonJS/Babylon.js/issues/8822)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue with compound initialization that has rotation ([#8744](https://github.com/BabylonJS/Babylon.js/issues/8744)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue in `DeviceSourceManager.getDeviceSources()` where null devices are returned ([Drigax](https://github.com/drigax))
+- Fix issue in glTF2 `_Exporter.createSkinsAsync()` that exported an incorrect joint indexing list ([drigax](https://github.com/drigax))
+- Fix gltf2 Morph Target export code style, add additional test case for non-animation group created morph targets ([drigax](https://github.com/drigax))
 
 ## Breaking changes
 - `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))
