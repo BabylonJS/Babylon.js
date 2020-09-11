@@ -21,6 +21,7 @@ import { DataBuffer } from '../../../Meshes/dataBuffer';
 import { _TypeStore } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../../Node/nodeMaterial';
 import { RenderTargetTextureSize } from '../../../Engines/Extensions/engine.renderTarget';
+import { EngineStore } from '../../../Engines/engineStore';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -117,7 +118,7 @@ export class ProceduralTexture extends Texture {
     constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false) {
         super(null, scene, !generateMipMaps);
 
-        scene = this.getScene()!;
+        scene = this.getScene() || EngineStore.LastCreatedScene!;
         let component = scene._getComponent(SceneComponentConstants.NAME_PROCEDURALTEXTURE);
         if (!component) {
             component = new ProceduralTextureSceneComponent(scene);
