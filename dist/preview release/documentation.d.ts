@@ -15406,21 +15406,21 @@ declare module BABYLON {
          */
         setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Set the euler rotation of the bone in local of world space
+         * Set the euler rotation of the bone in local or world space
          * @param rotation The euler rotation that the bone should be set to
          * @param space The space that the rotation is in
          * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
         setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Set the quaternion rotation of the bone in local of world space
+         * Set the quaternion rotation of the bone in local or world space
          * @param quat The quaternion rotation that the bone should be set to
          * @param space The space that the rotation is in
          * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
         setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Set the rotation matrix of the bone in local of world space
+         * Set the rotation matrix of the bone in local or world space
          * @param rotMat The rotation matrix that the bone should be set to
          * @param space The space that the rotation is in
          * @param mesh The mesh that this bone is attached to. This is only used in world space
@@ -22561,7 +22561,7 @@ declare module BABYLON {
          * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
          * @returns the post process created
          */
-        createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): PostProcess;
+        createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): Nullable<PostProcess>;
         /**
          * Create the post process effect from the material
          * @param postProcess The post process to create the effect for
@@ -22578,7 +22578,7 @@ declare module BABYLON {
             width: number;
             height: number;
             layers?: number;
-        }, scene: Scene): ProceduralTexture;
+        }, scene: Scene): Nullable<ProceduralTexture>;
         private _createEffectForParticles;
         private _checkInternals;
         /**
@@ -47987,7 +47987,7 @@ declare module BABYLON {
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
          * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, skeletons, and animationGroups when import succeeds
          * @param onProgress a callback with a progress event for each file being loaded
          * @param onError a callback with the scene, a message, and possibly an exception when import fails
          * @param pluginExtension the extension used to determine the plugin
@@ -66456,6 +66456,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
         }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates a tube mesh.
