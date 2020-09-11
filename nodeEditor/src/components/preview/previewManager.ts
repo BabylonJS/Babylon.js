@@ -28,6 +28,9 @@ import { ParticleHelper } from 'babylonjs/Particles/particleHelper';
 import { Texture } from 'babylonjs/Materials/Textures/texture';
 import { ParticleTextureBlock } from 'babylonjs/Materials/Node/Blocks/Particle/particleTextureBlock';
 import { FileTools } from 'babylonjs/Misc/fileTools';
+import { ProceduralTexture } from 'babylonjs/Materials/Textures/Procedurals/proceduralTexture';
+import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
+import { Layer } from 'babylonjs/Layers/layer';
 
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
@@ -43,12 +46,14 @@ export class PreviewManager {
     private _scene: Scene;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
-    private _material: NodeMaterial;
+    private _material: NodeMaterial | StandardMaterial;
     private _globalState: GlobalState;
     private _currentType: number;
     private _lightParent: TransformNode;
     private _postprocess: Nullable<PostProcess>;
+    private _proceduralTexture: Nullable<ProceduralTexture>;
     private _particleSystem: Nullable<IParticleSystem>;
+    private _layer: Nullable<Layer>;
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
@@ -257,6 +262,11 @@ export class PreviewManager {
             }
             this._meshes = [];
 
+            if (this._layer) {
+                this._layer.dispose();
+                this._layer = null;
+            }
+
             let lights = this._scene.lights.slice(0);
             for (var light of lights) {
                 light.dispose();
@@ -315,6 +325,8 @@ export class PreviewManager {
                         });
                         return;
                 }
+            } else if (this._globalState.mode === NodeMaterialModes.ProceduralTexture) {
+                this._layer = new Layer("proceduralLayer", null, this._scene);
             } else if (this._globalState.mode === NodeMaterialModes.Particle) {
                 switch (this._globalState.previewType) {
                     case PreviewType.DefaultParticleSystem:
@@ -421,15 +433,19 @@ export class PreviewManager {
                 this._postprocess = null;
             }
 
+            if (this._proceduralTexture) {
+                this._proceduralTexture.dispose();
+                this._proceduralTexture = null;
+            }
+
             switch (this._globalState.mode) {
-                case NodeMaterialModes.PostProcess: 
-                case NodeMaterialModes.ProceduralTexture: {
+                case NodeMaterialModes.PostProcess: {
                     this._globalState.onIsLoadingChanged.notifyObservers(false);
 
                     this._postprocess = tempMaterial.createPostProcess(this._camera, 1.0, Constants.TEXTURE_NEAREST_SAMPLINGMODE, this._engine);
 
                     const currentScreen = tempMaterial.getBlockByPredicate((block) => block instanceof CurrentScreenBlock);
-                    if (currentScreen) {
+                    if (currentScreen && this._postprocess) {
                         this._postprocess.onApplyObservable.add((effect) => {
                             effect.setTexture("textureSampler", (currentScreen as CurrentScreenBlock).texture);
                         });
@@ -439,6 +455,21 @@ export class PreviewManager {
                         this._material.dispose();
                     }
                     this._material = tempMaterial;
+                    break;
+                }
+                case NodeMaterialModes.ProceduralTexture: {
+                    this._globalState.onIsLoadingChanged.notifyObservers(false);
+
+                    this._proceduralTexture = tempMaterial.createProceduralTexture(512, this._scene);
+                   
+                    if (this._material) {
+                        this._material.dispose();
+                    }
+
+                    if (this._layer) {
+                        this._layer.texture = this._proceduralTexture;
+                    }
+
                     break;
                 }
 

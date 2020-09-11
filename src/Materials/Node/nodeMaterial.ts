@@ -750,7 +750,11 @@ export class NodeMaterial extends PushMaterial {
      */
     public createPostProcess(
         camera: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): PostProcess {
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): Nullable<PostProcess> {
+            if (this.mode !== NodeMaterialModes.PostProcess) {
+                console.log("Incompatible material mode");
+                return null;
+            }
             return this._createEffectForPostProcess(null, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
     }
 
@@ -822,7 +826,13 @@ export class NodeMaterial extends PushMaterial {
      * @param scene defines the hosting scene
      * @returns the new procedural texture attached to this node material
      */
-    public createProceduralTexture(size: number | { width: number, height: number, layers?: number }, scene: Scene): ProceduralTexture {
+    public createProceduralTexture(size: number | { width: number, height: number, layers?: number }, scene: Scene): Nullable<ProceduralTexture> {
+
+        if (this.mode !== NodeMaterialModes.ProceduralTexture) {
+            console.log("Incompatible material mode");
+            return null;
+        }
+
         let tempName = this.name + this._buildId;
 
         let proceduralTexture = new ProceduralTexture(tempName, size, null, scene);
@@ -993,6 +1003,11 @@ export class NodeMaterial extends PushMaterial {
      * @param onError defines a function to call when the effect creation has failed
      */
     public createEffectForParticles(particleSystem: IParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+        if (this.mode !== NodeMaterialModes.Particle) {
+            console.log("Incompatible material mode");
+            return;
+        }
+
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_ONEONE, onCompiled, onError);
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_MULTIPLY, onCompiled, onError);
     }

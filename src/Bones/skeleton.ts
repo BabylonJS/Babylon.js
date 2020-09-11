@@ -880,4 +880,13 @@ export class Skeleton implements IAnimatable {
 
         bones.push(bone);
     }
+
+    /**
+     * Set the current local matrix as the restPose for all bones in the skeleton.
+     */
+    public setCurrentPoseAsRest(): void {
+        this.bones.forEach((b) => {
+            b.setCurrentPoseAsRest();
+        });
+    }
 }
