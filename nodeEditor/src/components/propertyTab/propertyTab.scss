@@ -570,6 +570,7 @@
                 
                 img {
                     height: 100%;
+                    width: 20px;
                 }
             }
 
@@ -579,6 +580,11 @@
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;
+
+                img {
+                    height: 100%;
+                    width: 20px;
+                }
             }
         }   
 
