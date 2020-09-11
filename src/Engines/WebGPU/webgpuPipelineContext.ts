@@ -419,10 +419,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
     }
 
     public _getVertexShaderCode(): string | null {
-        return this.sources.vertex;
+        return this.sources?.vertex ?? "<vertex shader code not available>";
     }
 
     public _getFragmentShaderCode(): string | null {
-        return this.sources.fragment;
+        return this.sources?.fragment ?? "<fragment shader code not available>";
     }
 }

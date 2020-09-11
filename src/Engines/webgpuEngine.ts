@@ -23,6 +23,7 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 import { GPUTextureHelper } from './WebGPU/webgpuTextureHelper';
 import { ISceneLike } from './thinEngine';
+import { Scene } from '../scene';
 
 /**
  * Options to load the associated Glslang library
@@ -1072,6 +1073,7 @@ export class WebGPUEngine extends Engine {
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
         forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
 
+        // TODO WEBGPU. this._options.textureSize
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
             (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
@@ -1097,17 +1099,10 @@ export class WebGPUEngine extends Engine {
 
                     promise.then(async (img) => {
                         if (img) {
-                            let gpuTexture: GPUTexture;
-
                             // TODO WEBGPU: handle format if <> 0. Note that it seems "rgb" formats don't exist in WebGPU...
                             //let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
-                            if (noMipmap) {
-                                gpuTexture = await this._gpuTextureHelper.generateTexture(img, invertY);
-                            } else {
-                                gpuTexture = await this._gpuTextureHelper.generateMipmappedTexture(img, invertY);
-                            }
-                            texture._webGPUTexture = gpuTexture;
-                            texture._webGPUTextureView = gpuTexture.createView();
+                            texture._webGPUTexture = await this._gpuTextureHelper.generateTexture(img, !noMipmap, invertY);
+                            texture._webGPUTextureView = texture._webGPUTexture.createView();
                         }
 
                         if (scene) {
@@ -1125,161 +1120,51 @@ export class WebGPUEngine extends Engine {
         );
     }
 
-    /*public createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null, buffer: Nullable<ArrayBuffer | HTMLImageElement> = null, fallBack?: InternalTexture, format?: number): InternalTexture {
-        const texture = new InternalTexture(this, InternalTextureSource.Url);
-        const url = String(urlArg);
+    public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
+        onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
 
-        // TODO WEBGPU. Find a better way.
-        // TODO WEBGPU. this._options.textureSize
+        return this.createCubeTextureBase(
+            rootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback,
+            null,
+            (texture: InternalTexture, imgs: HTMLImageElement[]) => {
+                const width = imgs[0].width;
+                const height = width;
 
-        texture.url = url;
-        texture.generateMipMaps = !noMipmap;
-        texture.samplingMode = samplingMode;
-        texture.invertY = invertY;
+                // TODO WEBGPU. Cube Texture Sampling Mode.
+                texture.samplingMode = noMipmap ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
 
-        if (format) {
-            texture.format = format;
-        }
+                // TODO WEBGPU. handle format if <> 0
+                //const internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+                const imageBitmapPromises: Array<Promise<ImageBitmap>> = [];
 
-        let webglEngineTexture: InternalTexture;
-        const onLoadInternal = () => {
-            texture.isReady = webglEngineTexture.isReady;
-
-            const width = webglEngineTexture.width;
-            const height = webglEngineTexture.height;
-            texture.width = width;
-            texture.height = height;
-            texture.baseWidth = width;
-            texture.baseHeight = height;
-            texture._isRGBD = texture._isRGBD || webglEngineTexture._isRGBD;
-            texture._sphericalPolynomial = webglEngineTexture._sphericalPolynomial;
-
-            let mipMaps = Scalar.Log2(Math.max(width, height));
-            mipMaps = Math.floor(mipMaps);
-
-            const textureExtent = {
-                width,
-                height,
-                depth: 1
-            };
-            const textureDescriptor: GPUTextureDescriptor = {
-                dimension: WebGPUConstants.TextureDimension.E2d,
-                format: WebGPUConstants.TextureFormat.RGBA8Unorm,
-                mipLevelCount: noMipmap ? 1 : mipMaps + 1,
-                sampleCount: 1,
-                size: textureExtent,
-                usage: WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled
-            };
-
-            const gpuTexture = this._device.createTexture(textureDescriptor);
-            texture._webGPUTexture = gpuTexture;
-
-            if (noMipmap) {
-                this._uploadFromWebglTexture(webglEngineTexture, gpuTexture, width, height, -1);
-            }
-            else {
-                this._uploadMipMapsFromWebglTexture(mipMaps, webglEngineTexture, gpuTexture, width, height, -1);
-            }
-
-            texture._webGPUTextureView = gpuTexture.createView();
-
-            webglEngineTexture.dispose();
-
-            texture.onLoadedObservable.notifyObservers(texture);
-            texture.onLoadedObservable.clear();
-
-            if (onLoad) {
-                onLoad();
-            }
-        };
-
-        webglEngineTexture = this._decodeEngine.createTexture(urlArg, noMipmap, invertY, scene, samplingMode,
-            onLoadInternal, onError, buffer, fallBack, format);
-
-        this._internalTexturesCache.push(texture);
-
-        return texture;
-    }*/
-/*
-    public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
-        var texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
-        texture.isCube = true;
-        texture.url = rootUrl;
-        texture.generateMipMaps = !noMipmap;
-        // TODO WEBGPU. Cube Texture Sampling Mode.
-        texture.samplingMode = noMipmap ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-        texture._lodGenerationScale = lodScale;
-        texture._lodGenerationOffset = lodOffset;
-
-        if (!this._doNotHandleContextLost) {
-            texture._extension = forcedExtension;
-            texture._files = files;
-        }
-
-        let webglEngineTexture: InternalTexture;
-        const onLoadInternal = () => {
-            texture.isReady = webglEngineTexture.isReady;
-
-            const width = webglEngineTexture.width;
-            const height = webglEngineTexture.height;
-            const depth = 1;
-            texture.width = width;
-            texture.height = height;
-            texture.baseWidth = width;
-            texture.baseHeight = height;
-            texture.depth = depth;
-            texture.baseDepth = depth;
-            texture._isRGBD = texture._isRGBD || webglEngineTexture._isRGBD;
-            texture._sphericalPolynomial = webglEngineTexture._sphericalPolynomial;
-
-            let mipMaps = Scalar.Log2(width);
-            mipMaps = Math.round(mipMaps);
-
-            const textureExtent = {
-                width,
-                height,
-                depth: depth * 6,
-            };
-            const textureDescriptor: GPUTextureDescriptor = {
-                dimension: WebGPUConstants.TextureDimension.E2d,
-                format: WebGPUConstants.TextureFormat.RGBA8Unorm,
-                mipLevelCount: noMipmap ? 1 : mipMaps + 1,
-                sampleCount: 1,
-                size: textureExtent,
-                usage: WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled
-            };
-
-            const gpuTexture = this._device.createTexture(textureDescriptor);
-            texture._webGPUTexture = gpuTexture;
-
-            const faces = [0, 1, 2, 3, 4, 5];
-            for (let face of faces) {
-                if (noMipmap) {
-                    this._uploadFromWebglTexture(webglEngineTexture, gpuTexture, width, height, face);
+                for (var index = 0; index < 6; index++) {
+                    imageBitmapPromises.push(createImageBitmap(imgs[index]));
                 }
-                else {
-                    this._uploadMipMapsFromWebglTexture(mipMaps, webglEngineTexture, gpuTexture, width, height, face);
-                }
+
+                Promise.all(imageBitmapPromises).then(async (imageBitmaps) => {
+                    texture._webGPUTexture = await this._gpuTextureHelper.generateCubeTexture(imageBitmaps, !noMipmap);
+                    texture._webGPUTextureView = texture._webGPUTexture.createView({
+                        dimension: WebGPUConstants.TextureViewDimension.Cube
+                    });
+
+                    texture.width = width;
+                    texture.height = height;
+                    texture.isReady = true;
+                    if (format) {
+                        texture.format = format;
+                    }
+
+                    texture.onLoadedObservable.notifyObservers(texture);
+                    texture.onLoadedObservable.clear();
+
+                    if (onLoad) {
+                        onLoad();
+                    }
+                });
             }
-            texture._webGPUTextureView = gpuTexture.createView({
-                dimension: WebGPUConstants.TextureViewDimension.Cube,
-                format: WebGPUConstants.TextureFormat.RGBA8Unorm,
-                mipLevelCount: noMipmap ? 1 : mipMaps + 1,
-                baseArrayLayer: 0,
-                baseMipLevel: 0,
-                aspect: WebGPUConstants.TextureAspect.All
-            } as any);
-            webglEngineTexture.dispose();
-
-            onLoad && onLoad();
-        };
-        webglEngineTexture = this._decodeEngine.createCubeTexture(rootUrl, scene, files, noMipmap, onLoadInternal, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback);
-
-        this._internalTexturesCache.push(texture);
-
-        return texture;
+        );
     }
-*/
+
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         texture.samplingMode = samplingMode;
     }
