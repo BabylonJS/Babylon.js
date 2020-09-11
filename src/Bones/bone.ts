@@ -672,7 +672,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Set the euler rotation of the bone in local or world space
+     * Set the euler rotation of the bone in local of world space
      * @param rotation The euler rotation that the bone should be set to
      * @param space The space that the rotation is in
      * @param mesh The mesh that this bone is attached to. This is only used in world space
@@ -682,7 +682,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Set the quaternion rotation of the bone in local or world space
+     * Set the quaternion rotation of the bone in local of world space
      * @param quat The quaternion rotation that the bone should be set to
      * @param space The space that the rotation is in
      * @param mesh The mesh that this bone is attached to. This is only used in world space
@@ -712,7 +712,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Set the rotation matrix of the bone in local or world space
+     * Set the rotation matrix of the bone in local of world space
      * @param rotMat The rotation matrix that the bone should be set to
      * @param space The space that the rotation is in
      * @param mesh The mesh that this bone is attached to. This is only used in world space
