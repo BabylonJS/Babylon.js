@@ -18,8 +18,8 @@ VertexData.CreateCapsule = function(
 
     let subdivisions = Math.max(options.subdivisions ? options.subdivisions : 2, 1);
     let tessellation = Math.max(options.tessellation ? options.tessellation : 16, 3);
-    let height = Math.max(options.height ? options.height : 2, 0.);
-    let radius = Math.max(options.radius ? options.radius : 1, 0.);
+    let height = Math.max(options.height ? options.height : 1, 0.);
+    let radius = Math.max(options.radius ? options.radius : 0.25, 0.);
     let capDetail = Math.max(options.capSubdivisions ? options.capSubdivisions : 6, 1);
 
     let  radialSegments = tessellation;
@@ -27,6 +27,8 @@ VertexData.CreateCapsule = function(
 
     let radiusTop = Math.max(options.radiusTop ? options.radiusTop : radius, 0.);
     let radiusBottom = Math.max(options.radiusBottom ? options.radiusBottom : radius, 0.);
+
+    let heightMinusCaps = height - (radiusTop + radiusBottom);
 
     let thetaStart = 0.0;
     let thetaLength = (2.0 * Math.PI);
@@ -43,8 +45,10 @@ VertexData.CreateCapsule = function(
 
     var index = 0,
     indexArray = [],
-    heightMinusCaps = height - (radiusTop+radiusBottom),
-    halfHeight = heightMinusCaps / 2;
+    halfHeight = heightMinusCaps * 0.5;
+    let pi2 = Math.PI * 0.5;
+
+    console.log("halfHeight", halfHeight);
 
     var x, y;
     var normal = Vector3.Zero();
@@ -64,14 +68,14 @@ VertexData.CreateCapsule = function(
         ).length();
 
     // Total length for v texture coord
-    var vl = radiusTop * alpha + cone_length + radiusBottom * (Math.PI / 2 - alpha);
+    var vl = radiusTop * alpha + cone_length + radiusBottom * (pi2 - alpha);
 
     var v = 0;
     for (y = 0; y <= capsTopSegments; y++) {
 
         var indexRow = [];
 
-        var a = Math.PI / 2 - alpha * (y / capsTopSegments);
+        var a = pi2 - alpha * (y / capsTopSegments);
 
         v += radiusTop * alpha / capsTopSegments;
 
@@ -107,6 +111,7 @@ VertexData.CreateCapsule = function(
 
     var cone_height = (height - radiusTop - radiusBottom) + cosAlpha * radiusTop - cosAlpha * radiusBottom;
     var slope = sinAlpha * (radiusBottom - radiusTop) / cone_height;
+
     for (y = 1; y <= heightSegments; y++) {
         var indexRow = [];
         v += cone_length / heightSegments;
@@ -138,7 +143,7 @@ VertexData.CreateCapsule = function(
 
     for (y = 1; y <= capsBottomSegments; y++) {
         var indexRow = [];
-        var a = (Math.PI / 2 - alpha) - (Math.PI - alpha) * (y / capsBottomSegments);
+        var a = (pi2 - alpha) - (Math.PI - alpha) * (y / capsBottomSegments);
         v += radiusBottom * alpha / capsBottomSegments;
         var cosA = Math.cos(a);
         var sinA = Math.sin(a);
