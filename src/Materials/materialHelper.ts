@@ -319,7 +319,7 @@ export class MaterialHelper {
         {
             type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
             define: "PREPASS_POSITION",
-            index: "POSITION_TEXTURE_TYPE",
+            index: "PREPASS_POSITION_INDEX",
         },
         {
             type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,

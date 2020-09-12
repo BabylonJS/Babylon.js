@@ -135,7 +135,11 @@ void main()
         }
         
         // Get coordinates of the pixel to pick according to the pixel's position and normal.
+        #ifdef PREPASS_LAYOUT
+        vec3 normal = (texture2D(normalSampler, vUV)).gba;
+        #else
         vec3 normal = (texture2D(normalSampler, vUV)).xyz;
+        #endif
         vec3 position = (view * texture2D(positionSampler, vUV)).xyz;
         vec3 reflected = normalize(reflect(normalize(position), normalize(normal)));
 
