@@ -8,6 +8,7 @@ import { Effect } from "../Materials/effect";
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import { Nullable } from "../types";
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -265,6 +266,22 @@ export class PrePassRenderer {
 
         this._effectConfigurations.push(cfg);
         return cfg;
+    }
+
+
+    /**
+     * Returns an effect configuration
+     * @param cfg the effect configuration
+     * @return the effect configuration now used by the prepass
+     */
+    public getEffectConfiguration(name: string) : Nullable<PrePassEffectConfiguration> {
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].name === name) {
+                return this._effectConfigurations[i];
+            }
+        }
+
+        return null;
     }
 
     /**

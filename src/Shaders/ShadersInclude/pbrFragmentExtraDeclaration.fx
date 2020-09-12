@@ -28,13 +28,3 @@ varying vec3 vPositionW;
 #ifdef VERTEXCOLOR
     varying vec4 vColor;
 #endif
-
-#ifdef PREPASS
-    #ifdef PREPASS_DEPTHNORMAL
-        varying vec3 vViewPos;
-    #endif
-    #ifdef PREPASS_VELOCITY
-        varying vec4 vCurrentPosition;
-        varying vec4 vPreviousPosition;
-    #endif
-#endif

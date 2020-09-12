@@ -37,10 +37,6 @@ varying vec4 vColor;
 	varying vec2 vMainUV2;
 #endif
 
-#ifdef PREPASS
-	varying vec3 vViewPos;
-#endif
-
 // Helper functions
 #include<helperFunctions>
 
@@ -483,6 +479,16 @@ color.rgb = max(color.rgb, 0.);
 #ifdef PREPASS
     gl_FragData[0] = color; // We can't split irradiance on std material
 
+    #ifdef PREPASS_VELOCITY
+    vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
+    vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
+
+    vec2 velocity = abs(a - b);
+    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
+
+    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+    #endif
+    
     #ifdef PREPASS_IRRADIANCE
         gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(0.0, 0.0, 0.0, 1.0); //  We can't split irradiance on std material
     #endif

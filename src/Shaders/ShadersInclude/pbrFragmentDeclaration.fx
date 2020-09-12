@@ -140,14 +140,4 @@ uniform mat4 view;
     #ifdef PREPASS_IRRADIANCE
         uniform float scatteringDiffusionProfile;
     #endif
-
-    #ifdef PREPASS_VELOCITY
-        uniform mat4 previousWorld;
-        uniform mat4 previousViewProjection;
-        #ifdef BONES_VELOCITY_ENABLED
-            #if NUM_BONE_INFLUENCERS > 0
-                uniform mat4 mPreviousBones[BonesPerMesh];
-            #endif
-        #endif
-    #endif
 #endif
