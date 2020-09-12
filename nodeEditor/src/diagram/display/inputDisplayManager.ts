@@ -18,7 +18,7 @@ const inputNameToAttributeValue: { [name: string] : string } = {
 };
 
 const inputNameToAttributeName: { [name: string] : string } = {
-    "position2d" : "postprocess",
+    "position2d" : "screen",
     "particle_uv" : "particle",
     "particle_color" : "particle",
     "particle_texturemask": "particle",

@@ -234,7 +234,7 @@ export class Gizmo implements IDisposable {
                 var parentInv = this._tempMatrix1;
                 var localMat = this._tempMatrix2;
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
-                this._attachedNode._worldMatrix.multiplyToRef(parentInv, localMat);
+                this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
                 localMat.decompose(transform.scaling, this._tempQuaternion, transform.position);
             } else {
                 this._attachedNode._worldMatrix.decompose(transform.scaling, this._tempQuaternion, transform.position);

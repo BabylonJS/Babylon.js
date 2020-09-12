@@ -558,6 +558,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
+     * Gets or sets a collision response flag (default is true).
+     * when collisionResponse is false, events are still triggered but colliding entity has no response
+     * This helps creating trigger volume when user wants collision feedback events but not position/velocity
+     * to respond to the collision.
+     */
+    public get collisionResponse(): boolean {
+        return this._meshCollisionData._collisionResponse;
+    }
+
+    public set collisionResponse(response: boolean) {
+        this._meshCollisionData._collisionResponse = response;
+    }
+    /**
      * Gets or sets the current collision group mask (-1 by default).
      * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
      */
