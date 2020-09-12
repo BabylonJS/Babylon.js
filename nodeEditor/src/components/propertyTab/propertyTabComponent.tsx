@@ -216,11 +216,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         });
                     }
 
-                    alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
+                    this.props.globalState.hostDocument.defaultView!.alert("NodeMaterial saved with ID: " + material.snippetId + " (please note that the id was also saved to your clipboard)");
 
                 }
                 else {
-                    alert(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
+                    this.props.globalState.hostDocument.defaultView!.alert(`Unable to save your node material. It may be too large (${(dataToSend.payload.length / 1024).toFixed(2)} KB) because of embedded textures. Please reduce texture sizes or point to a specific url instead of embedding them and try again.`);
                 }
             }
         };
@@ -258,7 +258,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.props.globalState.onResetRequiredObservable.notifyObservers();
             }
         }).catch((err) => {
-            alert("Unable to load your node material: " + err);
+            this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
         });
     }
 
@@ -267,7 +267,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             return false;
         }
 
-        if (!force && !confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
+        if (!force && !this.props.globalState.hostDocument.defaultView!.confirm('Are your sure? You will lose your current changes (if any) if they are not saved!')) {
             this._modeSelect.current?.setValue(this.props.globalState.mode);
             return false;
         }
@@ -286,6 +286,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     break;
                 case NodeMaterialModes.Particle:
                     this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                    break;
+                case NodeMaterialModes.ProceduralTexture:
+                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
                     break;
             }
         }
@@ -350,6 +353,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Material", value: NodeMaterialModes.Material },
             { label: "Post Process", value: NodeMaterialModes.PostProcess },
             { label: "Particle", value: NodeMaterialModes.Particle },
+            { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
         ];
 
         return (
@@ -366,7 +370,20 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <TextLineComponent label="Version" value={Engine.Version}/>
                         <TextLineComponent label="Help" value="doc.babylonjs.com" underline={true} onLink={() => window.open('https://doc.babylonjs.com/how_to/node_material', '_blank')}/>
                         <ButtonLineComponent label="Reset to default" onClick={() => {
-                            this.props.globalState.nodeMaterial!.setToDefault();
+                            switch (this.props.globalState.mode) {
+                                case NodeMaterialModes.Material:
+                                    this.props.globalState.nodeMaterial!.setToDefault();
+                                    break;
+                                case NodeMaterialModes.PostProcess:
+                                    this.props.globalState.nodeMaterial!.setToDefaultPostProcess();
+                                    break;
+                                case NodeMaterialModes.Particle:
+                                    this.props.globalState.nodeMaterial!.setToDefaultParticle();
+                                    break;
+                                case NodeMaterialModes.ProceduralTexture:
+                                    this.props.globalState.nodeMaterial!.setToDefaultProceduralTexture();
+                                    break;
+                            }
                             this.props.globalState.onResetRequiredObservable.notifyObservers();
                         }} />
                     </LineContainerComponent>

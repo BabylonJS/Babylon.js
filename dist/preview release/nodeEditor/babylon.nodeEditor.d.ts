@@ -950,7 +950,10 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         forceRebuild(): void;
         deleteStep(step: BABYLON.GradientBlockColorStep): void;
         addNewStep(): void;
@@ -1427,7 +1430,9 @@ declare module NODEEDITOR {
         private _currentType;
         private _lightParent;
         private _postprocess;
+        private _proceduralTexture;
         private _particleSystem;
+        private _layer;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;

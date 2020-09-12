@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsTexture, expandToProperty } from "../../Misc/decorators";
+import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
 import { Observer, Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
 import { Scene } from "../../scene";
@@ -233,14 +233,41 @@ export class BaseTexture implements IAnimatable {
         this._texture.is2DArray = value;
     }
 
+    private _gammaSpace = true;
     /**
      * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
      * HDR texture are usually stored in linear space.
      * This only impacts the PBR and Background materials
      */
     @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public gammaSpace = true;
+    public get gammaSpace(): boolean {
+        if (!this._texture) {
+            return this._gammaSpace;
+        } else {
+            if (this._texture._gammaSpace === null) {
+                this._texture._gammaSpace = this._gammaSpace;
+            }
+        }
+
+        return this._texture._gammaSpace;
+    }
+
+    public set gammaSpace(gamma: boolean) {
+        if (!this._texture) {
+            if (this._gammaSpace === gamma) {
+                return;
+            }
+
+            this._gammaSpace = gamma;
+        } else {
+            if (this._texture._gammaSpace === gamma) {
+                return;
+            }
+            this._texture._gammaSpace = gamma;
+        }
+
+        this._markAllSubMeshesAsTexturesDirty();
+    }
 
     /**
      * Gets or sets whether or not the texture contains RGBD data.

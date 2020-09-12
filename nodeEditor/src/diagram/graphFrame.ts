@@ -1299,7 +1299,7 @@ export class GraphFrame {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: this.isCollapsed,
+            isCollapsed: false, //keeping closed to make reimporting cleaner
             blocks: this.nodes.map(n => n.block.uniqueId),
             comments: this._comments
         }

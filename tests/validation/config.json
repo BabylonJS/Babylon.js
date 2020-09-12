@@ -1,6 +1,11 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
-    "tests": [    
+    "tests": [   
+        {
+            "title": "Procedural texture with NME",
+            "playgroundId": "#8S19ZC#1",            
+            "referenceImage": "procedural_nme.png"
+        },   
         {
             "title": "EXT_texture_webp",
             "playgroundId": "#LSAUH2#2",            
@@ -331,6 +336,12 @@
             "functionToCall": "CreateLinesTestScene",
             "referenceImage": "lines.png",
             "replace": "updateVerticesDataDirectly, updateVerticesData"
+        },
+        {
+            "title": "Capsule",
+            "renderCount": 10,
+            "playgroundId": "#JAFIIU#2",
+            "referenceImage": "CreateCapsule.png"
         },
         {
             "title": "Bones",
@@ -890,6 +901,12 @@
             "playgroundId": "#SYQW69#311",
             "referenceImage": "objTestLoader.png",
             "renderCount": 10
+        },
+        {
+            "title": "KTX2 decoder test",
+            "playgroundId": "#EIJH8L#1",
+            "referenceImage": "ktx2decoder.png",
+            "excludeFromAutomaticTesting": true
         }
     ]
 }

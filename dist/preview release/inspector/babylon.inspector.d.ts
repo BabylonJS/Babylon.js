@@ -42,7 +42,7 @@ declare module INSPECTOR {
         glTFLoaderDefaults: {
             [key: string]: any;
         };
-        glTFLoaderExtenstions: {
+        glTFLoaderExtensions: {
             [key: string]: BABYLON.IGLTFLoaderExtension;
         };
         blockMutationUpdates: boolean;
@@ -2509,6 +2509,42 @@ declare module INSPECTOR {
     }
 }
 declare module INSPECTOR {
+    interface IGradientStepComponentProps {
+        globalState: GlobalState;
+        step: BABYLON.GradientBlockColorStep;
+        lineIndex: number;
+        onDelete: () => void;
+        onUpdateStep: () => void;
+        onCheckForReOrder: () => void;
+    }
+    export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
+        gradient: number;
+    }> {
+        constructor(props: IGradientStepComponentProps);
+        updateColor(color: string): void;
+        updateStep(gradient: number): void;
+        onPointerUp(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
+    export interface IPropertyComponentProps {
+        globalState: GlobalState;
+        block: BABYLON.NodeMaterialBlock;
+    }
+}
+declare module INSPECTOR {
+    export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private _gradientBlock;
+        constructor(props: IPropertyComponentProps);
+        forceRebuild(): void;
+        deleteStep(step: BABYLON.GradientBlockColorStep): void;
+        addNewStep(): void;
+        checkForReOrder(): void;
+        render(): JSX.Element;
+    }
+}
+declare module INSPECTOR {
     interface INodeMaterialPropertyGridComponentProps {
         globalState: GlobalState;
         material: BABYLON.NodeMaterial;
@@ -2522,7 +2558,7 @@ declare module INSPECTOR {
         edit(): void;
         renderTextures(): JSX.Element | null;
         renderInputBlock(block: BABYLON.InputBlock): JSX.Element | null;
-        renderInputValues(): JSX.Element | null;
+        renderInputValues(): JSX.Element;
         render(): JSX.Element;
     }
 }
@@ -2886,7 +2922,6 @@ declare module INSPECTOR {
     }
     export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         private _onValidationResultsUpdatedObserver;
-        constructor(props: IGLTFComponentProps);
         openValidationDetails(): void;
         prepareText(singularForm: string, count: number): string;
         componentDidMount(): void;

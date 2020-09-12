@@ -8,7 +8,8 @@
 - Added HDR texture filtering tools to the sandbox ([Sebavan](https://github.com/sebavan/))
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added SubSurfaceScattering on PBR materials ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
-- Added editing of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
+- Added edition of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
+- Added edition of procedural texture in the node material editor ([Deltakosh](https://github.com/deltakosh))
 - Added Curve editor to manage entity's animations and edit animation groups in Inspector ([pixelspace](https://github.com/devpixelspace))
 - Added support in `ShadowGenerator` for fast fake soft transparent shadows ([Popov72](https://github.com/Popov72))
 - Added support for **thin instances** for faster mesh instances. [Doc](https://doc.babylonjs.com/how_to/how_to_use_thininstances) ([Popov72](https://github.com/Popov72))
@@ -89,6 +90,8 @@
 - Add support to update inspector when switching to a new scene ([belfortk](https://github.com/belfortk))
 - Hex Component for Hex inputs on layer masks. ([msDestiny14](https://github.com/msDestiny14))
 - View & edit textures in pop out inspector using tools such as brush and floodfill. Supports region selection, individual channel editing, mipmap previews, and resizing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
+- Added mesh debug tools to display bone influence weights and bone indices maps. ([Pryme8](https://github.com/Pryme8))
+- Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
 
 ### Cameras
 
@@ -99,6 +102,10 @@
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 - Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
 
+### Debug
+- Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))
+- Added static methods to create debug shaders materials for a mesh with a skeleton. ([Pryme8](https://github.com/Pryme8))
+
 ### Sprites
 
 - Added support for 'sprite.useAlphaForPicking` to enable precise picking using sprite alpha ([Deltakosh](https://github.com/deltakosh))
@@ -108,6 +115,7 @@
 
 - Fixed time steps or delta time with sub time step for Oimo.js and Cannon.js ([cedricguillemet](https://github.com/cedricguillemet))
 - Ammo.js collision group and mask supported by impostor parameters ([cedricguillemet](https://github.com/cedricguillemet))
+- `collisionResponse` flag to disable response but still get onCollide events ([cedricguillemet](https://github.com/cedricguillemet))
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
 - Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
 - Added `scene.physicsEnabled` boolean ([Deltakosh](https://github.com/deltakosh))
@@ -130,6 +138,7 @@
 - Fixed issue with loading screen hiding too early when loading multiple assets concurrently. ([bghgary](https://github.com/bghgary))
 - Added the `loadAllMaterials` property to the gLTF loader to load materials even if not used by any mesh ([Popov72](https://github.com/Popov72))
 - Added transmission prerender pass when using KHR_materials_transmission ([MiiBond](https://github.com/MiiBond/))
+- Fixed a bug when loading glTF with interleaved animation data. ([bghgary](https://github.com/bghgary))
 
 ### Serializers
 
@@ -156,6 +165,10 @@
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 - Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
 
+### Meshes
+
+- Added `MeshBuilder.CreateCapsule` and `Mesh.CreateCapsule` for creation of a capsule shape mesh and VertexBuffers. ([Pryme8](https://github.com/Pryme8))
+
 ### WebXR
 
 - Added optional ray and mesh selection predicates to `WebXRControllerPointerSelection` ([Exolun](https://github.com/Exolun))
@@ -181,8 +194,10 @@
 - WebXR hit test can now define different entity type for the results ([#8687](https://github.com/BabylonJS/Babylon.js/issues/8687)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue with stencil not enabled per default ([#8720](https://github.com/BabylonJS/Babylon.js/issues/8720)) ([RaananW](https://github.com/RaananW))
 - Expose the overlay to which the XR Enter/Exit buttons are added to ([#8754](https://github.com/BabylonJS/Babylon.js/issues/8754)) ([RaananW](https://github.com/RaananW))
-- WebXR hand-tracking module is available, able to track hand-joints on selected devices including physics interactions ([RaananW](https://github.com/RaananW))
+- WebXR hand-tracking module is available, able to track hand-joints on selected devices including optional physics interactions ([RaananW](https://github.com/RaananW))
 - Fixed an issue with moving backwards in XR ([#8854](https://github.com/BabylonJS/Babylon.js/issues/8854)) ([RaananW](https://github.com/RaananW))
+- Hit-Test results can be an empty array ([#8887](https://github.com/BabylonJS/Babylon.js/issues/8887)) ([RaananW](https://github.com/RaananW))
+
 ### Collisions
 
 - Added an option to optimize collision detection performance ([jsdream](https://github.com/jsdream)) - [PR](https://github.com/BabylonJS/Babylon.js/pull/7810)

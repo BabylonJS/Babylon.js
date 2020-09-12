@@ -6816,6 +6816,46 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * The options Interface for creating a Capsule Mesh
+     */
+    export interface ICreateCapsuleOptions {
+        /** The Orientation of the capsule.  Default : Vector3.Up() */
+        orientation?: Vector3;
+        /** Number of sub segments on the tube section of the capsule running parallel to orientation. */
+        subdivisions: number;
+        /** Number of cylindrical segments on the capsule. */
+        tessellation: number;
+        /** Height or Length of the capsule. */
+        height: number;
+        /** Radius of the capsule. */
+        radius: number;
+        /** Height or Length of the capsule. */
+        capSubdivisions: number;
+        /** Overwrite for the top radius. */
+        radiusTop?: number;
+        /** Overwrite for the bottom radius. */
+        radiusBottom?: number;
+        /** Overwrite for the top capSubdivisions. */
+        topCapSubdivisions?: number;
+        /** Overwrite for the bottom capSubdivisions. */
+        bottomCapSubdivisions?: number;
+    }
+    /**
+     * Class containing static functions to help procedurally build meshes
+     */
+    export class CapsuleBuilder {
+        /**
+         * Creates a capsule or a pill mesh
+         * @param name defines the name of the mesh
+         * @param options The constructors options.
+         * @param scene The scene the mesh is scoped to.
+         * @returns Capsule Mesh
+         */
+        static CreateCapsule(name: string, options: ICreateCapsuleOptions | undefined, scene: any): Mesh;
+    }
+}
+declare module BABYLON {
+    /**
      * @hidden
      */
     export class IntersectionInfo {
@@ -8566,6 +8606,14 @@ declare module BABYLON {
     };
 }
 declare module BABYLON {
+    /**
+     * Type used to define a render target texture size (either with a number or with a rect width and height)
+     */
+    export type RenderTargetTextureSize = number | {
+        width: number;
+        height: number;
+        layers?: number;
+    };
         interface ThinEngine {
             /**
              * Creates a new render target texture
@@ -8573,11 +8621,7 @@ declare module BABYLON {
              * @param options defines the options used to create the texture
              * @returns a new render target texture stored in an InternalTexture
              */
-            createRenderTargetTexture(size: number | {
-                width: number;
-                height: number;
-                layers?: number;
-            }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+            createRenderTargetTexture(size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture;
             /**
              * Creates a depth stencil texture.
              * This is only available in WebGL 2 or with the depth texture extension available.
@@ -8585,17 +8629,9 @@ declare module BABYLON {
              * @param options The options defining the texture.
              * @returns The texture
              */
-            createDepthStencilTexture(size: number | {
-                width: number;
-                height: number;
-                layers?: number;
-            }, options: DepthTextureCreationOptions): InternalTexture;
+            createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
             /** @hidden */
-            _createDepthStencilTexture(size: number | {
-                width: number;
-                height: number;
-                layers?: number;
-            }, options: DepthTextureCreationOptions): InternalTexture;
+            _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
         }
 }
 declare module BABYLON {
@@ -11679,6 +11715,14 @@ declare module BABYLON {
          * Event raised when the texture is generated
          */
         onGeneratedObservable: Observable<ProceduralTexture>;
+        /**
+         * Event raised before the texture is generated
+         */
+        onBeforeGenerationObservable: Observable<ProceduralTexture>;
+        /**
+         * Gets or sets the node material used to create this texture (null if the texture was manually created)
+         */
+        nodeMaterialSource: Nullable<NodeMaterial>;
         /** @hidden */
         _generateMipMaps: boolean;
         /** @hidden **/
@@ -11724,7 +11768,7 @@ declare module BABYLON {
          * @param generateMipMaps Define if the texture should creates mip maps or not
          * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
          */
-        constructor(name: string, size: any, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean);
+        constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean);
         /**
          * The effect that is created when initializing the post process.
          * @returns The created effect corresponding the the postprocess.
@@ -11769,9 +11813,9 @@ declare module BABYLON {
         _shouldRender(): boolean;
         /**
          * Get the size the texture is rendering at.
-         * @returns the size (texture is always squared)
+         * @returns the size (on cube texture it is always squared)
          */
-        getRenderSize(): number;
+        getRenderSize(): RenderTargetTextureSize;
         /**
          * Resize the texture to new value.
          * @param size Define the new size the texture should have
@@ -15362,21 +15406,21 @@ declare module BABYLON {
          */
         setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Set the euler rotation of the bone in local of world space
+         * Set the euler rotation of the bone in local or world space
          * @param rotation The euler rotation that the bone should be set to
          * @param space The space that the rotation is in
          * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
         setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Set the quaternion rotation of the bone in local of world space
+         * Set the quaternion rotation of the bone in local or world space
          * @param quat The quaternion rotation that the bone should be set to
          * @param space The space that the rotation is in
          * @param mesh The mesh that this bone is attached to. This is only used in world space
          */
         setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
         /**
-         * Set the rotation matrix of the bone in local of world space
+         * Set the rotation matrix of the bone in local or world space
          * @param rotMat The rotation matrix that the bone should be set to
          * @param space The space that the rotation is in
          * @param mesh The mesh that this bone is attached to. This is only used in world space
@@ -15498,6 +15542,10 @@ declare module BABYLON {
          * @param result The vector3 that the local position should be copied to
          */
         getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Set the current local matrix as the restPose for this bone.
+         */
+        setCurrentPoseAsRest(): void;
     }
 }
 declare module BABYLON {
@@ -16222,6 +16270,10 @@ declare module BABYLON {
          */
         sortBones(): void;
         private _sortBones;
+        /**
+         * Set the current local matrix as the restPose for all bones in the skeleton.
+         */
+        setCurrentPoseAsRest(): void;
     }
 }
 declare module BABYLON {
@@ -20445,8 +20497,6 @@ declare module BABYLON {
         matrixMode: number;
         /** @hidden */
         _systemValue: Nullable<NodeMaterialSystemValues>;
-        /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-        visibleInInspector: boolean;
         /** Gets or sets a boolean indicating that the value of this input will not change after a build */
         isConstant: boolean;
         /** Gets or sets the group to use to display this block in the Inspector */
@@ -20756,7 +20806,9 @@ declare module BABYLON {
         /** For post process */
         PostProcess = 1,
         /** For particle system */
-        Particle = 2
+        Particle = 2,
+        /** For procedural texture */
+        ProceduralTexture = 3
     }
 }
 declare module BABYLON {
@@ -21609,6 +21661,8 @@ declare module BABYLON {
          * @returns the output or null if not found
          */
         getOutputByName(name: string): Nullable<NodeMaterialConnectionPoint>;
+        /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+        visibleInInspector: boolean;
         /**
          * Creates a new NodeMaterialBlock
          * @param name defines the block name
@@ -22198,6 +22252,80 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Operations supported by the Trigonometry block
+     */
+    export enum TrigonometryBlockOperations {
+        /** Cos */
+        Cos = 0,
+        /** Sin */
+        Sin = 1,
+        /** Abs */
+        Abs = 2,
+        /** Exp */
+        Exp = 3,
+        /** Exp2 */
+        Exp2 = 4,
+        /** Round */
+        Round = 5,
+        /** Floor */
+        Floor = 6,
+        /** Ceiling */
+        Ceiling = 7,
+        /** Square root */
+        Sqrt = 8,
+        /** Log */
+        Log = 9,
+        /** Tangent */
+        Tan = 10,
+        /** Arc tangent */
+        ArcTan = 11,
+        /** Arc cosinus */
+        ArcCos = 12,
+        /** Arc sinus */
+        ArcSin = 13,
+        /** Fraction */
+        Fract = 14,
+        /** Sign */
+        Sign = 15,
+        /** To radians (from degrees) */
+        Radians = 16,
+        /** To degrees (from radians) */
+        Degrees = 17
+    }
+    /**
+     * Block used to apply trigonometry operation to floats
+     */
+    export class TrigonometryBlock extends NodeMaterialBlock {
+        /**
+         * Gets or sets the operation applied by the block
+         */
+        operation: TrigonometryBlockOperations;
+        /**
+         * Creates a new TrigonometryBlock
+         * @param name defines the block name
+         */
+        constructor(name: string);
+        /**
+         * Gets the current class name
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Gets the input component
+         */
+        get input(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the output component
+         */
+        get output(): NodeMaterialConnectionPoint;
+        protected _buildBlock(state: NodeMaterialBuildState): this;
+        serialize(): any;
+        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
+        protected _dumpPropertiesCode(): string;
+    }
+}
+declare module BABYLON {
+    /**
      * Interface used to configure the node material editor
      */
     export interface INodeMaterialEditorOptions {
@@ -22441,14 +22569,26 @@ declare module BABYLON {
          * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
          * @returns the post process created
          */
-        createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): PostProcess;
+        createPostProcess(camera: Nullable<Camera>, options?: number | PostProcessOptions, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, textureFormat?: number): Nullable<PostProcess>;
         /**
          * Create the post process effect from the material
          * @param postProcess The post process to create the effect for
          */
         createEffectForPostProcess(postProcess: PostProcess): void;
-        private _createEffectOrPostProcess;
+        private _createEffectForPostProcess;
+        /**
+         * Create a new procedural texture based on this node material
+         * @param size defines the size of the texture
+         * @param scene defines the hosting scene
+         * @returns the new procedural texture attached to this node material
+         */
+        createProceduralTexture(size: number | {
+            width: number;
+            height: number;
+            layers?: number;
+        }, scene: Scene): Nullable<ProceduralTexture>;
         private _createEffectForParticles;
+        private _checkInternals;
         /**
          * Create the effect to be used as the custom effect for a particle system
          * @param particleSystem Particle system to create the effect for
@@ -22525,6 +22665,10 @@ declare module BABYLON {
          * Clear the current material and set it to a default state for post process
          */
         setToDefaultPostProcess(): void;
+        /**
+         * Clear the current material and set it to a default state for procedural texture
+         */
+        setToDefaultProceduralTexture(): void;
         /**
          * Clear the current material and set it to a default state for particle
          */
@@ -22807,7 +22951,7 @@ declare module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-         * @param blockCompilation If the shader should not be compiled imediatly. (default: false)
+         * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
          * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
          */
         constructor(name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, defines?: Nullable<string>, textureType?: number, vertexUrl?: string, indexParameters?: any, blockCompilation?: boolean, textureFormat?: number);
@@ -26460,6 +26604,12 @@ declare module BABYLON {
             backUVs?: Vector4;
         }): VertexData;
         /**
+         * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
+         * @param options an object used to set the following optional parameters for the capsule, required but can be empty
+         * @returns the VertexData of the Capsule
+         */
+        static CreateCapsule(options?: ICreateCapsuleOptions): VertexData;
+        /**
          * Creates the VertexData for a TorusKnot
          * @param options an object used to set the following optional parameters for the TorusKnot, required but can be empty
           * * radius the radius of the torus knot, optional, default 2
@@ -28088,6 +28238,7 @@ declare module BABYLON {
         hardwareInstancedRendering: boolean;
         sideOrientation: number;
         manualUpdate: boolean;
+        previousRenderId: number;
     }
     /**
      * @hidden
@@ -29249,6 +29400,14 @@ declare module BABYLON {
          * @returns a new Mesh
          */
         static CreateDecal(name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh;
+        /** Creates a Capsule Mesh
+         * @param name defines the name of the mesh.
+         * @param options the constructors options used to shape the mesh.
+         * @param scene defines the scene the mesh is scoped to.
+         * @returns the capsule mesh
+         * @see https://doc.babylonjs.com/how_to/capsule_shape
+         */
+        static CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh;
         /**
          * Prepare internal position array for software CPU skinning
          * @returns original positions used for CPU skinning. Useful for integrating Morphing with skeletons in same mesh
@@ -31903,6 +32062,7 @@ declare module BABYLON {
         _diffPositionForCollisions: Vector3;
         _onCollideObserver: Nullable<Observer<AbstractMesh>>;
         _onCollisionPositionChangeObserver: Nullable<Observer<Vector3>>;
+        _collisionResponse: boolean;
     }
 }
 declare module BABYLON {
@@ -32215,6 +32375,14 @@ declare module BABYLON {
          */
         get collisionMask(): number;
         set collisionMask(mask: number);
+        /**
+         * Gets or sets a collision response flag (default is true).
+         * when collisionResponse is false, events are still triggered but colliding entity has no response
+         * This helps creating trigger volume when user wants collision feedback events but not position/velocity
+         * to respond to the collision.
+         */
+        get collisionResponse(): boolean;
+        set collisionResponse(response: boolean);
         /**
          * Gets or sets the current collision group mask (-1 by default).
          * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
@@ -33937,12 +34105,14 @@ declare module BABYLON {
          */
         get is2DArray(): boolean;
         set is2DArray(value: boolean);
+        private _gammaSpace;
         /**
          * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
          * HDR texture are usually stored in linear space.
          * This only impacts the PBR and Background materials
          */
-        gammaSpace: boolean;
+        get gammaSpace(): boolean;
+        set gammaSpace(gamma: boolean);
         /**
          * Gets or sets whether or not the texture contains RGBD data.
          */
@@ -34794,6 +34964,8 @@ declare module BABYLON {
         etc2: any;
         /** Defines if astc texture compression is supported */
         astc: any;
+        /** Defines if bptc texture compression is supported */
+        bptc: any;
         /** Defines if float textures are supported */
         textureFloat: boolean;
         /** Defines if vertex array objects are supported */
@@ -36689,6 +36861,8 @@ declare module BABYLON {
         _webGLTexture: Nullable<WebGLTexture>;
         /** @hidden */
         _references: number;
+        /** @hidden */
+        _gammaSpace: Nullable<boolean>;
         private _engine;
         /**
          * Gets the Engine the texture belongs to.
@@ -43591,9 +43765,9 @@ declare module BABYLON {
          * @param startPickedPoint picked point of the pointer to be simulated (Default: attached mesh position)
          */
         startDrag(pointerId?: number, fromRay?: Ray, startPickedPoint?: Vector3): void;
-        private _startDrag;
+        protected _startDrag(pointerId: number, fromRay?: Ray, startPickedPoint?: Vector3): void;
         private _dragDelta;
-        private _moveDrag;
+        protected _moveDrag(ray: Ray): void;
         private _pickWithRayOnDragPlane;
         private _pointA;
         private _pointC;
@@ -47116,6 +47290,10 @@ declare module BABYLON {
          */
         isCompatible(): boolean;
         /**
+         * Was this feature disposed;
+         */
+        isDisposed: boolean;
+        /**
          * The name of the native xr feature name, if applicable (like anchor, hit-test, or hand-tracking)
          */
         xrNativeFeatureName?: string;
@@ -47817,7 +47995,7 @@ declare module BABYLON {
          * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
          * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
          * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, skeletons, and animationGroups when import succeeds
          * @param onProgress a callback with a progress event for each file being loaded
          * @param onError a callback with the scene, a message, and possibly an exception when import fails
          * @param pluginExtension the extension used to determine the plugin
@@ -48671,6 +48849,10 @@ declare module BABYLON {
         private _attached;
         private _removeOnDetach;
         /**
+         * Is this feature disposed?
+         */
+        isDisposed: boolean;
+        /**
          * Should auto-attach be disabled?
          */
         disableAutoAttach: boolean;
@@ -49498,7 +49680,7 @@ declare module BABYLON {
          * This is used to remove the selection rays when moving.
          * @param selectionFeature the feature to disable when forward movement is enabled
          */
-        setSelectionFeature(selectionFeature: IWebXRFeature): void;
+        setSelectionFeature(selectionFeature: Nullable<IWebXRFeature>): void;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachController;
         private _createDefaultTargetMesh;
@@ -51254,13 +51436,9 @@ declare module BABYLON.Debug {
         get debugMesh(): Nullable<AbstractMesh> | Nullable<LinesMesh>;
         /** Sets the debugMesh */
         set debugMesh(value: Nullable<AbstractMesh> | Nullable<LinesMesh>);
-        /** Gets the material */
-        get material(): StandardMaterial;
-        /** Sets the material */
-        set material(value: StandardMaterial);
-        /** Gets the material */
+        /** Gets the displayMode */
         get displayMode(): number;
-        /** Sets the material */
+        /** Sets the displayMode */
         set displayMode(value: number);
         /**
          * Creates a new SkeletonViewer
@@ -57734,16 +57912,60 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Helper class to push actions to a pool of workers.
+     */
+    export class WorkerPool implements IDisposable {
+        private _workerInfos;
+        private _pendingActions;
+        /**
+         * Constructor
+         * @param workers Array of workers to use for actions
+         */
+        constructor(workers: Array<Worker>);
+        /**
+         * Terminates all workers and clears any pending actions.
+         */
+        dispose(): void;
+        /**
+         * Pushes an action to the worker pool. If all the workers are active, the action will be
+         * pended until a worker has completed its action.
+         * @param action The action to perform. Call onComplete when the action is complete.
+         */
+        push(action: (worker: Worker, onComplete: () => void) => void): void;
+        private _execute;
+    }
+}
+declare module BABYLON {
+    /**
      * Class for loading KTX2 files
-     * !!! Experimental Extension Subject to Changes !!!
      * @hidden
      */
     export class KhronosTextureContainer2 {
-        private static _ModulePromise;
-        private static _TranscodeFormat;
-        constructor(engine: ThinEngine);
+        private static _WorkerPoolPromise?;
+        private static _Initialized;
+        private static _Ktx2Decoder;
+        /**
+         * URL to use when loading the KTX2 decoder module
+         */
+        static JSModuleURL: string;
+        /**
+         * Default number of workers used to handle data decoding
+         */
+        static DefaultNumWorkers: number;
+        private static GetDefaultNumWorkers;
+        private _engine;
+        private static _CreateWorkerPool;
+        /**
+         * Constructor
+         * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
+         */
+        constructor(engine: ThinEngine, numWorkers?: number);
         uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void>;
-        private _determineTranscodeFormat;
+        /**
+         * Stop all async operations and release resources.
+         */
+        dispose(): void;
+        protected _createTexture(data: any, internalTexture: InternalTexture): void;
         /**
          * Checks if the given data starts with a KTX2 file identifier.
          * @param data the data to check
@@ -57751,6 +57973,7 @@ declare module BABYLON {
          */
         static IsValid(data: ArrayBufferView): boolean;
     }
+    export function workerFunc(): void;
 }
 declare module BABYLON {
     /**
@@ -63066,80 +63289,6 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
-     * Operations supported by the Trigonometry block
-     */
-    export enum TrigonometryBlockOperations {
-        /** Cos */
-        Cos = 0,
-        /** Sin */
-        Sin = 1,
-        /** Abs */
-        Abs = 2,
-        /** Exp */
-        Exp = 3,
-        /** Exp2 */
-        Exp2 = 4,
-        /** Round */
-        Round = 5,
-        /** Floor */
-        Floor = 6,
-        /** Ceiling */
-        Ceiling = 7,
-        /** Square root */
-        Sqrt = 8,
-        /** Log */
-        Log = 9,
-        /** Tangent */
-        Tan = 10,
-        /** Arc tangent */
-        ArcTan = 11,
-        /** Arc cosinus */
-        ArcCos = 12,
-        /** Arc sinus */
-        ArcSin = 13,
-        /** Fraction */
-        Fract = 14,
-        /** Sign */
-        Sign = 15,
-        /** To radians (from degrees) */
-        Radians = 16,
-        /** To degrees (from radians) */
-        Degrees = 17
-    }
-    /**
-     * Block used to apply trigonometry operation to floats
-     */
-    export class TrigonometryBlock extends NodeMaterialBlock {
-        /**
-         * Gets or sets the operation applied by the block
-         */
-        operation: TrigonometryBlockOperations;
-        /**
-         * Creates a new TrigonometryBlock
-         * @param name defines the block name
-         */
-        constructor(name: string);
-        /**
-         * Gets the current class name
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Gets the input component
-         */
-        get input(): NodeMaterialConnectionPoint;
-        /**
-         * Gets the output component
-         */
-        get output(): NodeMaterialConnectionPoint;
-        protected _buildBlock(state: NodeMaterialBuildState): this;
-        serialize(): any;
-        _deserialize(serializationObject: any, scene: Scene, rootUrl: string): void;
-        protected _dumpPropertiesCode(): string;
-    }
-}
-declare module BABYLON {
-    /**
      * Block used to create a Color3/4 out of individual inputs (one for each component)
      */
     export class ColorMergerBlock extends NodeMaterialBlock {
@@ -63870,28 +64019,30 @@ declare module BABYLON {
      * Class used to store a color step for the GradientBlock
      */
     export class GradientBlockColorStep {
+        private _step;
         /**
-         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
+         * Gets value indicating which step this color is associated with (between 0 and 1)
          */
-        step: number;
+        get step(): number;
         /**
-         * Gets or sets the color associated with this step
+         * Sets a value indicating which step this color is associated with (between 0 and 1)
+        */
+        set step(val: number);
+        private _color;
+        /**
+         * Gets the color associated with this step
          */
-        color: Color3;
+        get color(): Color3;
+        /**
+         * Sets the color associated with this step
+         */
+        set color(val: Color3);
         /**
          * Creates a new GradientBlockColorStep
          * @param step defines a value indicating which step this color is associated with (between 0 and 1)
          * @param color defines the color associated with this step
          */
-        constructor(
-        /**
-         * Gets or sets a value indicating which step this color is associated with (between 0 and 1)
-         */
-        step: number, 
-        /**
-         * Gets or sets the color associated with this step
-         */
-        color: Color3);
+        constructor(step: number, color: Color3);
     }
     /**
      * Block used to return a color from a gradient based on an input value between 0 and 1
@@ -63901,6 +64052,10 @@ declare module BABYLON {
          * Gets or sets the list of color steps
          */
         colorSteps: GradientBlockColorStep[];
+        /** Gets an observable raised when the value is changed */
+        onValueChangedObservable: Observable<GradientBlock>;
+        /** calls observable when the value is changed*/
+        colorStepsUpdated(): void;
         /**
          * Creates a new GradientBlock
          * @param name defines the block name
@@ -64990,31 +65145,6 @@ declare module BABYLON {
          */
         get output(): NodeMaterialConnectionPoint;
         protected _buildBlock(state: NodeMaterialBuildState): this;
-    }
-}
-declare module BABYLON {
-    /**
-     * Helper class to push actions to a pool of workers.
-     */
-    export class WorkerPool implements IDisposable {
-        private _workerInfos;
-        private _pendingActions;
-        /**
-         * Constructor
-         * @param workers Array of workers to use for actions
-         */
-        constructor(workers: Array<Worker>);
-        /**
-         * Terminates all workers and clears any pending actions.
-         */
-        dispose(): void;
-        /**
-         * Pushes an action to the worker pool. If all the workers are active, the action will be
-         * pended until a worker has completed its action.
-         * @param action The action to perform. Call onComplete when the action is complete.
-         */
-        push(action: (worker: Worker, onComplete: () => void) => void): void;
-        private _execute;
     }
 }
 declare module BABYLON {
@@ -66334,6 +66464,7 @@ declare module BABYLON {
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
+            wrap?: boolean;
         }, scene?: Nullable<Scene>, earcutInjection?: any): Mesh;
         /**
          * Creates a tube mesh.
@@ -66427,6 +66558,15 @@ declare module BABYLON {
             size?: Vector3;
             angle?: number;
         }): Mesh;
+        /**
+         * Creates a Capsule Mesh
+         * @param name defines the name of the mesh.
+         * @param options the constructors options used to shape the mesh.
+         * @param scene defines the scene the mesh is scoped to.
+         * @returns the capsule mesh
+         * @see https://doc.babylonjs.com/how_to/capsule_shape
+         */
+        static CreateCapsule(name: string, options?: ICreateCapsuleOptions, scene?: Nullable<Scene>): Mesh;
     }
 }
 declare module BABYLON {
@@ -74429,6 +74569,7 @@ declare module BABYLON {
         autoCloneTransformation: boolean;
         /**
          * Triggered when new babylon (transformed) hit test results are available
+         * Note - this will be called when results come back from the device. It can be an empty array!!
          */
         onHitTestResultObservable: Observable<IWebXRHitResult[]>;
         /**
@@ -83930,20 +84071,20 @@ declare module BABYLON.GLTF2.Exporter {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
         /**
-     * @ignore
-     * Create individual morph animations from the mesh's morph target animation tracks
-     * @param babylonNode
-     * @param runtimeGLTFAnimation
-     * @param idleGLTFAnimations
-     * @param nodeMap
-     * @param nodes
-     * @param binaryWriter
-     * @param bufferViews
-     * @param accessors
-     * @param convertToRightHandedSystem
-     * @param animationSampleRate
-     */
-        static _CreateMorphTargetAnimationFromMorphTargets(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
+         * @ignore
+         * Create individual morph animations from the mesh's morph target animation tracks
+         * @param babylonNode
+         * @param runtimeGLTFAnimation
+         * @param idleGLTFAnimations
+         * @param nodeMap
+         * @param nodes
+         * @param binaryWriter
+         * @param bufferViews
+         * @param accessors
+         * @param convertToRightHandedSystem
+         * @param animationSampleRate
+         */
+        static _CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
         /**
@@ -83959,7 +84100,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param convertToRightHandedSystemMap
          * @param animationSampleRate
          */
-        static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
+        static _CreateNodeAndMorphAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystemMap: {
             [nodeId: number]: boolean;
