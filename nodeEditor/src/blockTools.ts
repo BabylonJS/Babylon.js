@@ -351,7 +351,7 @@ export class BlockTools {
                 meshPosition.setAsAttribute("position");
                 return meshPosition;
             }
-            case "Position2DBlock": {
+            case "ScreenPositionBlock": {
                 let meshPosition = new InputBlock("position");
                 meshPosition.setAsAttribute("position2d");
                 return meshPosition;
