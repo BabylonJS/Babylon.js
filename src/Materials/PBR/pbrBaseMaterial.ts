@@ -1758,7 +1758,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this._activeEffect = effect;
-        let ubo = this._uniformBuffer;
 
         // Matrices
         if (!defines.INSTANCES || defines.THIN_INSTANCES) {
@@ -1778,6 +1777,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
         let reflectionTexture: Nullable<BaseTexture> = null;
+        let ubo = this._uniformBuffer;
         if (mustRebind) {
             var engine = scene.getEngine();
             ubo.bindToEffect(effect, "Material");
