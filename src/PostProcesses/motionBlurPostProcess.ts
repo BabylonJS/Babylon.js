@@ -153,6 +153,9 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param camera The camera to dispose the post process on.
      */
     public dispose(camera?: Camera): void {
+        // TODO clear for motion blur configuration
+        // Mark prepass as dirty too
+
         if (this._geometryBufferRenderer) {
             // Clear previous transformation matrices dictionary used to compute objects velocities
             this._geometryBufferRenderer._previousTransformationMatrices = {};
