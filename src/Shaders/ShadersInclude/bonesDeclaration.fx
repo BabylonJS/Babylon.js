@@ -4,7 +4,10 @@
 		uniform float boneTextureWidth;
 	#else
 		uniform mat4 mBones[BonesPerMesh];
-	#endif	
+		#ifdef BONES_VELOCITY_ENABLED
+		    uniform mat4 mPreviousBones[BonesPerMesh];
+		#endif
+	#endif
 
 	attribute vec4 matricesIndices;
 	attribute vec4 matricesWeights;

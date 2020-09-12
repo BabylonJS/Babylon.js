@@ -73,9 +73,6 @@ uniform Material
 
     uniform vec4 vDetailInfos;
     uniform mat4 detailMatrix;
-
-    uniform mat4 previousWorld;
-    uniform mat4 previousViewProjection;
 };
 
 uniform Scene {

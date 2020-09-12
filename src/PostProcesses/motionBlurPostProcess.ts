@@ -175,7 +175,7 @@ export class MotionBlurPostProcess extends PostProcess {
         }
 
         cfg.enabled = true;
-        this._motionBlurConfiguration = prePassRenderer.addEffectConfiguration(cfg);
+        this._motionBlurConfiguration = prePassRenderer.addEffectConfiguration(cfg) as MotionBlurConfiguration;
         return true;
     }
 

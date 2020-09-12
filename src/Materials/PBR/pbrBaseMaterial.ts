@@ -16,7 +16,7 @@ import { IMaterialAnisotropicDefines, PBRAnisotropicConfiguration } from "./pbrA
 import { IMaterialBRDFDefines, PBRBRDFConfiguration } from "./pbrBRDFConfiguration";
 import { IMaterialSheenDefines, PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { IMaterialSubSurfaceDefines, PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
-import { PBRAdditionnalPrePassConfiguration } from "./pbrAdditionnalPrePassConfiguration";
+import { PrePassConfiguration } from "../PrePassConfiguration";
 import { Color3, TmpColors } from '../../Maths/math.color';
 import { Scalar } from "../../Maths/math.scalar";
 
@@ -182,6 +182,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
     public BONETEXTURE = false;
+    public BONES_VELOCITY_ENABLED = false;
 
     public NONUNIFORMSCALING = false;
 
@@ -826,7 +827,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Defines additionnal PrePass parameters for the material.
      */
-    public readonly additionnalPrePass: PBRAdditionnalPrePassConfiguration;
+    public readonly prePassConfiguration: PrePassConfiguration;
 
     /**
      * Defines the detail map parameters for the material.
@@ -861,7 +862,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._environmentBRDFTexture = BRDFTextureTools.GetEnvironmentBRDFTexture(scene);
         this.subSurface = new PBRSubSurfaceConfiguration(this._markAllSubMeshesAsTexturesDirty.bind(this), this._markScenePrePassDirty.bind(this), scene);
-        this.additionnalPrePass = new PBRAdditionnalPrePassConfiguration();
+        this.prePassConfiguration = new PrePassConfiguration();
     }
 
     /**
@@ -1294,8 +1295,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.AddUniforms(uniforms);
         PBRSheenConfiguration.AddSamplers(samplers);
 
-        PBRAdditionnalPrePassConfiguration.AddUniforms(uniforms);
-        PBRAdditionnalPrePassConfiguration.AddSamplers(uniforms);
+        PrePassConfiguration.AddUniforms(uniforms);
+        PrePassConfiguration.AddSamplers(uniforms);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1709,7 +1710,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         PBRSheenConfiguration.PrepareUniformBuffer(ubo);
         PBRSubSurfaceConfiguration.PrepareUniformBuffer(ubo);
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
-        PBRAdditionnalPrePassConfiguration.PrepareUniformBuffer(ubo);
 
         ubo.create();
     }
@@ -1763,7 +1763,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         // Matrices
         if (!defines.INSTANCES || defines.THIN_INSTANCES) {
             this.bindOnlyWorldMatrix(world);
-            this.additionnalPrePass.bindForSubMesh(ubo, scene, mesh, world, this.isFrozen);
+            this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
         }
 
         // Normal Matrix
@@ -1775,7 +1775,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
-        MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.additionnalPrePass);
+        MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
         let reflectionTexture: Nullable<BaseTexture> = null;
         if (mustRebind) {

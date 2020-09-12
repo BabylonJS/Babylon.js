@@ -9,7 +9,8 @@ import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
 import { Constants } from "../Engines/constants";
-import { PBRAdditionnalPrePassConfiguration } from "../Materials/PBR/pbrAdditionnalPrePassConfiguration";
+import { PrePassConfiguration } from "../Materials/prePassConfiguration";
+import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
@@ -204,6 +205,15 @@ export class MaterialHelper {
             } else {
                 defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
                 defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+
+                const prePassRenderer = mesh.getScene().prePassRenderer;
+                if (prePassRenderer) {
+                    const motionBlurConfiguration = prePassRenderer.getEffectConfiguration("motionBlur");
+                    if (motionBlurConfiguration) {
+                        const nonExcluded = (motionBlurConfiguration as MotionBlurConfiguration).excludedSkinnedMesh.indexOf(mesh) === -1;
+                        defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
+                    }
+                }
             }
         } else {
             defines["NUM_BONE_INFLUENCERS"] = 0;
@@ -822,7 +832,7 @@ export class MaterialHelper {
      * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      */
-    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PBRAdditionnalPrePassConfiguration): void {
+    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration): void {
         if (!effect || !mesh) {
             return;
         }
@@ -843,11 +853,24 @@ export class MaterialHelper {
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
                     if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
-                        effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+                        if (prePassConfiguration.previousBones[mesh.uniqueId]) {
+                            effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+                        }
+
+                        MaterialHelper._CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
                     }
                 }
             }
         }
+    }
+
+    // Copies the bones transformation matrices into the target array and returns the target's reference
+    private static _CopyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
+        for (let i = 0; i < source.length; i++) {
+            target[i] = source[i];
+        }
+
+        return target;
     }
 
     /**
