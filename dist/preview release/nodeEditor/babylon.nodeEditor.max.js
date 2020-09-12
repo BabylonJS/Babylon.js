@@ -63335,7 +63335,7 @@ var BlockTools = /** @class */ (function () {
                 meshPosition.setAsAttribute("position");
                 return meshPosition;
             }
-            case "Position2DBlock": {
+            case "ScreenPositionBlock": {
                 var meshPosition = new babylonjs_Materials_Node_Blocks_Fragment_discardBlock__WEBPACK_IMPORTED_MODULE_0__["InputBlock"]("position");
                 meshPosition.setAsAttribute("position2d");
                 return meshPosition;
@@ -63786,8 +63786,8 @@ var NodeListComponent = /** @class */ (function (_super) {
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
-            PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
-            Procedural__Texture: ["Position2DBlock"],
+            PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
+            Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -63963,7 +63963,7 @@ var NodeListComponent = /** @class */ (function (_super) {
         "ClearCoatBlock": "PBR ClearCoat block",
         "RefractionBlock": "PBR Refraction block",
         "SubSurfaceBlock": "PBR SubSurface block",
-        "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
+        "ScreenPositionBlock": "A Vector2 representing the position of each vertex of the screen quad (derived from UV set from the quad used to render)",
         "CurrentScreenBlock": "The screen buffer used as input for the post process",
         "ParticleUVBlock": "The particle uv texture coordinate",
         "ParticleTextureBlock": "The particle texture",
