@@ -5,6 +5,8 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from '../Rendering/geometryBufferRenderer';
 import { serialize, SerializationHelper } from '../Misc/decorators';
+import { PrePassRenderer } from "../Rendering/prePassRenderer";
+import { ScreenSpaceReflectionsConfiguration } from "../Rendering/screenSpaceReflectionsConfiguration";
 
 import "../Shaders/screenSpaceReflection.fragment";
 import { _TypeStore } from '../Misc/typeStore';
@@ -43,10 +45,13 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     @serialize()
     public roughnessFactor: number = 0.2;
 
+    private _forceGeometryBuffer: boolean = false;
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+    private _prePassRenderer: PrePassRenderer;
     private _enableSmoothReflections: boolean = false;
     private _reflectionSamples: number = 64;
     private _smoothSteps: number = 5;
+    private _ssrConfiguration: ScreenSpaceReflectionsConfiguration;
 
     /**
      * Gets a string identifying the name of the class
@@ -68,7 +73,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+    constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false, forceGeometryBuffer = false) {
         super(name, "screenSpaceReflection", [
             "projection", "view", "threshold", "reflectionSpecularFalloffExponent", "strength", "step", "roughnessFactor"
         ], [
@@ -77,31 +82,52 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         "#define SSR_SUPPORTED\n#define REFLECTION_SAMPLES 64\n#define SMOOTH_STEPS 5\n",
         textureType, undefined, null, blockCompilation);
 
-        // Get geometry buffer renderer and update effect
-        const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
-        if (geometryBufferRenderer) {
-            if (geometryBufferRenderer.isSupported) {
-                geometryBufferRenderer.enablePosition = true;
-                geometryBufferRenderer.enableReflectivity = true;
-                this._geometryBufferRenderer = geometryBufferRenderer;
+        this._forceGeometryBuffer = forceGeometryBuffer;
+
+        if (this._forceGeometryBuffer) {
+            // Get geometry buffer renderer and update effect
+            const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
+            if (geometryBufferRenderer) {
+                if (geometryBufferRenderer.isSupported) {
+                    geometryBufferRenderer.enablePosition = true;
+                    geometryBufferRenderer.enableReflectivity = true;
+                    this._geometryBufferRenderer = geometryBufferRenderer;
+                }
             }
+        } else {
+            this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
+            this._prePassRenderer.markAsDirty();
         }
 
         this._updateEffectDefines();
 
         // On apply, send uniforms
         this.onApply = (effect: Effect) => {
-            if (!geometryBufferRenderer) {
+            const geometryBufferRenderer = this._geometryBufferRenderer;
+            const prePassRenderer = this._prePassRenderer;
+
+            if (!prePassRenderer && !geometryBufferRenderer) {
                 return;
             }
 
-            // Samplers
-            const positionIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
-            const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
+            if (geometryBufferRenderer) {
+                // Samplers
+                const positionIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.POSITION_TEXTURE_TYPE);
+                const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
 
-            effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
-            effect.setTexture("positionSampler", geometryBufferRenderer.getGBuffer().textures[positionIndex]);
-            effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
+                effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
+                effect.setTexture("positionSampler", geometryBufferRenderer.getGBuffer().textures[positionIndex]);
+                effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
+            } else{
+                // Samplers
+                const positionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+                const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
+                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+
+                effect.setTexture("normalSampler", prePassRenderer.prePassRT.textures[normalIndex]);
+                effect.setTexture("positionSampler", prePassRenderer.prePassRT.textures[positionIndex]);
+                effect.setTexture("reflectivitySampler", prePassRenderer.prePassRT.textures[roughnessIndex]);
+            }
 
             // Uniforms
             const camera = scene.activeCamera;
@@ -192,8 +218,11 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
 
     private _updateEffectDefines(): void {
         const defines: string[] = [];
-        if (this._geometryBufferRenderer) {
+        if (this._geometryBufferRenderer || this._prePassRenderer) {
             defines.push("#define SSR_SUPPORTED");
+            if (this._prePassRenderer) {
+                defines.push("#define PREPASS_LAYOUT");
+            }
         }
         if (this._enableSmoothReflections) {
             defines.push("#define ENABLE_SMOOTH_REFLECTIONS");
@@ -203,6 +232,22 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         defines.push("#define SMOOTH_STEPS " + (this._smoothSteps >> 0));
 
         this.updateEffect(defines.join("\n"));
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to setup
+     * @returns true if the pre pass is needed.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        let cfg = this._ssrConfiguration;
+        if (!cfg) {
+            cfg = new ScreenSpaceReflectionsConfiguration();
+        }
+
+        cfg.enabled = true;
+        this._ssrConfiguration = prePassRenderer.addEffectConfiguration(cfg) as ScreenSpaceReflectionsConfiguration;
+        return true;
     }
 
     /** @hidden */
