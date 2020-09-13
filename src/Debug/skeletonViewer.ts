@@ -299,6 +299,9 @@ export class SkeletonViewer {
 
     /** The SkeletonViewers Mesh. */
     private _debugMesh: Nullable<LinesMesh>;
+    
+    /** The local axes Meshes. */
+    private _localAxes: LinesMesh[] = [];
 
     /** If SkeletonViewer is enabled. */
     private _isEnabled = false;
@@ -386,6 +389,8 @@ export class SkeletonViewer {
         options.displayOptions.sphereBaseSize = options.displayOptions.sphereBaseSize ?? 0.15;
         options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit ?? 2;
         options.displayOptions.sphereFactor = options.displayOptions.sphereFactor ?? 0.865;
+        options.displayOptions.showLocalAxes = options.displayOptions.showLocalAxes ?? false;
+        options.displayOptions.localAxesSize = options.displayOptions.localAxesSize ?? 0.075;
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
         options.useAllBones = options.useAllBones ?? true;
 
@@ -447,6 +452,8 @@ export class SkeletonViewer {
                 break;
             }
         }
+
+        this._buildLocalAxes();
     }
 
     /** Gets or sets a boolean indicating if the viewer is enabled */
@@ -732,6 +739,48 @@ export class SkeletonViewer {
             console.error(err);
             this._revert(animationState);
             this.dispose();
+        }
+    }
+
+    private _buildLocalAxes(): void {
+        if (this._localAxes) {
+            for (let axisMesh of this._localAxes) {
+                axisMesh.dispose();
+            }
+
+            this._localAxes = [];
+        }
+
+        let displayOptions = this.options.displayOptions || {};
+
+        if (!displayOptions.showLocalAxes) {
+            return;
+        }
+        
+        if (this._utilityLayer) {
+            const targetScene = this._utilityLayer.utilityLayerScene;
+            const size = displayOptions.localAxesSize || 0.075;
+
+            if (targetScene) {
+                for (let b of this.skeleton.bones) {
+                    if (b._index === -1 || (!this._boneIndices.has(b.getIndex()) && !this.options.useAllBones)) {
+                        continue;
+                    }
+                
+                    let axisX = Mesh.CreateLines('axisX', [Vector3.Zero(), new Vector3(size, 0, 0)], targetScene, true);
+                    let axisY = Mesh.CreateLines('axisY', [Vector3.Zero(), new Vector3(0, size, 0)], targetScene, true);
+                    let axisZ = Mesh.CreateLines('axisZ', [Vector3.Zero(), new Vector3(0, 0, size)], targetScene, true);
+
+                    axisX.color = new Color3(1, 0, 0);
+                    axisY.color = new Color3(0, 1, 0);
+                    axisZ.color = new Color3(0, 0, 1);
+
+                    axisX.parent = axisY.parent = axisZ.parent = b;
+                    axisX.renderingGroupId = axisY.renderingGroupId = axisZ.renderingGroupId = this.renderingGroupId;
+
+                    this._localAxes.push(axisX, axisY, axisZ);
+                }
+            }    
         }
     }
 
