@@ -94,6 +94,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         lastKeyframeCreated: Nullable<string>;
         canvasWidthScale: number;
         valuesPositionResize: number;
+        framesInCanvasView: { from: number; to: number };
     }
 > {
     private _snippetUrl = "https://snippet.babylonjs.com";
@@ -197,6 +198,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             lastKeyframeCreated: null,
             canvasWidthScale: 200,
             valuesPositionResize: 2,
+            framesInCanvasView: { from: 0, to: 20 },
         };
     }
 
@@ -840,16 +842,26 @@ export class AnimationCurveEditorComponent extends React.Component<
         const animation = this.state.selected;
         if (this.state.svgKeyframes && animation) {
             const keys = animation.getKeys();
-            const selectedControlPoint = this.state.svgKeyframes.find(
+            const selectedKeyframe = this.state.svgKeyframes.find(
                 (keyframe: IKeyframeSvgPoint) => keyframe.selected && (keyframe.isLeftActive || keyframe.isRightActive)
             );
-            if (selectedControlPoint !== null && selectedControlPoint) {
-                const { order, coordinate } = this.decodeCurveId(selectedControlPoint.id);
+
+            if (selectedKeyframe !== null && selectedKeyframe) {
+                const index = this.state.svgKeyframes.indexOf(selectedKeyframe);
+                const { order, coordinate } = this.decodeCurveId(selectedKeyframe.id);
                 const key = keys[order];
-                if (selectedControlPoint.isLeftActive && selectedControlPoint.leftControlPoint !== null) {
-                    key.inTangent = undefined;
-                } else if (selectedControlPoint.isRightActive && selectedControlPoint.rightControlPoint !== null) {
-                    key.outTangent = undefined;
+                if (selectedKeyframe.isLeftActive && selectedKeyframe.leftControlPoint !== null) {
+                    const prevSVGKeyframe = this.state.svgKeyframes[index - 1];
+                    let slope =
+                        (selectedKeyframe.keyframePoint.y - prevSVGKeyframe.keyframePoint.y) /
+                        (selectedKeyframe.keyframePoint.x - prevSVGKeyframe.keyframePoint.x);
+                    key.inTangent = slope * -1; // Divide by two to get half the distance of line
+                } else if (selectedKeyframe.isRightActive && selectedKeyframe.rightControlPoint !== null) {
+                    const nextSVGKeyframe = this.state.svgKeyframes[index + 1];
+                    let slope =
+                        (selectedKeyframe.keyframePoint.y - nextSVGKeyframe.keyframePoint.y) /
+                        (selectedKeyframe.keyframePoint.x - nextSVGKeyframe.keyframePoint.x);
+                    key.outTangent = slope; // Divide by two to get half the distance of line
                 }
                 this.selectAnimation(animation, coordinate);
             }
@@ -908,6 +920,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                 const recentlyCreated = {
                     frame: x,
                     value: actualValue,
+                    inTangent: this.state.isFlatTangentMode ? 0 : 0, // check if flat mode can be turn off
+                    outTangent: this.state.isFlatTangentMode ? 0 : 0, // check if flat mode can be turn off
                 };
 
                 keys.push(recentlyCreated);
@@ -1742,17 +1756,21 @@ export class AnimationCurveEditorComponent extends React.Component<
             const middleCanvas = this._heightScale / 2;
             const positionY = value === 0 ? middleCanvas : middleCanvas - value * valueScale;
 
-            this.setState({ panningX: positionX, panningY: positionY, repositionCanvas: true });
+            // change initialframe, last frame
+            const currentFramesInCanvas = this.state.framesInCanvasView.to - this.state.framesInCanvasView.from;
+
+            const newStartFrameInCanvas = Math.round(positionX / this._pixelFrameUnit);
+
+            this.setState({
+                panningX: positionX,
+                panningY: positionY,
+                repositionCanvas: true,
+                framesInCanvasView: { from: newStartFrameInCanvas, to: newStartFrameInCanvas + currentFramesInCanvas },
+            });
         }
     };
 
-    setCurrentFrame = (direction: number) => {
-        this.setState({
-            currentFrame: this.state.currentFrame + direction,
-        });
-    };
-
-    setCurrentFrame2 = (frame: number) => {
+    setCurrentFrame = (frame: number) => {
         this.setState({
             currentFrame: frame,
         });
@@ -1890,7 +1908,12 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.setState({ panningY });
     };
     setPanningX = (panningX: number) => {
-        this.setState({ panningX });
+        const currentFramesInCanvas = this.state.framesInCanvasView.to - this.state.framesInCanvasView.from;
+        const newStartFrameInCanvas = Math.round(panningX / this._pixelFrameUnit);
+        this.setState({
+            panningX,
+            framesInCanvasView: { from: newStartFrameInCanvas, to: newStartFrameInCanvas + currentFramesInCanvas },
+        });
     };
 
     canvasPositionEnded = () => {
@@ -1990,13 +2013,26 @@ export class AnimationCurveEditorComponent extends React.Component<
             // with client width divide the number of frames needed
             const frameDistance = lastFrame - firstFrame;
             this._pixelFrameUnit = availableSpaceForFrames / (frameDistance / 10); // Update scale here...
-
-            // Need to center and reposition canvas
             const canvasValue = isNaN(scale) || scale === 0 ? 1 : scale / 2 + lowest?.value;
-            this.setCanvasPosition({ frame: middleFrame, value: canvasValue });
 
-            // Render new points
-            this.selectAnimation(animation, coordinate);
+            const firstF = firstFrame;
+
+            const centerFrame = middleFrame;
+
+            this.setState(
+                {
+                    framesInCanvasView: { from: firstFrame, to: lastFrame },
+                },
+                () => {
+                    // Need to center and reposition canvas
+
+                    this.setCanvasPosition({ frame: firstF, value: canvasValue });
+                    console.log(`Should center canvas at: ${centerFrame}, ${canvasValue}`);
+
+                    // Render new points
+                    this.selectAnimation(animation, coordinate);
+                }
+            );
         }
     };
 
@@ -2074,12 +2110,13 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     updatePosition={this.renderPoints}
                                     panningY={this.setPanningY}
                                     panningX={this.setPanningX}
-                                    setCurrentFrame={this.setCurrentFrame2}
+                                    setCurrentFrame={this.setCurrentFrame}
                                     positionCanvas={new Vector2(this.state.panningX, this.state.panningY)}
                                     repositionCanvas={this.state.repositionCanvas}
                                     canvasPositionEnded={this.canvasPositionEnded}
                                     keyframeSvgPoints={this.state.svgKeyframes}
                                     resetActionableKeyframe={this.resetActionableKeyframe}
+                                    framesInCanvasView={this.state.framesInCanvasView}
                                 >
                                     {this.setValueLines().map((line, i) => {
                                         return (
@@ -2174,44 +2211,38 @@ export class AnimationCurveEditorComponent extends React.Component<
                                                     y2="5%"
                                                 ></line>
                                             ) : null}
-
-                                            {this.state.selected && this.isCurrentFrame(f.label) ? (
-                                                <svg>
-                                                    <line
-                                                        x1={f.value}
-                                                        y1="0"
-                                                        x2={f.value}
-                                                        y2="-100%"
-                                                        style={{
-                                                            stroke: "#a4a4a4",
-                                                            strokeWidth: 0.4,
-                                                        }}
-                                                    />
-                                                    <svg x={f.value} y="-1">
-                                                        <circle
-                                                            className="svg-playhead"
-                                                            cx="0"
-                                                            cy="0"
-                                                            r="2%"
-                                                            fill="white"
-                                                        />
-                                                        <text
-                                                            x="0"
-                                                            y="1%"
-                                                            textAnchor="middle"
-                                                            style={{
-                                                                fontSize: `${0.17 * this.state.scale}em`,
-                                                                pointerEvents: "none",
-                                                                fontWeight: 600,
-                                                            }}
-                                                        >
-                                                            {f.label}
-                                                        </text>
-                                                    </svg>
-                                                </svg>
-                                            ) : null}
                                         </svg>
                                     ))}
+
+                                    {this.state.selected && this.state.currentFrame ? (
+                                        <svg x="0" y={96 + this.state.panningY + "%"}>
+                                            <line
+                                                x1={this.state.currentFrame * this._pixelFrameUnit}
+                                                y1="0"
+                                                x2={this.state.currentFrame * this._pixelFrameUnit}
+                                                y2="-100%"
+                                                style={{
+                                                    stroke: "#a4a4a4",
+                                                    strokeWidth: 0.4,
+                                                }}
+                                            />
+                                            <svg x={this.state.currentFrame * this._pixelFrameUnit} y="-1">
+                                                <circle className="svg-playhead" cx="0" cy="0" r="2%" fill="white" />
+                                                <text
+                                                    x="0"
+                                                    y="1%"
+                                                    textAnchor="middle"
+                                                    style={{
+                                                        fontSize: `${0.17 * this.state.scale}em`,
+                                                        pointerEvents: "none",
+                                                        fontWeight: 600,
+                                                    }}
+                                                >
+                                                    {this.state.currentFrame}
+                                                </text>
+                                            </svg>
+                                        </svg>
+                                    ) : null}
                                 </SvgDraggableArea>
                             )}
                             <div

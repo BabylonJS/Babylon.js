@@ -16,6 +16,7 @@ interface ISvgDraggableAreaProps {
     repositionCanvas?: boolean;
     canvasPositionEnded: () => void;
     resetActionableKeyframe: () => void;
+    framesInCanvasView: { from: number; to: number };
 }
 
 export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { panX: number; panY: number }> {
@@ -138,14 +139,15 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
 
                     const draggableAreaWidth = e.currentTarget.clientWidth;
 
-                    const framesInDefaultCavas = 20;
+                    const initialFrame = this.props.framesInCanvasView.from;
 
-                    const unit = 39;
+                    const lastFrame = this.props.framesInCanvasView.to;
 
-                    const maxFrames = draggableAreaWidth / unit;
-                    const differentFrames = Math.round((Math.round(maxFrames) - framesInDefaultCavas) / 2);
+                    const framesInCanvas = lastFrame - initialFrame;
 
-                    const newFrame = Math.round(moving / unit) - differentFrames;
+                    const unit = draggableAreaWidth / framesInCanvas;
+
+                    const newFrame = Math.round(moving / unit) + initialFrame;
                     this.props.setCurrentFrame(newFrame);
                 } else {
                     var newPoints = [...this.props.keyframeSvgPoints];
