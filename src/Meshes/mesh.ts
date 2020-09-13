@@ -2094,7 +2094,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let numBones: number = this.skeleton.bones.length;
         let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
         let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
-		let numBadBoneIndices: number = 0;
+        let numBadBoneIndices: number = 0;
         for (var a = 0; a < numWeights; a += 4) {
             for (var b = 0; b < numInfluences; b++) {
                 let index = b < 4 ? matricesIndices[a + b] : matricesIndicesExtra[a + b - 4];
