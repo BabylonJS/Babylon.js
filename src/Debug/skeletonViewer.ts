@@ -765,6 +765,12 @@ export class SkeletonViewer {
             let axisX = Mesh.CreateLines('axisX', [Vector3.Zero(), new Vector3(size, 0, 0)], targetScene, true);
             let axisY = Mesh.CreateLines('axisY', [Vector3.Zero(), new Vector3(0, size, 0)], targetScene, true);
             let axisZ = Mesh.CreateLines('axisZ', [Vector3.Zero(), new Vector3(0, 0, size)], targetScene, true);
+            
+            if (this.displayMode === SkeletonViewer.DISPLAY_LINES) {
+                // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its 
+                // skeleton is applied to at least one mesh. For the other display mode we don't have this issue.
+                axisX.skeleton = this.skeleton;
+            }
 
             axisX.color = new Color3(1, 0, 0);
             axisY.color = new Color3(0, 1, 0);
