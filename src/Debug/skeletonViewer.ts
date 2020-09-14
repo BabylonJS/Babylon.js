@@ -302,7 +302,7 @@ export class SkeletonViewer {
     private _debugMesh: Nullable<LinesMesh>;
 
     /** The local axes Meshes. */
-    private _localAxes: Nullable<LinesMesh> = null;
+    private _localAxes: LinesMesh[] = [];
 
     /** If SkeletonViewer is enabled. */
     private _isEnabled = false;
@@ -744,11 +744,11 @@ export class SkeletonViewer {
     }
 
     private _buildLocalAxes(): void {
-        if (this._localAxes) {
-            this._localAxes.dispose();
+        for (let axisMesh of this._localAxes) {
+            axisMesh.dispose();
         }
         
-        this._localAxes = null;
+        this._localAxes = [];
         let displayOptions = this.options.displayOptions || {};
 
         if (!displayOptions.showLocalAxes) {
@@ -772,17 +772,18 @@ export class SkeletonViewer {
             let green = new Color4(0, 1, 0, 1);
             let blue = new Color4(0, 0, 1, 1);
             let colors = [[red, red], [green, green], [blue, blue]];
+            let axes = MeshBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
+            
+            axes.parent = b;
+            axes.renderingGroupId = this.renderingGroupId;
 
-            this._localAxes = MeshBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
+            this._localAxes.push(axes);
+        }
 
-            if (this.displayMode === SkeletonViewer.DISPLAY_LINES && !this._localAxes.skeleton) {
-                // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its
-                // skeleton is applied to at least one mesh. For the other display mode we don't have this issue.
-                this._localAxes.skeleton = this.skeleton;
-            }
-
-            this._localAxes.parent = b;
-            this._localAxes.renderingGroupId = this.renderingGroupId;
+        if (this.displayMode === SkeletonViewer.DISPLAY_LINES && !this._localAxes[0].skeleton) {
+            // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its
+            // skeleton is applied to at least one mesh. For the other display mode we don't have this issue.
+            this._localAxes[0].skeleton = this.skeleton;
         }
     }
 
