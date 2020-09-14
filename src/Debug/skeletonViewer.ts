@@ -747,7 +747,7 @@ export class SkeletonViewer {
         for (let axisMesh of this._localAxes) {
             axisMesh.dispose();
         }
-        
+
         this._localAxes = [];
         let displayOptions = this.options.displayOptions || {};
 
@@ -773,7 +773,7 @@ export class SkeletonViewer {
             let blue = new Color4(0, 0, 1, 1);
             let colors = [[red, red], [green, green], [blue, blue]];
             let axes = MeshBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
-            
+
             axes.parent = b;
             axes.renderingGroupId = this.renderingGroupId;
 
