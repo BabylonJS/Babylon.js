@@ -865,7 +865,8 @@ export class TrajectoryClassifier {
             }
         });
 
-        if (allowableMatches.length == 0) {
+        if (allowableMatches.length === 0) {
+
             return null;
         }
 
