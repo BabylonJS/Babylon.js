@@ -1,5 +1,5 @@
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
-import { Color3 } from '../Maths/math.color';
+import { Color3, Color4 } from '../Maths/math.color';
 import { Scene } from "../scene";
 import { Nullable } from "../types";
 import { Bone } from "../Bones/bone";
@@ -20,6 +20,7 @@ import { Observer } from '../Misc/observable';
 
 import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
 import { ShapeBuilder } from '../Meshes/Builders/shapeBuilder';
+import { MeshBuilder } from '../Meshes/meshBuilder';
 
 /**
  * Class used to render a debug view of a given skeleton
@@ -301,7 +302,7 @@ export class SkeletonViewer {
     private _debugMesh: Nullable<LinesMesh>;
 
     /** The local axes Meshes. */
-    private _localAxes: LinesMesh[] = [];
+    private _localAxes: Nullable<LinesMesh> = null;
 
     /** If SkeletonViewer is enabled. */
     private _isEnabled = false;
@@ -743,11 +744,11 @@ export class SkeletonViewer {
     }
 
     private _buildLocalAxes(): void {
-        for (let axisMesh of this._localAxes) {
-            axisMesh.dispose();
+        if (this._localAxes) {
+            this._localAxes.dispose();
         }
-
-        this._localAxes = [];
+        
+        this._localAxes = null;
         let displayOptions = this.options.displayOptions || {};
 
         if (!displayOptions.showLocalAxes) {
@@ -762,24 +763,26 @@ export class SkeletonViewer {
                 continue;
             }
 
-            let axisX = Mesh.CreateLines('axisX', [Vector3.Zero(), new Vector3(size, 0, 0)], targetScene, true);
-            let axisY = Mesh.CreateLines('axisY', [Vector3.Zero(), new Vector3(0, size, 0)], targetScene, true);
-            let axisZ = Mesh.CreateLines('axisZ', [Vector3.Zero(), new Vector3(0, 0, size)], targetScene, true);
+            let lines = [
+                [Vector3.Zero(), new Vector3(size, 0, 0)],
+                [Vector3.Zero(), new Vector3(0, size, 0)],
+                [Vector3.Zero(), new Vector3(0, 0, size)]
+            ];
+            let red = new Color4(1, 0, 0, 1);
+            let green = new Color4(0, 1, 0, 1);
+            let blue = new Color4(0, 0, 1, 1);
+            let colors = [[red, red], [green, green], [blue, blue]];
 
-            if (this.displayMode === SkeletonViewer.DISPLAY_LINES) {
+            this._localAxes = MeshBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
+
+            if (this.displayMode === SkeletonViewer.DISPLAY_LINES && !this._localAxes.skeleton) {
                 // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its
                 // skeleton is applied to at least one mesh. For the other display mode we don't have this issue.
-                axisX.skeleton = this.skeleton;
+                this._localAxes.skeleton = this.skeleton;
             }
 
-            axisX.color = new Color3(1, 0, 0);
-            axisY.color = new Color3(0, 1, 0);
-            axisZ.color = new Color3(0, 0, 1);
-
-            axisX.parent = axisY.parent = axisZ.parent = b;
-            axisX.renderingGroupId = axisY.renderingGroupId = axisZ.renderingGroupId = this.renderingGroupId;
-
-            this._localAxes.push(axisX, axisY, axisZ);
+            this._localAxes.parent = b;
+            this._localAxes.renderingGroupId = this.renderingGroupId;
         }
     }
 
