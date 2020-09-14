@@ -972,7 +972,7 @@ export class Effect implements IDisposable {
         var cache = this._valueCache[uniformName];
         if (cache !== undefined && cache === value) {
             return this;
-        }        
+        }
 
         if (this._engine.setInt(this._uniforms[uniformName], value)) {
             this._valueCache[uniformName] = value;
@@ -1226,7 +1226,7 @@ export class Effect implements IDisposable {
             return this;
         }
 
-        if (this._engine.setInt(this._uniforms[uniformName], bool ? 1 : 0)) {            
+        if (this._engine.setInt(this._uniforms[uniformName], bool ? 1 : 0)) {
             this._valueCache[uniformName] = bool;
         }
 
