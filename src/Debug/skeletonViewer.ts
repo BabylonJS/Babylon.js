@@ -20,7 +20,6 @@ import { Observer } from '../Misc/observable';
 
 import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
 import { ShapeBuilder } from '../Meshes/Builders/shapeBuilder';
-import { MeshBuilder } from '../Meshes/meshBuilder';
 
 /**
  * Class used to render a debug view of a given skeleton
@@ -772,7 +771,7 @@ export class SkeletonViewer {
             let green = new Color4(0, 1, 0, 1);
             let blue = new Color4(0, 0, 1, 1);
             let colors = [[red, red], [green, green], [blue, blue]];
-            let axes = MeshBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
+            let axes = LinesBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
 
             axes.parent = b;
             axes.renderingGroupId = this.renderingGroupId;
