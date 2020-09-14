@@ -1,24 +1,8 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
-import { ISceneSerializableComponent, SceneComponentConstants } from "../sceneComponent";
+import { ISceneComponent, SceneComponentConstants } from "../sceneComponent";
 import { PrePassRenderer } from "./prePassRenderer";
-import { AbstractScene } from "../abstractScene";
-import { Color3 } from "../Maths/math.color";
 import { Logger } from "../Misc/logger";
-
-// Adds the parser to the scene parsers.
-AbstractScene.AddParser(SceneComponentConstants.NAME_PREPASSRENDERER, (parsedData: any, scene: Scene) => {
-    // Diffusion profiles
-    if (parsedData.ssDiffusionProfileColors !== undefined && parsedData.ssDiffusionProfileColors !== null) {
-        scene.enablePrePassRenderer();
-        if (scene.prePassRenderer) {
-            for (var index = 0, cache = parsedData.ssDiffusionProfileColors.length; index < cache; index++) {
-                var color = parsedData.ssDiffusionProfileColors[index];
-                scene.prePassRenderer.subSurfaceConfiguration.addDiffusionProfile(new Color3(color.r, color.g, color.b));
-            }
-        }
-    }
-});
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -86,7 +70,7 @@ Scene.prototype.disablePrePassRenderer = function(): void {
  * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
  * in several rendering techniques.
  */
-export class PrePassRendererSceneComponent implements ISceneSerializableComponent {
+export class PrePassRendererSceneComponent implements ISceneComponent {
     /**
      * The component name helpful to identify the component in the list of scene components.
      */
@@ -129,45 +113,6 @@ export class PrePassRendererSceneComponent implements ISceneSerializableComponen
     private _beforeClearStage() {
         if (this.scene.prePassRenderer) {
             this.scene.prePassRenderer.clear();
-        }
-    }
-
-    /**
-     * Serializes the component data to the specified json object
-     * @param serializationObject The object to serialize to
-     */
-    public serialize(serializationObject: any): void {
-        if (!this.scene.prePassRenderer) {
-            return;
-        }
-
-        const ssDiffusionProfileColors = this.scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionProfileColors;
-        serializationObject.ssDiffusionProfileColors = [];
-
-        for (let i = 0; i < ssDiffusionProfileColors.length; i++) {
-            serializationObject.ssDiffusionProfileColors.push({ r: ssDiffusionProfileColors[i].r,
-                                                                g: ssDiffusionProfileColors[i].g,
-                                                                b: ssDiffusionProfileColors[i].b });
-        }
-    }
-
-    /**
-     * Adds all the elements from the container to the scene
-     * @param container the container holding the elements
-     */
-    public addFromContainer(container: AbstractScene): void {
-        // Nothing to do
-    }
-
-    /**
-     * Removes all the elements in the container from the scene
-     * @param container contains the elements to remove
-     * @param dispose if the removed element should be disposed (default: false)
-     */
-    public removeFromContainer(container: AbstractScene, dispose?: boolean): void {
-        // Make sure nothing will be serialized
-        if (this.scene.prePassRenderer) {
-            this.scene.prePassRenderer.subSurfaceConfiguration.clearAllDiffusionProfiles();
         }
     }
 
