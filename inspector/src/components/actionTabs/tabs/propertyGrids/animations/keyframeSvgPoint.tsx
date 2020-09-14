@@ -33,6 +33,7 @@ interface IKeyframeSvgPointProps {
     selectedControlPoint: (type: string, id: string) => void;
     isLeftActive: boolean;
     isRightActive: boolean;
+    framesInCanvasView: { from: number; to: number };
 }
 
 export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
@@ -61,7 +62,8 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
                     className="draggable"
                     x={this.props.keyframePoint.x}
                     y={this.props.keyframePoint.y}
-                    style={{ overflow: "visible", cursor: "pointer" }}>
+                    style={{ overflow: "visible", cursor: "pointer" }}
+                >
                     <image
                         data-id={this.props.id}
                         className="draggable"
@@ -82,6 +84,7 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
                         active={this.props.selected}
                         selected={this.props.isLeftActive}
                         selectControlPoint={this.selectedControlPointId}
+                        framesInCanvasView={this.props.framesInCanvasView}
                     />
                 )}
                 {this.props.rightControlPoint && (
@@ -93,6 +96,7 @@ export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
                         active={this.props.selected}
                         selected={this.props.isRightActive}
                         selectControlPoint={this.selectedControlPointId}
+                        framesInCanvasView={this.props.framesInCanvasView}
                     />
                 )}
             </>

@@ -9,6 +9,7 @@ interface IAnchorSvgPointProps {
     index: string;
     selected: boolean;
     selectControlPoint: (id: string) => void;
+    framesInCanvasView: { from: number; to: number };
 }
 
 export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visiblePoint: Vector2 }> {
@@ -28,7 +29,7 @@ export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visi
     };
 
     setVisiblePoint() {
-        const quarterDistance = 0.5;
+        const quarterDistance = (this.props.framesInCanvasView.to - this.props.framesInCanvasView.from) / 10;
         const distanceOnFlat = Math.abs(this.props.anchor.x - this.props.control.x);
         const currentDistance = Vector2.Distance(this.props.anchor, this.props.control);
         const percentageChange = ((currentDistance - distanceOnFlat) * 100) / currentDistance;
@@ -55,7 +56,8 @@ export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visi
                     x={this.state.visiblePoint.x}
                     y={this.state.visiblePoint.y}
                     style={{ overflow: "visible" }}
-                    onClick={this.select}>
+                    onClick={this.select}
+                >
                     <circle
                         type={this.props.type}
                         data-id={this.props.index}
