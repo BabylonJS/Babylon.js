@@ -2371,169 +2371,198 @@ export class ThinEngine {
      * Set the value of an uniform to a number (int)
      * @param uniform defines the webGL uniform location where to store the value
      * @param value defines the int number to store
+     * @returns true if the value was set
      */
-    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
+    public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniform1i(uniform, value);
+
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if the value was set
      */
-    public setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
+    public setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniform1iv(uniform, array);
+
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if the value was set
      */
-    public setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
+    public setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
         if (!uniform || array.length % 2 !== 0) {
-            return;
+            return false;
         }
 
         this._gl.uniform2iv(uniform, array);
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if the value was set
      */
-    public setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
+    public setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
         if (!uniform || array.length % 3 !== 0) {
-            return;
+            return false;
         }
 
         this._gl.uniform3iv(uniform, array);
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of int32 (stored as vec4)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of int32 to store
+     * @returns true if the value was set
      */
-    public setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void {
+    public setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
         if (!uniform || array.length % 4 !== 0) {
-            return;
+            return false;
         }
 
         this._gl.uniform4iv(uniform, array);
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if the value was set
      */
-    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
+    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniform1fv(uniform, array);
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if the value was set
      */
-    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
+    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
         if (!uniform || array.length % 2 !== 0) {
-            return;
+            return false;
         }
 
         this._gl.uniform2fv(uniform, <any>array);
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if the value was set
      */
-    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
+    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
         if (!uniform || array.length % 3 !== 0) {
-            return;
+            return false;
         }
 
         this._gl.uniform3fv(uniform, <any>array);
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of number (stored as vec4)
      * @param uniform defines the webGL uniform location where to store the value
      * @param array defines the array of number to store
+     * @returns true if the value was set
      */
-    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void {
+    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
         if (!uniform || array.length % 4 !== 0) {
-            return;
+            return false;
         }
 
         this._gl.uniform4fv(uniform, <any>array);
+        return true;
     }
 
     /**
      * Set the value of an uniform to an array of float32 (stored as matrices)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrices defines the array of float32 to store
+     * @returns true if the value was set
      */
-    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void {
+    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniformMatrix4fv(uniform, false, matrices);
+        return true;
     }
 
     /**
      * Set the value of an uniform to a matrix (3x3)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 3x3 matrix to store
+     * @returns true if the value was set
      */
-    public setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
+    public setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniformMatrix3fv(uniform, false, matrix);
+        return true;
     }
 
     /**
      * Set the value of an uniform to a matrix (2x2)
      * @param uniform defines the webGL uniform location where to store the value
      * @param matrix defines the Float32Array representing the 2x2 matrix to store
+     * @returns true if the value was set
      */
-    public setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void {
+    public setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniformMatrix2fv(uniform, false, matrix);
+        return true;
     }
 
     /**
      * Set the value of an uniform to a number (float)
      * @param uniform defines the webGL uniform location where to store the value
      * @param value defines the float number to store
+     * @returns true if the value was transfered
      */
-    public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void {
+    public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniform1f(uniform, value);
+        
+        return true;
     }
 
     /**
@@ -2541,13 +2570,16 @@ export class ThinEngine {
      * @param uniform defines the webGL uniform location where to store the value
      * @param x defines the 1st component of the value
      * @param y defines the 2nd component of the value
+     * @returns true if the value was set
      */
-    public setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void {
+    public setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniform2f(uniform, x, y);
+
+        return true;
     }
 
     /**
@@ -2556,13 +2588,16 @@ export class ThinEngine {
      * @param x defines the 1st component of the value
      * @param y defines the 2nd component of the value
      * @param z defines the 3rd component of the value
+     * @returns true if the value was set
      */
-    public setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void {
+    public setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniform3f(uniform, x, y, z);
+
+        return true;
     }
 
     /**
@@ -2572,13 +2607,16 @@ export class ThinEngine {
      * @param y defines the 2nd component of the value
      * @param z defines the 3rd component of the value
      * @param w defines the 4th component of the value
+     * @returns true if the value was set
      */
-    public setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void {
+    public setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._gl.uniform4f(uniform, x, y, z, w);
+
+        return true;
     }
 
     // States
