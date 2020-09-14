@@ -743,14 +743,11 @@ export class SkeletonViewer {
     }
 
     private _buildLocalAxes(): void {
-        if (this._localAxes) {
-            for (let axisMesh of this._localAxes) {
-                axisMesh.dispose();
-            }
-
-            this._localAxes = [];
+        for (let axisMesh of this._localAxes) {
+            axisMesh.dispose();
         }
 
+        this._localAxes = [];
         let displayOptions = this.options.displayOptions || {};
 
         if (!displayOptions.showLocalAxes) {
@@ -761,26 +758,24 @@ export class SkeletonViewer {
             const targetScene = this._utilityLayer.utilityLayerScene;
             const size = displayOptions.localAxesSize || 0.075;
 
-            if (targetScene) {
-                for (let b of this.skeleton.bones) {
-                    if (b._index === -1 || (!this._boneIndices.has(b.getIndex()) && !this.options.useAllBones)) {
-                        continue;
-                    }
-                
-                    let axisX = Mesh.CreateLines('axisX', [Vector3.Zero(), new Vector3(size, 0, 0)], targetScene, true);
-                    let axisY = Mesh.CreateLines('axisY', [Vector3.Zero(), new Vector3(0, size, 0)], targetScene, true);
-                    let axisZ = Mesh.CreateLines('axisZ', [Vector3.Zero(), new Vector3(0, 0, size)], targetScene, true);
-
-                    axisX.color = new Color3(1, 0, 0);
-                    axisY.color = new Color3(0, 1, 0);
-                    axisZ.color = new Color3(0, 0, 1);
-
-                    axisX.parent = axisY.parent = axisZ.parent = b;
-                    axisX.renderingGroupId = axisY.renderingGroupId = axisZ.renderingGroupId = this.renderingGroupId;
-
-                    this._localAxes.push(axisX, axisY, axisZ);
+            for (let b of this.skeleton.bones) {
+                if (b._index === -1 || (!this._boneIndices.has(b.getIndex()) && !this.options.useAllBones)) {
+                    continue;
                 }
-            }    
+            
+                let axisX = Mesh.CreateLines('axisX', [Vector3.Zero(), new Vector3(size, 0, 0)], targetScene, true);
+                let axisY = Mesh.CreateLines('axisY', [Vector3.Zero(), new Vector3(0, size, 0)], targetScene, true);
+                let axisZ = Mesh.CreateLines('axisZ', [Vector3.Zero(), new Vector3(0, 0, size)], targetScene, true);
+
+                axisX.color = new Color3(1, 0, 0);
+                axisY.color = new Color3(0, 1, 0);
+                axisZ.color = new Color3(0, 0, 1);
+
+                axisX.parent = axisY.parent = axisZ.parent = b;
+                axisX.renderingGroupId = axisY.renderingGroupId = axisZ.renderingGroupId = this.renderingGroupId;
+
+                this._localAxes.push(axisX, axisY, axisZ);
+            }	
         }
     }
 
