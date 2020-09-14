@@ -974,9 +974,9 @@ export class Effect implements IDisposable {
             return this;
         }
 
-        this._valueCache[uniformName] = value;
-
-        this._engine.setInt(this._uniforms[uniformName], value);
+        if (this._engine.setInt(this._uniforms[uniformName], value)) {
+            this._valueCache[uniformName] = value;
+        }
 
         return this;
     }
@@ -1162,7 +1162,9 @@ export class Effect implements IDisposable {
      */
     public setMatrix(uniformName: string, matrix: IMatrixLike): Effect {
         if (this._cacheMatrix(uniformName, matrix)) {
-            this._engine.setMatrices(this._uniforms[uniformName], matrix.toArray() as Float32Array);
+            if (!this._engine.setMatrices(this._uniforms[uniformName], matrix.toArray() as Float32Array)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1205,9 +1207,9 @@ export class Effect implements IDisposable {
             return this;
         }
 
-        this._valueCache[uniformName] = value;
-
-        this._engine.setFloat(this._uniforms[uniformName], value);
+        if (this._engine.setFloat(this._uniforms[uniformName], value)) {
+            this._valueCache[uniformName] = value;
+        }
 
         return this;
     }
@@ -1224,9 +1226,9 @@ export class Effect implements IDisposable {
             return this;
         }
 
-        this._valueCache[uniformName] = bool;
-
-        this._engine.setInt(this._uniforms[uniformName], bool ? 1 : 0);
+        if (this._engine.setInt(this._uniforms[uniformName], bool ? 1 : 0)) {
+            this._valueCache[uniformName] = bool;
+        }
 
         return this;
     }
@@ -1239,7 +1241,9 @@ export class Effect implements IDisposable {
      */
     public setVector2(uniformName: string, vector2: IVector2Like): Effect {
         if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-            this._engine.setFloat2(this._uniforms[uniformName], vector2.x, vector2.y);
+            if (!this._engine.setFloat2(this._uniforms[uniformName], vector2.x, vector2.y)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1253,7 +1257,9 @@ export class Effect implements IDisposable {
      */
     public setFloat2(uniformName: string, x: number, y: number): Effect {
         if (this._cacheFloat2(uniformName, x, y)) {
-            this._engine.setFloat2(this._uniforms[uniformName], x, y);
+            if (!this._engine.setFloat2(this._uniforms[uniformName], x, y)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1266,7 +1272,9 @@ export class Effect implements IDisposable {
      */
     public setVector3(uniformName: string, vector3: IVector3Like): Effect {
         if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-            this._engine.setFloat3(this._uniforms[uniformName], vector3.x, vector3.y, vector3.z);
+            if (!this._engine.setFloat3(this._uniforms[uniformName], vector3.x, vector3.y, vector3.z)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1281,7 +1289,9 @@ export class Effect implements IDisposable {
      */
     public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
         if (this._cacheFloat3(uniformName, x, y, z)) {
-            this._engine.setFloat3(this._uniforms[uniformName], x, y, z);
+            if (!this._engine.setFloat3(this._uniforms[uniformName], x, y, z)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1294,7 +1304,9 @@ export class Effect implements IDisposable {
      */
     public setVector4(uniformName: string, vector4: IVector4Like): Effect {
         if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
-            this._engine.setFloat4(this._uniforms[uniformName], vector4.x, vector4.y, vector4.z, vector4.w);
+            if (!this._engine.setFloat4(this._uniforms[uniformName], vector4.x, vector4.y, vector4.z, vector4.w)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1310,7 +1322,9 @@ export class Effect implements IDisposable {
      */
     public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
         if (this._cacheFloat4(uniformName, x, y, z, w)) {
-            this._engine.setFloat4(this._uniforms[uniformName], x, y, z, w);
+            if (!this._engine.setFloat4(this._uniforms[uniformName], x, y, z, w)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1323,7 +1337,9 @@ export class Effect implements IDisposable {
      */
     public setColor3(uniformName: string, color3: IColor3Like): Effect {
         if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-            this._engine.setFloat3(this._uniforms[uniformName], color3.r, color3.g, color3.b);
+            if (!this._engine.setFloat3(this._uniforms[uniformName], color3.r, color3.g, color3.b)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1337,7 +1353,9 @@ export class Effect implements IDisposable {
      */
     public setColor4(uniformName: string, color3: IColor3Like, alpha: number): Effect {
         if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-            this._engine.setFloat4(this._uniforms[uniformName], color3.r, color3.g, color3.b, alpha);
+            if (!this._engine.setFloat4(this._uniforms[uniformName], color3.r, color3.g, color3.b, alpha)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }
@@ -1350,7 +1368,9 @@ export class Effect implements IDisposable {
      */
     public setDirectColor4(uniformName: string, color4: IColor4Like): Effect {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            this._engine.setFloat4(this._uniforms[uniformName], color4.r, color4.g, color4.b, color4.a);
+            if (!this._engine.setFloat4(this._uniforms[uniformName], color4.r, color4.g, color4.b, color4.a)) {
+                this._valueCache[uniformName] = null;
+            }
         }
         return this;
     }

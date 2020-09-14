@@ -691,180 +691,202 @@ export class NativeEngine extends Engine {
         return this._alphaMode;
     }
 
-    public setInt(uniform: WebGLUniformLocation, int: number): void {
+    public setInt(uniform: WebGLUniformLocation, int: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setInt(uniform, int);
+        return true;
     }
 
-    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setIntArray(uniform, array);
+        return true;
     }
 
-    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setIntArray2(uniform, array);
+        return true;
     }
 
-    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setIntArray3(uniform, array);
+        return true;
     }
 
-    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setIntArray4(uniform, array);
+        return true;
     }
 
-    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray(uniform, array);
+        return true;
     }
 
-    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray2(uniform, array);
+        return true;
     }
 
-    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray3(uniform, array);
+        return true;
     }
 
-    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray4(uniform, array);
+        return true;
     }
 
-    public setArray(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray(uniform, array);
+        return true;
     }
 
-    public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray2(uniform, array);
+        return true;
     }
 
-    public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray3(uniform, array);
+        return true;
     }
 
-    public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray4(uniform, array);
+        return true;
     }
 
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setMatrices(uniform, matrices);
+        return true;
     }
 
-    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setMatrix3x3(uniform, matrix);
+        return true;
     }
 
-    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setMatrix2x2(uniform, matrix);
+        return true;
     }
 
-    public setFloat(uniform: WebGLUniformLocation, value: number): void {
+    public setFloat(uniform: WebGLUniformLocation, value: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat(uniform, value);
+        return true;
     }
 
-    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
+    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat2(uniform, x, y);
+        return true;
     }
 
-    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
+    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat3(uniform, x, y, z);
+        return true;
     }
 
-    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
+    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat4(uniform, x, y, z, w);
+        return true;
     }
 
-    public setColor3(uniform: WebGLUniformLocation, color3: Color3): void {
+    public setColor3(uniform: WebGLUniformLocation, color3: Color3): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat3(uniform, color3.r, color3.g, color3.b);
+        return true;
     }
 
-    public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void {
+    public setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
+        return true;
     }
 
     public wipeCaches(bruteForce?: boolean): void {
