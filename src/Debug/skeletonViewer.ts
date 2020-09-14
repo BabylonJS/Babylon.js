@@ -776,13 +776,13 @@ export class SkeletonViewer {
             axes.parent = b;
             axes.renderingGroupId = this.renderingGroupId;
 
-            this._localAxes.push(axes);
-        }
+            if (this.displayMode === SkeletonViewer.DISPLAY_LINES) {
+                // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its
+                // skeleton is applied to at least one mesh. For the other display mode we don't have this issue.
+                axes.skeleton = this.skeleton;
+            }
 
-        if (this.displayMode === SkeletonViewer.DISPLAY_LINES && !this._localAxes[0].skeleton) {
-            // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its
-            // skeleton is applied to at least one mesh. For the other display mode we don't have this issue.
-            this._localAxes[0].skeleton = this.skeleton;
+            this._localAxes.push(axes);
         }
     }
 
