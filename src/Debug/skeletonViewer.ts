@@ -299,7 +299,7 @@ export class SkeletonViewer {
 
     /** The SkeletonViewers Mesh. */
     private _debugMesh: Nullable<LinesMesh>;
-    
+
     /** The local axes Meshes. */
     private _localAxes: LinesMesh[] = [];
 
@@ -753,7 +753,7 @@ export class SkeletonViewer {
         if (!displayOptions.showLocalAxes) {
             return;
         }
-        
+
         const targetScene = this._utilityLayer!.utilityLayerScene;
         const size = displayOptions.localAxesSize || 0.075;
 
@@ -761,13 +761,13 @@ export class SkeletonViewer {
             if (b._index === -1 || (!this._boneIndices.has(b.getIndex()) && !this.options.useAllBones)) {
                 continue;
             }
-        
+
             let axisX = Mesh.CreateLines('axisX', [Vector3.Zero(), new Vector3(size, 0, 0)], targetScene, true);
             let axisY = Mesh.CreateLines('axisY', [Vector3.Zero(), new Vector3(0, size, 0)], targetScene, true);
             let axisZ = Mesh.CreateLines('axisZ', [Vector3.Zero(), new Vector3(0, 0, size)], targetScene, true);
-            
+
             if (this.displayMode === SkeletonViewer.DISPLAY_LINES) {
-                // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its 
+                // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its
                 // skeleton is applied to at least one mesh. For the other display mode we don't have this issue.
                 axisX.skeleton = this.skeleton;
             }
