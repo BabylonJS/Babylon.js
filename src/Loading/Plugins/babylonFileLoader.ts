@@ -300,6 +300,11 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedMesh = parsedData.meshes[index];
                 var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
                 container.meshes.push(mesh);
+                if (mesh.hasInstances) {
+                    for (var instance of (mesh as Mesh).instances) {
+                        container.meshes.push(instance);
+                    }
+                }
                 log += (index === 0 ? "\n\tMeshes:" : "");
                 log += "\n\t\t" + mesh.toString(fullDetails);
             }
