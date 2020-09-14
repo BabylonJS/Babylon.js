@@ -5,7 +5,7 @@ import { FreeCamera } from "../Cameras/freeCamera";
 import { TargetCamera } from "../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
-import { Observable } from '../Misc/observable';
+import { Observable } from "../Misc/observable";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -49,6 +49,8 @@ export class WebXRCamera extends FreeCamera {
         this.cameraRigMode = Camera.RIG_MODE_CUSTOM;
         this.updateUpVectorFromRotation = true;
         this._updateNumberOfRigCameras(1);
+        // freeze projection matrix, which will be copied later
+        this.freezeProjectionMatrix();
 
         this._xrSessionManager.onXRSessionInit.add(() => {
             this._referencedPosition.copyFromFloats(0, 0, 0);
@@ -167,7 +169,7 @@ export class WebXRCamera extends FreeCamera {
             this._updateNumberOfRigCameras(pose.views.length);
         }
 
-        pose.views.forEach((view: any, i: number) => {
+        pose.views.forEach((view: XRView, i: number) => {
             const currentRig = <TargetCamera>this.rigCameras[i];
             // update right and left, where applicable
             if (!currentRig.isLeftCamera && !currentRig.isRightCamera) {
@@ -194,6 +196,11 @@ export class WebXRCamera extends FreeCamera {
 
             if (!this._scene.useRightHandedSystem) {
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
+            }
+
+            // first camera?
+            if (i === 0) {
+                this._projectionMatrix.copyFrom(currentRig._projectionMatrix);
             }
 
             // Update viewport
