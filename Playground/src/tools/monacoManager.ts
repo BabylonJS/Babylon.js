@@ -123,12 +123,14 @@ export class MonacoManager {
 
         if(this.globalState.language === "JS"){
             this._editor?.setValue(`// You have to create a function called createScene. This function must return a BABYLON.Scene object
-// You can reference the following variables: scene, canvas
+// You can reference the following variables: engine, canvas
 // You must at least define a camera
 
 var createScene = function() {
     var scene = new BABYLON.Scene(engine);
-    var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
+
+    //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
+    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
     camera.attachControl(canvas, true);
 
     return scene;
@@ -141,8 +143,8 @@ class Playground {
     public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
         var scene = new BABYLON.Scene(engine);
 
+        //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-        camera.setTarget(BABYLON.Vector3.Zero());
         camera.attachControl(canvas, true);
 
         return scene;
