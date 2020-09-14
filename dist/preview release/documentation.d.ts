@@ -36009,95 +36009,110 @@ declare module BABYLON {
          * Set the value of an uniform to a number (int)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the int number to store
+         * @returns true if the value was set
          */
-        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void;
+        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean;
         /**
          * Set the value of an uniform to an array of int32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if the value was set
          */
-        setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if the value was set
          */
-        setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if the value was set
          */
-        setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if the value was set
          */
-        setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of number
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if the value was set
          */
-        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
+        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if the value was set
          */
-        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
+        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if the value was set
          */
-        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
+        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if the value was set
          */
-        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
+        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as matrices)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrices defines the array of float32 to store
+         * @returns true if the value was set
          */
-        setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void;
+        setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean;
         /**
          * Set the value of an uniform to a matrix (3x3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 3x3 matrix to store
+         * @returns true if the value was set
          */
-        setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
+        setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean;
         /**
          * Set the value of an uniform to a matrix (2x2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 2x2 matrix to store
+         * @returns true if the value was set
          */
-        setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
+        setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean;
         /**
          * Set the value of an uniform to a number (float)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the float number to store
+         * @returns true if the value was transfered
          */
-        setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void;
+        setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): boolean;
         /**
          * Set the value of an uniform to a vec2
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
+         * @returns true if the value was set
          */
-        setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void;
+        setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean;
         /**
          * Set the value of an uniform to a vec3
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
+         * @returns true if the value was set
          */
-        setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void;
+        setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean;
         /**
          * Set the value of an uniform to a vec4
          * @param uniform defines the webGL uniform location where to store the value
@@ -36105,8 +36120,9 @@ declare module BABYLON {
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
          * @param w defines the 4th component of the value
+         * @returns true if the value was set
          */
-        setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
+        setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean;
         /**
          * Apply all cached states (depth, culling, stencil and alpha)
          */
@@ -51962,119 +51978,138 @@ declare module BABYLON {
          * Set the value of an uniform to an array of int32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if value was set
          */
-        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if value was set
          */
-        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if value was set
          */
-        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if value was set
          */
-        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
+         * @returns true if value was set
          */
-        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
+         * @returns true if value was set
          */
-        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
+         * @returns true if value was set
          */
-        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
+         * @returns true if value was set
          */
-        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of number
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if value was set
          */
-        setArray(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray(uniform: WebGLUniformLocation, array: number[]): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if value was set
          */
-        setArray2(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray2(uniform: WebGLUniformLocation, array: number[]): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if value was set
          */
-        setArray3(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray3(uniform: WebGLUniformLocation, array: number[]): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if value was set
          */
-        setArray4(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray4(uniform: WebGLUniformLocation, array: number[]): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as matrices)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrices defines the array of float32 to store
+         * @returns true if value was set
          */
-        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean;
         /**
          * Set the value of an uniform to a matrix (3x3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 3x3 matrix to store
+         * @returns true if value was set
          */
-        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
         /**
          * Set the value of an uniform to a matrix (2x2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 2x2 matrix to store
+         * @returns true if value was set
          */
-        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
         /**
          * Set the value of an uniform to a number (float)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the float number to store
+         * @returns true if value was set
          */
-        setFloat(uniform: WebGLUniformLocation, value: number): void;
+        setFloat(uniform: WebGLUniformLocation, value: number): boolean;
         /**
          * Set the value of an uniform to a vec2
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
+         * @returns true if value was set
          */
-        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean;
         /**
          * Set the value of an uniform to a vec3
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
+         * @returns true if value was set
          */
-        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean;
         /**
          * Set the value of an uniform to a boolean
          * @param uniform defines the webGL uniform location where to store the value
          * @param bool defines the boolean to store
+         * @returns true if value was set
          */
-        setBool(uniform: WebGLUniformLocation, bool: number): void;
+        setBool(uniform: WebGLUniformLocation, bool: number): boolean;
         /**
          * Set the value of an uniform to a vec4
          * @param uniform defines the webGL uniform location where to store the value
@@ -52082,8 +52117,9 @@ declare module BABYLON {
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
          * @param w defines the 4th component of the value
+         * @returns true if value was set
          */
-        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -52948,28 +52984,28 @@ declare module BABYLON {
          * @returns the current alpha mode
          */
         getAlphaMode(): number;
-        setInt(uniform: WebGLUniformLocation, int: number): void;
-        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setArray(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray2(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray3(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray4(uniform: WebGLUniformLocation, array: number[]): void;
-        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
-        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-        setFloat(uniform: WebGLUniformLocation, value: number): void;
-        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
-        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-        setColor3(uniform: WebGLUniformLocation, color3: Color3): void;
-        setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void;
+        setInt(uniform: WebGLUniformLocation, int: number): boolean;
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setArray(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray2(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray3(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray4(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
+        setFloat(uniform: WebGLUniformLocation, value: number): boolean;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean;
+        setColor3(uniform: WebGLUniformLocation, color3: Color3): boolean;
+        setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): boolean;
         wipeCaches(bruteForce?: boolean): void;
         _createTexture(): WebGLTexture;
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
@@ -74519,6 +74555,136 @@ declare module BABYLON {
         static ApplyDelta(deltaJSON: any | string, scene: Scene): void;
         private static _ApplyPropertiesToEntity;
         private static _ApplyDeltaForEntity;
+    }
+}
+declare module BABYLON {
+    /**
+     * A 3D trajectory consisting of an order list of vectors describing a
+     * path of motion through 3D space.
+     */
+    export class Trajectory {
+        private _points;
+        private readonly _segmentLength;
+        /**
+         * Serialize to JSON.
+         * @returns serialized JSON string
+         */
+        serialize(): string;
+        /**
+         * Deserialize from JSON.
+         * @param json serialized JSON string
+         * @returns deserialized Trajectory
+         */
+        static Deserialize(json: string): Trajectory;
+        /**
+         * Create a new empty Trajectory.
+         * @param segmentLength radius of discretization for Trajectory points
+         */
+        constructor(segmentLength?: number);
+        /**
+         * Get the length of the Trajectory.
+         * @returns length of the Trajectory
+         */
+        getLength(): number;
+        /**
+         * Append a new point to the Trajectory.
+         * NOTE: This implementation has many allocations.
+         * @param point point to append to the Trajectory
+         */
+        add(point: DeepImmutable<Vector3>): void;
+        /**
+         * Create a new Trajectory with a segment length chosen to make it
+         * probable that the new Trajectory will have a specified number of
+         * segments. This operation is imprecise.
+         * @param targetResolution number of segments desired
+         * @returns new Trajectory with approximately the requested number of segments
+         */
+        resampleAtTargetResolution(targetResolution: number): Trajectory;
+        /**
+         * Convert Trajectory segments into tokenized representation. This
+         * representation is an array of numbers where each nth number is the
+         * index of the token which is most similar to the nth segment of the
+         * Trajectory.
+         * @param tokens list of vectors which serve as discrete tokens
+         * @returns list of indices of most similar token per segment
+         */
+        tokenize(tokens: DeepImmutable<Vector3[]>): number[];
+        private static _forwardDir;
+        private static _inverseFromVec;
+        private static _upDir;
+        private static _fromToVec;
+        private static _lookMatrix;
+        /**
+         * Transform the rotation (i.e., direction) of a segment to isolate
+         * the relative transformation represented by the segment. This operation
+         * may or may not succeed due to singularities in the equations that define
+         * motion relativity in this context.
+         * @param priorVec the origin of the prior segment
+         * @param fromVec the origin of the current segment
+         * @param toVec the destination of the current segment
+         * @param result reference to output variable
+         * @returns whether or not transformation was successful
+         */
+        private static _transformSegmentDirToRef;
+        private static _bestMatch;
+        private static _score;
+        private static _bestScore;
+        /**
+         * Determine which token vector is most similar to the
+         * segment vector.
+         * @param segment segment vector
+         * @param tokens token vector list
+         * @returns index of the most similar token to the segment
+         */
+        private static _tokenizeSegment;
+    }
+    /**
+     * Class representing a set of known, named trajectories to which Trajectories can be
+     * added and using which Trajectories can be recognized.
+     */
+    export class TrajectoryClassifier {
+        private _maximumAllowableMatchCost;
+        private _vector3Alphabet;
+        private _levenshteinAlphabet;
+        private _nameToDescribedTrajectory;
+        /**
+         * Serialize to JSON.
+         * @returns JSON serialization
+         */
+        serialize(): string;
+        /**
+         * Deserialize from JSON.
+         * @param json JSON serialization
+         * @returns deserialized TrajectorySet
+         */
+        static Deserialize(json: string): TrajectoryClassifier;
+        /**
+         * Initialize a new empty TrajectorySet with auto-generated Alphabets.
+         * VERY naive, need to be generating these things from known
+         * sets. Better version later, probably eliminating this one.
+         * @returns auto-generated TrajectorySet
+         */
+        static Generate(): TrajectoryClassifier;
+        private constructor();
+        /**
+         * Add a new Trajectory to the set with a given name.
+         * @param trajectory new Trajectory to be added
+         * @param classification name to which to add the Trajectory
+         */
+        addTrajectoryToClassification(trajectory: Trajectory, classification: string): void;
+        /**
+         * Remove a known named trajectory and all Trajectories associated with it.
+         * @param classification name to remove
+         * @returns whether anything was removed
+         */
+        deleteClassification(classification: string): boolean;
+        /**
+         * Attempt to recognize a Trajectory from among all the classifications
+         * already known to the classifier.
+         * @param trajectory Trajectory to be recognized
+         * @returns classification of Trajectory if recognized, null otherwise
+         */
+        classifyTrajectory(trajectory: Trajectory): Nullable<string>;
     }
 }
 declare module BABYLON {
