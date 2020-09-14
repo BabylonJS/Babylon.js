@@ -642,12 +642,12 @@ export class AnimationCurveEditorComponent extends React.Component<
                     ((newValueOfY - updatedSvgKeyFrame.keyframePoint.y) * this._scaleFactor) / this._heightScale;
 
                 if (updatedValue > -100 && updatedValue < 100) {
-                    key.inTangent = this.updateValuePerCoordinate(dataType, key.inTangent, updatedValue, coordinate);
+                    key.inTangent = slope; //this.updateValuePerCoordinate(dataType, key.inTangent, updatedValue, coordinate);
 
                     if (!this.state.isBrokenMode) {
-                        // Right control point if exists
                         if (updatedSvgKeyFrame.rightControlPoint !== null) {
                             // Sets opposite value
+                            // get angle between control points and keep angle...
                             key.outTangent = key.inTangent * -1;
                         }
                     }
@@ -682,7 +682,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     ((newValueOfY - updatedSvgKeyFrame.keyframePoint.y) * this._scaleFactor) / this._heightScale;
 
                 if (updatedValue > -100 && updatedValue < 100) {
-                    key.outTangent = this.updateValuePerCoordinate(dataType, key.outTangent, updatedValue, coordinate);
+                    key.outTangent = slope * -1; //this.updateValuePerCoordinate(dataType, key.outTangent, updatedValue, coordinate);
 
                     if (!this.state.isBrokenMode) {
                         if (updatedSvgKeyFrame.leftControlPoint !== null) {
@@ -847,21 +847,22 @@ export class AnimationCurveEditorComponent extends React.Component<
             );
 
             if (selectedKeyframe !== null && selectedKeyframe) {
-                const index = this.state.svgKeyframes.indexOf(selectedKeyframe);
                 const { order, coordinate } = this.decodeCurveId(selectedKeyframe.id);
                 const key = keys[order];
                 if (selectedKeyframe.isLeftActive && selectedKeyframe.leftControlPoint !== null) {
-                    const prevSVGKeyframe = this.state.svgKeyframes[index - 1];
-                    let slope =
-                        (selectedKeyframe.keyframePoint.y - prevSVGKeyframe.keyframePoint.y) /
-                        (selectedKeyframe.keyframePoint.x - prevSVGKeyframe.keyframePoint.x);
-                    key.inTangent = slope * -1; // Divide by two to get half the distance of line
+                    const start = new Vector2(key.frame, key.value);
+                    const prev = new Vector2(keys[order - 1].frame, keys[order - 1].value);
+                    //const pointHalf = Vector2.Lerp(prev, start, 0.5); // Explore the distance of the point
+                    //const inTangent = pointHalf.y - start.y;
+                    let slope = (start.y - prev.y) / (start.x - prev.x);
+                    key.inTangent = slope * -1;
                 } else if (selectedKeyframe.isRightActive && selectedKeyframe.rightControlPoint !== null) {
-                    const nextSVGKeyframe = this.state.svgKeyframes[index + 1];
-                    let slope =
-                        (selectedKeyframe.keyframePoint.y - nextSVGKeyframe.keyframePoint.y) /
-                        (selectedKeyframe.keyframePoint.x - nextSVGKeyframe.keyframePoint.x);
-                    key.outTangent = slope; // Divide by two to get half the distance of line
+                    const start = new Vector2(key.frame, key.value);
+                    const next = new Vector2(keys[order + 1].frame, keys[order + 1].value);
+                    //const pointHalf = Vector2.Lerp(start, next, 0.5); // Explore the distance of the point
+                    let slope = (next.y - start.y) / (next.x - start.x);
+                    // const outTangent = pointHalf.y - start.y;
+                    key.outTangent = slope;
                 }
                 this.selectAnimation(animation, coordinate);
             }
@@ -1168,7 +1169,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                             data = this.curvePath(keyframes, data, middle, easingFunction as EasingFunction);
                         } else {
                             if (this.state !== undefined) {
-                                data = this.curvePathWithTangents(keyframes, data, middle, valueType, d, id);
+                                data = this.curvePathWithoutTangents(keyframes, data, middle, valueType, d, id);
                             }
                         }
                     }
@@ -1227,6 +1228,44 @@ export class AnimationCurveEditorComponent extends React.Component<
             easingMode,
             valueType,
         };
+    }
+
+    calculateLinearTangents(keyframes: IAnimationKey[]) {
+        const updatedKeyframes: IAnimationKey[] = keyframes.map((kf, i) => {
+            if (keyframes[i + 1] !== undefined) {
+                const start = new Vector2(keyframes[i].frame, keyframes[i].value);
+                const next = new Vector2(keyframes[i + 1].frame, keyframes[i + 1].value);
+                let slope = (next.y - start.y) / (next.x - start.x);
+                kf.outTangent = slope;
+            }
+
+            if (keyframes[i - 1] !== undefined) {
+                const start = new Vector2(keyframes[i].frame, keyframes[i].value);
+                const prev = new Vector2(keyframes[i - 1].frame, keyframes[i - 1].value);
+                let slope = (prev.y - start.y) / (prev.x - start.x);
+                kf.inTangent = slope * -1;
+            }
+
+            if (i === keyframes.length - 1) {
+                kf.outTangent = null;
+            }
+
+            return kf;
+        });
+
+        return updatedKeyframes;
+    }
+
+    curvePathWithoutTangents(
+        keyframes: IAnimationKey[],
+        data: string,
+        middle: number,
+        type: number,
+        coordinate: number,
+        animationName: string
+    ) {
+        const updatedKeyframes = this.calculateLinearTangents(keyframes);
+        return this.curvePathWithTangents(updatedKeyframes, data, middle, type, coordinate, animationName);
     }
 
     curvePathWithTangents(
@@ -1289,23 +1328,26 @@ export class AnimationCurveEditorComponent extends React.Component<
             if (i !== 0 || i !== keyframes.length - 1) {
                 defaultTangent = null;
             }
+            // defaultTangent = 0; Zero or if linear get linear formula (slope of next, prev point)
 
-            var inT =
-                key.inTangent === undefined ? defaultTangent : this.getValueAsArray(type, key.inTangent)[coordinate];
+            var inT = key.inTangent === null ? defaultTangent : this.getValueAsArray(type, key.inTangent)[coordinate];
             var outT =
-                key.outTangent === undefined ? defaultTangent : this.getValueAsArray(type, key.outTangent)[coordinate];
+                key.outTangent === null ? defaultTangent : this.getValueAsArray(type, key.outTangent)[coordinate];
 
-            let y = this._heightScale - keyframe_valueAsArray * middle;
+            //let y = this._heightScale - keyframe_valueAsArray * middle; // should be half of heightscale
+            defaultWeight = 1 * this._pixelFrameUnit;
 
             if (inT !== null) {
-                let valueIn = y * inT + y;
+                let valueInY = inT + keyframe_valueAsArray;
+                let valueIn = this._heightScale - valueInY * middle;
                 inTangent = new Vector2(key.frame * this._pixelFrameUnit - defaultWeight, valueIn);
             } else {
                 inTangent = null;
             }
 
             if (outT !== null) {
-                let valueOut = y * outT + y;
+                let valueOutY = outT + keyframe_valueAsArray;
+                let valueOut = this._heightScale - valueOutY * middle;
                 outTangent = new Vector2(key.frame * this._pixelFrameUnit + defaultWeight, valueOut);
             } else {
                 outTangent = null;
@@ -2178,6 +2220,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                             selected={keyframe.selected}
                                             selectedControlPoint={this.selectedControlPoint}
                                             selectKeyframe={this.selectKeyframe}
+                                            framesInCanvasView={this.state.framesInCanvasView}
                                         />
                                     ))}
 
