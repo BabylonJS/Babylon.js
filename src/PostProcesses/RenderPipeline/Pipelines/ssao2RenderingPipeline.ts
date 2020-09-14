@@ -12,14 +12,14 @@ import { PassPostProcess } from "../../../PostProcesses/passPostProcess";
 import { Scene } from "../../../scene";
 import { _TypeStore } from '../../../Misc/typeStore';
 import { EngineStore } from '../../../Engines/engineStore';
+import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
+import { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import { Constants } from "../../../Engines/constants";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "../../../Shaders/ssao2.fragment";
 import "../../../Shaders/ssaoCombine.fragment";
-
-declare type PrePassRenderer = import("../../../Rendering/prePassRenderer").PrePassRenderer;
 
 /**
  * Render pipeline to produce ssao effect
@@ -118,6 +118,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     * Dynamically generated sphere sampler.
     */
     private _sampleSphere: number[];
+
+    private _ssao2PrePassConfiguration: SSAO2Configuration;
 
     /**
     * Blur filter offsets
@@ -267,6 +269,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         }
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
+        this._ssao2PrePassConfiguration.enabled = false;
 
         super.dispose();
     }
@@ -293,7 +296,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             if (this._forceGeometryBuffer) {
                 effect.setTexture("depthNormalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[Constants.PREPASS_DEPTHNORMAL_INDEX]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
         };
@@ -311,7 +314,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             if (this._forceGeometryBuffer) {
                 effect.setTexture("depthNormalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[Constants.PREPASS_DEPTHNORMAL_INDEX]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setArray("samplerOffsets", this._samplerOffsets);
 
@@ -429,7 +432,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 effect.setTexture("depthSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[0]);
                 effect.setTexture("normalSampler", this._scene.enableGeometryBufferRenderer()!.getGBuffer().textures[1]);
             } else {
-                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[Constants.PREPASS_DEPTHNORMAL_INDEX]);
+                effect.setTexture("depthNormalSampler", this._prePassRenderer.prePassRT.textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)]);
             }
             effect.setTexture("randomSampler", this._randomTexture);
         };
@@ -512,7 +515,13 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @returns true if the pre pass is needed.
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        prePassRenderer.materialsShouldRenderGeometry = prePassRenderer.materialsShouldRenderGeometry || true;
+        let cfg = this._ssao2PrePassConfiguration;
+        if (!cfg) {
+            cfg = new SSAO2Configuration();
+        }
+
+        cfg.enabled = true;
+        this._ssao2PrePassConfiguration = prePassRenderer.addEffectConfiguration(cfg);
         return true;
     }
 }
