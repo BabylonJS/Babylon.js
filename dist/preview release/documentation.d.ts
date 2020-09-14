@@ -1050,21 +1050,40 @@ declare module BABYLON {
          */
         static readonly SCENELOADER_DETAILED_LOGGING: number;
         /**
-         * Prepass texture index for color
+         * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+         * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
          */
-        static readonly PREPASS_COLOR_INDEX: number;
+        static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE: number;
         /**
-         * Prepass texture index for irradiance
+         * Constant used to retrieve the position texture index in the textures array in the prepass
+         * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
          */
-        static readonly PREPASS_IRRADIANCE_INDEX: number;
+        static readonly PREPASS_POSITION_TEXTURE_TYPE: number;
         /**
-         * Prepass texture index for depth + normal
+         * Constant used to retrieve the velocity texture index in the textures array in the prepass
+         * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_INDEX)
          */
-        static readonly PREPASS_DEPTHNORMAL_INDEX: number;
+        static readonly PREPASS_VELOCITY_TEXTURE_TYPE: number;
         /**
-         * Prepass texture index for albedo
+         * Constant used to retrieve the reflectivity texture index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)
          */
-        static readonly PREPASS_ALBEDO_INDEX: number;
+        static readonly PREPASS_REFLECTIVITY_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve the lit color texture index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)
+         */
+        static readonly PREPASS_COLOR_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve depth + normal index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)
+         */
+        static readonly PREPASS_DEPTHNORMAL_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve albedo index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+         */
+        static readonly PREPASS_ALBEDO_TEXTURE_TYPE: number;
     }
 }
 declare module BABYLON {
@@ -10651,6 +10670,7 @@ declare module BABYLON {
         static readonly NAME_DEPTHRENDERER: string;
         static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER: string;
         static readonly NAME_SPRITE: string;
+        static readonly NAME_SUBSURFACE: string;
         static readonly NAME_OUTLINERENDERER: string;
         static readonly NAME_PROCEDURALTEXTURE: string;
         static readonly NAME_SHADOWGENERATOR: string;
@@ -24167,8 +24187,9 @@ declare module BABYLON {
          * @param options Define the options used to create the multi render target
          */
         constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
+        private _initTypes;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(forceFullRebuild?: boolean): void;
         private _createInternalTextures;
         private _createTextures;
         /**
@@ -24178,10 +24199,17 @@ declare module BABYLON {
         set samples(value: number);
         /**
          * Resize all the textures in the multi render target.
-         * Be carrefull as it will recreate all the data in the new texture.
+         * Be careful as it will recreate all the data in the new texture.
          * @param size Define the new size
          */
         resize(size: any): void;
+        /**
+         * Changes the number of render targets in this MRT
+         * Be careful as it will recreate all the data in the new texture.
+         * @param count new texture count
+         * @param options Specifies texture types and sampling modes for new textures
+         */
+        updateCount(count: number, options?: IMultiRenderTargetOptions): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
         /**
          * Dispose the render targets and their associated resources
@@ -24390,55 +24418,22 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var fibonacci: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var subSurfaceScatteringFunctions: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var diffusionProfile: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var subSurfaceScatteringPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Sub surface scattering post process
-     */
-    export class SubSurfaceScatteringPostProcess extends PostProcess {
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "SubSurfaceScatteringPostProcess" string
-         */
-        getClassName(): string;
-        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
-    }
-}
-declare module BABYLON {
     /**
      * Interface for defining prepass effects in the prepass post-process pipeline
      */
     export interface PrePassEffectConfiguration {
         /**
+         * Name of the effect
+         */
+        name: string;
+        /**
          * Post process to attach for this effect
          */
-        postProcess: PostProcess;
+        postProcess?: PostProcess;
+        /**
+         * Textures required in the MRT
+         */
+        texturesRequired: number[];
         /**
          * Is the effect enabled
          */
@@ -24448,99 +24443,9 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
-         * Disposes the effect configuration
+         * Creates the associated post process
          */
-        createPostProcess: () => PostProcess;
-    }
-}
-declare module BABYLON {
-    /**
-     * Contains all parameters needed for the prepass to perform
-     * screen space subsurface scattering
-     */
-    export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
-        private _ssDiffusionS;
-        private _ssFilterRadii;
-        private _ssDiffusionD;
-        /**
-         * Post process to attach for screen space subsurface scattering
-         */
-        postProcess: SubSurfaceScatteringPostProcess;
-        /**
-         * Diffusion profile color for subsurface scattering
-         */
-        get ssDiffusionS(): number[];
-        /**
-         * Diffusion profile max color channel value for subsurface scattering
-         */
-        get ssDiffusionD(): number[];
-        /**
-         * Diffusion profile filter radius for subsurface scattering
-         */
-        get ssFilterRadii(): number[];
-        /**
-         * Is subsurface enabled
-         */
-        enabled: boolean;
-        /**
-         * Diffusion profile colors for subsurface scattering
-         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
-         * See ...
-         * Note that you can only store up to 5 of them
-         */
-        ssDiffusionProfileColors: Color3[];
-        /**
-         * Defines the ratio real world => scene units.
-         * Used for subsurface scattering
-         */
-        metersPerUnit: number;
-        private _scene;
-        /**
-         * Builds a subsurface configuration object
-         * @param scene The scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Adds a new diffusion profile.
-         * Useful for more realistic subsurface scattering on diverse materials.
-         * @param color The color of the diffusion profile. Should be the average color of the material.
-         * @return The index of the diffusion profile for the material subsurface configuration
-         */
-        addDiffusionProfile(color: Color3): number;
-        /**
-         * Creates the sss post process
-         * @return The created post process
-         */
-        createPostProcess(): SubSurfaceScatteringPostProcess;
-        /**
-         * Deletes all diffusion profiles.
-         * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
-         */
-        clearAllDiffusionProfiles(): void;
-        /**
-         * Disposes this object
-         */
-        dispose(): void;
-        /**
-         * @hidden
-         * https://zero-radiance.github.io/post/sampling-diffusion/
-         *
-         * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
-         * ------------------------------------------------------------------------------------
-         * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
-         * PDF[r, phi, s] = r * R[r, phi, s]
-         * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
-         * ------------------------------------------------------------------------------------
-         * We importance sample the color channel with the widest scattering distance.
-         */
-        getDiffusionProfileParameters(color: Color3): number;
-        /**
-         * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
-         * 'u' is the random number (the value of the CDF): [0, 1).
-         * rcp(s) = 1 / ShapeParam = ScatteringDistance.
-         * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
-         */
-        private _sampleBurleyDiffusionProfile;
+        createPostProcess?: () => PostProcess;
     }
 }
 declare module BABYLON {
@@ -24553,18 +24458,19 @@ declare module BABYLON {
     export class PrePassRenderer {
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
+        private _textureFormats;
+        private _textureIndices;
         private _scene;
         private _engine;
         private _isDirty;
         /**
          * Number of textures in the multi render target texture where the scene is directly rendered
          */
-        readonly mrtCount: number;
+        mrtCount: number;
         /**
          * The render target where the scene is directly rendered
          */
         prePassRT: MultiRenderTarget;
-        private _mrtTypes;
         private _multiRenderAttachments;
         private _defaultAttachments;
         private _clearAttachments;
@@ -24575,9 +24481,9 @@ declare module BABYLON {
          */
         imageProcessingPostProcess: ImageProcessingPostProcess;
         /**
-         * Configuration for sub surface scattering post process
+         * Configuration for prepass effects
          */
-        subSurfaceConfiguration: SubSurfaceConfiguration;
+        private _effectConfigurations;
         /**
          * Should materials render their geometry on the MRT
          */
@@ -24586,6 +24492,8 @@ declare module BABYLON {
          * Should materials render the irradiance information on the MRT
          */
         materialsShouldRenderIrradiance: boolean;
+        private _mrtFormats;
+        private _mrtLayout;
         private _enabled;
         /**
          * Indicates if the prepass is enabled
@@ -24627,14 +24535,34 @@ declare module BABYLON {
          */
         clear(): void;
         private _setState;
+        private _checkTextureType;
+        /**
+         * Adds an effect configuration to the prepass.
+         * If an effect has already been added, it won't add it twice and will return the configuration
+         * already present.
+         * @param cfg the effect configuration
+         * @return the effect configuration now used by the prepass
+         */
+        addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration;
+        /**
+         * Returns the index of a texture in the multi render target texture array.
+         * @param type Texture type
+         * @return The index
+         */
+        getIndex(type: number): number;
         private _enable;
         private _disable;
+        private _resetLayout;
         private _resetPostProcessChain;
         private _bindPostProcessChain;
         /**
          * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
          */
         markAsDirty(): void;
+        /**
+         * Enables a texture on the MultiRenderTarget for prepass
+         */
+        private _enableTextures;
         private _update;
         /**
          * Disposes the prepass renderer.
@@ -30645,6 +30573,12 @@ declare module BABYLON {
         ALPHATEST_AFTERALLALPHACOMPUTATIONS: boolean;
         ALPHABLEND: boolean;
         PREPASS: boolean;
+        PREPASS_IRRADIANCE: boolean;
+        PREPASS_IRRADIANCE_INDEX: number;
+        PREPASS_ALBEDO: boolean;
+        PREPASS_ALBEDO_INDEX: number;
+        PREPASS_DEPTHNORMAL: boolean;
+        PREPASS_DEPTHNORMAL_INDEX: number;
         SCENE_MRT_COUNT: number;
         RGBDLIGHTMAP: boolean;
         RGBDREFLECTION: boolean;
@@ -56250,6 +56184,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var subSurfaceScatteringFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var importanceSampling: {
         name: string;
         shader: string;
@@ -56575,6 +56516,12 @@ declare module BABYLON {
         INSTANCES: boolean;
         THIN_INSTANCES: boolean;
         PREPASS: boolean;
+        PREPASS_IRRADIANCE: boolean;
+        PREPASS_IRRADIANCE_INDEX: number;
+        PREPASS_ALBEDO: boolean;
+        PREPASS_ALBEDO_INDEX: number;
+        PREPASS_DEPTHNORMAL: boolean;
+        PREPASS_DEPTHNORMAL_INDEX: number;
         SCENE_MRT_COUNT: number;
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -70909,6 +70856,35 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Contains all parameters needed for the prepass to perform
+     * screen space subsurface scattering
+     */
+    export class SSAO2Configuration implements PrePassEffectConfiguration {
+        /**
+         * Is subsurface enabled
+         */
+        enabled: boolean;
+        /**
+         * Name of the configuration
+         */
+        name: string;
+        /**
+         * Textures that should be present in the MRT for this effect to work
+         */
+        readonly texturesRequired: number[];
+        /**
+         * Builds a ssao2 configuration object
+         * @param scene The scene
+         */
+        constructor();
+        /**
+         * Disposes the configuration
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var ssao2PixelShader: {
         name: string;
@@ -70988,6 +70964,7 @@ declare module BABYLON {
         * Dynamically generated sphere sampler.
         */
         private _sampleSphere;
+        private _ssao2PrePassConfiguration;
         /**
         * Blur filter offsets
         */
@@ -72088,7 +72065,7 @@ declare module BABYLON {
      * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
      * in several rendering techniques.
      */
-    export class PrePassRendererSceneComponent implements ISceneSerializableComponent {
+    export class PrePassRendererSceneComponent implements ISceneComponent {
         /**
          * The component name helpful to identify the component in the list of scene components.
          */
@@ -72109,6 +72086,191 @@ declare module BABYLON {
         private _beforeCameraDraw;
         private _afterCameraDraw;
         private _beforeClearStage;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var fibonacci: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var diffusionProfile: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var subSurfaceScatteringPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Sub surface scattering post process
+     */
+    export class SubSurfaceScatteringPostProcess extends PostProcess {
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "SubSurfaceScatteringPostProcess" string
+         */
+        getClassName(): string;
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains all parameters needed for the prepass to perform
+     * screen space subsurface scattering
+     */
+    export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        private _ssDiffusionS;
+        private _ssFilterRadii;
+        private _ssDiffusionD;
+        /**
+         * Post process to attach for screen space subsurface scattering
+         */
+        postProcess: SubSurfaceScatteringPostProcess;
+        /**
+         * Diffusion profile color for subsurface scattering
+         */
+        get ssDiffusionS(): number[];
+        /**
+         * Diffusion profile max color channel value for subsurface scattering
+         */
+        get ssDiffusionD(): number[];
+        /**
+         * Diffusion profile filter radius for subsurface scattering
+         */
+        get ssFilterRadii(): number[];
+        /**
+         * Is subsurface enabled
+         */
+        enabled: boolean;
+        /**
+         * Name of the configuration
+         */
+        name: string;
+        /**
+         * Diffusion profile colors for subsurface scattering
+         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
+         * See ...
+         * Note that you can only store up to 5 of them
+         */
+        ssDiffusionProfileColors: Color3[];
+        /**
+         * Defines the ratio real world => scene units.
+         * Used for subsurface scattering
+         */
+        metersPerUnit: number;
+        /**
+         * Textures that should be present in the MRT for this effect to work
+         */
+        readonly texturesRequired: number[];
+        private _scene;
+        /**
+         * Builds a subsurface configuration object
+         * @param scene The scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Adds a new diffusion profile.
+         * Useful for more realistic subsurface scattering on diverse materials.
+         * @param color The color of the diffusion profile. Should be the average color of the material.
+         * @return The index of the diffusion profile for the material subsurface configuration
+         */
+        addDiffusionProfile(color: Color3): number;
+        /**
+         * Creates the sss post process
+         * @return The created post process
+         */
+        createPostProcess(): SubSurfaceScatteringPostProcess;
+        /**
+         * Deletes all diffusion profiles.
+         * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
+         */
+        clearAllDiffusionProfiles(): void;
+        /**
+         * Disposes this object
+         */
+        dispose(): void;
+        /**
+         * @hidden
+         * https://zero-radiance.github.io/post/sampling-diffusion/
+         *
+         * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
+         * ------------------------------------------------------------------------------------
+         * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
+         * PDF[r, phi, s] = r * R[r, phi, s]
+         * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
+         * ------------------------------------------------------------------------------------
+         * We importance sample the color channel with the widest scattering distance.
+         */
+        getDiffusionProfileParameters(color: Color3): number;
+        /**
+         * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
+         * 'u' is the random number (the value of the CDF): [0, 1).
+         * rcp(s) = 1 / ShapeParam = ScatteringDistance.
+         * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
+         */
+        private _sampleBurleyDiffusionProfile;
+    }
+}
+declare module BABYLON {
+        interface AbstractScene {
+            /** @hidden (Backing field) */
+            _subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
+            /**
+             * Gets or Sets the current prepass renderer associated to the scene.
+             */
+            subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
+            /**
+             * Enables the subsurface effect for prepass
+             * @returns the SubSurfaceConfiguration
+             */
+            enableSubSurfaceForPrePass(): Nullable<SubSurfaceConfiguration>;
+            /**
+             * Disables the subsurface effect for prepass
+             */
+            disableSubSurfaceForPrePass(): void;
+        }
+    /**
+     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
+     * in several rendering techniques.
+     */
+    export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
+        /**
+         * The component name helpful to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
         /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to

@@ -80,22 +80,22 @@ export class PBRSubSurfaceConfiguration {
      * Useful for better scattering in the skins or foliages.
      */
     public get scatteringDiffusionProfile() : Nullable<Color3> {
-        if (!this._scene.prePassRenderer) {
+        if (!this._scene.subSurfaceConfiguration) {
             return null;
         }
 
-        return this._scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
+        return this._scene.subSurfaceConfiguration.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
     }
 
     public set scatteringDiffusionProfile(c: Nullable<Color3>) {
-        if (!this._scene.enablePrePassRenderer()) {
+        if (!this._scene.enableSubSurfaceForPrePass()) {
             // Not supported
             return;
         }
 
         // addDiffusionProfile automatically checks for doubles
         if (c) {
-            this._scatteringDiffusionProfileIndex = this._scene.prePassRenderer!.subSurfaceConfiguration.addDiffusionProfile(c);
+            this._scatteringDiffusionProfileIndex = this._scene.subSurfaceConfiguration!.addDiffusionProfile(c);
         }
     }
 

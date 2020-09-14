@@ -8,6 +8,7 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
+import { Constants } from "../Engines/constants";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
@@ -304,9 +305,33 @@ export class MaterialHelper {
     public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
         var previousPrePass = defines.PREPASS;
 
-        if (scene.prePassRenderer && canRenderToMRT) {
+        if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
+
+            const irradianceIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE);
+            if (irradianceIndex !== -1) {
+                defines.PREPASS_IRRADIANCE = true;
+                defines.PREPASS_IRRADIANCE_INDEX = irradianceIndex;
+            } else {
+                defines.PREPASS_IRRADIANCE = false;
+            }
+
+            const albedoIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE);
+            if (albedoIndex !== -1) {
+                defines.PREPASS_ALBEDO = true;
+                defines.PREPASS_ALBEDO_INDEX = albedoIndex;
+            } else {
+                defines.PREPASS_ALBEDO = false;
+            }
+
+            const depthNormalIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+            if (depthNormalIndex !== -1) {
+                defines.PREPASS_DEPTHNORMAL = true;
+                defines.PREPASS_DEPTHNORMAL_INDEX = depthNormalIndex;
+            } else {
+                defines.PREPASS_DEPTHNORMAL = false;
+            }
         } else {
             defines.PREPASS = false;
         }
