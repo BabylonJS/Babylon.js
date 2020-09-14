@@ -48,8 +48,6 @@ VertexData.CreateCapsule = function(
     halfHeight = heightMinusCaps * 0.5;
     let pi2 = Math.PI * 0.5;
 
-    console.log("halfHeight", halfHeight);
-
     var x, y;
     var normal = Vector3.Zero();
     var vertex = Vector3.Zero();
