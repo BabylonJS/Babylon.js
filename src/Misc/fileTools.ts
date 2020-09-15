@@ -155,7 +155,7 @@ export class FileTools {
             url = FileTools.PreprocessUrl(input);
         }
 
-        if (typeof Image === "undefined") {
+        if (typeof Image === "undefined" || ThinEngine.Features.forceBitmapOverHTMLImageElement) {
             FileTools.LoadFile(url, (data) => {
                 createImageBitmap(new Blob([data], { type: mimeType })).then((imgBmp) => {
                     onLoad(imgBmp);

@@ -17,6 +17,7 @@ import "../Materials/Textures/baseTexture.polynomial";
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
 import { Engine } from '../Engines/engine';
+import { ThinEngine } from '../Engines/thinEngine';
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -456,7 +457,7 @@ export class EnvironmentTextureTools {
             lodTextures = {};
         }
         // in webgl 1 there are no ways to either render or copy lod level information for float textures.
-        else if (engine.webGLVersion < 2) {
+        else if (!ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures) {
             expandTexture = false;
         }
         // If half float available we can uncompress the texture
@@ -545,7 +546,7 @@ export class EnvironmentTextureTools {
                 let url = URL.createObjectURL(blob);
                 let promise: Promise<void>;
 
-                if (typeof Image === "undefined") {
+                if (typeof Image === "undefined" || ThinEngine.Features.forceBitmapOverHTMLImageElement) {
                     promise = createImageBitmap(blob).then((img) => {
                         return this._OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                     });

@@ -21,9 +21,12 @@ import { WebGPUShaderProcessor } from "./WebGPU/webgpuShaderProcessors";
 import { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
-import { GPUTextureHelper } from './WebGPU/webgpuTextureHelper';
-import { ISceneLike } from './thinEngine';
+import { WebGPUTextureHelper } from './WebGPU/webgpuTextureHelper';
+import { ISceneLike, ThinEngine } from './thinEngine';
 import { Scene } from '../scene';
+import { Scalar } from '../Maths/math.scalar';
+import { WebGPUBufferManager } from './WebGPU/webgpuBufferManager';
+import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
 
 /**
  * Options to load the associated Glslang library
@@ -125,7 +128,9 @@ export class WebGPUEngine extends Engine {
     private _context: GPUCanvasContext;
     private _swapChain: GPUSwapChain;
     private _mainPassSampleCount: number;
-    private _gpuTextureHelper: GPUTextureHelper;
+    private _textureHelper: WebGPUTextureHelper;
+    private _bufferManager: WebGPUBufferManager;
+    private _cacheTextureCreation: { [id: number] : Promise<GPUTexture> } = {};
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
@@ -184,6 +189,9 @@ export class WebGPUEngine extends Engine {
      */
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
         super(null);
+
+        ThinEngine.Features.forceBitmapOverHTMLImageElement = true;
+        ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = false; // TODO WEBGPU should be true but needs RTT support first for env texture to be generated correctly with this flag on
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
@@ -249,7 +257,8 @@ export class WebGPUEngine extends Engine {
             })
             .then((device: GPUDevice | null) => this._device = device!)
             .then(() => {
-                this._gpuTextureHelper = new GPUTextureHelper(this._device, this._glslang);
+                this._bufferManager = new WebGPUBufferManager(this._device);
+                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
 
                 this._initializeLimits();
                 this._initializeContextAndSwapChain();
@@ -502,60 +511,6 @@ export class WebGPUEngine extends Engine {
     }
 
     //------------------------------------------------------------------------------
-    //                              WebGPU Buffers
-    //------------------------------------------------------------------------------
-    private _createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
-        const padding = view.byteLength % 4;
-        const verticesBufferDescriptor = {
-            size: view.byteLength + padding,
-            usage: flags
-        };
-        const buffer = this._device.createBuffer(verticesBufferDescriptor);
-        const dataBuffer = new WebGPUDataBuffer(buffer);
-        dataBuffer.references = 1;
-        dataBuffer.capacity = view.byteLength;
-
-        this._setSubData(dataBuffer, 0, view);
-
-        return dataBuffer;
-    }
-
-    private _setSubData(dataBuffer: WebGPUDataBuffer, dstByteOffset: number, src: ArrayBufferView, srcByteOffset = 0, byteLength = 0): void {
-        const buffer = dataBuffer.underlyingResource as GPUBuffer;
-
-        byteLength = byteLength || src.byteLength;
-        byteLength = Math.min(byteLength, dataBuffer.capacity - dstByteOffset);
-
-        // After Migration to Canary
-        let chunkStart = src.byteOffset + srcByteOffset;
-        let chunkEnd = chunkStart + byteLength;
-
-        // 4 bytes alignments for upload
-        const padding = byteLength % 4;
-        if (padding !== 0) {
-            const tempView = new Uint8Array(src.buffer.slice(chunkStart, chunkEnd));
-            src = new Uint8Array(byteLength + padding);
-            tempView.forEach((element, index) => {
-                (src as Uint8Array)[index] = element;
-            });
-            srcByteOffset = 0;
-            chunkStart = 0;
-            chunkEnd = byteLength + padding;
-            byteLength = byteLength + padding;
-        }
-
-        // Chunk
-        const maxChunk = 1024 * 1024 * 15;
-        let offset = 0;
-        while ((chunkEnd - (chunkStart + offset)) > maxChunk) {
-            this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, maxChunk);
-            offset += maxChunk;
-        }
-
-        this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
-    }
-
-    //------------------------------------------------------------------------------
     //                              Vertex/Index Buffers
     //------------------------------------------------------------------------------
 
@@ -572,7 +527,7 @@ export class WebGPUEngine extends Engine {
             view = data;
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst);
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst);
         return dataBuffer;
     }
 
@@ -610,7 +565,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._setSubData(dataBuffer, byteOffset, view, 0, byteLength);
+        this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
     }
 
     public createIndexBuffer(data: IndicesArray): DataBuffer {
@@ -634,7 +589,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst);
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst);
         dataBuffer.is32Bits = is32Bits;
         return dataBuffer;
     }
@@ -668,7 +623,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._setSubData(gpuBuffer, offset, view);
+        this._bufferManager.setSubData(gpuBuffer, offset, view);
     }
 
     public bindBuffersDirectly(vertexBuffer: DataBuffer, indexBuffer: DataBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
@@ -709,7 +664,7 @@ export class WebGPUEngine extends Engine {
             view = elements;
         }
 
-        const dataBuffer = this._createBuffer(view, WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst);
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst);
         return dataBuffer;
     }
 
@@ -739,7 +694,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._setSubData(dataBuffer, offset, view, 0, count);
+        this._bufferManager.setSubData(dataBuffer, offset, view, 0, count);
     }
 
     public bindUniformBufferBase(buffer: DataBuffer, location: number, name: string): void {
@@ -934,6 +889,8 @@ export class WebGPUEngine extends Engine {
         if (texture._webGPUTexture) {
             texture._webGPUTexture.destroy();
         }
+
+        delete this._cacheTextureCreation[texture.id];
     }
 
     private _getSamplerFilterDescriptor(internalTexture: InternalTexture): {
@@ -1017,6 +974,185 @@ export class WebGPUEngine extends Engine {
         };
     }
 
+    /** @hidden */
+    public _getWebGPUInternalFormat(format: number): GPUTextureFormat {
+        let internalFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
+
+        switch (format) {
+            case Constants.TEXTUREFORMAT_ALPHA:
+                throw "TEXTUREFORMAT_ALPHA format not supported in WebGPU";
+            case Constants.TEXTUREFORMAT_LUMINANCE:
+                throw "TEXTUREFORMAT_LUMINANCE format not supported in WebGPU";
+            case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                throw "TEXTUREFORMAT_LUMINANCE_ALPHA format not supported in WebGPU";
+            case Constants.TEXTUREFORMAT_RED:
+                internalFormat = WebGPUConstants.TextureFormat.R8Snorm;
+            case Constants.TEXTUREFORMAT_RG:
+                internalFormat = WebGPUConstants.TextureFormat.RG8Snorm;
+            case Constants.TEXTUREFORMAT_RGB:
+                throw "RGB format not supported in WebGPU";
+            case Constants.TEXTUREFORMAT_RGBA:
+                internalFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
+        }
+
+        return internalFormat;
+    }
+
+    /** @hidden */
+    public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
+        return format ?? Constants.TEXTUREFORMAT_RGBA;
+    }
+
+    private _getWebGPUTextureFormat(type: number, format: number): GPUTextureFormat {
+        switch (type) {
+            case Constants.TEXTURETYPE_BYTE:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED:
+                        return WebGPUConstants.TextureFormat.R8Snorm;
+                    case Constants.TEXTUREFORMAT_RG:
+                        return WebGPUConstants.TextureFormat.RG8Snorm;
+                    case Constants.TEXTUREFORMAT_RGB:
+                        throw "RGB format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                        return WebGPUConstants.TextureFormat.R8Sint;
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return WebGPUConstants.TextureFormat.RG8Sint;
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        throw "RGB_INTEGER format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return WebGPUConstants.TextureFormat.RGBA8Sint;
+                    default:
+                        return WebGPUConstants.TextureFormat.RGBA8Snorm;
+                }
+            case Constants.TEXTURETYPE_UNSIGNED_BYTE:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED:
+                        return WebGPUConstants.TextureFormat.R8Unorm;
+                    case Constants.TEXTUREFORMAT_RG:
+                        return WebGPUConstants.TextureFormat.RG8Unorm;
+                    case Constants.TEXTUREFORMAT_RGB:
+                        throw "TEXTUREFORMAT_RGB format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return WebGPUConstants.TextureFormat.RGBA8Unorm;
+                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                        return WebGPUConstants.TextureFormat.R8Uint;
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return WebGPUConstants.TextureFormat.RG8Uint;
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        throw "RGB_INTEGER format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return WebGPUConstants.TextureFormat.RGBA8Uint;
+                    case Constants.TEXTUREFORMAT_ALPHA:
+                        throw "TEXTUREFORMAT_ALPHA format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_LUMINANCE:
+                        throw "TEXTUREFORMAT_LUMINANCE format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                        throw "TEXTUREFORMAT_LUMINANCE_ALPHA format not supported in WebGPU";
+                    default:
+                        return WebGPUConstants.TextureFormat.RGBA8Unorm;
+                }
+            case Constants.TEXTURETYPE_SHORT:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                        return WebGPUConstants.TextureFormat.R16Sint;
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return WebGPUConstants.TextureFormat.RG16Sint;
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        throw "TEXTUREFORMAT_RGB_INTEGER format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return WebGPUConstants.TextureFormat.RGBA16Sint;
+                    default:
+                        return WebGPUConstants.TextureFormat.RGBA16Sint;
+                }
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                        return WebGPUConstants.TextureFormat.R16Uint;
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return WebGPUConstants.TextureFormat.RG16Uint;
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        throw "TEXTUREFORMAT_RGB_INTEGER format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return WebGPUConstants.TextureFormat.RGBA16Uint;
+                    default:
+                        return WebGPUConstants.TextureFormat.RGBA16Uint;
+                }
+            case Constants.TEXTURETYPE_INT:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                        return WebGPUConstants.TextureFormat.R32Sint;
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return WebGPUConstants.TextureFormat.RG32Sint;
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        throw "TEXTUREFORMAT_RGB_INTEGER format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return WebGPUConstants.TextureFormat.RGBA32Sint;
+                    default:
+                        return WebGPUConstants.TextureFormat.RGBA32Sint;
+                }
+            case Constants.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED_INTEGER:
+                        return WebGPUConstants.TextureFormat.R32Uint;
+                    case Constants.TEXTUREFORMAT_RG_INTEGER:
+                        return WebGPUConstants.TextureFormat.RG32Uint;
+                    case Constants.TEXTUREFORMAT_RGB_INTEGER:
+                        throw "TEXTUREFORMAT_RGB_INTEGER format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        return WebGPUConstants.TextureFormat.RGBA32Uint;
+                    default:
+                        return WebGPUConstants.TextureFormat.RGBA32Uint;
+                }
+            case Constants.TEXTURETYPE_FLOAT:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED:
+                        return WebGPUConstants.TextureFormat.R32Float; // By default. Other possibility is R16Float.
+                    case Constants.TEXTUREFORMAT_RG:
+                        return WebGPUConstants.TextureFormat.RG32Float; // By default. Other possibility is RG16Float.
+                    case Constants.TEXTUREFORMAT_RGB:
+                        throw "TEXTUREFORMAT_RGB format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return WebGPUConstants.TextureFormat.RGBA32Float; // By default. Other possibility is RGBA16Float.
+                    default:
+                        return WebGPUConstants.TextureFormat.RGBA32Float;
+                }
+            case Constants.TEXTURETYPE_HALF_FLOAT:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RED:
+                        return WebGPUConstants.TextureFormat.R16Float;
+                    case Constants.TEXTUREFORMAT_RG:
+                        return WebGPUConstants.TextureFormat.RG16Float;
+                    case Constants.TEXTUREFORMAT_RGB:
+                        throw "TEXTUREFORMAT_RGB format not supported in WebGPU";
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return WebGPUConstants.TextureFormat.RGBA16Float;
+                    default:
+                        return WebGPUConstants.TextureFormat.RGBA16Float;
+                }
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                throw "TEXTURETYPE_UNSIGNED_SHORT_5_6_5 format not supported in WebGPU";
+            case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+                throw "TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV format not supported in WebGPU";
+            case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+                throw "TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV format not supported in WebGPU";
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                throw "TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 format not supported in WebGPU";
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                throw "TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 format not supported in WebGPU";
+            case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return WebGPUConstants.TextureFormat.RGB10A2Unorm;
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        throw "TEXTUREFORMAT_RGBA_INTEGER format not supported in WebGPU when type is TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV";
+                    default:
+                        return WebGPUConstants.TextureFormat.RGB10A2Unorm;
+                }
+        }
+
+        return WebGPUConstants.TextureFormat.RGBA8Unorm;
+    }
+
     private _getWrappingMode(mode: number): GPUAddressMode {
         switch (mode) {
             case Engine.TEXTURE_WRAP_ADDRESSMODE:
@@ -1048,26 +1184,6 @@ export class WebGPUEngine extends Engine {
         };
     }
 
-    /**
-     * Usually called from Texture.ts.
-     * Passed information to create a WebGLTexture
-     * @param url defines a value which contains one of the following:
-     * * A conventional http URL, e.g. 'http://...' or 'file://...'
-     * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
-     * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
-     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
-     * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
-     * @param scene needed for loading to the correct scene
-     * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
-     * @param onLoad optional callback to be called upon successful completion
-     * @param onError optional callback to be called upon failure
-     * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
-     * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
-     * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
-     * @param forcedExtension defines the extension to use to pick the right loader
-     * @param mimeType defines an optional mime type
-     * @returns a InternalTexture for assignment back into BABYLON.Texture
-     */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
@@ -1076,48 +1192,44 @@ export class WebGPUEngine extends Engine {
         // TODO WEBGPU. this._options.textureSize
         return this._createTextureBase(
             url, noMipmap, invertY, scene, samplingMode, onLoad, onError,
-            (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
+            async (texture: InternalTexture, extension: string, scene: Nullable<ISceneLike>, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, invertY: boolean, noMipmap: boolean, isCompressed: boolean,
                 processFunction: (width: number, height: number, img: HTMLImageElement | ImageBitmap | { width: number, height: number }, extension: string, texture: InternalTexture, continuationCallback: () => void) => boolean, samplingMode: number) => {
-                    texture.baseWidth = img.width;
-                    texture.baseHeight = img.height;
-                    texture.width = img.width;
-                    texture.height = img.height;
+                    const imageBitmap = img as (ImageBitmap | { width: number, height: number}); // we will never get an HTMLImageElement in WebGPU
+
+                    texture.baseWidth = imageBitmap.width;
+                    texture.baseHeight = imageBitmap.height;
+                    texture.width = imageBitmap.width;
+                    texture.height = imageBitmap.height;
                     if (format) {
                         texture.format = format;
                     }
 
-                    const promise: Promise<Nullable<ImageBitmap>> =
-                        img instanceof String ? Promise.resolve(null) :
-                        img instanceof ImageBitmap ? Promise.resolve(img) :
-                            new Promise((resolve) => {
-                                (img as HTMLImageElement).decode().then(() => {
-                                    createImageBitmap(img as HTMLImageElement).then((imageBitmap) => {
-                                        resolve(imageBitmap);
-                                    });
-                                });
-                            });
+                    // TODO WEBGPU: handle format if <> 0. Note that it seems "rgb" formats don't exist in WebGPU...
+                    //let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
+                    texture._webGPUTexture = await this._textureHelper.createTexture(imageBitmap, !noMipmap, invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format));
+                    texture._webGPUTextureView = texture._webGPUTexture.createView();
 
-                    promise.then(async (img) => {
-                        if (img) {
-                            // TODO WEBGPU: handle format if <> 0. Note that it seems "rgb" formats don't exist in WebGPU...
-                            //let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
-                            texture._webGPUTexture = await this._gpuTextureHelper.generateTexture(img, !noMipmap, invertY);
-                            texture._webGPUTextureView = texture._webGPUTexture.createView();
-                        }
+                    if (scene) {
+                        scene._removePendingData(texture);
+                    }
 
-                        if (scene) {
-                            scene._removePendingData(texture);
-                        }
+                    processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
-                        texture.isReady = true;
+                    texture.isReady = true;
 
-                        texture.onLoadedObservable.notifyObservers(texture);
-                        texture.onLoadedObservable.clear();
-                    });
+                    texture.onLoadedObservable.notifyObservers(texture);
+                    texture.onLoadedObservable.clear();
             },
             () => false,
             buffer, fallback, format, forcedExtension, mimeType
         );
+    }
+
+    /** @hidden */
+    public _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean) {
+        texture.samplingMode = loadMipmap ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : Engine.TEXTURE_BILINEAR_SAMPLINGMODE;
+
+        // TODO WEBGPU the webgl code also sets wraps / wrapt to CLAMP_TO_EDGE by calling gl.texParameteri but we can't do it as wrapu/wraps are properties of BaseTexture
     }
 
     public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
@@ -1126,8 +1238,9 @@ export class WebGPUEngine extends Engine {
         return this.createCubeTextureBase(
             rootUrl, scene, files, !!noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, fallback,
             null,
-            (texture: InternalTexture, imgs: HTMLImageElement[]) => {
-                const width = imgs[0].width;
+            async (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
+                const imageBitmaps = imgs as ImageBitmap[]; // we will always get an ImageBitmap array in WebGPU
+                const width = imageBitmaps[0].width;
                 const height = width;
 
                 // TODO WEBGPU. Cube Texture Sampling Mode.
@@ -1135,42 +1248,45 @@ export class WebGPUEngine extends Engine {
 
                 // TODO WEBGPU. handle format if <> 0
                 //const internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
-                const imageBitmapPromises: Array<Promise<ImageBitmap>> = [];
+                texture._webGPUTexture = await this._textureHelper.createCubeTexture(imageBitmaps, !noMipmap, false, false, this._getWebGPUTextureFormat(texture.type, texture.format));
+                texture._webGPUTextureView = texture._webGPUTexture.createView({
+                    dimension: WebGPUConstants.TextureViewDimension.Cube
+                });
 
-                for (var index = 0; index < 6; index++) {
-                    imageBitmapPromises.push(createImageBitmap(imgs[index]));
+                texture.width = width;
+                texture.height = height;
+                texture.isReady = true;
+                if (format) {
+                    texture.format = format;
                 }
 
-                Promise.all(imageBitmapPromises).then(async (imageBitmaps) => {
-                    texture._webGPUTexture = await this._gpuTextureHelper.generateCubeTexture(imageBitmaps, !noMipmap);
-                    texture._webGPUTextureView = texture._webGPUTexture.createView({
-                        dimension: WebGPUConstants.TextureViewDimension.Cube
-                    });
+                texture.onLoadedObservable.notifyObservers(texture);
+                texture.onLoadedObservable.clear();
 
-                    texture.width = width;
-                    texture.height = height;
-                    texture.isReady = true;
-                    if (format) {
-                        texture.format = format;
-                    }
-
-                    texture.onLoadedObservable.notifyObservers(texture);
-                    texture.onLoadedObservable.clear();
-
-                    if (onLoad) {
-                        onLoad();
-                    }
-                });
+                if (onLoad) {
+                    onLoad();
+                }
             }
         );
     }
 
-    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-        texture.samplingMode = samplingMode;
+    public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
+        if (texture.generateMipMaps) {
+            this._ensureTextureCreated(texture).then((gpuTexture) => {
+                this._textureHelper.generateCubeMipmaps(gpuTexture, WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height));
+            });
+        }
     }
 
-    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-        throw "Unimplemented updateDynamicTexture on WebGPU so far";
+    /** @hidden */
+    public _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture {
+        console.warn("_createDepthStencilCubeTexture not implemented yet in WebGPU");
+
+        return null as any;
+    }
+
+    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
+        texture.samplingMode = samplingMode;
     }
 
     public setTexture(channel: number, _: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
@@ -1225,20 +1341,123 @@ export class WebGPUEngine extends Engine {
         this._bindTextureDirectly(0, texture);
     }
 
-    /** @hidden */
-    public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+    private _ensureTextureCreated(texture: InternalTexture, width?: number, height?: number): Promise<GPUTexture> {
+        let promise = this._cacheTextureCreation[texture.id];
+
+        if (promise) {
+            return promise;
+        }
+
+        promise = Promise.resolve(texture._webGPUTexture as GPUTexture);
+
+        if (width === undefined) {
+            width = texture.width;
+        }
+        if (height === undefined) {
+            height = texture.height;
+        }
+
+        if (!texture._webGPUTexture) {
+            if (texture.isCube) {
+                promise = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format)).then((gpuTexture) => {
+                    texture._webGPUTexture = gpuTexture;
+                    texture._webGPUTextureView = texture._webGPUTexture.createView({
+                        dimension: WebGPUConstants.TextureViewDimension.Cube,
+                        mipLevelCount: Math.round(Scalar.Log2(Math.max(width!, height!))) + 1,
+                        baseArrayLayer: 0,
+                        baseMipLevel: 0,
+                        aspect: WebGPUConstants.TextureAspect.All
+                    });
+                    return gpuTexture;
+                });
+            } else {
+                promise = this._textureHelper.createTexture({ width, height }, texture.generateMipMaps, texture.invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format)).then((gpuTexture) => {
+                    texture._webGPUTexture = gpuTexture;
+                    texture._webGPUTextureView = texture._webGPUTexture.createView();
+                    return gpuTexture;
+                });
+            }
+
+            texture.width = texture.baseWidth = width;
+            texture.height = texture.baseHeight = height;
+        }
+
+        this._cacheTextureCreation[texture.id] = promise;
+
+        return promise;
+    }
+
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture?: boolean): void {
+        if (!texture) {
+            return;
+        }
+
+        const width = canvas.width, height = canvas.height;
+
+        Promise.all([createImageBitmap(canvas), this._ensureTextureCreated(texture, width, height)]).then(([bitmap, gpuTexture]) => {
+            // TODO WEBGPU: handle format if <> 0
+            // let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+            this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha);
+
+            if (texture.generateMipMaps) {
+                const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(width, height);
+
+                if (texture.isCube) {
+                    this._textureHelper.generateCubeMipmaps(gpuTexture, mipmapCount);
+                } else {
+                    this._textureHelper.generateMipmaps(gpuTexture, mipmapCount);
+                }
+            }
+
+            texture.isReady = true;
+        });
+    }
+
+    public updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex: number = 0, lod: number = 0): void {
+        const imgData = new ImageData(new Uint8ClampedArray(imageData.buffer), width, height);
+
+        Promise.all([createImageBitmap(imgData), this._ensureTextureCreated(texture)]).then(([bitmap, gpuTexture]) => {
+            this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, xOffset, yOffset);
+        });
     }
 
     /** @hidden */
-    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+    public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+        console.warn("_uploadCompressedDataToTextureDirectly not implemented yet in WebGPU");
+    }
+
+    /** @hidden */
+    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0, babylonInternalFormat?: number, useTextureWidthAndHeight = false): void {
+        // TODO WEBPU what to do with babylonInternalFormat? Texture format is set at creation time and can't be changed afterwards...
+
+        const lodMaxWidth = Math.round(Math.log(texture.width) * Math.LOG2E);
+        const lodMaxHeight = Math.round(Math.log(texture.height) * Math.LOG2E);
+
+        const width = useTextureWidthAndHeight ? texture.width : Math.pow(2, Math.max(lodMaxWidth - lod, 0));
+        const height = useTextureWidthAndHeight ? texture.height : Math.pow(2, Math.max(lodMaxHeight - lod, 0));
+
+        const imgData = new ImageData(new Uint8ClampedArray(imageData.buffer, 0, width * height * 4), width, height);
+
+        Promise.all([createImageBitmap(imgData), this._ensureTextureCreated(texture, width, height)]).then(([bitmap, gpuTexture]) => {
+            this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false);
+        });
     }
 
     /** @hidden */
     public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {
+        this._uploadDataToTextureDirectly(texture, imageData, faceIndex, lod);
     }
 
     /** @hidden */
-    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
+    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
+        const bitmap = image as ImageBitmap; // in WebGPU we will always get an ImageBitmap, not an HTMLImageElement
+
+        this._ensureTextureCreated(texture).then((gpuTexture) => {
+            const width = Math.ceil(texture.width / (1 << lod));
+            const height = Math.ceil(texture.height / (1 << lod));
+
+            this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY);
+        });
     }
 
     //------------------------------------------------------------------------------
@@ -2019,6 +2238,12 @@ export class WebGPUEngine extends Engine {
                             const samplerDescriptor: GPUSamplerDescriptor = this._getSamplerDescriptor(bindingInfo.texture!);
                             const gpuSampler = this._device.createSampler(samplerDescriptor);
                             bindingInfo.texture._webGPUSampler = gpuSampler;
+                        }
+
+                        // TODO WEBGPU Remove this when all testings are ok
+                        if (!bindingInfo.texture._webGPUTextureView) {
+                            console.error("Trying to bind a null gpu texture! bindingDefinition=", bindingDefinition, " | bindingInfo=", bindingInfo);
+                            debugger;
                         }
 
                         entries.push({
