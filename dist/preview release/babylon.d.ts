@@ -51150,6 +51150,10 @@ declare module BABYLON {
         sphereScaleUnit?: number;
         /** Ratio for the Sphere Size */
         sphereFactor?: number;
+        /** Whether to show local axes or not  */
+        showLocalAxes?: boolean;
+        /** Length of each local axis */
+        localAxesSize?: number;
     }
     /**
      * Defines the constructor options for the BoneWeight Shader.
@@ -51365,6 +51369,8 @@ declare module BABYLON.Debug {
         private _debugLines;
         /** The SkeletonViewers Mesh. */
         private _debugMesh;
+        /** The local axes Meshes. */
+        private _localAxes;
         /** If SkeletonViewer is enabled. */
         private _isEnabled;
         /** If SkeletonViewer is ready. */
@@ -51424,15 +51430,23 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength;
         /** function to revert the mesh and scene back to the initial state. */
         private _revert;
+        private getAbsoluteRestPose;
         /** function to build and bind sphere joint points and spur bone representations. */
         private _buildSpheresAndSpurs;
+        private _buildLocalAxes;
         /** Update the viewer to sync with current skeleton state, only used for the line display. */
         private _displayLinesUpdate;
         /** Changes the displayMode of the skeleton viewer
          * @param mode The displayMode numerical value
          */
         changeDisplayMode(mode: number): void;
-        /** Changes the displayMode of the skeleton viewer
+        /** Sets a display option of the skeleton viewer
+         *
+         * | Option          | Type    | Default | Description |
+         * | --------------- | ------- | ------- | ----------- |
+         * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
+         * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
+         *
          * @param option String of the option name
          * @param value The numerical option value
          */

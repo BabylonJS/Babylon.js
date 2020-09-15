@@ -64766,7 +64766,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M7.13,13.61a.76.76,0,0,0,.06,1.06,1.6,1.6,0,0,1,.51.88l1,4.68A2.26,2.26,0,0,0,10.92,22h2.16a2.26,2.26,0,0,0,2.19-1.76l1-4.68a1.6,1.6,0,0,1,.51-.88,7.18,7.18,0,0,0,2.42-5,7.26,7.26,0,0,0-2-5.4A7.13,7.13,0,0,0,12,2,6.9,6.9,0,0,0,7.13,3.94a.75.75,0,1,0,1,1.1A5.35,5.35,0,0,1,12,3.51a5.67,5.67,0,0,1,4.16,1.8,5.8,5.8,0,0,1,1.58,4.28,5.7,5.7,0,0,1-1.93,3.95,3.18,3.18,0,0,0-1,1.69L14.45,17H9.55l-.38-1.77a3.16,3.16,0,0,0-1-1.68A.75.75,0,0,0,7.13,13.61Zm3.06,6.29-.3-1.4h4.23l-.31,1.4a.76.76,0,0,1-.73.59H10.92A.76.76,0,0,1,10.19,19.9Z' style='fill:white'/%3E%3Cpath d='M2.23,8.86,4.87,6.23a.75.75,0,0,1,1.06,0,.74.74,0,0,1,0,1.06L4.58,8.64h7.11a.75.75,0,0,1,0,1.5H4.58l1.35,1.35a.74.74,0,0,1,0,1.06.75.75,0,0,1-.53.22.74.74,0,0,1-.53-.22L2.23,9.92a.75.75,0,0,1,0-1.06Z' style='fill:white'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M15.81,13.55a3.16,3.16,0,0,0-1,1.68L14.45,17H9.55l-.38-1.77a3.18,3.18,0,0,0-1-1.69A5.7,5.7,0,0,1,6.26,9.59,5.8,5.8,0,0,1,7.84,5.31,5.67,5.67,0,0,1,12,3.51,5.35,5.35,0,0,1,15.85,5a.75.75,0,0,0,1-1.1A6.9,6.9,0,0,0,12,2,7.13,7.13,0,0,0,6.75,4.28a7.26,7.26,0,0,0-2,5.4,7.18,7.18,0,0,0,2.42,5,1.6,1.6,0,0,1,.51.88l1,4.68A2.26,2.26,0,0,0,10.92,22h2.16a2.26,2.26,0,0,0,2.19-1.76l1-4.68a1.6,1.6,0,0,1,.51-.88.76.76,0,0,0,.06-1.06A.75.75,0,0,0,15.81,13.55Zm-2.73,6.94H10.92a.76.76,0,0,1-.73-.59l-.31-1.4h4.23l-.3,1.4A.76.76,0,0,1,13.08,20.49Z' style='fill:white'/%3E%3Cpath d='M21.77,8.86,19.13,6.23a.75.75,0,0,0-1.06,0,.74.74,0,0,0,0,1.06l1.35,1.35H12.31a.75.75,0,0,0,0,1.5h7.11l-1.35,1.35a.74.74,0,0,0,0,1.06.75.75,0,0,0,.53.22.74.74,0,0,0,.53-.22l2.64-2.63a.75.75,0,0,0,0-1.06Z' style='fill:white'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -64777,7 +64777,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M15.81,13.55a3.16,3.16,0,0,0-1,1.68L14.45,17H9.55l-.38-1.77a3.18,3.18,0,0,0-1-1.69A5.7,5.7,0,0,1,6.26,9.59,5.8,5.8,0,0,1,7.84,5.31,5.67,5.67,0,0,1,12,3.51,5.35,5.35,0,0,1,15.85,5a.75.75,0,0,0,1-1.1A6.9,6.9,0,0,0,12,2,7.13,7.13,0,0,0,6.75,4.28a7.26,7.26,0,0,0-2,5.4,7.18,7.18,0,0,0,2.42,5,1.6,1.6,0,0,1,.51.88l1,4.68A2.26,2.26,0,0,0,10.92,22h2.16a2.26,2.26,0,0,0,2.19-1.76l1-4.68a1.6,1.6,0,0,1,.51-.88.76.76,0,0,0,.06-1.06A.75.75,0,0,0,15.81,13.55Zm-2.73,6.94H10.92a.76.76,0,0,1-.73-.59l-.31-1.4h4.23l-.3,1.4A.76.76,0,0,1,13.08,20.49Z' style='fill:white'/%3E%3Cpath d='M21.77,8.86,19.13,6.23a.75.75,0,0,0-1.06,0,.74.74,0,0,0,0,1.06l1.35,1.35H12.31a.75.75,0,0,0,0,1.5h7.11l-1.35,1.35a.74.74,0,0,0,0,1.06.75.75,0,0,0,.53.22.74.74,0,0,0,.53-.22l2.64-2.63a.75.75,0,0,0,0-1.06Z' style='fill:white'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M7.13,13.61a.76.76,0,0,0,.06,1.06,1.6,1.6,0,0,1,.51.88l1,4.68A2.26,2.26,0,0,0,10.92,22h2.16a2.26,2.26,0,0,0,2.19-1.76l1-4.68a1.6,1.6,0,0,1,.51-.88,7.18,7.18,0,0,0,2.42-5,7.26,7.26,0,0,0-2-5.4A7.13,7.13,0,0,0,12,2,6.9,6.9,0,0,0,7.13,3.94a.75.75,0,1,0,1,1.1A5.35,5.35,0,0,1,12,3.51a5.67,5.67,0,0,1,4.16,1.8,5.8,5.8,0,0,1,1.58,4.28,5.7,5.7,0,0,1-1.93,3.95,3.18,3.18,0,0,0-1,1.69L14.45,17H9.55l-.38-1.77a3.16,3.16,0,0,0-1-1.68A.75.75,0,0,0,7.13,13.61Zm3.06,6.29-.3-1.4h4.23l-.31,1.4a.76.76,0,0,1-.73.59H10.92A.76.76,0,0,1,10.19,19.9Z' style='fill:white'/%3E%3Cpath d='M2.23,8.86,4.87,6.23a.75.75,0,0,1,1.06,0,.74.74,0,0,1,0,1.06L4.58,8.64h7.11a.75.75,0,0,1,0,1.5H4.58l1.35,1.35a.74.74,0,0,1,0,1.06.75.75,0,0,1-.53.22.74.74,0,0,1-.53-.22L2.23,9.92a.75.75,0,0,1,0-1.06Z' style='fill:white'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -65205,7 +65205,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             else if (Object(_diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_23__["isFramePortData"])(selection)) {
                 _this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port, currentNodePort: null });
             }
-            else if (selection instanceof _diagram_nodePort__WEBPACK_IMPORTED_MODULE_22__["NodePort"] && selection.hasLabel()) {
+            else if (selection instanceof _diagram_nodePort__WEBPACK_IMPORTED_MODULE_22__["NodePort"]) {
                 _this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: selection });
             }
             else {
@@ -66245,9 +66245,6 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                     else {
                         _this._selectedNodes = [selection];
                     }
-                }
-                else if (selection instanceof _nodePort__WEBPACK_IMPORTED_MODULE_6__["NodePort"] && !selection.hasLabel()) { // if node port is uneditable, select graphNode instead
-                    props.globalState.onSelectionChangedObservable.notifyObservers(selection.node);
                 }
                 else if (selection instanceof _nodePort__WEBPACK_IMPORTED_MODULE_6__["NodePort"]) {
                     _this._selectedNodes = [];
@@ -69965,6 +69962,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+
 
 
 
@@ -69984,14 +69983,17 @@ var NodePortPropertyTabComponent = /** @class */ (function (_super) {
     };
     NodePortPropertyTabComponent.prototype.render = function () {
         var _this = this;
+        var info = this.props.nodePort.hasLabel() ?
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
+                this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })) :
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "This node is a constant input node and cannot be exposed to the frame.", value: " " });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
-                    this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
-                    this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" }, info))));
     };
     return NodePortPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -71989,7 +71991,12 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
         if (result) {
-            nextState.color = nextProps.value;
+            nextState.color = {
+                r: nextProps.value.r * 255,
+                g: nextProps.value.g * 255,
+                b: nextProps.value.b * 255,
+                a: nextProps.value instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"] ? nextProps.value.a : 1,
+            };
             nextState.hex = nextProps.value.toHexString();
         }
         return result;
