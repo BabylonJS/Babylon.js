@@ -863,7 +863,13 @@ export class SkeletonViewer {
         }
     }
 
-    /** Changes the displayMode of the skeleton viewer
+    /** Sets a display option of the skeleton viewer
+     *
+     * | Option          | Type    | Default | Description |
+     * | --------------- | ------- | ------- | ----------- |
+     * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
+     * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
+     *
      * @param option String of the option name
      * @param value The numerical option value
      */
