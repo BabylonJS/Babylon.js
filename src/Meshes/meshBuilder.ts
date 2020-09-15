@@ -17,7 +17,7 @@ import { TubeBuilder } from "./Builders/tubeBuilder";
 import { PolyhedronBuilder } from "./Builders/polyhedronBuilder";
 import { IcoSphereBuilder } from "./Builders/icoSphereBuilder";
 import { DecalBuilder } from "./Builders/decalBuilder";
-
+import { CapsuleBuilder, ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { Vector4, Vector3, Vector2 } from "../Maths/math.vector";
 import { Nullable } from "../types";
 import { Scene } from "../scene";
@@ -476,7 +476,7 @@ export class MeshBuilder {
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns the polygon mesh
      */
-    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
+    public static ExtrudePolygon(name: string, options: { shape: Vector3[], holes?: Vector3[][], depth?: number, faceUV?: Vector4[], faceColors?: Color4[], updatable?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, wrap?: boolean }, scene: Nullable<Scene> = null, earcutInjection = earcut): Mesh {
         return PolygonBuilder.ExtrudePolygon(name, options, scene, earcutInjection);
     }
 
@@ -545,5 +545,24 @@ export class MeshBuilder {
      */
     public static CreateDecal(name: string, sourceMesh: AbstractMesh, options: { position?: Vector3, normal?: Vector3, size?: Vector3, angle?: number }): Mesh {
         return DecalBuilder.CreateDecal(name, sourceMesh, options);
+    }
+
+    /**
+     * Creates a Capsule Mesh
+     * @param name defines the name of the mesh.
+     * @param options the constructors options used to shape the mesh.
+     * @param scene defines the scene the mesh is scoped to.
+     * @returns the capsule mesh
+     * @see https://doc.babylonjs.com/how_to/capsule_shape
+     */
+    public static CreateCapsule(name: string, options: ICreateCapsuleOptions = {
+        orientation : Vector3.Up(),
+        subdivisions: 2,
+        tessellation: 16,
+        height: 1,
+        radius: 0.25,
+        capSubdivisions: 6
+    }, scene: Nullable<Scene> = null): Mesh {
+        return CapsuleBuilder.CreateCapsule(name, options, scene);
     }
 }

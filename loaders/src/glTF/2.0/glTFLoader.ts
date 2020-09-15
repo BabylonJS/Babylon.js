@@ -1525,7 +1525,7 @@ export class GLTFLoader implements IGLTFLoader {
         else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
             accessor._data = this.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
-                if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized) {
+                if (accessor.componentType === AccessorComponentType.FLOAT && !accessor.normalized && (!bufferView.byteStride || bufferView.byteStride === byteStride)) {
                     return GLTFLoader._GetTypedArray(context, accessor.componentType, data, accessor.byteOffset, length);
                 }
                 else {

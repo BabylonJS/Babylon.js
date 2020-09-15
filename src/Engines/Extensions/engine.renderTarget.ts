@@ -5,7 +5,13 @@ import { Constants } from '../constants';
 import { ThinEngine } from '../thinEngine';
 import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
 
+/**
+ * Type used to define a render target texture size (either with a number or with a rect width and height)
+ */
+export type RenderTargetTextureSize = number | { width: number, height: number, layers?: number };
+
 declare module "../../Engines/thinEngine" {
+
     export interface ThinEngine {
         /**
          * Creates a new render target texture
@@ -13,7 +19,7 @@ declare module "../../Engines/thinEngine" {
          * @param options defines the options used to create the texture
          * @returns a new render target texture stored in an InternalTexture
          */
-        createRenderTargetTexture(size: number | { width: number, height: number, layers?: number }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        createRenderTargetTexture(size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture;
 
         /**
          * Creates a depth stencil texture.
@@ -22,14 +28,14 @@ declare module "../../Engines/thinEngine" {
          * @param options The options defining the texture.
          * @returns The texture
          */
-        createDepthStencilTexture(size: number | { width: number, height: number, layers?: number }, options: DepthTextureCreationOptions): InternalTexture;
+        createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
 
         /** @hidden */
-        _createDepthStencilTexture(size: number | { width: number, height: number, layers?: number }, options: DepthTextureCreationOptions): InternalTexture;
+        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture;
     }
 }
 
-ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size: number | { width: number, height: number, layers?: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
+ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size: RenderTargetTextureSize, options: boolean | RenderTargetCreationOptions): InternalTexture {
     const fullOptions = new RenderTargetCreationOptions();
     if (options !== undefined && typeof options === "object") {
         fullOptions.generateMipMaps = options.generateMipMaps;
@@ -126,7 +132,7 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
     return texture;
 };
 
-ThinEngine.prototype.createDepthStencilTexture = function(size: number | { width: number, height: number, layers?: number }, options: DepthTextureCreationOptions): InternalTexture {
+ThinEngine.prototype.createDepthStencilTexture = function(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
     if (options.isCube) {
         let width = (<{ width: number, height: number }>size).width || <number>size;
         return this._createDepthStencilCubeTexture(width, options);
@@ -136,7 +142,7 @@ ThinEngine.prototype.createDepthStencilTexture = function(size: number | { width
     }
 };
 
-ThinEngine.prototype._createDepthStencilTexture = function(size: number | { width: number, height: number, layers?: number }, options: DepthTextureCreationOptions): InternalTexture {
+ThinEngine.prototype._createDepthStencilTexture = function(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): InternalTexture {
     const gl = this._gl;
     const layers = (<{ width: number, height: number, layers?: number }>size).layers || 0;
     const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;

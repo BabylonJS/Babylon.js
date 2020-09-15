@@ -135,8 +135,8 @@ void main(void) {
 	vColor = color;
 
 	#ifdef ANIMATESHEET
-		float rowOffset = floor(cellIndex / particlesInfos.z);
-		float columnOffset = cellIndex - rowOffset * particlesInfos.z;
+		float rowOffset = floor(cellIndex * particlesInfos.z);
+		float columnOffset = cellIndex - rowOffset / particlesInfos.z;
 
 		vec2 uvScale = particlesInfos.xy;
 		vec2 uvOffset = vec2(offset.x , 1.0 - offset.y);
