@@ -17,9 +17,13 @@ interface IGraphActionsBarProps {
     title: string;
     enabled: boolean;
     setKeyframeValue: (actionableKeyframe: IActionableKeyFrame) => void;
+    frameRange: { min: number | undefined; max: number | undefined };
 }
 
-export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { frame: string; value: string }> {
+export class GraphActionsBar extends React.Component<
+    IGraphActionsBarProps,
+    { frame: string; value: string; min: number | undefined; max: number | undefined }
+> {
     private _frameInput: React.RefObject<HTMLInputElement>;
     private _valueInput: React.RefObject<HTMLInputElement>;
     constructor(props: IGraphActionsBarProps) {
@@ -27,7 +31,7 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
         this._frameInput = React.createRef();
         this._valueInput = React.createRef();
         const { frame, value } = this.selectedKeyframeChanged(this.props.actionableKeyframe);
-        this.state = { frame, value };
+        this.state = { frame, value, min: this.props.frameRange.min, max: this.props.frameRange.max };
     }
 
     componentDidMount() {
@@ -39,6 +43,13 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
         if (prevProps.actionableKeyframe !== this.props.actionableKeyframe) {
             const { frame, value } = this.selectedKeyframeChanged(this.props.actionableKeyframe);
             this.setState({ frame, value });
+        }
+
+        if (
+            prevProps.frameRange.min !== this.props.frameRange.min ||
+            prevProps.frameRange.max !== this.props.frameRange.max
+        ) {
+            this.setState({ min: this.props.frameRange.min, max: this.props.frameRange.max });
         }
     }
 
@@ -121,6 +132,8 @@ export class GraphActionsBar extends React.Component<IGraphActionsBarProps, { fr
                             type="number"
                             onChange={this.handleFrameChange}
                             value={this.state.frame}
+                            max={this.state.max}
+                            min={this.state.min}
                             step="1"
                             disabled={this.props.actionableKeyframe.frame === undefined}
                             onBlur={this.onBlur}
