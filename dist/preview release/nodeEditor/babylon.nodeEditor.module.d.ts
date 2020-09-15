@@ -1735,7 +1735,9 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _currentType;
         private _lightParent;
         private _postprocess;
+        private _proceduralTexture;
         private _particleSystem;
+        private _layer;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;
@@ -3335,7 +3337,9 @@ declare module NODEEDITOR {
         private _currentType;
         private _lightParent;
         private _postprocess;
+        private _proceduralTexture;
         private _particleSystem;
+        private _layer;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;

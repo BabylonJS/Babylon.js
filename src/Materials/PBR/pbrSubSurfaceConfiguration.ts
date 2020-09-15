@@ -154,6 +154,7 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public indexOfRefraction = 1.5;
 
+    @serialize()
     private _volumeIndexOfRefraction = -1.0;
 
     /**
@@ -163,7 +164,6 @@ export class PBRSubSurfaceConfiguration {
      * This ONLY impacts refraction. If not provided or given a non-valid value,
      * the volume will use the same IOR as the surface.
      */
-    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public get volumeIndexOfRefraction(): number {
         if (this._volumeIndexOfRefraction >= 1.0) {

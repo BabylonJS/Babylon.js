@@ -57,6 +57,7 @@ const isPowerOfTwo = (value: number)  => {
 
 /**
  * Class for decoding KTX2 files
+ * 
  */
 export class KTX2Decoder {
 

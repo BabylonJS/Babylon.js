@@ -55,7 +55,7 @@ declare module "babylonjs-inspector/components/globalState" {
         glTFLoaderDefaults: {
             [key: string]: any;
         };
-        glTFLoaderExtenstions: {
+        glTFLoaderExtensions: {
             [key: string]: IGLTFLoaderExtension;
         };
         blockMutationUpdates: boolean;
@@ -3560,7 +3560,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/tools/gltfCompone
     }
     export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         private _onValidationResultsUpdatedObserver;
-        constructor(props: IGLTFComponentProps);
         openValidationDetails(): void;
         prepareText(singularForm: string, count: number): string;
         componentDidMount(): void;
@@ -4288,7 +4287,7 @@ declare module INSPECTOR {
         glTFLoaderDefaults: {
             [key: string]: any;
         };
-        glTFLoaderExtenstions: {
+        glTFLoaderExtensions: {
             [key: string]: BABYLON.IGLTFLoaderExtension;
         };
         blockMutationUpdates: boolean;
@@ -7168,7 +7167,6 @@ declare module INSPECTOR {
     }
     export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         private _onValidationResultsUpdatedObserver;
-        constructor(props: IGLTFComponentProps);
         openValidationDetails(): void;
         prepareText(singularForm: string, count: number): string;
         componentDidMount(): void;
