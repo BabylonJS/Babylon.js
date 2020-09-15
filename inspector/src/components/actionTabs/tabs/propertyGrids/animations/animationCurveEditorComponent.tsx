@@ -95,6 +95,8 @@ export class AnimationCurveEditorComponent extends React.Component<
         canvasWidthScale: number;
         valuesPositionResize: number;
         framesInCanvasView: { from: number; to: number };
+        maxFrame: number | undefined;
+        minFrame: number | undefined;
     }
 > {
     private _snippetUrl = "https://snippet.babylonjs.com";
@@ -199,6 +201,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             canvasWidthScale: 200,
             valuesPositionResize: 2,
             framesInCanvasView: { from: 0, to: 20 },
+            maxFrame: undefined,
+            minFrame: undefined,
         };
     }
 
@@ -366,10 +370,36 @@ export class AnimationCurveEditorComponent extends React.Component<
             }
             return kf;
         });
+
+        let maxFrame = undefined;
+        let minFrame = undefined;
+        if (frameValue && typeof frameValue.frame === "number") {
+            let { prev, next } = this.getPreviousAndNextKeyframe(frameValue.frame);
+            maxFrame = next;
+            minFrame = prev;
+        }
+
         this.setState({
             svgKeyframes: updatedKeyframes,
             actionableKeyframe: frameValue ?? this.state.actionableKeyframe,
+            maxFrame: maxFrame,
+            minFrame: minFrame,
         });
+    };
+
+    getPreviousAndNextKeyframe = (frame: number) => {
+        let prev,
+            next = undefined;
+        const animation = this.state.selected;
+        if (animation) {
+            const keys = animation.getKeys();
+            if (keys) {
+                const index = keys.findIndex((x) => x.frame === frame);
+                prev = keys[index - 1] && keys[index - 1].frame + 1;
+                next = keys[index + 1] && keys[index + 1].frame - 1;
+            }
+        }
+        return { prev, next };
     };
 
     selectKeyframeFromId = (id: string, actionableKeyframe: IActionableKeyFrame) => {
@@ -380,15 +410,20 @@ export class AnimationCurveEditorComponent extends React.Component<
             }
             return kf;
         });
+        let { prev, next } = this.getPreviousAndNextKeyframe(actionableKeyframe.frame as number);
         this.setState({
             svgKeyframes: updatedKeyframes,
             actionableKeyframe: actionableKeyframe ?? this.state.actionableKeyframe,
+            maxFrame: next,
+            minFrame: prev,
         });
     };
 
     resetActionableKeyframe = () => {
         this.setState({
             actionableKeyframe: { frame: undefined, value: undefined },
+            maxFrame: undefined,
+            minFrame: undefined,
         });
     };
 
@@ -427,6 +462,8 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.setState({
             svgKeyframes: updatedKeyframes,
             actionableKeyframe: { frame: undefined, value: undefined },
+            maxFrame: undefined,
+            minFrame: undefined,
         });
     };
 
@@ -607,8 +644,11 @@ export class AnimationCurveEditorComponent extends React.Component<
         this.forceFrameZeroToExist(keys);
         animation.setKeys(keys);
 
+        let { prev, next } = this.getPreviousAndNextKeyframe(newFrame);
         this.setState({
             actionableKeyframe: { frame: newFrame, value: updatedValueInCoordinate },
+            maxFrame: next,
+            minFrame: prev,
         });
 
         this.selectAnimation(animation, coordinate);
@@ -727,10 +767,15 @@ export class AnimationCurveEditorComponent extends React.Component<
         event.preventDefault();
 
         let frame;
+        let maxFrame = undefined;
+        let minFrame = undefined;
         if (event.target.value === "") {
             frame = "";
         } else {
             frame = parseInt(event.target.value);
+            const { prev, next } = this.getPreviousAndNextKeyframe(frame);
+            maxFrame = next;
+            minFrame = prev;
         }
 
         this.setState({
@@ -738,6 +783,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                 frame: frame,
                 value: this.state.actionableKeyframe.value,
             },
+            maxFrame,
+            minFrame,
         });
     };
 
@@ -758,6 +805,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                     frame: this.state.actionableKeyframe.frame,
                     value: value,
                 },
+                maxFrame: undefined,
+                minFrame: undefined,
             });
         }
     };
@@ -804,6 +853,10 @@ export class AnimationCurveEditorComponent extends React.Component<
                             frame: this.state.actionableKeyframe.frame as number,
                             value: this.state.actionableKeyframe.value,
                         });
+                        const { prev, next } = this.getPreviousAndNextKeyframe(
+                            this.state.actionableKeyframe.frame as number
+                        );
+                        this.setState({ maxFrame: next, minFrame: prev });
                     }
                 }
             }
@@ -1330,9 +1383,14 @@ export class AnimationCurveEditorComponent extends React.Component<
             }
             // defaultTangent = 0; Zero or if linear get linear formula (slope of next, prev point)
 
-            var inT = key.inTangent === null ? defaultTangent : this.getValueAsArray(type, key.inTangent)[coordinate];
+            var inT =
+                key.inTangent === null || key.inTangent === undefined
+                    ? defaultTangent
+                    : this.getValueAsArray(type, key.inTangent)[coordinate];
             var outT =
-                key.outTangent === null ? defaultTangent : this.getValueAsArray(type, key.outTangent)[coordinate];
+                key.outTangent === null || key.inTangent === undefined
+                    ? defaultTangent
+                    : this.getValueAsArray(type, key.outTangent)[coordinate];
 
             //let y = this._heightScale - keyframe_valueAsArray * middle; // should be half of heightscale
             defaultWeight = 1 * this._pixelFrameUnit;
@@ -2122,6 +2180,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                     lerpMode={this.state.lerpMode}
                     setLerpToActiveControlPoint={this.setLerpToActiveControlPoint}
                     flatTangent={this.setFlatTangent}
+                    frameRange={{ max: this.state.maxFrame, min: this.state.minFrame }}
                 />
 
                 <div className="content">
