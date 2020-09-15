@@ -67,7 +67,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 this.setState({ currentNode: null, currentFrame: selection, currentFrameNodePort: null, currentNodePort: null });
             } else if (isFramePortData(selection)) {
                 this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port, currentNodePort: null });
-            } else if (selection instanceof NodePort && selection.hasLabel()) {
+            } else if (selection instanceof NodePort) { // && selection.hasLabel()
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: selection});
             } else {
                 this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null });
