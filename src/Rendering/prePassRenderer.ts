@@ -9,6 +9,8 @@ import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { Nullable } from "../types";
+import { AbstractMesh } from '../Meshes/abstractMesh';
+
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -50,7 +52,12 @@ export class PrePassRenderer {
             type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
         },
-];
+    ];
+
+    /**
+     * To save performance, we can excluded skinned meshes from the prepass
+     */
+    public excludedSkinnedMesh: AbstractMesh[] = [];
 
     private _textureIndices: number[] = [];
 
