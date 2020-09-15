@@ -72,6 +72,20 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * True when the mouse pointer is hovering a gizmo mesh
+     */
+    public get isHovered() {
+        var hovered = false;
+        for (var key in this.gizmos) {
+            var gizmo = <Nullable<Gizmo>>((<any>this.gizmos)[key]);
+            if (gizmo) {
+                hovered = hovered || gizmo.isHovered;
+            }
+        }
+        return hovered;
+    }
+
+    /**
      * Instatiates a gizmo manager
      * @param scene the scene to overlay the gizmos on top of
      * @param thickness display gizmo axis thickness

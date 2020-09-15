@@ -77,6 +77,17 @@ export class ScaleGizmo extends Gizmo {
     }
 
     /**
+     * True when the mouse pointer is hovering a gizmo mesh
+     */
+    public get isHovered() {
+        var hovered = false;
+        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+            hovered = hovered || gizmo.isHovered;
+        });
+        return hovered;
+    }
+
+    /**
      * Creates a ScaleGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param thickness display gizmo axis thickness
