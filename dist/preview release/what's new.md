@@ -321,7 +321,6 @@
 - Fix gltf2 Morph Target export code style, add additional test case for non-animation group created morph targets ([drigax](https://github.com/drigax))
 - Fix "Uncaught ReferenceError: name is not defined" ([outermeasure](https://github.com/outermeasure))
 
-
 ## Breaking changes
 - `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))
 - `EffectRenderer.render` now takes a `RenderTargetTexture` or an `InternalTexture` as the output texture and only a single `EffectWrapper` for its first argument ([Popov72](https://github.com/Popov72))
