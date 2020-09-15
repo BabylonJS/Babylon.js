@@ -10,7 +10,6 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
 import { Constants } from "../Engines/constants";
 import { PrePassConfiguration } from "../Materials/prePassConfiguration";
-import { MotionBlurConfiguration } from "../Rendering/motionBlurConfiguration";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
@@ -207,12 +206,9 @@ export class MaterialHelper {
                 defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
 
                 const prePassRenderer = mesh.getScene().prePassRenderer;
-                if (prePassRenderer) {
-                    const motionBlurConfiguration = prePassRenderer.getEffectConfiguration("motionBlur");
-                    if (motionBlurConfiguration) {
-                        const nonExcluded = (motionBlurConfiguration as MotionBlurConfiguration).excludedSkinnedMesh.indexOf(mesh) === -1;
-                        defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
-                    }
+                if (prePassRenderer && prePassRenderer.enabled) {
+                    const nonExcluded = prePassRenderer.excludedSkinnedMesh.indexOf(mesh) === -1;
+                    defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
                 }
             }
         } else {
