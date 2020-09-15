@@ -301,7 +301,7 @@ export class SkeletonViewer {
     private _debugMesh: Nullable<LinesMesh>;
 
     /** The local axes Meshes. */
-    private _localAxes: LinesMesh[] = [];
+    private _localAxes: Nullable<LinesMesh> = null;
 
     /** If SkeletonViewer is enabled. */
     private _isEnabled = false;
@@ -560,6 +560,17 @@ export class SkeletonViewer {
         }
     }
 
+    private getAbsoluteRestPose(bone: Nullable<Bone>, matrix: Matrix) {
+        if (bone === null || bone._index === -1) {
+            matrix.copyFrom(Matrix.Identity());
+            return;
+        }
+
+        this.getAbsoluteRestPose(bone.getParent(), matrix);
+        bone.getBindPose().multiplyToRef(matrix, matrix);
+        return;
+    }
+
     /** function to build and bind sphere joint points and spur bone representations. */
     private _buildSpheresAndSpurs(spheresOnly = true): void {
 
@@ -591,16 +602,6 @@ export class SkeletonViewer {
             }
 
             let longestBoneLength = Number.NEGATIVE_INFINITY;
-            let getAbsoluteRestPose = function(bone: Nullable<Bone>, matrix: Matrix) {
-                if (bone === null || bone._index === -1) {
-                    matrix.copyFrom(Matrix.Identity());
-                    return;
-                }
-                getAbsoluteRestPose(bone.getParent(), matrix);
-                bone.getBindPose().multiplyToRef(matrix, matrix);
-                return;
-            };
-
             let displayOptions = this.options.displayOptions || {};
 
             for (let i = 0; i < bones.length; i++) {
@@ -611,7 +612,7 @@ export class SkeletonViewer {
                 }
 
                 let boneAbsoluteRestTransform = new Matrix();
-                getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
+                this.getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
 
                 let anchorPoint = new Vector3();
 
@@ -743,11 +744,12 @@ export class SkeletonViewer {
     }
 
     private _buildLocalAxes(): void {
-        for (let axisMesh of this._localAxes) {
-            axisMesh.dispose();
+        if (this._localAxes) {
+            this._localAxes.dispose();
         }
 
-        this._localAxes = [];
+        this._localAxes = null;
+
         let displayOptions = this.options.displayOptions || {};
 
         if (!displayOptions.showLocalAxes) {
@@ -756,34 +758,58 @@ export class SkeletonViewer {
 
         const targetScene = this._utilityLayer!.utilityLayerScene;
         const size = displayOptions.localAxesSize || 0.075;
+        let lines = [];
+        let colors = [];
+        let red = new Color4(1, 0, 0, 1);
+        let green = new Color4(0, 1, 0, 1);
+        let blue = new Color4(0, 0, 1, 1);
 
-        for (let b of this.skeleton.bones) {
-            if (b._index === -1 || (!this._boneIndices.has(b.getIndex()) && !this.options.useAllBones)) {
+        let mwk: number[] = [];
+        let mik: number[] = [];
+        const vertsPerBone = 6;
+
+        for (let i in this.skeleton.bones) {
+            let bone = this.skeleton.bones[i];
+
+            if (bone._index === -1 || (!this._boneIndices.has(bone.getIndex()) && !this.options.useAllBones)) {
                 continue;
             }
 
-            let lines = [
-                [Vector3.Zero(), new Vector3(size, 0, 0)],
-                [Vector3.Zero(), new Vector3(0, size, 0)],
-                [Vector3.Zero(), new Vector3(0, 0, size)]
-            ];
-            let red = new Color4(1, 0, 0, 1);
-            let green = new Color4(0, 1, 0, 1);
-            let blue = new Color4(0, 0, 1, 1);
-            let colors = [[red, red], [green, green], [blue, blue]];
-            let axes = LinesBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
+            let boneAbsoluteRestTransform = new Matrix();
+            let boneOrigin = new Vector3();
 
-            axes.parent = b;
-            axes.renderingGroupId = this.renderingGroupId;
+            this.getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
+            boneAbsoluteRestTransform.decompose(undefined, undefined, boneOrigin);
 
-            if (this.displayMode === SkeletonViewer.DISPLAY_LINES) {
-                // The local axes needs a mesh. Since the world matrix of a bone is not recalculated unless its
-                // skeleton is applied to at least one mesh. For the other display mode we don't have this issue.
-                axes.skeleton = this.skeleton;
+            let m = bone.getBindPose().getRotationMatrix();
+
+            let boneAxisX = Vector3.TransformCoordinates(new Vector3(0 + size, 0, 0), m);
+            let boneAxisY = Vector3.TransformCoordinates(new Vector3(0, 0 + size, 0), m);
+            let boneAxisZ = Vector3.TransformCoordinates(new Vector3(0, 0, 0 + size), m);
+
+            let axisX = [boneOrigin, boneOrigin.add(boneAxisX)];
+            let axisY = [boneOrigin, boneOrigin.add(boneAxisY)];
+            let axisZ = [boneOrigin, boneOrigin.add(boneAxisZ)];
+
+            let linePoints = [axisX, axisY, axisZ];
+            let lineColors = [[red, red], [green, green], [blue, blue]];
+
+            lines.push(...linePoints);
+            colors.push(...lineColors);
+
+            for (let j = 0; j < vertsPerBone; j++) {
+                mwk.push(1, 0, 0, 0);
+                mik.push(bone.getIndex(), 0, 0, 0);
             }
-
-            this._localAxes.push(axes);
         }
+
+        this._localAxes = LinesBuilder.CreateLineSystem('localAxes', { lines: lines, colors: colors, updatable: true }, targetScene);
+        this._localAxes.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
+        this._localAxes.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
+        this._localAxes.skeleton = this.skeleton;
+        this._localAxes.renderingGroupId = this.renderingGroupId;
+        this._localAxes.parent = this.mesh;
+        this._localAxes.computeBonesUsingShaders = this.options.computeBonesUsingShaders ?? true;
     }
 
     /** Update the viewer to sync with current skeleton state, only used for the line display. */
