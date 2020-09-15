@@ -103,6 +103,21 @@ export class DeviceInputSystem implements IDisposable {
         return device[inputIndex];
     }
 
+    public checkForConnectedGamepads() {
+        const gamepads = navigator.getGamepads();
+
+        for (let i = 0; i < gamepads.length; i++) {
+            if (gamepads[i]) {
+            const deviceType = this._getGamepadDeviceType(gamepads[i]!.id);
+            const deviceSlot = gamepads[i]!.index;
+
+            this._registerDevice(deviceType, deviceSlot, gamepads[i]!.buttons.length + gamepads[i]!.axes.length);
+            this._gamepads = this._gamepads || new Array<DeviceType>(gamepads[i]!.index + 1);
+            this._gamepads[deviceSlot] = deviceType;
+            }
+        }
+    }
+
     /**
      * Dispose of all the eventlisteners
      */
@@ -286,7 +301,7 @@ export class DeviceInputSystem implements IDisposable {
             const deviceSlot = evt.gamepad.index;
 
             this._registerDevice(deviceType, deviceSlot, evt.gamepad.buttons.length + evt.gamepad.axes.length);
-            this._gamepads = this._gamepads || new Array<string>(evt.gamepad.index + 1);
+            this._gamepads = this._gamepads || new Array<DeviceType>(evt.gamepad.index + 1);
             this._gamepads[deviceSlot] = deviceType;
         });
 

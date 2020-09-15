@@ -72,6 +72,7 @@ export class DeviceSourceManager implements IDisposable {
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
     private readonly _deviceInputSystem: DeviceInputSystem;
+    private _checkConnectedGamepads: boolean = false;
 
     /**
      * Default Constructor
@@ -109,6 +110,10 @@ export class DeviceSourceManager implements IDisposable {
      * @returns DeviceSource object
      */
     public getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> {
+        if (!this._checkConnectedGamepads) {
+            this._deviceInputSystem.checkForConnectedGamepads();
+        }
+
         if (deviceSlot === undefined) {
             if (this._firstDevice[deviceType] === undefined) {
                 return null;
