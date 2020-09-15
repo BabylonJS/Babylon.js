@@ -261,6 +261,14 @@ export class InternalTexture {
     public _references: number = 1;
 
     private _engine: ThinEngine;
+    private _id: number;
+
+    private static _Counter = 0;
+
+    /** Gets the unique id of the internal texture */
+    public get id() {
+        return this._id;
+    }
 
     /**
      * Gets the Engine the texture belongs to.
@@ -286,9 +294,10 @@ export class InternalTexture {
     constructor(engine: ThinEngine, source: InternalTextureSource, delayAllocation = false) {
         this._engine = engine;
         this._source = source;
+        this._id = InternalTexture._Counter++;
 
         if (!delayAllocation) {
-            this._webGLTexture = engine._createTexture();
+            this._webGLTexture = engine._createTexture(); // TODO WebGPU: don't do this in WebGPU
         }
     }
 
@@ -449,6 +458,7 @@ export class InternalTexture {
     public _swapAndDie(target: InternalTexture): void {
         target._webGLTexture = this._webGLTexture;
         target._webGPUTexture = this._webGPUTexture;
+        target._webGPUTextureView = this._webGPUTextureView;
         target._isRGBD = this._isRGBD;
 
         if (this._framebuffer) {

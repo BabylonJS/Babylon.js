@@ -30,6 +30,7 @@ import { IEffectFallbacks } from '../Materials/iEffectFallbacks';
 import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { PerformanceConfigurator } from './performanceConfigurator';
+import { EngineFeatures } from './engineFeatures';
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -151,6 +152,14 @@ export class ThinEngine {
      */
     public static get Version(): string {
         return "4.2.0-alpha.27";
+    }
+
+    /**
+     * Returns the features of the engine
+     */
+    public static Features: EngineFeatures = {
+        forceBitmapOverHTMLImageElement: false,
+        supportRenderAndCopyToLodForFloatTextures: false,
     }
 
     /**
@@ -677,6 +686,8 @@ export class ThinEngine {
                 options.stencil = attributes.stencil;
             }
         }
+
+        ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = this._webGLVersion !== 1;
 
         // Ensures a consistent color space unpacking of textures cross browser.
         this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
