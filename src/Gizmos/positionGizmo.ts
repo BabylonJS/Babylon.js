@@ -87,6 +87,18 @@ export class PositionGizmo extends Gizmo {
             }
         });
     }
+
+    /**
+     * True when the mouse pointer is hovering a gizmo mesh
+     */
+    public get isHovered() {
+        var hovered = false;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            hovered = hovered || gizmo.isHovered;
+        });
+        return hovered;
+    }
+
     /**
      * Creates a PositionGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
