@@ -319,7 +319,7 @@
 - Fixed an issue in `DeviceSourceManager.getDeviceSources()` where null devices are returned ([Drigax](https://github.com/drigax))
 - Fix issue in glTF2 `_Exporter.createSkinsAsync()` that exported an incorrect joint indexing list ([drigax](https://github.com/drigax))
 - Fix gltf2 Morph Target export code style, add additional test case for non-animation group created morph targets ([drigax](https://github.com/drigax))
-- Fix "Uncaught ReferenceError: name is not defined" ([#8973](https://github.com/outermeasure))
+- Fix "Uncaught ReferenceError: name is not defined" ([outermeasure](https://github.com/outermeasure))
 
 
 ## Breaking changes
