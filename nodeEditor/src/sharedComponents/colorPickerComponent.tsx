@@ -65,7 +65,12 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
             || nextState.pickerEnabled !== this.state.pickerEnabled;
         
         if(result) {
-            nextState.color = nextProps.value;
+            nextState.color =  {
+                r: nextProps.value.r * 255,
+                g: nextProps.value.g * 255,
+                b: nextProps.value.b * 255,
+                a: nextProps.value instanceof Color4 ? nextProps.value.a : 1,
+            };
             nextState.hex = nextProps.value.toHexString();
         }
         return result;   
