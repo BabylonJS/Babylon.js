@@ -103,6 +103,9 @@ export class DeviceInputSystem implements IDisposable {
         return device[inputIndex];
     }
 
+    /**
+     * Checks for existing connections to gamepads and registers them, if necessary
+     */
     public checkForConnectedGamepads() {
         const gamepads = navigator.getGamepads();
 
