@@ -42,6 +42,12 @@ export interface ISkeletonViewerDisplayOptions{
 
    /** Ratio for the Sphere Size */
    sphereFactor? : number;
+
+   /** Whether to show local axes or not  */
+   showLocalAxes? : boolean;
+
+   /** Length of each local axis */
+   localAxesSize? : number;
 }
 
 /**
