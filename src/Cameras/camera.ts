@@ -625,6 +625,12 @@ export class Camera extends Node {
             this._postProcesses.splice(insertAt, 0, postProcess);
         }
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
+
+        // Update prePass
+        if (this._scene.prePassRenderer) {
+            this._scene.prePassRenderer.markAsDirty();
+        }
+
         return this._postProcesses.indexOf(postProcess);
     }
 
@@ -638,6 +644,12 @@ export class Camera extends Node {
         if (idx !== -1) {
             this._postProcesses[idx] = null;
         }
+
+        // Update prePass
+        if (this._scene.prePassRenderer) {
+            this._scene.prePassRenderer.markAsDirty();
+        }
+
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
     }
 

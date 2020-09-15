@@ -359,6 +359,9 @@ export class MaterialHelper {
 
         } else {
             defines.PREPASS = false;
+            for (let i = 0; i < texturesList.length; i++) {
+                defines[texturesList[i].define] = false;
+            }
         }
 
         if (defines.PREPASS != previousPrePass) {
