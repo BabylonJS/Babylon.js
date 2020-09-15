@@ -51,7 +51,6 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     private _enableSmoothReflections: boolean = false;
     private _reflectionSamples: number = 64;
     private _smoothSteps: number = 5;
-    private _ssrConfiguration: ScreenSpaceReflectionsConfiguration;
 
     /**
      * Gets a string identifying the name of the class
@@ -97,6 +96,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         } else {
             this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
             this._prePassRenderer.markAsDirty();
+            this.prePassEffectConfiguration = new ScreenSpaceReflectionsConfiguration();
         }
 
         this._updateEffectDefines();
@@ -232,22 +232,6 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         defines.push("#define SMOOTH_STEPS " + (this._smoothSteps >> 0));
 
         this.updateEffect(defines.join("\n"));
-    }
-
-    /**
-     * Sets the required values to the prepass renderer.
-     * @param prePassRenderer defines the prepass renderer to setup
-     * @returns true if the pre pass is needed.
-     */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        let cfg = this._ssrConfiguration;
-        if (!cfg) {
-            cfg = new ScreenSpaceReflectionsConfiguration();
-        }
-
-        cfg.enabled = true;
-        this._ssrConfiguration = prePassRenderer.addEffectConfiguration(cfg) as ScreenSpaceReflectionsConfiguration;
-        return true;
     }
 
     /** @hidden */

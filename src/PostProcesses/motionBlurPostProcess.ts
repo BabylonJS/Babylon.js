@@ -62,7 +62,6 @@ export class MotionBlurPostProcess extends PostProcess {
     private _forceGeometryBuffer: boolean = false;
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
     private _prePassRenderer: PrePassRenderer;
-    private _motionBlurConfiguration: MotionBlurConfiguration;
 
     /**
      * Gets a string identifying the name of the class
@@ -99,6 +98,7 @@ export class MotionBlurPostProcess extends PostProcess {
         } else {
             this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
             this._prePassRenderer.markAsDirty();
+            this.prePassEffectConfiguration = new MotionBlurConfiguration();
         }
 
         if (!this._geometryBufferRenderer && !this._prePassRenderer) {
@@ -164,22 +164,6 @@ export class MotionBlurPostProcess extends PostProcess {
         }
 
         super.dispose(camera);
-    }
-
-    /**
-     * Sets the required values to the prepass renderer.
-     * @param prePassRenderer defines the prepass renderer to setup
-     * @returns true if the pre pass is needed.
-     */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        let cfg = this._motionBlurConfiguration;
-        if (!cfg) {
-            cfg = new MotionBlurConfiguration();
-        }
-
-        cfg.enabled = true;
-        this._motionBlurConfiguration = prePassRenderer.addEffectConfiguration(cfg) as MotionBlurConfiguration;
-        return true;
     }
 
     /** @hidden */

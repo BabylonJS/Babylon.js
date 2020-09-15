@@ -409,17 +409,32 @@ export class PrePassRenderer {
             }
         }
 
-        const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
-        for (let i = 0; i < pipelines.length; i++) {
-            if (pipelines[i].setPrePassRenderer(this)) {
-                enablePrePass = true;
-            }
+        // const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
+        // for (let i = 0; i < pipelines.length; i++) {
+        //     if (pipelines[i].setPrePassRenderer(this)) {
+        //         enablePrePass = true;
+        //     }
+        // }
+
+        // const postProcesses = this._scene.postProcesses;
+        // for (let i = 0; i < postProcesses.length; i++) {
+        //     if (postProcesses[i].setPrePassRenderer(this)) {
+        //         enablePrePass = true;
+        //     }
+        // }
+
+        const camera = this._scene.activeCamera;
+        if (!camera) {
+            return;
         }
 
-        const postProcesses = this._scene.postProcesses;
-        for (let i = 0; i < postProcesses.length; i++) {
-            if (postProcesses[i].setPrePassRenderer(this)) {
-                enablePrePass = true;
+        const postProcesses = (<Nullable<PostProcess[]>>camera._postProcesses.filter((pp) => { return pp != null; }));
+
+        if (postProcesses) {
+            for (let i = 0; i < postProcesses.length; i++) {
+                if (postProcesses[i].setPrePassRenderer(this)) {
+                    enablePrePass = true;
+                }
             }
         }
 
@@ -430,7 +445,8 @@ export class PrePassRenderer {
         }
 
         if (!this.enabled) {
-            this._engine.bindAttachments(this._defaultAttachments);
+            // Prepass disabled, we render only on 1 color attachment
+            this._engine.bindAttachments([this._engine._gl.COLOR_ATTACHMENT0]);
         }
     }
 

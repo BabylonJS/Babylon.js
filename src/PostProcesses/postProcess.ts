@@ -20,6 +20,7 @@ declare type InternalTexture = import("../Materials/Textures/internalTexture").I
 declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
 declare type Animation = import("../Animations/animation").Animation;
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
+declare type PrePassEffectConfiguration = import("../Rendering/prePassEffectConfiguration").PrePassEffectConfiguration;
 
 /**
  * Size options for a post process
@@ -186,6 +187,12 @@ export class PostProcess {
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
     private _forcedOutputTexture: Nullable<InternalTexture>;
+
+    /**
+    * Prepass configuration in case this post process needs a texture from prepass
+    * @hidden
+    */
+    public prePassEffectConfiguration: PrePassEffectConfiguration;
 
     /**
      * Returns the fragment url or shader name used in the post process.
@@ -685,7 +692,12 @@ export class PostProcess {
      * @returns true if the pre pass is needed.
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        // Do Nothing by default
+        if (this.prePassEffectConfiguration) {
+            this.prePassEffectConfiguration = prePassRenderer.addEffectConfiguration(this.prePassEffectConfiguration);
+            this.prePassEffectConfiguration.enabled = true;
+            return true;
+        }
+
         return false;
     }
 
