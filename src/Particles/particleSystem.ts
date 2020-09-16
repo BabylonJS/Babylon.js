@@ -1899,7 +1899,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this._isAnimationSheetEnabled && this.particleTexture) {
             var baseSize = this.particleTexture.getBaseSize();
-            effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
+            effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, this.spriteCellWidth / baseSize.width);
         }
 
         effect.setVector2("translationPivot", this.translationPivot);

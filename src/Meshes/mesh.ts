@@ -237,10 +237,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return;
         }
 
-        if (value && this._internalMeshDataInfo._sourcePositions && this._internalMeshDataInfo._sourceNormals) {
+        if (value && this._internalMeshDataInfo._sourcePositions) {
             // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
             this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions.slice(), true);
-            this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals.slice(), true);
+            if (this._internalMeshDataInfo._sourceNormals) {
+                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals.slice(), true);
+            }
         }
 
         this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
@@ -2095,9 +2097,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
         let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
         let numBadBoneIndices: number = 0;
-        for (var a = 0; a < numWeights; a++) {
+        for (var a = 0; a < numWeights; a += 4) {
             for (var b = 0; b < numInfluences; b++) {
-                let index = b < 4 ? matricesIndices[b] : matricesIndicesExtra[b - 4];
+                let index = b < 4 ? matricesIndices[a + b] : matricesIndicesExtra[a + b - 4];
                 if (index >= numBones || index < 0) { numBadBoneIndices++; }
             }
         }
@@ -4100,15 +4102,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
             return this;
         }
-        if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            return this;
-        }
         if (!this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
             return this;
         }
         if (!this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
             return this;
         }
+
+        const hasNormals = this.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         let internalDataInfo = this._internalMeshDataInfo;
 
@@ -4118,7 +4119,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.subMeshes = submeshes;
         }
 
-        if (!internalDataInfo._sourceNormals) {
+        if (hasNormals && !internalDataInfo._sourceNormals) {
             this.setNormalsForCPUSkinning();
         }
 
@@ -4136,12 +4137,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // normalsData checks for not being Float32Array will only pass at most once
         var normalsData = this.getVerticesData(VertexBuffer.NormalKind);
 
-        if (!normalsData) {
-            return this;
-        }
+        if (hasNormals) {
+            if (!normalsData) {
+                return this;
+            }
 
-        if (!(normalsData instanceof Float32Array)) {
-            normalsData = new Float32Array(normalsData);
+            if (!(normalsData instanceof Float32Array)) {
+                normalsData = new Float32Array(normalsData);
+            }
         }
 
         var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
@@ -4185,14 +4188,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Vector3.TransformCoordinatesFromFloatsToRef(internalDataInfo._sourcePositions[index], internalDataInfo._sourcePositions[index + 1], internalDataInfo._sourcePositions[index + 2], finalMatrix, tempVector3);
             tempVector3.toArray(positionsData, index);
 
-            Vector3.TransformNormalFromFloatsToRef(internalDataInfo._sourceNormals[index], internalDataInfo._sourceNormals[index + 1], internalDataInfo._sourceNormals[index + 2], finalMatrix, tempVector3);
-            tempVector3.toArray(normalsData, index);
+            if (hasNormals) {
+                Vector3.TransformNormalFromFloatsToRef(internalDataInfo._sourceNormals[index], internalDataInfo._sourceNormals[index + 1], internalDataInfo._sourceNormals[index + 2], finalMatrix, tempVector3);
+                tempVector3.toArray(normalsData!, index);
+            }
 
             finalMatrix.reset();
         }
 
         this.updateVerticesData(VertexBuffer.PositionKind, positionsData);
-        this.updateVerticesData(VertexBuffer.NormalKind, normalsData);
+        if (hasNormals) {
+            this.updateVerticesData(VertexBuffer.NormalKind, normalsData!);
+        }
 
         return this;
     }

@@ -137,8 +137,8 @@ export class AxisDragGizmo extends Gizmo {
             if (this._customMeshSet) {
                 return;
             }
-            var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            var material = isHovered ? this._hoverMaterial : this._coloredMaterial;
+            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
                 if ((<LinesMesh>m).color) {

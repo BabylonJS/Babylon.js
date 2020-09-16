@@ -242,9 +242,9 @@ export class Bone extends Node {
      */
     public returnToRest(): void {
         if (this._skeleton._numBonesWithLinkedTransformNode > 0) {
-            this.updateMatrix(this._restPose.clone(), false, false);
+            this.updateMatrix(this._restPose, false, false);
         } else {
-            this.updateMatrix(this._restPose.clone());
+            this.updateMatrix(this._restPose, false, true);
         }
     }
 
@@ -384,6 +384,7 @@ export class Bone extends Node {
         }
 
         if (updateLocalMatrix) {
+            this._needToCompose = false; // in case there was a pending compose
             this._localMatrix.copyFrom(matrix);
             this._markAsDirtyAndDecompose();
         }
