@@ -262,7 +262,7 @@ export class BoundingBoxGizmo extends Gizmo {
                     box.metadata = zeroAxisCount === 2; // None homogenous scale handle
 
                     // Dragging logic
-                    let dragAxis = new Vector3(i - 1, j - 1, k - 1);
+                    let dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
                     var _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
                     _dragBehavior.updateDragPlane = false;
                     _dragBehavior.moveAttached = false;

@@ -296,7 +296,7 @@ export class ActionManager extends AbstractActionManager {
             if (ActionManager.Triggers[action.trigger] === 0) {
                 delete ActionManager.Triggers[action.trigger];
             }
-            delete action._actionManager;
+            action._actionManager = null;
             return true;
         }
         return false;

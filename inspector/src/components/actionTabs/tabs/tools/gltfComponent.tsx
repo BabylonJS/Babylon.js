@@ -21,47 +21,6 @@ interface IGLTFComponentProps {
 export class GLTFComponent extends React.Component<IGLTFComponentProps> {
     private _onValidationResultsUpdatedObserver: Nullable<Observer<Nullable<IGLTFValidationResults>>> = null;
 
-    constructor(props: IGLTFComponentProps) {
-        super(props);
-
-        const extensionStates = this.props.globalState.glTFLoaderExtensionDefaults;
-
-        extensionStates["MSFT_lod"] = extensionStates["MSFT_lod"] || { enabled: true, maxLODsToLoad: 10 };
-        extensionStates["MSFT_minecraftMesh"] = extensionStates["MSFT_minecraftMesh"] || { enabled: true };
-        extensionStates["MSFT_sRGBFactors"] = extensionStates["MSFT_sRGBFactors"] || { enabled: true };
-        extensionStates["MSFT_audio_emitter"] = extensionStates["MSFT_audio_emitter"] || { enabled: true };
-        extensionStates["KHR_xmp"] = extensionStates["KHR_xmp"] || { enabled: true };
-        extensionStates["KHR_draco_mesh_compression"] = extensionStates["KHR_draco_mesh_compression"] || { enabled: true };
-        extensionStates["KHR_mesh_quantization"] = extensionStates["KHR_mesh_quantization"] || { enabled: true };
-        extensionStates["KHR_materials_pbrSpecularGlossiness"] = extensionStates["KHR_materials_pbrSpecularGlossiness"] || { enabled: true };
-        extensionStates["KHR_materials_clearcoat"] = extensionStates["KHR_materials_clearcoat"] || { enabled: true };
-        extensionStates["KHR_materials_ior"] = extensionStates["KHR_materials_ior"] || { enabled: true };
-        extensionStates["KHR_materials_sheen"] = extensionStates["KHR_materials_sheen"] || { enabled: true };
-        extensionStates["KHR_materials_specular"] = extensionStates["KHR_materials_specular"] || { enabled: true };
-        extensionStates["KHR_materials_unlit"] = extensionStates["KHR_materials_unlit"] || { enabled: true };        
-        extensionStates["KHR_materials_variants"] = extensionStates["KHR_materials_variants"] || { enabled: true };
-        extensionStates["KHR_materials_transmission"] = extensionStates["KHR_materials_transmission"] || { enabled: true };
-        extensionStates["KHR_lights_punctual"] = extensionStates["KHR_lights_punctual"] || { enabled: true };
-        extensionStates["KHR_texture_basisu"] = extensionStates["KHR_texture_basisu"] || { enabled: true };
-        extensionStates["KHR_texture_transform"] = extensionStates["KHR_texture_transform"] || { enabled: true };
-        extensionStates["EXT_lights_image_based"] = extensionStates["EXT_lights_image_based"] || { enabled: true };
-        extensionStates["EXT_mesh_gpu_instancing"] = extensionStates["EXT_mesh_gpu_instancing"] || { enabled: true };
-
-        const loaderState = this.props.globalState.glTFLoaderDefaults;
-
-        if (loaderState["animationStartMode"] === undefined) {
-            loaderState["animationStartMode"] = GLTFLoaderAnimationStartMode.FIRST;
-        }
-        loaderState["capturePerformanceCounters"] = loaderState["capturePerformanceCounters"] || false;
-        loaderState["compileMaterials"] = loaderState["compileMaterials"] || false;
-        loaderState["compileShadowGenerators"] = loaderState["compileShadowGenerators"] || false;
-        loaderState["coordinateSystemMode"] = loaderState["coordinateSystemMode"] || GLTFLoaderCoordinateSystemMode.AUTO;
-        loaderState["loggingEnabled"] = loaderState["loggingEnabled"] || false;
-        loaderState["transparencyAsCoverage"] = loaderState["transparencyAsCoverage"] || false;
-        loaderState["useClipPlane"] = loaderState["useClipPlane"] || false;
-        loaderState["validate"] = loaderState["validate"] || true;
-    }
-
     openValidationDetails() {
         const validationResults = this.props.globalState.validationResults;
         const win = window.open("", "_blank");
@@ -178,6 +137,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                     <CheckBoxLineComponent label="KHR_texture_transform" isSelected={() => extensionStates["KHR_texture_transform"].enabled} onSelect={(value) => extensionStates["KHR_texture_transform"].enabled = value} />
                     <CheckBoxLineComponent label="EXT_lights_image_based" isSelected={() => extensionStates["EXT_lights_image_based"].enabled} onSelect={(value) => extensionStates["EXT_lights_image_based"].enabled = value} />
                     <CheckBoxLineComponent label="EXT_mesh_gpu_instancing" isSelected={() => extensionStates["EXT_mesh_gpu_instancing"].enabled} onSelect={(value) => extensionStates["EXT_mesh_gpu_instancing"].enabled = value} />
+                    <CheckBoxLineComponent label="EXT_texture_webp" isSelected={() => extensionStates["EXT_texture_webp"].enabled} onSelect={(value) => extensionStates["EXT_texture_webp"].enabled = value} />
                     <MessageLineComponent text="You need to reload your file to see these changes" />
                 </LineContainerComponent>
                 {

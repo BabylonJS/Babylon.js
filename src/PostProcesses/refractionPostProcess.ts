@@ -6,6 +6,10 @@ import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 
 import "../Shaders/refraction.fragment";
+import { _TypeStore } from '../Misc/typeStore';
+import { SerializationHelper, serialize } from '../Misc/decorators';
+
+declare type Scene = import("../scene").Scene;
 
 /**
  * Post process which applies a refractin texture
@@ -14,6 +18,22 @@ import "../Shaders/refraction.fragment";
 export class RefractionPostProcess extends PostProcess {
     private _refTexture: Texture;
     private _ownRefractionTexture = true;
+
+    /** the base color of the refraction (used to taint the rendering) */
+    @serialize()
+    public color: Color3;
+
+    /** simulated refraction depth */
+    @serialize()
+    public depth: number;
+
+    /** the coefficient of the base color (0 to remove base color tainting) */
+    @serialize()
+    public colorLevel: number;
+
+    /** Gets the url used to load the refraction texture */
+    @serialize()
+    public refractionTextureUrl: string;
 
     /**
      * Gets or sets the refraction texture
@@ -33,6 +53,14 @@ export class RefractionPostProcess extends PostProcess {
     }
 
     /**
+     * Gets a string identifying the name of the class
+     * @returns "RefractionPostProcess" string
+     */
+    public getClassName(): string {
+        return "RefractionPostProcess";
+    }
+
+    /**
      * Initializes the RefractionPostProcess
      * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#refraction
      * @param name The name of the effect.
@@ -49,12 +77,9 @@ export class RefractionPostProcess extends PostProcess {
     constructor(
         name: string,
         refractionTextureUrl: string,
-        /** the base color of the refraction (used to taint the rendering) */
-        public color: Color3,
-        /** simulated refraction depth */
-        public depth: number,
-        /** the coefficient of the base color (0 to remove base color tainting) */
-        public colorLevel: number,
+        color: Color3,
+        depth: number,
+        colorLevel: number,
         options: number | PostProcessOptions,
         camera: Camera,
         samplingMode?: number,
@@ -62,6 +87,11 @@ export class RefractionPostProcess extends PostProcess {
         reusable?: boolean
     ) {
         super(name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], options, camera, samplingMode, engine, reusable);
+
+        this.color = color;
+        this.depth = depth;
+        this.colorLevel = colorLevel;
+        this.refractionTextureUrl = refractionTextureUrl;
 
         this.onActivateObservable.add((cam: Camera) => {
             this._refTexture = this._refTexture || new Texture(refractionTextureUrl, cam.getScene());
@@ -89,4 +119,19 @@ export class RefractionPostProcess extends PostProcess {
 
         super.dispose(camera);
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+        return SerializationHelper.Parse(() => {
+            return new RefractionPostProcess(
+                parsedPostProcess.name, parsedPostProcess.refractionTextureUrl,
+                parsedPostProcess.color, parsedPostProcess.depth,
+                parsedPostProcess.colorLevel,
+                parsedPostProcess.options, targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.RefractionPostProcess"] = RefractionPostProcess;

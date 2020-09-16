@@ -120,7 +120,7 @@ export class VirtualJoystick {
     private _deltaJoystickVector: Vector2;
     private _leftJoystick: boolean;
     private _touches: StringDictionary<{ x: number, y: number, prevX: number, prevY: number } | PointerEvent>;
-    private _joystickPosition: Vector2;
+    private _joystickPosition: Nullable<Vector2>;
     private _alwaysVisible: boolean;
     private _puckImage: HTMLImageElement;
     private _containerImage: HTMLImageElement;
@@ -448,7 +448,7 @@ export class VirtualJoystick {
     public clearPosition() {
         this.alwaysVisible = false;
 
-        delete this._joystickPosition;
+        this._joystickPosition = null;
     }
 
     /**

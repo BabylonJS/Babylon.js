@@ -481,10 +481,19 @@ color.rgb = max(color.rgb, 0.);
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
-    gl_FragData[0] = color; // Lit without irradiance
-    gl_FragData[1] = vec4(0.0, 0.0, 0.0, 1.0); // Irradiance
-    gl_FragData[2] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
-    gl_FragData[3] = vec4(0.0, 0.0, 0.0, 1.0); // albedo, for pre and post scatter
+    gl_FragData[0] = color; // We can't split irradiance on std material
+
+    #ifdef PREPASS_IRRADIANCE
+        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(0.0, 0.0, 0.0, 1.0); //  We can't split irradiance on std material
+    #endif
+
+    #ifdef PREPASS_DEPTHNORMAL
+    	gl_FragData[PREPASS_DEPTHNORMAL_INDEX] = vec4(vViewPos.z, (view * vec4(normalW, 0.0)).rgb); // Linear depth + normal
+    #endif
+
+    #ifdef PREPASS_ALBEDO
+        gl_FragData[PREPASS_ALBEDO_INDEX] = vec4(0.0, 0.0, 0.0, 1.0); // We can't split albedo on std material
+    #endif
 #endif
 	gl_FragColor = color;
 

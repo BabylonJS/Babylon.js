@@ -44,6 +44,7 @@ export class Bone extends Node {
     private _skeleton: Skeleton;
     private _localMatrix: Matrix;
     private _restPose: Matrix;
+    private _bindPose: Matrix;
     private _baseMatrix: Matrix;
     private _absoluteTransform = new Matrix();
     private _invertedAbsoluteTransform = new Matrix();
@@ -95,6 +96,7 @@ export class Bone extends Node {
         this._skeleton = skeleton;
         this._localMatrix = localMatrix ? localMatrix.clone() : Matrix.Identity();
         this._restPose = restPose ? restPose : this._localMatrix.clone();
+        this._bindPose = this._localMatrix.clone();
         this._baseMatrix = baseMatrix ? baseMatrix : this._localMatrix.clone();
         this._index = index;
 
@@ -213,6 +215,22 @@ export class Bone extends Node {
     }
 
     /**
+     * Gets the bind pose matrix
+     * @returns the bind pose matrix
+     */
+    public getBindPose(): Matrix {
+        return this._bindPose;
+    }
+
+    /**
+     * Sets the bind pose matrix
+     * @param matrix the local-space bind pose to set for this bone
+     */
+    public setBindPose(matrix: Matrix): void {
+        this._bindPose.copyFrom(matrix);
+    }
+
+    /**
      * Gets a matrix used to store world matrix (ie. the matrix sent to shaders)
      */
     public getWorldMatrix(): Matrix {
@@ -224,9 +242,9 @@ export class Bone extends Node {
      */
     public returnToRest(): void {
         if (this._skeleton._numBonesWithLinkedTransformNode > 0) {
-            this.updateMatrix(this._restPose.clone(), false, false);
+            this.updateMatrix(this._restPose, false, false);
         } else {
-            this.updateMatrix(this._restPose.clone());
+            this.updateMatrix(this._restPose, false, true);
         }
     }
 
@@ -366,6 +384,7 @@ export class Bone extends Node {
         }
 
         if (updateLocalMatrix) {
+            this._needToCompose = false; // in case there was a pending compose
             this._localMatrix.copyFrom(matrix);
             this._markAsDirtyAndDecompose();
         }
@@ -654,7 +673,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Set the euler rotation of the bone in local of world space
+     * Set the euler rotation of the bone in local or world space
      * @param rotation The euler rotation that the bone should be set to
      * @param space The space that the rotation is in
      * @param mesh The mesh that this bone is attached to. This is only used in world space
@@ -664,7 +683,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Set the quaternion rotation of the bone in local of world space
+     * Set the quaternion rotation of the bone in local or world space
      * @param quat The quaternion rotation that the bone should be set to
      * @param space The space that the rotation is in
      * @param mesh The mesh that this bone is attached to. This is only used in world space
@@ -694,7 +713,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Set the rotation matrix of the bone in local of world space
+     * Set the rotation matrix of the bone in local or world space
      * @param rotMat The rotation matrix that the bone should be set to
      * @param space The space that the rotation is in
      * @param mesh The mesh that this bone is attached to. This is only used in world space
@@ -1121,5 +1140,12 @@ export class Bone extends Node {
         tmat.invert();
 
         Vector3.TransformCoordinatesToRef(position, tmat, result);
+    }
+
+    /**
+     * Set the current local matrix as the restPose for this bone.
+     */
+    public setCurrentPoseAsRest(): void {
+        this.setRestPose(this.getLocalMatrix());
     }
 }

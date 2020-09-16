@@ -4,6 +4,7 @@ import { Color3, Color4 } from "../Maths/math.color";
 import { Condition } from "./condition";
 import { _TypeStore } from '../Misc/typeStore';
 import { AbstractActionManager } from './abstractActionManager';
+import { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 declare type ActionManager = import("./actionManager").ActionManager;
@@ -54,7 +55,7 @@ export interface IAction {
      * Internal only - manager for action
      * @hidden
      */
-    _actionManager: AbstractActionManager;
+    _actionManager: Nullable<AbstractActionManager>;
 
     /**
      * Adds action to chain of actions, may be a DoNothingAction

@@ -1,7 +1,10 @@
-import { Scene } from "../../scene";
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
+import { Nullable } from '../../types';
+import { ThinEngine } from '../../Engines/thinEngine';
+
+declare type Scene = import("../../scene").Scene;
 
 /**
  * Raw texture can help creating a texture directly from an array of data.
@@ -18,7 +21,7 @@ export class RawTexture extends Texture {
      * @param width define the width of the texture
      * @param height define the height of the texture
      * @param format define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
-     * @param scene  define the scene the texture belongs to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps define whether mip maps should be generated or not
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
@@ -29,10 +32,14 @@ export class RawTexture extends Texture {
          * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
          */
         public format: number,
-        scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
-        super(null, scene, !generateMipMaps, invertY);
+        sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_UNSIGNED_INT) {
+        super(null, sceneOrEngine, !generateMipMaps, invertY);
 
-        this._texture = scene.getEngine().createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type);
+        if (!this._engine) {
+            return;
+        }
+
+        this._texture = this._engine.createRawTexture(data, width, height, format, generateMipMaps, invertY, samplingMode, null, type);
 
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
         this.wrapV = Texture.CLAMP_ADDRESSMODE;
@@ -51,14 +58,14 @@ export class RawTexture extends Texture {
      * @param data Define the texture data
      * @param width Define the width of the texture
      * @param height Define the height of the texture
-     * @param scene Define the scene the texture belongs to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
      * @returns the luminance texture
      */
-    public static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_LUMINANCE, scene, generateMipMaps, invertY, samplingMode);
+    public static CreateLuminanceTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): RawTexture {
+        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_LUMINANCE, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -66,14 +73,14 @@ export class RawTexture extends Texture {
      * @param data Define the texture data
      * @param width Define the width of the texture
      * @param height Define the height of the texture
-     * @param scene Define the scene the texture belongs to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
      * @returns the luminance alpha texture
      */
-    public static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_LUMINANCE_ALPHA, scene, generateMipMaps, invertY, samplingMode);
+    public static CreateLuminanceAlphaTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): RawTexture {
+        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_LUMINANCE_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -81,14 +88,14 @@ export class RawTexture extends Texture {
      * @param data Define the texture data
      * @param width Define the width of the texture
      * @param height Define the height of the texture
-     * @param scene Define the scene the texture belongs to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
      * @returns the alpha texture
      */
-    public static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_ALPHA, scene, generateMipMaps, invertY, samplingMode);
+    public static CreateAlphaTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): RawTexture {
+        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_ALPHA, sceneOrEngine, generateMipMaps, invertY, samplingMode);
     }
 
     /**
@@ -96,15 +103,15 @@ export class RawTexture extends Texture {
      * @param data Define the texture data
      * @param width Define the width of the texture
      * @param height Define the height of the texture
-     * @param scene Define the scene the texture belongs to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
      * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
      * @returns the RGB alpha texture
      */
-    public static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGB, scene, generateMipMaps, invertY, samplingMode, type);
+    public static CreateRGBTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): RawTexture {
+        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGB, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
     }
 
     /**
@@ -112,15 +119,15 @@ export class RawTexture extends Texture {
      * @param data Define the texture data
      * @param width Define the width of the texture
      * @param height Define the height of the texture
-     * @param scene Define the scene the texture belongs to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
      * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
      * @returns the RGBA texture
      */
-    public static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode, type);
+    public static CreateRGBATexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_UNSIGNED_INT): RawTexture {
+        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
     }
 
     /**
@@ -128,14 +135,14 @@ export class RawTexture extends Texture {
      * @param data Define the texture data
      * @param width Define the width of the texture
      * @param height Define the height of the texture
-     * @param scene Define the scene the texture belongs to
+     * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param generateMipMaps Define whether or not to create mip maps for the texture
      * @param invertY define if the data should be flipped on Y when uploaded to the GPU
      * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
      * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
      * @returns the R texture
      */
-    public static CreateRTexture(data: ArrayBufferView, width: number, height: number, scene: Scene, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_FLOAT): RawTexture {
-        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_R, scene, generateMipMaps, invertY, samplingMode, type);
+    public static CreateRTexture(data: ArrayBufferView, width: number, height: number, sceneOrEngine: Nullable<Scene | ThinEngine>, generateMipMaps: boolean = true, invertY: boolean = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, type: number = Constants.TEXTURETYPE_FLOAT): RawTexture {
+        return new RawTexture(data, width, height, Constants.TEXTUREFORMAT_R, sceneOrEngine, generateMipMaps, invertY, samplingMode, type);
     }
 }

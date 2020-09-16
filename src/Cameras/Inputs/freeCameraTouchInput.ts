@@ -38,6 +38,18 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
 
     /**
+     * Manage the touch inputs to control the movement of a free camera.
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @param allowMouse Defines if mouse events can be treated as touch events
+     */
+    constructor(
+        /**
+         * Define if mouse events can be treated as touch events
+         */
+        public allowMouse = false) {
+    }
+
+    /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -54,7 +66,8 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             this._pointerInput = (p) => {
                 var evt = <PointerEvent>p.event;
 
-                if (evt.pointerType === "mouse") {
+                let isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
+                if (!this.allowMouse && (evt.pointerType === "mouse" || isMouseEvent)) {
                     return;
                 }
 

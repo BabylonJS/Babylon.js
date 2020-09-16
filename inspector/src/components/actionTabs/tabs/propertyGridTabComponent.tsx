@@ -96,6 +96,8 @@ import { SpriteManager } from 'babylonjs/Sprites/spriteManager';
 import { SpritePropertyGridComponent } from './propertyGrids/sprites/spritePropertyGridComponent';
 import { Sprite } from 'babylonjs/Sprites/sprite';
 import { TargetedAnimationGridComponent } from './propertyGrids/animations/targetedAnimationPropertyGridComponent';
+import { FollowCamera } from 'babylonjs/Cameras/followCamera';
+import { FollowCameraPropertyGridComponent } from './propertyGrids/cameras/followCameraPropertyGridComponent';
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -193,6 +195,13 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (className.indexOf("ArcRotateCamera") !== -1) {
                 const arcRotateCamera = entity as ArcRotateCamera;
                 return (<ArcRotateCameraPropertyGridComponent globalState={this.props.globalState} camera={arcRotateCamera}
+                    lockObject={this._lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
+            }
+
+            if (className.indexOf("FollowCamera") !== -1) {
+                const followCamera = entity as FollowCamera;
+                return (<FollowCameraPropertyGridComponent globalState={this.props.globalState} camera={followCamera}
                     lockObject={this._lockObject}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable} />);
             }

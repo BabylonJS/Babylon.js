@@ -56,6 +56,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines the target point of the camera.
      * The camera looks towards it form the radius distance.
+     * Please note that you can set the target to a mesh and thus the target will be copied from mesh.position
      */
     public get target(): Vector3 {
         return this._target;
@@ -74,9 +75,6 @@ export class ArcRotateCamera extends TargetCamera {
     public set position(newPosition: Vector3) {
         this.setPosition(newPosition);
     }
-
-    @serializeAsVector3("upVector")
-    protected _upVector = Vector3.Up();
 
     protected _upToYMatrix: Matrix;
     protected _YToUpMatrix: Matrix;

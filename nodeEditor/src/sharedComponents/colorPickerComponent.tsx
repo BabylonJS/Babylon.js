@@ -59,10 +59,21 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
     }
 
     shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
-        return nextProps.value.toHexString() !== this.props.value.toHexString() 
+        let result = nextProps.value.toHexString() !== this.props.value.toHexString() 
             || nextProps.disableAlpha !== this.props.disableAlpha 
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
+        
+        if(result) {
+            nextState.color =  {
+                r: nextProps.value.r * 255,
+                g: nextProps.value.g * 255,
+                b: nextProps.value.b * 255,
+                a: nextProps.value instanceof Color4 ? nextProps.value.a : 1,
+            };
+            nextState.hex = nextProps.value.toHexString();
+        }
+        return result;   
     }
 
     componentDidUpdate() {

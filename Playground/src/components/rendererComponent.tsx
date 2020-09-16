@@ -41,18 +41,19 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._downloadManager.download(this._engine);
         });
 
-        this.props.globalState.onInspectorRequiredObservable.add(() => {
+        this.props.globalState.onInspectorRequiredObservable.add((state) => {
             if (!this._scene) {
                 return;
             }
 
-            if (this._scene.debugLayer.isVisible()) {
-                this._scene.debugLayer.hide();
-            } else {
+            if (state) {
                 this._scene.debugLayer.show({
                     embedMode: true,
                 });
+            } else {
+                this._scene.debugLayer.hide();
             }
+            this.props.globalState.inspectorIsOpened = state;
         });
 
         this.props.globalState.onFullcreenRequiredObservable.add(() => {
@@ -240,7 +241,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (this._engine.scenes[0] && displayInspector) {
-                this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+                this.props.globalState.onInspectorRequiredObservable.notifyObservers(true);
             }
 
             if (checkCamera && this._engine.scenes[0].activeCamera == null) {
@@ -249,7 +250,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
                 return;
             } else if (globalObject.scene.then) {
-                globalObject.scene.then(function () {});
+                globalObject.scene.then(() => {
+                    if (this._engine!.scenes[0] && displayInspector) {
+                        this.props.globalState.onInspectorRequiredObservable.notifyObservers(true);
+                    }
+                });
             } else {
                 this._engine.scenes[0].executeWhenReady(function () {});
             }
