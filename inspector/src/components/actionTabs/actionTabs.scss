@@ -127,7 +127,6 @@ $line-padding-left: 2px;
 
         .panes {
             grid-row: 2;
-
             display: grid;
             grid-template-rows: 100%;
 
@@ -138,6 +137,120 @@ $line-padding-left: 2px;
                 color: white;
                 margin: 15px 5px 0px 5px;
                                 
+            }
+
+            .gradient-step {
+                display: grid;
+                grid-template-rows: 100%;
+                grid-template-columns: 25px 50px 55px 40px auto 20px 5px;
+                padding-top: 5px;
+                padding-left: 5px;
+                padding-bottom: 5px;    
+                align-items: center;
+        
+                .step {
+                    grid-row: 1;
+                    grid-column: 1;
+                }
+
+                .color1 {
+                    height: 100%;
+                }
+
+                .color2{
+                    height: 100%;
+                    padding-left: 5px;
+                }
+                    
+                .factor1 {
+                    grid-row: 1;
+                    grid-column: 2;
+                    cursor: pointer;
+                }
+
+                .factor2 {
+                    padding-left: 5px;
+                    grid-row: 1;
+                    grid-column: 3;
+                    cursor: pointer;
+
+                    .grayed {
+                        background: gray;
+                        border-color: gray;
+                    }
+                }
+
+                .numeric-input {
+                    width: calc(100% - 5px);
+                }
+
+                .icon{
+                    cursor: pointer;
+                }
+        
+                .step-value {       
+                    margin-left: 5px;     
+                    grid-row: 1;
+                    grid-column: 4;
+                    text-align: right;
+                    margin-right: 5px;
+                }
+        
+                .step-slider {            
+                    grid-row: 1;
+                    grid-column: 5;
+                    display: grid;
+                    justify-content: stretch;
+                    align-content: center;
+                    margin-right: 12px;
+        
+                    input {
+                        width: 100%;
+                    }
+                    .range:hover {
+                        opacity: 1;
+                    }
+
+                    .range {
+                        -webkit-appearance: none;
+                        height: 6px;
+                        background: #d3d3d3;
+                        border-radius: 5px;
+                        outline: none;
+                        opacity: 0.7;
+                        -webkit-transition: .2s;
+                        transition: opacity .2s;
+                    }
+                    .range::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        appearance: none;
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        background: rgb(51, 122, 183);
+                        cursor: pointer;
+                    }
+                    
+                    .range::-moz-range-thumb {
+                        width: 14px;
+                        height: 14px;
+                        border-radius: 50%;
+                        background: rgb(51, 122, 183);
+                        cursor: pointer;
+                    }
+
+                  
+
+                }
+               
+        
+                .gradient-delete {            
+                    grid-row: 1;
+                    grid-column: 6;
+                    display: grid;
+                    align-content: center;
+                    justify-content: center;
+                }
             }
 
             .pane {
@@ -801,7 +914,10 @@ $line-padding-left: 2px;
                         width: 256px;
                         margin-top: 5px;
                         margin-bottom: 5px;
-                        border: 2px solid rgba(255, 255, 255, 0.4);
+                        border: 1px solid white;
+                        background-size: 32px 32px;
+                        background-color: white;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 2'%3E%3Cpath fill='rgba(1.0,1.0,1.0,0.3)' fill-rule='evenodd' d='M0 0h1v1H0V0zm1 1h1v1H1V1z'/%3E%3C/svg%3E");
                     }
                 }
 

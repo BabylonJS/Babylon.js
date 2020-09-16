@@ -32,7 +32,6 @@ import { ICollisionCoordinator } from "./Collisions/collisionCoordinator";
 import { PointerEventTypes, PointerInfoPre, PointerInfo } from "./Events/pointerEvents";
 import { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
-import { PostProcess } from "./PostProcesses/postProcess";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
@@ -55,6 +54,7 @@ import { Plane } from './Maths/math.plane';
 import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
+import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -64,6 +64,7 @@ declare type AnimationGroup = import("./Animations/animationGroup").AnimationGro
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
 declare type Collider = import("./Collisions/collider").Collider;
 declare type WebGPUEngine = import("./Engines/webgpuEngine").WebGPUEngine;
+declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -103,7 +104,7 @@ export interface SceneOptions {
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/scene
  */
-export class Scene extends AbstractScene implements IAnimatable {
+export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
@@ -183,8 +184,6 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public environmentBRDFTexture: BaseTexture;
 
-    /** @hidden */
-    protected _environmentTexture: Nullable<BaseTexture>;
     /**
      * Texture used in all pbr material as the reflection texture.
      * As in the majority of the scene they are the same (exception for multi room and so on),
@@ -1046,10 +1045,6 @@ export class Scene extends AbstractScene implements IAnimatable {
     */
     public postProcessesEnabled = true;
     /**
-     * The list of postprocesses added to the scene
-     */
-    public postProcesses = new Array<PostProcess>();
-    /**
      * Gets the current postprocess manager
      */
     public postProcessManager: PostProcessManager;
@@ -1438,7 +1433,7 @@ export class Scene extends AbstractScene implements IAnimatable {
     }
 
     /**
-     * Gets a string idenfifying the name of the class
+     * Gets a string identifying the name of the class
      * @returns "Scene" string
      */
     public getClassName(): string {
@@ -2884,10 +2879,12 @@ export class Scene extends AbstractScene implements IAnimatable {
 
         if (index !== this.geometries.length - 1) {
             const lastGeometry = this.geometries[this.geometries.length - 1];
-            this.geometries[index] = lastGeometry;
-            if (this.geometriesByUniqueId) {
-                this.geometriesByUniqueId[lastGeometry.uniqueId] = index;
-                this.geometriesByUniqueId[geometry.uniqueId] = undefined;
+            if (lastGeometry) {
+                this.geometries[index] = lastGeometry;
+                if (this.geometriesByUniqueId) {
+                    this.geometriesByUniqueId[lastGeometry.uniqueId] = index;
+                    this.geometriesByUniqueId[geometry.uniqueId] = undefined;
+                }
             }
         }
 
@@ -3240,6 +3237,21 @@ export class Scene extends AbstractScene implements IAnimatable {
                 if (target.name === name) {
                     return target;
                 }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets a post process using a given name (if many are found, this function will pick the first one)
+     * @param name defines the name to search for
+     * @return the found post process or null if not found at all.
+     */
+    public getPostProcessByName(name: string): Nullable<PostProcess> {
+        for (let postProcessIndex = 0; postProcessIndex < this.postProcesses.length; ++postProcessIndex) {
+            const postProcess = this.postProcesses[postProcessIndex];
+            if (postProcess.name === name) {
+                return postProcess;
             }
         }
         return null;
@@ -4568,9 +4580,10 @@ export class Scene extends AbstractScene implements IAnimatable {
     /**
      * Force the value of meshUnderPointer
      * @param mesh defines the mesh to use
+     * @param pointerId optional pointer id when using more than one pointer
      */
-    public setPointerOverMesh(mesh: Nullable<AbstractMesh>): void {
-        this._inputManager.setPointerOverMesh(mesh);
+    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId?: number): void {
+        this._inputManager.setPointerOverMesh(mesh, pointerId);
     }
 
     /**
@@ -4674,6 +4687,16 @@ export class Scene extends AbstractScene implements IAnimatable {
      */
     public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
         return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+    }
+
+    /**
+     * Get a list of transform nodes by tags
+     * @param tagsQuery defines the tags query to use
+     * @param forEach defines a predicate used to filter results
+     * @returns an array of TransformNode
+     */
+    public getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => void): TransformNode[] {
+        return this._getByTags(this.transformNodes, tagsQuery, forEach);
     }
 
     /**

@@ -527,6 +527,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFUtilities" {
         static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
         static _NormalizeTangentFromRef(tangent: Vector4): void;
         static _GetRightHandedMatrixFromRef(matrix: Matrix): void;
+        static _GetDataAccessorElementCount(accessorType: AccessorType): 1 | 3 | 2 | 4 | 9 | 16;
     }
 }
 declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
@@ -536,6 +537,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
     import { Node } from "babylonjs/node";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { SubMesh } from "babylonjs/Meshes/subMesh";
+    import { MorphTarget } from "babylonjs/Morph/morphTarget";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { Texture } from "babylonjs/Materials/Textures/texture";
     import { Material } from "babylonjs/Materials/material";
@@ -622,6 +624,10 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
                 mimeType: ImageMimeType;
             };
         };
+        protected _orderedImageData: Array<{
+            data: Uint8Array;
+            mimeType: ImageMimeType;
+        }>;
         /**
          * Stores a map of the unique id of a node to its index in the node array
          */
@@ -762,6 +768,16 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          */
         writeAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, babylonTransformNode: TransformNode): void;
         /**
+         * Writes mesh attribute data to a data buffer
+         * Returns the bytelength of the data
+         * @param vertexBufferKind Indicates what kind of vertex data is being passed in
+         * @param meshAttributeArray Array containing the attribute data
+         * @param byteStride Specifies the space between data
+         * @param binaryWriter The buffer to write the binary data to
+         * @param convertToRightHandedSystem Converts the values to right-handed
+         */
+        writeMorphTargetAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshPrimitive: SubMesh, morphTarget: MorphTarget, meshAttributeArray: FloatArray, morphTargetAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, minMax?: any): void;
+        /**
          * Generates glTF json data
          * @param shouldUseGlb Indicates whether the json should be written for a glb file
          * @param glTFPrefix Text to use when prefixing a glTF file
@@ -808,6 +824,14 @@ declare module "babylonjs-serializers/glTF/2.0/glTFExporter" {
          * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private createBufferViewKind;
+        /**
+     * Creates a bufferview based on the vertices type for the Babylon mesh
+     * @param babylonSubMesh The Babylon submesh that the morph target is applied to
+     * @param babylonMorphTarget the morph target to be exported
+     * @param binaryWriter The buffer to write the bufferview data to
+     * @param convertToRightHandedSystem Converts the values to right-handed
+     */
+        private setMorphTargetAttributes;
         /**
          * The primitive mode of the Babylon mesh
          * @param babylonMesh The BabylonJS mesh
@@ -991,7 +1015,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFAnimation" {
         /**
          * The glTF accessor type for the data.
          */
-        dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4;
+        dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4 | AccessorType.SCALAR;
         /**
          * Specifies if quaternions should be used.
          */
@@ -1034,7 +1058,24 @@ declare module "babylonjs-serializers/glTF/2.0/glTFAnimation" {
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
         /**
          * @ignore
-         * Create node animations from the animation groups
+         * Create individual morph animations from the mesh's morph target animation tracks
+         * @param babylonNode
+         * @param runtimeGLTFAnimation
+         * @param idleGLTFAnimations
+         * @param nodeMap
+         * @param nodes
+         * @param binaryWriter
+         * @param bufferViews
+         * @param accessors
+         * @param convertToRightHandedSystem
+         * @param animationSampleRate
+         */
+        static _CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
+            [key: number]: number;
+        }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
+        /**
+         * @ignore
+         * Create node and morph animations from the animation groups
          * @param babylonScene
          * @param glTFAnimations
          * @param nodeMap
@@ -1045,7 +1086,7 @@ declare module "babylonjs-serializers/glTF/2.0/glTFAnimation" {
          * @param convertToRightHandedSystemMap
          * @param animationSampleRate
          */
-        static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
+        static _CreateNodeAndMorphAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystemMap: {
             [nodeId: number]: boolean;
@@ -1834,6 +1875,7 @@ declare module BABYLON.GLTF2.Exporter {
         static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]): void;
         static _NormalizeTangentFromRef(tangent: Vector4): void;
         static _GetRightHandedMatrixFromRef(matrix: Matrix): void;
+        static _GetDataAccessorElementCount(accessorType: AccessorType): 1 | 3 | 2 | 4 | 9 | 16;
     }
 }
 declare module BABYLON.GLTF2.Exporter {
@@ -1914,6 +1956,10 @@ declare module BABYLON.GLTF2.Exporter {
                 mimeType: ImageMimeType;
             };
         };
+        protected _orderedImageData: Array<{
+            data: Uint8Array;
+            mimeType: ImageMimeType;
+        }>;
         /**
          * Stores a map of the unique id of a node to its index in the node array
          */
@@ -2054,6 +2100,16 @@ declare module BABYLON.GLTF2.Exporter {
          */
         writeAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, babylonTransformNode: TransformNode): void;
         /**
+         * Writes mesh attribute data to a data buffer
+         * Returns the bytelength of the data
+         * @param vertexBufferKind Indicates what kind of vertex data is being passed in
+         * @param meshAttributeArray Array containing the attribute data
+         * @param byteStride Specifies the space between data
+         * @param binaryWriter The buffer to write the binary data to
+         * @param convertToRightHandedSystem Converts the values to right-handed
+         */
+        writeMorphTargetAttributeData(vertexBufferKind: string, attributeComponentKind: AccessorComponentType, meshPrimitive: SubMesh, morphTarget: MorphTarget, meshAttributeArray: FloatArray, morphTargetAttributeArray: FloatArray, stride: number, binaryWriter: _BinaryWriter, convertToRightHandedSystem: boolean, minMax?: any): void;
+        /**
          * Generates glTF json data
          * @param shouldUseGlb Indicates whether the json should be written for a glb file
          * @param glTFPrefix Text to use when prefixing a glTF file
@@ -2100,6 +2156,14 @@ declare module BABYLON.GLTF2.Exporter {
          * @param convertToRightHandedSystem Converts the values to right-handed
          */
         private createBufferViewKind;
+        /**
+     * Creates a bufferview based on the vertices type for the Babylon mesh
+     * @param babylonSubMesh The Babylon submesh that the morph target is applied to
+     * @param babylonMorphTarget the morph target to be exported
+     * @param binaryWriter The buffer to write the bufferview data to
+     * @param convertToRightHandedSystem Converts the values to right-handed
+     */
+        private setMorphTargetAttributes;
         /**
          * The primitive mode of the Babylon mesh
          * @param babylonMesh The BabylonJS mesh
@@ -2276,7 +2340,7 @@ declare module BABYLON.GLTF2.Exporter {
         /**
          * The glTF accessor type for the data.
          */
-        dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4;
+        dataAccessorType: AccessorType.VEC3 | AccessorType.VEC4 | AccessorType.SCALAR;
         /**
          * Specifies if quaternions should be used.
          */
@@ -2319,7 +2383,24 @@ declare module BABYLON.GLTF2.Exporter {
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
         /**
          * @ignore
-         * Create node animations from the animation groups
+         * Create individual morph animations from the mesh's morph target animation tracks
+         * @param babylonNode
+         * @param runtimeGLTFAnimation
+         * @param idleGLTFAnimations
+         * @param nodeMap
+         * @param nodes
+         * @param binaryWriter
+         * @param bufferViews
+         * @param accessors
+         * @param convertToRightHandedSystem
+         * @param animationSampleRate
+         */
+        static _CreateMorphTargetAnimationFromMorphTargetAnimations(babylonNode: Node, runtimeGLTFAnimation: IAnimation, idleGLTFAnimations: IAnimation[], nodeMap: {
+            [key: number]: number;
+        }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystem: boolean, animationSampleRate: number): void;
+        /**
+         * @ignore
+         * Create node and morph animations from the animation groups
          * @param babylonScene
          * @param glTFAnimations
          * @param nodeMap
@@ -2330,7 +2411,7 @@ declare module BABYLON.GLTF2.Exporter {
          * @param convertToRightHandedSystemMap
          * @param animationSampleRate
          */
-        static _CreateNodeAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
+        static _CreateNodeAndMorphAnimationFromAnimationGroups(babylonScene: Scene, glTFAnimations: IAnimation[], nodeMap: {
             [key: number]: number;
         }, nodes: INode[], binaryWriter: _BinaryWriter, bufferViews: IBufferView[], accessors: IAccessor[], convertToRightHandedSystemMap: {
             [nodeId: number]: boolean;

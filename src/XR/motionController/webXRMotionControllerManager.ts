@@ -3,6 +3,7 @@ import { WebXRGenericTriggerMotionController } from "./webXRGenericMotionControl
 import { Scene } from "../../scene";
 import { Tools } from "../../Misc/tools";
 import { WebXRProfiledMotionController } from "./webXRProfiledMotionController";
+import { Nullable } from "../../types";
 
 /**
  * A construction function type to create a new controller based on an xrInput object
@@ -22,7 +23,7 @@ export class WebXRMotionControllerManager {
     private static _Fallbacks: { [profileId: string]: string[] } = {};
     // cache for loading
     private static _ProfileLoadingPromises: { [profileName: string]: Promise<IMotionControllerProfile> } = {};
-    private static _ProfilesList: Promise<{ [profile: string]: string }>;
+    private static _ProfilesList: Nullable<Promise<{ [profile: string]: string }>>;
 
     /**
      * The base URL of the online controller repository. Can be changed at any time.
@@ -41,7 +42,7 @@ export class WebXRMotionControllerManager {
      * Clear the cache used for profile loading and reload when requested again
      */
     public static ClearProfilesCache() {
-        delete this._ProfilesList;
+        this._ProfilesList = null;
         this._ProfileLoadingPromises = {};
     }
 

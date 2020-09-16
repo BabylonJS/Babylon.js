@@ -80,22 +80,22 @@ export class PBRSubSurfaceConfiguration {
      * Useful for better scattering in the skins or foliages.
      */
     public get scatteringDiffusionProfile() : Nullable<Color3> {
-        if (!this._scene.prePassRenderer) {
+        if (!this._scene.subSurfaceConfiguration) {
             return null;
         }
 
-        return this._scene.prePassRenderer.subSurfaceConfiguration.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
+        return this._scene.subSurfaceConfiguration.ssDiffusionProfileColors[this._scatteringDiffusionProfileIndex];
     }
 
     public set scatteringDiffusionProfile(c: Nullable<Color3>) {
-        if (!this._scene.enablePrePassRenderer()) {
+        if (!this._scene.enableSubSurfaceForPrePass()) {
             // Not supported
             return;
         }
 
         // addDiffusionProfile automatically checks for doubles
         if (c) {
-            this._scatteringDiffusionProfileIndex = this._scene.prePassRenderer!.subSurfaceConfiguration.addDiffusionProfile(c);
+            this._scatteringDiffusionProfileIndex = this._scene.subSurfaceConfiguration!.addDiffusionProfile(c);
         }
     }
 
@@ -154,6 +154,7 @@ export class PBRSubSurfaceConfiguration {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public indexOfRefraction = 1.5;
 
+    @serialize()
     private _volumeIndexOfRefraction = -1.0;
 
     /**
@@ -163,7 +164,6 @@ export class PBRSubSurfaceConfiguration {
      * This ONLY impacts refraction. If not provided or given a non-valid value,
      * the volume will use the same IOR as the surface.
      */
-    @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public get volumeIndexOfRefraction(): number {
         if (this._volumeIndexOfRefraction >= 1.0) {

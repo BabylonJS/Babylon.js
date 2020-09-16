@@ -904,6 +904,10 @@ export class EdgesRenderer implements IEdgesRenderer {
         engine.drawElementsType(Material.TriangleFillMode, 0, this._indicesCount, instanceCount);
         this._lineShader.unbind();
 
+        if (useBuffersWithInstances) {
+            engine.unbindInstanceAttributes();
+        }
+
         this.customInstances.reset();
     }
 }

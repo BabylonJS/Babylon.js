@@ -8,6 +8,8 @@ import { Logger } from '../Misc/logger';
 declare type Geometry = import("../Meshes/geometry").Geometry;
 declare type Mesh = import("../Meshes/mesh").Mesh;
 
+import { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
+
 /**
  * Define an interface for all classes that will get and set the data on vertices
  */
@@ -1039,6 +1041,23 @@ export class VertexData {
      */
     public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
         throw _DevTools.WarnImport("polyhedronBuilder");
+    }
+
+    //
+    /**
+     * Creates the VertexData for a Capsule, inspired from https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
+     * @param options an object used to set the following optional parameters for the capsule, required but can be empty
+     * @returns the VertexData of the Capsule
+     */
+    public static CreateCapsule(options: ICreateCapsuleOptions = {
+        orientation : Vector3.Up(),
+        subdivisions: 2,
+        tessellation: 16,
+        height: 1,
+        radius: 0.25,
+        capSubdivisions: 6
+    }): VertexData {
+        throw _DevTools.WarnImport("capsuleBuilder");
     }
 
     // based on http://code.google.com/p/away3d/source/browse/trunk/fp10/Away3D/src/away3d/primitives/TorusKnot.as?spec=svn2473&r=2473

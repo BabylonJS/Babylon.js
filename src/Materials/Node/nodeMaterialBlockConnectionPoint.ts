@@ -461,6 +461,7 @@ export class NodeMaterialConnectionPoint {
             serializationObject.inputName = this.name;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
+            serializationObject.isExposedOnFrame = true;
         }
 
         if (this.isExposedOnFrame) {

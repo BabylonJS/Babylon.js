@@ -34,9 +34,7 @@ export class ScaleGizmo extends Gizmo {
 
     private _meshAttached: Nullable<AbstractMesh> = null;
     private _nodeAttached: Nullable<Node> = null;
-    private _updateGizmoRotationToMatchAttachedMesh: boolean;
     private _snapDistance: number;
-    private _scaleRatio: number;
     private _uniformScalingMesh: Mesh;
     private _octahedron: Mesh;
     private _sensitivity: number = 1;
@@ -76,6 +74,17 @@ export class ScaleGizmo extends Gizmo {
                 gizmo.attachedNode = null;
             }
         });
+    }
+
+    /**
+     * True when the mouse pointer is hovering a gizmo mesh
+     */
+    public get isHovered() {
+        var hovered = false;
+        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+            hovered = hovered || gizmo.isHovered;
+        });
+        return hovered;
     }
 
     /**

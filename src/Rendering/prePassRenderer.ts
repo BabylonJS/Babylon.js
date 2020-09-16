@@ -5,10 +5,10 @@ import { Constants } from "../Engines/constants";
 import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
+import { Logger } from '../Misc/logger';
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
-import { SubSurfaceConfiguration } from "./subSurfaceConfiguration";
-
+import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -21,6 +21,39 @@ export class PrePassRenderer {
         throw _DevTools.WarnImport("PrePassRendererSceneComponent");
     }
 
+    private _textureFormats = [
+        {
+            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_UNSIGNED_INT,
+        },
+        {
+            type: Constants.PREPASS_COLOR_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_HALF_FLOAT,
+        },
+        {
+            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+            format: Constants.TEXTURETYPE_UNSIGNED_INT,
+        },
+];
+
+    private _textureIndices: number[] = [];
+
     private _scene: Scene;
     private _engine: Engine;
     private _isDirty: boolean = false;
@@ -28,18 +61,13 @@ export class PrePassRenderer {
     /**
      * Number of textures in the multi render target texture where the scene is directly rendered
      */
-    public readonly mrtCount: number = 4;
+    public mrtCount: number = 0;
 
     /**
      * The render target where the scene is directly rendered
      */
     public prePassRT: MultiRenderTarget;
-    private _mrtTypes = [
-        Constants.TEXTURETYPE_HALF_FLOAT, // Original color
-        Constants.TEXTURETYPE_HALF_FLOAT, // Irradiance
-        Constants.TEXTURETYPE_HALF_FLOAT, // Depth (world units)
-        Constants.TEXTURETYPE_UNSIGNED_INT // Albedo
-    ];
+
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
@@ -54,9 +82,9 @@ export class PrePassRenderer {
     public imageProcessingPostProcess: ImageProcessingPostProcess;
 
     /**
-     * Configuration for sub surface scattering post process
+     * Configuration for prepass effects
      */
-    public subSurfaceConfiguration: SubSurfaceConfiguration;
+    private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
     /**
      * Should materials render their geometry on the MRT
@@ -67,6 +95,9 @@ export class PrePassRenderer {
      * Should materials render the irradiance information on the MRT
      */
     public materialsShouldRenderIrradiance: boolean = false;
+
+    private _mrtFormats: number[] = [];
+    private _mrtLayout: number[];
 
     private _enabled: boolean = false;
 
@@ -102,7 +133,7 @@ export class PrePassRenderer {
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
 
-        this.subSurfaceConfiguration = new SubSurfaceConfiguration(this._scene);
+        this._resetLayout();
     }
 
     private _initializeAttachments() {
@@ -124,10 +155,8 @@ export class PrePassRenderer {
 
     private _createCompositionEffect() {
         this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtTypes });
+            { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtFormats });
         this.prePassRT.samples = 1;
-
-        this._initializeAttachments();
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
         this.imageProcessingPostProcess.autoClear = false;
@@ -230,16 +259,76 @@ export class PrePassRenderer {
         }
     }
 
+    private _checkTextureType(type: number) : boolean {
+        if (type < 0 || type >= this._textureFormats.length) {
+            Logger.Error("PrePassRenderer : Unknown texture type");
+            return false;
+        }
+
+        return true;
+
+    }
+
+    /**
+     * Adds an effect configuration to the prepass.
+     * If an effect has already been added, it won't add it twice and will return the configuration
+     * already present.
+     * @param cfg the effect configuration
+     * @return the effect configuration now used by the prepass
+     */
+    public addEffectConfiguration(cfg: PrePassEffectConfiguration) : PrePassEffectConfiguration {
+        // Do not add twice
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].name === cfg.name) {
+                return this._effectConfigurations[i];
+            }
+        }
+
+        this._effectConfigurations.push(cfg);
+        return cfg;
+    }
+
+    /**
+     * Returns the index of a texture in the multi render target texture array.
+     * @param type Texture type
+     * @return The index
+     */
+    public getIndex(type: number) : number {
+        if (!this._checkTextureType(type)) {
+            return -1;
+        }
+
+        return this._textureIndices[type];
+    }
+
     private _enable() {
+        const previousMrtCount = this.mrtCount;
+
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].enabled) {
+                this._enableTextures(this._effectConfigurations[i].texturesRequired);
+            }
+        }
+
+        if (this.prePassRT && this.mrtCount !== previousMrtCount) {
+            this.prePassRT.updateCount(this.mrtCount, { types: this._mrtFormats });
+        }
+
         this._resetPostProcessChain();
 
-        if (this.subSurfaceConfiguration.enabled) {
-            if (!this.subSurfaceConfiguration.postProcess) {
-                this.subSurfaceConfiguration.createPostProcess();
-            }
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].enabled) {
+                if (!this._effectConfigurations[i].postProcess && this._effectConfigurations[i].createPostProcess) {
+                    this._effectConfigurations[i].createPostProcess!();
+                }
 
-            this._postProcesses.push(this.subSurfaceConfiguration.postProcess);
+                if (this._effectConfigurations[i].postProcess) {
+                    this._postProcesses.push(this._effectConfigurations[i].postProcess!);
+                }
+            }
         }
+
+        this._initializeAttachments();
 
         if (!this.imageProcessingPostProcess) {
             this._createCompositionEffect();
@@ -252,9 +341,22 @@ export class PrePassRenderer {
 
     private _disable() {
         this._setState(false);
-        this.subSurfaceConfiguration.enabled = false;
-        this.materialsShouldRenderGeometry = false;
-        this.materialsShouldRenderIrradiance = false;
+        this._resetLayout();
+
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            this._effectConfigurations[i].enabled = false;
+        }
+    }
+
+    private _resetLayout() {
+        for (let i = 0 ; i < this._textureFormats.length; i++) {
+            this._textureIndices[this._textureFormats[i].type] = -1;
+        }
+
+        this._textureIndices[Constants.PREPASS_COLOR_TEXTURE_TYPE] = 0;
+        this._mrtLayout = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
+        this._mrtFormats = [Constants.TEXTURETYPE_HALF_FLOAT];
+        this.mrtCount = 1;
     }
 
     private _resetPostProcessChain() {
@@ -263,8 +365,10 @@ export class PrePassRenderer {
             this.imageProcessingPostProcess.restoreDefaultInputTexture();
         }
 
-        if (this.subSurfaceConfiguration.postProcess) {
-            this.subSurfaceConfiguration.postProcess.restoreDefaultInputTexture();
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].postProcess) {
+                this._effectConfigurations[i].postProcess!.restoreDefaultInputTexture();
+            }
         }
     }
 
@@ -279,11 +383,30 @@ export class PrePassRenderer {
         this._isDirty = true;
     }
 
+    /**
+     * Enables a texture on the MultiRenderTarget for prepass
+     */
+    private _enableTextures(types: number[]) {
+        for (let i = 0; i < types.length; i++) {
+            let type = types[i];
+            if (!this._checkTextureType(type)) {
+                return;
+            }
+
+            if (this._textureIndices[type] === -1) {
+                this._textureIndices[type] = this._mrtLayout.length;
+                this._mrtLayout.push(type);
+
+                this._mrtFormats.push(this._textureFormats[type].format);
+                this.mrtCount++;
+            }
+        }
+    }
+
     private _update() {
         this._disable();
         let enablePrePass = false;
 
-        // Subsurface scattering
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
                 enablePrePass = true;
@@ -312,8 +435,11 @@ export class PrePassRenderer {
      * Disposes the prepass renderer.
      */
     public dispose() {
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            this._effectConfigurations[i].dispose();
+        }
+
         this.imageProcessingPostProcess.dispose();
-        this.subSurfaceConfiguration.dispose();
         this.prePassRT.dispose();
     }
 

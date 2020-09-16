@@ -186,7 +186,7 @@ export interface IMotionControllerMeshMap {
     /**
      * The mesh that will be changed when axis value changes
      */
-    valueMesh: AbstractMesh;
+    valueMesh?: AbstractMesh;
 }
 
 /**
@@ -431,13 +431,13 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     }
 
     // Look through all children recursively. This will return null if no mesh exists with the given name.
-    protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh {
-        return <AbstractMesh>node.getChildren((n) => n.name === name, false)[0];
+    protected _getChildByName(node: AbstractMesh, name: string): AbstractMesh | undefined {
+        return <AbstractMesh | undefined>node.getChildren((n) => n.name === name, false)[0];
     }
 
     // Look through only immediate children. This will return null if no mesh exists with the given name.
-    protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh {
-        return <AbstractMesh>node.getChildren((n) => n.name == name, true)[0];
+    protected _getImmediateChildByName(node: AbstractMesh, name: string): AbstractMesh | undefined {
+        return <AbstractMesh | undefined>node.getChildren((n) => n.name == name, true)[0];
     }
 
     /**
@@ -447,7 +447,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * @hidden
      */
     protected _lerpTransform(axisMap: IMotionControllerMeshMap, axisValue: number, fixValueCoordinates?: boolean): void {
-        if (!axisMap.minMesh || !axisMap.maxMesh) {
+        if (!axisMap.minMesh || !axisMap.maxMesh || !axisMap.valueMesh) {
             return;
         }
 

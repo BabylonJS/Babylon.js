@@ -27,7 +27,7 @@ export class Inspector {
     private static _SceneExplorerHost: Nullable<HTMLElement>;
     private static _ActionTabsHost: Nullable<HTMLElement>;
     private static _EmbedHost: Nullable<HTMLElement>;
-    private static _NewCanvasContainer: HTMLElement;
+    private static _NewCanvasContainer: Nullable<HTMLElement>;
 
     private static _SceneExplorerWindow: Window;
     private static _ActionTabsWindow: Window;
@@ -382,7 +382,10 @@ export class Inspector {
             if (options.popup) {
                 this._CreateEmbedHost(scene, options, this._CreatePopup("INSPECTOR", "_EmbedHostWindow"), Inspector.OnSelectionChangeObservable);
             } else {
-                let parentControl = (options.globalRoot ? options.globalRoot : rootElement!.parentElement) as HTMLElement;
+                if (!rootElement) {
+                    return;
+                }
+                let parentControl = (options.globalRoot ? options.globalRoot : rootElement.parentElement) as HTMLElement;
 
                 if (!options.overlay && !this._NewCanvasContainer) {
                     this._CreateCanvasContainer(parentControl);
@@ -468,6 +471,9 @@ export class Inspector {
     }
 
     private static _DestroyCanvasContainer() {
+        if (!this._NewCanvasContainer) {
+            return;
+        }
         const parentControl = this._NewCanvasContainer.parentElement!;
 
         while (this._NewCanvasContainer.childElementCount > 0) {
@@ -478,7 +484,7 @@ export class Inspector {
 
         parentControl.removeChild(this._NewCanvasContainer);
         parentControl.style.display = this._NewCanvasContainer.style.display;
-        delete this._NewCanvasContainer;
+        this._NewCanvasContainer = null;
     }
 
     private static _Cleanup() {
@@ -490,6 +496,11 @@ export class Inspector {
         this._GlobalState.lightGizmos.forEach((g) => {
             if (g.light) {
                 this._GlobalState.enableLightGizmo(g.light, false);
+            }
+        });
+        this._GlobalState.cameraGizmos.forEach((g) => {
+            if (g.camera) {
+                this._GlobalState.enableCameraGizmo(g.camera, false);
             }
         });
         if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {

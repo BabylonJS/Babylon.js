@@ -540,8 +540,6 @@ export class Template {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
             });
         }
-
-        delete this._fragment;
     }
 
     private _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {

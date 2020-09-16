@@ -44,14 +44,14 @@ export class DetailMapConfiguration {
      * Bigger values mean stronger blending
      */
     @serialize()
-    public diffuseBlendLevel = 0.5;
+    public diffuseBlendLevel = 1;
 
     /**
      * Defines how strongly the detail roughness channel is blended with the regular roughness value
      * Bigger values mean stronger blending. Only used with PBR materials
      */
     @serialize()
-    public roughnessBlendLevel = 0.5;
+    public roughnessBlendLevel = 1;
 
     /**
      * Defines how strong the bump effect from the detail map is

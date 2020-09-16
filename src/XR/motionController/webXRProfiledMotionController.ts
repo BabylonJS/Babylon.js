@@ -17,7 +17,7 @@ import { Logger } from "../../Misc/logger";
 export class WebXRProfiledMotionController extends WebXRAbstractMotionController {
     private _buttonMeshMapping: {
         [buttonName: string]: {
-            mainMesh: AbstractMesh;
+            mainMesh?: AbstractMesh;
             states: {
                 [state: string]: IMotionControllerMeshMap;
             };
@@ -89,7 +89,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                         );
                         dot.material = new StandardMaterial(visualResponseKey + "mat", this.scene);
                         (<StandardMaterial>dot.material).diffuseColor = Color3.Red();
-                        dot.parent = this._buttonMeshMapping[type].states[visualResponseKey].valueMesh;
+                        dot.parent = this._buttonMeshMapping[type].states[visualResponseKey].valueMesh || null;
                         dot.isVisible = false;
                         this._touchDots[visualResponseKey] = dot;
                     }
@@ -145,7 +145,10 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
                     this._lerpTransform(meshes.states[visualResponseKey], value, visResponse.componentProperty !== "button");
                 } else {
                     // visibility
-                    meshes.states[visualResponseKey].valueMesh.isVisible = component.touched || component.pressed;
+                    const valueMesh = meshes.states[visualResponseKey].valueMesh;
+                    if (valueMesh) {
+                        valueMesh.isVisible = component.touched || component.pressed;
+                    }
                     if (this._touchDots[visualResponseKey]) {
                         this._touchDots[visualResponseKey].isVisible = component.touched || component.pressed;
                     }

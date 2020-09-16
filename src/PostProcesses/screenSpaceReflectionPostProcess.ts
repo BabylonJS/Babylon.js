@@ -3,13 +3,15 @@ import { Camera } from "../Cameras/camera";
 import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
-import { Scene } from '../scene';
 import { GeometryBufferRenderer } from '../Rendering/geometryBufferRenderer';
-import { serialize } from '../Misc/decorators';
+import { serialize, SerializationHelper } from '../Misc/decorators';
 
 import "../Shaders/screenSpaceReflection.fragment";
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Engine = import("../Engines/engine").Engine;
+declare type Scene = import("../scene").Scene;
+
 /**
  * The ScreenSpaceReflectionPostProcess performs realtime reflections using only and only the available informations on the screen (positions and normals).
  * Basically, the screen space reflection post-process will compute reflections according the material's reflectivity.
@@ -45,6 +47,14 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     private _enableSmoothReflections: boolean = false;
     private _reflectionSamples: number = 64;
     private _smoothSteps: number = 5;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "ScreenSpaceReflectionPostProcess" string
+     */
+    public getClassName(): string {
+        return "ScreenSpaceReflectionPostProcess";
+    }
 
     /**
      * Creates a new instance of ScreenSpaceReflectionPostProcess.
@@ -194,4 +204,17 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
 
         this.updateEffect(defines.join("\n"));
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+        return SerializationHelper.Parse(() => {
+            return new ScreenSpaceReflectionPostProcess(
+                parsedPostProcess.name, scene,
+                parsedPostProcess.options, targetCamera,
+                parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.textureType, parsedPostProcess.reusable);
+        }, parsedPostProcess, scene, rootUrl);
+    }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.ScreenSpaceReflectionPostProcess"] = ScreenSpaceReflectionPostProcess;

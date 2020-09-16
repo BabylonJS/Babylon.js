@@ -28,6 +28,7 @@ export class SceneComponentConstants {
     public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
     public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
     public static readonly NAME_SPRITE = "Sprite";
+    public static readonly NAME_SUBSURFACE = "SubSurface";
     public static readonly NAME_OUTLINERENDERER = "Outline";
     public static readonly NAME_PROCEDURALTEXTURE = "ProceduralTexture";
     public static readonly NAME_SHADOWGENERATOR = "ShadowGenerator";

@@ -3,7 +3,7 @@ import { PushMaterial } from '../pushMaterial';
 import { Scene } from '../../scene';
 import { AbstractMesh } from '../../Meshes/abstractMesh';
 import { Matrix, Vector2 } from '../../Maths/math.vector';
-import { Color4 } from '../../Maths/math.color';
+import { Color3, Color4 } from '../../Maths/math.color';
 import { Mesh } from '../../Meshes/mesh';
 import { Engine } from '../../Engines/engine';
 import { NodeMaterialBuildState } from './nodeMaterialBuildState';
@@ -47,6 +47,9 @@ import { IParticleSystem } from '../../Particles/IParticleSystem';
 import { BaseParticleSystem } from '../../Particles/baseParticleSystem';
 import { ColorSplitterBlock } from './Blocks/colorSplitterBlock';
 import { TimingTools } from '../../Misc/timingTools';
+import { ProceduralTexture } from '../Textures/Procedurals/proceduralTexture';
+import { AnimatedInputBlockTypes } from './Blocks/Input/animatedInputBlockTypes';
+import { TrigonometryBlock, TrigonometryBlockOperations } from './Blocks/trigonometryBlock';
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -747,8 +750,12 @@ export class NodeMaterial extends PushMaterial {
      */
     public createPostProcess(
         camera: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): PostProcess {
-            return this._createEffectOrPostProcess(null, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
+        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): Nullable<PostProcess> {
+            if (this.mode !== NodeMaterialModes.PostProcess) {
+                console.log("Incompatible material mode");
+                return null;
+            }
+            return this._createEffectForPostProcess(null, camera, options, samplingMode, engine, reusable, textureType, textureFormat);
     }
 
     /**
@@ -756,10 +763,10 @@ export class NodeMaterial extends PushMaterial {
      * @param postProcess The post process to create the effect for
      */
     public createEffectForPostProcess(postProcess: PostProcess) {
-        this._createEffectOrPostProcess(postProcess);
+        this._createEffectForPostProcess(postProcess);
     }
 
-    private _createEffectOrPostProcess(postProcess: Nullable<PostProcess>,
+    private _createEffectForPostProcess(postProcess: Nullable<PostProcess>,
         camera?: Nullable<Camera>, options: number | PostProcessOptions = 1, samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT, textureFormat = Constants.TEXTUREFORMAT_RGBA): PostProcess {
         let tempName = this.name + this._buildId;
@@ -807,33 +814,86 @@ export class NodeMaterial extends PushMaterial {
                 );
             }
 
-            // Animated blocks
-            if (this._sharedData.animatedInputs) {
-                const scene = this.getScene();
-
-                let frameId = scene.getFrameId();
-
-                if (this._animationFrame !== frameId) {
-                    for (var input of this._sharedData.animatedInputs) {
-                        input.animate(scene);
-                    }
-
-                    this._animationFrame = frameId;
-                }
-            }
-
-            // Bindable blocks
-            for (var block of this._sharedData.bindableBlocks) {
-                block.bind(effect, this);
-            }
-
-            // Connection points
-            for (var inputBlock of this._sharedData.inputBlocks) {
-                inputBlock._transmit(effect, this.getScene());
-            }
+            this._checkInternals(effect);
         });
 
         return postProcess;
+    }
+
+    /**
+     * Create a new procedural texture based on this node material
+     * @param size defines the size of the texture
+     * @param scene defines the hosting scene
+     * @returns the new procedural texture attached to this node material
+     */
+    public createProceduralTexture(size: number | { width: number, height: number, layers?: number }, scene: Scene): Nullable<ProceduralTexture> {
+
+        if (this.mode !== NodeMaterialModes.ProceduralTexture) {
+            console.log("Incompatible material mode");
+            return null;
+        }
+
+        let tempName = this.name + this._buildId;
+
+        let proceduralTexture = new ProceduralTexture(tempName, size, null, scene);
+
+        const dummyMesh = new AbstractMesh(tempName + "Procedural", this.getScene());
+        dummyMesh.reservedDataStore = {
+            hidden: true
+        };
+
+        const defines = new NodeMaterialDefines();
+        let result = this._processDefines(dummyMesh, defines);
+        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
+
+        let effect = this.getScene().getEngine().createEffect({
+                vertexElement: tempName,
+                fragmentElement: tempName
+            },
+            [VertexBuffer.PositionKind],
+            this._fragmentCompilationState.uniforms,
+            this._fragmentCompilationState.samplers,
+            defines.toString(), result?.fallbacks, undefined);
+
+        proceduralTexture.nodeMaterialSource = this;
+        proceduralTexture._effect = effect;
+
+        let buildId = this._buildId;
+        proceduralTexture.onBeforeGenerationObservable.add(() => {
+            if (buildId !== this._buildId) {
+                delete Effect.ShadersStore[tempName + "VertexShader"];
+                delete Effect.ShadersStore[tempName + "PixelShader"];
+
+                tempName = this.name + this._buildId;
+
+                defines.markAsUnprocessed();
+
+                buildId = this._buildId;
+            }
+
+            const result = this._processDefines(dummyMesh, defines);
+
+            if (result) {
+                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
+
+                TimingTools.SetImmediate(() => {
+                    effect = this.getScene().getEngine().createEffect({
+                            vertexElement: tempName,
+                            fragmentElement: tempName
+                        },
+                        [VertexBuffer.PositionKind],
+                        this._fragmentCompilationState.uniforms,
+                        this._fragmentCompilationState.samplers,
+                        defines.toString(), result?.fallbacks, undefined);
+
+                    proceduralTexture._effect = effect;
+                });
+            }
+
+            this._checkInternals(effect);
+        });
+
+        return proceduralTexture;
     }
 
     private _createEffectForParticles(particleSystem: IParticleSystem, blendMode: number, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, effect?: Effect, defines?: NodeMaterialDefines, dummyMesh?: Nullable<AbstractMesh>, particleSystemDefinesJoined_ = "") {
@@ -847,6 +907,9 @@ export class NodeMaterial extends PushMaterial {
             dummyMesh = this.getScene().getMeshByName(this.name + "Particle");
             if (!dummyMesh) {
                 dummyMesh = new AbstractMesh(this.name + "Particle", this.getScene());
+                dummyMesh.reservedDataStore = {
+                    hidden: true
+                };
             }
         }
 
@@ -902,31 +965,35 @@ export class NodeMaterial extends PushMaterial {
                 return;
             }
 
-            // Animated blocks
-            if (this._sharedData.animatedInputs) {
-                const scene = this.getScene();
-
-                let frameId = scene.getFrameId();
-
-                if (this._animationFrame !== frameId) {
-                    for (var input of this._sharedData.animatedInputs) {
-                        input.animate(scene);
-                    }
-
-                    this._animationFrame = frameId;
-                }
-            }
-
-            // Bindable blocks
-            for (var block of this._sharedData.bindableBlocks) {
-                block.bind(effect, this);
-            }
-
-            // Connection points
-            for (var inputBlock of this._sharedData.inputBlocks) {
-                inputBlock._transmit(effect, this.getScene());
-            }
+            this._checkInternals(effect);
         });
+    }
+
+    private _checkInternals(effect: Effect) {
+         // Animated blocks
+         if (this._sharedData.animatedInputs) {
+            const scene = this.getScene();
+
+            let frameId = scene.getFrameId();
+
+            if (this._animationFrame !== frameId) {
+                for (var input of this._sharedData.animatedInputs) {
+                    input.animate(scene);
+                }
+
+                this._animationFrame = frameId;
+            }
+        }
+
+        // Bindable blocks
+        for (var block of this._sharedData.bindableBlocks) {
+            block.bind(effect, this);
+        }
+
+        // Connection points
+        for (var inputBlock of this._sharedData.inputBlocks) {
+            inputBlock._transmit(effect, this.getScene());
+        }
     }
 
     /**
@@ -936,6 +1003,11 @@ export class NodeMaterial extends PushMaterial {
      * @param onError defines a function to call when the effect creation has failed
      */
     public createEffectForParticles(particleSystem: IParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+        if (this.mode !== NodeMaterialModes.Particle) {
+            console.log("Incompatible material mode");
+            return;
+        }
+
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_ONEONE, onCompiled, onError);
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_MULTIPLY, onCompiled, onError);
     }
@@ -1401,6 +1473,62 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Clear the current material and set it to a default state for procedural texture
+     */
+    public setToDefaultProceduralTexture() {
+        this.clear();
+
+        this.editorData = null;
+
+        const position = new InputBlock("Position");
+        position.setAsAttribute("position2d");
+
+        const const1 = new InputBlock("Constant1");
+        const1.isConstant = true;
+        const1.value = 1;
+
+        const vmerger = new VectorMergerBlock("Position3D");
+
+        position.connectTo(vmerger);
+        const1.connectTo(vmerger, { input: "w" });
+
+        const vertexOutput = new VertexOutputBlock("VertexOutput");
+        vmerger.connectTo(vertexOutput);
+
+        // Pixel
+        var time = new InputBlock("Time");
+        time.value = 0;
+        time.min = 0;
+        time.max = 0;
+        time.isBoolean = false;
+        time.matrixMode = 0;
+        time.animationType = AnimatedInputBlockTypes.Time;
+        time.isConstant = false;
+
+        const color = new InputBlock("Color3");
+        color.value = new Color3(1, 1, 1);
+        color.isConstant = false;
+        var fragmentOutput = new FragmentOutputBlock("FragmentOutput");
+
+        var vectorMerger = new VectorMergerBlock("VectorMerger");
+        vectorMerger.visibleInInspector = false;
+
+        var cos = new TrigonometryBlock("Cos");
+        cos.operation = TrigonometryBlockOperations.Cos;
+
+        position.connectTo(vectorMerger);
+        time.output.connectTo(cos.input);
+        cos.output.connectTo(vectorMerger.z);
+        vectorMerger.xyzOut.connectTo(fragmentOutput.rgb);
+
+        // Add to nodes
+        this.addOutputNode(vertexOutput);
+        this.addOutputNode(fragmentOutput);
+
+        this._mode = NodeMaterialModes.ProceduralTexture;
+    }
+
+    /**
      * Clear the current material and set it to a default state for particle
      */
     public setToDefaultParticle() {
@@ -1784,6 +1912,7 @@ export class NodeMaterial extends PushMaterial {
      */
     public static CreateDefault(name: string, scene?: Scene) {
         let newMaterial = new NodeMaterial(name, scene);
+
         newMaterial.setToDefault();
         newMaterial.build();
 

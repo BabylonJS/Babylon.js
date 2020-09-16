@@ -48,7 +48,7 @@ export class ExtrasAsMetadata implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose(): void {
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */

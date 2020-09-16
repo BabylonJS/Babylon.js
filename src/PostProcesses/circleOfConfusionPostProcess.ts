@@ -8,6 +8,8 @@ import { Logger } from "../Misc/logger";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/circleOfConfusion.fragment";
+import { _TypeStore } from '../Misc/typeStore';
+import { serialize } from '../Misc/decorators';
 
 /**
  * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion
@@ -16,19 +18,31 @@ export class CircleOfConfusionPostProcess extends PostProcess {
     /**
      * Max lens size in scene units/1000 (eg. millimeter). Standard cameras are 50mm. (default: 50) The diamater of the resulting aperture can be computed by lensSize/fStop.
      */
+    @serialize()
     public lensSize = 50;
     /**
      * F-Stop of the effect's camera. The diamater of the resulting aperture can be computed by lensSize/fStop. (default: 1.4)
      */
+    @serialize()
     public fStop = 1.4;
     /**
      * Distance away from the camera to focus on in scene units/1000 (eg. millimeter). (default: 2000)
      */
+    @serialize()
     public focusDistance = 2000;
     /**
      * Focal length of the effect's camera in scene units/1000 (eg. millimeter). (default: 50)
      */
+    @serialize()
     public focalLength = 50;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "CircleOfConfusionPostProcess" string
+     */
+    public getClassName(): string {
+        return "CircleOfConfusionPostProcess";
+    }
 
     private _depthTexture: Nullable<RenderTargetTexture> = null;
     /**
@@ -70,3 +84,5 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         this._depthTexture = value;
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.CircleOfConfusionPostProcess"] = CircleOfConfusionPostProcess;

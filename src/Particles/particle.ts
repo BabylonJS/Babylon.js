@@ -2,10 +2,12 @@ import { Nullable } from "../types";
 import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Color4 } from '../Maths/math.color';
 import { Scalar } from "../Maths/math.scalar";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { ParticleSystem } from "./particleSystem";
 import { SubEmitter } from "./subEmitter";
 import { ColorGradient, FactorGradient } from "../Misc/gradients";
+
+declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+
 /**
  * A particle represents one of the element emitted by a particle system.
  * This is mainly define by its coordinates, direction, velocity and age.

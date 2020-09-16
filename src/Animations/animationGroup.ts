@@ -427,6 +427,9 @@ export class AnimationGroup implements IDisposable {
      */
     public reset(): AnimationGroup {
         if (!this._isStarted) {
+            this.play();
+            this.goToFrame(0);
+            this.stop();
             return this;
         }
 

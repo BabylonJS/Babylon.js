@@ -710,6 +710,8 @@ export abstract class EffectLayer {
 
             this._effectLayerMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
+            this._effectLayerMapGenerationEffect.setMatrix("world", effectiveMesh.getWorldMatrix());
+
             this._effectLayerMapGenerationEffect.setFloat4("glowColor",
                 this._emissiveTextureAndColor.color.r,
                 this._emissiveTextureAndColor.color.g,

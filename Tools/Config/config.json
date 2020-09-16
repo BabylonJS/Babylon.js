@@ -63,7 +63,8 @@
     ],
     "apps": [
         "playground",
-        "sandbox"
+        "sandbox",
+        "ktx2Decoder"
     ],
     "lintModules": [
         "core",
@@ -638,6 +639,15 @@
                 "typings": "babylon.nodeEditor.module.d.ts",
                 "index": "babylon.nodeEditor.max.js"
             }
+        }
+    },
+    "ktx2Decoder": {
+        "distFile": "/dist/preview release/babylon.ktx2Decoder.js",
+        "build": {
+            "ignoreInWorkerMode": true,
+            "ignoreInTestMode": true,
+            "distOutputDirectory": "../../dist/preview release/",
+            "mainFolder": "./ktx2Decoder/"
         }
     },
     "playground": {
