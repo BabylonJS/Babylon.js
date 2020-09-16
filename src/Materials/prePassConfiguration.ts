@@ -4,9 +4,24 @@ import { Scene } from "../scene";
 import { Effect } from "../Materials/effect";
 import { Constants } from "../Engines/constants";
 
+/**
+ * Configuration needed for prepass-capable materials
+ */
 export class PrePassConfiguration {
+    /**
+     * Previous world matrices of meshes carrying this material
+     * Used for computing velocity
+     */
     public previousWorldMatrices: { [index: number]: Matrix } = {};
+    /**
+     * Previous view project matrix
+     * Used for computing velocity
+     */
     public previousViewProjection: Matrix;
+    /**
+     * Previous bones of meshes carrying this material
+     * Used for computing velocity
+     */
     public previousBones: { [index: number]: Float32Array } = {};
 
     /**
@@ -29,6 +44,9 @@ export class PrePassConfiguration {
      * Binds the material data.
      * @param effect defines theeffect to update
      * @param scene defines the scene the material belongs to.
+     * @param mesh The mesh
+     * @param world World matrix of this mesh
+     * @param isFrozen Is the material frozen
      */
     public bindForSubMesh(effect: Effect, scene: Scene, mesh: Mesh, world: Matrix, isFrozen: boolean): void {
         if (scene.prePassRenderer && scene.prePassRenderer.enabled) {

@@ -11,7 +11,7 @@ import { VertexBuffer } from "../Meshes/buffer";
 import { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { PrePassConfiguration } from "./PrePassConfiguration";
+import { PrePassConfiguration } from "./prePassConfiguration";
 
 import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
 import { ColorCurves } from "./colorCurves";

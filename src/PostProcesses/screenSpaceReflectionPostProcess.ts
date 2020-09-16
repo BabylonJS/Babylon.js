@@ -118,7 +118,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
                 effect.setTexture("positionSampler", geometryBufferRenderer.getGBuffer().textures[positionIndex]);
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
-            } else{
+            } else {
                 // Samplers
                 const positionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
