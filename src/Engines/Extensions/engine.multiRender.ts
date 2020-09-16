@@ -171,7 +171,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         attachments.push(attachment);
 
         gl.activeTexture((<any>gl)["TEXTURE" + i]);
-        gl.bindTexture(gl.TEXTURE_2D, texture._hardwareTexture?.underlyingResource ?? null);
+        gl.bindTexture(gl.TEXTURE_2D, texture._hardwareTexture?.underlyingResource);
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
@@ -180,7 +180,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
 
         gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(type), width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
 
-        gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture?.underlyingResource ?? null, 0);
+        gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture?.underlyingResource, 0);
 
         if (generateMipMaps) {
             this._gl.generateMipmap(this._gl.TEXTURE_2D);
@@ -213,7 +213,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
         var depthTexture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, depthTexture._hardwareTexture?.underlyingResource ?? null);
+        gl.bindTexture(gl.TEXTURE_2D, depthTexture._hardwareTexture?.underlyingResource);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -234,7 +234,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function(size: any, options: I
             gl.FRAMEBUFFER,
             gl.DEPTH_ATTACHMENT,
             gl.TEXTURE_2D,
-            depthTexture._hardwareTexture?.underlyingResource ?? null,
+            depthTexture._hardwareTexture?.underlyingResource,
             0
         );
 
