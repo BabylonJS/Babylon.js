@@ -78,8 +78,9 @@ export class GizmoManager implements IDisposable {
         var hovered = false;
         for (var key in this.gizmos) {
             var gizmo = <Nullable<Gizmo>>((<any>this.gizmos)[key]);
-            if (gizmo) {
-                hovered = hovered || gizmo.isHovered;
+            if (gizmo && gizmo.isHovered) {
+                hovered = true;
+                break;
             }
         }
         return hovered;
