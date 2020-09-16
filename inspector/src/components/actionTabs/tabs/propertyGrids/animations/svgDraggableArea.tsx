@@ -17,6 +17,7 @@ interface ISvgDraggableAreaProps {
     canvasPositionEnded: () => void;
     resetActionableKeyframe: () => void;
     framesInCanvasView: { from: number; to: number };
+    framesResized: number;
 }
 
 export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { panX: number; panY: number }> {
