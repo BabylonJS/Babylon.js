@@ -1050,21 +1050,40 @@ declare module BABYLON {
          */
         static readonly SCENELOADER_DETAILED_LOGGING: number;
         /**
-         * Prepass texture index for color
+         * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+         * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
          */
-        static readonly PREPASS_COLOR_INDEX: number;
+        static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE: number;
         /**
-         * Prepass texture index for irradiance
+         * Constant used to retrieve the position texture index in the textures array in the prepass
+         * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
          */
-        static readonly PREPASS_IRRADIANCE_INDEX: number;
+        static readonly PREPASS_POSITION_TEXTURE_TYPE: number;
         /**
-         * Prepass texture index for depth + normal
+         * Constant used to retrieve the velocity texture index in the textures array in the prepass
+         * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_INDEX)
          */
-        static readonly PREPASS_DEPTHNORMAL_INDEX: number;
+        static readonly PREPASS_VELOCITY_TEXTURE_TYPE: number;
         /**
-         * Prepass texture index for albedo
+         * Constant used to retrieve the reflectivity texture index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)
          */
-        static readonly PREPASS_ALBEDO_INDEX: number;
+        static readonly PREPASS_REFLECTIVITY_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve the lit color texture index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)
+         */
+        static readonly PREPASS_COLOR_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve depth + normal index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)
+         */
+        static readonly PREPASS_DEPTHNORMAL_TEXTURE_TYPE: number;
+        /**
+         * Constant used to retrieve albedo index in the textures array in the prepass
+         * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+         */
+        static readonly PREPASS_ALBEDO_TEXTURE_TYPE: number;
     }
 }
 declare module BABYLON {
@@ -10651,6 +10670,7 @@ declare module BABYLON {
         static readonly NAME_DEPTHRENDERER: string;
         static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER: string;
         static readonly NAME_SPRITE: string;
+        static readonly NAME_SUBSURFACE: string;
         static readonly NAME_OUTLINERENDERER: string;
         static readonly NAME_PROCEDURALTEXTURE: string;
         static readonly NAME_SHADOWGENERATOR: string;
@@ -24167,8 +24187,9 @@ declare module BABYLON {
          * @param options Define the options used to create the multi render target
          */
         constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
+        private _initTypes;
         /** @hidden */
-        _rebuild(): void;
+        _rebuild(forceFullRebuild?: boolean): void;
         private _createInternalTextures;
         private _createTextures;
         /**
@@ -24178,10 +24199,17 @@ declare module BABYLON {
         set samples(value: number);
         /**
          * Resize all the textures in the multi render target.
-         * Be carrefull as it will recreate all the data in the new texture.
+         * Be careful as it will recreate all the data in the new texture.
          * @param size Define the new size
          */
         resize(size: any): void;
+        /**
+         * Changes the number of render targets in this MRT
+         * Be careful as it will recreate all the data in the new texture.
+         * @param count new texture count
+         * @param options Specifies texture types and sampling modes for new textures
+         */
+        updateCount(count: number, options?: IMultiRenderTargetOptions): void;
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
         /**
          * Dispose the render targets and their associated resources
@@ -24390,55 +24418,22 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-    /** @hidden */
-    export var fibonacci: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var subSurfaceScatteringFunctions: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var diffusionProfile: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /** @hidden */
-    export var subSurfaceScatteringPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * Sub surface scattering post process
-     */
-    export class SubSurfaceScatteringPostProcess extends PostProcess {
-        /**
-         * Gets a string identifying the name of the class
-         * @returns "SubSurfaceScatteringPostProcess" string
-         */
-        getClassName(): string;
-        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
-    }
-}
-declare module BABYLON {
     /**
      * Interface for defining prepass effects in the prepass post-process pipeline
      */
     export interface PrePassEffectConfiguration {
         /**
+         * Name of the effect
+         */
+        name: string;
+        /**
          * Post process to attach for this effect
          */
-        postProcess: PostProcess;
+        postProcess?: PostProcess;
+        /**
+         * Textures required in the MRT
+         */
+        texturesRequired: number[];
         /**
          * Is the effect enabled
          */
@@ -24448,99 +24443,9 @@ declare module BABYLON {
          */
         dispose(): void;
         /**
-         * Disposes the effect configuration
+         * Creates the associated post process
          */
-        createPostProcess: () => PostProcess;
-    }
-}
-declare module BABYLON {
-    /**
-     * Contains all parameters needed for the prepass to perform
-     * screen space subsurface scattering
-     */
-    export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
-        private _ssDiffusionS;
-        private _ssFilterRadii;
-        private _ssDiffusionD;
-        /**
-         * Post process to attach for screen space subsurface scattering
-         */
-        postProcess: SubSurfaceScatteringPostProcess;
-        /**
-         * Diffusion profile color for subsurface scattering
-         */
-        get ssDiffusionS(): number[];
-        /**
-         * Diffusion profile max color channel value for subsurface scattering
-         */
-        get ssDiffusionD(): number[];
-        /**
-         * Diffusion profile filter radius for subsurface scattering
-         */
-        get ssFilterRadii(): number[];
-        /**
-         * Is subsurface enabled
-         */
-        enabled: boolean;
-        /**
-         * Diffusion profile colors for subsurface scattering
-         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
-         * See ...
-         * Note that you can only store up to 5 of them
-         */
-        ssDiffusionProfileColors: Color3[];
-        /**
-         * Defines the ratio real world => scene units.
-         * Used for subsurface scattering
-         */
-        metersPerUnit: number;
-        private _scene;
-        /**
-         * Builds a subsurface configuration object
-         * @param scene The scene
-         */
-        constructor(scene: Scene);
-        /**
-         * Adds a new diffusion profile.
-         * Useful for more realistic subsurface scattering on diverse materials.
-         * @param color The color of the diffusion profile. Should be the average color of the material.
-         * @return The index of the diffusion profile for the material subsurface configuration
-         */
-        addDiffusionProfile(color: Color3): number;
-        /**
-         * Creates the sss post process
-         * @return The created post process
-         */
-        createPostProcess(): SubSurfaceScatteringPostProcess;
-        /**
-         * Deletes all diffusion profiles.
-         * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
-         */
-        clearAllDiffusionProfiles(): void;
-        /**
-         * Disposes this object
-         */
-        dispose(): void;
-        /**
-         * @hidden
-         * https://zero-radiance.github.io/post/sampling-diffusion/
-         *
-         * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
-         * ------------------------------------------------------------------------------------
-         * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
-         * PDF[r, phi, s] = r * R[r, phi, s]
-         * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
-         * ------------------------------------------------------------------------------------
-         * We importance sample the color channel with the widest scattering distance.
-         */
-        getDiffusionProfileParameters(color: Color3): number;
-        /**
-         * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
-         * 'u' is the random number (the value of the CDF): [0, 1).
-         * rcp(s) = 1 / ShapeParam = ScatteringDistance.
-         * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
-         */
-        private _sampleBurleyDiffusionProfile;
+        createPostProcess?: () => PostProcess;
     }
 }
 declare module BABYLON {
@@ -24553,18 +24458,19 @@ declare module BABYLON {
     export class PrePassRenderer {
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
+        private _textureFormats;
+        private _textureIndices;
         private _scene;
         private _engine;
         private _isDirty;
         /**
          * Number of textures in the multi render target texture where the scene is directly rendered
          */
-        readonly mrtCount: number;
+        mrtCount: number;
         /**
          * The render target where the scene is directly rendered
          */
         prePassRT: MultiRenderTarget;
-        private _mrtTypes;
         private _multiRenderAttachments;
         private _defaultAttachments;
         private _clearAttachments;
@@ -24575,9 +24481,9 @@ declare module BABYLON {
          */
         imageProcessingPostProcess: ImageProcessingPostProcess;
         /**
-         * Configuration for sub surface scattering post process
+         * Configuration for prepass effects
          */
-        subSurfaceConfiguration: SubSurfaceConfiguration;
+        private _effectConfigurations;
         /**
          * Should materials render their geometry on the MRT
          */
@@ -24586,6 +24492,8 @@ declare module BABYLON {
          * Should materials render the irradiance information on the MRT
          */
         materialsShouldRenderIrradiance: boolean;
+        private _mrtFormats;
+        private _mrtLayout;
         private _enabled;
         /**
          * Indicates if the prepass is enabled
@@ -24627,14 +24535,34 @@ declare module BABYLON {
          */
         clear(): void;
         private _setState;
+        private _checkTextureType;
+        /**
+         * Adds an effect configuration to the prepass.
+         * If an effect has already been added, it won't add it twice and will return the configuration
+         * already present.
+         * @param cfg the effect configuration
+         * @return the effect configuration now used by the prepass
+         */
+        addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration;
+        /**
+         * Returns the index of a texture in the multi render target texture array.
+         * @param type Texture type
+         * @return The index
+         */
+        getIndex(type: number): number;
         private _enable;
         private _disable;
+        private _resetLayout;
         private _resetPostProcessChain;
         private _bindPostProcessChain;
         /**
          * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
          */
         markAsDirty(): void;
+        /**
+         * Enables a texture on the MultiRenderTarget for prepass
+         */
+        private _enableTextures;
         private _update;
         /**
          * Disposes the prepass renderer.
@@ -30645,6 +30573,12 @@ declare module BABYLON {
         ALPHATEST_AFTERALLALPHACOMPUTATIONS: boolean;
         ALPHABLEND: boolean;
         PREPASS: boolean;
+        PREPASS_IRRADIANCE: boolean;
+        PREPASS_IRRADIANCE_INDEX: number;
+        PREPASS_ALBEDO: boolean;
+        PREPASS_ALBEDO_INDEX: number;
+        PREPASS_DEPTHNORMAL: boolean;
+        PREPASS_DEPTHNORMAL_INDEX: number;
         SCENE_MRT_COUNT: number;
         RGBDLIGHTMAP: boolean;
         RGBDREFLECTION: boolean;
@@ -36075,95 +36009,110 @@ declare module BABYLON {
          * Set the value of an uniform to a number (int)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the int number to store
+         * @returns true if the value was set
          */
-        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void;
+        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean;
         /**
          * Set the value of an uniform to an array of int32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if the value was set
          */
-        setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if the value was set
          */
-        setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if the value was set
          */
-        setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if the value was set
          */
-        setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of number
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if the value was set
          */
-        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
+        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if the value was set
          */
-        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
+        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if the value was set
          */
-        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
+        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if the value was set
          */
-        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): void;
+        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as matrices)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrices defines the array of float32 to store
+         * @returns true if the value was set
          */
-        setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void;
+        setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean;
         /**
          * Set the value of an uniform to a matrix (3x3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 3x3 matrix to store
+         * @returns true if the value was set
          */
-        setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
+        setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean;
         /**
          * Set the value of an uniform to a matrix (2x2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 2x2 matrix to store
+         * @returns true if the value was set
          */
-        setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
+        setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean;
         /**
          * Set the value of an uniform to a number (float)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the float number to store
+         * @returns true if the value was transfered
          */
-        setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void;
+        setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): boolean;
         /**
          * Set the value of an uniform to a vec2
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
+         * @returns true if the value was set
          */
-        setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void;
+        setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean;
         /**
          * Set the value of an uniform to a vec3
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
+         * @returns true if the value was set
          */
-        setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void;
+        setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean;
         /**
          * Set the value of an uniform to a vec4
          * @param uniform defines the webGL uniform location where to store the value
@@ -36171,8 +36120,9 @@ declare module BABYLON {
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
          * @param w defines the 4th component of the value
+         * @returns true if the value was set
          */
-        setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
+        setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean;
         /**
          * Apply all cached states (depth, culling, stencil and alpha)
          */
@@ -51200,6 +51150,10 @@ declare module BABYLON {
         sphereScaleUnit?: number;
         /** Ratio for the Sphere Size */
         sphereFactor?: number;
+        /** Whether to show local axes or not  */
+        showLocalAxes?: boolean;
+        /** Length of each local axis */
+        localAxesSize?: number;
     }
     /**
      * Defines the constructor options for the BoneWeight Shader.
@@ -51415,6 +51369,8 @@ declare module BABYLON.Debug {
         private _debugLines;
         /** The SkeletonViewers Mesh. */
         private _debugMesh;
+        /** The local axes Meshes. */
+        private _localAxes;
         /** If SkeletonViewer is enabled. */
         private _isEnabled;
         /** If SkeletonViewer is ready. */
@@ -51474,15 +51430,23 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength;
         /** function to revert the mesh and scene back to the initial state. */
         private _revert;
+        private getAbsoluteRestPose;
         /** function to build and bind sphere joint points and spur bone representations. */
         private _buildSpheresAndSpurs;
+        private _buildLocalAxes;
         /** Update the viewer to sync with current skeleton state, only used for the line display. */
         private _displayLinesUpdate;
         /** Changes the displayMode of the skeleton viewer
          * @param mode The displayMode numerical value
          */
         changeDisplayMode(mode: number): void;
-        /** Changes the displayMode of the skeleton viewer
+        /** Sets a display option of the skeleton viewer
+         *
+         * | Option          | Type    | Default | Description |
+         * | --------------- | ------- | ------- | ----------- |
+         * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
+         * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
+         *
          * @param option String of the option name
          * @param value The numerical option value
          */
@@ -52028,119 +51992,138 @@ declare module BABYLON {
          * Set the value of an uniform to an array of int32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if value was set
          */
-        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if value was set
          */
-        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if value was set
          */
-        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of int32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of int32 to store
+         * @returns true if value was set
          */
-        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
+         * @returns true if value was set
          */
-        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
+         * @returns true if value was set
          */
-        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
+         * @returns true if value was set
          */
-        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of float32 to store
+         * @returns true if value was set
          */
-        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean;
         /**
          * Set the value of an uniform to an array of number
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if value was set
          */
-        setArray(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray(uniform: WebGLUniformLocation, array: number[]): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if value was set
          */
-        setArray2(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray2(uniform: WebGLUniformLocation, array: number[]): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if value was set
          */
-        setArray3(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray3(uniform: WebGLUniformLocation, array: number[]): boolean;
         /**
          * Set the value of an uniform to an array of number (stored as vec4)
          * @param uniform defines the webGL uniform location where to store the value
          * @param array defines the array of number to store
+         * @returns true if value was set
          */
-        setArray4(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray4(uniform: WebGLUniformLocation, array: number[]): boolean;
         /**
          * Set the value of an uniform to an array of float32 (stored as matrices)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrices defines the array of float32 to store
+         * @returns true if value was set
          */
-        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean;
         /**
          * Set the value of an uniform to a matrix (3x3)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 3x3 matrix to store
+         * @returns true if value was set
          */
-        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
         /**
          * Set the value of an uniform to a matrix (2x2)
          * @param uniform defines the webGL uniform location where to store the value
          * @param matrix defines the Float32Array representing the 2x2 matrix to store
+         * @returns true if value was set
          */
-        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
         /**
          * Set the value of an uniform to a number (float)
          * @param uniform defines the webGL uniform location where to store the value
          * @param value defines the float number to store
+         * @returns true if value was set
          */
-        setFloat(uniform: WebGLUniformLocation, value: number): void;
+        setFloat(uniform: WebGLUniformLocation, value: number): boolean;
         /**
          * Set the value of an uniform to a vec2
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
+         * @returns true if value was set
          */
-        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean;
         /**
          * Set the value of an uniform to a vec3
          * @param uniform defines the webGL uniform location where to store the value
          * @param x defines the 1st component of the value
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
+         * @returns true if value was set
          */
-        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean;
         /**
          * Set the value of an uniform to a boolean
          * @param uniform defines the webGL uniform location where to store the value
          * @param bool defines the boolean to store
+         * @returns true if value was set
          */
-        setBool(uniform: WebGLUniformLocation, bool: number): void;
+        setBool(uniform: WebGLUniformLocation, bool: number): boolean;
         /**
          * Set the value of an uniform to a vec4
          * @param uniform defines the webGL uniform location where to store the value
@@ -52148,8 +52131,9 @@ declare module BABYLON {
          * @param y defines the 2nd component of the value
          * @param z defines the 3rd component of the value
          * @param w defines the 4th component of the value
+         * @returns true if value was set
          */
-        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean;
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
@@ -53014,28 +52998,28 @@ declare module BABYLON {
          * @returns the current alpha mode
          */
         getAlphaMode(): number;
-        setInt(uniform: WebGLUniformLocation, int: number): void;
-        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setArray(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray2(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray3(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray4(uniform: WebGLUniformLocation, array: number[]): void;
-        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
-        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-        setFloat(uniform: WebGLUniformLocation, value: number): void;
-        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
-        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-        setColor3(uniform: WebGLUniformLocation, color3: Color3): void;
-        setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void;
+        setInt(uniform: WebGLUniformLocation, int: number): boolean;
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean;
+        setArray(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray2(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray3(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setArray4(uniform: WebGLUniformLocation, array: number[]): boolean;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean;
+        setFloat(uniform: WebGLUniformLocation, value: number): boolean;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean;
+        setColor3(uniform: WebGLUniformLocation, color3: Color3): boolean;
+        setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): boolean;
         wipeCaches(bruteForce?: boolean): void;
         _createTexture(): WebGLTexture;
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
@@ -56250,6 +56234,13 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var subSurfaceScatteringFunctions: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var importanceSampling: {
         name: string;
         shader: string;
@@ -56575,6 +56566,12 @@ declare module BABYLON {
         INSTANCES: boolean;
         THIN_INSTANCES: boolean;
         PREPASS: boolean;
+        PREPASS_IRRADIANCE: boolean;
+        PREPASS_IRRADIANCE_INDEX: number;
+        PREPASS_ALBEDO: boolean;
+        PREPASS_ALBEDO_INDEX: number;
+        PREPASS_DEPTHNORMAL: boolean;
+        PREPASS_DEPTHNORMAL_INDEX: number;
         SCENE_MRT_COUNT: number;
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
@@ -70909,6 +70906,35 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Contains all parameters needed for the prepass to perform
+     * screen space subsurface scattering
+     */
+    export class SSAO2Configuration implements PrePassEffectConfiguration {
+        /**
+         * Is subsurface enabled
+         */
+        enabled: boolean;
+        /**
+         * Name of the configuration
+         */
+        name: string;
+        /**
+         * Textures that should be present in the MRT for this effect to work
+         */
+        readonly texturesRequired: number[];
+        /**
+         * Builds a ssao2 configuration object
+         * @param scene The scene
+         */
+        constructor();
+        /**
+         * Disposes the configuration
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var ssao2PixelShader: {
         name: string;
@@ -70988,6 +71014,7 @@ declare module BABYLON {
         * Dynamically generated sphere sampler.
         */
         private _sampleSphere;
+        private _ssao2PrePassConfiguration;
         /**
         * Blur filter offsets
         */
@@ -72088,7 +72115,7 @@ declare module BABYLON {
      * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
      * in several rendering techniques.
      */
-    export class PrePassRendererSceneComponent implements ISceneSerializableComponent {
+    export class PrePassRendererSceneComponent implements ISceneComponent {
         /**
          * The component name helpful to identify the component in the list of scene components.
          */
@@ -72109,6 +72136,191 @@ declare module BABYLON {
         private _beforeCameraDraw;
         private _afterCameraDraw;
         private _beforeClearStage;
+        /**
+         * Rebuilds the elements related to this component in case of
+         * context lost for instance.
+         */
+        rebuild(): void;
+        /**
+         * Disposes the component and the associated ressources
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var fibonacci: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var diffusionProfile: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var subSurfaceScatteringPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * Sub surface scattering post process
+     */
+    export class SubSurfaceScatteringPostProcess extends PostProcess {
+        /**
+         * Gets a string identifying the name of the class
+         * @returns "SubSurfaceScatteringPostProcess" string
+         */
+        getClassName(): string;
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
+    }
+}
+declare module BABYLON {
+    /**
+     * Contains all parameters needed for the prepass to perform
+     * screen space subsurface scattering
+     */
+    export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        private _ssDiffusionS;
+        private _ssFilterRadii;
+        private _ssDiffusionD;
+        /**
+         * Post process to attach for screen space subsurface scattering
+         */
+        postProcess: SubSurfaceScatteringPostProcess;
+        /**
+         * Diffusion profile color for subsurface scattering
+         */
+        get ssDiffusionS(): number[];
+        /**
+         * Diffusion profile max color channel value for subsurface scattering
+         */
+        get ssDiffusionD(): number[];
+        /**
+         * Diffusion profile filter radius for subsurface scattering
+         */
+        get ssFilterRadii(): number[];
+        /**
+         * Is subsurface enabled
+         */
+        enabled: boolean;
+        /**
+         * Name of the configuration
+         */
+        name: string;
+        /**
+         * Diffusion profile colors for subsurface scattering
+         * You can add one diffusion color using `addDiffusionProfile` on `scene.prePassRenderer`
+         * See ...
+         * Note that you can only store up to 5 of them
+         */
+        ssDiffusionProfileColors: Color3[];
+        /**
+         * Defines the ratio real world => scene units.
+         * Used for subsurface scattering
+         */
+        metersPerUnit: number;
+        /**
+         * Textures that should be present in the MRT for this effect to work
+         */
+        readonly texturesRequired: number[];
+        private _scene;
+        /**
+         * Builds a subsurface configuration object
+         * @param scene The scene
+         */
+        constructor(scene: Scene);
+        /**
+         * Adds a new diffusion profile.
+         * Useful for more realistic subsurface scattering on diverse materials.
+         * @param color The color of the diffusion profile. Should be the average color of the material.
+         * @return The index of the diffusion profile for the material subsurface configuration
+         */
+        addDiffusionProfile(color: Color3): number;
+        /**
+         * Creates the sss post process
+         * @return The created post process
+         */
+        createPostProcess(): SubSurfaceScatteringPostProcess;
+        /**
+         * Deletes all diffusion profiles.
+         * Note that in order to render subsurface scattering, you should have at least 1 diffusion profile.
+         */
+        clearAllDiffusionProfiles(): void;
+        /**
+         * Disposes this object
+         */
+        dispose(): void;
+        /**
+         * @hidden
+         * https://zero-radiance.github.io/post/sampling-diffusion/
+         *
+         * Importance sample the normalized diffuse reflectance profile for the computed value of 's'.
+         * ------------------------------------------------------------------------------------
+         * R[r, phi, s]   = s * (Exp[-r * s] + Exp[-r * s / 3]) / (8 * Pi * r)
+         * PDF[r, phi, s] = r * R[r, phi, s]
+         * CDF[r, s]      = 1 - 1/4 * Exp[-r * s] - 3/4 * Exp[-r * s / 3]
+         * ------------------------------------------------------------------------------------
+         * We importance sample the color channel with the widest scattering distance.
+         */
+        getDiffusionProfileParameters(color: Color3): number;
+        /**
+         * Performs sampling of a Normalized Burley diffusion profile in polar coordinates.
+         * 'u' is the random number (the value of the CDF): [0, 1).
+         * rcp(s) = 1 / ShapeParam = ScatteringDistance.
+         * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
+         */
+        private _sampleBurleyDiffusionProfile;
+    }
+}
+declare module BABYLON {
+        interface AbstractScene {
+            /** @hidden (Backing field) */
+            _subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
+            /**
+             * Gets or Sets the current prepass renderer associated to the scene.
+             */
+            subSurfaceConfiguration: Nullable<SubSurfaceConfiguration>;
+            /**
+             * Enables the subsurface effect for prepass
+             * @returns the SubSurfaceConfiguration
+             */
+            enableSubSurfaceForPrePass(): Nullable<SubSurfaceConfiguration>;
+            /**
+             * Disables the subsurface effect for prepass
+             */
+            disableSubSurfaceForPrePass(): void;
+        }
+    /**
+     * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
+     * in several rendering techniques.
+     */
+    export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
+        /**
+         * The component name helpful to identify the component in the list of scene components.
+         */
+        readonly name: string;
+        /**
+         * The scene the component belongs to.
+         */
+        scene: Scene;
+        /**
+         * Creates a new instance of the component for the given scene
+         * @param scene Defines the scene to register the component in
+         */
+        constructor(scene: Scene);
+        /**
+         * Registers the component in a given scene
+         */
+        register(): void;
         /**
          * Serializes the component data to the specified json object
          * @param serializationObject The object to serialize to
@@ -74357,6 +74569,136 @@ declare module BABYLON {
         static ApplyDelta(deltaJSON: any | string, scene: Scene): void;
         private static _ApplyPropertiesToEntity;
         private static _ApplyDeltaForEntity;
+    }
+}
+declare module BABYLON {
+    /**
+     * A 3D trajectory consisting of an order list of vectors describing a
+     * path of motion through 3D space.
+     */
+    export class Trajectory {
+        private _points;
+        private readonly _segmentLength;
+        /**
+         * Serialize to JSON.
+         * @returns serialized JSON string
+         */
+        serialize(): string;
+        /**
+         * Deserialize from JSON.
+         * @param json serialized JSON string
+         * @returns deserialized Trajectory
+         */
+        static Deserialize(json: string): Trajectory;
+        /**
+         * Create a new empty Trajectory.
+         * @param segmentLength radius of discretization for Trajectory points
+         */
+        constructor(segmentLength?: number);
+        /**
+         * Get the length of the Trajectory.
+         * @returns length of the Trajectory
+         */
+        getLength(): number;
+        /**
+         * Append a new point to the Trajectory.
+         * NOTE: This implementation has many allocations.
+         * @param point point to append to the Trajectory
+         */
+        add(point: DeepImmutable<Vector3>): void;
+        /**
+         * Create a new Trajectory with a segment length chosen to make it
+         * probable that the new Trajectory will have a specified number of
+         * segments. This operation is imprecise.
+         * @param targetResolution number of segments desired
+         * @returns new Trajectory with approximately the requested number of segments
+         */
+        resampleAtTargetResolution(targetResolution: number): Trajectory;
+        /**
+         * Convert Trajectory segments into tokenized representation. This
+         * representation is an array of numbers where each nth number is the
+         * index of the token which is most similar to the nth segment of the
+         * Trajectory.
+         * @param tokens list of vectors which serve as discrete tokens
+         * @returns list of indices of most similar token per segment
+         */
+        tokenize(tokens: DeepImmutable<Vector3[]>): number[];
+        private static _forwardDir;
+        private static _inverseFromVec;
+        private static _upDir;
+        private static _fromToVec;
+        private static _lookMatrix;
+        /**
+         * Transform the rotation (i.e., direction) of a segment to isolate
+         * the relative transformation represented by the segment. This operation
+         * may or may not succeed due to singularities in the equations that define
+         * motion relativity in this context.
+         * @param priorVec the origin of the prior segment
+         * @param fromVec the origin of the current segment
+         * @param toVec the destination of the current segment
+         * @param result reference to output variable
+         * @returns whether or not transformation was successful
+         */
+        private static _transformSegmentDirToRef;
+        private static _bestMatch;
+        private static _score;
+        private static _bestScore;
+        /**
+         * Determine which token vector is most similar to the
+         * segment vector.
+         * @param segment segment vector
+         * @param tokens token vector list
+         * @returns index of the most similar token to the segment
+         */
+        private static _tokenizeSegment;
+    }
+    /**
+     * Class representing a set of known, named trajectories to which Trajectories can be
+     * added and using which Trajectories can be recognized.
+     */
+    export class TrajectoryClassifier {
+        private _maximumAllowableMatchCost;
+        private _vector3Alphabet;
+        private _levenshteinAlphabet;
+        private _nameToDescribedTrajectory;
+        /**
+         * Serialize to JSON.
+         * @returns JSON serialization
+         */
+        serialize(): string;
+        /**
+         * Deserialize from JSON.
+         * @param json JSON serialization
+         * @returns deserialized TrajectorySet
+         */
+        static Deserialize(json: string): TrajectoryClassifier;
+        /**
+         * Initialize a new empty TrajectorySet with auto-generated Alphabets.
+         * VERY naive, need to be generating these things from known
+         * sets. Better version later, probably eliminating this one.
+         * @returns auto-generated TrajectorySet
+         */
+        static Generate(): TrajectoryClassifier;
+        private constructor();
+        /**
+         * Add a new Trajectory to the set with a given name.
+         * @param trajectory new Trajectory to be added
+         * @param classification name to which to add the Trajectory
+         */
+        addTrajectoryToClassification(trajectory: Trajectory, classification: string): void;
+        /**
+         * Remove a known named trajectory and all Trajectories associated with it.
+         * @param classification name to remove
+         * @returns whether anything was removed
+         */
+        deleteClassification(classification: string): boolean;
+        /**
+         * Attempt to recognize a Trajectory from among all the classifications
+         * already known to the classifier.
+         * @param trajectory Trajectory to be recognized
+         * @returns classification of Trajectory if recognized, null otherwise
+         */
+        classifyTrajectory(trajectory: Trajectory): Nullable<string>;
     }
 }
 declare module BABYLON {

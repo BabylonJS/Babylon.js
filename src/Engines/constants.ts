@@ -486,22 +486,38 @@ export class Constants {
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
 
     /**
-     * Prepass texture index for color
+     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_COLOR_INDEX = 0;
-
+    public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 0;
     /**
-     * Prepass texture index for irradiance
+     * Constant used to retrieve the position texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
      */
-    public static readonly PREPASS_IRRADIANCE_INDEX = 1;
-
+    public static readonly PREPASS_POSITION_TEXTURE_TYPE = 1;
     /**
-     * Prepass texture index for depth + normal
+     * Constant used to retrieve the velocity texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_INDEX)
      */
-    public static readonly PREPASS_DEPTHNORMAL_INDEX = 2;
-
+    public static readonly PREPASS_VELOCITY_TEXTURE_TYPE = 2;
     /**
-     * Prepass texture index for albedo
+     * Constant used to retrieve the reflectivity texture index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)
      */
-    public static readonly PREPASS_ALBEDO_INDEX = 3;
+    public static readonly PREPASS_REFLECTIVITY_TEXTURE_TYPE = 3;
+    /**
+     * Constant used to retrieve the lit color texture index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_COLOR_TEXTURE_TYPE = 4;
+    /**
+     * Constant used to retrieve depth + normal index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_DEPTHNORMAL_TEXTURE_TYPE = 5;
+    /**
+     * Constant used to retrieve albedo index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 6;
 }

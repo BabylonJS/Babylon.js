@@ -23,6 +23,7 @@
 - Refactored React refs from old string API to React.createRef() API ([belfortk](https://github.com/belfortk))
 - Scale on one axis for `BoundingBoxGizmo` ([cedricguillemet](https://github.com/cedricguillemet))
 - Camera gizmo ([cedricguillemet](https://github.com/cedricguillemet))
+- gizmo isHovered boolean ([cedricguillemet](https://github.com/cedricguillemet))
 - Node support (Transform, Bone) for gizmos ([cedricguillemet](https://github.com/cedricguillemet))
 - Simplified code contributions by fully automating the dev setup with gitpod ([nisarhassan12](https://github.com/nisarhassan12))
 - Add a `CascadedShadowMap.IsSupported` method and log an error instead of throwing an exception when CSM is not supported ([Popov72](https://github.com/Popov72))
@@ -105,6 +106,7 @@
 ### Debug
 - Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))
 - Added static methods to create debug shaders materials for a mesh with a skeleton. ([Pryme8](https://github.com/Pryme8))
+- Added ability to view local rotation axes of bones using new `displayOptions`: `showLocalAxes` and `localAxesSize` ([reimund](https://github.com/reimund))
 
 ### Sprites
 
@@ -197,6 +199,7 @@
 - WebXR hand-tracking module is available, able to track hand-joints on selected devices including optional physics interactions ([RaananW](https://github.com/RaananW))
 - Fixed an issue with moving backwards in XR ([#8854](https://github.com/BabylonJS/Babylon.js/issues/8854)) ([RaananW](https://github.com/RaananW))
 - Hit-Test results can be an empty array ([#8887](https://github.com/BabylonJS/Babylon.js/issues/8887)) ([RaananW](https://github.com/RaananW))
+- XR's main camera uses the first eye's projection matrix ([#8944](https://github.com/BabylonJS/Babylon.js/issues/8944)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -317,6 +320,7 @@
 - Fixed an issue in `DeviceSourceManager.getDeviceSources()` where null devices are returned ([Drigax](https://github.com/drigax))
 - Fix issue in glTF2 `_Exporter.createSkinsAsync()` that exported an incorrect joint indexing list ([drigax](https://github.com/drigax))
 - Fix gltf2 Morph Target export code style, add additional test case for non-animation group created morph targets ([drigax](https://github.com/drigax))
+- Fix "Uncaught ReferenceError: name is not defined" ([outermeasure](https://github.com/outermeasure))
 
 ## Breaking changes
 

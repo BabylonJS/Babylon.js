@@ -28,6 +28,11 @@ export class Gizmo implements IDisposable {
     protected _scaleRatio = 1;
 
     /**
+     * boolean updated by pointermove when a gizmo mesh is hovered
+     */
+    protected _isHovered = false;
+
+    /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
@@ -37,6 +42,14 @@ export class Gizmo implements IDisposable {
     public get scaleRatio() {
         return this._scaleRatio;
     }
+
+    /**
+     * True when the mouse pointer is hovered a gizmo mesh
+     */
+    public get isHovered() {
+        return this._isHovered;
+    }
+
     /**
      * If a custom mesh has been set (Default: false)
      */

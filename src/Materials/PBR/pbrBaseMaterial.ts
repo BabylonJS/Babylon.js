@@ -164,6 +164,12 @@ export class PBRMaterialDefines extends MaterialDefines
     public THIN_INSTANCES = false;
 
     public PREPASS = false;
+    public PREPASS_IRRADIANCE = false;
+    public PREPASS_IRRADIANCE_INDEX = -1;
+    public PREPASS_ALBEDO = false;
+    public PREPASS_ALBEDO_INDEX = -1;
+    public PREPASS_DEPTHNORMAL = false;
+    public PREPASS_DEPTHNORMAL_INDEX = -1;
     public SCENE_MRT_COUNT = 0;
 
     public NUM_BONE_INFLUENCERS = 0;
@@ -2232,11 +2238,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         if (this.subSurface.isScatteringEnabled) {
-            prePassRenderer.subSurfaceConfiguration.enabled = true;
-            prePassRenderer.materialsShouldRenderIrradiance = true;
+            let subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
+            if (subSurfaceConfiguration) {
+                subSurfaceConfiguration.enabled = true;
+            }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**
