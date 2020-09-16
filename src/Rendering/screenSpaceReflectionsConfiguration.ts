@@ -25,8 +25,4 @@ export class ScreenSpaceReflectionsConfiguration implements PrePassEffectConfigu
         Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
         Constants.PREPASS_POSITION_TEXTURE_TYPE,
     ];
-
-    public dispose() {
-
-    }
 }

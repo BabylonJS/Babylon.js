@@ -275,22 +275,6 @@ export class PrePassRenderer {
         return cfg;
     }
 
-
-    /**
-     * Returns an effect configuration
-     * @param cfg the effect configuration
-     * @return the effect configuration now used by the prepass
-     */
-    public getEffectConfiguration(name: string) : Nullable<PrePassEffectConfiguration> {
-        for (let i = 0; i < this._effectConfigurations.length; i++) {
-            if (this._effectConfigurations[i].name === name) {
-                return this._effectConfigurations[i];
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Returns the index of a texture in the multi render target texture array.
      * @param type Texture type
@@ -409,20 +393,6 @@ export class PrePassRenderer {
             }
         }
 
-        // const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
-        // for (let i = 0; i < pipelines.length; i++) {
-        //     if (pipelines[i].setPrePassRenderer(this)) {
-        //         enablePrePass = true;
-        //     }
-        // }
-
-        // const postProcesses = this._scene.postProcesses;
-        // for (let i = 0; i < postProcesses.length; i++) {
-        //     if (postProcesses[i].setPrePassRenderer(this)) {
-        //         enablePrePass = true;
-        //     }
-        // }
-
         const camera = this._scene.activeCamera;
         if (!camera) {
             return;
@@ -455,7 +425,9 @@ export class PrePassRenderer {
      */
     public dispose() {
         for (let i = 0; i < this._effectConfigurations.length; i++) {
-            this._effectConfigurations[i].dispose();
+            if (this._effectConfigurations[i].dispose) {
+                this._effectConfigurations[i].dispose!();
+            }
         }
 
         this.imageProcessingPostProcess.dispose();

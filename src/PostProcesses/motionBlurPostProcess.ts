@@ -129,8 +129,16 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param skinnedMesh The mesh containing the skeleton to ignore when computing the velocity map.
      */
     public excludeSkinnedMesh(skinnedMesh: AbstractMesh): void {
-        if (this._geometryBufferRenderer && skinnedMesh.skeleton) {
-            this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity.push(skinnedMesh);
+        if (skinnedMesh.skeleton) {
+            let list;
+            if (this._geometryBufferRenderer) {
+                list = this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity;
+            } else if (this._prePassRenderer) {
+                list = this._prePassRenderer.excludedSkinnedMesh;
+            } else {
+                return;
+            }
+            list.push(skinnedMesh);
         }
     }
 
@@ -140,10 +148,19 @@ export class MotionBlurPostProcess extends PostProcess {
      * @see excludeSkinnedMesh to exclude a skinned mesh from bones velocity computation.
      */
     public removeExcludedSkinnedMesh(skinnedMesh: AbstractMesh): void {
-        if (this._geometryBufferRenderer && skinnedMesh.skeleton) {
-            const index = this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity.indexOf(skinnedMesh);
+        if (skinnedMesh.skeleton) {
+            let list;
+            if (this._geometryBufferRenderer) {
+                list = this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity;
+            } else if (this._prePassRenderer) {
+                list = this._prePassRenderer.excludedSkinnedMesh;
+            } else {
+                return;
+            }
+
+            const index = list.indexOf(skinnedMesh);
             if (index !== -1) {
-                this._geometryBufferRenderer.excludedSkinnedMeshesFromVelocity.splice(index, 1);
+                list.splice(index, 1);
             }
         }
     }
@@ -153,9 +170,6 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param camera The camera to dispose the post process on.
      */
     public dispose(camera?: Camera): void {
-        // TODO clear for motion blur configuration
-        // Mark prepass as dirty too
-
         if (this._geometryBufferRenderer) {
             // Clear previous transformation matrices dictionary used to compute objects velocities
             this._geometryBufferRenderer._previousTransformationMatrices = {};

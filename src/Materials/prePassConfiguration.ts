@@ -9,10 +9,6 @@ export class PrePassConfiguration {
     public previousViewProjection: Matrix;
     public previousBones: { [index: number]: Float32Array } = {};
 
-    constructor() {
-
-    }
-
     /**
      * Add the required uniforms to the current list.
      * @param uniforms defines the current uniform list.
@@ -44,7 +40,7 @@ export class PrePassConfiguration {
                 if (!this.previousViewProjection) {
                     this.previousViewProjection = scene.getTransformMatrix();
                 }
-                
+
                 effect.setMatrix("previousWorld", this.previousWorldMatrices[mesh.uniqueId]);
                 effect.setMatrix("previousViewProjection", this.previousViewProjection);
 

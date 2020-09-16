@@ -23,16 +23,4 @@ export class MotionBlurConfiguration implements PrePassEffectConfiguration {
     public readonly texturesRequired: number[] = [
         Constants.PREPASS_VELOCITY_TEXTURE_TYPE
     ];
-
-    /**
-     * Builds a motion blur configuration object
-     * @param scene The scene
-     */
-    constructor() {
-
-    }
-
-    public dispose() {
-
-    }
 }
