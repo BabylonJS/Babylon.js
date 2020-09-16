@@ -830,6 +830,7 @@ export class MaterialHelper {
      * Binds the bones information from the mesh to the effect.
      * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
+     * @param prePassConfiguration Configuration for the prepass, in case prepass is activated
      */
     public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration): void {
         if (!effect || !mesh) {
