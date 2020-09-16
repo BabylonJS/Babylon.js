@@ -205,7 +205,6 @@ export class VideoTexture extends Texture {
             this.video.onplaying = () => {
                 this.video.muted = oldMuted;
                 this.video.onplaying = oldHandler;
-                this._texture!.isReady = true;
                 this._updateInternalTexture();
                 if (!error) {
                     this.video.pause();
@@ -229,7 +228,6 @@ export class VideoTexture extends Texture {
             }
             else {
                 this.video.onplaying = oldHandler;
-                this._texture.isReady = true;
                 this._updateInternalTexture();
                 if (this.onLoadObservable.hasObservers()) {
                     this.onLoadObservable.notifyObservers(this);
@@ -237,7 +235,6 @@ export class VideoTexture extends Texture {
             }
         }
         else {
-            this._texture.isReady = true;
             this._updateInternalTexture();
             if (this.onLoadObservable.hasObservers()) {
                 this.onLoadObservable.notifyObservers(this);
@@ -291,7 +288,7 @@ export class VideoTexture extends Texture {
     }
 
     protected _updateInternalTexture = (): void => {
-        if (this._texture == null || !this._texture.isReady) {
+        if (this._texture == null) {
             return;
         }
         if (this.video.readyState < this.video.HAVE_CURRENT_DATA) {
