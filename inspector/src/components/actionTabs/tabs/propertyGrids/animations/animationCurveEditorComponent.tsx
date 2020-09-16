@@ -97,29 +97,24 @@ export class AnimationCurveEditorComponent extends React.Component<
         framesInCanvasView: { from: number; to: number };
         maxFrame: number | undefined;
         minFrame: number | undefined;
+        framesResized: number;
     }
 > {
     private _snippetUrl = "https://snippet.babylonjs.com";
-    // Height scale *Review this functionaliy
     private _heightScale: number = 100;
     private _scaleFactor: number = 2;
     private _currentScale: number = 10;
-    // Canvas Length *Review this functionality
     readonly _entityName: string;
-    //private _canvasLength: number;
     private _svgKeyframes: IKeyframeSvgPoint[] = [];
     private _isPlaying: boolean = false;
     private _graphCanvas: React.RefObject<HTMLDivElement>;
     private _editor: React.RefObject<HTMLDivElement>;
     private _editorWindow: Window;
-
-    //private _selectedCurve: React.RefObject<SVGPathElement>;
+    private _resizeId: ReturnType<typeof setTimeout>;
     private _svgCanvas: React.RefObject<SvgDraggableArea>;
     private _isTargetedAnimation: boolean;
-
     private _pixelFrameUnit: number;
     private _resizedTimeline: number;
-
     private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _mainAnimatable: Nullable<Animatable>;
     constructor(props: IAnimationCurveEditorComponentProps) {
@@ -130,7 +125,10 @@ export class AnimationCurveEditorComponent extends React.Component<
         this._graphCanvas = React.createRef();
         this._svgCanvas = React.createRef();
 
+        // Default values
         this._pixelFrameUnit = 10;
+        const _canvasLength = 240;
+        const valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
 
         let initialSelection;
         let initialPathData;
@@ -157,12 +155,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             initialPathData = initialPathData === null || initialPathData === undefined ? undefined : initialPathData;
         }
 
-        const _canvasLength = 240;
-
         this.stopAnimation();
 
-        // will update this until we have a top scroll/zoom feature
-        let valueInd = [2, 1.8, 1.6, 1.4, 1.2, 1, 0.8, 0.6, 0.4, 0.2, 0];
         this.state = {
             selected: initialSelection,
             isOpen: true,
@@ -203,6 +197,7 @@ export class AnimationCurveEditorComponent extends React.Component<
             framesInCanvasView: { from: 0, to: 20 },
             maxFrame: undefined,
             minFrame: undefined,
+            framesResized: 0,
         };
     }
 
@@ -255,7 +250,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     };
 
     setFrameAxis(currentLength: number) {
-        //const factor = 10 / this._pixelFrameUnit;
         let halfNegative = new Array(currentLength).fill(0).map((s, i) => {
             return { value: -i * 10, label: -i };
         });
@@ -298,7 +292,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     getValueLabel(i: number) {
-        // Need to update this when Y axis grows
         let label = 0;
         if (i === 0) {
             label = 2;
@@ -683,8 +676,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                 // Get the previous svgKeyframe and measure distance between these two points
                 let distanceWithPreviousKeyframe = this.getControlPointWeight(updatedSvgKeyFrame);
 
-                // Get a quarter of that value for amplitude
-
                 let distanceAmplitudeOfX = updatedSvgKeyFrame.leftControlPoint.x - distanceWithPreviousKeyframe;
 
                 let slope =
@@ -699,12 +690,11 @@ export class AnimationCurveEditorComponent extends React.Component<
                     ((newValueOfY - updatedSvgKeyFrame.keyframePoint.y) * this._scaleFactor) / this._heightScale;
 
                 if (updatedValue > -100 && updatedValue < 100) {
-                    key.inTangent = slope; //this.updateValuePerCoordinate(dataType, key.inTangent, updatedValue, coordinate);
+                    key.inTangent = slope;
 
                     if (!this.state.isBrokenMode) {
                         if (updatedSvgKeyFrame.rightControlPoint !== null) {
-                            // Sets opposite value
-                            // get angle between control points and keep angle...
+                            // get angle between control points and keep angle to allow broken control points feature
                             key.outTangent = key.inTangent * -1;
                         }
                     }
@@ -721,7 +711,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     ) {
         if (updatedSvgKeyFrame.isRightActive) {
             if (updatedSvgKeyFrame.rightControlPoint !== null) {
-                // Rotate Control Points
                 // Get the next svgKeyframe and measure distance between these two points
                 let distanceWithNextKeyframe = this.getControlPointWeight(updatedSvgKeyFrame);
 
@@ -739,11 +728,11 @@ export class AnimationCurveEditorComponent extends React.Component<
                     ((newValueOfY - updatedSvgKeyFrame.keyframePoint.y) * this._scaleFactor) / this._heightScale;
 
                 if (updatedValue > -100 && updatedValue < 100) {
-                    key.outTangent = slope * -1; //this.updateValuePerCoordinate(dataType, key.outTangent, updatedValue, coordinate);
+                    key.outTangent = slope * -1;
 
                     if (!this.state.isBrokenMode) {
                         if (updatedSvgKeyFrame.leftControlPoint !== null) {
-                            // Sets opposite value
+                            // get angle between control points and keep angle to allow broken control points feature
                             key.inTangent = key.outTangent * -1;
                         }
                     }
@@ -935,16 +924,12 @@ export class AnimationCurveEditorComponent extends React.Component<
                 if (selectedKeyframe.isLeftActive && selectedKeyframe.leftControlPoint !== null) {
                     const start = new Vector2(key.frame, key.value);
                     const prev = new Vector2(keys[order - 1].frame, keys[order - 1].value);
-                    //const pointHalf = Vector2.Lerp(prev, start, 0.5); // Explore the distance of the point
-                    //const inTangent = pointHalf.y - start.y;
                     let slope = (start.y - prev.y) / (start.x - prev.x);
                     key.inTangent = slope * -1;
                 } else if (selectedKeyframe.isRightActive && selectedKeyframe.rightControlPoint !== null) {
                     const start = new Vector2(key.frame, key.value);
                     const next = new Vector2(keys[order + 1].frame, keys[order + 1].value);
-                    //const pointHalf = Vector2.Lerp(start, next, 0.5); // Explore the distance of the point
                     let slope = (next.y - start.y) / (next.x - start.x);
-                    // const outTangent = pointHalf.y - start.y;
                     key.outTangent = slope;
                 }
                 this.setState({ isBrokenMode: true }, () => {
@@ -1006,8 +991,8 @@ export class AnimationCurveEditorComponent extends React.Component<
                 const recentlyCreated = {
                     frame: x,
                     value: actualValue,
-                    inTangent: this.state.isFlatTangentMode ? 0 : 0, // check if flat mode can be turn off
-                    outTangent: this.state.isFlatTangentMode ? 0 : 0, // check if flat mode can be turn off
+                    inTangent: this.state.isFlatTangentMode ? 0 : 0, // check if flat mode can be turned off
+                    outTangent: this.state.isFlatTangentMode ? 0 : 0, // check if flat mode can be turned off
                 };
 
                 keys.push(recentlyCreated);
@@ -1112,7 +1097,6 @@ export class AnimationCurveEditorComponent extends React.Component<
      * This section handles how to render curves.
      */
     setKeyframePointLinear(point: Vector2, index: number) {
-        // here set the ID to a unique id
         let svgKeyframe = {
             keyframePoint: point,
             rightControlPoint: null,
@@ -1126,10 +1110,6 @@ export class AnimationCurveEditorComponent extends React.Component<
     }
 
     flatTangents(keyframes: IAnimationKey[], dataType: number) {
-        // Checks if Flat Tangent is active (tangents are set to zero)
-
-        // only flat the selected control point
-        // if multiple selected then flat all...
         let flattened;
         if (this.state && this.state.isFlatTangentMode) {
             flattened = keyframes.map((kf) => {
@@ -1232,7 +1212,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                 targetProperty,
             } = this.getAnimationData(animation);
 
-            //keyframes = this.flatTangents(keyframes, valueType); // This will break because we are using setState before mounted...
             const startKey = keyframes[0];
             let middle = this._heightScale / this._scaleFactor; //?
             let collection: ICurveData[] = [];
@@ -1285,14 +1264,12 @@ export class AnimationCurveEditorComponent extends React.Component<
         let targetPropertyPath = animation.targetPropertyPath;
         let framesPerSecond = animation.framePerSecond;
         let highestFrame = animation.getHighestFrame();
-        //let serialized = animation.serialize();
         let usesTangents =
             animation.getKeys().find((kf) => kf.hasOwnProperty("inTangent") || kf.hasOwnProperty("outTangent")) !==
             undefined
                 ? true
                 : false;
         let valueType = animation.dataType;
-        // easing properties
         let easingType, easingMode;
         let easingFunction: EasingFunction = animation.getEasingFunction() as EasingFunction;
         if (easingFunction === undefined) {
@@ -1374,8 +1351,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             let svgKeyframe;
             let outTangent;
             let inTangent;
-            let defaultWeight = this.state.canvasWidthScale / 2; // Get weight depending on prev and next frame distance
-            //distanceWithPreviousKeyframe = Vector2.Distance(updatedSvgKeyFrame.keyframePoint, previousKeyframe.keyframePoint) / 4;
+            let defaultWeight = this.state.canvasWidthScale / 2;
+
             // For inTangent
             // has prev frame?
             let weightIn = 0;
@@ -1410,25 +1387,21 @@ export class AnimationCurveEditorComponent extends React.Component<
                 defaultWeight = weightIn > defaultWeight ? defaultWeight : weightIn;
             }
 
-            // if curve doesnt have tangents then must be null to have linear
-            // right now has 0 then the linear will show a slight curve as flat tangents...
             let defaultTangent: number | null = null;
             if (i !== 0 || i !== keyframes.length - 1) {
                 defaultTangent = null;
             }
-            // defaultTangent = 0; Zero or if linear get linear formula (slope of next, prev point)
 
             var inT =
                 key.inTangent === null || key.inTangent === undefined
                     ? defaultTangent
                     : this.getValueAsArray(type, key.inTangent)[coordinate];
             var outT =
-                key.outTangent === null || key.inTangent === undefined
+                key.outTangent === null || key.outTangent === undefined
                     ? defaultTangent
                     : this.getValueAsArray(type, key.outTangent)[coordinate];
 
-            //let y = this._heightScale - keyframe_valueAsArray * middle; // should be half of heightscale
-            defaultWeight = 1 * this._pixelFrameUnit;
+            defaultWeight = 1 * this._pixelFrameUnit; // update based on control points
 
             if (inT !== null) {
                 let valueInY = inT + keyframe_valueAsArray;
@@ -1522,7 +1495,6 @@ export class AnimationCurveEditorComponent extends React.Component<
 
         keyframes.forEach((key, i) => {
             // identify type of value and split...
-
             // Gets previous initial point of curve segment
             var pointA = new Vector2(0, 0);
             if (i === 0) {
@@ -1640,7 +1612,9 @@ export class AnimationCurveEditorComponent extends React.Component<
         d = 3 * (1 - v) * v * v;
         det = a * d - b * c;
 
-        if (det == 0.0) return undefined;
+        if (det == 0.0) {
+            return undefined;
+        }
 
         q1.x = p1.x - ((1 - u) * (1 - u) * (1 - u) * p0.x + u * u * u * p3.x);
         q1.y = p1.y - ((1 - u) * (1 - u) * (1 - u) * p0.y + u * u * u * p3.y);
@@ -1710,7 +1684,6 @@ export class AnimationCurveEditorComponent extends React.Component<
             selectedCurve = coordinate;
         }
 
-        // check for empty svgKeyframes, lastframe, selected
         this.setState(
             {
                 selected: animation,
@@ -1876,7 +1849,12 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     setCanvasPosition = (keyframe: IAnimationKey) => {
         if (this.state.selected) {
-            const positionX = (keyframe.frame - this._pixelFrameUnit) * this._pixelFrameUnit;
+            // change initialframe, last frame
+            const currentFramesInCanvas = this.state.framesInCanvasView.to - this.state.framesInCanvasView.from;
+
+            const positionX = (keyframe.frame - currentFramesInCanvas / 2) * this._pixelFrameUnit;
+
+            const newStartFrameInCanvas = Math.round(positionX / this._pixelFrameUnit);
 
             let value = 0;
             if (keyframe.value === null) {
@@ -1890,11 +1868,6 @@ export class AnimationCurveEditorComponent extends React.Component<
             const valueScale = this._heightScale / this._scaleFactor;
             const middleCanvas = this._heightScale / 2;
             const positionY = value === 0 ? middleCanvas : middleCanvas - value * valueScale;
-
-            // change initialframe, last frame
-            const currentFramesInCanvas = this.state.framesInCanvasView.to - this.state.framesInCanvasView.from;
-
-            const newStartFrameInCanvas = Math.round(positionX / this._pixelFrameUnit);
 
             this.setState({
                 panningX: positionX,
@@ -2033,6 +2006,8 @@ export class AnimationCurveEditorComponent extends React.Component<
             this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
         }
+
+        this._editorWindow.removeEventListener("resize", this.onWindowResizeWidth);
     }
 
     isCurrentFrame(frame: number) {
@@ -2063,7 +2038,7 @@ export class AnimationCurveEditorComponent extends React.Component<
         const animation = this.state.selected;
         const coordinate = this.state.selectedCoordinate;
         if (animation) {
-            let highest, lowest, middleFrame, firstFrame, lastFrame;
+            let highest, lowest, firstFrame, lastFrame;
             const keysCopy = [...animation.getKeys()];
             // calculate scale factor for Value Axis //
             const selectedKeyframes = this.state.svgKeyframes?.filter((x) => x.selected);
@@ -2079,8 +2054,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                 lowest = keysCopy[0];
                 highest = keysCopy[keysCopy.length - 1];
                 keysCopy.sort((a, b) => a.frame - b.frame);
-                middleFrame =
-                    Math.round((keysCopy[keysCopy.length - 1].frame - keysCopy[0].frame) / 2) + keysCopy[0].frame;
             } else {
                 // If selected get keys
                 const keysInRange = keysCopy.filter((kf, i) => {
@@ -2093,18 +2066,20 @@ export class AnimationCurveEditorComponent extends React.Component<
                 // Sort to get first and last frame
                 keysInRange.sort((a, b) => a.frame - b.frame);
 
+                firstFrame = keysInRange[0].frame;
+                lastFrame = keysInRange[keysInRange.length - 1].frame;
+
                 // Get previous and next non selected keyframe in range
                 const prevKey = keysCopy[keysCopy.indexOf(keysInRange[0]) - 1];
                 const nextKey = keysCopy[keysCopy.indexOf(keysInRange[keysInRange.length - 1]) + 1];
 
-                firstFrame = prevKey.frame;
-                lastFrame = nextKey.frame;
-
                 // Insert keys in range
                 if (prevKey) {
+                    firstFrame = prevKey.frame;
                     keysInRange.push(prevKey);
                 }
                 if (nextKey) {
+                    lastFrame = nextKey.frame;
                     keysInRange.push(nextKey);
                 }
 
@@ -2119,9 +2094,6 @@ export class AnimationCurveEditorComponent extends React.Component<
                 highest = keysInRange[keysInRange.length - 1];
 
                 keysInRange.sort((a, b) => a.frame - b.frame);
-                middleFrame =
-                    Math.round((keysInRange[keysInRange.length - 1].frame - keysInRange[0].frame) / 2) +
-                    keysInRange[0].frame;
             }
 
             // calculate scale...
@@ -2135,10 +2107,6 @@ export class AnimationCurveEditorComponent extends React.Component<
             this._scaleFactor = isNaN(scale) || scale === 0 ? 2 : scale * canvasMargin;
 
             // Set a new scale factor but for Frames
-            // ****
-            // get client width of canvas
-            // how many frames are in canvas ... get the pixelFrameUnit?
-            // get frames needed (last frame - first frame)
             let currentSpace = 780;
             const frameUnit = 39;
             if (this._graphCanvas.current) {
@@ -2148,11 +2116,12 @@ export class AnimationCurveEditorComponent extends React.Component<
             // with client width divide the number of frames needed
             const frameDistance = lastFrame - firstFrame;
             this._pixelFrameUnit = availableSpaceForFrames / (frameDistance / 10); // Update scale here...
+            if (this._pixelFrameUnit > 10) {
+                this._pixelFrameUnit = 10;
+            }
             const canvasValue = isNaN(scale) || scale === 0 ? 1 : scale / 2 + lowest?.value;
 
-            const firstF = firstFrame;
-
-            const centerFrame = middleFrame;
+            const centerFrame = frameDistance / 2 + firstFrame; // add margin
 
             this.setState(
                 {
@@ -2160,10 +2129,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                 },
                 () => {
                     // Need to center and reposition canvas
-
-                    this.setCanvasPosition({ frame: firstF, value: canvasValue });
-                    console.log(`Should center canvas at: ${centerFrame}, ${canvasValue}`);
-
+                    this.setCanvasPosition({ frame: centerFrame, value: canvasValue });
                     // Render new points
                     this.selectAnimation(animation, coordinate);
                 }
@@ -2172,17 +2138,40 @@ export class AnimationCurveEditorComponent extends React.Component<
     };
 
     onWindowResizeWidth = () => {
+        let framesResized: number;
         if (this._graphCanvas.current) {
             const defaultWidth = 781;
             const defaultSvgProportion = 1.8;
             const proportionResized = (defaultSvgProportion / 2) * 10;
-            const svgWidth = 200;
-            const width = (this._graphCanvas.current.clientWidth / svgWidth) * defaultSvgProportion;
+            const svgCanvasViewBoxWidth = 200;
+            const width = (this._graphCanvas.current.clientWidth / svgCanvasViewBoxWidth) * defaultSvgProportion;
             const percentResize = (this._graphCanvas.current.clientWidth * 100) / defaultWidth;
+
             const value = (percentResize - 100) * -1;
-            this.setState({ valuesPositionResize: value - width + proportionResized });
-            this.onTimelineResize();
+
+            const unit = 39;
+            framesResized = Math.round(this._graphCanvas.current.clientWidth / unit);
+
+            this.setState({
+                valuesPositionResize: value - width + proportionResized,
+                framesResized,
+            });
         }
+        this.onTimelineResize();
+        clearTimeout(this._resizeId);
+        this._resizeId = setTimeout(() => this.onWindowEndResize(framesResized), 300);
+    };
+
+    onWindowEndResize = (framesResized: number) => {
+        const howManyFrames = this.state.framesInCanvasView.to - this.state.framesInCanvasView.from;
+        const difference = framesResized - howManyFrames;
+        const framesInCanvasView = {
+            from: this.state.framesInCanvasView.from - Math.round(difference / 2),
+            to: this.state.framesInCanvasView.to + Math.round(difference / 2),
+        };
+        this.setState({
+            framesInCanvasView,
+        });
     };
 
     onTimelineResize = () => {
@@ -2253,6 +2242,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     keyframeSvgPoints={this.state.svgKeyframes}
                                     resetActionableKeyframe={this.resetActionableKeyframe}
                                     framesInCanvasView={this.state.framesInCanvasView}
+                                    framesResized={this.state.framesResized}
                                 >
                                     {this.setValueLines().map((line, i) => {
                                         return (
@@ -2351,7 +2341,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                         </svg>
                                     ))}
 
-                                    {this.state.selected && this.state.currentFrame ? (
+                                    {this.state.selected && this.state.currentFrame !== undefined ? (
                                         <svg x="0" y={96 + this.state.panningY + "%"}>
                                             <line
                                                 x1={this.state.currentFrame * this._pixelFrameUnit}
