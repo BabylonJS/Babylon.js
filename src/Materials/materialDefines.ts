@@ -21,6 +21,8 @@ export class MaterialDefines {
     /** @hidden */
     public _areMiscDirty = true;
     /** @hidden */
+    public _arePrePassDirty = true;
+    /** @hidden */
     public _areImageProcessingDirty = true;
 
     /** @hidden */
@@ -53,6 +55,7 @@ export class MaterialDefines {
         this._areLightsDirty = false;
         this._areLightsDisposed = false;
         this._areMiscDirty = false;
+        this._arePrePassDirty = false;
         this._areImageProcessingDirty = false;
     }
 
@@ -123,6 +126,14 @@ export class MaterialDefines {
      */
     public markAsMiscDirty() {
         this._areMiscDirty = true;
+        this._isDirty = true;
+    }
+
+    /**
+     * Marks the prepass state as changed
+     */
+    public markAsPrePassDirty() {
+        this._arePrePassDirty = true;
         this._isDirty = true;
     }
 
