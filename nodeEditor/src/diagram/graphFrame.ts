@@ -1266,7 +1266,7 @@ export class GraphFrame {
     }
 
     public dispose() {
-        //this.isCollapsed = false;
+        this.isCollapsed = false;
         
         this._nodes.forEach(node => {
             node.enclosingFrameId = -1;
