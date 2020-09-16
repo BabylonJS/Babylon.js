@@ -27,6 +27,8 @@ import { Scene } from '../scene';
 import { Scalar } from '../Maths/math.scalar';
 import { WebGPUBufferManager } from './WebGPU/webgpuBufferManager';
 import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
+import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
+import { WebGPUHardwareTexture } from './WebGPU/webgpuHardwareTexture';
 
 /**
  * Options to load the associated Glslang library
@@ -879,15 +881,17 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     /** @hidden */
-    public _createTexture(): WebGLTexture {
-        // TODO WEBGPU. This should return the GPUTexture, WebGLTexture might need to be wrapped like the buffers.
-        return { };
+    public _createHardwareTexture(): HardwareTextureWrapper {
+        return new WebGPUHardwareTexture();
     }
 
     /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
-        if (texture._webGPUTexture) {
-            texture._webGPUTexture.destroy();
+        texture._hardwareTexture?.release();
+
+        const index = this._internalTexturesCache.indexOf(texture);
+        if (index !== -1) {
+            this._internalTexturesCache.splice(index, 1);
         }
 
         delete this._cacheTextureCreation[texture.id];
@@ -1206,8 +1210,10 @@ export class WebGPUEngine extends Engine {
 
                     // TODO WEBGPU: handle format if <> 0. Note that it seems "rgb" formats don't exist in WebGPU...
                     //let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
-                    texture._webGPUTexture = await this._textureHelper.createTexture(imageBitmap, !noMipmap, invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format));
-                    texture._webGPUTextureView = texture._webGPUTexture.createView();
+                    const gpuTexture = await this._textureHelper.createTexture(imageBitmap, !noMipmap, invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format));
+
+                    texture._hardwareTexture!.set(gpuTexture);
+                    (texture._hardwareTexture as WebGPUHardwareTexture).createView();
 
                     if (scene) {
                         scene._removePendingData(texture);
@@ -1248,8 +1254,10 @@ export class WebGPUEngine extends Engine {
 
                 // TODO WEBGPU. handle format if <> 0
                 //const internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
-                texture._webGPUTexture = await this._textureHelper.createCubeTexture(imageBitmaps, !noMipmap, false, false, this._getWebGPUTextureFormat(texture.type, texture.format));
-                texture._webGPUTextureView = texture._webGPUTexture.createView({
+                const gpuTexture = await this._textureHelper.createCubeTexture(imageBitmaps, !noMipmap, false, false, this._getWebGPUTextureFormat(texture.type, texture.format));
+
+                texture._hardwareTexture!.set(gpuTexture);
+                (texture._hardwareTexture as WebGPUHardwareTexture).createView({
                     dimension: WebGPUConstants.TextureViewDimension.Cube
                 });
 
@@ -1276,13 +1284,6 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper.generateCubeMipmaps(gpuTexture, WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height));
             });
         }
-    }
-
-    /** @hidden */
-    public _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture {
-        console.warn("_createDepthStencilCubeTexture not implemented yet in WebGPU");
-
-        return null as any;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
@@ -1348,7 +1349,7 @@ export class WebGPUEngine extends Engine {
             return promise;
         }
 
-        promise = Promise.resolve(texture._webGPUTexture as GPUTexture);
+        promise = Promise.resolve(texture._hardwareTexture!.underlyingResource ?? null);
 
         if (width === undefined) {
             width = texture.width;
@@ -1357,11 +1358,11 @@ export class WebGPUEngine extends Engine {
             height = texture.height;
         }
 
-        if (!texture._webGPUTexture) {
+        if (!texture._hardwareTexture!.underlyingResource) {
             if (texture.isCube) {
                 promise = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format)).then((gpuTexture) => {
-                    texture._webGPUTexture = gpuTexture;
-                    texture._webGPUTextureView = texture._webGPUTexture.createView({
+                    texture._hardwareTexture!.set(gpuTexture);
+                    (texture._hardwareTexture as WebGPUHardwareTexture).createView({
                         dimension: WebGPUConstants.TextureViewDimension.Cube,
                         mipLevelCount: Math.round(Scalar.Log2(Math.max(width!, height!))) + 1,
                         baseArrayLayer: 0,
@@ -1372,8 +1373,8 @@ export class WebGPUEngine extends Engine {
                 });
             } else {
                 promise = this._textureHelper.createTexture({ width, height }, texture.generateMipMaps, texture.invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format)).then((gpuTexture) => {
-                    texture._webGPUTexture = gpuTexture;
-                    texture._webGPUTextureView = texture._webGPUTexture.createView();
+                    texture._hardwareTexture!.set(gpuTexture);
+                    (texture._hardwareTexture as WebGPUHardwareTexture).createView();
                     return gpuTexture;
                 });
             }
@@ -1421,6 +1422,35 @@ export class WebGPUEngine extends Engine {
         });
     }
 
+    public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
+        console.warn("updateVideoTexture not implemented yet in WebGPU");
+
+        // TODO WEBGPU is there/will be a native way to handle video textures?
+        /*if (!texture._workingCanvas) {
+            texture._workingCanvas = CanvasGenerator.CreateCanvas(texture.width, texture.height);
+            let context = texture._workingCanvas.getContext("2d");
+
+            if (!context) {
+                throw new Error("Unable to get 2d context");
+            }
+
+            texture._workingContext = context;
+            texture._workingCanvas.width = texture.width;
+            texture._workingCanvas.height = texture.height;
+        }
+
+        texture._workingContext!.clearRect(0, 0, texture.width, texture.height);
+        texture._workingContext!.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
+
+        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
+
+        if (texture.generateMipMaps) {
+            this._gl.generateMipmap(this._gl.TEXTURE_2D);
+        }
+
+        texture.isReady = true;*/
+    }
+
     /** @hidden */
     public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
         console.warn("_uploadCompressedDataToTextureDirectly not implemented yet in WebGPU");
@@ -1460,9 +1490,39 @@ export class WebGPUEngine extends Engine {
         });
     }
 
+    /** @hidden */
+    public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
+        console.warn("_readTexturePixels not implemented yet in WebGPU");
+
+        return null as any;
+        /*let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
+
+        switch (readType) {
+            case gl.UNSIGNED_BYTE:
+                if (!buffer) {
+                    buffer = new Uint8Array(4 * width * height);
+                }
+                readType = gl.UNSIGNED_BYTE;
+                break;
+            default:
+                if (!buffer) {
+                    buffer = new Float32Array(4 * width * height);
+                }
+                readType = gl.FLOAT;
+                break;
+        }
+
+        gl.readPixels(0, 0, width, height, gl.RGBA, readType, <DataView>buffer);*/
+    }
+
     //------------------------------------------------------------------------------
     //                              Render Target Textures
     //------------------------------------------------------------------------------
+
+    /** @hidden */
+    public _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number, layers?: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number): void {
+        console.warn("_setupDepthStencilTexture not implemented yet in WebGPU");
+    }
 
     public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture {
         let fullOptions = new RenderTargetCreationOptions();
@@ -1473,17 +1533,21 @@ export class WebGPUEngine extends Engine {
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
             fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            // TODO WEBGPU fullOptions.format not set?
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.generateDepthBuffer = true;
             fullOptions.generateStencilBuffer = false;
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+            // TODO WEBGPU fullOptions.format not set?
         }
         var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
         var width = size.width || size;
         var height = size.height || size;
+
+        // TODO WEBGPU handle layers
 
         texture._depthStencilBuffer = {};
         texture._framebuffer = {};
@@ -1502,6 +1566,35 @@ export class WebGPUEngine extends Engine {
         this._internalTexturesCache.push(texture);
 
         return texture;
+    }
+
+    public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+        var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+
+        this._internalTexturesCache.push(texture);
+
+        console.warn("createRenderTargetCubeTexture not implemented yet in WebGPU");
+
+        return texture;
+    }
+
+    /** @hidden */
+    public _createDepthStencilTexture(size: number | { width: number, height: number, layers?: number }, options: DepthTextureCreationOptions): InternalTexture {
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
+
+        console.warn("_createDepthStencilTexture not implemented yet in WebGPU");
+
+        return internalTexture;
+    }
+
+    /** @hidden */
+    public _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture {
+        var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown);
+        internalTexture.isCube = true;
+
+        console.warn("_createDepthStencilCubeTexture not implemented yet in WebGPU");
+
+        return internalTexture;
     }
 
     //------------------------------------------------------------------------------
@@ -2234,24 +2327,25 @@ export class WebGPUEngine extends Engine {
                 if (bindingDefinition.isSampler) {
                     const bindingInfo = webgpuPipelineContext.samplers[bindingDefinition.name];
                     if (bindingInfo) {
-                        if (!bindingInfo.texture._webGPUSampler) {
+                        const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
+                        if (!hardwareTexture.sampler) {
                             const samplerDescriptor: GPUSamplerDescriptor = this._getSamplerDescriptor(bindingInfo.texture!);
                             const gpuSampler = this._device.createSampler(samplerDescriptor);
-                            bindingInfo.texture._webGPUSampler = gpuSampler;
+                            hardwareTexture.setSampler(gpuSampler);
                         }
 
                         // TODO WEBGPU Remove this when all testings are ok
-                        if (!bindingInfo.texture._webGPUTextureView) {
+                        if (!hardwareTexture.view) {
                             console.error("Trying to bind a null gpu texture! bindingDefinition=", bindingDefinition, " | bindingInfo=", bindingInfo);
                             debugger;
                         }
 
                         entries.push({
                             binding: bindingInfo.textureBinding,
-                            resource: bindingInfo.texture._webGPUTextureView!,
+                            resource: hardwareTexture.view!,
                         }, {
                             binding: bindingInfo.samplerBinding,
-                            resource: bindingInfo.texture._webGPUSampler!,
+                            resource: hardwareTexture.sampler!,
                         });
                     }
                     else {

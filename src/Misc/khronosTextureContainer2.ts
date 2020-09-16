@@ -41,7 +41,10 @@ export class KhronosTextureContainer2 {
 
                 const result = ktxTexture.glUpload();
                 if (result.error === 0) {
-                    internalTexture._webGLTexture = result.texture;
+                    if (!internalTexture._hardwareTexture) {
+                        internalTexture._hardwareTexture = internalTexture.getEngine()._createHardwareTexture();
+                    }
+                    internalTexture._hardwareTexture.set(result.texture);
                 }
                 else {
                     throw new Error(`Failed to upload: ${result.error}`);

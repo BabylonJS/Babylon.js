@@ -4,6 +4,7 @@ import { RenderTargetCreationOptions } from "../../Materials/Textures/renderTarg
 import { Constants } from "../../Engines/constants";
 import { _DevTools } from '../../Misc/devTools';
 import { Engine } from '../../Engines/engine';
+import { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
@@ -249,13 +250,7 @@ export class InternalTexture {
     public _irradianceTexture: Nullable<BaseTexture> = null;
 
     /** @hidden */
-    public _webGLTexture: Nullable<WebGLTexture> = null;
-    /** @hidden */
-    public _webGPUTexture: Nullable<GPUTexture> = null;
-    /** @hidden */
-    public _webGPUSampler: Nullable<GPUSampler> = null;
-    /** @hidden */
-    public _webGPUTextureView: Nullable<GPUTextureView> = null;
+    public _hardwareTexture: Nullable<HardwareTextureWrapper> = null;
 
     /** @hidden */
     public _references: number = 1;
@@ -297,7 +292,7 @@ export class InternalTexture {
         this._id = InternalTexture._Counter++;
 
         if (!delayAllocation) {
-            this._webGLTexture = engine._createTexture(); // TODO WebGPU: don't do this in WebGPU
+            this._hardwareTexture = engine._createHardwareTexture();
         }
     }
 
@@ -456,9 +451,9 @@ export class InternalTexture {
 
     /** @hidden */
     public _swapAndDie(target: InternalTexture): void {
-        target._webGLTexture = this._webGLTexture;
-        target._webGPUTexture = this._webGPUTexture;
-        target._webGPUTextureView = this._webGPUTextureView;
+        // TODO what about refcount on target?
+
+        target._hardwareTexture = this._hardwareTexture;
         target._isRGBD = this._isRGBD;
 
         if (this._framebuffer) {
@@ -515,16 +510,10 @@ export class InternalTexture {
      * Dispose the current allocated resources
      */
     public dispose(): void {
-        if (!this._webGLTexture && !this._webGPUTexture) {
-            return;
-        }
-
         this._references--;
         if (this._references === 0) {
             this._engine._releaseTexture(this);
-            this._webGLTexture = null;
-            this._webGPUTexture = null;
-            this._webGPUSampler = null;
+            this._hardwareTexture = null;
         }
     }
 }

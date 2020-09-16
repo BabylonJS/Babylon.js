@@ -1350,7 +1350,7 @@ export class NativeEngine extends Engine {
         this._cachedEffectForVertexBuffers = null;
     }
 
-    public _createTexture(): WebGLTexture {
+    protected _createTexture(): WebGLTexture {
         return this._native.createTexture();
     }
 
@@ -1457,7 +1457,7 @@ export class NativeEngine extends Engine {
             throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
         } else {
             const onload = (data: ArrayBufferView) => {
-                const webGLTexture = texture._webGLTexture;
+                const webGLTexture = texture._hardwareTexture?.underlyingResource ?? null;
                 if (!webGLTexture) {
                     if (scene) {
                         scene._removePendingData(texture);
@@ -1586,7 +1586,7 @@ export class NativeEngine extends Engine {
                 texture._isRGBD = true;
                 texture.invertY = true;
 
-                this._native.loadCubeTextureWithMips(texture._webGLTexture!, imageData, () => {
+                this._native.loadCubeTextureWithMips(texture._hardwareTexture!.underlyingResource, imageData, () => {
                     texture.isReady = true;
                     if (onLoad) {
                         onLoad();
@@ -1618,7 +1618,7 @@ export class NativeEngine extends Engine {
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer)))).then((data) => {
                 return new Promise((resolve, reject) => {
-                    this._native.loadCubeTexture(texture._webGLTexture!, data, !noMipmap, resolve, reject);
+                    this._native.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, resolve, reject);
                 });
             }).then(() => {
                 texture.isReady = true;
@@ -1723,7 +1723,7 @@ export class NativeEngine extends Engine {
         }
 
         var framebuffer = this._native.createFramebuffer(
-            texture._webGLTexture!,
+            texture._hardwareTexture!.underlyingResource,
             width,
             height,
             NativeEngine._GetNativeTextureFormat(fullOptions.format, fullOptions.type),
@@ -1752,9 +1752,9 @@ export class NativeEngine extends Engine {
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
-        if (texture._webGLTexture) {
+        if (texture._hardwareTexture?.underlyingResource ?? false) {
             var filter = this._getSamplingFilter(samplingMode);
-            this._native.setTextureSampling(texture._webGLTexture, filter);
+            this._native.setTextureSampling(texture._hardwareTexture?.underlyingResource ?? null, filter);
         }
         texture.samplingMode = samplingMode;
     }
@@ -1858,18 +1858,18 @@ export class NativeEngine extends Engine {
         this._activeChannel = channel;
 
         if (!internalTexture ||
-            !internalTexture._webGLTexture) {
+            !(internalTexture._hardwareTexture?.underlyingResource ?? null)) {
             return false;
         }
 
         this._native.setTextureWrapMode(
-            internalTexture._webGLTexture,
+            internalTexture._hardwareTexture?.underlyingResource ?? null,
             this._getAddressMode(texture.wrapU),
             this._getAddressMode(texture.wrapV),
             this._getAddressMode(texture.wrapR));
         this._updateAnisotropicLevel(texture);
 
-        this._native.setTexture(uniform, internalTexture._webGLTexture);
+        this._native.setTexture(uniform, internalTexture._hardwareTexture?.underlyingResource ?? null);
 
         return true;
     }
@@ -1880,12 +1880,12 @@ export class NativeEngine extends Engine {
         var internalTexture = texture.getInternalTexture();
         var value = texture.anisotropicFilteringLevel;
 
-        if (!internalTexture || !internalTexture._webGLTexture) {
+        if (!internalTexture || !(internalTexture._hardwareTexture?.underlyingResource ?? null)) {
             return;
         }
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-            this._native.setTextureAnisotropicLevel(internalTexture._webGLTexture, value);
+            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture?.underlyingResource ?? null, value);
             internalTexture._cachedAnisotropicFilteringLevel = value;
         }
     }
