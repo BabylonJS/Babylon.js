@@ -537,7 +537,7 @@ export class NullEngine extends Engine {
     }
 
     /** @hidden */
-    public _createTexture(): WebGLTexture {
+    protected _createTexture(): WebGLTexture {
         return {};
     }
 

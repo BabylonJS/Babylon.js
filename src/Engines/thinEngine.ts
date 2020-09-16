@@ -31,6 +31,8 @@ import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { CanvasGenerator } from '../Misc/canvasGenerator';
 import { PerformanceConfigurator } from './performanceConfigurator';
 import { EngineFeatures } from './engineFeatures';
+import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
+import { WebGLHardwareTexture } from './WebGL/webGLHardwareTexture';
 
 declare type WebRequest = import("../Misc/webRequest").WebRequest;
 declare type LoadFileError = import("../Misc/fileTools").LoadFileError;
@@ -160,7 +162,7 @@ export class ThinEngine {
     public static Features: EngineFeatures = {
         forceBitmapOverHTMLImageElement: false,
         supportRenderAndCopyToLodForFloatTextures: false,
-    }
+    };
 
     /**
      * Returns a string describing the current engine
@@ -1363,23 +1365,23 @@ export class ThinEngine {
 
         const gl = this._gl;
         if (texture.is2DArray) {
-            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._webGLTexture, lodLevel, layer);
+            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture._hardwareTexture!.underlyingResource, lodLevel, layer);
         }
         else if (texture.isCube) {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, lodLevel);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._hardwareTexture!.underlyingResource, lodLevel);
         }
 
         const depthStencilTexture = texture._depthStencilTexture;
         if (depthStencilTexture) {
             const attachment = (depthStencilTexture._generateStencilBuffer) ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
             if (texture.is2DArray) {
-                gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._webGLTexture, lodLevel, layer);
+                gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel, layer);
             }
             else if (texture.isCube) {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, lodLevel);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel);
             }
             else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, lodLevel);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._hardwareTexture!.underlyingResource, lodLevel);
             }
         }
 
@@ -2836,7 +2838,7 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _createTexture(): WebGLTexture {
+    protected _createTexture(): WebGLTexture {
         let texture = this._gl.createTexture();
 
         if (!texture) {
@@ -2844,6 +2846,11 @@ export class ThinEngine {
         }
 
         return texture;
+    }
+
+    /** @hidden */
+    public _createHardwareTexture(): HardwareTextureWrapper {
+        return new WebGLHardwareTexture(this._createTexture(), this._gl);
     }
 
     protected _createTextureBase(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -3393,7 +3400,7 @@ export class ThinEngine {
             return;
         }
 
-        if (!texture._webGLTexture) {
+        if (!texture._hardwareTexture!.underlyingResource) {
             //  this.resetTextureCache();
             if (scene) {
                 scene._removePendingData(texture);
@@ -3492,7 +3499,7 @@ export class ThinEngine {
     public _releaseTexture(texture: InternalTexture): void {
         this._releaseFramebufferObjects(texture);
 
-        this._deleteTexture(texture._webGLTexture);
+        this._deleteTexture(texture._hardwareTexture?.underlyingResource);
 
         // Unbind channels
         this.unbindAllTextures();
@@ -3520,7 +3527,9 @@ export class ThinEngine {
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
-        this._gl.deleteTexture(texture);
+        if (texture) {
+            this._gl.deleteTexture(texture);
+        }
     }
 
     protected _setProgram(program: WebGLProgram): void {
@@ -3573,7 +3582,7 @@ export class ThinEngine {
             if (texture && texture.isMultiview) {
                 this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
             } else {
-                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+                this._gl.bindTexture(target, texture ? texture._hardwareTexture!.underlyingResource : null);
             }
 
             this._boundTexturesCache[this._activeChannel] = texture;
