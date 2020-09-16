@@ -53,8 +53,8 @@ export class LightGizmo extends Gizmo {
                 return;
             }
 
-            var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            if (isHovered && pointerInfo.event.button === 0) {
+            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            if (this._isHovered && pointerInfo.event.button === 0) {
                 this.onClickedObservable.notifyObservers(this._light);
             }
         }, PointerEventTypes.POINTERDOWN);
