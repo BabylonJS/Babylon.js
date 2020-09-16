@@ -10,6 +10,7 @@ import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { Nullable } from "../types";
 import { AbstractMesh } from '../Meshes/abstractMesh';
+import { Material } from '../Materials/material';
 
 /**
  * Renders a pre pass of the scene
@@ -364,6 +365,7 @@ export class PrePassRenderer {
      */
     public markAsDirty() {
         this._isDirty = true;
+        this._markAllMaterialsAsPrePassDirty();
     }
 
     /**
@@ -417,6 +419,14 @@ export class PrePassRenderer {
         if (!this.enabled) {
             // Prepass disabled, we render only on 1 color attachment
             this._engine.bindAttachments([this._engine._gl.COLOR_ATTACHMENT0]);
+        }
+    }
+
+    private _markAllMaterialsAsPrePassDirty() {
+        const materials = this._scene.materials;
+
+        for (let i = 0; i < materials.length; i++) {
+            materials[i].markAsDirty(Material.PrePassDirtyFlag);
         }
     }
 

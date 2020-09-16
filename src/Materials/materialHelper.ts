@@ -311,6 +311,11 @@ export class MaterialHelper {
      */
     public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
         const previousPrePass = defines.PREPASS;
+
+        if (!defines._arePrePassDirty) {
+            return;
+        }
+
         const texturesList = [
         {
             type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
