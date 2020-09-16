@@ -29,6 +29,9 @@ import { WebGPUBufferManager } from './WebGPU/webgpuBufferManager';
 import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
 import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
 import { WebGPUHardwareTexture } from './WebGPU/webgpuHardwareTexture';
+import { CanvasGenerator } from '../Misc/canvasGenerator';
+
+declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 
 /**
  * Options to load the associated Glslang library
@@ -1320,6 +1323,15 @@ export class WebGPUEngine extends Engine {
                     };
                 }
             }
+
+            // Video
+            if ((<VideoTexture>texture).video) {
+                this._activeChannel = channel;
+                (<VideoTexture>texture).update();
+            } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+                texture.delayLoad();
+                return;
+            }
         }
     }
 
@@ -1388,6 +1400,16 @@ export class WebGPUEngine extends Engine {
         return promise;
     }
 
+    private _generateMipmaps(texture: InternalTexture, gpuTexture: GPUTexture) {
+        const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height);
+
+        if (texture.isCube) {
+            this._textureHelper.generateCubeMipmaps(gpuTexture, mipmapCount);
+        } else {
+            this._textureHelper.generateMipmaps(gpuTexture, mipmapCount);
+        }
+    }
+
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture?: boolean): void {
         if (!texture) {
             return;
@@ -1401,13 +1423,7 @@ export class WebGPUEngine extends Engine {
             this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha);
 
             if (texture.generateMipMaps) {
-                const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(width, height);
-
-                if (texture.isCube) {
-                    this._textureHelper.generateCubeMipmaps(gpuTexture, mipmapCount);
-                } else {
-                    this._textureHelper.generateMipmaps(gpuTexture, mipmapCount);
-                }
+                this._generateMipmaps(texture, gpuTexture);
             }
 
             texture.isReady = true;
@@ -1423,10 +1439,16 @@ export class WebGPUEngine extends Engine {
     }
 
     public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
-        console.warn("updateVideoTexture not implemented yet in WebGPU");
+        if (!texture || texture._isDisabled) {
+            return;
+        }
 
-        // TODO WEBGPU is there/will be a native way to handle video textures?
-        /*if (!texture._workingCanvas) {
+        if (this._videoTextureSupported === undefined) {
+            // TODO WEBGPU is there/will be a native way to handle video textures?
+            this._videoTextureSupported = false;
+        }
+
+        if (!texture._workingCanvas) {
             texture._workingCanvas = CanvasGenerator.CreateCanvas(texture.width, texture.height);
             let context = texture._workingCanvas.getContext("2d");
 
@@ -1442,13 +1464,17 @@ export class WebGPUEngine extends Engine {
         texture._workingContext!.clearRect(0, 0, texture.width, texture.height);
         texture._workingContext!.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
 
-        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas);
+        this._ensureTextureCreated(texture).then((gpuTexture) => {
+            createImageBitmap(texture._workingCanvas!).then((bitmap) => {
+                this._textureHelper.updateTexture(bitmap, gpuTexture, texture.width, texture.height, 0, 0, !invertY);
 
-        if (texture.generateMipMaps) {
-            this._gl.generateMipmap(this._gl.TEXTURE_2D);
-        }
+                if (texture.generateMipMaps) {
+                    this._generateMipmaps(texture, gpuTexture);
+                }
 
-        texture.isReady = true;*/
+                texture.isReady = true;
+            });
+        });
     }
 
     /** @hidden */
