@@ -352,7 +352,9 @@ export class AnimationCurveEditorComponent extends React.Component<
      */
     selectKeyframe = (id: string, multiselect: boolean) => {
         let frameValue: IActionableKeyFrame | undefined;
-        const selectedKeyFrame = this.state.svgKeyframes?.find((kf) => kf.id === id)?.selected;
+        const selectedKeyframe = this.state.svgKeyframes?.find((kf) => kf.id === id);
+        const isKeyFrameSelected = selectedKeyframe?.selected;
+        const hasCollinearPoints = this.hasCollinearPoints(selectedKeyframe);
         if (!multiselect) {
             frameValue = this.getKeyframeValueFromAnimation(id);
             this.deselectKeyframes();
@@ -360,13 +362,13 @@ export class AnimationCurveEditorComponent extends React.Component<
             frameValue = { frame: undefined, value: undefined };
         }
 
-        if (selectedKeyFrame) {
+        if (isKeyFrameSelected) {
             frameValue = { frame: undefined, value: undefined };
         }
 
         const updatedKeyframes = this.state.svgKeyframes?.map((kf) => {
             if (kf.id === id) {
-                kf.selected = !selectedKeyFrame;
+                kf.selected = !isKeyFrameSelected;
             }
             return kf;
         });
@@ -384,7 +386,22 @@ export class AnimationCurveEditorComponent extends React.Component<
             actionableKeyframe: frameValue ?? this.state.actionableKeyframe,
             maxFrame: maxFrame,
             minFrame: minFrame,
+            isBrokenMode: !hasCollinearPoints,
         });
+    };
+
+    hasCollinearPoints = (kf: IKeyframeSvgPoint | undefined) => {
+        const left = kf?.leftControlPoint;
+        const right = kf?.rightControlPoint;
+        if (left === undefined || right === undefined || left === null || right === null) {
+            return false;
+        } else {
+            if (left.y === right.y) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     };
 
     getPreviousAndNextKeyframe = (frame: number) => {
@@ -864,20 +881,33 @@ export class AnimationCurveEditorComponent extends React.Component<
     };
 
     setFlatTangent = () => {
-        const keyframes = this.state.svgKeyframes?.filter((kf) => kf.selected).map((k) => this.decodeCurveId(k.id));
-
         if (this.state.selected !== null) {
-            let currentAnimation = this.state.selected;
+            const keyframes = this.state.svgKeyframes?.filter((kf) => kf.selected).map((k) => this.decodeCurveId(k.id));
+            const currentAnimation = this.state.selected;
             const keys = currentAnimation.getKeys();
+            if (this.state.isBrokenMode) {
+                const keyframeWithControlPointSelected = this.state.svgKeyframes?.find((kf) => kf.selected);
 
-            keyframes?.forEach((k) => {
-                const keyframe = keys[k.order];
-                keyframe.inTangent = this.returnZero(currentAnimation.dataType);
-                keyframe.outTangent = this.returnZero(currentAnimation.dataType);
-            });
+                if (keyframeWithControlPointSelected) {
+                    keyframes?.forEach((k) => {
+                        const keyframe = keys[k.order];
+                        if (keyframeWithControlPointSelected.isLeftActive) {
+                            keyframe.inTangent = this.returnZero(currentAnimation.dataType);
+                        }
+                        if (keyframeWithControlPointSelected.isRightActive) {
+                            keyframe.outTangent = this.returnZero(currentAnimation.dataType);
+                        }
+                    });
+                }
+            } else {
+                keyframes?.forEach((k) => {
+                    const keyframe = keys[k.order];
+                    keyframe.inTangent = this.returnZero(currentAnimation.dataType);
+                    keyframe.outTangent = this.returnZero(currentAnimation.dataType);
+                });
+            }
 
             currentAnimation.setKeys(keys);
-
             this.selectAnimation(currentAnimation, this.state.selectedCoordinate);
         }
     };
@@ -917,7 +947,9 @@ export class AnimationCurveEditorComponent extends React.Component<
                     // const outTangent = pointHalf.y - start.y;
                     key.outTangent = slope;
                 }
-                this.selectAnimation(animation, coordinate);
+                this.setState({ isBrokenMode: true }, () => {
+                    this.selectAnimation(animation, coordinate);
+                });
             }
         }
     };
@@ -1095,6 +1127,9 @@ export class AnimationCurveEditorComponent extends React.Component<
 
     flatTangents(keyframes: IAnimationKey[], dataType: number) {
         // Checks if Flat Tangent is active (tangents are set to zero)
+
+        // only flat the selected control point
+        // if multiple selected then flat all...
         let flattened;
         if (this.state && this.state.isFlatTangentMode) {
             flattened = keyframes.map((kf) => {
