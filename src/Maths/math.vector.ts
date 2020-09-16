@@ -3125,7 +3125,6 @@ export class Quaternion {
     /**
      * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
      * @param result defines the vector which will be filled with the Euler angles
-     * @param order is a reserved parameter and is ignored for now
      * @returns the current unchanged quaternion
      */
     public toEulerAnglesToRef(result: Vector3): Quaternion {
