@@ -514,13 +514,13 @@ export class ThinEngine {
 
         let canvas: Nullable<HTMLCanvasElement> = null;
 
-        if (!canvasOrContext) {
-            return;
-        }
-
         options = options || {};
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+
+        if (!canvasOrContext) {
+            return;
+        }
 
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
