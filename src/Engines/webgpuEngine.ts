@@ -1445,28 +1445,11 @@ export class WebGPUEngine extends Engine {
         }
 
         if (this._videoTextureSupported === undefined) {
-            // TODO WEBGPU is there/will be a native way to handle video textures?
-            this._videoTextureSupported = false;
+            this._videoTextureSupported = true;
         }
-
-        if (!texture._workingCanvas) {
-            texture._workingCanvas = CanvasGenerator.CreateCanvas(texture.width, texture.height);
-            let context = texture._workingCanvas.getContext("2d");
-
-            if (!context) {
-                throw new Error("Unable to get 2d context");
-            }
-
-            texture._workingContext = context;
-            texture._workingCanvas.width = texture.width;
-            texture._workingCanvas.height = texture.height;
-        }
-
-        texture._workingContext!.clearRect(0, 0, texture.width, texture.height);
-        texture._workingContext!.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
 
         this._ensureTextureCreated(texture).then((gpuTexture) => {
-            createImageBitmap(texture._workingCanvas!).then((bitmap) => {
+            createImageBitmap(video).then((bitmap) => {
                 this._textureHelper.updateTexture(bitmap, gpuTexture, texture.width, texture.height, 0, 0, !invertY);
 
                 if (texture.generateMipMaps) {
