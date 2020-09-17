@@ -68193,10 +68193,17 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.prototype.dispose = function () {
         var _a;
-        this.isCollapsed = false;
-        this._nodes.forEach(function (node) {
-            node.enclosingFrameId = -1;
-        });
+        if (this.isCollapsed) {
+            while (this._nodes.length > 0) {
+                this._nodes[0].dispose();
+            }
+            this.isCollapsed = false;
+        }
+        else {
+            this._nodes.forEach(function (node) {
+                node.enclosingFrameId = -1;
+            });
+        }
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -68221,7 +68228,7 @@ var GraphFrame = /** @class */ (function () {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: false,
+            isCollapsed: true,
             blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
             comments: this._comments
         };

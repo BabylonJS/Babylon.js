@@ -1554,9 +1554,6 @@ declare module INSPECTOR {
     export const Floodfill: IToolData;
 }
 declare module INSPECTOR {
-    export const Contrast: IToolData;
-}
-declare module INSPECTOR {
     export const RectangleSelect: IToolData;
 }
 declare module INSPECTOR {
@@ -3498,4 +3495,7 @@ declare module INSPECTOR {
         calculateMove(): string;
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    export const Contrast: IToolData;
 }
