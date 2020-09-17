@@ -1457,6 +1457,10 @@ export class WebGPUEngine extends Engine {
                 }
 
                 texture.isReady = true;
+            }).catch((msg) => {
+                // Sometimes createImageBitmap(video) fails with "Failed to execute 'createImageBitmap' on 'Window': The provided element's player has no current data."
+                // Just keep going on
+                texture.isReady = true;
             });
         });
     }
