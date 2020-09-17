@@ -232,7 +232,7 @@ export interface ICreateCapsuleOptions{
     /** Radius of the capsule. */
     radius: number;
 
-    /** Height or Length of the capsule. */
+    /** Number of sub segments on the cap sections of the capsule running parallel to orientation. */
     capSubdivisions: number;
 
     /** Overwrite for the top radius. */
