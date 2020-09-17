@@ -12,7 +12,6 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { Tools } from "../Misc/tools";
 import { Observer } from "../Misc/observable";
 import { EnvironmentTextureTools, EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
-// import { Matrix, Viewport, Color3 } from "../Maths/math";
 import { Scene } from "../scene";
 import { RenderTargetCreationOptions } from "../Materials/Textures/renderTargetCreationOptions";
 import { IPipelineContext } from './IPipelineContext';
@@ -42,7 +41,6 @@ interface INativeEngine {
     createVertexBuffer(data: ArrayBufferView, dynamic: boolean): any;
     deleteVertexBuffer(buffer: any): void;
     recordVertexBuffer(vertexArray: any, buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
-    bindBuffer(buffer: any, location: number, byteOffset: number, byteStride: number, numElements: number, type: number, normalized: boolean): void;
     updateDynamicVertexBuffer(buffer: any, data: ArrayBufferView, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): any;
@@ -278,9 +276,9 @@ class NativePipelineContext implements IPipelineContext {
             return;
         }
 
-        this._valueCache[uniformName] = value;
-
-        this.engine.setInt(this._uniforms[uniformName]!, value);
+        if (this.engine.setInt(this._uniforms[uniformName]!, value)) {
+            this._valueCache[uniformName] = value;
+        }
     }
 
     /**
@@ -425,7 +423,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setMatrix(uniformName: string, matrix: IMatrixLike): void {
         if (this._cacheMatrix(uniformName, matrix)) {
-            this.engine.setMatrices(this._uniforms[uniformName]!, matrix.toArray() as Float32Array);
+            if (!this.engine.setMatrices(this._uniforms[uniformName]!, matrix.toArray() as Float32Array)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -461,9 +461,9 @@ class NativePipelineContext implements IPipelineContext {
             return;
         }
 
-        this._valueCache[uniformName] = value;
-
-        this.engine.setFloat(this._uniforms[uniformName]!, value);
+        if (this.engine.setFloat(this._uniforms[uniformName]!, value)) {
+            this._valueCache[uniformName] = value;
+        }
     }
 
     /**
@@ -479,7 +479,9 @@ class NativePipelineContext implements IPipelineContext {
 
         this._valueCache[uniformName] = bool;
 
-        this.engine.setInt(this._uniforms[uniformName]!, bool ? 1 : 0);
+        if (this.engine.setInt(this._uniforms[uniformName]!, bool ? 1 : 0)) {
+            this._valueCache[uniformName] = bool ? 1 : 0;
+        }
     }
 
     /**
@@ -489,7 +491,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setVector2(uniformName: string, vector2: IVector2Like): void {
         if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-            this.engine.setFloat2(this._uniforms[uniformName]!, vector2.x, vector2.y);
+            if (!this.engine.setFloat2(this._uniforms[uniformName]!, vector2.x, vector2.y)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -501,7 +505,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setFloat2(uniformName: string, x: number, y: number): void {
         if (this._cacheFloat2(uniformName, x, y)) {
-            this.engine.setFloat2(this._uniforms[uniformName]!, x, y);
+            if (!this.engine.setFloat2(this._uniforms[uniformName]!, x, y)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -512,7 +518,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setVector3(uniformName: string, vector3: IVector3Like): void {
         if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-            this.engine.setFloat3(this._uniforms[uniformName]!, vector3.x, vector3.y, vector3.z);
+            if (!this.engine.setFloat3(this._uniforms[uniformName]!, vector3.x, vector3.y, vector3.z)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -525,7 +533,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setFloat3(uniformName: string, x: number, y: number, z: number): void {
         if (this._cacheFloat3(uniformName, x, y, z)) {
-            this.engine.setFloat3(this._uniforms[uniformName]!, x, y, z);
+            if (!this.engine.setFloat3(this._uniforms[uniformName]!, x, y, z)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -536,7 +546,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setVector4(uniformName: string, vector4: IVector4Like): void {
         if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
-            this.engine.setFloat4(this._uniforms[uniformName]!, vector4.x, vector4.y, vector4.z, vector4.w);
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, vector4.x, vector4.y, vector4.z, vector4.w)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -551,7 +563,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
         if (this._cacheFloat4(uniformName, x, y, z, w)) {
-            this.engine.setFloat4(this._uniforms[uniformName]!, x, y, z, w);
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, x, y, z, w)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -562,7 +576,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setColor3(uniformName: string, color3: IColor3Like): void {
         if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-            this.engine.setFloat3(this._uniforms[uniformName]!, color3.r, color3.g, color3.b);
+            if (!this.engine.setFloat3(this._uniforms[uniformName]!, color3.r, color3.g, color3.b)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -574,7 +590,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setColor4(uniformName: string, color3: IColor3Like, alpha: number): void {
         if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-            this.engine.setFloat4(this._uniforms[uniformName]!, color3.r, color3.g, color3.b, alpha);
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, color3.r, color3.g, color3.b, alpha)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 
@@ -585,7 +603,9 @@ class NativePipelineContext implements IPipelineContext {
      */
     public setDirectColor4(uniformName: string, color4: IColor4Like): void {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            this.engine.setColor4(this._uniforms[uniformName]!, color4, color4.a);
+            if (!this.engine.setFloat4(this._uniforms[uniformName]!, color4.r, color4.g, color4.b, color4.a)) {
+                this._valueCache[uniformName] = null;
+            }
         }
     }
 }
@@ -666,6 +686,7 @@ export class NativeEngine extends Engine {
     private readonly _native: INativeEngine = new _native.Engine();
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
+    private _boundBuffersVertexArray: any = null;
 
     public getHardwareScalingLevel(): number {
         return 1.0;
@@ -696,6 +717,7 @@ export class NativeEngine extends Engine {
             pvrtc: null,
             etc1: null,
             etc2: null,
+            bptc: null,
             maxAnisotropy: 16,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
             uintIndices: true,
             fragmentDepthSupported: false,
@@ -737,6 +759,9 @@ export class NativeEngine extends Engine {
 
     public dispose(): void {
         super.dispose();
+        if (this._boundBuffersVertexArray) {
+            this._native.deleteVertexArray(this._boundBuffersVertexArray);
+        }
         this._native.dispose();
     }
 
@@ -826,26 +851,7 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
-    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
-        // TODO : support index buffer
-        const attributes = effect.getAttributesNames();
-        for (let index = 0; index < attributes.length; index++) {
-            const location = effect.getAttributeLocation(index);
-            if (location >= 0) {
-                const kind = attributes[index];
-                const vertexBuffer = vertexBuffers[kind];
-                if (vertexBuffer) {
-                    const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
-                    if (buffer) {
-                        this._native.bindBuffer(buffer.nativeVertexBuffer, location, vertexBuffer.byteOffset, vertexBuffer.byteStride, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized);
-                    }
-                }
-            }
-        }
-    }
-    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
-        const vertexArray = this._native.createVertexArray();
-
+    protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (indexBuffer) {
             this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
         }
@@ -872,7 +878,20 @@ export class NativeEngine extends Engine {
                 }
             }
         }
+    }
 
+    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
+        if (this._boundBuffersVertexArray) {
+            this._native.deleteVertexArray(this._boundBuffersVertexArray);
+        }
+        this._boundBuffersVertexArray = this._native.createVertexArray();
+        this._recordVertexArrayObject(this._boundBuffersVertexArray, vertexBuffers, indexBuffer, effect);
+        this._native.bindVertexArray(this._boundBuffersVertexArray);
+    }
+
+    public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): WebGLVertexArrayObject {
+        const vertexArray = this._native.createVertexArray();
+        this._recordVertexArrayObject(vertexArray, vertexBuffers, indexBuffer, effect);
         return vertexArray;
     }
 
@@ -1154,180 +1173,202 @@ export class NativeEngine extends Engine {
         return this._alphaMode;
     }
 
-    public setInt(uniform: WebGLUniformLocation, int: number): void {
+    public setInt(uniform: WebGLUniformLocation, int: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setInt(uniform, int);
+        return true;
     }
 
-    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setIntArray(uniform, array);
+        return true;
     }
 
-    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setIntArray2(uniform, array);
+        return true;
     }
 
-    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setIntArray3(uniform, array);
+        return true;
     }
 
-    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void {
+    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setIntArray4(uniform, array);
+        return true;
     }
 
-    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray(uniform, array);
+        return true;
     }
 
-    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray2(uniform, array);
+        return true;
     }
 
-    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray3(uniform, array);
+        return true;
     }
 
-    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void {
+    public setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray4(uniform, array);
+        return true;
     }
 
-    public setArray(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray(uniform, array);
+        return true;
     }
 
-    public setArray2(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray2(uniform, array);
+        return true;
     }
 
-    public setArray3(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray3(uniform, array);
+        return true;
     }
 
-    public setArray4(uniform: WebGLUniformLocation, array: number[]): void {
+    public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloatArray4(uniform, array);
+        return true;
     }
 
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setMatrices(uniform, matrices);
+        return true;
     }
 
-    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setMatrix3x3(uniform, matrix);
+        return true;
     }
 
-    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void {
+    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setMatrix2x2(uniform, matrix);
+        return true;
     }
 
-    public setFloat(uniform: WebGLUniformLocation, value: number): void {
+    public setFloat(uniform: WebGLUniformLocation, value: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat(uniform, value);
+        return true;
     }
 
-    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void {
+    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat2(uniform, x, y);
+        return true;
     }
 
-    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void {
+    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat3(uniform, x, y, z);
+        return true;
     }
 
-    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void {
+    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat4(uniform, x, y, z, w);
+        return true;
     }
 
-    public setColor3(uniform: WebGLUniformLocation, color3: IColor3Like): void {
+    public setColor3(uniform: WebGLUniformLocation, color3: IColor3Like): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat3(uniform, color3.r, color3.g, color3.b);
+        return true;
     }
 
-    public setColor4(uniform: WebGLUniformLocation, color3: IColor3Like, alpha: number): void {
+    public setColor4(uniform: WebGLUniformLocation, color3: IColor3Like, alpha: number): boolean {
         if (!uniform) {
-            return;
+            return false;
         }
 
         this._native.setFloat4(uniform, color3.r, color3.g, color3.b, alpha);
+        return true;
     }
 
     public wipeCaches(bruteForce?: boolean): void {
@@ -1457,7 +1498,7 @@ export class NativeEngine extends Engine {
             throw new Error("Loading textures from IInternalTextureLoader not yet implemented.");
         } else {
             const onload = (data: ArrayBufferView) => {
-                const webGLTexture = texture._hardwareTexture?.underlyingResource ?? null;
+                const webGLTexture = texture._hardwareTexture?.underlyingResource;
                 if (!webGLTexture) {
                     if (scene) {
                         scene._removePendingData(texture);
@@ -1754,7 +1795,7 @@ export class NativeEngine extends Engine {
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         if (texture._hardwareTexture?.underlyingResource ?? false) {
             var filter = this._getSamplingFilter(samplingMode);
-            this._native.setTextureSampling(texture._hardwareTexture?.underlyingResource ?? null, filter);
+            this._native.setTextureSampling(texture._hardwareTexture?.underlyingResource, filter);
         }
         texture.samplingMode = samplingMode;
     }
@@ -1858,18 +1899,18 @@ export class NativeEngine extends Engine {
         this._activeChannel = channel;
 
         if (!internalTexture ||
-            !(internalTexture._hardwareTexture?.underlyingResource ?? null)) {
+            !internalTexture._hardwareTexture?.underlyingResource) {
             return false;
         }
 
         this._native.setTextureWrapMode(
-            internalTexture._hardwareTexture?.underlyingResource ?? null,
+            internalTexture._hardwareTexture?.underlyingResource,
             this._getAddressMode(texture.wrapU),
             this._getAddressMode(texture.wrapV),
             this._getAddressMode(texture.wrapR));
         this._updateAnisotropicLevel(texture);
 
-        this._native.setTexture(uniform, internalTexture._hardwareTexture?.underlyingResource ?? null);
+        this._native.setTexture(uniform, internalTexture._hardwareTexture?.underlyingResource);
 
         return true;
     }
@@ -1880,12 +1921,12 @@ export class NativeEngine extends Engine {
         var internalTexture = texture.getInternalTexture();
         var value = texture.anisotropicFilteringLevel;
 
-        if (!internalTexture || !(internalTexture._hardwareTexture?.underlyingResource ?? null)) {
+        if (!internalTexture || !internalTexture._hardwareTexture?.underlyingResource) {
             return;
         }
 
         if (internalTexture._cachedAnisotropicFilteringLevel !== value) {
-            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture?.underlyingResource ?? null, value);
+            this._native.setTextureAnisotropicLevel(internalTexture._hardwareTexture?.underlyingResource, value);
             internalTexture._cachedAnisotropicFilteringLevel = value;
         }
     }
