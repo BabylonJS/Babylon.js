@@ -1871,6 +1871,10 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise that will resolve to the new node material
      */
     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = "", nodeMaterial?: NodeMaterial): Promise<NodeMaterial> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve(this.CreateDefault("blank", scene));
+        }
+
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
             request.addEventListener("readystatechange", () => {
