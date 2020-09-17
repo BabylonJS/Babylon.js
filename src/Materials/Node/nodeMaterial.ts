@@ -1446,14 +1446,14 @@ export class NodeMaterial extends PushMaterial {
         vmerger.connectTo(vertexOutput);
 
         // Pixel
-        const scale = new InputBlock("scale");
+        const scale = new InputBlock("Scale");
         scale.visibleInInspector = true;
         scale.value = new Vector2(1, 1);
 
         const uv0 = new RemapBlock("uv0");
         position.connectTo(uv0);
 
-        const uv = new MultiplyBlock("uv");
+        const uv = new MultiplyBlock("UV scale");
         uv0.connectTo(uv);
         scale.connectTo(uv);
 
