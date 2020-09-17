@@ -3848,14 +3848,13 @@ declare module BABYLON {
         normalize(): Quaternion;
         /**
          * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-         * @param order is a reserved parameter and is ignore for now
+         * @param order is a reserved parameter and is ignored for now
          * @returns a new Vector3 containing the Euler angles
          */
         toEulerAngles(order?: string): Vector3;
         /**
          * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
          * @param result defines the vector which will be filled with the Euler angles
-         * @param order is a reserved parameter and is ignore for now
          * @returns the current unchanged quaternion
          */
         toEulerAnglesToRef(result: Vector3): Quaternion;
