@@ -912,19 +912,22 @@
             "title": "Motion Blur",
             "playgroundId": "#E5YGEL#2",
             "referenceImage": "motionBlur.png",
-            "renderCount": 10
+            "renderCount": 10,
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Screen space reflections",
-            "playgroundId": "#PIZ1GK#170",
+            "playgroundId": "#PIZ1GK#172",
             "referenceImage": "ssr.png",
-            "renderCount": 10
+            "renderCount": 10,
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Geometry buffer renderer",
-            "playgroundId": "#PIZ1GK#171",
+            "playgroundId": "#PIZ1GK#173",
             "referenceImage": "geometrybufferrenderer.png",
-            "renderCount": 10
+            "renderCount": 10,
+            "excludeFromAutomaticTesting": true
         }
     ]
 }

@@ -365,7 +365,6 @@ export class PrePassRenderer {
      */
     public markAsDirty() {
         this._isDirty = true;
-        this._markAllMaterialsAsPrePassDirty();
     }
 
     /**
@@ -410,6 +409,7 @@ export class PrePassRenderer {
             }
         }
 
+        this._markAllMaterialsAsPrePassDirty();
         this._isDirty = false;
 
         if (enablePrePass) {
