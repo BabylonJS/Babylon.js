@@ -29,7 +29,6 @@ import { WebGPUBufferManager } from './WebGPU/webgpuBufferManager';
 import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
 import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
 import { WebGPUHardwareTexture } from './WebGPU/webgpuHardwareTexture';
-import { CanvasGenerator } from '../Misc/canvasGenerator';
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 
