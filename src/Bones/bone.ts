@@ -1,6 +1,6 @@
 import { Skeleton } from "./skeleton";
 
-import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
+import { Vector3, Quaternion, Matrix, TmpVectors } from "../Maths/math.vector";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -1147,39 +1147,36 @@ export class Bone extends Node {
      */
     public setCurrentPoseAsRest(): void {
         this.setRestPose(this.getLocalMatrix());
-	}
+    }
 
-	/**
+    /**
      * Freezes the rotations of the bone by updating the base matrix. The result is a
-	 * bone in the same pose but with a zeroed local rotation.
+     * bone in the same pose but with a zeroed local rotation.
      * @param updateRestPose defines if the rest pose should be updated
      */
-	public freezeRotation(updateRestPose: boolean = false) {
-		let b0s = new Vector3();
-		let b0r = new Quaternion();
-		let b0t = new Vector3();
+    public freezeRotation(updateRestPose: boolean = false) {
+        let b0s = TmpVectors.Vector3[0];
+        let b0r = TmpVectors.Quaternion[0];
+        let b0t = TmpVectors.Vector3[1];
+        let quatDiff = TmpVectors.Quaternion[1];
 
-		this._baseMatrix.decompose(b0s, b0r, b0t);
+        this._baseMatrix.decompose(b0s, b0r, b0t);
 
-		let lr = new Quaternion();
-		let l = this.getLocalMatrix().clone();
+        // Compute the difference between the current rotation and the base rotation.
+        quatDiff = Quaternion.InverseToRef(b0r, quatDiff).multiply(this._localRotation);
 
-		l.decompose(undefined, lr, undefined);
+        // The new base rotation will be the inverse of the quatDiff.
+        let b1r = TmpVectors.Quaternion[0];
+        Quaternion.InverseToRef(quatDiff, b1r);
 
-		// Compute the difference between the current rotation and the base rotation.
-		let quatDiff = Quaternion.Inverse(b0r).multiply(lr);
+        this._baseMatrix = Matrix.Compose(b0s, b1r, b0t);
 
-		// The new base rotation will be the inverse of the quatDiff.
-		let b1r = Quaternion.Inverse(quatDiff);
+        this._updateDifferenceMatrix();
 
-		this._baseMatrix = Matrix.Compose(b0s, b1r, b0t);
+        this.rotationQuaternion.set(0, 0, 0, 1);
 
-		this._updateDifferenceMatrix();
-
-		this.rotationQuaternion = Quaternion.Zero();
-
-		if (updateRestPose) {
-			this.setCurrentPoseAsRest();
-		}
-	}
+        if (updateRestPose) {
+            this.setCurrentPoseAsRest();
+        }
+    }
 }
