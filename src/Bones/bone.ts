@@ -1150,8 +1150,8 @@ export class Bone extends Node {
 	}
 
 	/**
-     * Freezes the rotations of the bone. The result is a bone in the same pose but
-	 * with a zeroed local rotation.
+     * Freezes the rotations of the bone by updating the base matrix. The result is a
+	 * bone in the same pose but with a zeroed local rotation.
      * @param updateRestPose defines if the rest pose should be updated
      */
 	public freezeRotation(updateRestPose: boolean = false) {
