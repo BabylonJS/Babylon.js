@@ -191,7 +191,7 @@ export class Bone extends Node {
     }
 
     /**
-     * Gets the base matrix (initial matrix which remains unchanged)
+     * Gets the base matrix.
      * @returns a matrix
      */
     public getBaseMatrix(): Matrix {
@@ -1147,5 +1147,39 @@ export class Bone extends Node {
      */
     public setCurrentPoseAsRest(): void {
         this.setRestPose(this.getLocalMatrix());
-    }
+	}
+
+	/**
+     * Freezes the rotations of the bone. The result is a bone in the same pose but
+	 * with a zeroed local rotation.
+     * @param updateRestPose defines if the rest pose should be updated
+     */
+	public freezeRotation(updateRestPose: boolean = false) {
+		let b0s = new Vector3();
+		let b0r = new Quaternion();
+		let b0t = new Vector3();
+
+		this._baseMatrix.decompose(b0s, b0r, b0t);
+
+		let lr = new Quaternion();
+		let l = this.getLocalMatrix().clone();
+
+		l.decompose(undefined, lr, undefined);
+
+		// Compute the difference between the current rotation and the base rotation.
+		let quatDiff = Quaternion.Inverse(b0r).multiply(lr);
+
+		// The new base rotation will be the inverse of the quatDiff.
+		let b1r = Quaternion.Inverse(quatDiff);
+
+		this._baseMatrix = Matrix.Compose(b0s, b1r, b0t);
+
+		this._updateDifferenceMatrix();
+
+		this.rotationQuaternion = Quaternion.Zero();
+
+		if (updateRestPose) {
+			this.setCurrentPoseAsRest();
+		}
+	}
 }
