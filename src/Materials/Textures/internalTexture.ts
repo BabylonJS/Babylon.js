@@ -259,13 +259,13 @@ export class InternalTexture {
     public _gammaSpace: Nullable<boolean> = null;
 
     private _engine: ThinEngine;
-    private _id: number;
+    private _uniqueId: number;
 
     private static _Counter = 0;
 
     /** Gets the unique id of the internal texture */
-    public get id() {
-        return this._id;
+    public get uniqueId() {
+        return this._uniqueId;
     }
 
     /**
@@ -292,7 +292,7 @@ export class InternalTexture {
     constructor(engine: ThinEngine, source: InternalTextureSource, delayAllocation = false) {
         this._engine = engine;
         this._source = source;
-        this._id = InternalTexture._Counter++;
+        this._uniqueId = InternalTexture._Counter++;
 
         if (!delayAllocation) {
             this._hardwareTexture = engine._createHardwareTexture();
