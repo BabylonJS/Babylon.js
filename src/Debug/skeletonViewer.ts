@@ -560,13 +560,14 @@ export class SkeletonViewer {
         }
     }
 
-    private getAbsoluteRestPose(bone: Nullable<Bone>, matrix: Matrix) {
+    /** function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy. */
+    private getAbsoluteBindPoseToRef(bone: Nullable<Bone>, matrix: Matrix) {
         if (bone === null || bone._index === -1) {
             matrix.copyFrom(Matrix.Identity());
             return;
         }
 
-        this.getAbsoluteRestPose(bone.getParent(), matrix);
+        this.getAbsoluteBindPoseToRef(bone.getParent(), matrix);
         bone.getBindPose().multiplyToRef(matrix, matrix);
         return;
     }
@@ -611,18 +612,18 @@ export class SkeletonViewer {
                     continue;
                 }
 
-                let boneAbsoluteRestTransform = new Matrix();
-                this.getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
+                let boneAbsoluteBindPoseTransform = new Matrix();
+                this.getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
 
                 let anchorPoint = new Vector3();
 
-                boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
+                boneAbsoluteBindPoseTransform.decompose(undefined, undefined, anchorPoint);
 
                 bone.children.forEach((bc, i) => {
-                    let childAbsoluteRestTransform : Matrix = new Matrix();
-                    bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
+                    let childAbsoluteRestPoseTransform : Matrix = new Matrix();
+                    bc.getRestPose().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteRestPoseTransform);
                     let childPoint = new Vector3();
-                    childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);
+                    childAbsoluteRestPoseTransform.decompose(undefined, undefined, childPoint);
                     let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
                     if (distanceFromParent > longestBoneLength) {
                         longestBoneLength = distanceFromParent;
@@ -775,11 +776,11 @@ export class SkeletonViewer {
                 continue;
             }
 
-            let boneAbsoluteRestTransform = new Matrix();
+            let boneAbsoluteBindPoseTransform = new Matrix();
             let boneOrigin = new Vector3();
 
-            this.getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
-            boneAbsoluteRestTransform.decompose(undefined, undefined, boneOrigin);
+            this.getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
+            boneAbsoluteBindPoseTransform.decompose(undefined, undefined, boneOrigin);
 
             let m = bone.getBindPose().getRotationMatrix();
 
