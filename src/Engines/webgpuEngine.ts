@@ -134,7 +134,7 @@ export class WebGPUEngine extends Engine {
     private _mainPassSampleCount: number;
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
-    private _cacheTextureCreation: { [id: number] : Promise<GPUTexture> } = {};
+    private _promisesFrame: Promise<any>[] = []; // TODO WEBGPU should we keep that?
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
@@ -161,8 +161,6 @@ export class WebGPUEngine extends Engine {
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
     private __colorWrite = true;
     private _uniformsBuffers: { [name: string]: WebGPUDataBuffer } = {};
-
-    private _promisesFrame: Promise<any>[] = []; // TODO WEBGPU should we keep that?
 
     // Caches
     private _compiledShaders: { [key: string]: {
@@ -237,9 +235,6 @@ export class WebGPUEngine extends Engine {
         this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
-
-        // TODO. WEBGPU. Use real way to do it.
-        this._canvas.style.transform = "scaleY(-1)";
     }
 
     //------------------------------------------------------------------------------
@@ -265,6 +260,9 @@ export class WebGPUEngine extends Engine {
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._bufferManager);
+
+                this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
+                this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
 
                 this._initializeLimits();
                 this._initializeContextAndSwapChain();
@@ -898,8 +896,6 @@ export class WebGPUEngine extends Engine {
         if (index !== -1) {
             this._internalTexturesCache.splice(index, 1);
         }
-
-        delete this._cacheTextureCreation[texture.uniqueId];
     }
 
     private _getSamplerFilterDescriptor(internalTexture: InternalTexture): {
@@ -1215,27 +1211,21 @@ export class WebGPUEngine extends Engine {
 
                     // TODO WEBGPU: handle format if <> 0. Note that it seems "rgb" formats don't exist in WebGPU...
                     //let internalFormat = format ? this._getInternalFormat(format) : ((extension === ".jpg") ? gl.RGB : gl.RGBA);
-                    this._cacheTextureCreation[texture.uniqueId] = this._textureHelper.createTexture(imageBitmap, !noMipmap, invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format), 1, this._uploadEncoder);
+                    const [gpuTexture] = this._textureHelper.createTexture(imageBitmap, !noMipmap, invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format), 1, this._uploadEncoder);
 
-                    this._promisesFrame.push(new Promise((resolve) => {
-                        this._cacheTextureCreation[texture.uniqueId].then((gpuTexture) => {
-                            texture._hardwareTexture!.set(gpuTexture);
-                            (texture._hardwareTexture as WebGPUHardwareTexture).createView();
+                    texture._hardwareTexture!.set(gpuTexture);
+                    (texture._hardwareTexture as WebGPUHardwareTexture).createView();
 
-                            if (scene) {
-                                scene._removePendingData(texture);
-                            }
+                    if (scene) {
+                        scene._removePendingData(texture);
+                    }
 
-                            processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
+                    processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
-                            texture.isReady = true;
+                    texture.isReady = true;
 
-                            resolve();
-
-                            texture.onLoadedObservable.notifyObservers(texture);
-                            texture.onLoadedObservable.clear();
-                        });
-                    }));
+                    texture.onLoadedObservable.notifyObservers(texture);
+                    texture.onLoadedObservable.clear();
             },
             () => false,
             buffer, fallback, format, forcedExtension, mimeType
@@ -1265,44 +1255,40 @@ export class WebGPUEngine extends Engine {
 
                 // TODO WEBGPU. handle format if <> 0
                 //const internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
-                this._cacheTextureCreation[texture.uniqueId] = this._textureHelper.createCubeTexture(imageBitmaps, !noMipmap, false, false, this._getWebGPUTextureFormat(texture.type, texture.format), 1, this._uploadEncoder);
+                const [gpuTexture] = this._textureHelper.createCubeTexture(imageBitmaps, !noMipmap, false, false, this._getWebGPUTextureFormat(texture.type, texture.format), 1, this._uploadEncoder);
 
-                this._promisesFrame.push(new Promise((resolve) => {
-                    this._cacheTextureCreation[texture.uniqueId].then((gpuTexture) => {
-                        texture._hardwareTexture!.set(gpuTexture);
-                        (texture._hardwareTexture as WebGPUHardwareTexture).createView({
-                            dimension: WebGPUConstants.TextureViewDimension.Cube
-                        });
+                texture._hardwareTexture!.set(gpuTexture);
+                (texture._hardwareTexture as WebGPUHardwareTexture).createView({
+                    dimension: WebGPUConstants.TextureViewDimension.Cube
+                });
 
-                        texture.width = width;
-                        texture.height = height;
-                        texture.isReady = true;
-                        if (format) {
-                            texture.format = format;
-                        }
+                texture.width = width;
+                texture.height = height;
+                if (format) {
+                    texture.format = format;
+                }
 
-                        resolve();
+                texture.isReady = true;
 
-                        texture.onLoadedObservable.notifyObservers(texture);
-                        texture.onLoadedObservable.clear();
+                texture.onLoadedObservable.notifyObservers(texture);
+                texture.onLoadedObservable.clear();
 
-                        if (onLoad) {
-                            onLoad();
-                        }
-                    });
-                }));
+                if (onLoad) {
+                    onLoad();
+                }
             }
         );
     }
 
     public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
         if (texture.generateMipMaps) {
-            this._promisesFrame.push(new Promise((resolve) => {
-                this._ensureTextureCreated(texture).then((gpuTexture) => {
-                    this._textureHelper.generateCubeMipmaps(gpuTexture, WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height), this._uploadEncoder);
-                    resolve();
-                });
-            }));
+            let gpuTexture = texture._hardwareTexture?.underlyingResource;
+
+            if (!gpuTexture) {
+                gpuTexture = this._createGPUTextureForInternalTexture(texture);
+            }
+
+            this._textureHelper.generateCubeMipmaps(gpuTexture, WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height), this._uploadEncoder);
         }
     }
 
@@ -1371,14 +1357,10 @@ export class WebGPUEngine extends Engine {
         this._bindTextureDirectly(0, texture);
     }
 
-    private _ensureTextureCreated(texture: InternalTexture, width?: number, height?: number): Promise<GPUTexture> {
-        let promise = this._cacheTextureCreation[texture.uniqueId];
-
-        if (promise) {
-            return promise;
+    private _createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number): GPUTexture {
+        if (!texture._hardwareTexture) {
+            texture._hardwareTexture = this._createHardwareTexture();
         }
-
-        promise = Promise.resolve(texture._hardwareTexture!.underlyingResource);
 
         if (width === undefined) {
             width = texture.width;
@@ -1387,47 +1369,38 @@ export class WebGPUEngine extends Engine {
             height = texture.height;
         }
 
-        if (!texture._hardwareTexture!.underlyingResource) {
-            if (texture.isCube) {
-                promise = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format), 1, this._uploadEncoder).then((gpuTexture) => {
-                    texture._hardwareTexture!.set(gpuTexture);
-                    (texture._hardwareTexture as WebGPUHardwareTexture).createView({
-                        dimension: WebGPUConstants.TextureViewDimension.Cube,
-                        mipLevelCount: Math.round(Scalar.Log2(Math.max(width!, height!))) + 1,
-                        baseArrayLayer: 0,
-                        baseMipLevel: 0,
-                        aspect: WebGPUConstants.TextureAspect.All
-                    });
-                    return gpuTexture;
-                });
-            } else {
-                promise = this._textureHelper.createTexture({ width, height }, texture.generateMipMaps, texture.invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format), 1, this._uploadEncoder).then((gpuTexture) => {
-                    texture._hardwareTexture!.set(gpuTexture);
-                    (texture._hardwareTexture as WebGPUHardwareTexture).createView();
-                    return gpuTexture;
-                });
-            }
+        if (texture.isCube) {
+            const [gpuTexture] = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format), 1, this._uploadEncoder);
 
-            texture.width = texture.baseWidth = width;
-            texture.height = texture.baseHeight = height;
+            texture._hardwareTexture!.set(gpuTexture);
+            (texture._hardwareTexture as WebGPUHardwareTexture).createView({
+                dimension: WebGPUConstants.TextureViewDimension.Cube,
+                mipLevelCount: Math.round(Scalar.Log2(Math.max(width!, height!))) + 1,
+                baseArrayLayer: 0,
+                baseMipLevel: 0,
+                aspect: WebGPUConstants.TextureAspect.All
+            });
+        } else {
+            const [gpuTexture] = this._textureHelper.createTexture({ width, height }, texture.generateMipMaps, texture.invertY, false, this._getWebGPUTextureFormat(texture.type, texture.format), 1, this._uploadEncoder);
+
+            texture._hardwareTexture!.set(gpuTexture);
+            (texture._hardwareTexture as WebGPUHardwareTexture).createView();
         }
 
-        this._cacheTextureCreation[texture.uniqueId] = promise;
+        texture.width = texture.baseWidth = width;
+        texture.height = texture.baseHeight = height;
 
-        return promise;
+        return texture._hardwareTexture!.underlyingResource;
     }
 
     private _generateMipmaps(texture: InternalTexture, gpuTexture: GPUTexture) {
         const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height);
 
-        this._promisesFrame.push(new Promise((resolve) => {
-            if (texture.isCube) {
-                this._textureHelper.generateCubeMipmaps(gpuTexture, mipmapCount, this._uploadEncoder);
-            } else {
-                this._textureHelper.generateMipmaps(gpuTexture, mipmapCount, 0, this._uploadEncoder);
-            }
-            resolve();
-        }));
+        if (texture.isCube) {
+            this._textureHelper.generateCubeMipmaps(gpuTexture, mipmapCount, this._uploadEncoder);
+        } else {
+            this._textureHelper.generateMipmaps(gpuTexture, mipmapCount, 0, this._uploadEncoder);
+        }
     }
 
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement | OffscreenCanvas, invertY: boolean, premulAlpha: boolean = false, format?: number, forceBindTexture?: boolean): void {
@@ -1437,13 +1410,19 @@ export class WebGPUEngine extends Engine {
 
         const width = canvas.width, height = canvas.height;
 
+        let gpuTexture = texture._hardwareTexture?.underlyingResource;
+
+        if (!gpuTexture) {
+            gpuTexture = this._createGPUTextureForInternalTexture(texture, width, height);
+        }
+
         // TODO WEBGPU clean this, for testing purpose only
         /*if (!(this as any)._bitmap) {
             (this as any)._bitmap = createImageBitmap(canvas);
         }*/
 
         this._promisesFrame.push(new Promise((resolve) => {
-            Promise.all([/*(this as any)._bitmap*/createImageBitmap(canvas), this._ensureTextureCreated(texture, width, height)]).then(([bitmap, gpuTexture]) => {
+            /*(this as any)._bitmap*/createImageBitmap(canvas).then((bitmap) => {
                 // TODO WEBGPU: handle format if <> 0
                 // let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
                 this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder).then(() => {
@@ -1459,14 +1438,17 @@ export class WebGPUEngine extends Engine {
     }
 
     public updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex: number = 0, lod: number = 0): void {
+        let gpuTexture = texture._hardwareTexture?.underlyingResource;
+
+        if (!gpuTexture) {
+            gpuTexture = this._createGPUTextureForInternalTexture(texture);
+        }
+
         const imgData = new ImageData(new Uint8ClampedArray(imageData.buffer), width, height);
 
-        this._promisesFrame.push(new Promise((resolve) => {
-            Promise.all([createImageBitmap(imgData), this._ensureTextureCreated(texture)]).then(([bitmap, gpuTexture]) => {
-                this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
-                resolve();
-            });
-        }));
+        createImageBitmap(imgData).then((bitmap) => {
+            this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
+        });
     }
 
     public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
@@ -1478,25 +1460,25 @@ export class WebGPUEngine extends Engine {
             this._videoTextureSupported = true;
         }
 
-        this._promisesFrame.push(new Promise((resolve) => {
-            this._ensureTextureCreated(texture).then((gpuTexture) => {
-                createImageBitmap(video).then((bitmap) => {
-                    this._textureHelper.updateTexture(bitmap, gpuTexture, texture.width, texture.height, 0, 0, !invertY, false, 0, 0, this._uploadEncoder).then(() => {
-                        if (texture.generateMipMaps) {
-                            this._generateMipmaps(texture, gpuTexture);
-                        }
-                    });
+        let gpuTexture = texture._hardwareTexture?.underlyingResource;
 
-                    texture.isReady = true;
-                    resolve();
-                }).catch((msg) => {
-                    // Sometimes createImageBitmap(video) fails with "Failed to execute 'createImageBitmap' on 'Window': The provided element's player has no current data."
-                    // Just keep going on
-                    texture.isReady = true;
-                    resolve();
-                });
+        if (!gpuTexture) {
+            gpuTexture = this._createGPUTextureForInternalTexture(texture);
+        }
+
+        createImageBitmap(video).then((bitmap) => {
+            this._textureHelper.updateTexture(bitmap, gpuTexture, texture.width, texture.height, 0, 0, !invertY, false, 0, 0, this._uploadEncoder).then(() => {
+                if (texture.generateMipMaps) {
+                    this._generateMipmaps(texture, gpuTexture);
+                }
             });
-        }));
+
+            texture.isReady = true;
+        }).catch((msg) => {
+            // Sometimes createImageBitmap(video) fails with "Failed to execute 'createImageBitmap' on 'Window': The provided element's player has no current data."
+            // Just keep going on
+            texture.isReady = true;
+        });
     }
 
     /** @hidden */
@@ -1507,21 +1489,24 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0, babylonInternalFormat?: number, useTextureWidthAndHeight = false): void {
         // TODO WEBPU what to do with babylonInternalFormat? Texture format is set at creation time and can't be changed afterwards...
-
         const lodMaxWidth = Math.round(Math.log(texture.width) * Math.LOG2E);
         const lodMaxHeight = Math.round(Math.log(texture.height) * Math.LOG2E);
 
         const width = useTextureWidthAndHeight ? texture.width : Math.pow(2, Math.max(lodMaxWidth - lod, 0));
         const height = useTextureWidthAndHeight ? texture.height : Math.pow(2, Math.max(lodMaxHeight - lod, 0));
 
+        let gpuTexture = texture._hardwareTexture?.underlyingResource;
+
+        if (!gpuTexture) {
+            gpuTexture = this._createGPUTextureForInternalTexture(texture, width, height);
+        }
+
         const imgData = new ImageData(new Uint8ClampedArray(imageData.buffer, 0, width * height * 4), width, height);
 
-        this._promisesFrame.push(new Promise((resolve) => {
-            Promise.all([createImageBitmap(imgData), this._ensureTextureCreated(texture, width, height)]).then(([bitmap, gpuTexture]) => {
-                this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
-                resolve();
-            });
-        }));
+        // TODO WEBGPU don't convert to image bitmap and directly pass the Uint8ClampedArray
+        createImageBitmap(imgData).then((bitmap) => {
+            this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        });
     }
 
     /** @hidden */
@@ -1531,18 +1516,18 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
+        let gpuTexture = texture._hardwareTexture?.underlyingResource;
+
+        if (!gpuTexture) {
+            gpuTexture = this._createGPUTextureForInternalTexture(texture);
+        }
+
         const bitmap = image as ImageBitmap; // in WebGPU we will always get an ImageBitmap, not an HTMLImageElement
 
-        this._promisesFrame.push(new Promise((resolve) => {
-            this._ensureTextureCreated(texture).then((gpuTexture) => {
-                const width = Math.ceil(texture.width / (1 << lod));
-                const height = Math.ceil(texture.height / (1 << lod));
+        const width = Math.ceil(texture.width / (1 << lod));
+        const height = Math.ceil(texture.height / (1 << lod));
 
-                this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
-
-                resolve();
-            });
-        }));
+        this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -1671,9 +1656,6 @@ export class WebGPUEngine extends Engine {
         }
 
         super.beginFrame();
-
-        this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
-        this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
     }
 
     /**
@@ -1686,15 +1668,20 @@ export class WebGPUEngine extends Engine {
             this._commandBuffers[0] = this._uploadEncoder.finish();
             this._commandBuffers[1] = this._renderEncoder.finish();
 
+            this._device.defaultQueue.submit(this._commandBuffers);
+
+            const numPromises = this._promisesFrame.length;
+
             this._promisesFrame.length = 0;
 
-            this._device.defaultQueue.submit(this._commandBuffers);
+            this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
+            this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
 
             super.endFrame();
 
             // TODO WEBGPU debug only code
             if (!(this as any)._count || (this as any)._count < 20) {
-                console.log("end frame");
+                console.log("end frame. There was " + numPromises + " promises to wait on.");
             }
         });
     }
@@ -1894,9 +1881,9 @@ export class WebGPUEngine extends Engine {
     private _getFrontFace(): GPUFrontFace {
         switch (this._depthCullingState.frontFace) {
             case 1:
-                return WebGPUConstants.FrontFace.CCW;
-            default:
                 return WebGPUConstants.FrontFace.CW;
+            default:
+                return WebGPUConstants.FrontFace.CCW;
         }
     }
 
