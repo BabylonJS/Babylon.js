@@ -951,6 +951,22 @@ export class NativeEngine extends Engine {
         this._native.deleteTexture(texture);
     }
 
+    /**
+     * Update the content of a dynamic texture
+     * @param texture defines the texture to update
+     * @param canvas defines the canvas containing the source
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param premulAlpha defines if alpha is stored as premultiplied
+     * @param format defines the format of the data
+     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+     */
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        if (texture) {
+            texture.isReady = true;
+        }
+        // TODO: Stub! This function is needed for some GLTF validation tests.
+    }
+
     // TODO: Refactor to share more logic with babylon.engine.ts version.
     /**
      * Usually called from Texture.ts.
