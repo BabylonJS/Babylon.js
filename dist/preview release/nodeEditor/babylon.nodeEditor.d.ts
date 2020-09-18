@@ -162,6 +162,8 @@ declare module NODEEDITOR {
         private _frameInPorts;
         private _frameOutPorts;
         private _controlledPorts;
+        private _exposedInPorts;
+        private _exposedOutPorts;
         private _id;
         private _comments;
         private _frameIsResizing;
@@ -178,6 +180,9 @@ declare module NODEEDITOR {
         private _createInputPort;
         private _markFramePortPositions;
         private _createFramePorts;
+        private removePortFromExposed;
+        private createInputPorts;
+        private createOutputPorts;
         private _redrawFramePorts;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
@@ -273,6 +278,7 @@ declare module NODEEDITOR {
         protected _onCandidateLinkMovedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<BABYLON.Vector2>>>;
         protected _onSelectionChangedObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
         protected _exposedOnFrame: boolean;
+        isExposed: boolean;
         delegatedPort: BABYLON.Nullable<FrameNodePort>;
         get element(): HTMLDivElement;
         get portName(): string;
