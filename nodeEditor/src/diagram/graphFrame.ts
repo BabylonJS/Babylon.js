@@ -90,8 +90,7 @@ export class GraphFrame {
         port.delegatedPort = localPort;
         this._controlledPorts.push(port);
 
-        if(!port.isExposed)
-        {
+        if(!port.isExposed) {
             port.isExposed = true;
             this._exposedInPorts.push(port);
         }
@@ -146,18 +145,18 @@ export class GraphFrame {
                 this._exposedOutPorts.splice(index,1);
                 port.isExposed = false;
             }
-            else{
+            else {
                 this.createOutputPorts(port, port.node);
             }
         }
 
         for (var port of this._exposedInPorts) { // Input
-            if(port.node == null || port.node.enclosingFrameId != this.id){
+            if(port.node == null || port.node.enclosingFrameId != this.id) {
                 let index = this._exposedInPorts.findIndex(nodePort => nodePort === port);
                 this._exposedInPorts.splice(index,1);
                 port.isExposed = false;
             }
-            else{
+            else {
                 this.createInputPorts(port, port.node);
             }
         }
