@@ -131,6 +131,9 @@
             varying vec2 vSheenUV;
         #endif
         uniform sampler2D sheenSampler;
+        #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL)
+            uniform sampler2D sheenRoughnessSampler;
+        #endif
     #endif
 #endif
 
