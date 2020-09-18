@@ -286,11 +286,17 @@ void main(void) {
         #ifdef SHEEN_TEXTURE
             vec4 sheenMapData = toLinearSpace(texture2D(sheenSampler, vSheenUV + uvOffset)) * vSheenInfos.y;
         #endif
+        #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL)
+            vec4 sheenMapRoughnessData = texture2D(sheenRoughnessSampler, vSheenUV + uvOffset) * vSheenInfos.w;
+        #endif
 
         sheenBlock(
             vSheenColor,
         #ifdef SHEEN_ROUGHNESS
             vSheenRoughness,
+            #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL)
+                sheenMapRoughnessData,
+            #endif
         #endif
             roughness,
         #ifdef SHEEN_TEXTURE

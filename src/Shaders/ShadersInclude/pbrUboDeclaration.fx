@@ -56,7 +56,7 @@ uniform Material
 
     uniform vec4 vSheenColor;
     uniform float vSheenRoughness;
-    uniform vec2 vSheenInfos;
+    uniform vec4 vSheenInfos;
     uniform mat4 sheenMatrix;
 
     uniform vec3 vRefractionMicrosurfaceInfos;
