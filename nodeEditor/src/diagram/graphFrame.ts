@@ -140,7 +140,7 @@ export class GraphFrame {
         }
 
         for (var port of this._exposedOutPorts) { // Output
-            if(port.node == null || port.node.enclosingFrameId != this.id) {
+            if(port.node === null || port.node.enclosingFrameId != this.id) {
                 let index = this._exposedOutPorts.findIndex(nodePort => nodePort === port);
                 this._exposedOutPorts.splice(index,1);
                 port.isExposed = false;
@@ -151,7 +151,7 @@ export class GraphFrame {
         }
 
         for (var port of this._exposedInPorts) { // Input
-            if(port.node == null || port.node.enclosingFrameId != this.id) {
+            if(port.node === null || port.node.enclosingFrameId != this.id) {
                 let index = this._exposedInPorts.findIndex(nodePort => nodePort === port);
                 this._exposedInPorts.splice(index,1);
                 port.isExposed = false;
