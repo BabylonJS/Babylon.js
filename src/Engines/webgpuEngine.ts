@@ -32,6 +32,8 @@ import { WebGPUHardwareTexture } from './WebGPU/webgpuHardwareTexture';
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 
+const makeDynamicTextureUpdateSynchronous = true;
+
 /**
  * Options to load the associated Glslang library
  */
@@ -1421,20 +1423,32 @@ export class WebGPUEngine extends Engine {
             (this as any)._bitmap = createImageBitmap(canvas);
         }*/
 
-        this._promisesFrame.push(new Promise((resolve) => {
-            /*(this as any)._bitmap*/createImageBitmap(canvas).then((bitmap) => {
-                // TODO WEBGPU: handle format if <> 0
-                // let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
-                this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder).then(() => {
-                    if (texture.generateMipMaps) {
-                        this._generateMipmaps(texture, gpuTexture);
-                    }
-                    resolve();
+        // TODO WEBGPU: handle format if <> 0
+        // let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
+
+        if (makeDynamicTextureUpdateSynchronous) {
+            this._promisesFrame.push(new Promise((resolve) => {
+                /*(this as any)._bitmap*/createImageBitmap(canvas).then((bitmap) => {
+                    this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder).then(() => {
+                        if (texture.generateMipMaps) {
+                            this._generateMipmaps(texture, gpuTexture);
+                        }
+                        resolve();
+                    });
+
+                    texture.isReady = true;
                 });
+            }));
+        } else {
+            createImageBitmap(canvas).then((bitmap) => {
+                /*(this as any)._bitmap*/this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
+                if (texture.generateMipMaps) {
+                    this._generateMipmaps(texture, gpuTexture);
+                }
 
                 texture.isReady = true;
             });
-        }));
+        }
     }
 
     public updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex: number = 0, lod: number = 0): void {
@@ -1664,7 +1678,7 @@ export class WebGPUEngine extends Engine {
     public endFrame() {
         this._endRenderPass();
 
-        Promise.all(this._promisesFrame).then(() => {
+        const submitQueue = () => {
             this._commandBuffers[0] = this._uploadEncoder.finish();
             this._commandBuffers[1] = this._renderEncoder.finish();
 
@@ -1683,7 +1697,15 @@ export class WebGPUEngine extends Engine {
             if (!(this as any)._count || (this as any)._count < 20) {
                 console.log("end frame. There was " + numPromises + " promises to wait on.");
             }
-        });
+        };
+
+        if (makeDynamicTextureUpdateSynchronous) {
+            Promise.all(this._promisesFrame).then(() => {
+                submitQueue();
+            });
+        } else {
+            submitQueue();
+        }
     }
 
     //------------------------------------------------------------------------------
