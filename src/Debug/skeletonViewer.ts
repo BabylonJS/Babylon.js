@@ -864,12 +864,16 @@ export class SkeletonViewer {
     }
 
     /** Sets a display option of the skeleton viewer
-     *
+	 *
      * | Option          | Type    | Default | Description |
      * | --------------- | ------- | ------- | ----------- |
+     * | midStep         | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | midStepFactor   | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | sphereBaseSize  | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | sphereScaleUnit | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
      * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
-     * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
-     *
+	 * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
+	 *
      * @param option String of the option name
      * @param value The numerical option value
      */
