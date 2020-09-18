@@ -41,9 +41,7 @@ export class AddAnimation extends React.Component<
             animationName: editingAnimation ? editingAnimation.name : "",
             animationTargetPath: "",
             animationType: editingAnimation ? editingAnimation.dataType : Animation.ANIMATIONTYPE_FLOAT,
-            loopMode: editingAnimation
-                ? editingAnimation.loopMode ?? Animation.ANIMATIONLOOPMODE_CYCLE
-                : Animation.ANIMATIONLOOPMODE_CYCLE,
+            loopMode: editingAnimation ? editingAnimation.loopMode ?? Animation.ANIMATIONLOOPMODE_CYCLE : Animation.ANIMATIONLOOPMODE_CYCLE,
             animationTargetProperty: editingAnimation ? editingAnimation.targetProperty : "",
             isUpdating: editingAnimation ? true : false,
         };
@@ -111,38 +109,28 @@ export class AddAnimation extends React.Component<
                 if (match) {
                     switch (match.constructor.name) {
                         case "Vector2":
-                            animationDataType === Animation.ANIMATIONTYPE_VECTOR2
-                                ? (matched = true)
-                                : (matched = false);
+                            matched = animationDataType === Animation.ANIMATIONTYPE_VECTOR2;
                             break;
                         case "Vector3":
-                            animationDataType === Animation.ANIMATIONTYPE_VECTOR3
-                                ? (matched = true)
-                                : (matched = false);
+                            matched = animationDataType === Animation.ANIMATIONTYPE_VECTOR3;
                             break;
                         case "Quaternion":
-                            animationDataType === Animation.ANIMATIONTYPE_QUATERNION
-                                ? (matched = true)
-                                : (matched = false);
+                            matched = animationDataType === Animation.ANIMATIONTYPE_QUATERNION;
                             break;
                         case "Color3":
-                            animationDataType === Animation.ANIMATIONTYPE_COLOR3 ? (matched = true) : (matched = false);
+                            matched = animationDataType === Animation.ANIMATIONTYPE_COLOR3;
                             break;
                         case "Color4":
-                            animationDataType === Animation.ANIMATIONTYPE_COLOR4 ? (matched = true) : (matched = false);
+                            matched = animationDataType === Animation.ANIMATIONTYPE_COLOR4;
                             break;
                         case "Size":
-                            animationDataType === Animation.ANIMATIONTYPE_SIZE ? (matched = true) : (matched = false);
+                            matched = animationDataType === Animation.ANIMATIONTYPE_SIZE;
                             break;
                     }
                 } else {
-                    this.props.setNotificationMessage(
-                        `The selected entity doesn't have a ${matchTypeTargetProperty[0]} property`
-                    );
+                    this.props.setNotificationMessage(`The selected entity doesn't have a ${matchTypeTargetProperty[0]} property`);
                 }
             } else if (matchTypeTargetProperty.length > 1) {
-                const entity = this.props.entity;
-                console.log(entity);
                 let matchProp = (this.props.entity as any)[matchTypeTargetProperty[0]];
                 if (matchProp) {
                     let match = matchProp[matchTypeTargetProperty[1]];
@@ -153,31 +141,16 @@ export class AddAnimation extends React.Component<
             }
 
             if (matched) {
-                let alreadyAnimatedProperty = (this.props.entity as IAnimatable).animations?.find(
-                    (anim) => anim.targetProperty === this.state.animationTargetProperty,
-                    this
-                );
+                let alreadyAnimatedProperty = (this.props.entity as IAnimatable).animations?.find((anim) => anim.targetProperty === this.state.animationTargetProperty, this);
 
-                let alreadyAnimationName = (this.props.entity as IAnimatable).animations?.find(
-                    (anim) => anim.name === this.state.animationName,
-                    this
-                );
+                let alreadyAnimationName = (this.props.entity as IAnimatable).animations?.find((anim) => anim.name === this.state.animationName, this);
 
                 if (alreadyAnimatedProperty) {
-                    this.props.setNotificationMessage(
-                        `The property "${this.state.animationTargetProperty}" already has an animation`
-                    );
+                    this.props.setNotificationMessage(`The property "${this.state.animationTargetProperty}" already has an animation`);
                 } else if (alreadyAnimationName) {
-                    this.props.setNotificationMessage(
-                        `There is already an animation with the name: "${this.state.animationName}"`
-                    );
+                    this.props.setNotificationMessage(`There is already an animation with the name: "${this.state.animationName}"`);
                 } else {
-                    let animation = new Animation(
-                        this.state.animationName,
-                        this.state.animationTargetProperty,
-                        this.props.fps,
-                        animationDataType
-                    );
+                    let animation = new Animation(this.state.animationName, this.state.animationTargetProperty, this.props.fps, animationDataType);
 
                     // Start with two keyframes
                     var keys: IAnimationKey[] = [];
@@ -201,11 +174,7 @@ export class AddAnimation extends React.Component<
                     }
                 }
             } else {
-                this.props.setNotificationMessage(
-                    `The property "${this.state.animationTargetProperty}" is not a "${this.getTypeAsString(
-                        this.state.animationType
-                    )}" type`
-                );
+                this.props.setNotificationMessage(`The property "${this.state.animationTargetProperty}" is not a "${this.getTypeAsString(this.state.animationType)}" type`);
             }
         } else {
             this.props.setNotificationMessage(`You need to provide a name and target property.`);
@@ -276,11 +245,7 @@ export class AddAnimation extends React.Component<
                     {this.state.isUpdating ? null : (
                         <div className="label-input">
                             <label>Property</label>
-                            <input
-                                type="text"
-                                value={this.state.animationTargetProperty}
-                                onChange={this.handlePropertyChange}
-                            ></input>
+                            <input type="text" value={this.state.animationTargetProperty} onChange={this.handlePropertyChange}></input>
                         </div>
                     )}
                     {this.state.isUpdating ? null : (
@@ -308,9 +273,7 @@ export class AddAnimation extends React.Component<
                     </div>
                     <div className="confirm-buttons">
                         <ButtonLineComponent label={confirmLabel} onClick={confirmHandleOnClick} />
-                        {this.props.entity.animations?.length !== 0 ? (
-                            <ButtonLineComponent label={"Cancel"} onClick={this.props.close} />
-                        ) : null}
+                        {this.props.entity.animations?.length !== 0 ? <ButtonLineComponent label={"Cancel"} onClick={this.props.close} /> : null}
                     </div>
                 </div>
             </div>
