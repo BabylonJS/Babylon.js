@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Observable } from "babylonjs/Misc/observable";
 
 import { NumericInputComponent } from "./numericInputComponent";

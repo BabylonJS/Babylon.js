@@ -1,9 +1,6 @@
 import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { SceneComponentConstants, ISceneComponent } from "../sceneComponent";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
-
 import { GamepadManager } from "./gamepadManager";
 
 import { FreeCameraInputsManager } from "../Cameras/freeCameraInputsManager";
@@ -18,7 +15,7 @@ declare module "../scene" {
 
         /**
          * Gets the gamepad manager associated with the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
+         * @see https://doc.babylonjs.com/how_to/how_to_use_gamepads
          */
         gamepadManager: GamepadManager;
     }

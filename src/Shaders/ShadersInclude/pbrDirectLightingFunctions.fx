@@ -39,6 +39,7 @@ vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
+#define inline
 vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
     vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
     strq /= strq.w;
@@ -72,12 +73,12 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
 
         #ifdef BRDF_V_HEIGHT_CORRELATED
-            float visibility = smithVisibility_GGXCorrelated(info.NdotL, info.NdotV, alphaG);
+            float smithVisibility = smithVisibility_GGXCorrelated(info.NdotL, info.NdotV, alphaG);
         #else
-            float visibility = smithVisibility_TrowbridgeReitzGGXFast(info.NdotL, info.NdotV, alphaG);
+            float smithVisibility = smithVisibility_TrowbridgeReitzGGXFast(info.NdotL, info.NdotV, alphaG);
         #endif
 
-        vec3 specTerm = fresnel * distribution * visibility;
+        vec3 specTerm = fresnel * distribution * smithVisibility;
         return specTerm * info.attenuation * info.NdotL * lightColor;
     }
 #endif
@@ -97,9 +98,9 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 
         vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
         float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
-        float visibility = smithVisibility_GGXCorrelated_Anisotropic(info.NdotL, info.NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);
+        float smithVisibility = smithVisibility_GGXCorrelated_Anisotropic(info.NdotL, info.NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);
 
-        vec3 specTerm = fresnel * distribution * visibility;
+        vec3 specTerm = fresnel * distribution * smithVisibility;
         return specTerm * info.attenuation * info.NdotL * lightColor;
     }
 #endif
@@ -114,9 +115,9 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         float fresnel = fresnelSchlickGGX(info.VdotH, vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
         fresnel *= clearCoatIntensity;
         float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NccdotH, alphaG);
-        float visibility = visibility_Kelemen(info.VdotH);
+        float kelemenVisibility = visibility_Kelemen(info.VdotH);
 
-        float clearCoatTerm = fresnel * distribution * visibility;
+        float clearCoatTerm = fresnel * distribution * kelemenVisibility;
 
         return vec4(
             clearCoatTerm * info.attenuation * NccdotL * lightColor,
@@ -141,11 +142,15 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 
         // No Fresnel Effect with sheen
         // vec3 fresnel = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
-        vec3 fresnel = reflectance0;
+        float fresnel = 1.;
         float distribution = normalDistributionFunction_CharlieSheen(NdotH, alphaG);
-        float visibility = visibility_Ashikhmin(info.NdotL, info.NdotV);
+        /*#ifdef SHEEN_SOFTER
+            float visibility = visibility_CharlieSheen(info.NdotL, info.NdotV, alphaG);
+        #else */
+            float visibility = visibility_Ashikhmin(info.NdotL, info.NdotV);
+        /* #endif */
 
-        vec3 sheenTerm = fresnel * distribution * visibility;
+        float sheenTerm = fresnel * distribution * visibility;
         return sheenTerm * info.attenuation * info.NdotL * lightColor;
     }
 #endif

@@ -1,6 +1,5 @@
 import { Nullable } from "../../types";
 import { Engine } from "../../Engines/engine";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { DataBuffer } from '../../Meshes/dataBuffer';
 
 /** @hidden */

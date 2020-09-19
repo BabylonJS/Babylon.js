@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
-import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { BackgroundMaterial } from "babylonjs/Materials/Background/backgroundMaterial";
 
 import { PropertyChangedEvent } from "../../../../propertyChangedEvent";
@@ -23,7 +22,7 @@ interface IBackgroundMaterialPropertyGridComponentProps {
 }
 
 export class BackgroundMaterialPropertyGridComponent extends React.Component<IBackgroundMaterialPropertyGridComponentProps> {
-    private _onDebugSelectionChangeObservable = new Observable<BaseTexture>();
+    private _onDebugSelectionChangeObservable = new Observable<TextureLinkLineComponent>();
 
     constructor(props: IBackgroundMaterialPropertyGridComponentProps) {
         super(props);

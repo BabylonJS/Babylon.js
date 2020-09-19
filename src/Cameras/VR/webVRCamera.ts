@@ -154,7 +154,7 @@ export interface WebVROptions {
 /**
  * This represents a WebVR camera.
  * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
- * @example http://doc.babylonjs.com/how_to/webvr_camera
+ * @example https://doc.babylonjs.com/how_to/webvr_camera
  */
 export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     /**
@@ -278,7 +278,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
             this.setCameraRigMode(Camera.RIG_MODE_WEBVR, { parentCamera: this, vrDisplay: this._vrDevice, frameData: this._frameData, specs: this._specsVersion });
 
             if (this._attached) {
-                this.getEngine().enableVR();
+                this.getEngine().enableVR(this.webVROptions);
             }
         });
 
@@ -463,7 +463,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
      * @param poseData Pose coming from the device
      */
     updateFromDevice(poseData: DevicePose) {
-        if (poseData && poseData.orientation) {
+        if (poseData && poseData.orientation && poseData.orientation.length === 4) {
             this.rawPose = poseData;
             this._deviceRoomRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 
@@ -506,11 +506,14 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         noPreventDefault = Camera.ForceAttachControlToAlwaysPreventDefault ? false : noPreventDefault;
 
         if (this._vrDevice) {
-            this.getEngine().enableVR();
+            this.getEngine().enableVR(this.webVROptions);
         }
 
         let hostWindow = this._scene.getEngine().getHostWindow();
-        hostWindow.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
+
+        if (hostWindow) {
+            hostWindow.addEventListener('vrdisplaypresentchange', this._detachIfAttached);
+        }
     }
 
     /**

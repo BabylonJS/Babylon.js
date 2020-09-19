@@ -4,14 +4,15 @@ import { Logger } from "babylonjs/Misc/logger";
 import { Control } from "./control";
 import { Measure } from "../measure";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Root class for 2D containers
- * @see http://doc.babylonjs.com/how_to/gui#containers
+ * @see https://doc.babylonjs.com/how_to/gui#containers
  */
 export class Container extends Control {
     /** @hidden */
-    protected _children = new Array<Control>();
+    public _children = new Array<Control>();
     /** @hidden */
     protected _measureForChildren = Measure.Empty();
     /** @hidden */
@@ -20,6 +21,16 @@ export class Container extends Control {
     protected _adaptWidthToChildren = false;
     /** @hidden */
     protected _adaptHeightToChildren = false;
+
+    /**
+     * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+     */
+    public logLayoutCycleErrors = false;
+
+    /**
+     * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+     */
+    public maxLayoutCycle = 3;
 
     /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
     public get adaptHeightToChildren(): boolean {
@@ -293,6 +304,8 @@ export class Container extends Control {
             return false;
         }
 
+        this.host._numLayoutCalls++;
+
         if (this._isDirty) {
             this._currentMeasure.transformToRef(this._transformMatrix, this._prevCurrentMeasureTransformedIntoGlobalSpace);
         }
@@ -318,21 +331,23 @@ export class Container extends Control {
                     if (child._layout(this._measureForChildren, context)) {
 
                         if (this.adaptWidthToChildren && child._width.isPixel) {
-                            computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width + child.paddingLeftInPixels + child.paddingRightInPixels);
                         }
                         if (this.adaptHeightToChildren && child._height.isPixel) {
-                            computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height + child.paddingTopInPixels + child.paddingBottomInPixels);
                         }
                     }
                 }
 
                 if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    computedWidth += this.paddingLeftInPixels + this.paddingRightInPixels;
                     if (this.width !== computedWidth + "px") {
                         this.width = computedWidth + "px";
                         this._rebuildLayout = true;
                     }
                 }
                 if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    computedHeight += this.paddingTopInPixels + this.paddingBottomInPixels;
                     if (this.height !== computedHeight + "px") {
                         this.height = computedHeight + "px";
                         this._rebuildLayout = true;
@@ -343,9 +358,9 @@ export class Container extends Control {
             }
             rebuildCount++;
         }
-        while (this._rebuildLayout && rebuildCount < 3);
+        while (this._rebuildLayout && rebuildCount < this.maxLayoutCycle);
 
-        if (rebuildCount >= 3) {
+        if (rebuildCount >= 3 && this.logLayoutCycleErrors) {
             Logger.Error(`Layout cycle detected in GUI (Container name=${this.name}, uniqueId=${this.uniqueId})`);
         }
 
@@ -384,8 +399,7 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
-    public _getDescendants(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+    public getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
         if (!this.children) {
             return;
         }
@@ -398,13 +412,13 @@ export class Container extends Control {
             }
 
             if (!directDescendantsOnly) {
-                item._getDescendants(results, false, predicate);
+                item.getDescendantsToRef(results, false, predicate);
             }
         }
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean {
+    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -416,7 +430,7 @@ export class Container extends Control {
         // Checking backwards to pick closest first
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
-            if (child._processPicking(x, y, type, pointerId, buttonIndex)) {
+            if (child._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
                 }
@@ -428,7 +442,7 @@ export class Container extends Control {
             return false;
         }
 
-        return this._processObservables(type, x, y, pointerId, buttonIndex);
+        return this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
     }
 
     /** @hidden */
@@ -447,3 +461,4 @@ export class Container extends Control {
         }
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Container"] = Container;

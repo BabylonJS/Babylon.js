@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 import { Camera } from "babylonjs/Cameras/camera";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 

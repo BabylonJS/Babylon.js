@@ -11,26 +11,48 @@ precision highp int;
 attribute vec3 position;
 attribute vec3 normal;
 
-#if defined(ALPHATEST) || defined(NEED_UV)
-varying vec2 vUV;
-uniform mat4 diffuseMatrix;
-#ifdef UV1
-attribute vec2 uv;
-#endif
-#ifdef UV2
-attribute vec2 uv2;
-#endif
+#ifdef NEED_UV
+	varying vec2 vUV;
+
+	#ifdef ALPHATEST
+	uniform mat4 diffuseMatrix;
+	#endif
+	#ifdef BUMP
+	uniform mat4 bumpMatrix;
+	varying vec2 vBumpUV;
+	#endif
+	#ifdef REFLECTIVITY
+	uniform mat4 reflectivityMatrix;
+	varying vec2 vReflectivityUV;
+	#endif
+
+	#ifdef UV1
+	attribute vec2 uv;
+	#endif
+
+	#ifdef UV2
+	attribute vec2 uv2;
+	#endif
 #endif
 
 // Uniform
 uniform mat4 viewProjection;
 uniform mat4 view;
 
+#ifdef BUMP
+varying mat4 vWorldView;
+#endif
+
+#ifdef BUMP
+varying vec3 vNormalW;
+#else
 varying vec3 vNormalV;
+#endif
+
 varying vec4 vViewPos;
 
-#ifdef POSITION
-varying vec3 vPosition;
+#if defined(POSITION) || defined(BUMP)
+varying vec3 vPositionW;
 #endif
 
 #ifdef VELOCITY
@@ -66,7 +88,13 @@ void main(void)
 #include<bonesVertex>
 	vec4 pos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
+	#ifdef BUMP
+	vWorldView = view * finalWorld;
+	vNormalW = normalUpdated;
+	#else
 	vNormalV = normalize(vec3((view * finalWorld) * vec4(normalUpdated, 0.0)));
+	#endif
+
 	vViewPos = view * pos;
 
 	#if defined(VELOCITY) && defined(BONES_VELOCITY_ENABLED)
@@ -104,18 +132,42 @@ void main(void)
 		#endif
 	#endif
 
-	#ifdef POSITION
-	vPosition = pos.xyz / pos.w;
+	#if defined(POSITION) || defined(BUMP)
+	vPositionW = pos.xyz / pos.w;
 	#endif
 
 	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 
-#if defined(ALPHATEST) || defined(BASIC_RENDER)
-#ifdef UV1
-	vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
-#endif
-#ifdef UV2
-	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
-#endif
-#endif
+	#ifdef NEED_UV
+		#ifdef UV1
+			#ifdef ALPHATEST
+			vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#else
+			vUV = uv;
+			#endif
+
+			#ifdef BUMP
+			vBumpUV = vec2(bumpMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#endif
+			#ifdef REFLECTIVITY
+			vReflectivityUV = vec2(reflectivityMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#endif
+		#endif
+		#ifdef UV2
+			#ifdef ALPHATEST
+			vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
+			#else
+			vUV = uv2;
+			#endif
+
+			#ifdef BUMP
+			vBumpUV = vec2(bumpMatrix * vec4(uv2, 1.0, 0.0));
+			#endif
+			#ifdef REFLECTIVITY
+			vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
+			#endif
+		#endif
+	#endif
+
+	#include<bumpVertex>
 }

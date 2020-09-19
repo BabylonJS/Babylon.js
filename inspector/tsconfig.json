@@ -11,6 +11,9 @@
             "babylonjs-gltf2interface": [
                 "../../dist/preview release/glTF2Interface/babylon.glTF2Interface.d.ts"
             ],
+            "@babylonjs/loaders/glTF/2.0/Extensions*": [
+                "../../../distES6/loaders/glTF/2.0/Extensions"
+            ],
             "babylonjs-loaders/*": [
                 "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
             ],

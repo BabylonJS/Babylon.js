@@ -18,12 +18,20 @@ import { Logger } from "../Misc/logger";
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
+import { Engine } from '../Engines/engine';
+import { WebRequest } from '../Misc/webRequest';
 declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * Defines the minimum interface to fullfil in order to be a sprite manager.
  */
 export interface ISpriteManager extends IDisposable {
+
+    /**
+     * Gets manager's name
+     */
+    name: string;
+
     /**
      * Restricts the camera to viewing objects with the same layerMask.
      * A camera with a layerMask of 1 will render spriteManager.layerMask & camera.layerMask!== 0
@@ -36,8 +44,13 @@ export interface ISpriteManager extends IDisposable {
     isPickable: boolean;
 
     /**
+     * Gets the hosting scene
+     */
+    scene: Scene;
+
+    /**
      * Specifies the rendering group id for this mesh (0 by default)
-     * @see http://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
+     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
     renderingGroupId: number;
 
@@ -47,14 +60,33 @@ export interface ISpriteManager extends IDisposable {
     sprites: Array<Sprite>;
 
     /**
+     * Gets or sets the spritesheet texture
+     */
+    texture: Texture;
+
+    /** Defines the default width of a cell in the spritesheet */
+    cellWidth: number;
+    /** Defines the default height of a cell in the spritesheet */
+    cellHeight: number;
+
+    /**
      * Tests the intersection of a sprite with a specific ray.
      * @param ray The ray we are sending to test the collision
      * @param camera The camera space we are sending rays in
      * @param predicate A predicate allowing excluding sprites from the list of object to test
-     * @param fastCheck Is the hit test done in a OOBB or AOBB fashion the faster, the less precise
+     * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @returns picking info or null.
      */
     intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+
+    /**
+     * Intersects the sprites with a ray
+     * @param ray defines the ray to intersect with
+     * @param camera defines the current active camera
+     * @param predicate defines a predicate used to select candidate sprites
+     * @returns null if no hit or a PickingInfo array
+     */
+    multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]>;
 
     /**
      * Renders the list of sprites on screen.
@@ -64,9 +96,15 @@ export interface ISpriteManager extends IDisposable {
 
 /**
  * Class used to manage multiple sprites on the same spritesheet
- * @see http://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/babylon101/sprites
  */
 export class SpriteManager implements ISpriteManager {
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the manager was created from the snippet server */
+    public snippetId: string;
+
     /** Gets the list of sprites */
     public sprites = new Array<Sprite>();
     /** Gets or sets the rendering group id (0 by default) */
@@ -88,6 +126,10 @@ export class SpriteManager implements ISpriteManager {
     private _spriteMap: Array<string>;
     /** True when packed cell data from JSON file is ready*/
     private _packedAndReady: boolean = false;
+
+    private _textureContent: Nullable<Uint8Array>;
+
+    private _useInstancing = false;
 
     /**
     * An event triggered when the manager is disposed.
@@ -116,9 +158,38 @@ export class SpriteManager implements ISpriteManager {
     private _vertexData: Float32Array;
     private _buffer: Buffer;
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+    private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: DataBuffer;
     private _effectBase: Effect;
     private _effectFog: Effect;
+
+    private _vertexBufferSize: number;
+
+    /**
+     * Gets or sets the unique id of the sprite
+     */
+    public uniqueId: number;
+
+    /**
+     * Gets the array of sprites
+     */
+    public get children() {
+        return this.sprites;
+    }
+
+    /**
+     * Gets the hosting scene
+     */
+    public get scene() {
+        return this._scene;
+    }
+
+    /**
+     * Gets the capacity of the manager
+     */
+    public get capacity() {
+        return this._capacity;
+    }
 
     /**
      * Gets or sets the spritesheet texture
@@ -129,7 +200,27 @@ export class SpriteManager implements ISpriteManager {
 
     public set texture(value: Texture) {
         this._spriteTexture = value;
+        this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+        this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        this._textureContent = null;
     }
+
+    private _blendMode = Constants.ALPHA_COMBINE;
+    /**
+     * Blend mode use to render the particle, it can be any of
+     * the static Constants.ALPHA_x properties provided in this class.
+     * Default value is Constants.ALPHA_COMBINE
+     */
+    public get blendMode() { return this._blendMode; }
+    public set blendMode(blendMode: number) {
+        this._blendMode = blendMode;
+    }
+
+    /** Disables writing to the depth buffer when rendering the sprites.
+     *  It can be handy to disable depth writing when using textures without alpha channel
+     *  and setting some specific blend modes.
+    */
+    public disableDepthWrite: boolean = false;
 
     /**
      * Creates a new sprite manager
@@ -146,15 +237,23 @@ export class SpriteManager implements ISpriteManager {
     constructor(
         /** defines the manager's name */
         public name: string,
-        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: string | null = null) {
+        imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon: number = 0.01, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, fromPacked: boolean = false, spriteJSON: any | null = null) {
+
+        if (!scene) {
+            scene = Engine.LastCreatedScene!;
+        }
+
         if (!scene._getComponent(SceneComponentConstants.NAME_SPRITE)) {
             scene._addComponent(new SpriteSceneComponent(scene));
         }
         this._capacity = capacity;
         this._fromPacked = fromPacked;
-        this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
-        this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+
+        if (imgUrl) {
+            this._spriteTexture = new Texture(imgUrl, scene, true, false, samplingMode);
+            this._spriteTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this._spriteTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+        }
 
         if (cellSize.width && cellSize.height) {
             this.cellWidth = cellSize.width;
@@ -169,46 +268,68 @@ export class SpriteManager implements ISpriteManager {
         this._epsilon = epsilon;
         this._scene = scene;
         this._scene.spriteManagers.push(this);
+        this.uniqueId = this.scene.getUniqueId();
+        const engine = this._scene.getEngine();
+        this._useInstancing = engine.getCaps().instancedArrays;
 
-        var indices = [];
-        var index = 0;
-        for (var count = 0; count < capacity; count++) {
-            indices.push(index);
-            indices.push(index + 1);
-            indices.push(index + 2);
-            indices.push(index);
-            indices.push(index + 2);
-            indices.push(index + 3);
-            index += 4;
+        if (!this._useInstancing) {
+            var indices = [];
+            var index = 0;
+            for (var count = 0; count < capacity; count++) {
+                indices.push(index);
+                indices.push(index + 1);
+                indices.push(index + 2);
+                indices.push(index);
+                indices.push(index + 2);
+                indices.push(index + 3);
+                index += 4;
+            }
+
+            this._indexBuffer = engine.createIndexBuffer(indices);
+        } else {
         }
-
-        this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
 
         // VBO
         // 18 floats per sprite (x, y, z, angle, sizeX, sizeY, offsetX, offsetY, invertU, invertV, cellLeft, cellTop, cellWidth, cellHeight, color r, color g, color b, color a)
-        this._vertexData = new Float32Array(capacity * 18 * 4);
-        this._buffer = new Buffer(scene.getEngine(), this._vertexData, true, 18);
+        // 16 when using instances
+        this._vertexBufferSize = this._useInstancing ? 16 : 18;
+        this._vertexData = new Float32Array(capacity * this._vertexBufferSize * (this._useInstancing ? 1 : 4));
+        this._buffer = new Buffer(engine, this._vertexData, true, this._vertexBufferSize);
 
-        var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4);
-        var options = this._buffer.createVertexBuffer("options", 4, 4);
-        var inverts = this._buffer.createVertexBuffer("inverts", 8, 2);
-        var cellInfo = this._buffer.createVertexBuffer("cellInfo", 10, 4);
-        var colors = this._buffer.createVertexBuffer(VertexBuffer.ColorKind, 14, 4);
+        var positions = this._buffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 4, this._vertexBufferSize, this._useInstancing);
+        var options = this._buffer.createVertexBuffer("options", 4, 2, this._vertexBufferSize, this._useInstancing);
+
+        let offset = 6;
+        var offsets: VertexBuffer;
+
+        if (this._useInstancing) {
+            var spriteData = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
+            this._spriteBuffer = new Buffer(engine, spriteData, false, 2);
+            offsets = this._spriteBuffer.createVertexBuffer("offsets", 0, 2);
+        } else {
+            offsets = this._buffer.createVertexBuffer("offsets", offset, 2, this._vertexBufferSize, this._useInstancing);
+            offset += 2;
+        }
+
+        var inverts = this._buffer.createVertexBuffer("inverts", offset, 2, this._vertexBufferSize, this._useInstancing);
+        var cellInfo = this._buffer.createVertexBuffer("cellInfo", offset + 2, 4, this._vertexBufferSize, this._useInstancing);
+        var colors = this._buffer.createVertexBuffer(VertexBuffer.ColorKind, offset + 6, 4, this._vertexBufferSize, this._useInstancing);
 
         this._vertexBuffers[VertexBuffer.PositionKind] = positions;
         this._vertexBuffers["options"] = options;
+        this._vertexBuffers["offsets"] = offsets;
         this._vertexBuffers["inverts"] = inverts;
         this._vertexBuffers["cellInfo"] = cellInfo;
         this._vertexBuffers[VertexBuffer.ColorKind] = colors;
 
         // Effects
         this._effectBase = this._scene.getEngine().createEffect("sprites",
-            [VertexBuffer.PositionKind, "options", "inverts", "cellInfo", VertexBuffer.ColorKind],
+            [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest"],
             ["diffuseSampler"], "");
 
         this._effectFog = this._scene.getEngine().createEffect("sprites",
-            [VertexBuffer.PositionKind, "options", "inverts", "cellInfo", VertexBuffer.ColorKind],
+            [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
             ["diffuseSampler"], "#define FOG");
 
@@ -217,11 +338,41 @@ export class SpriteManager implements ISpriteManager {
         }
     }
 
-    private _makePacked(imgUrl: string, spriteJSON: string | null) {
+    /**
+     * Returns the string "SpriteManager"
+     * @returns "SpriteManager"
+     */
+    public getClassName(): string {
+        return "SpriteManager";
+    }
+
+    private _makePacked(imgUrl: string, spriteJSON: any) {
         if (spriteJSON !== null) {
             try {
-                let celldata = JSON.parse(spriteJSON);
+                //Get the JSON and Check its stucture.  If its an array parse it if its a JSON sring etc...
+                let celldata: any;
+                if (typeof spriteJSON === "string") {
+                    celldata = JSON.parse(spriteJSON);
+                }else {
+                    celldata = spriteJSON;
+                }
+
+                if (celldata.frames.length) {
+                    let frametemp: any = {};
+                    for (let i = 0; i < celldata.frames.length; i++) {
+                        let _f = celldata.frames[i];
+                        if (typeof (Object.keys(_f))[0] !== "string") {
+                            throw new Error("Invalid JSON Format.  Check the frame values and make sure the name is the first parameter.");
+                        }
+
+                        let name: string = _f[(Object.keys(_f))[0]];
+                        frametemp[name] = _f;
+                    }
+                    celldata.frames = frametemp;
+                }
+
                 let spritemap = (<string[]>(<any>Reflect).ownKeys(celldata.frames));
+
                 this._spriteMap = spritemap;
                 this._packedAndReady = true;
                 this._cellData = celldata.frames;
@@ -243,7 +394,7 @@ export class SpriteManager implements ISpriteManager {
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", jsonUrl, true);
             xmlhttp.onerror = () => {
-                Logger.Error("Unable to Load Sprite JSON Data. Spritesheet managed with constant cell size.");
+                Logger.Error("JSON ERROR: Unable to load JSON file.");
                 this._fromPacked = false;
                 this._packedAndReady = false;
             };
@@ -258,7 +409,7 @@ export class SpriteManager implements ISpriteManager {
                 catch (e) {
                     this._fromPacked = false;
                     this._packedAndReady = false;
-                    throw new Error("Invalid JSON from file. Spritesheet managed with constant cell size.");
+                    throw new Error("Invalid JSON format. Please check documentation for format specifications.");
                 }
             };
             xmlhttp.send();
@@ -266,7 +417,7 @@ export class SpriteManager implements ISpriteManager {
     }
 
     private _appendSpriteVertex(index: number, sprite: Sprite, offsetX: number, offsetY: number, baseSize: any): void {
-        var arrayOffset = index * 18;
+        var arrayOffset = index * this._vertexBufferSize;
 
         if (offsetX === 0) {
             offsetX = this._epsilon;
@@ -290,10 +441,22 @@ export class SpriteManager implements ISpriteManager {
         // Options
         this._vertexData[arrayOffset + 4] = sprite.width;
         this._vertexData[arrayOffset + 5] = sprite.height;
-        this._vertexData[arrayOffset + 6] = offsetX;
-        this._vertexData[arrayOffset + 7] = offsetY;
-        // Inverts
-        this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+
+        if (!this._useInstancing) {
+            this._vertexData[arrayOffset + 6] = offsetX;
+            this._vertexData[arrayOffset + 7] = offsetY;
+        } else {
+            arrayOffset -= 2;
+        }
+
+        // Inverts according to Right Handed
+        if (this._scene.useRightHandedSystem) {
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 0 : 1;
+        }
+        else {
+            this._vertexData[arrayOffset + 8] = sprite.invertU ? 1 : 0;
+        }
+
         this._vertexData[arrayOffset + 9] = sprite.invertV ? 1 : 0;
         // CellIfo
         if (this._packedAndReady) {
@@ -304,10 +467,14 @@ export class SpriteManager implements ISpriteManager {
             if (typeof (num) === "number" && isFinite(num) && Math.floor(num) === num) {
                 sprite.cellRef = this._spriteMap[sprite.cellIndex];
             }
-            this._vertexData[arrayOffset + 10] = this._cellData[sprite.cellRef].frame.x / baseSize.width;
-            this._vertexData[arrayOffset + 11] = this._cellData[sprite.cellRef].frame.y / baseSize.height;
-            this._vertexData[arrayOffset + 12] = this._cellData[sprite.cellRef].frame.w / baseSize.width;
-            this._vertexData[arrayOffset + 13] = this._cellData[sprite.cellRef].frame.h / baseSize.height;
+            sprite._xOffset = this._cellData[sprite.cellRef].frame.x / baseSize.width;
+            sprite._yOffset = this._cellData[sprite.cellRef].frame.y / baseSize.height;
+            sprite._xSize = this._cellData[sprite.cellRef].frame.w;
+            sprite._ySize = this._cellData[sprite.cellRef].frame.h;
+            this._vertexData[arrayOffset + 10] = sprite._xOffset;
+            this._vertexData[arrayOffset + 11] = sprite._yOffset;
+            this._vertexData[arrayOffset + 12] = sprite._xSize / baseSize.width;
+            this._vertexData[arrayOffset + 13] = sprite._ySize / baseSize.height;
         }
         else {
             if (!sprite.cellIndex) {
@@ -315,8 +482,12 @@ export class SpriteManager implements ISpriteManager {
             }
             var rowSize = baseSize.width / this.cellWidth;
             var offset = (sprite.cellIndex / rowSize) >> 0;
-            this._vertexData[arrayOffset + 10] = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
-            this._vertexData[arrayOffset + 11] = offset * this.cellHeight / baseSize.height;
+            sprite._xOffset = (sprite.cellIndex - offset * rowSize) * this.cellWidth / baseSize.width;
+            sprite._yOffset = offset * this.cellHeight / baseSize.height;
+            sprite._xSize = this.cellWidth;
+            sprite._ySize = this.cellHeight;
+            this._vertexData[arrayOffset + 10] = sprite._xOffset;
+            this._vertexData[arrayOffset + 11] = sprite._yOffset;
             this._vertexData[arrayOffset + 12] = this.cellWidth / baseSize.width;
             this._vertexData[arrayOffset + 13] = this.cellHeight / baseSize.height;
         }
@@ -325,6 +496,41 @@ export class SpriteManager implements ISpriteManager {
         this._vertexData[arrayOffset + 15] = sprite.color.g;
         this._vertexData[arrayOffset + 16] = sprite.color.b;
         this._vertexData[arrayOffset + 17] = sprite.color.a;
+    }
+
+    private _checkTextureAlpha(sprite: Sprite, ray: Ray, distance: number, min: Vector3, max: Vector3) {
+        if (!sprite.useAlphaForPicking || !this._spriteTexture) {
+            return true;
+        }
+
+        let textureSize = this._spriteTexture.getSize();
+        if (!this._textureContent) {
+            this._textureContent = new Uint8Array(textureSize.width * textureSize.height * 4);
+            this._spriteTexture.readPixels(0, 0, this._textureContent);
+        }
+
+        let contactPoint = TmpVectors.Vector3[0];
+
+        contactPoint.copyFrom(ray.direction);
+
+        contactPoint.normalize();
+        contactPoint.scaleInPlace(distance);
+        contactPoint.addInPlace(ray.origin);
+
+        let contactPointU = ((contactPoint.x - min.x) / (max.x - min.x)) - 0.5;
+        let contactPointV = (1.0 - (contactPoint.y - min.y) / (max.y - min.y)) - 0.5;
+
+        // Rotate
+        let angle = sprite.angle;
+        let rotatedU = 0.5 + (contactPointU * Math.cos(angle) - contactPointV * Math.sin(angle));
+        let rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
+
+        let u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
+        let v = (sprite._yOffset * textureSize.height +  rotatedV * sprite._ySize) | 0;
+
+        let alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
+
+        return (alpha > 0.5);
     }
 
     /**
@@ -341,8 +547,8 @@ export class SpriteManager implements ISpriteManager {
         var max = Vector3.Zero();
         var distance = Number.MAX_VALUE;
         var currentSprite: Nullable<Sprite> = null;
-        var pickedPoint = Vector3.Zero();
-        var cameraSpacePosition = Vector3.Zero();
+        var pickedPoint = TmpVectors.Vector3[0];
+        var cameraSpacePosition = TmpVectors.Vector3[1];
         var cameraView = camera.getViewMatrix();
 
         for (var index = 0; index < count; index++) {
@@ -368,6 +574,11 @@ export class SpriteManager implements ISpriteManager {
                 var currentDistance = Vector3.Distance(cameraSpacePosition, ray.origin);
 
                 if (distance > currentDistance) {
+
+                    if (!this._checkTextureAlpha(sprite, ray, currentDistance, min, max)) {
+                        continue;
+                    }
+
                     distance = currentDistance;
                     currentSprite = sprite;
 
@@ -387,7 +598,7 @@ export class SpriteManager implements ISpriteManager {
             result.distance = distance;
 
             // Get picked point
-            let direction = TmpVectors.Vector3[0];
+            let direction = TmpVectors.Vector3[2];
             direction.copyFrom(ray.direction);
             direction.normalize();
             direction.scaleInPlace(distance);
@@ -399,6 +610,72 @@ export class SpriteManager implements ISpriteManager {
         }
 
         return null;
+    }
+
+    /**
+     * Intersects the sprites with a ray
+     * @param ray defines the ray to intersect with
+     * @param camera defines the current active camera
+     * @param predicate defines a predicate used to select candidate sprites
+     * @returns null if no hit or a PickingInfo array
+     */
+    public multiIntersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean): Nullable<PickingInfo[]> {
+        var count = Math.min(this._capacity, this.sprites.length);
+        var min = Vector3.Zero();
+        var max = Vector3.Zero();
+        var distance: number;
+        var results: Nullable<PickingInfo[]> = [];
+        var pickedPoint = TmpVectors.Vector3[0].copyFromFloats(0, 0, 0);
+        var cameraSpacePosition = TmpVectors.Vector3[1].copyFromFloats(0, 0, 0);
+        var cameraView = camera.getViewMatrix();
+
+        for (var index = 0; index < count; index++) {
+            var sprite = this.sprites[index];
+            if (!sprite) {
+                continue;
+            }
+
+            if (predicate) {
+                if (!predicate(sprite)) {
+                    continue;
+                }
+            } else if (!sprite.isPickable) {
+                continue;
+            }
+
+            Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
+
+            min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
+            max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
+
+            if (ray.intersectsBoxMinMax(min, max)) {
+                distance = Vector3.Distance(cameraSpacePosition, ray.origin);
+
+                if (!this._checkTextureAlpha(sprite, ray, distance, min, max)) {
+                    continue;
+                }
+
+                var result = new PickingInfo();
+                results.push(result);
+
+                cameraView.invertToRef(TmpVectors.Matrix[0]);
+                result.hit = true;
+                result.pickedSprite = sprite;
+                result.distance = distance;
+
+                // Get picked point
+                let direction = TmpVectors.Vector3[2];
+                direction.copyFrom(ray.direction);
+                direction.normalize();
+                direction.scaleInPlace(distance);
+
+                ray.origin.addToRef(direction, pickedPoint);
+                result.pickedPoint = Vector3.TransformCoordinates(pickedPoint, TmpVectors.Matrix[0]);
+            }
+
+        }
+
+        return results;
     }
 
     /**
@@ -434,9 +711,11 @@ export class SpriteManager implements ISpriteManager {
             sprite._animate(deltaTime);
 
             this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize);
-            this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize);
-            this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize);
-            this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize);
+            if (!this._useInstancing) {
+                this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize);
+                this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize);
+                this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize);
+            }
         }
 
         if (noSprite) {
@@ -468,17 +747,41 @@ export class SpriteManager implements ISpriteManager {
         // VBOs
         engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
+        // Handle Right Handed
+        const culling = engine.depthCullingState.cull || true;
+        const zOffset = engine.depthCullingState.zOffset;
+        if (this._scene.useRightHandedSystem) {
+            engine.setState(culling, zOffset, false, false);
+        }
+
         // Draw order
         engine.setDepthFunctionToLessOrEqual();
-        effect.setBool("alphaTest", true);
-        engine.setColorWrite(false);
-        engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
-        engine.setColorWrite(true);
-        effect.setBool("alphaTest", false);
+        if (!this.disableDepthWrite) {
+            effect.setBool("alphaTest", true);
+            engine.setColorWrite(false);
+            if (this._useInstancing) {
+                engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, offset);
+            } else {
+                engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+            }
+            engine.setColorWrite(true);
+            effect.setBool("alphaTest", false);
+        }
 
-        engine.setAlphaMode(Constants.ALPHA_COMBINE);
-        engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+        engine.setAlphaMode(this._blendMode);
+        if (this._useInstancing) {
+            engine.drawArraysType(Constants.MATERIAL_TriangleFanDrawMode, 0, 4, offset);
+        } else {
+            engine.drawElementsType(Material.TriangleFillMode, 0, (offset / 4) * 6);
+        }
         engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        // Restore Right Handed
+        if (this._scene.useRightHandedSystem) {
+            engine.setState(culling, zOffset, false, true);
+        }
+
+        engine.unbindInstanceAttributes();
     }
 
     /**
@@ -488,6 +791,11 @@ export class SpriteManager implements ISpriteManager {
         if (this._buffer) {
             this._buffer.dispose();
             (<any>this._buffer) = null;
+        }
+
+        if (this._spriteBuffer) {
+            this._spriteBuffer.dispose();
+            (<any>this._spriteBuffer) = null;
         }
 
         if (this._indexBuffer) {
@@ -500,6 +808,8 @@ export class SpriteManager implements ISpriteManager {
             (<any>this._spriteTexture) = null;
         }
 
+        this._textureContent = null;
+
         // Remove from scene
         var index = this._scene.spriteManagers.indexOf(this);
         this._scene.spriteManagers.splice(index, 1);
@@ -507,5 +817,131 @@ export class SpriteManager implements ISpriteManager {
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+    }
+
+    /**
+     * Serializes the sprite manager to a JSON object
+     * @param serializeTexture defines if the texture must be serialized as well
+     * @returns the JSON object
+     */
+    public serialize(serializeTexture = false): any {
+        var serializationObject: any = {};
+
+        serializationObject.name = this.name;
+        serializationObject.capacity = this.capacity;
+        serializationObject.cellWidth = this.cellWidth;
+        serializationObject.cellHeight = this.cellHeight;
+
+        if (this.texture) {
+            if (serializeTexture) {
+                serializationObject.texture = this.texture.serialize();
+            } else {
+                serializationObject.textureUrl = this.texture.name;
+                serializationObject.invertY = this.texture._invertY;
+            }
+        }
+
+        serializationObject.sprites = [];
+
+        for (var sprite of this.sprites) {
+            serializationObject.sprites.push(sprite.serialize());
+        }
+
+        return serializationObject;
+    }
+
+    /**
+     * Parses a JSON object to create a new sprite manager.
+     * @param parsedManager The JSON object to parse
+     * @param scene The scene to create the sprite managerin
+     * @param rootUrl The root url to use to load external dependencies like texture
+     * @returns the new sprite manager
+     */
+    public static Parse(parsedManager: any, scene: Scene, rootUrl: string): SpriteManager {
+        var manager = new SpriteManager(parsedManager.name, "", parsedManager.capacity, {
+            width: parsedManager.cellWidth,
+            height: parsedManager.cellHeight,
+        }, scene);
+
+        if (parsedManager.texture) {
+            manager.texture = Texture.Parse(parsedManager.texture, scene, rootUrl) as Texture;
+        } else if (parsedManager.textureName) {
+            manager.texture = new Texture(rootUrl + parsedManager.textureUrl, scene, false, parsedManager.invertY !== undefined ? parsedManager.invertY : true);
+        }
+
+        for (var parsedSprite of parsedManager.sprites) {
+            Sprite.Parse(parsedSprite, manager);
+        }
+
+        return manager;
+    }
+
+    /**
+     * Creates a sprite manager from a snippet saved in a remote file
+     * @param name defines the name of the sprite manager to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new sprite manager
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        if (name) {
+                            output.name = name;
+                        }
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the sprite manager");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates a sprite manager from a snippet saved by the sprite editor
+     * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new sprite manager
+     */
+    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve(new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene));
+        }
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.spriteManager);
+                        let output = SpriteManager.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        output.snippetId = snippetId;
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 }

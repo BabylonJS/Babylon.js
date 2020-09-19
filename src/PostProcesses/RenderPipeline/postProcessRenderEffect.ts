@@ -95,6 +95,10 @@ export class PostProcessRenderEffect {
 
         for (var i = 0; i < cams.length; i++) {
             var camera = cams[i];
+            if (!camera) {
+                continue;
+            }
+
             var cameraName = camera.name;
 
             if (this._singleInstance) {

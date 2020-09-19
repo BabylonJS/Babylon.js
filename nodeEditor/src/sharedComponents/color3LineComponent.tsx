@@ -1,10 +1,14 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { Color3 } from "babylonjs/Maths/math";
+import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
 import { NumericInputComponent } from "./numericInputComponent";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMinus, faPlus, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { GlobalState } from '../globalState';
+import { ColorPickerLineComponent } from './colorPickerComponent';
+
+const copyIcon: string = require("./copy.svg");
+const plusIcon: string = require("./plus.svg");
+const minusIcon: string = require("./minus.svg");
 
 export interface IColor3LineComponentProps {
     label: string;
@@ -12,6 +16,7 @@ export interface IColor3LineComponentProps {
     propertyName: string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     onChange?: () => void;
+    globalState: GlobalState;
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps, { isExpanded: boolean, color: Color3 }> {
@@ -46,7 +51,11 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
             });
         }
 
-        this.props.target[this.props.propertyName] = newColor;
+        if (this.props.target[this.props.propertyName].getClassName() === "Color4") {
+            this.props.target[this.props.propertyName] = new Color4(newColor.r, newColor.g, newColor.b, 1.0);
+        } else {
+            this.props.target[this.props.propertyName] = newColor;
+        }
 
         this.setState({ color: newColor });
 
@@ -61,6 +70,10 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
     }
 
     raiseOnPropertyChanged(previousValue: Color3) {
+        if (this.props.onChange) {
+            this.props.onChange();
+        }
+
         if (!this.props.onPropertyChangedObservable) {
             return;
         }
@@ -126,8 +139,7 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
 
     render() {
 
-        const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const colorAsColor3 = this.state.color.getClassName() === "Color3" ? this.state.color : new Color3(this.state.color.r, this.state.color.g, this.state.color.b);
+        const expandedIcon = this.state.isExpanded ? minusIcon : plusIcon;
 
         return (
             <div className="color3Line">
@@ -136,21 +148,23 @@ export class Color3LineComponent extends React.Component<IColor3LineComponentPro
                         {this.props.label}
                     </div>
                     <div className="color3">
-                        <input type="color" value={colorAsColor3.toHexString()} onChange={(evt) => this.onChange(evt.target.value)} />
+                        <ColorPickerLineComponent value={this.state.color} disableAlpha={true} globalState={this.props.globalState} onColorChanged={color => {
+                                this.onChange(color);
+                            }} />  
                     </div>
                     <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <FontAwesomeIcon icon={faCopy} />
+                        <img src={copyIcon} alt=""/>
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
-                        {chevron}
+                        <img src={expandedIcon} alt=""/>
                     </div>
                 </div>
                 {
                     this.state.isExpanded &&
                     <div className="secondLine">
-                        <NumericInputComponent label="r" value={this.state.color.r} onChange={value => this.updateStateR(value)} />
-                        <NumericInputComponent label="g" value={this.state.color.g} onChange={value => this.updateStateG(value)} />
-                        <NumericInputComponent label="b" value={this.state.color.b} onChange={value => this.updateStateB(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
+                        <NumericInputComponent globalState={this.props.globalState} label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
                     </div>
                 }
             </div>

@@ -8,7 +8,7 @@ export class ValueAndUnit {
     private _originalUnit: number;
     /**
      * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
-     * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
      */
     public ignoreAdaptiveScaling = false;
 

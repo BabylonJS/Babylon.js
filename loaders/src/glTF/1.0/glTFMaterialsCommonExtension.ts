@@ -3,7 +3,8 @@ import { GLTFLoaderBase } from "./glTFLoader";
 
 import { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
-import { Color3, Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
+import { Color3 } from 'babylonjs/Maths/math.color';
 import { Tools } from "babylonjs/Misc/tools";
 import { Material } from "babylonjs/Materials/material";
 import { StandardMaterial } from "babylonjs/Materials/standardMaterial";

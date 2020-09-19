@@ -71,10 +71,10 @@ class InternalPromise<T> {
         if (this._state !== PromiseStates.Pending) {
             setTimeout(() => {
                 if (this._state === PromiseStates.Fulfilled || this._rejectWasConsumed) {
-                    let returnedValue = newPromise._resolve(this._result);
+                    let returnedValue: any = newPromise._resolve(this._result);
 
                     if (returnedValue !== undefined && returnedValue !== null) {
-                        if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
+                        if ((<any>returnedValue)._state !== undefined) {
                             let returnedPromise = returnedValue as InternalPromise<T>;
                             newPromise._children.push(returnedPromise);
                             returnedPromise._parent = newPromise;

@@ -222,5 +222,4 @@ export class RollingAverage {
         let max = this._samples.length;
         return ((i % max) + max) % max;
     }
-
 }

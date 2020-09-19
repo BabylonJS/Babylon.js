@@ -1,17 +1,38 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockConnectionPointMode } from '../../NodeMaterialBlockConnectionPointMode';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointMode } from '../../Enums/nodeMaterialBlockConnectionPointMode';
+import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { Nullable } from '../../../../types';
 import { Effect } from '../../../../Materials/effect';
 import { Matrix, Vector2, Vector3, Vector4 } from '../../../../Maths/math.vector';
 import { Scene } from '../../../../scene';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { _TypeStore } from '../../../../Misc/typeStore';
 import { Color3, Color4 } from '../../../../Maths/math';
 import { AnimatedInputBlockTypes } from './animatedInputBlockTypes';
+import { Observable } from '../../../../Misc/observable';
+import { MaterialHelper } from '../../../../Materials/materialHelper';
+
+const remapAttributeName: { [name: string]: string }  = {
+    "position2d": "position",
+    "particle_uv": "vUV",
+    "particle_color": "vColor",
+    "particle_texturemask": "textureMask",
+    "particle_positionw": "vPositionW",
+};
+
+const attributeInFragmentOnly: { [name: string]: boolean }  = {
+    "particle_uv": true,
+    "particle_color": true,
+    "particle_texturemask": true,
+    "particle_positionw": true,
+};
+
+const attributeAsUniform: { [name: string]: boolean }  = {
+    "particle_texturemask": true,
+};
 
 /**
  * Block used to expose an input value
@@ -24,8 +45,29 @@ export class InputBlock extends NodeMaterialBlock {
     private _type: NodeMaterialBlockConnectionPointTypes;
     private _animationType = AnimatedInputBlockTypes.None;
 
+    /** Gets or set a value used to limit the range of float values */
+    public min: number = 0;
+
+    /** Gets or set a value used to limit the range of float values */
+    public max: number = 0;
+
+    /** Gets or set a value indicating that this input can only get 0 and 1 values */
+    public isBoolean: boolean = false;
+
+    /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
+    public matrixMode: number = 0;
+
     /** @hidden */
-    public _wellKnownValue: Nullable<NodeMaterialWellKnownValues> = null;
+    public _systemValue: Nullable<NodeMaterialSystemValues> = null;
+
+    /** Gets or sets a boolean indicating that the value of this input will not change after a build */
+    public isConstant = false;
+
+    /** Gets or sets the group to use to display this block in the Inspector */
+    public groupInInspector = "";
+
+    /** Gets an observable raised when the value is changed */
+    public onValueChangedObservable = new Observable<InputBlock>();
 
     /**
      * Gets or sets the connection point type (default is float)
@@ -54,6 +96,9 @@ export class InputBlock extends NodeMaterialBlock {
                     case "Color4":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
+                    case "Matrix":
+                        this._type = NodeMaterialBlockConnectionPointTypes.Matrix;
+                        return this._type;
                 }
             }
 
@@ -62,27 +107,49 @@ export class InputBlock extends NodeMaterialBlock {
                     case "position":
                     case "normal":
                     case "tangent":
+                    case "particle_positionw":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
                     case "uv":
                     case "uv2":
+                    case "position2d":
+                    case "particle_uv":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector2;
+                        return this._type;
+                    case "matricesIndices":
+                    case "matricesWeights":
+                    case "world0":
+                    case "world1":
+                    case "world2":
+                    case "world3":
+                        this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
+                        return this._type;
+                    case "color":
+                    case "particle_color":
+                    case "particle_texturemask":
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color4;
                         return this._type;
                 }
             }
 
-            if (this.isWellKnownValue) {
-                switch (this._wellKnownValue) {
-                    case NodeMaterialWellKnownValues.World:
-                    case NodeMaterialWellKnownValues.WorldView:
-                    case NodeMaterialWellKnownValues.WorldViewProjection:
-                    case NodeMaterialWellKnownValues.View:
-                    case NodeMaterialWellKnownValues.ViewProjection:
-                    case NodeMaterialWellKnownValues.Projection:
+            if (this.isSystemValue) {
+                switch (this._systemValue) {
+                    case NodeMaterialSystemValues.World:
+                    case NodeMaterialSystemValues.WorldView:
+                    case NodeMaterialSystemValues.WorldViewProjection:
+                    case NodeMaterialSystemValues.View:
+                    case NodeMaterialSystemValues.ViewProjection:
+                    case NodeMaterialSystemValues.Projection:
                         this._type = NodeMaterialBlockConnectionPointTypes.Matrix;
                         return this._type;
-                    case NodeMaterialWellKnownValues.CameraPosition:
+                    case NodeMaterialSystemValues.CameraPosition:
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
+                        return this._type;
+                    case NodeMaterialSystemValues.FogColor:
+                        this._type = NodeMaterialBlockConnectionPointTypes.Color3;
+                        return this._type;
+                    case NodeMaterialSystemValues.DeltaTime:
+                        this._type = NodeMaterialBlockConnectionPointTypes.Float;
                         return this._type;
                 }
             }
@@ -108,6 +175,18 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
+    * Validates if a name is a reserve word.
+    * @param newName the new name to be given to the node.
+    * @returns false if the name is a reserve word, else true.
+    */
+    public validateBlockName(newName: string) {
+        if (!this.isAttribute) {
+            return super.validateBlockName(newName);
+        }
+        return true;
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeMaterialConnectionPoint {
@@ -120,20 +199,20 @@ export class InputBlock extends NodeMaterialBlock {
      * @returns the current connection point
      */
     public setAsAttribute(attributeName?: string): InputBlock {
+        this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
         if (attributeName) {
             this.name = attributeName;
         }
-        this._mode = NodeMaterialBlockConnectionPointMode.Attribute;
         return this;
     }
 
     /**
-     * Set the source of this connection point to a well known value
-     * @param value define the well known value to use (world, view, etc...) or null to switch to manual value
+     * Set the source of this connection point to a system value
+     * @param value define the system value to use (world, view, etc...) or null to switch to manual value
      * @returns the current connection point
      */
-    public setAsWellKnownValue(value: Nullable<NodeMaterialWellKnownValues>): InputBlock {
-        this.wellKnownValue = value;
+    public setAsSystemValue(value: Nullable<NodeMaterialSystemValues>): InputBlock {
+        this.systemValue = value;
         return this;
     }
 
@@ -146,8 +225,20 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     public set value(value: any) {
+        if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
+            if (this.isBoolean) {
+                value = value ? 1 : 0;
+            }
+            else if (this.min !== this.max) {
+                value = Math.max(this.min, value);
+                value = Math.min(this.max, value);
+            }
+        }
+
         this._storedValue = value;
         this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
+
+        this.onValueChangedObservable.notifyObservers(this);
     }
 
     /**
@@ -232,23 +323,23 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets a boolean indicating that the current connection point is a well known value
+     * Gets a boolean indicating that the current connection point is a system value
      */
-    public get isWellKnownValue(): boolean {
-        return this._wellKnownValue != null;
+    public get isSystemValue(): boolean {
+        return this._systemValue != null;
     }
 
     /**
-     * Gets or sets the current well known value or null if not defined as well know value
+     * Gets or sets the current well known value or null if not defined as a system value
      */
-    public get wellKnownValue(): Nullable<NodeMaterialWellKnownValues> {
-        return this._wellKnownValue;
+    public get systemValue(): Nullable<NodeMaterialSystemValues> {
+        return this._systemValue;
     }
 
-    public set wellKnownValue(value: Nullable<NodeMaterialWellKnownValues>) {
+    public set systemValue(value: Nullable<NodeMaterialSystemValues>) {
         this._mode = NodeMaterialBlockConnectionPointMode.Uniform;
         this.associatedVariableName = "";
-        this._wellKnownValue = value;
+        this._systemValue = value;
     }
 
     /**
@@ -282,6 +373,10 @@ export class InputBlock extends NodeMaterialBlock {
         return `#ifdef ${define}\r\n`;
     }
 
+    public initialize(state: NodeMaterialBuildState) {
+        this.associatedVariableName = "";
+    }
+
     /**
      * Set the input block to its default value (based on its type)
      */
@@ -311,11 +406,44 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
+    private _emitConstant(state: NodeMaterialBuildState) {
+        switch (this.type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return `${state._emitFloat(this.value)}`;
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return `vec2(${this.value.x}, ${this.value.y})`;
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                return `vec3(${this.value.x}, ${this.value.y}, ${this.value.z})`;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                return `vec4(${this.value.x}, ${this.value.y}, ${this.value.z}, ${this.value.w})`;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                return `vec3(${this.value.r}, ${this.value.g}, ${this.value.b})`;
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                return `vec4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
+        }
+
+        return "";
+    }
+
+    /** @hidden */
+    public get _noContextSwitch(): boolean {
+        return attributeInFragmentOnly[this.name];
+    }
+
     private _emit(state: NodeMaterialBuildState, define?: string) {
         // Uniforms
         if (this.isUniform) {
             if (!this.associatedVariableName) {
                 this.associatedVariableName = state._getFreeVariableName("u_" + this.name);
+            }
+
+            if (this.isConstant) {
+                if (state.constants.indexOf(this.associatedVariableName) !== -1) {
+                    return;
+                }
+                state.constants.push(this.associatedVariableName);
+                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant(state)};\r\n`;
+                return;
             }
 
             if (state.uniforms.indexOf(this.associatedVariableName) !== -1) {
@@ -333,12 +461,12 @@ export class InputBlock extends NodeMaterialBlock {
 
             // well known
             let hints = state.sharedData.hints;
-            if (this._wellKnownValue !== null) {
-                switch (this._wellKnownValue) {
-                    case NodeMaterialWellKnownValues.WorldView:
+            if (this._systemValue !== null && this._systemValue !== undefined) {
+                switch (this._systemValue) {
+                    case NodeMaterialSystemValues.WorldView:
                         hints.needWorldViewMatrix = true;
                         break;
-                    case NodeMaterialWellKnownValues.WorldViewProjection:
+                    case NodeMaterialSystemValues.WorldViewProjection:
                         hints.needWorldViewProjectionMatrix = true;
                         break;
                 }
@@ -353,10 +481,18 @@ export class InputBlock extends NodeMaterialBlock {
 
         // Attribute
         if (this.isAttribute) {
-            this.associatedVariableName = this.name;
+            this.associatedVariableName = remapAttributeName[this.name] ?? this.name;
 
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) { // Attribute for fragment need to be carried over by varyings
-                this._emit(state._vertexState, define);
+                if (attributeInFragmentOnly[this.name]) {
+                    if (attributeAsUniform[this.name]) {
+                        state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    } else {
+                        state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    }
+                } else {
+                    this._emit(state._vertexState, define);
+                }
                 return;
             }
 
@@ -365,31 +501,40 @@ export class InputBlock extends NodeMaterialBlock {
             }
 
             state.attributes.push(this.associatedVariableName);
-            if (define) {
-                state._attributeDeclaration += this._emitDefine(define);
-            }
-            state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
-            if (define) {
-                state._attributeDeclaration += `#endif\r\n`;
+
+            if (attributeInFragmentOnly[this.name]) {
+                if (attributeAsUniform[this.name]) {
+                    state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                } else {
+                    state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                }
+            } else {
+                if (define) {
+                    state._attributeDeclaration += this._emitDefine(define);
+                }
+                state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
+                if (define) {
+                    state._attributeDeclaration += `#endif\r\n`;
+                }
             }
         }
     }
 
     /** @hidden */
     public _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
-        if (!this._wellKnownValue) {
+        if (!this._systemValue) {
             return;
         }
 
         let variableName = this.associatedVariableName;
-        switch (this._wellKnownValue) {
-            case NodeMaterialWellKnownValues.World:
+        switch (this._systemValue) {
+            case NodeMaterialSystemValues.World:
                 effect.setMatrix(variableName, world);
                 break;
-            case NodeMaterialWellKnownValues.WorldView:
+            case NodeMaterialSystemValues.WorldView:
                 effect.setMatrix(variableName, worldView);
                 break;
-            case NodeMaterialWellKnownValues.WorldViewProjection:
+            case NodeMaterialSystemValues.WorldViewProjection:
                 effect.setMatrix(variableName, worldViewProjection);
                 break;
         }
@@ -402,27 +547,29 @@ export class InputBlock extends NodeMaterialBlock {
         }
 
         let variableName = this.associatedVariableName;
-        if (this._wellKnownValue) {
-            switch (this._wellKnownValue) {
-                case NodeMaterialWellKnownValues.World:
-                case NodeMaterialWellKnownValues.WorldView:
-                case NodeMaterialWellKnownValues.WorldViewProjection:
+        if (this._systemValue) {
+            switch (this._systemValue) {
+                case NodeMaterialSystemValues.World:
+                case NodeMaterialSystemValues.WorldView:
+                case NodeMaterialSystemValues.WorldViewProjection:
                     return;
-                case NodeMaterialWellKnownValues.View:
+                case NodeMaterialSystemValues.View:
                     effect.setMatrix(variableName, scene.getViewMatrix());
                     break;
-                case NodeMaterialWellKnownValues.Projection:
+                case NodeMaterialSystemValues.Projection:
                     effect.setMatrix(variableName, scene.getProjectionMatrix());
                     break;
-                case NodeMaterialWellKnownValues.ViewProjection:
+                case NodeMaterialSystemValues.ViewProjection:
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
-                case NodeMaterialWellKnownValues.CameraPosition:
-                    effect.setVector3(variableName, scene.activeCamera!.globalPosition);
+                case NodeMaterialSystemValues.CameraPosition:
+                    MaterialHelper.BindEyePosition(effect, scene, variableName);
                     break;
-                case NodeMaterialWellKnownValues.FogColor:
+                case NodeMaterialSystemValues.FogColor:
                     effect.setColor3(variableName, scene.fogColor);
                     break;
+                case NodeMaterialSystemValues.DeltaTime:
+                    effect.setFloat(variableName, scene.deltaTime / 1000.0);
             }
             return;
         }
@@ -464,11 +611,81 @@ export class InputBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        if (this.isUniform || this.isWellKnownValue) {
+        if (this.isUniform || this.isSystemValue) {
             state.sharedData.inputBlocks.push(this);
         }
 
         this._emit(state);
+    }
+
+    protected _dumpPropertiesCode() {
+        let variableName = this._codeVariableName;
+
+        if (this.isAttribute) {
+            return `${variableName}.setAsAttribute("${this.name}");\r\n`;
+        }
+        if (this.isSystemValue) {
+            return `${variableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
+        }
+        if (this.isUniform) {
+            const codes: string[] = [];
+
+            let valueString = "";
+
+            switch (this.type) {
+                case NodeMaterialBlockConnectionPointTypes.Float:
+                    valueString = `${this.value}`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Vector2:
+                    valueString = `new BABYLON.Vector2(${this.value.x}, ${this.value.y})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Vector3:
+                    valueString = `new BABYLON.Vector3(${this.value.x}, ${this.value.y}, ${this.value.z})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Vector4:
+                    valueString = `new BABYLON.Vector4(${this.value.x}, ${this.value.y}, ${this.value.z}, ${this.value.w})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Color3:
+                    valueString = `new BABYLON.Color3(${this.value.r}, ${this.value.g}, ${this.value.b})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Color4:
+                    valueString = `new BABYLON.Color4(${this.value.r}, ${this.value.g}, ${this.value.b}, ${this.value.a})`;
+                    break;
+                case NodeMaterialBlockConnectionPointTypes.Matrix:
+                    valueString = `BABYLON.Matrix.FromArray([${(this.value as Matrix).m}])`;
+                    break;
+            }
+
+            // Common Property "Value"
+            codes.push(`${variableName}.value = ${valueString}`);
+
+            // Float-Value-Specific Properties
+            if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                codes.push(
+                    `${variableName}.min = ${this.min}`,
+                    `${variableName}.max = ${this.max}`,
+                    `${variableName}.isBoolean = ${this.isBoolean}`,
+                    `${variableName}.matrixMode = ${this.matrixMode}`,
+                    `${variableName}.animationType = BABYLON.AnimatedInputBlockTypes.${AnimatedInputBlockTypes[this.animationType]}`
+                );
+            }
+
+            // Common Property "Type"
+            codes.push(
+                `${variableName}.isConstant = ${this.isConstant}`,
+            );
+
+            codes.push('');
+
+            return codes.join(';\r\n');
+        }
+        return "";
+    }
+
+    public dispose() {
+        this.onValueChangedObservable.clear();
+
+        super.dispose();
     }
 
     public serialize(): any {
@@ -476,8 +693,14 @@ export class InputBlock extends NodeMaterialBlock {
 
         serializationObject.type = this.type;
         serializationObject.mode = this._mode;
-        serializationObject.wellKnownValue = this._wellKnownValue;
+        serializationObject.systemValue = this._systemValue;
         serializationObject.animationType = this._animationType;
+        serializationObject.min = this.min;
+        serializationObject.max = this.max;
+        serializationObject.isBoolean = this.isBoolean;
+        serializationObject.matrixMode = this.matrixMode;
+        serializationObject.isConstant = this.isConstant;
+        serializationObject.groupInInspector = this.groupInInspector;
 
         if (this._storedValue != null && this._mode === NodeMaterialBlockConnectionPointMode.Uniform) {
             if (this._storedValue.asArray) {
@@ -493,12 +716,19 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+        this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);
 
         this._type = serializationObject.type;
-        this._mode = serializationObject.mode;
-        this._wellKnownValue = serializationObject.wellKnownValue;
+
+        this._systemValue = serializationObject.systemValue || serializationObject.wellKnownValue;
         this._animationType = serializationObject.animationType;
+        this.min = serializationObject.min || 0;
+        this.max = serializationObject.max || 0;
+        this.isBoolean = !!serializationObject.isBoolean;
+        this.matrixMode = serializationObject.matrixMode || 0;
+        this.isConstant = !!serializationObject.isConstant;
+        this.groupInInspector = serializationObject.groupInInspector || "";
 
         if (!serializationObject.valueType) {
             return;

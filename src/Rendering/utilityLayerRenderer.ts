@@ -24,15 +24,24 @@ export class UtilityLayerRenderer implements IDisposable {
 
     /**
      * Gets the camera that is used to render the utility layer (when not set, this will be the last active camera)
+     * @param getRigParentIfPossible if the current active camera is a rig camera, should its parent camera be returned
      * @returns the camera that is used when rendering the utility layer
      */
-    public getRenderCamera() {
+    public getRenderCamera(getRigParentIfPossible?: boolean) {
         if (this._renderCamera) {
             return this._renderCamera;
-        } else if (this.originalScene.activeCameras.length > 1) {
-            return this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
         } else {
-            return this.originalScene.activeCamera;
+            let activeCam: Camera;
+            if (this.originalScene.activeCameras.length > 1) {
+                activeCam = this.originalScene.activeCameras[this.originalScene.activeCameras.length - 1];
+            } else {
+                activeCam = <Camera>(this.originalScene.activeCamera!);
+            }
+
+            if (getRigParentIfPossible && activeCam && activeCam.isRigCamera) {
+                return activeCam.rigParent!;
+            }
+            return activeCam;
         }
     }
     /**
@@ -141,7 +150,8 @@ export class UtilityLayerRenderer implements IDisposable {
                 if (!this.processAllEvents) {
                     if (prePointerInfo.type !== PointerEventTypes.POINTERMOVE
                         && prePointerInfo.type !== PointerEventTypes.POINTERUP
-                        && prePointerInfo.type !== PointerEventTypes.POINTERDOWN) {
+                        && prePointerInfo.type !== PointerEventTypes.POINTERDOWN
+                        && prePointerInfo.type !== PointerEventTypes.POINTERDOUBLETAP) {
                         return;
                     }
                 }
@@ -164,7 +174,7 @@ export class UtilityLayerRenderer implements IDisposable {
                 // allow every non pointer down event to flow to the utility layer
                 if (this.onlyCheckPointerDownEvents && prePointerInfo.type != PointerEventTypes.POINTERDOWN) {
                     if (!prePointerInfo.skipOnPointerObservable) {
-                        this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick));
+                        this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick), prePointerInfo.type);
                     }
                     if (prePointerInfo.type === PointerEventTypes.POINTERUP && this._pointerCaptures[pointerEvent.pointerId]) {
                         this._pointerCaptures[pointerEvent.pointerId] = false;
@@ -177,7 +187,7 @@ export class UtilityLayerRenderer implements IDisposable {
                     if (utilityScenePick && utilityScenePick.hit) {
 
                         if (!prePointerInfo.skipOnPointerObservable) {
-                            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick));
+                            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, utilityScenePick), prePointerInfo.type);
                         }
                         prePointerInfo.skipOnPointerObservable = true;
                     }
@@ -254,7 +264,7 @@ export class UtilityLayerRenderer implements IDisposable {
 
     private _notifyObservers(prePointerInfo: PointerInfoPre, pickInfo: PickingInfo, pointerEvent: PointerEvent) {
         if (!prePointerInfo.skipOnPointerObservable) {
-            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo));
+            this.utilityLayerScene.onPointerObservable.notifyObservers(new PointerInfo(prePointerInfo.type, prePointerInfo.event, pickInfo), prePointerInfo.type);
             this._lastPointerEvents[pointerEvent.pointerId] = true;
         }
     }

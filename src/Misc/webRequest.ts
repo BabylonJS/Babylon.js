@@ -1,7 +1,10 @@
+import { IWebRequest } from './interfaces/iWebRequest';
+import { Nullable } from '../types';
+
 /**
  * Extended version of XMLHttpRequest with support for customizations (headers, ...)
  */
-export class WebRequest {
+export class WebRequest implements IWebRequest {
     private _xhr = new XMLHttpRequest();
 
     /**
@@ -134,5 +137,23 @@ export class WebRequest {
         url = url.replace("file:https:", "https:");
 
         return this._xhr.open(method, url, true);
+    }
+
+    /**
+     * Sets the value of a request header.
+     * @param name The name of the header whose value is to be set
+     * @param value The value to set as the body of the header
+     */
+    setRequestHeader(name: string, value: string): void {
+        this._xhr.setRequestHeader(name, value);
+    }
+
+    /**
+     * Get the string containing the text of a particular header's value.
+     * @param name The name of the header
+     * @returns The string containing the text of the given header name
+     */
+    getResponseHeader(name: string): Nullable<string> {
+        return this._xhr.getResponseHeader(name);
     }
 }

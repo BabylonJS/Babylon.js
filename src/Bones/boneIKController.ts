@@ -6,7 +6,7 @@ import { Space } from '../Maths/math.axis';
 
 /**
  * Class used to apply inverse kinematics to bones
- * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
+ * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
  */
 export class BoneIKController {
 

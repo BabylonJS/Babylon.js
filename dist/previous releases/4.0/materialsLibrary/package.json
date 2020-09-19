@@ -1,0 +1,36 @@
+{
+    "author": {
+        "name": "David CATUHE"
+    },
+    "name": "babylonjs-materials",
+    "description": "The Babylon.js materials library is a collection of advanced materials to be used in a Babylon.js scene.",
+    "version": "4.0.3",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "main": "babylonjs.materials.min.js",
+    "files": [
+        "babylonjs.materials.js.map",
+        "babylonjs.materials.js",
+        "babylonjs.materials.min.js",
+        "babylonjs.materials.module.d.ts",
+        "readme.md",
+        "package.json"
+    ],
+    "typings": "babylonjs.materials.module.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "materials"
+    ],
+    "license": "Apache-2.0",
+    "dependencies": {
+        "babylonjs": "4.0.3"
+    },
+    "engines": {
+        "node": "*"
+    }
+}

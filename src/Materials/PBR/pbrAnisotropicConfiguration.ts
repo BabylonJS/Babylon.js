@@ -1,5 +1,4 @@
 import { SerializationHelper, serialize, expandToProperty, serializeAsVector2, serializeAsTexture } from "../../Misc/decorators";
-import { EffectFallbacks } from "../../Materials/effect";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { VertexBuffer } from "../../Meshes/buffer";
@@ -10,6 +9,7 @@ import { MaterialHelper } from "../../Materials/materialHelper";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
 import { IAnimatable } from '../../Animations/animatable.interface';
+import { EffectFallbacks } from '../effectFallbacks';
 
 /**
  * @hidden

@@ -57,9 +57,12 @@ export class DefaultCollisionCoordinator implements ICollisionCoordinator {
 
         collider._initialize(position, velocity, closeDistance);
 
-        // Check all meshes
-        for (var index = 0; index < this._scene.meshes.length; index++) {
-            var mesh = this._scene.meshes[index];
+        // Check if collision detection should happen against specified list of meshes or,
+        // if not specified, against all meshes in the scene
+        var meshes = (excludedMesh && excludedMesh.surroundingMeshes) || this._scene.meshes;
+
+        for (var index = 0; index < meshes.length; index++) {
+            var mesh = meshes[index];
             if (mesh.isEnabled() && mesh.checkCollisions && mesh.subMeshes && mesh !== excludedMesh && ((collisionMask & mesh.collisionGroup) !== 0)) {
                 mesh._checkCollision(collider);
             }

@@ -6,8 +6,6 @@ import { Node } from "../node";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Effect } from "../Materials/effect";
 Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
     return () => new DirectionalLight(name, Vector3.Zero(), scene);
@@ -63,6 +61,13 @@ export class DirectionalLight extends ShadowLight {
      */
     @serialize()
     public autoUpdateExtends = true;
+
+    /**
+     * Automatically compute the shadowMinZ and shadowMaxZ for the projection matrix to best fit (including all the casters)
+     * on each frame. autoUpdateExtends must be set to true for this to work
+     */
+    @serialize()
+    public autoCalcShadowZBounds = false;
 
     // Cache
     private _orthoLeft = Number.MAX_VALUE;
@@ -149,6 +154,9 @@ export class DirectionalLight extends ShadowLight {
             this._orthoTop = Number.MIN_VALUE;
             this._orthoBottom = Number.MAX_VALUE;
 
+            var shadowMinZ = Number.MAX_VALUE;
+            var shadowMaxZ = Number.MIN_VALUE;
+
             for (var meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
                 var mesh = renderList[meshIndex];
 
@@ -175,7 +183,20 @@ export class DirectionalLight extends ShadowLight {
                     if (tempVector3.y > this._orthoTop) {
                         this._orthoTop = tempVector3.y;
                     }
+                    if (this.autoCalcShadowZBounds) {
+                        if (tempVector3.z < shadowMinZ) {
+                            shadowMinZ = tempVector3.z;
+                        }
+                        if (tempVector3.z > shadowMaxZ) {
+                            shadowMaxZ = tempVector3.z;
+                        }
+                    }
                 }
+            }
+
+            if (this.autoCalcShadowZBounds) {
+                this._shadowMinZ = shadowMinZ;
+                this._shadowMaxZ = shadowMaxZ;
             }
         }
 
@@ -190,7 +211,7 @@ export class DirectionalLight extends ShadowLight {
     protected _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
-        this._uniformBuffer.addUniform("vLightSpecular", 3);
+        this._uniformBuffer.addUniform("vLightSpecular", 4);
         this._uniformBuffer.addUniform("shadowsInfo", 3);
         this._uniformBuffer.addUniform("depthValues", 2);
         this._uniformBuffer.create();
@@ -208,6 +229,16 @@ export class DirectionalLight extends ShadowLight {
             return this;
         }
         this._uniformBuffer.updateFloat4("vLightData", this.direction.x, this.direction.y, this.direction.z, 1, lightIndex);
+        return this;
+    }
+
+    public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string): Light {
+        if (this.computeTransformedInformation()) {
+            effect.setFloat3(lightDataUniformName, this.transformedDirection.x, this.transformedDirection.y, this.transformedDirection.z);
+            return this;
+        }
+
+        effect.setFloat3(lightDataUniformName, this.direction.x, this.direction.y, this.direction.z);
         return this;
     }
 

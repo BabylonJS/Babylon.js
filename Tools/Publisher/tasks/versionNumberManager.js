@@ -5,13 +5,13 @@ const colorConsole = require("../../NodeHelpers/colorConsole");
 
 // Global Variables.
 const config = require("../../Config/config.js");
-const enginePath = path.join(config.core.computed.mainDirectory, "Engines/engine.ts");
+const enginePath = path.join(config.core.computed.mainDirectory, "Engines/thinEngine.ts");
 
 /**
  * Get the version from the engine class for Babylon
  */
 function getEngineVersion() {
-    colorConsole.log("Get version from engine.ts", enginePath);
+    colorConsole.log("Get version from thinEngine.ts", enginePath);
     const engineContent = fs.readFileSync(enginePath).toString();
 
     const versionRegex = new RegExp(`public static get Version\\(\\): string {\\s*return "(\\S*)";\\s*}`, "gm");
@@ -23,7 +23,7 @@ function getEngineVersion() {
         return version;
     }
 
-    colorConsole.error("Version not found in engine.ts");
+    colorConsole.error("Version not found in thinEngine.ts");
     process.exit(1);
 }
 
@@ -31,7 +31,7 @@ function getEngineVersion() {
  * Update the version in the engine class for Babylon
  */
 function updateEngineVersion(newVersion) {
-    colorConsole.log("Updating version in engine.ts to: " + newVersion.green);
+    colorConsole.log("Updating version in thinEngine.ts to: " + newVersion.green);
     let engineContent = fs.readFileSync(enginePath).toString();
     let replaced = engineContent.replace(/(public static get Version\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + newVersion + "$3");
     replaced = replaced.replace(/(public static get NpmPackage\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + "babylonjs@" + newVersion + "$3");

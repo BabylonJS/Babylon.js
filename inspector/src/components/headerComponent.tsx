@@ -25,7 +25,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
         this.state = { isBackVisible: false };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         if (!this.props.onSelectionChangedObservable) {
             return;
         }

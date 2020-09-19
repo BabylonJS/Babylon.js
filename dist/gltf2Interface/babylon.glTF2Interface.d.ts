@@ -1,14 +1,8 @@
-/**
- * @ignoreChildren
- * @ignore
- */
 declare module "babylonjs-gltf2interface" {
     export = BABYLON.GLTF2;
 }
 /**
  * Module for glTF 2.0 Interface
- * @ignoreChildren
- * @ignore
  */
 declare module BABYLON.GLTF2 {
     /**
@@ -857,6 +851,7 @@ declare module BABYLON.GLTF2 {
 
     /**
      * The glTF validation results
+     * @ignore
      */
     interface IGLTFValidationResults {
         info: {
@@ -888,16 +883,23 @@ declare module BABYLON.GLTF2 {
      * The glTF validation options
      */
     interface IGLTFValidationOptions {
+        /** Uri to use */
         uri?: string;
+        /** Function used to load external resources */
         externalResourceFunction?: (uri: string) => Promise<Uint8Array>;
+        /** Boolean indicating that we need to validate accessor data */
         validateAccessorData?: boolean;
+        /** max number of issues allowed */
         maxIssues?: number;
+        /** Ignored issues */
         ignoredIssues?: Array<string>;
+        /** Value to override severy settings */
         severityOverrides?: Object;
     }
 
     /**
      * The glTF validator object
+     * @ignore
      */
     interface IGLTFValidator {
         validateBytes: (data: Uint8Array, options?: IGLTFValidationOptions) => Promise<IGLTFValidationResults>;

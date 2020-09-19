@@ -1,0 +1,237 @@
+
+.commands {
+    grid-row: 1;
+    grid-column: 3;
+    user-select: none;
+
+    .commands-left {
+        float: left;
+        display: flex;
+    }
+
+    .commands-right {
+        float: right;
+        display: flex;
+    }
+
+    &.background-ts {
+        .command-button, .command-dropdown  {
+            img {
+                filter: invert(64%) sepia(78%) saturate(940%) hue-rotate(323deg) brightness(105%) contrast(103%);
+            }
+
+            &:hover, &.activated {
+                img {
+                    filter: invert(34%) sepia(21%) saturate(3832%) hue-rotate(324deg) brightness(88%) contrast(82%) !important;
+                }
+            } 
+        }
+    }
+
+    &.background-js {
+        .command-button, .command-dropdown  {
+            img {
+                filter: invert(57%) sepia(80%) saturate(2031%) hue-rotate(215deg);
+            }
+
+            &:hover, &.activated {
+                img {
+                    filter: invert(17%) !important;
+                }
+            } 
+        }
+    }
+
+    .command-button {
+        cursor: pointer;
+        width: 55px;
+
+        .command-label {
+            display: none;
+        }        
+
+        .command-button-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
+
+        &:hover {
+            background-color: white;
+        } 
+        
+        &:active {
+            transform-origin: center;
+            transform: scale(0.95);
+        }
+
+        img {
+            &.active {
+                filter: invert(100%);
+            }
+        }
+    }
+
+    .command-dropdown-root {
+        position: relative;
+        text-transform: uppercase;
+        z-index: 1;
+    }
+
+    .command-dropdown {        
+        cursor: pointer;
+        width: 55px;
+        height: 55px;
+
+        .command-dropdown-icon {
+            height: 100%;
+            width: 100%;
+            display: grid;
+            align-content: center;
+            justify-content: center;
+        }
+
+        &:hover, &.activated {
+            background-color: white;
+        } 
+        
+        &:active {
+            transform-origin: center;
+            transform: scale(0.95);
+        }
+    }
+
+    .command-dropdown-blocker {
+        position: absolute;    
+        top:0;
+        left:0;
+        width: 100%;
+        height: 100%;
+        transform: scale(1);
+        z-index: 1;
+    }
+
+    &.background-js {
+        .command-dropdown-content {
+            .command-dropdown-label {
+                &:hover {
+                    background-color: #bfabff;
+                }
+            }
+        }
+    }
+
+    &.background-ts {
+        .command-dropdown-content {
+            .command-dropdown-label {
+                &:hover {
+                    background-color: #ff7656;
+                }
+            }
+        }
+    }
+
+    .command-dropdown-content {
+        position: absolute;
+        top: 55px;
+        width: 200px;
+        transform: scale(1);
+        z-index: 100;
+
+        &.toRight {
+            width: 120px;
+            right:0;
+        }        
+
+        .command-dropdown-label {
+            font-family: "acumin-pro-extra-condensed";
+            color:white;
+            padding: 5px;
+            padding-left: 10px;
+            height: 35px;
+            font-size: 20px;
+            display: grid;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            grid-template-columns: 1fr 20px;
+            grid-template-rows: 100%;
+            position: relative;
+
+            &.active {
+                font-weight: bold;
+                font-size: 22px;
+            }
+
+            &:hover {
+                .sub-items {
+                    display: block;
+                }
+            } 
+
+            .command-dropdown-label-text {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            .command-dropdown-label-check {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            .command-dropdown-arrow {
+                grid-column: 2;
+                grid-row: 1;    
+                font-size: 28px;
+                font-weight: bold;
+                padding-bottom: 10px;
+                padding-left: 4px;
+            }
+
+            .sub-items {
+                position: absolute;
+                left: 200px;
+                top: 0;
+                width: 150px;
+                display: none;        
+    
+                &.background-js {
+                    background: #bfabff;
+                    .sub-item {                      
+                        &:hover {
+                            background-color: #9379e6;
+                            color: white;
+                        }
+                    }
+                }   
+
+                &.background-ts {
+                    background: #ff7656;
+                    .sub-item {                      
+                        &:hover {
+                            background-color: #e0684b;
+                            color: white;
+                        }
+                    }
+                }   
+                                    
+                .sub-item {                      
+                    font-family: "acumin-pro-extra-condensed";                    
+                    color: white;
+                    padding: 5px;
+                    padding-left: 10px;
+                    height: 35px;
+                    display: grid;
+
+                    &.checked {
+                        background: white;
+                        color: black;
+                    }
+                }
+            }            
+        }
+    }
+
+}

@@ -1,3 +1,4 @@
+export * from "./abstractActionManager";
 export * from "./action";
 export * from "./actionEvent";
 export * from "./actionManager";

@@ -9,9 +9,12 @@ interface IFileButtonLineComponentProps {
 export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
     private static _IDGenerator = 0;
     private _id = FileButtonLineComponent._IDGenerator++;
+    private uploadInputRef: React.RefObject<HTMLInputElement>;
+
 
     constructor(props: IFileButtonLineComponentProps) {
         super(props);
+        this.uploadInputRef = React.createRef();
     }
 
     onChange(evt: any) {
@@ -29,7 +32,7 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
                 <label htmlFor={"file-upload" + this._id} className="file-upload">
                     {this.props.label}
                 </label>
-                <input ref="upload" id={"file-upload" + this._id} type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
+                <input ref={this.uploadInputRef} id={"file-upload" + this._id} type="file" accept={this.props.accept} onChange={evt => this.onChange(evt)} />
             </div>
         );
     }

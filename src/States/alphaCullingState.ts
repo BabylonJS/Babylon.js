@@ -3,7 +3,7 @@ import { Nullable } from "../types";
 /**
  * @hidden
  **/
-export class _AlphaState {
+export class AlphaState {
     private _isAlphaBlendDirty = false;
     private _isBlendFunctionParametersDirty = false;
     private _isBlendEquationParametersDirty = false;

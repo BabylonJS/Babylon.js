@@ -35,8 +35,9 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param directionToUpdate is the direction vector to update with the result
      * @param particle is the particle we are computed the direction for
+     * @param isLocal defines if the direction should be set in local space
      */
-    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+    public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
         var randX = Scalar.RandomRange(0, this.directionRandomizer);
         var randY = Scalar.RandomRange(0, this.directionRandomizer);
@@ -46,6 +47,11 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
         direction.z += randZ;
         direction.normalize();
 
+        if (isLocal) {
+            directionToUpdate.copyFrom(direction);
+            return;
+        }
+
         Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
     }
 
@@ -54,8 +60,9 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
      * @param worldMatrix is the world matrix of the particle system
      * @param positionToUpdate is the position vector to update with the result
      * @param particle is the particle we are computed the position for
+     * @param isLocal defines if the position should be set in local space
      */
-    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+    public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         var randRadius = this.radius - Scalar.RandomRange(0, this.radius * this.radiusRange);
         var v = Scalar.RandomRange(0, 1.0);
         var phi = Scalar.RandomRange(0, 2 * Math.PI);
@@ -63,6 +70,12 @@ export class HemisphericParticleEmitter implements IParticleEmitterType {
         var randX = randRadius * Math.cos(phi) * Math.sin(theta);
         var randY = randRadius * Math.cos(theta);
         var randZ = randRadius * Math.sin(phi) * Math.sin(theta);
+
+        if (isLocal) {
+            positionToUpdate.copyFromFloats(randX, Math.abs(randY), randZ);
+            return;
+        }
+
         Vector3.TransformCoordinatesFromFloatsToRef(randX, Math.abs(randY), randZ, worldMatrix, positionToUpdate);
     }
 

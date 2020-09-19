@@ -1,10 +1,12 @@
 import * as React from "react";
+import { GlobalState } from '../globalState';
 
 interface INumericInputComponentProps {
     label: string;
     value: number;
     step?: number;
     onChange: (value: number) => void;
+    globalState: GlobalState;
 }
 
 export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
@@ -62,7 +64,12 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                         {`${this.props.label}: `}
                     </div>
                 }
-                <input type="number" step={this.props.step} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} />
+                <input type="number" 
+                    onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                    onBlur={evt => {
+                        this.props.globalState.blockKeyboardEvents = false;
+                    }}
+                    step={this.props.step} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} />
             </div>
         )
     }

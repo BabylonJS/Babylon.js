@@ -28,7 +28,16 @@ vec4 finalColor = glowColor;
 // _____________________________ Alpha Information _______________________________
 #ifdef DIFFUSE
     vec4 albedoTexture = texture2D(diffuseSampler, vUVDiffuse);
-    finalColor.a *= albedoTexture.a;
+
+    #ifdef GLOW
+        // In glow mode a is used to dim the opacity
+        finalColor.a *= albedoTexture.a;
+    #endif
+
+    #ifdef HIGHLIGHT
+        // While in highlight mode we only use the 3 colors
+        finalColor.a = albedoTexture.a;
+    #endif
 #endif
 
 #ifdef OPACITY
@@ -56,5 +65,10 @@ vec4 finalColor = glowColor;
     gl_FragColor = texture2D(emissiveSampler, vUVEmissive) * finalColor;
 #else
     gl_FragColor = finalColor;
+#endif
+
+#ifdef HIGHLIGHT
+    // a should stay untouched from the setup in highlight mode.
+    gl_FragColor.a = glowColor.a;
 #endif
 }

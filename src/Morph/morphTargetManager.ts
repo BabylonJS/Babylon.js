@@ -8,7 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { MorphTarget } from "./morphTarget";
 /**
  * This class is used to deform meshes using morphing between different targets
- * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+ * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
  */
 export class MorphTargetManager {
     private _targets = new Array<MorphTarget>();
@@ -159,6 +159,24 @@ export class MorphTargetManager {
             target._onDataLayoutChanged.remove(this._targetDataLayoutChangedObservers.splice(index, 1)[0]);
             this._syncActiveTargets(true);
         }
+    }
+
+    /**
+     * Clone the current manager
+     * @returns a new MorphTargetManager
+     */
+    public clone(): MorphTargetManager {
+        let copy = new MorphTargetManager(this._scene);
+
+        for (var target of this._targets) {
+            copy.addTarget(target.clone());
+        }
+
+        copy.enableNormalMorphing = this.enableNormalMorphing;
+        copy.enableTangentMorphing = this.enableTangentMorphing;
+        copy.enableUVMorphing = this.enableUVMorphing;
+
+        return copy;
     }
 
     /**

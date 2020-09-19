@@ -2,6 +2,7 @@ import { Vector4, Vector3, Matrix } from "../../Maths/math.vector";
 import { Mesh, _CreationDataStorage } from "../mesh";
 import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
+import { Nullable } from '../../types';
 
 VertexData.CreateSphere = function(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
     var segments: number = options.segments || 32;
@@ -47,13 +48,16 @@ VertexData.CreateSphere = function(options: { segments?: number, diameter?: numb
         if (zRotationStep > 0) {
             var verticesCount = positions.length / 3;
             for (var firstIndex = verticesCount - 2 * (totalYRotationSteps + 1); (firstIndex + totalYRotationSteps + 2) < verticesCount; firstIndex++) {
-                indices.push((firstIndex));
-                indices.push((firstIndex + 1));
-                indices.push(firstIndex + totalYRotationSteps + 1);
-
-                indices.push((firstIndex + totalYRotationSteps + 1));
-                indices.push((firstIndex + 1));
-                indices.push((firstIndex + totalYRotationSteps + 2));
+                if (zRotationStep > 1) {
+                    indices.push((firstIndex));
+                    indices.push((firstIndex + 1));
+                    indices.push(firstIndex + totalYRotationSteps + 1);
+                }
+                if (zRotationStep < totalZRotationSteps || slice < 1.0) {
+                    indices.push((firstIndex + totalYRotationSteps + 1));
+                    indices.push((firstIndex + 1));
+                    indices.push((firstIndex + totalYRotationSteps + 2));
+                }
             }
         }
     }
@@ -105,7 +109,7 @@ export class SphereBuilder {
      * @returns the sphere mesh
      * @see https://doc.babylonjs.com/how_to/set_shapes#sphere
      */
-    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: any): Mesh {
+    public static CreateSphere(name: string, options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, updatable?: boolean }, scene: Nullable<Scene> = null): Mesh {
         var sphere = new Mesh(name, scene);
 
         options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);

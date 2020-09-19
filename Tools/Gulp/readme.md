@@ -44,7 +44,7 @@ gulp tests-all
 
 ## Run Integrated Web Server and watch for changes (dev build):
 ```
-gulp run
+npm start
 ```
 
 you can now freely test in the following URLs:

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Observable } from "babylonjs/Misc/observable";
-import { Quaternion, Vector3 } from "babylonjs/Maths/math";
+import { Quaternion, Vector3 } from "babylonjs/Maths/math.vector";
 import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -27,11 +27,12 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
         this.state = { isExpanded: false, value: quat, eulerValue: quat.toEulerAngles() }
     }
 
-    shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: { isExpanded: boolean, value: Quaternion }) {
+    shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: { isExpanded: boolean, value: Quaternion, eulerValue: Vector3 }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
             nextState.value = nextPropsValue.clone();
+            nextState.eulerValue = nextPropsValue.toEulerAngles();
             this._localChange = false;
             return true;
         }

@@ -9,7 +9,7 @@ import { Quaternion } from "../../Maths/math.vector";
 import { Axis } from '../../Maths/math.axis';
 /**
  * Listen to mouse events to control the camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     /**
@@ -69,7 +69,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     /**
      * Listen to mouse events to control the camera.
      * @param touchEnabled Define if touch is enabled. (Default is true.)
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
     constructor(touchEnabled = true) {
     }

@@ -1,10 +1,11 @@
 import { Tools } from "babylonjs/Misc/tools";
-import { Space, Axis, Matrix, TmpVectors, Vector3 } from "babylonjs/Maths/math";
+import { Matrix, TmpVectors, Vector3 } from "babylonjs/Maths/math.vector";
 import { float } from "babylonjs/types";
 
 import { VolumeBasedPanel } from "./volumeBasedPanel";
 import { Control3D } from "./control3D";
 import { Container3D } from "./container3D";
+import { Axis, Space } from 'babylonjs/Maths/math.axis';
 
 /**
  * Class used to create a container panel deployed on the surface of a sphere

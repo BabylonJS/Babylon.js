@@ -22,6 +22,22 @@ export class MaterialFlags {
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private static _DetailTextureEnabled = true;
+    /**
+     * Are detail textures enabled in the application.
+     */
+    public static get DetailTextureEnabled(): boolean {
+        return this._DetailTextureEnabled;
+    }
+    public static set DetailTextureEnabled(value: boolean) {
+        if (this._DetailTextureEnabled === value) {
+            return;
+        }
+
+        this._DetailTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     private static _AmbientTextureEnabled = true;
     /**
      * Are ambient textures enabled in the application.

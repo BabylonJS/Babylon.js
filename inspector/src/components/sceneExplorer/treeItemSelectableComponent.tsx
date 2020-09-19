@@ -92,10 +92,11 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
         const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         return (
-            children.map(item => {
+            children.map((item, i) => {
 
                 return (
-                    <TreeItemSelectableComponent globalState={this.props.globalState} mustExpand={this.props.mustExpand} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} key={item.uniqueId} offset={this.props.offset + 2} entity={item} filter={this.props.filter} />
+                    <TreeItemSelectableComponent globalState={this.props.globalState} mustExpand={this.props.mustExpand} extensibilityGroups={this.props.extensibilityGroups} selectedEntity={this.props.selectedEntity} 
+                    key={i} offset={this.props.offset + 2} entity={item} filter={this.props.filter} />
                 );
             })
         )
@@ -108,7 +109,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         const entity = this.props.entity;
 
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />
-        const children = Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
+        const children = entity.getClassName() === "MultiMaterial" ? [] : Tools.SortAndFilter(entity, entity.getChildren ? entity.getChildren() : entity.children);
         const hasChildren = children.length > 0;
 
         if (!entity.reservedDataStore) {
@@ -129,7 +130,6 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
 
                 if (entity.getDescendants) {
                     if (entity.getDescendants(false, (n: any) => {
-                        console.log(n.name);
                         return n.name && n.name.toLowerCase().indexOf(lowerCaseFilter) !== -1
                     }).length === 0) {
                         return null;

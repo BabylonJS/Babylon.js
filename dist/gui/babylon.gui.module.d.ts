@@ -27,11 +27,11 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
         /** defines a boolean indicating if the value can be negative */
         negativeValueAllowed?: boolean);
         /** Gets a boolean indicating if the value is a percentage */
-        readonly isPercentage: boolean;
+        get isPercentage(): boolean;
         /** Gets a boolean indicating if the value is store as pixel */
-        readonly isPixel: boolean;
+        get isPixel(): boolean;
         /** Gets direct internal value */
-        readonly internalValue: number;
+        get internalValue(): number;
         /**
          * Gets value as pixel
          * @param host defines the root host
@@ -69,9 +69,9 @@ declare module "babylonjs-gui/2D/valueAndUnit" {
         private static _UNITMODE_PERCENTAGE;
         private static _UNITMODE_PIXEL;
         /** UNITMODE_PERCENTAGE */
-        static readonly UNITMODE_PERCENTAGE: number;
+        static get UNITMODE_PERCENTAGE(): number;
         /** UNITMODE_PIXEL */
-        static readonly UNITMODE_PIXEL: number;
+        static get UNITMODE_PIXEL(): number;
     }
 }
 declare module "babylonjs-gui/2D/style" {
@@ -103,24 +103,28 @@ declare module "babylonjs-gui/2D/style" {
         /**
          * Gets or sets the font size
          */
-        fontSize: string | number;
+        get fontSize(): string | number;
+        set fontSize(value: string | number);
         /**
          * Gets or sets the font family
          */
-        fontFamily: string;
+        get fontFamily(): string;
+        set fontFamily(value: string);
         /**
          * Gets or sets the font style
          */
-        fontStyle: string;
+        get fontStyle(): string;
+        set fontStyle(value: string);
         /** Gets or sets font weight */
-        fontWeight: string;
+        get fontWeight(): string;
+        set fontWeight(value: string);
         /** Dispose all associated resources */
         dispose(): void;
     }
 }
 declare module "babylonjs-gui/2D/math2D" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     /**
      * Class used to transport Vector2 information for pointer events
      */
@@ -304,7 +308,7 @@ declare module "babylonjs-gui/2D/measure" {
 declare module "babylonjs-gui/2D/advancedDynamicTexture" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Viewport, Vector2, Vector3, Matrix } from "babylonjs/Maths/math";
+    import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
     import { ClipboardInfo } from "babylonjs/Events/clipboardEvents";
     import { DynamicTexture } from "babylonjs/Materials/Textures/dynamicTexture";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -313,6 +317,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Style } from "babylonjs-gui/2D/style";
+    import { Viewport } from 'babylonjs/Maths/math.viewport';
     /**
     * Interface used to define a control that can receive focus
     */
@@ -380,8 +385,17 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         private _focusedControl;
         private _blockNextFocusCheck;
         private _renderScale;
-        private _rootCanvas;
+        private _rootElement;
         private _cursorChanged;
+        private _defaultMousePointerId;
+        /** @hidden */
+        _numLayoutCalls: number;
+        /** Gets the number of layout calls made the last time the ADT has been rendered */
+        get numLayoutCalls(): number;
+        /** @hidden */
+        _numRenderCalls: number;
+        /** Gets the number of render calls made the last time the ADT has been rendered */
+        get numRenderCalls(): number;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
@@ -419,39 +433,50 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
         */
-        renderScale: number;
+        get renderScale(): number;
+        set renderScale(value: number);
         /** Gets or sets the background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /**
         * Gets or sets the ideal width used to design controls.
         * The GUI will then rescale everything accordingly
         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
-        idealWidth: number;
+        get idealWidth(): number;
+        set idealWidth(value: number);
         /**
         * Gets or sets the ideal height used to design controls.
         * The GUI will then rescale everything accordingly
         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
-        idealHeight: number;
+        get idealHeight(): number;
+        set idealHeight(value: number);
         /**
         * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
-        useSmallestIdeal: boolean;
+        get useSmallestIdeal(): boolean;
+        set useSmallestIdeal(value: boolean);
         /**
         * Gets or sets a boolean indicating if adaptive scaling must be used
         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
-        renderAtIdealSize: boolean;
+        get renderAtIdealSize(): boolean;
+        set renderAtIdealSize(value: boolean);
+        /**
+         * Gets the ratio used when in "ideal mode"
+        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * */
+        get idealRatio(): number;
         /**
         * Gets the underlying layer used to render the texture when in fullscreen mode
         */
-        readonly layer: Nullable<Layer>;
+        get layer(): Nullable<Layer>;
         /**
         * Gets the root container control
         */
-        readonly rootContainer: Container;
+        get rootContainer(): Container;
         /**
         * Returns an array containing the root container.
         * This is mostly used to let the Inspector introspects the ADT
@@ -468,15 +493,18 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         /**
         * Gets or sets the current focused control
         */
-        focusedControl: Nullable<IFocusableControl>;
+        get focusedControl(): Nullable<IFocusableControl>;
+        set focusedControl(control: Nullable<IFocusableControl>);
         /**
         * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
         */
-        isForeground: boolean;
+        get isForeground(): boolean;
+        set isForeground(value: boolean);
         /**
         * Gets or set information about clipboardData
         */
-        clipboardData: string;
+        get clipboardData(): string;
+        set clipboardData(value: string);
         /**
        * Creates a new AdvancedDynamicTexture
        * @param name defines the name of the texture
@@ -502,7 +530,8 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
         /**
          * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
          */
-        useInvalidateRectOptimization: boolean;
+        get useInvalidateRectOptimization(): boolean;
+        set useInvalidateRectOptimization(value: boolean);
         private _invalidatedRectangle;
         /**
          * Invalidates a rectangle area on the gui texture
@@ -619,7 +648,7 @@ declare module "babylonjs-gui/2D/advancedDynamicTexture" {
 declare module "babylonjs-gui/2D/controls/control" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2, Vector3 } from "babylonjs/Maths/math";
+    import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { Scene } from "babylonjs/scene";
     import { Container } from "babylonjs-gui/2D/controls/container";
@@ -714,10 +743,15 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _downPointerIds;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
+        protected _disabledColorItem: string;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
+        _customData: any;
+        /** @hidden */
         _isClipped: boolean;
+        /** @hidden */
+        _automaticSize: boolean;
         /** @hidden */
         _tag: any;
         /**
@@ -751,16 +785,20 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _cacheData;
         private _shadowOffsetX;
         /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
-        shadowOffsetX: number;
+        get shadowOffsetX(): number;
+        set shadowOffsetX(value: number);
         private _shadowOffsetY;
         /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
-        shadowOffsetY: number;
+        get shadowOffsetY(): number;
+        set shadowOffsetY(value: number);
         private _shadowBlur;
         /** Gets or sets a value indicating the amount of blur to use to render the shadow */
-        shadowBlur: number;
+        get shadowBlur(): number;
+        set shadowBlur(value: number);
         private _shadowColor;
         /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
-        shadowColor: string;
+        get shadowColor(): string;
+        set shadowColor(value: string);
         /** Gets or sets the cursor to use when the control is hovered */
         hoverCursor: string;
         /** @hidden */
@@ -768,12 +806,16 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         protected _linkOffsetY: ValueAndUnit;
         /** Gets the control type name */
-        readonly typeName: string;
+        get typeName(): string;
         /**
          * Get the current class name of the control.
          * @returns current class name
          */
         getClassName(): string;
+        /**
+        * An event triggered when pointer wheel is scrolled
+        */
+        onWheelObservable: Observable<Vector2>;
         /**
         * An event triggered when the pointer move over the control.
         */
@@ -813,188 +855,237 @@ declare module "babylonjs-gui/2D/controls/control" {
         /**
          * Get the hosting AdvancedDynamicTexture
          */
-        readonly host: AdvancedDynamicTexture;
+        get host(): AdvancedDynamicTexture;
         /** Gets or set information about font offsets (used to render and align text) */
-        fontOffset: {
+        get fontOffset(): {
             ascent: number;
             height: number;
             descent: number;
         };
+        set fontOffset(offset: {
+            ascent: number;
+            height: number;
+            descent: number;
+        });
         /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
-        alpha: number;
+        get alpha(): number;
+        set alpha(value: number);
         /**
          * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
          */
-        isHighlighted: boolean;
+        get isHighlighted(): boolean;
+        set isHighlighted(value: boolean);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        scaleX: number;
+        get scaleX(): number;
+        set scaleX(value: number);
         /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        scaleY: number;
+        get scaleY(): number;
+        set scaleY(value: number);
         /** Gets or sets the rotation angle (0 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        rotation: number;
+        get rotation(): number;
+        set rotation(value: number);
         /** Gets or sets the transformation center on Y axis (0 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        transformCenterY: number;
+        get transformCenterY(): number;
+        set transformCenterY(value: number);
         /** Gets or sets the transformation center on X axis (0 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        transformCenterX: number;
+        get transformCenterX(): number;
+        set transformCenterX(value: number);
         /**
          * Gets or sets the horizontal alignment
          * @see http://doc.babylonjs.com/how_to/gui#alignments
          */
-        horizontalAlignment: number;
+        get horizontalAlignment(): number;
+        set horizontalAlignment(value: number);
         /**
          * Gets or sets the vertical alignment
          * @see http://doc.babylonjs.com/how_to/gui#alignments
          */
-        verticalAlignment: number;
+        get verticalAlignment(): number;
+        set verticalAlignment(value: number);
         /**
          * Gets or sets control width
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        width: string | number;
+        get width(): string | number;
+        set width(value: string | number);
         /**
          * Gets or sets the control width in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        widthInPixels: number;
+        get widthInPixels(): number;
+        set widthInPixels(value: number);
         /**
          * Gets or sets control height
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        height: string | number;
+        get height(): string | number;
+        set height(value: string | number);
         /**
          * Gets or sets control height in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        heightInPixels: number;
+        get heightInPixels(): number;
+        set heightInPixels(value: number);
         /** Gets or set font family */
-        fontFamily: string;
+        get fontFamily(): string;
+        set fontFamily(value: string);
         /** Gets or sets font style */
-        fontStyle: string;
+        get fontStyle(): string;
+        set fontStyle(value: string);
         /** Gets or sets font weight */
-        fontWeight: string;
+        get fontWeight(): string;
+        set fontWeight(value: string);
         /**
          * Gets or sets style
          * @see http://doc.babylonjs.com/how_to/gui#styles
          */
-        style: Nullable<Style>;
+        get style(): Nullable<Style>;
+        set style(value: Nullable<Style>);
         /** @hidden */
-        readonly _isFontSizeInPercentage: boolean;
+        get _isFontSizeInPercentage(): boolean;
         /** Gets or sets font size in pixels */
-        fontSizeInPixels: number;
+        get fontSizeInPixels(): number;
+        set fontSizeInPixels(value: number);
         /** Gets or sets font size */
-        fontSize: string | number;
+        get fontSize(): string | number;
+        set fontSize(value: string | number);
         /** Gets or sets foreground color */
-        color: string;
+        get color(): string;
+        set color(value: string);
         /** Gets or sets z index which is used to reorder controls on the z axis */
-        zIndex: number;
+        get zIndex(): number;
+        set zIndex(value: number);
         /** Gets or sets a boolean indicating if the control can be rendered */
-        notRenderable: boolean;
+        get notRenderable(): boolean;
+        set notRenderable(value: boolean);
         /** Gets or sets a boolean indicating if the control is visible */
-        isVisible: boolean;
+        get isVisible(): boolean;
+        set isVisible(value: boolean);
         /** Gets a boolean indicating that the control needs to update its rendering */
-        readonly isDirty: boolean;
+        get isDirty(): boolean;
         /**
          * Gets the current linked mesh (or null if none)
          */
-        readonly linkedMesh: Nullable<AbstractMesh>;
+        get linkedMesh(): Nullable<AbstractMesh>;
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingLeft: string | number;
+        get paddingLeft(): string | number;
+        set paddingLeft(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the left of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingLeftInPixels: number;
+        get paddingLeftInPixels(): number;
+        set paddingLeftInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingRight: string | number;
+        get paddingRight(): string | number;
+        set paddingRight(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingRightInPixels: number;
+        get paddingRightInPixels(): number;
+        set paddingRightInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingTop: string | number;
+        get paddingTop(): string | number;
+        set paddingTop(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingTopInPixels: number;
+        get paddingTopInPixels(): number;
+        set paddingTopInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingBottom: string | number;
+        get paddingBottom(): string | number;
+        set paddingBottom(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingBottomInPixels: number;
+        get paddingBottomInPixels(): number;
+        set paddingBottomInPixels(value: number);
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        left: string | number;
+        get left(): string | number;
+        set left(value: string | number);
         /**
          * Gets or sets a value indicating the left coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        leftInPixels: number;
+        get leftInPixels(): number;
+        set leftInPixels(value: number);
         /**
          * Gets or sets a value indicating the top coordinate of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        top: string | number;
+        get top(): string | number;
+        set top(value: string | number);
         /**
          * Gets or sets a value indicating the top coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        topInPixels: number;
+        get topInPixels(): number;
+        set topInPixels(value: number);
         /**
          * Gets or sets a value indicating the offset on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkOffsetX: string | number;
+        get linkOffsetX(): string | number;
+        set linkOffsetX(value: string | number);
         /**
          * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkOffsetXInPixels: number;
+        get linkOffsetXInPixels(): number;
+        set linkOffsetXInPixels(value: number);
         /**
          * Gets or sets a value indicating the offset on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkOffsetY: string | number;
+        get linkOffsetY(): string | number;
+        set linkOffsetY(value: string | number);
         /**
          * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkOffsetYInPixels: number;
+        get linkOffsetYInPixels(): number;
+        set linkOffsetYInPixels(value: number);
         /** Gets the center coordinate on X axis */
-        readonly centerX: number;
+        get centerX(): number;
         /** Gets the center coordinate on Y axis */
-        readonly centerY: number;
+        get centerY(): number;
         /** Gets or sets if control is Enabled*/
-        isEnabled: boolean;
+        get isEnabled(): boolean;
+        set isEnabled(value: boolean);
         /** Gets or sets background color of control if it's disabled*/
-        disabledColor: string;
+        get disabledColor(): string;
+        set disabledColor(value: string);
+        /** Gets or sets front color of control if it's disabled*/
+        get disabledColorItem(): string;
+        set disabledColorItem(value: string);
         /**
          * Creates a new control
          * @param name defines the name of the control
@@ -1043,8 +1134,13 @@ declare module "babylonjs-gui/2D/controls/control" {
          * @param scene defines the hosting scene
          */
         moveToVector3(position: Vector3, scene: Scene): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        /**
+         * Will store all controls that have this control as ascendant in a given array
+         * @param results defines the array where to store the descendants
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         */
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /**
          * Will return all controls that have this control as ascendant
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
@@ -1116,7 +1212,7 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
         /** @hidden */
@@ -1130,7 +1226,9 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _forcePointerUp(pointerId?: Nullable<number>): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean;
+        _onWheelScroll(deltaX?: number, deltaY?: number): void;
+        /** @hidden */
+        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -1141,17 +1239,17 @@ declare module "babylonjs-gui/2D/controls/control" {
         private static _VERTICAL_ALIGNMENT_BOTTOM;
         private static _VERTICAL_ALIGNMENT_CENTER;
         /** HORIZONTAL_ALIGNMENT_LEFT */
-        static readonly HORIZONTAL_ALIGNMENT_LEFT: number;
+        static get HORIZONTAL_ALIGNMENT_LEFT(): number;
         /** HORIZONTAL_ALIGNMENT_RIGHT */
-        static readonly HORIZONTAL_ALIGNMENT_RIGHT: number;
+        static get HORIZONTAL_ALIGNMENT_RIGHT(): number;
         /** HORIZONTAL_ALIGNMENT_CENTER */
-        static readonly HORIZONTAL_ALIGNMENT_CENTER: number;
+        static get HORIZONTAL_ALIGNMENT_CENTER(): number;
         /** VERTICAL_ALIGNMENT_TOP */
-        static readonly VERTICAL_ALIGNMENT_TOP: number;
+        static get VERTICAL_ALIGNMENT_TOP(): number;
         /** VERTICAL_ALIGNMENT_BOTTOM */
-        static readonly VERTICAL_ALIGNMENT_BOTTOM: number;
+        static get VERTICAL_ALIGNMENT_BOTTOM(): number;
         /** VERTICAL_ALIGNMENT_CENTER */
-        static readonly VERTICAL_ALIGNMENT_CENTER: number;
+        static get VERTICAL_ALIGNMENT_CENTER(): number;
         private static _FontHeightSizes;
         /** @hidden */
         static _GetFontOffset(font: string): {
@@ -1189,7 +1287,7 @@ declare module "babylonjs-gui/2D/controls/container" {
     export class Container extends Control {
         name?: string | undefined;
         /** @hidden */
-        protected _children: Control[];
+        _children: Control[];
         /** @hidden */
         protected _measureForChildren: Measure;
         /** @hidden */
@@ -1198,14 +1296,25 @@ declare module "babylonjs-gui/2D/controls/container" {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /**
+         * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+         */
+        logLayoutCycleErrors: boolean;
+        /**
+         * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+         */
+        maxLayoutCycle: number;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
-        adaptHeightToChildren: boolean;
+        get adaptHeightToChildren(): boolean;
+        set adaptHeightToChildren(value: boolean);
         /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
-        adaptWidthToChildren: boolean;
+        get adaptWidthToChildren(): boolean;
+        set adaptWidthToChildren(value: boolean);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets the list of children */
-        readonly children: Control[];
+        get children(): Control[];
         /**
          * Creates a new Container
          * @param name defines the name of the container
@@ -1270,10 +1379,9 @@ declare module "babylonjs-gui/2D/controls/container" {
         protected _postMeasure(): void;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
-        /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -1289,9 +1397,11 @@ declare module "babylonjs-gui/2D/controls/rectangle" {
         private _thickness;
         private _cornerRadius;
         /** Gets or sets border thickness */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /** Gets or sets the corner radius angle */
-        cornerRadius: number;
+        get cornerRadius(): number;
+        set cornerRadius(value: number);
         /**
          * Creates a new Rectangle
          * @param name defines the control name
@@ -1308,6 +1418,7 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
     import { Observable } from "babylonjs/Misc/observable";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Nullable } from 'babylonjs/types';
     /**
      * Enum that determines the text-wrapping mode to use.
      */
@@ -1353,63 +1464,71 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         /**
          * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
          */
-        readonly lines: any[];
+        get lines(): any[];
         /**
          * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
          */
+        get resizeToFit(): boolean;
         /**
-        * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
-        */
-        resizeToFit: boolean;
+         * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+         */
+        set resizeToFit(value: boolean);
         /**
          * Gets or sets a boolean indicating if text must be wrapped
          */
+        get textWrapping(): TextWrapping | boolean;
         /**
-        * Gets or sets a boolean indicating if text must be wrapped
-        */
-        textWrapping: TextWrapping | boolean;
+         * Gets or sets a boolean indicating if text must be wrapped
+         */
+        set textWrapping(value: TextWrapping | boolean);
         /**
          * Gets or sets text to display
          */
+        get text(): string;
         /**
-        * Gets or sets text to display
-        */
-        text: string;
+         * Gets or sets text to display
+         */
+        set text(value: string);
         /**
          * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
          */
+        get textHorizontalAlignment(): number;
         /**
-        * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
-        */
-        textHorizontalAlignment: number;
+         * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+         */
+        set textHorizontalAlignment(value: number);
         /**
          * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
          */
+        get textVerticalAlignment(): number;
         /**
-        * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
-        */
-        textVerticalAlignment: number;
+         * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+         */
+        set textVerticalAlignment(value: number);
         /**
          * Gets or sets line spacing value
          */
+        set lineSpacing(value: string | number);
         /**
-        * Gets or sets line spacing value
-        */
-        lineSpacing: string | number;
+         * Gets or sets line spacing value
+         */
+        get lineSpacing(): string | number;
         /**
          * Gets or sets outlineWidth of the text to display
          */
+        get outlineWidth(): number;
         /**
-        * Gets or sets outlineWidth of the text to display
-        */
-        outlineWidth: number;
+         * Gets or sets outlineWidth of the text to display
+         */
+        set outlineWidth(value: number);
         /**
          * Gets or sets outlineColor of the text to display
          */
+        get outlineColor(): string;
         /**
-        * Gets or sets outlineColor of the text to display
-        */
-        outlineColor: string;
+         * Gets or sets outlineColor of the text to display
+         */
+        set outlineColor(value: string);
         /**
          * Creates a new TextBlock object
          * @param name defines the name of the control
@@ -1424,7 +1543,7 @@ declare module "babylonjs-gui/2D/controls/textBlock" {
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
@@ -1449,7 +1568,7 @@ declare module "babylonjs-gui/2D/controls/image" {
      */
     export class Image extends Control {
         name?: string | undefined;
-        private static _WorkingCanvas;
+        private _workingCanvas;
         private _domImage;
         private _imageWidth;
         private _imageHeight;
@@ -1461,6 +1580,8 @@ declare module "babylonjs-gui/2D/controls/image" {
         private _sourceTop;
         private _sourceWidth;
         private _sourceHeight;
+        private _svgAttributesComputationCompleted;
+        private _isSVG;
         private _cellWidth;
         private _cellHeight;
         private _cellId;
@@ -1475,82 +1596,119 @@ declare module "babylonjs-gui/2D/controls/image" {
          */
         onImageLoadedObservable: Observable<Image>;
         /**
+         * Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
+         */
+        onSVGAttributesComputedObservable: Observable<Image>;
+        /**
          * Gets a boolean indicating that the content is loaded
          */
-        readonly isLoaded: boolean;
+        get isLoaded(): boolean;
         /**
          * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
          */
-        populateNinePatchSlicesFromImage: boolean;
+        get populateNinePatchSlicesFromImage(): boolean;
+        set populateNinePatchSlicesFromImage(value: boolean);
         /**
          * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
          * Beware using this as this will comsume more memory as the image has to be stored twice
          */
-        detectPointerOnOpaqueOnly: boolean;
+        get detectPointerOnOpaqueOnly(): boolean;
+        set detectPointerOnOpaqueOnly(value: boolean);
         /**
          * Gets or sets the left value for slicing (9-patch)
          */
-        sliceLeft: number;
+        get sliceLeft(): number;
+        set sliceLeft(value: number);
         /**
          * Gets or sets the right value for slicing (9-patch)
          */
-        sliceRight: number;
+        get sliceRight(): number;
+        set sliceRight(value: number);
         /**
          * Gets or sets the top value for slicing (9-patch)
          */
-        sliceTop: number;
+        get sliceTop(): number;
+        set sliceTop(value: number);
         /**
          * Gets or sets the bottom value for slicing (9-patch)
          */
-        sliceBottom: number;
+        get sliceBottom(): number;
+        set sliceBottom(value: number);
         /**
          * Gets or sets the left coordinate in the source image
          */
-        sourceLeft: number;
+        get sourceLeft(): number;
+        set sourceLeft(value: number);
         /**
          * Gets or sets the top coordinate in the source image
          */
-        sourceTop: number;
+        get sourceTop(): number;
+        set sourceTop(value: number);
         /**
          * Gets or sets the width to capture in the source image
          */
-        sourceWidth: number;
+        get sourceWidth(): number;
+        set sourceWidth(value: number);
         /**
          * Gets or sets the height to capture in the source image
          */
-        sourceHeight: number;
+        get sourceHeight(): number;
+        set sourceHeight(value: number);
+        /** Indicates if the format of the image is SVG */
+        get isSVG(): boolean;
+        /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+        get svgAttributesComputationCompleted(): boolean;
         /**
          * Gets or sets a boolean indicating if the image can force its container to adapt its size
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
-        autoScale: boolean;
+        get autoScale(): boolean;
+        set autoScale(value: boolean);
         /** Gets or sets the streching mode used by the image */
-        stretch: number;
+        get stretch(): number;
+        set stretch(value: number);
+        /** @hidden */
+        _rotate90(n: number, preserveProperties?: boolean): Image;
+        private _handleRotationForSVGImage;
+        private _rotate90SourceProperties;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
-        domImage: HTMLImageElement;
+        set domImage(value: HTMLImageElement);
+        get domImage(): HTMLImageElement;
         private _onImageLoaded;
         private _extractNinePatchSliceDataFromImage;
         /**
          * Gets or sets image source url
          */
-        source: Nullable<string>;
+        set source(value: Nullable<string>);
+        /**
+         * Checks for svg document with icon id present
+         */
+        private _svgCheck;
+        /**
+         * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
+         * given external svg file and icon id
+         */
+        private _getSVGAttribs;
         /**
          * Gets or sets the cell width to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
-        cellWidth: number;
+        get cellWidth(): number;
+        set cellWidth(value: number);
         /**
          * Gets or sets the cell height to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
-        cellHeight: number;
+        get cellHeight(): number;
+        set cellHeight(value: number);
         /**
          * Gets or sets the cell id to use (this will turn on the animation sheet mode)
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
-        cellId: number;
+        get cellId(): number;
+        set cellId(value: number);
         /**
          * Creates a new Image
          * @param name defines the control name
@@ -1588,7 +1746,7 @@ declare module "babylonjs-gui/2D/controls/image" {
 }
 declare module "babylonjs-gui/2D/controls/button" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
@@ -1614,16 +1772,20 @@ declare module "babylonjs-gui/2D/controls/button" {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
          */
-        readonly image: Nullable<Image>;
+        get image(): Nullable<Image>;
         private _textBlock;
         /**
          * Returns the image part of the button (if any)
          */
-        readonly textBlock: Nullable<TextBlock>;
+        get textBlock(): Nullable<TextBlock>;
         /**
          * Creates a new Button
          * @param name defines the name of the button
@@ -1631,7 +1793,7 @@ declare module "babylonjs-gui/2D/controls/button" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
@@ -1684,18 +1846,25 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        /**
+         * Gets or sets a boolean indicating that layou warnings should be ignored
+         */
+        ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
-        isVertical: boolean;
+        get isVertical(): boolean;
+        set isVertical(value: boolean);
         /**
          * Gets or sets panel width.
          * This value should not be set when in horizontal mode as it will be computed automatically
          */
-        width: string | number;
+        set width(value: string | number);
+        get width(): string | number;
         /**
          * Gets or sets panel height.
          * This value should not be set when in vertical mode as it will be computed automatically
          */
-        height: string | number;
+        set height(value: string | number);
+        get height(): string | number;
         /**
          * Creates a new StackPanel
          * @param name defines control name
@@ -1710,9 +1879,11 @@ declare module "babylonjs-gui/2D/controls/stackPanel" {
 }
 declare module "babylonjs-gui/2D/controls/checkbox" {
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
+    import { Nullable } from 'babylonjs/types';
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
      * Class used to represent a 2D checkbox
      */
@@ -1723,17 +1894,21 @@ declare module "babylonjs-gui/2D/controls/checkbox" {
         private _checkSizeRatio;
         private _thickness;
         /** Gets or sets border thickness  */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /**
          * Observable raised when isChecked property changes
          */
         onIsCheckedChangedObservable: Observable<boolean>;
         /** Gets or sets a value indicating the ratio between overall size and check size */
-        checkSizeRatio: number;
+        get checkSizeRatio(): number;
+        set checkSizeRatio(value: number);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets a boolean indicating if the checkbox is checked or not */
-        isChecked: boolean;
+        get isChecked(): boolean;
+        set isChecked(value: boolean);
         /**
          * Creates a new CheckBox
          * @param name defines the control name
@@ -1741,7 +1916,7 @@ declare module "babylonjs-gui/2D/controls/checkbox" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
         /**
@@ -1824,7 +1999,7 @@ declare module "babylonjs-gui/2D/controls/virtualKeyboard" {
         private _connectedInputTexts;
         private _onKeyPressObserver;
         /** Gets the input text control currently attached to the keyboard */
-        readonly connectedInputText: Nullable<InputText>;
+        get connectedInputText(): Nullable<InputText>;
         /**
          * Connects the keyboard with an input text control
          *
@@ -1854,10 +2029,11 @@ declare module "babylonjs-gui/2D/controls/virtualKeyboard" {
 declare module "babylonjs-gui/2D/controls/inputText" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
      * Class used to create input text control
      */
@@ -1898,6 +2074,8 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         _connectedVirtualKeyboard: Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** Observable raised when the text changes */
         onTextChangedObservable: Observable<InputText>;
         /** Observable raised just before an entered character is to be added */
@@ -1917,45 +2095,63 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         /** Observable raised when a key event was processed */
         onKeyboardEventProcessedObservable: Observable<KeyboardEvent>;
         /** Gets or sets the maximum width allowed by the control */
-        maxWidth: string | number;
+        get maxWidth(): string | number;
         /** Gets the maximum width allowed by the control in pixels */
-        readonly maxWidthInPixels: number;
+        get maxWidthInPixels(): number;
+        set maxWidth(value: string | number);
         /** Gets or sets the text highlighter transparency; default: 0.4 */
-        highligherOpacity: number;
+        get highligherOpacity(): number;
+        set highligherOpacity(value: number);
         /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
-        onFocusSelectAll: boolean;
+        get onFocusSelectAll(): boolean;
+        set onFocusSelectAll(value: boolean);
         /** Gets or sets the text hightlight color */
-        textHighlightColor: string;
+        get textHighlightColor(): string;
+        set textHighlightColor(value: string);
         /** Gets or sets control margin */
-        margin: string;
+        get margin(): string;
         /** Gets control margin in pixels */
-        readonly marginInPixels: number;
+        get marginInPixels(): number;
+        set margin(value: string);
         /** Gets or sets a boolean indicating if the control can auto stretch its width to adapt to the text */
-        autoStretchWidth: boolean;
+        get autoStretchWidth(): boolean;
+        set autoStretchWidth(value: boolean);
         /** Gets or sets border thickness */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /** Gets or sets the background color when focused */
-        focusedBackground: string;
+        get focusedBackground(): string;
+        set focusedBackground(value: string);
         /** Gets or sets the background color when focused */
-        focusedColor: string;
+        get focusedColor(): string;
+        set focusedColor(value: string);
         /** Gets or sets the background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets the placeholder color */
-        placeholderColor: string;
+        get placeholderColor(): string;
+        set placeholderColor(value: string);
         /** Gets or sets the text displayed when the control is empty */
-        placeholderText: string;
+        get placeholderText(): string;
+        set placeholderText(value: string);
         /** Gets or sets the dead key flag */
-        deadKey: boolean;
+        get deadKey(): boolean;
+        set deadKey(flag: boolean);
         /** Gets or sets the highlight text */
-        highlightedText: string;
+        get highlightedText(): string;
+        set highlightedText(text: string);
         /** Gets or sets if the current key should be added */
-        addKey: boolean;
+        get addKey(): boolean;
+        set addKey(flag: boolean);
         /** Gets or sets the value of the current key being entered */
-        currentKey: string;
+        get currentKey(): string;
+        set currentKey(key: string);
         /** Gets or sets the text displayed in the control */
-        text: string;
+        get text(): string;
+        set text(value: string);
         /** Gets or sets control width */
-        width: string | number;
+        get width(): string | number;
+        set width(value: string | number);
         /**
          * Creates a new InputText
          * @param name defines the control name
@@ -1991,7 +2187,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -2017,15 +2213,15 @@ declare module "babylonjs-gui/2D/controls/grid" {
         /**
          * Gets the number of columns
          */
-        readonly columnCount: number;
+        get columnCount(): number;
         /**
          * Gets the number of rows
          */
-        readonly rowCount: number;
+        get rowCount(): number;
         /** Gets the list of children */
-        readonly children: Control[];
+        get children(): Control[];
         /** Gets the list of cells (e.g. the containers) */
-        readonly cells: {
+        get cells(): {
             [key: string]: Container;
         };
         /**
@@ -2127,10 +2323,11 @@ declare module "babylonjs-gui/2D/controls/grid" {
 }
 declare module "babylonjs-gui/2D/controls/colorpicker" {
     import { Observable } from "babylonjs/Misc/observable";
-    import { Color3, Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { Color3 } from 'babylonjs/Maths/math.color';
     /** Class used to create color pickers */
     export class ColorPicker extends Control {
         name?: string | undefined;
@@ -2152,20 +2349,24 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
          */
         onValueChangedObservable: Observable<Color3>;
         /** Gets or sets the color of the color picker */
-        value: Color3;
+        get value(): Color3;
+        set value(value: Color3);
         /**
          * Gets or sets control width
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        width: string | number;
+        get width(): string | number;
+        set width(value: string | number);
         /**
          * Gets or sets control height
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
+        get height(): string | number;
         /** Gets or sets control height */
-        height: string | number;
+        set height(value: string | number);
         /** Gets or sets control size */
-        size: string | number;
+        get size(): string | number;
+        set size(value: string | number);
         /**
          * Creates a new ColorPicker
          * @param name defines the control name
@@ -2178,8 +2379,6 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
         private _drawGradientSquare;
         private _drawCircle;
         private _createColorWheelCanvas;
-        private _RGBtoHSV;
-        private _HSVtoRGB;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D): void;
         private _pointerIsDown;
@@ -2219,7 +2418,8 @@ declare module "babylonjs-gui/2D/controls/ellipse" {
         name?: string | undefined;
         private _thickness;
         /** Gets or sets border thickness */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /**
          * Creates a new Ellipse
          * @param name defines the control name
@@ -2241,7 +2441,7 @@ declare module "babylonjs-gui/2D/controls/inputPassword" {
     }
 }
 declare module "babylonjs-gui/2D/controls/line" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Scene } from "babylonjs/scene";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
@@ -2257,25 +2457,32 @@ declare module "babylonjs-gui/2D/controls/line" {
         private _connectedControl;
         private _connectedControlDirtyObserver;
         /** Gets or sets the dash pattern */
-        dash: Array<number>;
+        get dash(): Array<number>;
+        set dash(value: Array<number>);
         /** Gets or sets the control connected with the line end */
-        connectedControl: Control;
+        get connectedControl(): Control;
+        set connectedControl(value: Control);
         /** Gets or sets start coordinates on X axis */
-        x1: string | number;
+        get x1(): string | number;
+        set x1(value: string | number);
         /** Gets or sets start coordinates on Y axis */
-        y1: string | number;
+        get y1(): string | number;
+        set y1(value: string | number);
         /** Gets or sets end coordinates on X axis */
-        x2: string | number;
+        get x2(): string | number;
+        set x2(value: string | number);
         /** Gets or sets end coordinates on Y axis */
-        y2: string | number;
+        get y2(): string | number;
+        set y2(value: string | number);
         /** Gets or sets line width */
-        lineWidth: number;
+        get lineWidth(): number;
+        set lineWidth(value: number);
         /** Gets or sets horizontal alignment */
-        horizontalAlignment: number;
+        set horizontalAlignment(value: number);
         /** Gets or sets vertical alignment */
-        verticalAlignment: number;
-        private readonly _effectiveX2;
-        private readonly _effectiveY2;
+        set verticalAlignment(value: number);
+        private get _effectiveX2();
+        private get _effectiveY2();
         /**
          * Creates a new Line
          * @param name defines the control name
@@ -2302,7 +2509,7 @@ declare module "babylonjs-gui/2D/controls/line" {
 }
 declare module "babylonjs-gui/2D/multiLinePoint" {
     import { Nullable } from "babylonjs/types";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { MultiLine } from "babylonjs-gui/2D/controls/multiLine";
     import { Control } from "babylonjs-gui/2D/controls/control";
@@ -2326,13 +2533,17 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
          */
         constructor(multiLine: MultiLine);
         /** Gets or sets x coordinate */
-        x: string | number;
+        get x(): string | number;
+        set x(value: string | number);
         /** Gets or sets y coordinate */
-        y: string | number;
+        get y(): string | number;
+        set y(value: string | number);
         /** Gets or sets the control associated with this point */
-        control: Nullable<Control>;
+        get control(): Nullable<Control>;
+        set control(value: Nullable<Control>);
         /** Gets or sets the mesh associated with this point */
-        mesh: Nullable<AbstractMesh>;
+        get mesh(): Nullable<AbstractMesh>;
+        set mesh(value: Nullable<AbstractMesh>);
         /** Resets links */
         resetLinks(): void;
         /**
@@ -2346,6 +2557,7 @@ declare module "babylonjs-gui/2D/multiLinePoint" {
     }
 }
 declare module "babylonjs-gui/2D/controls/multiLine" {
+    import { Nullable } from "babylonjs/types";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { MultiLinePoint } from "babylonjs-gui/2D/multiLinePoint";
@@ -2368,7 +2580,8 @@ declare module "babylonjs-gui/2D/controls/multiLine" {
          */
         constructor(name?: string | undefined);
         /** Gets or sets dash pattern */
-        dash: Array<number>;
+        get dash(): Array<number>;
+        set dash(value: Array<number>);
         /**
          * Gets point stored at specified index
          * @param index defines the index to look for
@@ -2409,11 +2622,12 @@ declare module "babylonjs-gui/2D/controls/multiLine" {
          */
         resetLinks(): void;
         /** Gets or sets line width */
-        lineWidth: number;
-        horizontalAlignment: number;
-        verticalAlignment: number;
+        get lineWidth(): number;
+        set lineWidth(value: number);
+        set horizontalAlignment(value: number);
+        set verticalAlignment(value: number);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -2422,7 +2636,7 @@ declare module "babylonjs-gui/2D/controls/multiLine" {
 }
 declare module "babylonjs-gui/2D/controls/radioButton" {
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     /**
@@ -2435,17 +2649,21 @@ declare module "babylonjs-gui/2D/controls/radioButton" {
         private _checkSizeRatio;
         private _thickness;
         /** Gets or sets border thickness */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /** Gets or sets group name */
         group: string;
         /** Observable raised when isChecked is changed */
         onIsCheckedChangedObservable: Observable<boolean>;
         /** Gets or sets a value indicating the ratio between overall size and check size */
-        checkSizeRatio: number;
+        get checkSizeRatio(): number;
+        set checkSizeRatio(value: number);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets a boolean indicating if the checkbox is checked or not */
-        isChecked: boolean;
+        get isChecked(): boolean;
+        set isChecked(value: boolean);
         /**
          * Creates a new RadioButton
          * @param name defines the control name
@@ -2467,7 +2685,7 @@ declare module "babylonjs-gui/2D/controls/radioButton" {
 }
 declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
     /**
@@ -2496,27 +2714,36 @@ declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
         /** Observable raised when the sldier value changes */
         onValueChangedObservable: Observable<number>;
         /** Gets or sets a boolean indicating if the thumb must be rendered */
-        displayThumb: boolean;
+        get displayThumb(): boolean;
+        set displayThumb(value: boolean);
         /** Gets or sets a step to apply to values (0 by default) */
-        step: number;
+        get step(): number;
+        set step(value: number);
         /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
-        barOffset: string | number;
+        get barOffset(): string | number;
         /** Gets main bar offset in pixels*/
-        readonly barOffsetInPixels: number;
+        get barOffsetInPixels(): number;
+        set barOffset(value: string | number);
         /** Gets or sets thumb width */
-        thumbWidth: string | number;
+        get thumbWidth(): string | number;
         /** Gets thumb width in pixels */
-        readonly thumbWidthInPixels: number;
+        get thumbWidthInPixels(): number;
+        set thumbWidth(value: string | number);
         /** Gets or sets minimum value */
-        minimum: number;
+        get minimum(): number;
+        set minimum(value: number);
         /** Gets or sets maximum value */
-        maximum: number;
+        get maximum(): number;
+        set maximum(value: number);
         /** Gets or sets current value */
-        value: number;
+        get value(): number;
+        set value(value: number);
         /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
-        isVertical: boolean;
+        get isVertical(): boolean;
+        set isVertical(value: boolean);
         /** Gets or sets a value indicating if the thumb can go over main bar extends */
-        isThumbClamped: boolean;
+        get isThumbClamped(): boolean;
+        set isThumbClamped(value: boolean);
         /**
          * Creates a new BaseSlider
          * @param name defines the control name
@@ -2536,6 +2763,8 @@ declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
 }
 declare module "babylonjs-gui/2D/controls/sliders/slider" {
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
+    import { Nullable } from 'babylonjs/types';
+    import { Measure } from "babylonjs-gui/2D/measure";
     /**
      * Class used to create slider controls
      */
@@ -2546,20 +2775,24 @@ declare module "babylonjs-gui/2D/controls/sliders/slider" {
         private _isThumbCircle;
         protected _displayValueBar: boolean;
         /** Gets or sets a boolean indicating if the value bar must be rendered */
-        displayValueBar: boolean;
+        get displayValueBar(): boolean;
+        set displayValueBar(value: boolean);
         /** Gets or sets border color */
-        borderColor: string;
+        get borderColor(): string;
+        set borderColor(value: string);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets a boolean indicating if the thumb should be round or square */
-        isThumbCircle: boolean;
+        get isThumbCircle(): boolean;
+        set isThumbCircle(value: boolean);
         /**
          * Creates a new Slider
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/selector" {
@@ -2582,11 +2815,12 @@ declare module "babylonjs-gui/2D/controls/selector" {
         /** name of SelectorGroup */
         name: string);
         /** Gets the groupPanel of the SelectorGroup  */
-        readonly groupPanel: StackPanel;
+        get groupPanel(): StackPanel;
         /** Gets the selectors array */
-        readonly selectors: StackPanel[];
+        get selectors(): StackPanel[];
         /** Gets and sets the group header */
-        header: string;
+        get header(): string;
+        set header(label: string);
         /** @hidden */
         private _addGroupHeader;
         /** @hidden*/
@@ -2689,25 +2923,32 @@ declare module "babylonjs-gui/2D/controls/selector" {
         groups?: SelectorGroup[]);
         protected _getTypeName(): string;
         /** Gets or sets the headerColor */
-        headerColor: string;
+        get headerColor(): string;
+        set headerColor(color: string);
         private _setHeaderColor;
         /** Gets or sets the button color */
-        buttonColor: string;
+        get buttonColor(): string;
+        set buttonColor(color: string);
         private _setbuttonColor;
         /** Gets or sets the label color */
-        labelColor: string;
+        get labelColor(): string;
+        set labelColor(color: string);
         private _setLabelColor;
         /** Gets or sets the button background */
-        buttonBackground: string;
+        get buttonBackground(): string;
+        set buttonBackground(color: string);
         private _setButtonBackground;
         /** Gets or sets the color of separator bar */
-        barColor: string;
+        get barColor(): string;
+        set barColor(color: string);
         private _setBarColor;
         /** Gets or sets the height of separator bar */
-        barHeight: string;
+        get barHeight(): string;
+        set barHeight(value: string);
         private _setBarHeight;
         /** Gets or sets the height of spacers*/
-        spacerHeight: string;
+        get spacerHeight(): string;
+        set spacerHeight(value: string);
         private _setSpacerHeight;
         /** Adds a bar between groups */
         private _addSpacer;
@@ -2773,6 +3014,24 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewerWindow" {
     export class _ScrollViewerWindow extends Container {
         parentClientWidth: number;
         parentClientHeight: number;
+        private _freezeControls;
+        private _parentMeasure;
+        private _oldLeft;
+        private _oldTop;
+        get freezeControls(): boolean;
+        set freezeControls(value: boolean);
+        private _bucketWidth;
+        private _bucketHeight;
+        private _buckets;
+        private _bucketLen;
+        get bucketWidth(): number;
+        get bucketHeight(): number;
+        setBucketSizes(width: number, height: number): void;
+        private _useBuckets;
+        private _makeBuckets;
+        private _dispatchInBuckets;
+        private _updateMeasures;
+        private _updateChildrenMeasures;
         /**
         * Creates a new ScrollViewerWindow
         * @param name of ScrollViewerWindow
@@ -2781,11 +3040,17 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewerWindow" {
         protected _getTypeName(): string;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /** @hidden */
+        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        private _scrollChildren;
+        private _scrollChildrenWithBuckets;
+        /** @hidden */
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         protected _postMeasure(): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
-    import { Vector2 } from "babylonjs/Maths/math";
+    import { Vector2 } from "babylonjs/Maths/math.vector";
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
     import { Control } from "babylonjs-gui/2D/controls/control";
     /**
@@ -2795,13 +3060,76 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
         name?: string | undefined;
         private _background;
         private _borderColor;
-        private _thumbMeasure;
+        private _tempMeasure;
         /** Gets or sets border color */
-        borderColor: string;
+        get borderColor(): string;
+        set borderColor(value: string);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /**
          * Creates a new Slider
+         * @param name defines the control name
+         */
+        constructor(name?: string | undefined);
+        protected _getTypeName(): string;
+        protected _getThumbThickness(): number;
+        _draw(context: CanvasRenderingContext2D): void;
+        private _first;
+        private _originX;
+        private _originY;
+        /** @hidden */
+        protected _updateValueFromPointer(x: number, y: number): void;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+    }
+}
+declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
+    import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
+    import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Image } from "babylonjs-gui/2D/controls/image";
+    /**
+     * Class used to create slider controls
+     */
+    export class ImageScrollBar extends BaseSlider {
+        name?: string | undefined;
+        private _backgroundBaseImage;
+        private _backgroundImage;
+        private _thumbImage;
+        private _thumbBaseImage;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
+        private _tempMeasure;
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        num90RotationInVerticalMode: number;
+        /**
+         * Gets or sets the image used to render the background for horizontal bar
+         */
+        get backgroundImage(): Image;
+        set backgroundImage(value: Image);
+        /**
+         * Gets or sets the image used to render the thumb
+         */
+        get thumbImage(): Image;
+        set thumbImage(value: Image);
+        /**
+         * Gets or sets the length of the thumb
+         */
+        get thumbLength(): number;
+        set thumbLength(value: number);
+        /**
+         * Gets or sets the height of the thumb
+         */
+        get thumbHeight(): number;
+        set thumbHeight(value: number);
+        /**
+         * Gets or sets the height of the bar image
+         */
+        get barImageHeight(): number;
+        set barImageHeight(value: number);
+        /**
+         * Creates a new ImageScrollBar
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
@@ -2819,11 +3147,13 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
 declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
     import { Nullable } from "babylonjs/types";
     import { Rectangle } from "babylonjs-gui/2D/controls/rectangle";
+    import { Image } from "babylonjs-gui/2D/controls/image";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { ScrollBar } from "babylonjs-gui/2D/controls/sliders/scrollBar";
+    import { ImageScrollBar } from "babylonjs-gui/2D/controls/sliders/imageScrollBar";
     /**
      * Class used to hold a viewer window and sliders in a grid
     */
@@ -2836,23 +3166,33 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
         private _verticalBar;
         private _barColor;
         private _barBackground;
+        private _barImage;
+        private _horizontalBarImage;
+        private _verticalBarImage;
+        private _barBackgroundImage;
+        private _horizontalBarBackgroundImage;
+        private _verticalBarBackgroundImage;
         private _barSize;
-        private _endLeft;
-        private _endTop;
         private _window;
         private _pointerIsOver;
         private _wheelPrecision;
-        private _onPointerObserver;
+        private _onWheelObserver;
         private _clientWidth;
         private _clientHeight;
+        private _useImageBar;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
+        private _horizontalBarImageHeight;
+        private _verticalBarImageHeight;
         /**
          * Gets the horizontal scrollbar
          */
-        readonly horizontalBar: ScrollBar;
+        get horizontalBar(): ScrollBar | ImageScrollBar;
         /**
          * Gets the vertical scrollbar
          */
-        readonly verticalBar: ScrollBar;
+        get verticalBar(): ScrollBar | ImageScrollBar;
         /**
          * Adds a new control to the current container
          * @param control defines the control to add
@@ -2866,13 +3206,48 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
          */
         removeControl(control: Control): Container;
         /** Gets the list of children */
-        readonly children: Control[];
+        get children(): Control[];
         _flagDescendantsAsMatrixDirty(): void;
+        /**
+         * Freezes or unfreezes the controls in the window.
+         * When controls are frozen, the scroll viewer can render a lot more quickly but updates to positions/sizes of controls
+         * are not taken into account. If you want to change positions/sizes, unfreeze, perform the changes then freeze again
+         */
+        get freezeControls(): boolean;
+        set freezeControls(value: boolean);
+        /** Gets the bucket width */
+        get bucketWidth(): number;
+        /** Gets the bucket height */
+        get bucketHeight(): number;
+        /**
+         * Sets the bucket sizes.
+         * When freezeControls is true, setting a non-zero bucket size will improve performances by updating only
+         * controls that are visible. The bucket sizes is used to subdivide (internally) the window area to smaller areas into which
+         * controls are dispatched. So, the size should be roughly equals to the mean size of all the controls of
+         * the window. To disable the usage of buckets, sets either width or height (or both) to 0.
+         * Please note that using this option will raise the memory usage (the higher the bucket sizes, the less memory
+         * used), that's why it is not enabled by default.
+         * @param width width of the bucket
+         * @param height height of the bucket
+         */
+        setBucketSizes(width: number, height: number): void;
+        private _forceHorizontalBar;
+        private _forceVerticalBar;
+        /**
+         * Forces the horizontal scroll bar to be displayed
+         */
+        get forceHorizontalBar(): boolean;
+        set forceHorizontalBar(value: boolean);
+        /**
+         * Forces the vertical scroll bar to be displayed
+         */
+        get forceVerticalBar(): boolean;
+        set forceVerticalBar(value: boolean);
         /**
         * Creates a new ScrollViewer
         * @param name of ScrollViewer
         */
-        constructor(name?: string);
+        constructor(name?: string, isImageBased?: boolean);
         /** Reset the scroll viewer window to initial size */
         resetWindow(): void;
         protected _getTypeName(): string;
@@ -2883,16 +3258,59 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
          * Gets or sets the mouse wheel precision
          * from 0 to 1 with a default value of 0.05
          * */
-        wheelPrecision: number;
+        get wheelPrecision(): number;
+        set wheelPrecision(value: number);
+        /** Gets or sets the scroll bar container background color */
+        get scrollBackground(): string;
+        set scrollBackground(color: string);
         /** Gets or sets the bar color */
-        barColor: string;
+        get barColor(): string;
+        set barColor(color: string);
+        /** Gets or sets the bar image */
+        get thumbImage(): Image;
+        set thumbImage(value: Image);
+        /** Gets or sets the horizontal bar image */
+        get horizontalThumbImage(): Image;
+        set horizontalThumbImage(value: Image);
+        /** Gets or sets the vertical bar image */
+        get verticalThumbImage(): Image;
+        set verticalThumbImage(value: Image);
         /** Gets or sets the size of the bar */
-        barSize: number;
+        get barSize(): number;
+        set barSize(value: number);
+        /** Gets or sets the length of the thumb */
+        get thumbLength(): number;
+        set thumbLength(value: number);
+        /** Gets or sets the height of the thumb */
+        get thumbHeight(): number;
+        set thumbHeight(value: number);
+        /** Gets or sets the height of the bar image */
+        get barImageHeight(): number;
+        set barImageHeight(value: number);
+        /** Gets or sets the height of the horizontal bar image */
+        get horizontalBarImageHeight(): number;
+        set horizontalBarImageHeight(value: number);
+        /** Gets or sets the height of the vertical bar image */
+        get verticalBarImageHeight(): number;
+        set verticalBarImageHeight(value: number);
         /** Gets or sets the bar background */
-        barBackground: string;
+        get barBackground(): string;
+        set barBackground(color: string);
+        /** Gets or sets the bar background image */
+        get barImage(): Image;
+        set barImage(value: Image);
+        /** Gets or sets the horizontal bar background image */
+        get horizontalBarImage(): Image;
+        set horizontalBarImage(value: Image);
+        /** Gets or sets the vertical bar background image */
+        get verticalBarImage(): Image;
+        set verticalBarImage(value: Image);
+        private _setWindowPosition;
         /** @hidden */
         private _updateScroller;
         _link(host: AdvancedDynamicTexture): void;
+        /** @hidden */
+        private _addBar;
         /** @hidden */
         private _attachWheel;
         _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
@@ -2902,6 +3320,8 @@ declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
 }
 declare module "babylonjs-gui/2D/controls/displayGrid" {
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { Nullable } from 'babylonjs/types';
+    import { Measure } from "babylonjs-gui/2D/measure";
     /** Class used to render a grid  */
     export class DisplayGrid extends Control {
         name?: string | undefined;
@@ -2916,37 +3336,49 @@ declare module "babylonjs-gui/2D/controls/displayGrid" {
         private _displayMajorLines;
         private _displayMinorLines;
         /** Gets or sets a boolean indicating if minor lines must be rendered (true by default)) */
-        displayMinorLines: boolean;
+        get displayMinorLines(): boolean;
+        set displayMinorLines(value: boolean);
         /** Gets or sets a boolean indicating if major lines must be rendered (true by default)) */
-        displayMajorLines: boolean;
+        get displayMajorLines(): boolean;
+        set displayMajorLines(value: boolean);
         /** Gets or sets background color (Black by default) */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets the width of each cell (20 by default) */
-        cellWidth: number;
+        get cellWidth(): number;
+        set cellWidth(value: number);
         /** Gets or sets the height of each cell (20 by default) */
-        cellHeight: number;
+        get cellHeight(): number;
+        set cellHeight(value: number);
         /** Gets or sets the tickness of minor lines (1 by default) */
-        minorLineTickness: number;
+        get minorLineTickness(): number;
+        set minorLineTickness(value: number);
         /** Gets or sets the color of minor lines (DarkGray by default) */
-        minorLineColor: string;
+        get minorLineColor(): string;
+        set minorLineColor(value: string);
         /** Gets or sets the tickness of major lines (2 by default) */
-        majorLineTickness: number;
+        get majorLineTickness(): number;
+        set majorLineTickness(value: number);
         /** Gets or sets the color of major lines (White by default) */
-        majorLineColor: string;
+        get majorLineColor(): string;
+        set majorLineColor(value: string);
         /** Gets or sets the frequency of major lines (default is 1 every 5 minor lines)*/
-        majorLineFrequency: number;
+        get majorLineFrequency(): number;
+        set majorLineFrequency(value: number);
         /**
          * Creates a new GridDisplayRectangle
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
 declare module "babylonjs-gui/2D/controls/sliders/imageBasedSlider" {
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
+    import { Measure } from "babylonjs-gui/2D/measure";
     import { Image } from "babylonjs-gui/2D/controls/image";
+    import { Nullable } from 'babylonjs/types';
     /**
      * Class used to create slider controls based on images
      */
@@ -2956,26 +3388,30 @@ declare module "babylonjs-gui/2D/controls/sliders/imageBasedSlider" {
         private _thumbImage;
         private _valueBarImage;
         private _tempMeasure;
-        displayThumb: boolean;
+        get displayThumb(): boolean;
+        set displayThumb(value: boolean);
         /**
          * Gets or sets the image used to render the background
          */
-        backgroundImage: Image;
+        get backgroundImage(): Image;
+        set backgroundImage(value: Image);
         /**
          * Gets or sets the image used to render the value bar
          */
-        valueBarImage: Image;
+        get valueBarImage(): Image;
+        set valueBarImage(value: Image);
         /**
          * Gets or sets the image used to render the thumb
          */
-        thumbImage: Image;
+        get thumbImage(): Image;
+        set thumbImage(value: Image);
         /**
          * Creates a new ImageBasedSlider
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
     }
 }
 declare module "babylonjs-gui/2D/controls/statics" {
@@ -3011,10 +3447,11 @@ declare module "babylonjs-gui/2D/controls/index" {
     export * from "babylonjs-gui/2D/controls/sliders/slider";
     export * from "babylonjs-gui/2D/controls/sliders/imageBasedSlider";
     export * from "babylonjs-gui/2D/controls/sliders/scrollBar";
+    export * from "babylonjs-gui/2D/controls/sliders/imageScrollBar";
     export * from "babylonjs-gui/2D/controls/statics";
 }
 declare module "babylonjs-gui/2D/adtInstrumentation" {
-    import { PerfCounter } from "babylonjs/Misc/tools";
+    import { PerfCounter } from "babylonjs/Misc/perfCounter";
     import { IDisposable } from "babylonjs/scene";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     /**
@@ -3036,19 +3473,21 @@ declare module "babylonjs-gui/2D/adtInstrumentation" {
         /**
          * Gets the perf counter used to capture render time
          */
-        readonly renderTimeCounter: PerfCounter;
+        get renderTimeCounter(): PerfCounter;
         /**
          * Gets the perf counter used to capture layout time
          */
-        readonly layoutTimeCounter: PerfCounter;
+        get layoutTimeCounter(): PerfCounter;
         /**
          * Enable or disable the render time capture
          */
-        captureRenderTime: boolean;
+        get captureRenderTime(): boolean;
+        set captureRenderTime(value: boolean);
         /**
          * Enable or disable the layout time capture
          */
-        captureLayoutTime: boolean;
+        get captureLayoutTime(): boolean;
+        set captureLayoutTime(value: boolean);
         /**
          * Instantiates a new advanced dynamic texture instrumentation.
          * This class can be used to get instrumentation data from an AdvancedDynamicTexture object
@@ -3065,6 +3504,54 @@ declare module "babylonjs-gui/2D/adtInstrumentation" {
         dispose(): void;
     }
 }
+declare module "babylonjs-gui/2D/xmlLoader" {
+    /**
+    * Class used to load GUI via XML.
+    */
+    export class XmlLoader {
+        private _nodes;
+        private _nodeTypes;
+        private _isLoaded;
+        private _objectAttributes;
+        private _parentClass;
+        /**
+        * Create a new xml loader
+        * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
+        */
+        constructor(parentClass?: null);
+        private _getChainElement;
+        private _getClassAttribute;
+        private _createGuiElement;
+        private _parseGrid;
+        private _parseElement;
+        private _prepareSourceElement;
+        private _parseElementsFromSource;
+        private _parseXml;
+        /**
+         * Gets if the loading has finished.
+         * @returns whether the loading has finished or not
+        */
+        isLoaded(): boolean;
+        /**
+         * Gets a loaded node / control by id.
+         * @param id the Controls id set in the xml
+         * @returns element of type Control
+        */
+        getNodeById(id: string): any;
+        /**
+         * Gets all loaded nodes / controls
+         * @returns Array of controls
+        */
+        getNodes(): any;
+        /**
+         * Initiates the xml layout loading
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @param callback defines the callback called on layout load.
+         */
+        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
+    }
+}
 declare module "babylonjs-gui/2D/index" {
     export * from "babylonjs-gui/2D/controls/index";
     export * from "babylonjs-gui/2D/advancedDynamicTexture";
@@ -3074,6 +3561,7 @@ declare module "babylonjs-gui/2D/index" {
     export * from "babylonjs-gui/2D/multiLinePoint";
     export * from "babylonjs-gui/2D/style";
     export * from "babylonjs-gui/2D/valueAndUnit";
+    export * from "babylonjs-gui/2D/xmlLoader";
 }
 declare module "babylonjs-gui/3D/controls/container3D" {
     import { Nullable } from "babylonjs/types";
@@ -3092,12 +3580,13 @@ declare module "babylonjs-gui/3D/controls/container3D" {
         /**
          * Gets the list of child controls
          */
-        readonly children: Array<Control3D>;
+        get children(): Array<Control3D>;
         /**
          * Gets or sets a boolean indicating if the layout must be blocked (default is false).
          * This is helpful to optimize layout operation when adding multiple children in a row
          */
-        blockLayout: boolean;
+        get blockLayout(): boolean;
+        set blockLayout(value: boolean);
         /**
          * Creates a new container
          * @param name defines the container name
@@ -3151,7 +3640,7 @@ declare module "babylonjs-gui/3D/controls/container3D" {
 declare module "babylonjs-gui/3D/gui3DManager" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Material } from "babylonjs/Materials/material";
     import { UtilityLayerRenderer } from "babylonjs/Rendering/utilityLayerRenderer";
     import { IDisposable, Scene } from "babylonjs/scene";
@@ -3187,9 +3676,9 @@ declare module "babylonjs-gui/3D/gui3DManager" {
             [key: string]: Material;
         };
         /** Gets the hosting scene */
-        readonly scene: Scene;
+        get scene(): Scene;
         /** Gets associated utility layer */
-        readonly utilityLayer: Nullable<UtilityLayerRenderer>;
+        get utilityLayer(): Nullable<UtilityLayerRenderer>;
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -3200,7 +3689,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
         /**
          * Gets the root container
          */
-        readonly rootContainer: Container3D;
+        get rootContainer(): Container3D;
         /**
          * Gets a boolean indicating if the given control is in the root child list
          * @param control defines the control to check
@@ -3226,7 +3715,7 @@ declare module "babylonjs-gui/3D/gui3DManager" {
     }
 }
 declare module "babylonjs-gui/3D/vector3WithInfo" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     /**
      * Class used to transport Vector3 information for pointer events
      */
@@ -3246,7 +3735,7 @@ declare module "babylonjs-gui/3D/vector3WithInfo" {
 declare module "babylonjs-gui/3D/controls/control3D" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { IBehaviorAware, Behavior } from "babylonjs/Behaviors/behavior";
@@ -3268,9 +3757,11 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         private _downPointerIds;
         private _isVisible;
         /** Gets or sets the control position  in world space */
-        position: Vector3;
+        get position(): Vector3;
+        set position(value: Vector3);
         /** Gets or sets the control scaling  in world space */
-        scaling: Vector3;
+        get scaling(): Vector3;
+        set scaling(value: Vector3);
         /** Callback used to start pointer enter animation */
         pointerEnterAnimation: () => void;
         /** Callback used to start pointer out animation */
@@ -3312,7 +3803,7 @@ declare module "babylonjs-gui/3D/controls/control3D" {
          * Gets the list of attached behaviors
          * @see http://doc.babylonjs.com/features/behaviour
          */
-        readonly behaviors: Behavior<Control3D>[];
+        get behaviors(): Behavior<Control3D>[];
         /**
          * Attach a behavior to the control
          * @see http://doc.babylonjs.com/features/behaviour
@@ -3335,7 +3826,8 @@ declare module "babylonjs-gui/3D/controls/control3D" {
          */
         getBehaviorByName(name: string): Nullable<Behavior<Control3D>>;
         /** Gets or sets a boolean indicating if the control is visible */
-        isVisible: boolean;
+        get isVisible(): boolean;
+        set isVisible(value: boolean);
         /**
          * Creates a new control
          * @param name defines the control name
@@ -3346,7 +3838,7 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         /**
          * Gets a string representing the class name
          */
-        readonly typeName: string;
+        get typeName(): string;
         /**
          * Get the current class name of the control.
          * @returns current class name
@@ -3356,11 +3848,11 @@ declare module "babylonjs-gui/3D/controls/control3D" {
         /**
          * Gets the transform node used by this control
          */
-        readonly node: Nullable<TransformNode>;
+        get node(): Nullable<TransformNode>;
         /**
          * Gets the mesh used to render this control
          */
-        readonly mesh: Nullable<AbstractMesh>;
+        get mesh(): Nullable<AbstractMesh>;
         /**
          * Link the control as child of the given node
          * @param node defines the node to link to. Use null to unlink the control
@@ -3442,11 +3934,13 @@ declare module "babylonjs-gui/3D/controls/button3D" {
         /**
          * Gets or sets the texture resolution used to render content (512 by default)
          */
-        contentResolution: int;
+        get contentResolution(): int;
+        set contentResolution(value: int);
         /**
          * Gets or sets the texture scale ratio used to render content (2 by default)
          */
-        contentScaleRatio: number;
+        get contentScaleRatio(): number;
+        set contentScaleRatio(value: number);
         protected _disposeFacadeTexture(): void;
         protected _resetContent(): void;
         /**
@@ -3457,7 +3951,8 @@ declare module "babylonjs-gui/3D/controls/button3D" {
         /**
          * Gets or sets the GUI 2D content used to display the button's facade
          */
-        content: Control;
+        get content(): Control;
+        set content(value: Control);
         /**
          * Apply the facade texture (created from the content property).
          * This function can be overloaded by child classes
@@ -3474,7 +3969,7 @@ declare module "babylonjs-gui/3D/controls/button3D" {
     }
 }
 declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { int } from "babylonjs/types";
     import { Container3D } from "babylonjs-gui/3D/controls/container3D";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -3502,17 +3997,20 @@ declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
         * | 3     | FACEFORWARD_ORIENTATION             |  Control will rotate to look at z axis (0, 0, 1) |
         * | 4     | FACEFORWARDREVERSED_ORIENTATION     |  Control will rotate to look at negative z axis (0, 0, -1) |
          */
-        orientation: number;
+        get orientation(): number;
+        set orientation(value: number);
         /**
          * Gets or sets the number of columns requested (10 by default).
          * The panel will automatically compute the number of rows based on number of child controls.
          */
-        columns: int;
+        get columns(): int;
+        set columns(value: int);
         /**
          * Gets or sets a the number of rows requested.
          * The panel will automatically compute the number of columns based on number of child controls.
          */
-        rows: int;
+        get rows(): int;
+        set rows(value: int);
         /**
          * Creates new VolumeBasedPanel
          */
@@ -3525,7 +4023,7 @@ declare module "babylonjs-gui/3D/controls/volumeBasedPanel" {
     }
 }
 declare module "babylonjs-gui/3D/controls/cylinderPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -3537,7 +4035,8 @@ declare module "babylonjs-gui/3D/controls/cylinderPanel" {
         /**
          * Gets or sets the radius of the cylinder where to project controls (5 by default)
          */
-        radius: float;
+        get radius(): float;
+        set radius(value: float);
         protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
         private _cylindricalMapping;
     }
@@ -3558,7 +4057,7 @@ declare module "babylonjs-gui/3D/materials/shaders/fluent.fragment" {
 }
 declare module "babylonjs-gui/3D/materials/fluentMaterial" {
     import { Nullable } from "babylonjs/types";
-    import { Color3, Vector3, Color4, Matrix } from "babylonjs/Maths/math";
+    import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
     import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
     import { MaterialDefines } from "babylonjs/Materials/materialDefines";
     import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -3566,6 +4065,7 @@ declare module "babylonjs-gui/3D/materials/fluentMaterial" {
     import { SubMesh } from "babylonjs/Meshes/subMesh";
     import { Mesh } from "babylonjs/Meshes/mesh";
     import { Scene } from "babylonjs/scene";
+    import { Color3, Color4 } from 'babylonjs/Maths/math.color';
     import "babylonjs-gui/3D/materials/shaders/fluent.vertex";
     import "babylonjs-gui/3D/materials/shaders/fluent.fragment";
     /** @hidden */
@@ -3682,33 +4182,41 @@ declare module "babylonjs-gui/3D/controls/holographicButton" {
         private _tooltipOutObserver;
         private _disposeTooltip;
         /**
+         * Rendering ground id of all the mesh in the button
+         */
+        set renderingGroupId(id: number);
+        get renderingGroupId(): number;
+        /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
-        tooltipText: Nullable<string>;
+        set tooltipText(text: Nullable<string>);
+        get tooltipText(): Nullable<string>;
         /**
          * Gets or sets text for the button
          */
-        text: string;
+        get text(): string;
+        set text(value: string);
         /**
          * Gets or sets the image url for the button
          */
-        imageUrl: string;
+        get imageUrl(): string;
+        set imageUrl(value: string);
         /**
          * Gets the back material used by this button
          */
-        readonly backMaterial: FluentMaterial;
+        get backMaterial(): FluentMaterial;
         /**
          * Gets the front material used by this button
          */
-        readonly frontMaterial: FluentMaterial;
+        get frontMaterial(): FluentMaterial;
         /**
          * Gets the plate material used by this button
          */
-        readonly plateMaterial: StandardMaterial;
+        get plateMaterial(): StandardMaterial;
         /**
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
-        readonly shareMaterials: boolean;
+        get shareMaterials(): boolean;
         /**
          * Creates a new button
          * @param name defines the control name
@@ -3752,7 +4260,7 @@ declare module "babylonjs-gui/3D/controls/meshButton3D" {
     }
 }
 declare module "babylonjs-gui/3D/controls/planePanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     /**
@@ -3763,7 +4271,7 @@ declare module "babylonjs-gui/3D/controls/planePanel" {
     }
 }
 declare module "babylonjs-gui/3D/controls/scatterPanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -3775,14 +4283,15 @@ declare module "babylonjs-gui/3D/controls/scatterPanel" {
         /**
          * Gets or sets the number of iteration to use to scatter the controls (100 by default)
          */
-        iteration: float;
+        get iteration(): float;
+        set iteration(value: float);
         protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
         private _scatterMapping;
         protected _finalProcessing(): void;
     }
 }
 declare module "babylonjs-gui/3D/controls/spherePanel" {
-    import { Vector3 } from "babylonjs/Maths/math";
+    import { Vector3 } from "babylonjs/Maths/math.vector";
     import { float } from "babylonjs/types";
     import { VolumeBasedPanel } from "babylonjs-gui/3D/controls/volumeBasedPanel";
     import { Control3D } from "babylonjs-gui/3D/controls/control3D";
@@ -3794,7 +4303,8 @@ declare module "babylonjs-gui/3D/controls/spherePanel" {
         /**
          * Gets or sets the radius of the sphere where to project controls (5 by default)
          */
-        radius: float;
+        get radius(): float;
+        set radius(value: float);
         protected _mapGridNode(control: Control3D, nodePosition: Vector3): void;
         private _sphericalMapping;
     }
@@ -3809,7 +4319,8 @@ declare module "babylonjs-gui/3D/controls/stackPanel3D" {
         /**
          * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
          */
-        isVertical: boolean;
+        get isVertical(): boolean;
+        set isVertical(value: boolean);
         /**
          * Gets or sets the distance between elements
          */
@@ -3883,11 +4394,11 @@ declare module BABYLON.GUI {
         /** defines a boolean indicating if the value can be negative */
         negativeValueAllowed?: boolean);
         /** Gets a boolean indicating if the value is a percentage */
-        readonly isPercentage: boolean;
+        get isPercentage(): boolean;
         /** Gets a boolean indicating if the value is store as pixel */
-        readonly isPixel: boolean;
+        get isPixel(): boolean;
         /** Gets direct internal value */
-        readonly internalValue: number;
+        get internalValue(): number;
         /**
          * Gets value as pixel
          * @param host defines the root host
@@ -3925,9 +4436,9 @@ declare module BABYLON.GUI {
         private static _UNITMODE_PERCENTAGE;
         private static _UNITMODE_PIXEL;
         /** UNITMODE_PERCENTAGE */
-        static readonly UNITMODE_PERCENTAGE: number;
+        static get UNITMODE_PERCENTAGE(): number;
         /** UNITMODE_PIXEL */
-        static readonly UNITMODE_PIXEL: number;
+        static get UNITMODE_PIXEL(): number;
     }
 }
 declare module BABYLON.GUI {
@@ -3955,17 +4466,21 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets the font size
          */
-        fontSize: string | number;
+        get fontSize(): string | number;
+        set fontSize(value: string | number);
         /**
          * Gets or sets the font family
          */
-        fontFamily: string;
+        get fontFamily(): string;
+        set fontFamily(value: string);
         /**
          * Gets or sets the font style
          */
-        fontStyle: string;
+        get fontStyle(): string;
+        set fontStyle(value: string);
         /** Gets or sets font weight */
-        fontWeight: string;
+        get fontWeight(): string;
+        set fontWeight(value: string);
         /** Dispose all associated resources */
         dispose(): void;
     }
@@ -4218,8 +4733,17 @@ declare module BABYLON.GUI {
         private _focusedControl;
         private _blockNextFocusCheck;
         private _renderScale;
-        private _rootCanvas;
+        private _rootElement;
         private _cursorChanged;
+        private _defaultMousePointerId;
+        /** @hidden */
+        _numLayoutCalls: number;
+        /** Gets the number of layout calls made the last time the ADT has been rendered */
+        get numLayoutCalls(): number;
+        /** @hidden */
+        _numRenderCalls: number;
+        /** Gets the number of render calls made the last time the ADT has been rendered */
+        get numRenderCalls(): number;
         /**
         * Define type to string to ensure compatibility across browsers
         * Safari doesn't support DataTransfer constructor
@@ -4257,39 +4781,50 @@ declare module BABYLON.GUI {
         * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
         * Useful when you want more antialiasing
         */
-        renderScale: number;
+        get renderScale(): number;
+        set renderScale(value: number);
         /** Gets or sets the background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /**
         * Gets or sets the ideal width used to design controls.
         * The GUI will then rescale everything accordingly
         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
-        idealWidth: number;
+        get idealWidth(): number;
+        set idealWidth(value: number);
         /**
         * Gets or sets the ideal height used to design controls.
         * The GUI will then rescale everything accordingly
         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
-        idealHeight: number;
+        get idealHeight(): number;
+        set idealHeight(value: number);
         /**
         * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
-        useSmallestIdeal: boolean;
+        get useSmallestIdeal(): boolean;
+        set useSmallestIdeal(value: boolean);
         /**
         * Gets or sets a boolean indicating if adaptive scaling must be used
         * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
         */
-        renderAtIdealSize: boolean;
+        get renderAtIdealSize(): boolean;
+        set renderAtIdealSize(value: boolean);
+        /**
+         * Gets the ratio used when in "ideal mode"
+        * @see http://doc.babylonjs.com/how_to/gui#adaptive-scaling
+         * */
+        get idealRatio(): number;
         /**
         * Gets the underlying layer used to render the texture when in fullscreen mode
         */
-        readonly layer: BABYLON.Nullable<BABYLON.Layer>;
+        get layer(): BABYLON.Nullable<BABYLON.Layer>;
         /**
         * Gets the root container control
         */
-        readonly rootContainer: Container;
+        get rootContainer(): Container;
         /**
         * Returns an array containing the root container.
         * This is mostly used to let the Inspector introspects the ADT
@@ -4306,15 +4841,18 @@ declare module BABYLON.GUI {
         /**
         * Gets or sets the current focused control
         */
-        focusedControl: BABYLON.Nullable<IFocusableControl>;
+        get focusedControl(): BABYLON.Nullable<IFocusableControl>;
+        set focusedControl(control: BABYLON.Nullable<IFocusableControl>);
         /**
         * Gets or sets a boolean indicating if the texture must be rendered in background or foreground when in fullscreen mode
         */
-        isForeground: boolean;
+        get isForeground(): boolean;
+        set isForeground(value: boolean);
         /**
         * Gets or set information about clipboardData
         */
-        clipboardData: string;
+        get clipboardData(): string;
+        set clipboardData(value: string);
         /**
        * Creates a new AdvancedDynamicTexture
        * @param name defines the name of the texture
@@ -4340,7 +4878,8 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets a boolean indicating if the InvalidateRect optimization should be turned on
          */
-        useInvalidateRectOptimization: boolean;
+        get useInvalidateRectOptimization(): boolean;
+        set useInvalidateRectOptimization(value: boolean);
         private _invalidatedRectangle;
         /**
          * Invalidates a rectangle area on the gui texture
@@ -4541,10 +5080,15 @@ declare module BABYLON.GUI {
         private _downPointerIds;
         protected _isEnabled: boolean;
         protected _disabledColor: string;
+        protected _disabledColorItem: string;
         /** @hidden */
         protected _rebuildLayout: boolean;
         /** @hidden */
+        _customData: any;
+        /** @hidden */
         _isClipped: boolean;
+        /** @hidden */
+        _automaticSize: boolean;
         /** @hidden */
         _tag: any;
         /**
@@ -4578,16 +5122,20 @@ declare module BABYLON.GUI {
         private _cacheData;
         private _shadowOffsetX;
         /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
-        shadowOffsetX: number;
+        get shadowOffsetX(): number;
+        set shadowOffsetX(value: number);
         private _shadowOffsetY;
         /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
-        shadowOffsetY: number;
+        get shadowOffsetY(): number;
+        set shadowOffsetY(value: number);
         private _shadowBlur;
         /** Gets or sets a value indicating the amount of blur to use to render the shadow */
-        shadowBlur: number;
+        get shadowBlur(): number;
+        set shadowBlur(value: number);
         private _shadowColor;
         /** Gets or sets a value indicating the color of the shadow (black by default ie. "#000") */
-        shadowColor: string;
+        get shadowColor(): string;
+        set shadowColor(value: string);
         /** Gets or sets the cursor to use when the control is hovered */
         hoverCursor: string;
         /** @hidden */
@@ -4595,12 +5143,16 @@ declare module BABYLON.GUI {
         /** @hidden */
         protected _linkOffsetY: ValueAndUnit;
         /** Gets the control type name */
-        readonly typeName: string;
+        get typeName(): string;
         /**
          * Get the current class name of the control.
          * @returns current class name
          */
         getClassName(): string;
+        /**
+        * An event triggered when pointer wheel is scrolled
+        */
+        onWheelObservable: BABYLON.Observable<BABYLON.Vector2>;
         /**
         * An event triggered when the pointer move over the control.
         */
@@ -4640,188 +5192,237 @@ declare module BABYLON.GUI {
         /**
          * Get the hosting AdvancedDynamicTexture
          */
-        readonly host: AdvancedDynamicTexture;
+        get host(): AdvancedDynamicTexture;
         /** Gets or set information about font offsets (used to render and align text) */
-        fontOffset: {
+        get fontOffset(): {
             ascent: number;
             height: number;
             descent: number;
         };
+        set fontOffset(offset: {
+            ascent: number;
+            height: number;
+            descent: number;
+        });
         /** Gets or sets alpha value for the control (1 means opaque and 0 means entirely transparent) */
-        alpha: number;
+        get alpha(): number;
+        set alpha(value: number);
         /**
          * Gets or sets a boolean indicating that we want to highlight the control (mostly for debugging purpose)
          */
-        isHighlighted: boolean;
+        get isHighlighted(): boolean;
+        set isHighlighted(value: boolean);
         /** Gets or sets a value indicating the scale factor on X axis (1 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        scaleX: number;
+        get scaleX(): number;
+        set scaleX(value: number);
         /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        scaleY: number;
+        get scaleY(): number;
+        set scaleY(value: number);
         /** Gets or sets the rotation angle (0 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        rotation: number;
+        get rotation(): number;
+        set rotation(value: number);
         /** Gets or sets the transformation center on Y axis (0 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        transformCenterY: number;
+        get transformCenterY(): number;
+        set transformCenterY(value: number);
         /** Gets or sets the transformation center on X axis (0 by default)
          * @see http://doc.babylonjs.com/how_to/gui#rotation-and-scaling
         */
-        transformCenterX: number;
+        get transformCenterX(): number;
+        set transformCenterX(value: number);
         /**
          * Gets or sets the horizontal alignment
          * @see http://doc.babylonjs.com/how_to/gui#alignments
          */
-        horizontalAlignment: number;
+        get horizontalAlignment(): number;
+        set horizontalAlignment(value: number);
         /**
          * Gets or sets the vertical alignment
          * @see http://doc.babylonjs.com/how_to/gui#alignments
          */
-        verticalAlignment: number;
+        get verticalAlignment(): number;
+        set verticalAlignment(value: number);
         /**
          * Gets or sets control width
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        width: string | number;
+        get width(): string | number;
+        set width(value: string | number);
         /**
          * Gets or sets the control width in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        widthInPixels: number;
+        get widthInPixels(): number;
+        set widthInPixels(value: number);
         /**
          * Gets or sets control height
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        height: string | number;
+        get height(): string | number;
+        set height(value: string | number);
         /**
          * Gets or sets control height in pixel
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        heightInPixels: number;
+        get heightInPixels(): number;
+        set heightInPixels(value: number);
         /** Gets or set font family */
-        fontFamily: string;
+        get fontFamily(): string;
+        set fontFamily(value: string);
         /** Gets or sets font style */
-        fontStyle: string;
+        get fontStyle(): string;
+        set fontStyle(value: string);
         /** Gets or sets font weight */
-        fontWeight: string;
+        get fontWeight(): string;
+        set fontWeight(value: string);
         /**
          * Gets or sets style
          * @see http://doc.babylonjs.com/how_to/gui#styles
          */
-        style: BABYLON.Nullable<Style>;
+        get style(): BABYLON.Nullable<Style>;
+        set style(value: BABYLON.Nullable<Style>);
         /** @hidden */
-        readonly _isFontSizeInPercentage: boolean;
+        get _isFontSizeInPercentage(): boolean;
         /** Gets or sets font size in pixels */
-        fontSizeInPixels: number;
+        get fontSizeInPixels(): number;
+        set fontSizeInPixels(value: number);
         /** Gets or sets font size */
-        fontSize: string | number;
+        get fontSize(): string | number;
+        set fontSize(value: string | number);
         /** Gets or sets foreground color */
-        color: string;
+        get color(): string;
+        set color(value: string);
         /** Gets or sets z index which is used to reorder controls on the z axis */
-        zIndex: number;
+        get zIndex(): number;
+        set zIndex(value: number);
         /** Gets or sets a boolean indicating if the control can be rendered */
-        notRenderable: boolean;
+        get notRenderable(): boolean;
+        set notRenderable(value: boolean);
         /** Gets or sets a boolean indicating if the control is visible */
-        isVisible: boolean;
+        get isVisible(): boolean;
+        set isVisible(value: boolean);
         /** Gets a boolean indicating that the control needs to update its rendering */
-        readonly isDirty: boolean;
+        get isDirty(): boolean;
         /**
          * Gets the current linked mesh (or null if none)
          */
-        readonly linkedMesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+        get linkedMesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingLeft: string | number;
+        get paddingLeft(): string | number;
+        set paddingLeft(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the left of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingLeftInPixels: number;
+        get paddingLeftInPixels(): number;
+        set paddingLeftInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingRight: string | number;
+        get paddingRight(): string | number;
+        set paddingRight(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the right of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingRightInPixels: number;
+        get paddingRightInPixels(): number;
+        set paddingRightInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingTop: string | number;
+        get paddingTop(): string | number;
+        set paddingTop(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the top of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingTopInPixels: number;
+        get paddingTopInPixels(): number;
+        set paddingTopInPixels(value: number);
         /**
          * Gets or sets a value indicating the padding to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingBottom: string | number;
+        get paddingBottom(): string | number;
+        set paddingBottom(value: string | number);
         /**
          * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        paddingBottomInPixels: number;
+        get paddingBottomInPixels(): number;
+        set paddingBottomInPixels(value: number);
         /**
          * Gets or sets a value indicating the left coordinate of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        left: string | number;
+        get left(): string | number;
+        set left(value: string | number);
         /**
          * Gets or sets a value indicating the left coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        leftInPixels: number;
+        get leftInPixels(): number;
+        set leftInPixels(value: number);
         /**
          * Gets or sets a value indicating the top coordinate of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        top: string | number;
+        get top(): string | number;
+        set top(value: string | number);
         /**
          * Gets or sets a value indicating the top coordinate in pixels of the control
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        topInPixels: number;
+        get topInPixels(): number;
+        set topInPixels(value: number);
         /**
          * Gets or sets a value indicating the offset on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkOffsetX: string | number;
+        get linkOffsetX(): string | number;
+        set linkOffsetX(value: string | number);
         /**
          * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkOffsetXInPixels: number;
+        get linkOffsetXInPixels(): number;
+        set linkOffsetXInPixels(value: number);
         /**
          * Gets or sets a value indicating the offset on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkOffsetY: string | number;
+        get linkOffsetY(): string | number;
+        set linkOffsetY(value: string | number);
         /**
          * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
          * @see http://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkOffsetYInPixels: number;
+        get linkOffsetYInPixels(): number;
+        set linkOffsetYInPixels(value: number);
         /** Gets the center coordinate on X axis */
-        readonly centerX: number;
+        get centerX(): number;
         /** Gets the center coordinate on Y axis */
-        readonly centerY: number;
+        get centerY(): number;
         /** Gets or sets if control is Enabled*/
-        isEnabled: boolean;
+        get isEnabled(): boolean;
+        set isEnabled(value: boolean);
         /** Gets or sets background color of control if it's disabled*/
-        disabledColor: string;
+        get disabledColor(): string;
+        set disabledColor(value: string);
+        /** Gets or sets front color of control if it's disabled*/
+        get disabledColorItem(): string;
+        set disabledColorItem(value: string);
         /**
          * Creates a new control
          * @param name defines the name of the control
@@ -4870,8 +5471,13 @@ declare module BABYLON.GUI {
          * @param scene defines the hosting scene
          */
         moveToVector3(position: BABYLON.Vector3, scene: BABYLON.Scene): void;
-        /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
+        /**
+         * Will store all controls that have this control as ascendant in a given array
+         * @param results defines the array where to store the descendants
+         * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+         * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+         */
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /**
          * Will return all controls that have this control as ascendant
          * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
@@ -4943,7 +5549,7 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         /** @hidden */
@@ -4957,7 +5563,9 @@ declare module BABYLON.GUI {
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean;
+        _onWheelScroll(deltaX?: number, deltaY?: number): void;
+        /** @hidden */
+        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -4968,17 +5576,17 @@ declare module BABYLON.GUI {
         private static _VERTICAL_ALIGNMENT_BOTTOM;
         private static _VERTICAL_ALIGNMENT_CENTER;
         /** HORIZONTAL_ALIGNMENT_LEFT */
-        static readonly HORIZONTAL_ALIGNMENT_LEFT: number;
+        static get HORIZONTAL_ALIGNMENT_LEFT(): number;
         /** HORIZONTAL_ALIGNMENT_RIGHT */
-        static readonly HORIZONTAL_ALIGNMENT_RIGHT: number;
+        static get HORIZONTAL_ALIGNMENT_RIGHT(): number;
         /** HORIZONTAL_ALIGNMENT_CENTER */
-        static readonly HORIZONTAL_ALIGNMENT_CENTER: number;
+        static get HORIZONTAL_ALIGNMENT_CENTER(): number;
         /** VERTICAL_ALIGNMENT_TOP */
-        static readonly VERTICAL_ALIGNMENT_TOP: number;
+        static get VERTICAL_ALIGNMENT_TOP(): number;
         /** VERTICAL_ALIGNMENT_BOTTOM */
-        static readonly VERTICAL_ALIGNMENT_BOTTOM: number;
+        static get VERTICAL_ALIGNMENT_BOTTOM(): number;
         /** VERTICAL_ALIGNMENT_CENTER */
-        static readonly VERTICAL_ALIGNMENT_CENTER: number;
+        static get VERTICAL_ALIGNMENT_CENTER(): number;
         private static _FontHeightSizes;
         /** @hidden */
         static _GetFontOffset(font: string): {
@@ -5012,7 +5620,7 @@ declare module BABYLON.GUI {
     export class Container extends Control {
         name?: string | undefined;
         /** @hidden */
-        protected _children: Control[];
+        _children: Control[];
         /** @hidden */
         protected _measureForChildren: Measure;
         /** @hidden */
@@ -5021,14 +5629,25 @@ declare module BABYLON.GUI {
         protected _adaptWidthToChildren: boolean;
         /** @hidden */
         protected _adaptHeightToChildren: boolean;
+        /**
+         * Gets or sets a boolean indicating that layout cycle errors should be displayed on the console
+         */
+        logLayoutCycleErrors: boolean;
+        /**
+         * Gets or sets the number of layout cycles (a change involved by a control while evaluating the layout) allowed
+         */
+        maxLayoutCycle: number;
         /** Gets or sets a boolean indicating if the container should try to adapt to its children height */
-        adaptHeightToChildren: boolean;
+        get adaptHeightToChildren(): boolean;
+        set adaptHeightToChildren(value: boolean);
         /** Gets or sets a boolean indicating if the container should try to adapt to its children width */
-        adaptWidthToChildren: boolean;
+        get adaptWidthToChildren(): boolean;
+        set adaptWidthToChildren(value: boolean);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets the list of children */
-        readonly children: Control[];
+        get children(): Control[];
         /**
          * Creates a new Container
          * @param name defines the name of the container
@@ -5093,10 +5712,9 @@ declare module BABYLON.GUI {
         protected _postMeasure(): void;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
+        getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _getDescendants(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
-        /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -5110,9 +5728,11 @@ declare module BABYLON.GUI {
         private _thickness;
         private _cornerRadius;
         /** Gets or sets border thickness */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /** Gets or sets the corner radius angle */
-        cornerRadius: number;
+        get cornerRadius(): number;
+        set cornerRadius(value: number);
         /**
          * Creates a new Rectangle
          * @param name defines the control name
@@ -5171,63 +5791,71 @@ declare module BABYLON.GUI {
         /**
          * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
          */
-        readonly lines: any[];
+        get lines(): any[];
         /**
          * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
          */
+        get resizeToFit(): boolean;
         /**
-        * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
-        */
-        resizeToFit: boolean;
+         * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+         */
+        set resizeToFit(value: boolean);
         /**
          * Gets or sets a boolean indicating if text must be wrapped
          */
+        get textWrapping(): TextWrapping | boolean;
         /**
-        * Gets or sets a boolean indicating if text must be wrapped
-        */
-        textWrapping: TextWrapping | boolean;
+         * Gets or sets a boolean indicating if text must be wrapped
+         */
+        set textWrapping(value: TextWrapping | boolean);
         /**
          * Gets or sets text to display
          */
+        get text(): string;
         /**
-        * Gets or sets text to display
-        */
-        text: string;
+         * Gets or sets text to display
+         */
+        set text(value: string);
         /**
          * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
          */
+        get textHorizontalAlignment(): number;
         /**
-        * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
-        */
-        textHorizontalAlignment: number;
+         * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+         */
+        set textHorizontalAlignment(value: number);
         /**
          * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
          */
+        get textVerticalAlignment(): number;
         /**
-        * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
-        */
-        textVerticalAlignment: number;
+         * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+         */
+        set textVerticalAlignment(value: number);
         /**
          * Gets or sets line spacing value
          */
+        set lineSpacing(value: string | number);
         /**
-        * Gets or sets line spacing value
-        */
-        lineSpacing: string | number;
+         * Gets or sets line spacing value
+         */
+        get lineSpacing(): string | number;
         /**
          * Gets or sets outlineWidth of the text to display
          */
+        get outlineWidth(): number;
         /**
-        * Gets or sets outlineWidth of the text to display
-        */
-        outlineWidth: number;
+         * Gets or sets outlineWidth of the text to display
+         */
+        set outlineWidth(value: number);
         /**
          * Gets or sets outlineColor of the text to display
          */
+        get outlineColor(): string;
         /**
-        * Gets or sets outlineColor of the text to display
-        */
-        outlineColor: string;
+         * Gets or sets outlineColor of the text to display
+         */
+        set outlineColor(value: string);
         /**
          * Creates a new TextBlock object
          * @param name defines the name of the control
@@ -5242,7 +5870,7 @@ declare module BABYLON.GUI {
         protected _processMeasures(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _drawText;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _breakLines(refWidth: number, context: CanvasRenderingContext2D): object[];
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
@@ -5263,7 +5891,7 @@ declare module BABYLON.GUI {
      */
     export class Image extends Control {
         name?: string | undefined;
-        private static _WorkingCanvas;
+        private _workingCanvas;
         private _domImage;
         private _imageWidth;
         private _imageHeight;
@@ -5275,6 +5903,8 @@ declare module BABYLON.GUI {
         private _sourceTop;
         private _sourceWidth;
         private _sourceHeight;
+        private _svgAttributesComputationCompleted;
+        private _isSVG;
         private _cellWidth;
         private _cellHeight;
         private _cellId;
@@ -5289,82 +5919,119 @@ declare module BABYLON.GUI {
          */
         onImageLoadedObservable: BABYLON.Observable<Image>;
         /**
+         * BABYLON.Observable notified when _sourceLeft, _sourceTop, _sourceWidth and _sourceHeight are computed
+         */
+        onSVGAttributesComputedObservable: BABYLON.Observable<Image>;
+        /**
          * Gets a boolean indicating that the content is loaded
          */
-        readonly isLoaded: boolean;
+        get isLoaded(): boolean;
         /**
          * Gets or sets a boolean indicating if nine patch slices (left, top, right, bottom) should be read from image data
          */
-        populateNinePatchSlicesFromImage: boolean;
+        get populateNinePatchSlicesFromImage(): boolean;
+        set populateNinePatchSlicesFromImage(value: boolean);
         /**
          * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
          * Beware using this as this will comsume more memory as the image has to be stored twice
          */
-        detectPointerOnOpaqueOnly: boolean;
+        get detectPointerOnOpaqueOnly(): boolean;
+        set detectPointerOnOpaqueOnly(value: boolean);
         /**
          * Gets or sets the left value for slicing (9-patch)
          */
-        sliceLeft: number;
+        get sliceLeft(): number;
+        set sliceLeft(value: number);
         /**
          * Gets or sets the right value for slicing (9-patch)
          */
-        sliceRight: number;
+        get sliceRight(): number;
+        set sliceRight(value: number);
         /**
          * Gets or sets the top value for slicing (9-patch)
          */
-        sliceTop: number;
+        get sliceTop(): number;
+        set sliceTop(value: number);
         /**
          * Gets or sets the bottom value for slicing (9-patch)
          */
-        sliceBottom: number;
+        get sliceBottom(): number;
+        set sliceBottom(value: number);
         /**
          * Gets or sets the left coordinate in the source image
          */
-        sourceLeft: number;
+        get sourceLeft(): number;
+        set sourceLeft(value: number);
         /**
          * Gets or sets the top coordinate in the source image
          */
-        sourceTop: number;
+        get sourceTop(): number;
+        set sourceTop(value: number);
         /**
          * Gets or sets the width to capture in the source image
          */
-        sourceWidth: number;
+        get sourceWidth(): number;
+        set sourceWidth(value: number);
         /**
          * Gets or sets the height to capture in the source image
          */
-        sourceHeight: number;
+        get sourceHeight(): number;
+        set sourceHeight(value: number);
+        /** Indicates if the format of the image is SVG */
+        get isSVG(): boolean;
+        /** Gets the status of the SVG attributes computation (sourceLeft, sourceTop, sourceWidth, sourceHeight) */
+        get svgAttributesComputationCompleted(): boolean;
         /**
          * Gets or sets a boolean indicating if the image can force its container to adapt its size
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
-        autoScale: boolean;
+        get autoScale(): boolean;
+        set autoScale(value: boolean);
         /** Gets or sets the streching mode used by the image */
-        stretch: number;
+        get stretch(): number;
+        set stretch(value: number);
+        /** @hidden */
+        _rotate90(n: number, preserveProperties?: boolean): Image;
+        private _handleRotationForSVGImage;
+        private _rotate90SourceProperties;
         /**
          * Gets or sets the internal DOM image used to render the control
          */
-        domImage: HTMLImageElement;
+        set domImage(value: HTMLImageElement);
+        get domImage(): HTMLImageElement;
         private _onImageLoaded;
         private _extractNinePatchSliceDataFromImage;
         /**
          * Gets or sets image source url
          */
-        source: BABYLON.Nullable<string>;
+        set source(value: BABYLON.Nullable<string>);
+        /**
+         * Checks for svg document with icon id present
+         */
+        private _svgCheck;
+        /**
+         * Sets sourceLeft, sourceTop, sourceWidth, sourceHeight automatically
+         * given external svg file and icon id
+         */
+        private _getSVGAttribs;
         /**
          * Gets or sets the cell width to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
-        cellWidth: number;
+        get cellWidth(): number;
+        set cellWidth(value: number);
         /**
          * Gets or sets the cell height to use when animation sheet is enabled
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
-        cellHeight: number;
+        get cellHeight(): number;
+        set cellHeight(value: number);
         /**
          * Gets or sets the cell id to use (this will turn on the animation sheet mode)
          * @see http://doc.babylonjs.com/how_to/gui#image
          */
-        cellId: number;
+        get cellId(): number;
+        set cellId(value: number);
         /**
          * Creates a new Image
          * @param name defines the control name
@@ -5422,16 +6089,20 @@ declare module BABYLON.GUI {
          * Function called to generate a pointer up animation
          */
         pointerUpAnimation: () => void;
+        /**
+         * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+         */
+        delegatePickingToChildren: boolean;
         private _image;
         /**
          * Returns the image part of the button (if any)
          */
-        readonly image: BABYLON.Nullable<Image>;
+        get image(): BABYLON.Nullable<Image>;
         private _textBlock;
         /**
          * Returns the image part of the button (if any)
          */
-        readonly textBlock: BABYLON.Nullable<TextBlock>;
+        get textBlock(): BABYLON.Nullable<TextBlock>;
         /**
          * Creates a new Button
          * @param name defines the name of the button
@@ -5439,7 +6110,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): boolean;
+        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         _onPointerEnter(target: Control): boolean;
         /** @hidden */
@@ -5490,18 +6161,25 @@ declare module BABYLON.GUI {
         private _manualWidth;
         private _manualHeight;
         private _doNotTrackManualChanges;
+        /**
+         * Gets or sets a boolean indicating that layou warnings should be ignored
+         */
+        ignoreLayoutWarnings: boolean;
         /** Gets or sets a boolean indicating if the stack panel is vertical or horizontal*/
-        isVertical: boolean;
+        get isVertical(): boolean;
+        set isVertical(value: boolean);
         /**
          * Gets or sets panel width.
          * This value should not be set when in horizontal mode as it will be computed automatically
          */
-        width: string | number;
+        set width(value: string | number);
+        get width(): string | number;
         /**
          * Gets or sets panel height.
          * This value should not be set when in vertical mode as it will be computed automatically
          */
-        height: string | number;
+        set height(value: string | number);
+        get height(): string | number;
         /**
          * Creates a new StackPanel
          * @param name defines control name
@@ -5525,17 +6203,21 @@ declare module BABYLON.GUI {
         private _checkSizeRatio;
         private _thickness;
         /** Gets or sets border thickness  */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /**
          * BABYLON.Observable raised when isChecked property changes
          */
         onIsCheckedChangedObservable: BABYLON.Observable<boolean>;
         /** Gets or sets a value indicating the ratio between overall size and check size */
-        checkSizeRatio: number;
+        get checkSizeRatio(): number;
+        set checkSizeRatio(value: number);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets a boolean indicating if the checkbox is checked or not */
-        isChecked: boolean;
+        get isChecked(): boolean;
+        set isChecked(value: boolean);
         /**
          * Creates a new CheckBox
          * @param name defines the control name
@@ -5543,7 +6225,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         /**
@@ -5622,7 +6304,7 @@ declare module BABYLON.GUI {
         private _connectedInputTexts;
         private _onKeyPressObserver;
         /** Gets the input text control currently attached to the keyboard */
-        readonly connectedInputText: BABYLON.Nullable<InputText>;
+        get connectedInputText(): BABYLON.Nullable<InputText>;
         /**
          * Connects the keyboard with an input text control
          *
@@ -5690,6 +6372,8 @@ declare module BABYLON.GUI {
         _connectedVirtualKeyboard: BABYLON.Nullable<VirtualKeyboard>;
         /** Gets or sets a string representing the message displayed on mobile when the control gets the focus */
         promptMessage: string;
+        /** Force disable prompt on mobile device */
+        disableMobilePrompt: boolean;
         /** BABYLON.Observable raised when the text changes */
         onTextChangedObservable: BABYLON.Observable<InputText>;
         /** BABYLON.Observable raised just before an entered character is to be added */
@@ -5709,45 +6393,63 @@ declare module BABYLON.GUI {
         /** BABYLON.Observable raised when a key event was processed */
         onKeyboardEventProcessedObservable: BABYLON.Observable<KeyboardEvent>;
         /** Gets or sets the maximum width allowed by the control */
-        maxWidth: string | number;
+        get maxWidth(): string | number;
         /** Gets the maximum width allowed by the control in pixels */
-        readonly maxWidthInPixels: number;
+        get maxWidthInPixels(): number;
+        set maxWidth(value: string | number);
         /** Gets or sets the text highlighter transparency; default: 0.4 */
-        highligherOpacity: number;
+        get highligherOpacity(): number;
+        set highligherOpacity(value: number);
         /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
-        onFocusSelectAll: boolean;
+        get onFocusSelectAll(): boolean;
+        set onFocusSelectAll(value: boolean);
         /** Gets or sets the text hightlight color */
-        textHighlightColor: string;
+        get textHighlightColor(): string;
+        set textHighlightColor(value: string);
         /** Gets or sets control margin */
-        margin: string;
+        get margin(): string;
         /** Gets control margin in pixels */
-        readonly marginInPixels: number;
+        get marginInPixels(): number;
+        set margin(value: string);
         /** Gets or sets a boolean indicating if the control can auto stretch its width to adapt to the text */
-        autoStretchWidth: boolean;
+        get autoStretchWidth(): boolean;
+        set autoStretchWidth(value: boolean);
         /** Gets or sets border thickness */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /** Gets or sets the background color when focused */
-        focusedBackground: string;
+        get focusedBackground(): string;
+        set focusedBackground(value: string);
         /** Gets or sets the background color when focused */
-        focusedColor: string;
+        get focusedColor(): string;
+        set focusedColor(value: string);
         /** Gets or sets the background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets the placeholder color */
-        placeholderColor: string;
+        get placeholderColor(): string;
+        set placeholderColor(value: string);
         /** Gets or sets the text displayed when the control is empty */
-        placeholderText: string;
+        get placeholderText(): string;
+        set placeholderText(value: string);
         /** Gets or sets the dead key flag */
-        deadKey: boolean;
+        get deadKey(): boolean;
+        set deadKey(flag: boolean);
         /** Gets or sets the highlight text */
-        highlightedText: string;
+        get highlightedText(): string;
+        set highlightedText(text: string);
         /** Gets or sets if the current key should be added */
-        addKey: boolean;
+        get addKey(): boolean;
+        set addKey(flag: boolean);
         /** Gets or sets the value of the current key being entered */
-        currentKey: string;
+        get currentKey(): string;
+        set currentKey(key: string);
         /** Gets or sets the text displayed in the control */
-        text: string;
+        get text(): string;
+        set text(value: string);
         /** Gets or sets control width */
-        width: string | number;
+        get width(): string | number;
+        set width(value: string | number);
         /**
          * Creates a new InputText
          * @param name defines the control name
@@ -5783,7 +6485,7 @@ declare module BABYLON.GUI {
         private _onCutText;
         /** @hidden */
         private _onPasteText;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
@@ -5804,15 +6506,15 @@ declare module BABYLON.GUI {
         /**
          * Gets the number of columns
          */
-        readonly columnCount: number;
+        get columnCount(): number;
         /**
          * Gets the number of rows
          */
-        readonly rowCount: number;
+        get rowCount(): number;
         /** Gets the list of children */
-        readonly children: Control[];
+        get children(): Control[];
         /** Gets the list of cells (e.g. the containers) */
-        readonly cells: {
+        get cells(): {
             [key: string]: Container;
         };
         /**
@@ -5934,20 +6636,24 @@ declare module BABYLON.GUI {
          */
         onValueChangedObservable: BABYLON.Observable<BABYLON.Color3>;
         /** Gets or sets the color of the color picker */
-        value: BABYLON.Color3;
+        get value(): BABYLON.Color3;
+        set value(value: BABYLON.Color3);
         /**
          * Gets or sets control width
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
-        width: string | number;
+        get width(): string | number;
+        set width(value: string | number);
         /**
          * Gets or sets control height
          * @see http://doc.babylonjs.com/how_to/gui#position-and-size
          */
+        get height(): string | number;
         /** Gets or sets control height */
-        height: string | number;
+        set height(value: string | number);
         /** Gets or sets control size */
-        size: string | number;
+        get size(): string | number;
+        set size(value: string | number);
         /**
          * Creates a new ColorPicker
          * @param name defines the control name
@@ -5960,8 +6666,6 @@ declare module BABYLON.GUI {
         private _drawGradientSquare;
         private _drawCircle;
         private _createColorWheelCanvas;
-        private _RGBtoHSV;
-        private _HSVtoRGB;
         /** @hidden */
         _draw(context: CanvasRenderingContext2D): void;
         private _pointerIsDown;
@@ -5999,7 +6703,8 @@ declare module BABYLON.GUI {
         name?: string | undefined;
         private _thickness;
         /** Gets or sets border thickness */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /**
          * Creates a new Ellipse
          * @param name defines the control name
@@ -6032,25 +6737,32 @@ declare module BABYLON.GUI {
         private _connectedControl;
         private _connectedControlDirtyObserver;
         /** Gets or sets the dash pattern */
-        dash: Array<number>;
+        get dash(): Array<number>;
+        set dash(value: Array<number>);
         /** Gets or sets the control connected with the line end */
-        connectedControl: Control;
+        get connectedControl(): Control;
+        set connectedControl(value: Control);
         /** Gets or sets start coordinates on X axis */
-        x1: string | number;
+        get x1(): string | number;
+        set x1(value: string | number);
         /** Gets or sets start coordinates on Y axis */
-        y1: string | number;
+        get y1(): string | number;
+        set y1(value: string | number);
         /** Gets or sets end coordinates on X axis */
-        x2: string | number;
+        get x2(): string | number;
+        set x2(value: string | number);
         /** Gets or sets end coordinates on Y axis */
-        y2: string | number;
+        get y2(): string | number;
+        set y2(value: string | number);
         /** Gets or sets line width */
-        lineWidth: number;
+        get lineWidth(): number;
+        set lineWidth(value: number);
         /** Gets or sets horizontal alignment */
-        horizontalAlignment: number;
+        set horizontalAlignment(value: number);
         /** Gets or sets vertical alignment */
-        verticalAlignment: number;
-        private readonly _effectiveX2;
-        private readonly _effectiveY2;
+        set verticalAlignment(value: number);
+        private get _effectiveX2();
+        private get _effectiveY2();
         /**
          * Creates a new Line
          * @param name defines the control name
@@ -6096,13 +6808,17 @@ declare module BABYLON.GUI {
          */
         constructor(multiLine: MultiLine);
         /** Gets or sets x coordinate */
-        x: string | number;
+        get x(): string | number;
+        set x(value: string | number);
         /** Gets or sets y coordinate */
-        y: string | number;
+        get y(): string | number;
+        set y(value: string | number);
         /** Gets or sets the control associated with this point */
-        control: BABYLON.Nullable<Control>;
+        get control(): BABYLON.Nullable<Control>;
+        set control(value: BABYLON.Nullable<Control>);
         /** Gets or sets the mesh associated with this point */
-        mesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        set mesh(value: BABYLON.Nullable<BABYLON.AbstractMesh>);
         /** Resets links */
         resetLinks(): void;
         /**
@@ -6134,7 +6850,8 @@ declare module BABYLON.GUI {
          */
         constructor(name?: string | undefined);
         /** Gets or sets dash pattern */
-        dash: Array<number>;
+        get dash(): Array<number>;
+        set dash(value: Array<number>);
         /**
          * Gets point stored at specified index
          * @param index defines the index to look for
@@ -6175,11 +6892,12 @@ declare module BABYLON.GUI {
          */
         resetLinks(): void;
         /** Gets or sets line width */
-        lineWidth: number;
-        horizontalAlignment: number;
-        verticalAlignment: number;
+        get lineWidth(): number;
+        set lineWidth(value: number);
+        set horizontalAlignment(value: number);
+        set verticalAlignment(value: number);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _measure(): void;
         protected _computeAlignment(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -6197,17 +6915,21 @@ declare module BABYLON.GUI {
         private _checkSizeRatio;
         private _thickness;
         /** Gets or sets border thickness */
-        thickness: number;
+        get thickness(): number;
+        set thickness(value: number);
         /** Gets or sets group name */
         group: string;
         /** BABYLON.Observable raised when isChecked is changed */
         onIsCheckedChangedObservable: BABYLON.Observable<boolean>;
         /** Gets or sets a value indicating the ratio between overall size and check size */
-        checkSizeRatio: number;
+        get checkSizeRatio(): number;
+        set checkSizeRatio(value: number);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets a boolean indicating if the checkbox is checked or not */
-        isChecked: boolean;
+        get isChecked(): boolean;
+        set isChecked(value: boolean);
         /**
          * Creates a new RadioButton
          * @param name defines the control name
@@ -6254,27 +6976,36 @@ declare module BABYLON.GUI {
         /** BABYLON.Observable raised when the sldier value changes */
         onValueChangedObservable: BABYLON.Observable<number>;
         /** Gets or sets a boolean indicating if the thumb must be rendered */
-        displayThumb: boolean;
+        get displayThumb(): boolean;
+        set displayThumb(value: boolean);
         /** Gets or sets a step to apply to values (0 by default) */
-        step: number;
+        get step(): number;
+        set step(value: number);
         /** Gets or sets main bar offset (ie. the margin applied to the value bar) */
-        barOffset: string | number;
+        get barOffset(): string | number;
         /** Gets main bar offset in pixels*/
-        readonly barOffsetInPixels: number;
+        get barOffsetInPixels(): number;
+        set barOffset(value: string | number);
         /** Gets or sets thumb width */
-        thumbWidth: string | number;
+        get thumbWidth(): string | number;
         /** Gets thumb width in pixels */
-        readonly thumbWidthInPixels: number;
+        get thumbWidthInPixels(): number;
+        set thumbWidth(value: string | number);
         /** Gets or sets minimum value */
-        minimum: number;
+        get minimum(): number;
+        set minimum(value: number);
         /** Gets or sets maximum value */
-        maximum: number;
+        get maximum(): number;
+        set maximum(value: number);
         /** Gets or sets current value */
-        value: number;
+        get value(): number;
+        set value(value: number);
         /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
-        isVertical: boolean;
+        get isVertical(): boolean;
+        set isVertical(value: boolean);
         /** Gets or sets a value indicating if the thumb can go over main bar extends */
-        isThumbClamped: boolean;
+        get isThumbClamped(): boolean;
+        set isThumbClamped(value: boolean);
         /**
          * Creates a new BaseSlider
          * @param name defines the control name
@@ -6303,20 +7034,24 @@ declare module BABYLON.GUI {
         private _isThumbCircle;
         protected _displayValueBar: boolean;
         /** Gets or sets a boolean indicating if the value bar must be rendered */
-        displayValueBar: boolean;
+        get displayValueBar(): boolean;
+        set displayValueBar(value: boolean);
         /** Gets or sets border color */
-        borderColor: string;
+        get borderColor(): string;
+        set borderColor(value: string);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets a boolean indicating if the thumb should be round or square */
-        isThumbCircle: boolean;
+        get isThumbCircle(): boolean;
+        set isThumbCircle(value: boolean);
         /**
          * Creates a new Slider
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -6337,11 +7072,12 @@ declare module BABYLON.GUI {
         /** name of SelectorGroup */
         name: string);
         /** Gets the groupPanel of the SelectorGroup  */
-        readonly groupPanel: StackPanel;
+        get groupPanel(): StackPanel;
         /** Gets the selectors array */
-        readonly selectors: StackPanel[];
+        get selectors(): StackPanel[];
         /** Gets and sets the group header */
-        header: string;
+        get header(): string;
+        set header(label: string);
         /** @hidden */
         private _addGroupHeader;
         /** @hidden*/
@@ -6444,25 +7180,32 @@ declare module BABYLON.GUI {
         groups?: SelectorGroup[]);
         protected _getTypeName(): string;
         /** Gets or sets the headerColor */
-        headerColor: string;
+        get headerColor(): string;
+        set headerColor(color: string);
         private _setHeaderColor;
         /** Gets or sets the button color */
-        buttonColor: string;
+        get buttonColor(): string;
+        set buttonColor(color: string);
         private _setbuttonColor;
         /** Gets or sets the label color */
-        labelColor: string;
+        get labelColor(): string;
+        set labelColor(color: string);
         private _setLabelColor;
         /** Gets or sets the button background */
-        buttonBackground: string;
+        get buttonBackground(): string;
+        set buttonBackground(color: string);
         private _setButtonBackground;
         /** Gets or sets the color of separator bar */
-        barColor: string;
+        get barColor(): string;
+        set barColor(color: string);
         private _setBarColor;
         /** Gets or sets the height of separator bar */
-        barHeight: string;
+        get barHeight(): string;
+        set barHeight(value: string);
         private _setBarHeight;
         /** Gets or sets the height of spacers*/
-        spacerHeight: string;
+        get spacerHeight(): string;
+        set spacerHeight(value: string);
         private _setSpacerHeight;
         /** Adds a bar between groups */
         private _addSpacer;
@@ -6526,6 +7269,24 @@ declare module BABYLON.GUI {
     export class _ScrollViewerWindow extends Container {
         parentClientWidth: number;
         parentClientHeight: number;
+        private _freezeControls;
+        private _parentMeasure;
+        private _oldLeft;
+        private _oldTop;
+        get freezeControls(): boolean;
+        set freezeControls(value: boolean);
+        private _bucketWidth;
+        private _bucketHeight;
+        private _buckets;
+        private _bucketLen;
+        get bucketWidth(): number;
+        get bucketHeight(): number;
+        setBucketSizes(width: number, height: number): void;
+        private _useBuckets;
+        private _makeBuckets;
+        private _dispatchInBuckets;
+        private _updateMeasures;
+        private _updateChildrenMeasures;
         /**
         * Creates a new ScrollViewerWindow
         * @param name of ScrollViewerWindow
@@ -6534,6 +7295,12 @@ declare module BABYLON.GUI {
         protected _getTypeName(): string;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        /** @hidden */
+        _layout(parentMeasure: Measure, context: CanvasRenderingContext2D): boolean;
+        private _scrollChildren;
+        private _scrollChildrenWithBuckets;
+        /** @hidden */
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         protected _postMeasure(): void;
     }
 }
@@ -6545,13 +7312,72 @@ declare module BABYLON.GUI {
         name?: string | undefined;
         private _background;
         private _borderColor;
-        private _thumbMeasure;
+        private _tempMeasure;
         /** Gets or sets border color */
-        borderColor: string;
+        get borderColor(): string;
+        set borderColor(value: string);
         /** Gets or sets background color */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /**
          * Creates a new Slider
+         * @param name defines the control name
+         */
+        constructor(name?: string | undefined);
+        protected _getTypeName(): string;
+        protected _getThumbThickness(): number;
+        _draw(context: CanvasRenderingContext2D): void;
+        private _first;
+        private _originX;
+        private _originY;
+        /** @hidden */
+        protected _updateValueFromPointer(x: number, y: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+    }
+}
+declare module BABYLON.GUI {
+    /**
+     * Class used to create slider controls
+     */
+    export class ImageScrollBar extends BaseSlider {
+        name?: string | undefined;
+        private _backgroundBaseImage;
+        private _backgroundImage;
+        private _thumbImage;
+        private _thumbBaseImage;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
+        private _tempMeasure;
+        /** Number of 90° rotation to apply on the images when in vertical mode */
+        num90RotationInVerticalMode: number;
+        /**
+         * Gets or sets the image used to render the background for horizontal bar
+         */
+        get backgroundImage(): Image;
+        set backgroundImage(value: Image);
+        /**
+         * Gets or sets the image used to render the thumb
+         */
+        get thumbImage(): Image;
+        set thumbImage(value: Image);
+        /**
+         * Gets or sets the length of the thumb
+         */
+        get thumbLength(): number;
+        set thumbLength(value: number);
+        /**
+         * Gets or sets the height of the thumb
+         */
+        get thumbHeight(): number;
+        set thumbHeight(value: number);
+        /**
+         * Gets or sets the height of the bar image
+         */
+        get barImageHeight(): number;
+        set barImageHeight(value: number);
+        /**
+         * Creates a new ImageScrollBar
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
@@ -6579,23 +7405,33 @@ declare module BABYLON.GUI {
         private _verticalBar;
         private _barColor;
         private _barBackground;
+        private _barImage;
+        private _horizontalBarImage;
+        private _verticalBarImage;
+        private _barBackgroundImage;
+        private _horizontalBarBackgroundImage;
+        private _verticalBarBackgroundImage;
         private _barSize;
-        private _endLeft;
-        private _endTop;
         private _window;
         private _pointerIsOver;
         private _wheelPrecision;
-        private _onPointerObserver;
+        private _onWheelObserver;
         private _clientWidth;
         private _clientHeight;
+        private _useImageBar;
+        private _thumbLength;
+        private _thumbHeight;
+        private _barImageHeight;
+        private _horizontalBarImageHeight;
+        private _verticalBarImageHeight;
         /**
          * Gets the horizontal scrollbar
          */
-        readonly horizontalBar: ScrollBar;
+        get horizontalBar(): ScrollBar | ImageScrollBar;
         /**
          * Gets the vertical scrollbar
          */
-        readonly verticalBar: ScrollBar;
+        get verticalBar(): ScrollBar | ImageScrollBar;
         /**
          * Adds a new control to the current container
          * @param control defines the control to add
@@ -6609,13 +7445,48 @@ declare module BABYLON.GUI {
          */
         removeControl(control: Control): Container;
         /** Gets the list of children */
-        readonly children: Control[];
+        get children(): Control[];
         _flagDescendantsAsMatrixDirty(): void;
+        /**
+         * Freezes or unfreezes the controls in the window.
+         * When controls are frozen, the scroll viewer can render a lot more quickly but updates to positions/sizes of controls
+         * are not taken into account. If you want to change positions/sizes, unfreeze, perform the changes then freeze again
+         */
+        get freezeControls(): boolean;
+        set freezeControls(value: boolean);
+        /** Gets the bucket width */
+        get bucketWidth(): number;
+        /** Gets the bucket height */
+        get bucketHeight(): number;
+        /**
+         * Sets the bucket sizes.
+         * When freezeControls is true, setting a non-zero bucket size will improve performances by updating only
+         * controls that are visible. The bucket sizes is used to subdivide (internally) the window area to smaller areas into which
+         * controls are dispatched. So, the size should be roughly equals to the mean size of all the controls of
+         * the window. To disable the usage of buckets, sets either width or height (or both) to 0.
+         * Please note that using this option will raise the memory usage (the higher the bucket sizes, the less memory
+         * used), that's why it is not enabled by default.
+         * @param width width of the bucket
+         * @param height height of the bucket
+         */
+        setBucketSizes(width: number, height: number): void;
+        private _forceHorizontalBar;
+        private _forceVerticalBar;
+        /**
+         * Forces the horizontal scroll bar to be displayed
+         */
+        get forceHorizontalBar(): boolean;
+        set forceHorizontalBar(value: boolean);
+        /**
+         * Forces the vertical scroll bar to be displayed
+         */
+        get forceVerticalBar(): boolean;
+        set forceVerticalBar(value: boolean);
         /**
         * Creates a new ScrollViewer
         * @param name of ScrollViewer
         */
-        constructor(name?: string);
+        constructor(name?: string, isImageBased?: boolean);
         /** Reset the scroll viewer window to initial size */
         resetWindow(): void;
         protected _getTypeName(): string;
@@ -6626,16 +7497,59 @@ declare module BABYLON.GUI {
          * Gets or sets the mouse wheel precision
          * from 0 to 1 with a default value of 0.05
          * */
-        wheelPrecision: number;
+        get wheelPrecision(): number;
+        set wheelPrecision(value: number);
+        /** Gets or sets the scroll bar container background color */
+        get scrollBackground(): string;
+        set scrollBackground(color: string);
         /** Gets or sets the bar color */
-        barColor: string;
+        get barColor(): string;
+        set barColor(color: string);
+        /** Gets or sets the bar image */
+        get thumbImage(): Image;
+        set thumbImage(value: Image);
+        /** Gets or sets the horizontal bar image */
+        get horizontalThumbImage(): Image;
+        set horizontalThumbImage(value: Image);
+        /** Gets or sets the vertical bar image */
+        get verticalThumbImage(): Image;
+        set verticalThumbImage(value: Image);
         /** Gets or sets the size of the bar */
-        barSize: number;
+        get barSize(): number;
+        set barSize(value: number);
+        /** Gets or sets the length of the thumb */
+        get thumbLength(): number;
+        set thumbLength(value: number);
+        /** Gets or sets the height of the thumb */
+        get thumbHeight(): number;
+        set thumbHeight(value: number);
+        /** Gets or sets the height of the bar image */
+        get barImageHeight(): number;
+        set barImageHeight(value: number);
+        /** Gets or sets the height of the horizontal bar image */
+        get horizontalBarImageHeight(): number;
+        set horizontalBarImageHeight(value: number);
+        /** Gets or sets the height of the vertical bar image */
+        get verticalBarImageHeight(): number;
+        set verticalBarImageHeight(value: number);
         /** Gets or sets the bar background */
-        barBackground: string;
+        get barBackground(): string;
+        set barBackground(color: string);
+        /** Gets or sets the bar background image */
+        get barImage(): Image;
+        set barImage(value: Image);
+        /** Gets or sets the horizontal bar background image */
+        get horizontalBarImage(): Image;
+        set horizontalBarImage(value: Image);
+        /** Gets or sets the vertical bar background image */
+        get verticalBarImage(): Image;
+        set verticalBarImage(value: Image);
+        private _setWindowPosition;
         /** @hidden */
         private _updateScroller;
         _link(host: AdvancedDynamicTexture): void;
+        /** @hidden */
+        private _addBar;
         /** @hidden */
         private _attachWheel;
         _renderHighlightSpecific(context: CanvasRenderingContext2D): void;
@@ -6658,31 +7572,41 @@ declare module BABYLON.GUI {
         private _displayMajorLines;
         private _displayMinorLines;
         /** Gets or sets a boolean indicating if minor lines must be rendered (true by default)) */
-        displayMinorLines: boolean;
+        get displayMinorLines(): boolean;
+        set displayMinorLines(value: boolean);
         /** Gets or sets a boolean indicating if major lines must be rendered (true by default)) */
-        displayMajorLines: boolean;
+        get displayMajorLines(): boolean;
+        set displayMajorLines(value: boolean);
         /** Gets or sets background color (Black by default) */
-        background: string;
+        get background(): string;
+        set background(value: string);
         /** Gets or sets the width of each cell (20 by default) */
-        cellWidth: number;
+        get cellWidth(): number;
+        set cellWidth(value: number);
         /** Gets or sets the height of each cell (20 by default) */
-        cellHeight: number;
+        get cellHeight(): number;
+        set cellHeight(value: number);
         /** Gets or sets the tickness of minor lines (1 by default) */
-        minorLineTickness: number;
+        get minorLineTickness(): number;
+        set minorLineTickness(value: number);
         /** Gets or sets the color of minor lines (DarkGray by default) */
-        minorLineColor: string;
+        get minorLineColor(): string;
+        set minorLineColor(value: string);
         /** Gets or sets the tickness of major lines (2 by default) */
-        majorLineTickness: number;
+        get majorLineTickness(): number;
+        set majorLineTickness(value: number);
         /** Gets or sets the color of major lines (White by default) */
-        majorLineColor: string;
+        get majorLineColor(): string;
+        set majorLineColor(value: string);
         /** Gets or sets the frequency of major lines (default is 1 every 5 minor lines)*/
-        majorLineFrequency: number;
+        get majorLineFrequency(): number;
+        set majorLineFrequency(value: number);
         /**
          * Creates a new GridDisplayRectangle
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         protected _getTypeName(): string;
     }
 }
@@ -6696,26 +7620,30 @@ declare module BABYLON.GUI {
         private _thumbImage;
         private _valueBarImage;
         private _tempMeasure;
-        displayThumb: boolean;
+        get displayThumb(): boolean;
+        set displayThumb(value: boolean);
         /**
          * Gets or sets the image used to render the background
          */
-        backgroundImage: Image;
+        get backgroundImage(): Image;
+        set backgroundImage(value: Image);
         /**
          * Gets or sets the image used to render the value bar
          */
-        valueBarImage: Image;
+        get valueBarImage(): Image;
+        set valueBarImage(value: Image);
         /**
          * Gets or sets the image used to render the thumb
          */
-        thumbImage: Image;
+        get thumbImage(): Image;
+        set thumbImage(value: Image);
         /**
          * Creates a new ImageBasedSlider
          * @param name defines the control name
          */
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
-        _draw(context: CanvasRenderingContext2D): void;
+        _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
     }
 }
 declare module BABYLON.GUI {
@@ -6745,19 +7673,21 @@ declare module BABYLON.GUI {
         /**
          * Gets the perf counter used to capture render time
          */
-        readonly renderTimeCounter: BABYLON.PerfCounter;
+        get renderTimeCounter(): BABYLON.PerfCounter;
         /**
          * Gets the perf counter used to capture layout time
          */
-        readonly layoutTimeCounter: BABYLON.PerfCounter;
+        get layoutTimeCounter(): BABYLON.PerfCounter;
         /**
          * Enable or disable the render time capture
          */
-        captureRenderTime: boolean;
+        get captureRenderTime(): boolean;
+        set captureRenderTime(value: boolean);
         /**
          * Enable or disable the layout time capture
          */
-        captureLayoutTime: boolean;
+        get captureLayoutTime(): boolean;
+        set captureLayoutTime(value: boolean);
         /**
          * Instantiates a new advanced dynamic texture instrumentation.
          * This class can be used to get instrumentation data from an AdvancedDynamicTexture object
@@ -6776,6 +7706,54 @@ declare module BABYLON.GUI {
 }
 declare module BABYLON.GUI {
     /**
+    * Class used to load GUI via XML.
+    */
+    export class XmlLoader {
+        private _nodes;
+        private _nodeTypes;
+        private _isLoaded;
+        private _objectAttributes;
+        private _parentClass;
+        /**
+        * Create a new xml loader
+        * @param parentClass Sets the class context. Used when the loader is instanced inside a class and not in a global context
+        */
+        constructor(parentClass?: null);
+        private _getChainElement;
+        private _getClassAttribute;
+        private _createGuiElement;
+        private _parseGrid;
+        private _parseElement;
+        private _prepareSourceElement;
+        private _parseElementsFromSource;
+        private _parseXml;
+        /**
+         * Gets if the loading has finished.
+         * @returns whether the loading has finished or not
+        */
+        isLoaded(): boolean;
+        /**
+         * Gets a loaded node / control by id.
+         * @param id the Controls id set in the xml
+         * @returns element of type Control
+        */
+        getNodeById(id: string): any;
+        /**
+         * Gets all loaded nodes / controls
+         * @returns Array of controls
+        */
+        getNodes(): any;
+        /**
+         * Initiates the xml layout loading
+         * @param xmlFile defines the xml layout to load
+         * @param rootNode defines the node / control to use as a parent for the loaded layout controls.
+         * @param callback defines the callback called on layout load.
+         */
+        loadLayout(xmlFile: any, rootNode: any, callback: any): void;
+    }
+}
+declare module BABYLON.GUI {
+    /**
      * Class used to create containers for controls
      */
     export class Container3D extends Control3D {
@@ -6787,12 +7765,13 @@ declare module BABYLON.GUI {
         /**
          * Gets the list of child controls
          */
-        readonly children: Array<Control3D>;
+        get children(): Array<Control3D>;
         /**
          * Gets or sets a boolean indicating if the layout must be blocked (default is false).
          * This is helpful to optimize layout operation when adding multiple children in a row
          */
-        blockLayout: boolean;
+        get blockLayout(): boolean;
+        set blockLayout(value: boolean);
         /**
          * Creates a new container
          * @param name defines the container name
@@ -6874,9 +7853,9 @@ declare module BABYLON.GUI {
             [key: string]: BABYLON.Material;
         };
         /** Gets the hosting scene */
-        readonly scene: BABYLON.Scene;
+        get scene(): BABYLON.Scene;
         /** Gets associated utility layer */
-        readonly utilityLayer: BABYLON.Nullable<BABYLON.UtilityLayerRenderer>;
+        get utilityLayer(): BABYLON.Nullable<BABYLON.UtilityLayerRenderer>;
         /**
          * Creates a new GUI3DManager
          * @param scene
@@ -6887,7 +7866,7 @@ declare module BABYLON.GUI {
         /**
          * Gets the root container
          */
-        readonly rootContainer: Container3D;
+        get rootContainer(): Container3D;
         /**
          * Gets a boolean indicating if the given control is in the root child list
          * @param control defines the control to check
@@ -6944,9 +7923,11 @@ declare module BABYLON.GUI {
         private _downPointerIds;
         private _isVisible;
         /** Gets or sets the control position  in world space */
-        position: BABYLON.Vector3;
+        get position(): BABYLON.Vector3;
+        set position(value: BABYLON.Vector3);
         /** Gets or sets the control scaling  in world space */
-        scaling: BABYLON.Vector3;
+        get scaling(): BABYLON.Vector3;
+        set scaling(value: BABYLON.Vector3);
         /** Callback used to start pointer enter animation */
         pointerEnterAnimation: () => void;
         /** Callback used to start pointer out animation */
@@ -6988,7 +7969,7 @@ declare module BABYLON.GUI {
          * Gets the list of attached behaviors
          * @see http://doc.babylonjs.com/features/behaviour
          */
-        readonly behaviors: BABYLON.Behavior<Control3D>[];
+        get behaviors(): BABYLON.Behavior<Control3D>[];
         /**
          * Attach a behavior to the control
          * @see http://doc.babylonjs.com/features/behaviour
@@ -7011,7 +7992,8 @@ declare module BABYLON.GUI {
          */
         getBehaviorByName(name: string): BABYLON.Nullable<BABYLON.Behavior<Control3D>>;
         /** Gets or sets a boolean indicating if the control is visible */
-        isVisible: boolean;
+        get isVisible(): boolean;
+        set isVisible(value: boolean);
         /**
          * Creates a new control
          * @param name defines the control name
@@ -7022,7 +8004,7 @@ declare module BABYLON.GUI {
         /**
          * Gets a string representing the class name
          */
-        readonly typeName: string;
+        get typeName(): string;
         /**
          * Get the current class name of the control.
          * @returns current class name
@@ -7032,11 +8014,11 @@ declare module BABYLON.GUI {
         /**
          * Gets the transform node used by this control
          */
-        readonly node: BABYLON.Nullable<BABYLON.TransformNode>;
+        get node(): BABYLON.Nullable<BABYLON.TransformNode>;
         /**
          * Gets the mesh used to render this control
          */
-        readonly mesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+        get mesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
         /**
          * Link the control as child of the given node
          * @param node defines the node to link to. Use null to unlink the control
@@ -7107,11 +8089,13 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets the texture resolution used to render content (512 by default)
          */
-        contentResolution: BABYLON.int;
+        get contentResolution(): BABYLON.int;
+        set contentResolution(value: BABYLON.int);
         /**
          * Gets or sets the texture scale ratio used to render content (2 by default)
          */
-        contentScaleRatio: number;
+        get contentScaleRatio(): number;
+        set contentScaleRatio(value: number);
         protected _disposeFacadeTexture(): void;
         protected _resetContent(): void;
         /**
@@ -7122,7 +8106,8 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets the GUI 2D content used to display the button's facade
          */
-        content: Control;
+        get content(): Control;
+        set content(value: Control);
         /**
          * Apply the facade texture (created from the content property).
          * This function can be overloaded by child classes
@@ -7163,17 +8148,20 @@ declare module BABYLON.GUI {
         * | 3     | FACEFORWARD_ORIENTATION             |  Control will rotate to look at z axis (0, 0, 1) |
         * | 4     | FACEFORWARDREVERSED_ORIENTATION     |  Control will rotate to look at negative z axis (0, 0, -1) |
          */
-        orientation: number;
+        get orientation(): number;
+        set orientation(value: number);
         /**
          * Gets or sets the number of columns requested (10 by default).
          * The panel will automatically compute the number of rows based on number of child controls.
          */
-        columns: BABYLON.int;
+        get columns(): BABYLON.int;
+        set columns(value: BABYLON.int);
         /**
          * Gets or sets a the number of rows requested.
          * The panel will automatically compute the number of columns based on number of child controls.
          */
-        rows: BABYLON.int;
+        get rows(): BABYLON.int;
+        set rows(value: BABYLON.int);
         /**
          * Creates new VolumeBasedPanel
          */
@@ -7194,7 +8182,8 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets the radius of the cylinder where to project controls (5 by default)
          */
-        radius: BABYLON.float;
+        get radius(): BABYLON.float;
+        set radius(value: BABYLON.float);
         protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
         private _cylindricalMapping;
     }
@@ -7320,33 +8309,41 @@ declare module BABYLON.GUI {
         private _tooltipOutObserver;
         private _disposeTooltip;
         /**
+         * Rendering ground id of all the mesh in the button
+         */
+        set renderingGroupId(id: number);
+        get renderingGroupId(): number;
+        /**
          * Text to be displayed on the tooltip shown when hovering on the button. When set to null tooltip is disabled. (Default: null)
          */
-        tooltipText: BABYLON.Nullable<string>;
+        set tooltipText(text: BABYLON.Nullable<string>);
+        get tooltipText(): BABYLON.Nullable<string>;
         /**
          * Gets or sets text for the button
          */
-        text: string;
+        get text(): string;
+        set text(value: string);
         /**
          * Gets or sets the image url for the button
          */
-        imageUrl: string;
+        get imageUrl(): string;
+        set imageUrl(value: string);
         /**
          * Gets the back material used by this button
          */
-        readonly backMaterial: FluentMaterial;
+        get backMaterial(): FluentMaterial;
         /**
          * Gets the front material used by this button
          */
-        readonly frontMaterial: FluentMaterial;
+        get frontMaterial(): FluentMaterial;
         /**
          * Gets the plate material used by this button
          */
-        readonly plateMaterial: BABYLON.StandardMaterial;
+        get plateMaterial(): BABYLON.StandardMaterial;
         /**
          * Gets a boolean indicating if this button shares its material with other HolographicButtons
          */
-        readonly shareMaterials: boolean;
+        get shareMaterials(): boolean;
         /**
          * Creates a new button
          * @param name defines the control name
@@ -7401,7 +8398,8 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets the number of iteration to use to scatter the controls (100 by default)
          */
-        iteration: BABYLON.float;
+        get iteration(): BABYLON.float;
+        set iteration(value: BABYLON.float);
         protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
         private _scatterMapping;
         protected _finalProcessing(): void;
@@ -7416,7 +8414,8 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets the radius of the sphere where to project controls (5 by default)
          */
-        radius: BABYLON.float;
+        get radius(): BABYLON.float;
+        set radius(value: BABYLON.float);
         protected _mapGridNode(control: Control3D, nodePosition: BABYLON.Vector3): void;
         private _sphericalMapping;
     }
@@ -7430,7 +8429,8 @@ declare module BABYLON.GUI {
         /**
          * Gets or sets a boolean indicating if the stack panel is vertical or horizontal (horizontal by default)
          */
-        isVertical: boolean;
+        get isVertical(): boolean;
+        set isVertical(value: boolean);
         /**
          * Gets or sets the distance between elements
          */

@@ -23,6 +23,14 @@ export class TargetedAnimation {
     public target: any;
 
     /**
+     * Returns the string "TargetedAnimation"
+     * @returns "TargetedAnimation"
+     */
+    public getClassName(): string {
+        return "TargetedAnimation";
+    }
+
+    /**
      * Serialize the object
      * @returns the JSON object representing the current entity
      */
@@ -49,6 +57,7 @@ export class AnimationGroup implements IDisposable {
     private _isPaused: boolean;
     private _speedRatio = 1;
     private _loopAnimation = false;
+    private _isAdditive = false;
 
     /**
      * Gets or sets the unique id of the node
@@ -64,6 +73,11 @@ export class AnimationGroup implements IDisposable {
      * Observer raised when one animation loops
      */
     public onAnimationLoopObservable = new Observable<TargetedAnimation>();
+
+    /**
+     * Observer raised when all animations have looped
+     */
+    public onAnimationGroupLoopObservable = new Observable<AnimationGroup>();
 
     /**
      * This observable will notify when all animations have ended.
@@ -152,6 +166,26 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets or sets if all animations should be evaluated additively
+     */
+    public get isAdditive(): boolean {
+        return this._isAdditive;
+    }
+
+    public set isAdditive(value: boolean) {
+        if (this._isAdditive === value) {
+            return;
+        }
+
+        this._isAdditive = value;
+
+        for (var index = 0; index < this._animatables.length; index++) {
+            let animatable = this._animatables[index];
+            animatable.isAdditive = this._isAdditive;
+        }
+    }
+
+    /**
      * Gets the targeted animations for this animation group
      */
     public get targetedAnimations(): Array<TargetedAnimation> {
@@ -166,9 +200,16 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets the list of target animations
+     */
+    public get children() {
+        return this._targetedAnimations;
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
-     * @see http://doc.babylonjs.com/how_to/group
+     * @see https://doc.babylonjs.com/how_to/group
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
      */
@@ -179,7 +220,7 @@ export class AnimationGroup implements IDisposable {
         this._scene = scene || EngineStore.LastCreatedScene!;
         this.uniqueId = this._scene.getUniqueId();
 
-        this._scene.animationGroups.push(this);
+        this._scene.addAnimationGroup(this);
     }
 
     /**
@@ -253,30 +294,66 @@ export class AnimationGroup implements IDisposable {
         return this;
     }
 
+    private _animationLoopCount: number;
+    private _animationLoopFlags: boolean[];
+
+    private _processLoop(animatable: Animatable, targetedAnimation: TargetedAnimation, index: number) {
+        animatable.onAnimationLoop = () => {
+            this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
+
+            if (this._animationLoopFlags[index]) {
+                return;
+            }
+
+            this._animationLoopFlags[index] = true;
+
+            this._animationLoopCount++;
+            if (this._animationLoopCount === this._targetedAnimations.length) {
+                this.onAnimationGroupLoopObservable.notifyObservers(this);
+                this._animationLoopCount = 0;
+                this._animationLoopFlags = [];
+            }
+        };
+    }
+
     /**
      * Start all animations on given targets
      * @param loop defines if animations must loop
      * @param speedRatio defines the ratio to apply to animation speed (1 by default)
      * @param from defines the from key (optional)
      * @param to defines the to key (optional)
+     * @param isAdditive defines the additive state for the resulting animatables (optional)
      * @returns the current animation group
      */
-    public start(loop = false, speedRatio = 1, from?: number, to?: number): AnimationGroup {
+    public start(loop = false, speedRatio = 1, from?: number, to?: number, isAdditive?: boolean): AnimationGroup {
         if (this._isStarted || this._targetedAnimations.length === 0) {
             return this;
         }
 
         this._loopAnimation = loop;
 
-        for (const targetedAnimation of this._targetedAnimations) {
-            let animatable = this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio);
+        this._animationLoopCount = 0;
+        this._animationLoopFlags = [];
+
+        for (var index = 0; index < this._targetedAnimations.length; index++) {
+            const targetedAnimation = this._targetedAnimations[index];
+            let animatable = this._scene.beginDirectAnimation(
+                targetedAnimation.target,
+                [targetedAnimation.animation],
+                from !== undefined ? from : this._from,
+                to !== undefined ? to : this._to,
+                loop,
+                speedRatio,
+                undefined,
+                undefined,
+                isAdditive !== undefined ? isAdditive : this._isAdditive
+            );
             animatable.onAnimationEnd = () => {
                 this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 this._checkAnimationGroupEnded(animatable);
             };
-            animatable.onAnimationLoop = () => {
-                this.onAnimationLoopObservable.notifyObservers(targetedAnimation);
-            };
+
+            this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
         }
 
@@ -350,6 +427,9 @@ export class AnimationGroup implements IDisposable {
      */
     public reset(): AnimationGroup {
         if (!this._isStarted) {
+            this.play();
+            this.goToFrame(0);
+            this.stop();
             return this;
         }
 
@@ -403,7 +483,7 @@ export class AnimationGroup implements IDisposable {
      * Set animation weight for all animatables
      * @param weight defines the weight to use
      * @return the animationGroup
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public setWeightForAllAnimatables(weight: number): AnimationGroup {
         for (var index = 0; index < this._animatables.length; index++) {
@@ -418,7 +498,7 @@ export class AnimationGroup implements IDisposable {
      * Synchronize and normalize all animatables with a source animatable
      * @param root defines the root animatable to synchronize with
      * @return the animationGroup
-     * @see http://doc.babylonjs.com/babylon101/animations#animation-weights
+     * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
      */
     public syncAllAnimationsWith(root: Animatable): AnimationGroup {
         for (var index = 0; index < this._animatables.length; index++) {
@@ -465,6 +545,7 @@ export class AnimationGroup implements IDisposable {
         this.onAnimationGroupPauseObservable.clear();
         this.onAnimationGroupPlayObservable.clear();
         this.onAnimationLoopObservable.clear();
+        this.onAnimationGroupLoopObservable.clear();
     }
 
     private _checkAnimationGroupEnded(animatable: Animatable) {
@@ -544,9 +625,35 @@ export class AnimationGroup implements IDisposable {
             }
         }
 
-        if (parsedAnimationGroup.from !== null && parsedAnimationGroup.from !== null) {
+        if (parsedAnimationGroup.from !== null && parsedAnimationGroup.to !== null) {
             animationGroup.normalize(parsedAnimationGroup.from, parsedAnimationGroup.to);
         }
+
+        return animationGroup;
+    }
+
+    /**
+     * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
+     * @param sourceAnimationGroup defines the AnimationGroup containing animations to convert
+     * @param referenceFrame defines the frame that keyframes in the range will be relative to
+     * @param range defines the name of the AnimationRange belonging to the animations in the group to convert
+     * @param cloneOriginal defines whether or not to clone the group and convert the clone or convert the original group (default is false)
+     * @param clonedName defines the name of the resulting cloned AnimationGroup if cloneOriginal is true
+     * @returns a new AnimationGroup if cloneOriginal is true or the original AnimationGroup if cloneOriginal is false
+     */
+    public static MakeAnimationAdditive(sourceAnimationGroup: AnimationGroup, referenceFrame = 0, range?: string, cloneOriginal = false, clonedName?: string): AnimationGroup {
+        let animationGroup = sourceAnimationGroup;
+        if (cloneOriginal) {
+            animationGroup = sourceAnimationGroup.clone(clonedName || animationGroup.name);
+        }
+
+        let targetedAnimations = animationGroup.targetedAnimations;
+        for (var index = 0; index < targetedAnimations.length; index++) {
+            let targetedAnimation = targetedAnimations[index];
+            Animation.MakeAnimationAdditive(targetedAnimation.animation, referenceFrame, range);
+        }
+
+        animationGroup.isAdditive = true;
 
         return animationGroup;
     }

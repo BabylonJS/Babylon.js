@@ -1,17 +1,23 @@
 import { SerializationHelper } from "../Misc/decorators";
+import { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { BaseSubMesh } from "../Meshes/subMesh";
+import { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { MaterialHelper } from "./materialHelper";
-import { EffectFallbacks, EffectCreationOptions } from "./effect";
+import { Effect, IEffectCreationOptions } from "./effect";
 import { Material } from "./material";
 import { _TypeStore } from '../Misc/typeStore';
 import { Color3, Color4 } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
+import { WebRequest } from '../Misc/webRequest';
+import { Engine } from '../Engines/engine';
+
+const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
  * Defines the options associated with the creation of a shader material.
@@ -58,13 +64,13 @@ export interface IShaderMaterialOptions {
  *
  * This returned material effects how the mesh will look based on the code in the shaders.
  *
- * @see http://doc.babylonjs.com/how_to/shader_material
+ * @see https://doc.babylonjs.com/how_to/shader_material
  */
 export class ShaderMaterial extends Material {
     private _shaderPath: any;
     private _options: IShaderMaterialOptions;
-    private _textures: { [name: string]: Texture } = {};
-    private _textureArrays: { [name: string]: Texture[] } = {};
+    private _textures: { [name: string]: BaseTexture } = {};
+    private _textureArrays: { [name: string]: BaseTexture[] } = {};
     private _floats: { [name: string]: number } = {};
     private _ints: { [name: string]: number } = {};
     private _floatsArrays: { [name: string]: number[] } = {};
@@ -76,26 +82,36 @@ export class ShaderMaterial extends Material {
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
     private _matrices: { [name: string]: Matrix } = {};
-    private _matrices3x3: { [name: string]: Float32Array } = {};
-    private _matrices2x2: { [name: string]: Float32Array } = {};
+    private _matrixArrays: { [name: string]: Float32Array | Array<number> } = {};
+    private _matrices3x3: { [name: string]: Float32Array | Array<number> } = {};
+    private _matrices2x2: { [name: string]: Float32Array | Array<number> } = {};
     private _vectors2Arrays: { [name: string]: number[] } = {};
     private _vectors3Arrays: { [name: string]: number[] } = {};
     private _vectors4Arrays: { [name: string]: number[] } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _renderId: number;
+    private _multiview: boolean = false;
+    private _cachedDefines: string;
+
+    /** Define the Url to load snippets */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
+
+    /** Snippet ID if the material was created from the snippet server */
+    public snippetId: string;
 
     /**
      * Instantiate a new shader material.
      * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
      * This returned material effects how the mesh will look based on the code in the shaders.
-     * @see http://doc.babylonjs.com/how_to/shader_material
+     * @see https://doc.babylonjs.com/how_to/shader_material
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *     - object - { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-     *     - object - { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in <script> tags
-     *     - string - "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+     *  * object: { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
+     *  * object: { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in script tags
+     *  * object: { vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" } using with strings containing the shaders code
+     *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
     constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}) {
@@ -112,6 +128,22 @@ export class ShaderMaterial extends Material {
             defines: [],
             ...options
         };
+    }
+
+    /**
+     * Gets the shader path used to define the shader code
+     * It can be modified to trigger a new compilation
+     */
+    public get shaderPath(): any {
+        return this._shaderPath;
+    }
+
+    /**
+     * Sets the shader path used to define the shader code
+     * It can be modified to trigger a new compilation
+     */
+    public set shaderPath(shaderPath: any) {
+        this._shaderPath = shaderPath;
     }
 
     /**
@@ -159,7 +191,7 @@ export class ShaderMaterial extends Material {
      * @param texture Define the texture to bind to this sampler
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setTexture(name: string, texture: Texture): ShaderMaterial {
+    public setTexture(name: string, texture: BaseTexture): ShaderMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
             this._options.samplers.push(name);
         }
@@ -174,7 +206,7 @@ export class ShaderMaterial extends Material {
      * @param textures Define the list of textures to bind to this sampler
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setTextureArray(name: string, textures: Texture[]): ShaderMaterial {
+    public setTextureArray(name: string, textures: BaseTexture[]): ShaderMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
             this._options.samplers.push(name);
         }
@@ -334,12 +366,34 @@ export class ShaderMaterial extends Material {
     }
 
     /**
+     * Set a float32Array in the shader from a matrix array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setMatrices(name: string, value: Matrix[]): ShaderMaterial {
+        this._checkUniform(name);
+
+        let float32Array = new Float32Array(value.length * 16);
+
+        for (var index = 0; index < value.length; index++) {
+            let matrix = value[index];
+
+            matrix.copyToArray(float32Array, index * 16);
+        }
+
+        this._matrixArrays[name] = float32Array;
+
+        return this;
+    }
+
+    /**
      * Set a mat3 in the shader from a Float32Array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrix3x3(name: string, value: Float32Array): ShaderMaterial {
+    public setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
         this._matrices3x3[name] = value;
 
@@ -352,7 +406,7 @@ export class ShaderMaterial extends Material {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-    public setMatrix2x2(name: string, value: Float32Array): ShaderMaterial {
+    public setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
         this._matrices2x2[name] = value;
 
@@ -407,7 +461,7 @@ export class ShaderMaterial extends Material {
             return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -417,7 +471,7 @@ export class ShaderMaterial extends Material {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return this.isReady(mesh, useInstances);
     }
 
@@ -428,6 +482,12 @@ export class ShaderMaterial extends Material {
      * @returns true if ready, otherwise false
      */
     public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
+        if (this._effect && this.isFrozen) {
+            if (this._effect._wasPreviouslyReady) {
+                return true;
+            }
+        }
+
         var scene = this.getScene();
         var engine = scene.getEngine();
 
@@ -443,6 +503,19 @@ export class ShaderMaterial extends Material {
         var defines = [];
         var attribs = [];
         var fallbacks = new EffectFallbacks();
+
+        // global multiview
+        if (engine.getCaps().multiview &&
+            scene.activeCamera &&
+            scene.activeCamera.outputRenderTarget &&
+            scene.activeCamera.outputRenderTarget.getViewCount() > 1) {
+            this._multiview = true;
+            defines.push("#define MULTIVIEW");
+            if (this._options.uniforms.indexOf("viewProjection") !== -1 &&
+                this._options.uniforms.push("viewProjectionR") === -1) {
+                this._options.uniforms.push("viewProjectionR");
+            }
+        }
 
         for (var index = 0; index < this._options.defines.length; index++) {
             defines.push(this._options.defines[index]);
@@ -460,9 +533,13 @@ export class ShaderMaterial extends Material {
         if (useInstances) {
             defines.push("#define INSTANCES");
             MaterialHelper.PushAttributesForInstances(attribs);
+            if (mesh?.hasThinInstances) {
+                defines.push("#define THIN_INSTANCES");
+            }
         }
 
         // Bones
+        let numInfluencers = 0;
         if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
@@ -473,7 +550,8 @@ export class ShaderMaterial extends Material {
 
             const skeleton = mesh.skeleton;
 
-            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+            numInfluencers = mesh.numBoneInfluencers;
+            defines.push("#define NUM_BONE_INFLUENCERS " + numInfluencers);
             fallbacks.addCPUSkinningFallback(0, mesh);
 
             if (skeleton.isUsingTextureForMatrices) {
@@ -493,7 +571,6 @@ export class ShaderMaterial extends Material {
                     this._options.uniforms.push("mBones");
                 }
             }
-
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
         }
@@ -510,21 +587,43 @@ export class ShaderMaterial extends Material {
             defines.push("#define ALPHATEST");
         }
 
+        let shaderName = this._shaderPath,
+            uniforms = this._options.uniforms,
+            uniformBuffers = this._options.uniformBuffers,
+            samplers = this._options.samplers;
+
+        if (this.customShaderNameResolve) {
+            uniforms = uniforms.slice();
+            uniformBuffers = uniformBuffers.slice();
+            samplers = samplers.slice();
+            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+        }
+
         var previousEffect = this._effect;
         var join = defines.join("\n");
 
-        this._effect = engine.createEffect(this._shaderPath, <EffectCreationOptions>{
-            attributes: attribs,
-            uniformsNames: this._options.uniforms,
-            uniformBuffersNames: this._options.uniformBuffers,
-            samplers: this._options.samplers,
-            defines: join,
-            fallbacks: fallbacks,
-            onCompiled: this.onCompiled,
-            onError: this.onError
-        }, engine);
+        if (this._cachedDefines !== join) {
+            this._cachedDefines = join;
 
-        if (!this._effect.isReady()) {
+            this._effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
+                attributes: attribs,
+                uniformsNames: uniforms,
+                uniformBuffersNames: uniformBuffers,
+                samplers: samplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError,
+                indexParameters: { maxSimultaneousMorphTargets: numInfluencers }
+            }, engine);
+
+            if (this._onEffectCreatedObservable) {
+                onCreatedEffectParameters.effect = this._effect;
+                this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
+            }
+        }
+
+        if (!this._effect?.isReady() ?? true) {
             return false;
         }
 
@@ -533,6 +632,7 @@ export class ShaderMaterial extends Material {
         }
 
         this._renderId = scene.getRenderId();
+        this._effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -540,149 +640,185 @@ export class ShaderMaterial extends Material {
     /**
      * Binds the world matrix to the material
      * @param world defines the world transformation matrix
+     * @param effectOverride - If provided, use this effect instead of internal effect
      */
-    public bindOnlyWorldMatrix(world: Matrix): void {
+    public bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
         var scene = this.getScene();
 
-        if (!this._effect) {
+        const effect = effectOverride ?? this._effect;
+
+        if (!effect) {
             return;
         }
 
         if (this._options.uniforms.indexOf("world") !== -1) {
-            this._effect.setMatrix("world", world);
+            effect.setMatrix("world", world);
         }
 
         if (this._options.uniforms.indexOf("worldView") !== -1) {
             world.multiplyToRef(scene.getViewMatrix(), this._cachedWorldViewMatrix);
-            this._effect.setMatrix("worldView", this._cachedWorldViewMatrix);
+            effect.setMatrix("worldView", this._cachedWorldViewMatrix);
         }
 
         if (this._options.uniforms.indexOf("worldViewProjection") !== -1) {
             world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
-            this._effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
-
+            effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
         }
+    }
+
+    /**
+     * Binds the submesh to this material by preparing the effect and shader to draw
+     * @param world defines the world transformation matrix
+     * @param mesh defines the mesh containing the submesh
+     * @param subMesh defines the submesh to bind the material to
+     */
+    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        this.bind(world, mesh, subMesh._effectOverride);
     }
 
     /**
      * Binds the material to the mesh
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh to bind the material to
+     * @param effectOverride - If provided, use this effect instead of internal effect
      */
-    public bind(world: Matrix, mesh?: Mesh): void {
+    public bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>): void {
         // Std values
-        this.bindOnlyWorldMatrix(world);
+        this.bindOnlyWorldMatrix(world, effectOverride);
 
-        if (this._effect && this.getScene().getCachedMaterial() !== this) {
+        const effect = effectOverride ?? this._effect;
+
+        if (effect && this.getScene().getCachedMaterial() !== this) {
             if (this._options.uniforms.indexOf("view") !== -1) {
-                this._effect.setMatrix("view", this.getScene().getViewMatrix());
+                effect.setMatrix("view", this.getScene().getViewMatrix());
             }
 
             if (this._options.uniforms.indexOf("projection") !== -1) {
-                this._effect.setMatrix("projection", this.getScene().getProjectionMatrix());
+                effect.setMatrix("projection", this.getScene().getProjectionMatrix());
             }
 
             if (this._options.uniforms.indexOf("viewProjection") !== -1) {
-                this._effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                if (this._multiview) {
+                    effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
+                }
+            }
+
+            if (this.getScene().activeCamera && this._options.uniforms.indexOf("cameraPosition") !== -1) {
+                effect.setVector3("cameraPosition", this.getScene().activeCamera!.globalPosition);
             }
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, effect);
 
             var name: string;
             // Texture
             for (name in this._textures) {
-                this._effect.setTexture(name, this._textures[name]);
+                effect.setTexture(name, this._textures[name]);
             }
 
             // Texture arrays
             for (name in this._textureArrays) {
-                this._effect.setTextureArray(name, this._textureArrays[name]);
+                effect.setTextureArray(name, this._textureArrays[name]);
             }
 
             // Int
             for (name in this._ints) {
-                this._effect.setInt(name, this._ints[name]);
+                effect.setInt(name, this._ints[name]);
             }
 
             // Float
             for (name in this._floats) {
-                this._effect.setFloat(name, this._floats[name]);
+                effect.setFloat(name, this._floats[name]);
             }
 
             // Floats
             for (name in this._floatsArrays) {
-                this._effect.setArray(name, this._floatsArrays[name]);
+                effect.setArray(name, this._floatsArrays[name]);
             }
 
             // Color3
             for (name in this._colors3) {
-                this._effect.setColor3(name, this._colors3[name]);
+                effect.setColor3(name, this._colors3[name]);
             }
 
             // Color3Array
             for (name in this._colors3Arrays) {
-                this._effect.setArray3(name, this._colors3Arrays[name]);
+                effect.setArray3(name, this._colors3Arrays[name]);
             }
 
             // Color4
             for (name in this._colors4) {
                 var color = this._colors4[name];
-                this._effect.setFloat4(name, color.r, color.g, color.b, color.a);
+                effect.setFloat4(name, color.r, color.g, color.b, color.a);
             }
 
             // Color4Array
             for (name in this._colors4Arrays) {
-                this._effect.setArray4(name, this._colors4Arrays[name]);
+                effect.setArray4(name, this._colors4Arrays[name]);
             }
 
             // Vector2
             for (name in this._vectors2) {
-                this._effect.setVector2(name, this._vectors2[name]);
+                effect.setVector2(name, this._vectors2[name]);
             }
 
             // Vector3
             for (name in this._vectors3) {
-                this._effect.setVector3(name, this._vectors3[name]);
+                effect.setVector3(name, this._vectors3[name]);
             }
 
             // Vector4
             for (name in this._vectors4) {
-                this._effect.setVector4(name, this._vectors4[name]);
+                effect.setVector4(name, this._vectors4[name]);
             }
 
             // Matrix
             for (name in this._matrices) {
-                this._effect.setMatrix(name, this._matrices[name]);
+                effect.setMatrix(name, this._matrices[name]);
+            }
+
+            // MatrixArray
+            for (name in this._matrixArrays) {
+                effect.setMatrices(name, this._matrixArrays[name]);
             }
 
             // Matrix 3x3
             for (name in this._matrices3x3) {
-                this._effect.setMatrix3x3(name, this._matrices3x3[name]);
+                effect.setMatrix3x3(name, this._matrices3x3[name]);
             }
 
             // Matrix 2x2
             for (name in this._matrices2x2) {
-                this._effect.setMatrix2x2(name, this._matrices2x2[name]);
+                effect.setMatrix2x2(name, this._matrices2x2[name]);
             }
 
             // Vector2Array
             for (name in this._vectors2Arrays) {
-                this._effect.setArray2(name, this._vectors2Arrays[name]);
+                effect.setArray2(name, this._vectors2Arrays[name]);
             }
 
             // Vector3Array
             for (name in this._vectors3Arrays) {
-                this._effect.setArray3(name, this._vectors3Arrays[name]);
+                effect.setArray3(name, this._vectors3Arrays[name]);
             }
 
             // Vector4Array
             for (name in this._vectors4Arrays) {
-                this._effect.setArray4(name, this._vectors4Arrays[name]);
+                effect.setArray4(name, this._vectors4Arrays[name]);
             }
         }
 
+        const seffect = this._effect;
+
+        this._effect = effect; // make sure the active effect is the right one if there are some observers for onBind that would need to get the current effect
         this._afterBind(mesh);
+        this._effect = seffect;
+    }
+
+    protected _afterBind(mesh?: Mesh): void {
+        super._afterBind(mesh);
+        this.getScene()._cachedEffect = this._effect;
     }
 
     /**
@@ -740,9 +876,82 @@ export class ShaderMaterial extends Material {
      * @returns the cloned material
      */
     public clone(name: string): ShaderMaterial {
-        var newShaderMaterial = new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options);
+        var result = SerializationHelper.Clone(() => new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options), this);
 
-        return newShaderMaterial;
+        result.name = name;
+        result.id = name;
+
+        // Shader code path
+        if (typeof result._shaderPath === 'object') {
+            result._shaderPath = { ...result._shaderPath };
+        }
+
+        // Options
+        this._options = { ...this._options };
+
+        (Object.keys(this._options) as Array<keyof IShaderMaterialOptions>).forEach((propName) => {
+            const propValue = this._options[propName];
+            if (Array.isArray(propValue)) {
+                (<string[]>this._options[propName]) = propValue.slice(0);
+            }
+        });
+
+        // Texture
+        for (var key in this._textures) {
+            result.setTexture(key, this._textures[key]);
+        }
+
+        // Float
+        for (var key in this._floats) {
+            result.setFloat(key, this._floats[key]);
+        }
+
+        // Floats
+        for (var key in this._floatsArrays) {
+            result.setFloats(key, this._floatsArrays[key]);
+        }
+
+        // Color3
+        for (var key in this._colors3) {
+            result.setColor3(key, this._colors3[key]);
+        }
+
+        // Color4
+        for (var key in this._colors4) {
+            result.setColor4(key, this._colors4[key]);
+        }
+
+        // Vector2
+        for (var key in this._vectors2) {
+            result.setVector2(key, this._vectors2[key]);
+        }
+
+        // Vector3
+        for (var key in this._vectors3) {
+            result.setVector3(key, this._vectors3[key]);
+        }
+
+        // Vector4
+        for (var key in this._vectors4) {
+            result.setVector4(key, this._vectors4[key]);
+        }
+
+        // Matrix
+        for (var key in this._matrices) {
+            result.setMatrix(key,  this._matrices[key]);
+        }
+
+        // Matrix 3x3
+        for (var key in this._matrices3x3) {
+            result.setMatrix3x3(key, this._matrices3x3[key]);
+        }
+
+        // Matrix 2x2
+        for (var key in this._matrices2x2) {
+            result.setMatrix2x2(key, this._matrices2x2[key]);
+        }
+
+        return result;
     }
 
     /**
@@ -807,7 +1016,7 @@ export class ShaderMaterial extends Material {
             serializationObject.floats[name] = this._floats[name];
         }
 
-        // Float s
+        // Floats
         serializationObject.FloatArrays = {};
         for (name in this._floatsArrays) {
             serializationObject.FloatArrays[name] = this._floatsArrays[name];
@@ -859,6 +1068,12 @@ export class ShaderMaterial extends Material {
         serializationObject.matrices = {};
         for (name in this._matrices) {
             serializationObject.matrices[name] = this._matrices[name].asArray();
+        }
+
+        // MatrixArray
+        serializationObject.matrixArray = {};
+        for (name in this._matrixArrays) {
+            serializationObject.matrixArray[name] = this._matrixArrays[name];
         }
 
         // Matrix 3x3
@@ -988,6 +1203,11 @@ export class ShaderMaterial extends Material {
             material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
         }
 
+        // MatrixArray
+        for (name in source.matrixArray) {
+            material._matrixArrays[name] = new Float32Array(source.matrixArray[name]);
+        }
+
         // Matrix 3x3
         for (name in source.matrices3x3) {
             material.setMatrix3x3(name, source.matrices3x3[name]);
@@ -1014,6 +1234,71 @@ export class ShaderMaterial extends Material {
         }
 
         return material;
+    }
+
+    /**
+     * Creates a new ShaderMaterial from a snippet saved in a remote file
+     * @param name defines the name of the ShaderMaterial to create (can be null or empty to use the one from the json data)
+     * @param url defines the url to load from
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        let serializationObject = JSON.parse(request.responseText);
+                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        if (name) {
+                            output.name = name;
+                        }
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the ShaderMaterial");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates a ShaderMaterial from a snippet saved by the Inspector
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+        return new Promise((resolve, reject) => {
+            var request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        let serializationObject = JSON.parse(snippet.shaderMaterial);
+                        let output = this.Parse(serializationObject, scene || Engine.LastCreatedScene, rootUrl);
+
+                        output.snippetId = snippetId;
+
+                        resolve(output);
+                    } else {
+                        reject("Unable to load the snippet " + snippetId);
+                    }
+                }
+            });
+
+            request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
+            request.send();
+        });
     }
 }
 

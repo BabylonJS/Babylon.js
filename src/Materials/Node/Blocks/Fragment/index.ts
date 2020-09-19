@@ -1,8 +1,9 @@
 
 export * from "./fragmentOutputBlock";
-export * from "./alphaTestBlock";
-export * from "../colorMergerBlock";
-export * from "../vectorMergerBlock";
-export * from "../colorSplitterBlock";
-export * from "../vectorSplitterBlock";
 export * from "./imageProcessingBlock";
+export * from "./perturbNormalBlock";
+export * from "./discardBlock";
+export * from "./frontFacingBlock";
+export * from "./derivativeBlock";
+export * from "./fragCoordBlock";
+export * from "./screenSizeBlock";

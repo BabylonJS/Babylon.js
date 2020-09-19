@@ -74,20 +74,15 @@ export class KhronosTextureContainer {
 
     /**
      * Creates a new KhronosTextureContainer
-     * @param arrayBuffer contents of the KTX container file
+     * @param data contents of the KTX container file
      * @param facesExpected should be either 1 or 6, based whether a cube texture or or
      * @param threeDExpected provision for indicating that data should be a 3D texture, not implemented
      * @param textureArrayExpected provision for indicating that data should be a texture array, not implemented
      */
     public constructor(
         /** contents of the KTX container file */
-        public arrayBuffer: any, facesExpected: number, threeDExpected?: boolean, textureArrayExpected?: boolean) {
-        // Test that it is a ktx formatted file, based on the first 12 bytes, character representation is:
-        // '�', 'K', 'T', 'X', ' ', '1', '1', '�', '\r', '\n', '\x1A', '\n'
-        // 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A
-        var identifier = new Uint8Array(this.arrayBuffer, 0, 12);
-        if (identifier[0] !== 0xAB || identifier[1] !== 0x4B || identifier[2] !== 0x54 || identifier[3] !== 0x58 || identifier[4] !== 0x20 || identifier[5] !== 0x31 ||
-            identifier[6] !== 0x31 || identifier[7] !== 0xBB || identifier[8] !== 0x0D || identifier[9] !== 0x0A || identifier[10] !== 0x1A || identifier[11] !== 0x0A) {
+        public data: ArrayBufferView, facesExpected: number, threeDExpected?: boolean, textureArrayExpected?: boolean) {
+        if (!KhronosTextureContainer.IsValid(data)) {
             this.isInvalid = true;
             Logger.Error("texture missing KTX identifier");
             return;
@@ -95,7 +90,7 @@ export class KhronosTextureContainer {
 
         // load the reset of the header in native 32 bit uint
         var dataSize = Uint32Array.BYTES_PER_ELEMENT;
-        var headerDataView = new DataView(this.arrayBuffer, 12, 13 * dataSize);
+        var headerDataView = new DataView(this.data.buffer, this.data.byteOffset + 12, 13 * dataSize);
         var endianness = headerDataView.getUint32(0, true);
         var littleEndian = endianness === 0x04030201;
 
@@ -166,10 +161,10 @@ export class KhronosTextureContainer {
 
         var mipmapCount = loadMipmaps ? this.numberOfMipmapLevels : 1;
         for (var level = 0; level < mipmapCount; level++) {
-            var imageSize = new Int32Array(this.arrayBuffer, dataOffset, 1)[0]; // size per face, since not supporting array cubemaps
+            var imageSize = new Int32Array(this.data.buffer, this.data.byteOffset + dataOffset, 1)[0]; // size per face, since not supporting array cubemaps
             dataOffset += 4; //image data starts from next multiple of 4 offset. Each face refers to same imagesize field above.
             for (var face = 0; face < this.numberOfFaces; face++) {
-                var byteArray = new Uint8Array(this.arrayBuffer, dataOffset, imageSize);
+                var byteArray = new Uint8Array(this.data.buffer, this.data.byteOffset + dataOffset, imageSize);
 
                 const engine = texture.getEngine();
                 engine._uploadCompressedDataToTextureDirectly(texture, this.glInternalFormat, width, height, byteArray, face, level);
@@ -180,5 +175,24 @@ export class KhronosTextureContainer {
             width = Math.max(1.0, width * 0.5);
             height = Math.max(1.0, height * 0.5);
         }
+    }
+
+    /**
+     * Checks if the given data starts with a KTX file identifier.
+     * @param data the data to check
+     * @returns true if the data is a KTX file or false otherwise
+     */
+    public static IsValid(data: ArrayBufferView): boolean {
+        if (data.byteLength >= 12)
+        {
+            // '«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
+            const identifier = new Uint8Array(data.buffer, data.byteOffset, 12);
+            if (identifier[0] === 0xAB && identifier[1] === 0x4B && identifier[2] === 0x54 && identifier[3] === 0x58 && identifier[4] === 0x20 && identifier[5] === 0x31 &&
+                identifier[6] === 0x31 && identifier[7] === 0xBB && identifier[8] === 0x0D && identifier[9] === 0x0A && identifier[10] === 0x1A && identifier[11] === 0x0A) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

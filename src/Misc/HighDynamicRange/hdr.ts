@@ -148,7 +148,7 @@ export class HDRTools {
     public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number): CubeMapInfo {
         var uint8array = new Uint8Array(buffer);
         var hdrInfo = this.RGBE_ReadHeader(uint8array);
-        var data = this.RGBE_ReadPixels_RLE(uint8array, hdrInfo);
+        var data = this.RGBE_ReadPixels(uint8array, hdrInfo);
 
         var cubeMapData = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(data, hdrInfo.width, hdrInfo.height, size);
 
@@ -167,7 +167,6 @@ export class HDRTools {
      * @return The pixels data in RGB right to left up to down order.
      */
     public static RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
-        // Keep for multi format supports.
         return this.RGBE_ReadPixels_RLE(uint8array, hdrInfo);
     }
 
@@ -193,9 +192,8 @@ export class HDRTools {
             c = uint8array[dataIndex++];
             d = uint8array[dataIndex++];
 
-            if (a != 2 || b != 2 || (c & 0x80)) {
-                // this file is not run length encoded
-                throw "HDR Bad header format, not RLE";
+            if (a != 2 || b != 2 || (c & 0x80) || hdrInfo.width < 8 || hdrInfo.width > 32767) {
+                return this.RGBE_ReadPixels_NOT_RLE(uint8array, hdrInfo);
             }
 
             if (((c << 8) | d) != scanline_width) {
@@ -246,6 +244,39 @@ export class HDRTools {
                 b = scanLineArray[i + scanline_width];
                 c = scanLineArray[i + 2 * scanline_width];
                 d = scanLineArray[i + 3 * scanline_width];
+
+                this.Rgbe2float(resultArray,
+                    a, b, c, d,
+                    (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
+            }
+
+            num_scanlines--;
+        }
+
+        return resultArray;
+    }
+
+    private static RGBE_ReadPixels_NOT_RLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+        // this file is not run length encoded
+        // read values sequentially
+
+        var num_scanlines = hdrInfo.height;
+        var scanline_width = hdrInfo.width;
+
+        var a: number, b: number, c: number, d: number, i: number;
+        var dataIndex = hdrInfo.dataPosition;
+
+        // 3 channels of 4 bytes per pixel in float.
+        var resultBuffer = new ArrayBuffer(hdrInfo.width * hdrInfo.height * 4 * 3);
+        var resultArray = new Float32Array(resultBuffer);
+
+        // read in each successive scanline
+        while (num_scanlines > 0) {
+            for (i = 0; i < hdrInfo.width; i++) {
+                a = uint8array[dataIndex++];
+                b = uint8array[dataIndex++];
+                c = uint8array[dataIndex++];
+                d = uint8array[dataIndex++];
 
                 this.Rgbe2float(resultArray,
                     a, b, c, d,

@@ -4,17 +4,12 @@ import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Geometry } from "babylonjs/Meshes/geometry";
 import { Mesh } from "babylonjs/Meshes/mesh";
 
-import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import { IBufferView, IMeshPrimitive } from "../glTFLoaderInterfaces";
+import { MeshPrimitiveMode, IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
+import { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_draco_mesh_compression";
-
-interface IKHRDracoMeshCompression {
-    bufferView: number;
-    attributes: { [name: string]: number };
-}
 
 interface IBufferViewDraco extends IBufferView {
     _dracoBabylonGeometry?: Promise<Geometry>;
@@ -24,26 +19,33 @@ interface IBufferViewDraco extends IBufferView {
  * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
  */
 export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
-    /** The name of this extension. */
+    /**
+     * The name of this extension.
+     */
     public readonly name = NAME;
 
-    /** The draco compression used to decode vertex data or DracoCompression.Default if not defined */
+    /**
+     * The draco compression used to decode vertex data or DracoCompression.Default if not defined
+     */
     public dracoCompression?: DracoCompression;
 
-    /** Defines whether this extension is enabled. */
-    public enabled = DracoCompression.DecoderAvailable;
+    /**
+     * Defines whether this extension is enabled.
+     */
+    public enabled: boolean;
 
     private _loader: GLTFLoader;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this.enabled = DracoCompression.DecoderAvailable && this._loader.isExtensionUsed(NAME);
     }
 
     /** @hidden */
     public dispose(): void {
         delete this.dracoCompression;
-        delete this._loader;
+        (this._loader as any) = null;
     }
 
     /** @hidden */
@@ -87,7 +89,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
 
             var bufferView = ArrayItem.Get(extensionContext, this._loader.gltf.bufferViews, extension.bufferView) as IBufferViewDraco;
             if (!bufferView._dracoBabylonGeometry) {
-                bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`#/bufferViews/${bufferView.index}`, bufferView).then((data) => {
+                bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;
                     return dracoCompression.decodeMeshAsync(data, attributes).then((babylonVertexData) => {
                         const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);

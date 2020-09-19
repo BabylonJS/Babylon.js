@@ -1,5 +1,5 @@
 import { Observable } from "babylonjs/Misc/observable";
-import { Color3, Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Control } from "./control";
 import { Measure } from "../measure";
@@ -9,6 +9,8 @@ import { Button } from "./button";
 import { Grid } from "./grid";
 import { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { TextBlock } from "../controls/textBlock";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
+import { Color3 } from 'babylonjs/Maths/math.color';
 
 /** Class used to create color pickers */
 export class ColorPicker extends Control {
@@ -85,7 +87,7 @@ export class ColorPicker extends Control {
 
     /**
      * Gets or sets control width
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get width(): string | number {
         return this._width.toString(this._host);
@@ -104,7 +106,7 @@ export class ColorPicker extends Control {
 
     /**
      * Gets or sets control height
-     * @see http://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
      */
     public get height(): string | number {
         return this._height.toString(this._host);
@@ -430,6 +432,11 @@ export class ColorPicker extends Control {
 
         delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
+    }
+
+    public _onCanvasBlur() {
+        this._forcePointerUp();
+        super._onCanvasBlur();
     }
 
     /**
@@ -1513,3 +1520,4 @@ export class ColorPicker extends Control {
         });
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.ColorPicker"] = ColorPicker;

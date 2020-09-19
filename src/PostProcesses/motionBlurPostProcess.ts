@@ -6,14 +6,16 @@ import { Effect } from "../Materials/effect";
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Constants } from "../Engines/constants";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
-import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 
 import "../Animations/animatable";
 import '../Rendering/geometryBufferRendererSceneComponent';
 import "../Shaders/motionBlur.fragment";
+import { serialize, SerializationHelper } from '../Misc/decorators';
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Engine = import("../Engines/engine").Engine;
+declare type Scene = import("../scene").Scene;
 
 /**
  * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.
@@ -31,6 +33,7 @@ export class MotionBlurPostProcess extends PostProcess {
     /**
      * Defines how much the image is blurred by the movement. Default value is equal to 1
      */
+    @serialize()
     public motionStrength: number = 1;
 
     /**
@@ -51,8 +54,17 @@ export class MotionBlurPostProcess extends PostProcess {
         }
     }
 
+    @serialize("motionBlurSamples")
     private _motionBlurSamples: number = 32;
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+
+    /**
+     * Gets a string identifying the name of the class
+     * @returns "MotionBlurPostProcess" string
+     */
+    public getClassName(): string {
+        return "MotionBlurPostProcess";
+    }
 
     /**
      * Creates a new instance MotionBlurPostProcess
@@ -132,4 +144,17 @@ export class MotionBlurPostProcess extends PostProcess {
 
         super.dispose(camera);
     }
+
+    /** @hidden */
+    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess> {
+        return SerializationHelper.Parse(() => {
+            return new MotionBlurPostProcess(
+                parsedPostProcess.name, scene, parsedPostProcess.options,
+                targetCamera, parsedPostProcess.renderTargetSamplingMode,
+                scene.getEngine(), parsedPostProcess.reusable,
+                parsedPostProcess.textureType, false);
+        }, parsedPostProcess, scene, rootUrl);
+    }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.MotionBlurPostProcess"] = MotionBlurPostProcess;

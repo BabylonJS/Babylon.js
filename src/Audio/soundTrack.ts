@@ -21,7 +21,7 @@ export interface ISoundTrackOptions {
 /**
  * It could be useful to isolate your music & sounds on several tracks to better manage volume on a grouped instance of sounds.
  * It will be also used in a future release to apply effects on a specific track.
- * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+ * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
  */
 export class SoundTrack {
     /**
@@ -35,14 +35,13 @@ export class SoundTrack {
 
     private _outputAudioNode: Nullable<GainNode>;
     private _scene: Scene;
-    private _isMainTrack: boolean = false;
     private _connectedAnalyser: Analyser;
     private _options: ISoundTrackOptions;
     private _isInitialized = false;
 
     /**
      * Creates a new sound track.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-sound-tracks
      * @param scene Define the scene the sound track belongs to
      * @param options
      */
@@ -51,7 +50,7 @@ export class SoundTrack {
         this.soundCollection = new Array();
         this._options = options;
 
-        if (!this._isMainTrack && this._scene.soundTracks) {
+        if (!this._options.mainTrack && this._scene.soundTracks) {
             this._scene.soundTracks.push(this);
             this.id = this._scene.soundTracks.length - 1;
         }
@@ -64,7 +63,6 @@ export class SoundTrack {
 
             if (this._options) {
                 if (this._options.volume) { this._outputAudioNode.gain.value = this._options.volume; }
-                if (this._options.mainTrack) { this._isMainTrack = this._options.mainTrack; }
             }
 
             this._isInitialized = true;
@@ -139,7 +137,7 @@ export class SoundTrack {
     /**
      * Switch the panning model to HRTF:
      * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToHRTF(): void {
         if (Engine.audioEngine.canUseWebAudio) {
@@ -152,7 +150,7 @@ export class SoundTrack {
     /**
      * Switch the panning model to Equal Power:
      * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
      */
     public switchPanningModelToEqualPower(): void {
         if (Engine.audioEngine.canUseWebAudio) {
@@ -165,7 +163,7 @@ export class SoundTrack {
     /**
      * Connect the sound track to an audio analyser allowing some amazing
      * synchornization between the sounds/music and your visualization (VuMeter for instance).
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
+     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#using-the-analyser
      * @param analyser The analyser to connect to the engine
      */
     public connectToAnalyser(analyser: Analyser): void {

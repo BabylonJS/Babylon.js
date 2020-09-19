@@ -172,6 +172,13 @@ export class RuntimeAnimation {
         return this._currentActiveTarget;
     }
 
+    /**
+     * Gets the additive state of the runtime animation
+     */
+    public get isAdditive(): boolean {
+        return this._host && this._host.isAdditive;
+    }
+
     /** @hidden */
     public _onLoop: () => void;
 

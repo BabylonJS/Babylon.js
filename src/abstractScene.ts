@@ -17,6 +17,7 @@ import { Light } from "./Lights/light";
 import { Node } from "./node";
 
 declare type Animation = import("./Animations/animation").Animation;
+declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 
 /**
  * Defines how the parser contract is defined.
@@ -111,13 +112,13 @@ export abstract class AbstractScene {
     public rootNodes = new Array<Node>();
 
     /** All of the cameras added to this scene
-     * @see http://doc.babylonjs.com/babylon101/cameras
+     * @see https://doc.babylonjs.com/babylon101/cameras
      */
     public cameras = new Array<Camera>();
 
     /**
     * All of the lights added to this scene
-    * @see http://doc.babylonjs.com/babylon101/lights
+    * @see https://doc.babylonjs.com/babylon101/lights
     */
     public lights = new Array<Light>();
 
@@ -128,13 +129,13 @@ export abstract class AbstractScene {
 
     /**
      * The list of skeletons added to the scene
-     * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
      */
     public skeletons = new Array<Skeleton>();
 
     /**
     * All of the particle systems added to this scene
-    * @see http://doc.babylonjs.com/babylon101/particles
+    * @see https://doc.babylonjs.com/babylon101/particles
     */
     public particleSystems = new Array<IParticleSystem>();
 
@@ -145,28 +146,28 @@ export abstract class AbstractScene {
 
     /**
     * All of the animation groups added to this scene
-    * @see http://doc.babylonjs.com/how_to/group
+    * @see https://doc.babylonjs.com/how_to/group
     */
     public animationGroups = new Array<AnimationGroup>();
 
     /**
     * All of the multi-materials added to this scene
-    * @see http://doc.babylonjs.com/how_to/multi_materials
+    * @see https://doc.babylonjs.com/how_to/multi_materials
     */
     public multiMaterials = new Array<MultiMaterial>();
 
     /**
     * All of the materials added to this scene
     * In the context of a Scene, it is not supposed to be modified manually.
-    * Any addition or removal should be done using the addMaterial and removeMAterial Scene methods.
-    * Note also that the order of the Material wihin the array is not significant and might change.
-    * @see http://doc.babylonjs.com/babylon101/materials
+    * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
+    * Note also that the order of the Material within the array is not significant and might change.
+    * @see https://doc.babylonjs.com/babylon101/materials
     */
     public materials = new Array<Material>();
 
     /**
      * The list of morph target managers added to the scene
-     * @see http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh
+     * @see https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh
      */
     public morphTargetManagers = new Array<MorphTargetManager>();
 
@@ -180,7 +181,7 @@ export abstract class AbstractScene {
     * In the context of a Scene, it is not supposed to be modified manually.
     * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
     * Note also that the order of the TransformNode wihin the array is not significant and might change.
-    * @see http://doc.babylonjs.com/how_to/transformnode
+    * @see https://doc.babylonjs.com/how_to/transformnode
     */
     public transformNodes = new Array<TransformNode>();
 
@@ -194,8 +195,36 @@ export abstract class AbstractScene {
      */
     public textures = new Array<BaseTexture>();
 
+    /** @hidden */
+    protected _environmentTexture: Nullable<BaseTexture> = null;
     /**
-     * Environment texture for the scene
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
      */
-    public environmentTexture: Nullable<BaseTexture> = null;
+    public get environmentTexture(): Nullable<BaseTexture> {
+        return this._environmentTexture;
+    }
+
+    public set environmentTexture(value: Nullable<BaseTexture>) {
+        this._environmentTexture = value;
+    }
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses = new Array<PostProcess>();
+
+    /**
+     * @returns all meshes, lights, cameras, transformNodes and bones
+     */
+    public getNodes(): Array<Node> {
+        let nodes = new Array<Node>();
+        nodes = nodes.concat(this.meshes);
+        nodes = nodes.concat(this.lights);
+        nodes = nodes.concat(this.cameras);
+        nodes = nodes.concat(this.transformNodes); // dummies
+        this.skeletons.forEach((skeleton) => nodes = nodes.concat(skeleton.bones));
+        return nodes;
+    }
 }

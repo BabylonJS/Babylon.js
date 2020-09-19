@@ -1,15 +1,13 @@
 import { Observer, Observable } from "../Misc/observable";
 import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
-import { Vector3, Matrix } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { TransformNode } from "../Meshes/transformNode";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { PlaneBuilder } from "../Meshes/Builders/planeBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -49,9 +47,6 @@ export class PlaneDragGizmo extends Gizmo {
         var dragPlane = PlaneBuilder.CreatePlane("dragPlane", { width: .1375, height: .1375, sideOrientation: 2 }, scene);
         dragPlane.material = material;
         dragPlane.parent = plane;
-
-        // Position plane pointing normal to dragPlane normal
-        dragPlane.material = material;
         return plane;
     }
 
@@ -97,33 +92,28 @@ export class PlaneDragGizmo extends Gizmo {
         this.dragBehavior.moveAttached = false;
         this._rootMesh.addBehavior(this.dragBehavior);
 
-        var localDelta = new Vector3();
-        var tmpMatrix = new Matrix();
         this.dragBehavior.onDragObservable.add((event) => {
-            if (this.attachedMesh) {
-                // Convert delta to local translation if it has a parent
-                if (this.attachedMesh.parent) {
-                    this.attachedMesh.parent.computeWorldMatrix().invertToRef(tmpMatrix);
-                    tmpMatrix.setTranslationFromFloats(0, 0, 0);
-                    Vector3.TransformCoordinatesToRef(event.delta, tmpMatrix, localDelta);
-                } else {
-                    localDelta.copyFrom(event.delta);
-                }
+            if (this.attachedNode) {
+                // Keep world translation and use it to update world transform
+                // if the node has parent, the local transform properties (position, rotation, scale)
+                // will be recomputed in _matrixChanged function
+
                 // Snapping logic
                 if (this.snapDistance == 0) {
-                    this.attachedMesh.position.addInPlace(localDelta);
+                    this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
                 } else {
                     currentSnapDragDistance += event.dragDistance;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
                         var dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                        localDelta.normalizeToRef(tmpVector);
+                        event.delta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
-                        this.attachedMesh.position.addInPlace(tmpVector);
+                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
                         tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
                         this.onSnapObservable.notifyObservers(tmpSnapEvent);
                     }
                 }
+                this._matrixChanged();
             }
         });
 
@@ -131,8 +121,8 @@ export class PlaneDragGizmo extends Gizmo {
             if (this._customMeshSet) {
                 return;
             }
-            var isHovered = pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            var material = isHovered ? this._hoverMaterial : this._coloredMaterial;
+            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
             this._rootMesh.getChildMeshes().forEach((m) => {
                 m.material = material;
             });
@@ -141,7 +131,7 @@ export class PlaneDragGizmo extends Gizmo {
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
     }
-    protected _attachedMeshChanged(value: Nullable<AbstractMesh>) {
+    protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
         }
@@ -153,11 +143,11 @@ export class PlaneDragGizmo extends Gizmo {
     public set isEnabled(value: boolean) {
         this._isEnabled = value;
         if (!value) {
-            this.attachedMesh = null;
+            this.attachedNode = null;
         }
         else {
             if (this._parent) {
-                this.attachedMesh = this._parent.attachedMesh;
+                this.attachedNode = this._parent.attachedNode;
             }
         }
     }

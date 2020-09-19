@@ -3,6 +3,7 @@ var gulp = require("gulp");
 
 // Import Gulp Tasks
 require("./tasks/gulpTasks-viewerLibraries");
+require("./tasks/gulpTasks-apps");
 require("./tasks/gulpTasks-libraries");
 require("./tasks/gulpTasks-librariesES6");
 require("./tasks/gulpTasks-tsLint");
@@ -10,10 +11,11 @@ require("./tasks/gulpTasks-importLint");
 require("./tasks/gulpTasks-netlify");
 require("./tasks/gulpTasks-whatsNew");
 require("./tasks/gulpTasks-localRun");
+require("./tasks/gulpTasks-watchApps");
 require("./tasks/gulpTasks-watchLibraries");
 require("./tasks/gulpTasks-watchCore");
 require("./tasks/gulpTasks-typedoc");
-require("./tasks/gulpTasks-intellisense");
+require("./tasks/gulpTasks-documentation");
 require("./tasks/gulpTasks-tests");
 require("./tasks/gulpTasks-remapPaths");
 require("./tasks/gulpTasks-npmPackages");
@@ -70,12 +72,12 @@ gulp.task("typedoc-check", gulp.series("core", "gui", "loaders", "serializers", 
 /**
  * Combine Webserver and Watch as long as vscode does not handle multi tasks.
  */
-gulp.task("run", gulp.series("cleanup", "watchCore", "watchLibraries", "webserver"));
+gulp.task("run", gulp.series("cleanup", "watchCore", "watchLibraries", "watchApps", "webserver"));
 
 /**
  * Do it all (Build).
  */
-gulp.task("typescript-all", gulp.series("typescript-libraries", "typescript-es6", "netlify-cleanup"));
+gulp.task("typescript-all", gulp.series("typescript-libraries", "typescript-es6", "typescript-apps", "netlify-cleanup"));
 
 /**
  * Do it all (tests).
@@ -90,4 +92,4 @@ gulp.task("npmPackages", gulp.series("npmPackages-all"));
 /**
  * The default task, concat and min the main BJS files.
  */
-gulp.task("default", gulp.series("cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "intellisense", "documentation", "typedoc-all", "tests-all"));
+gulp.task("default", gulp.series("cleanup", "tsLint", "importLint", "circularDependencies", "typescript-all", "documentation", "typedoc-all", "tests-all"));

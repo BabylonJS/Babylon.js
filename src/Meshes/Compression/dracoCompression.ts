@@ -11,45 +11,12 @@ declare var WebAssembly: any;
 declare function importScripts(...urls: string[]): void;
 declare function postMessage(message: any, transfer?: any[]): void;
 
-function loadScriptAsync(url: string): Promise<void> {
-    if (typeof importScripts === "function") {
-        importScripts(url);
-        return Promise.resolve();
-    }
-    else {
-        return new Promise((resolve, reject) => {
-            Tools.LoadScript(url, () => {
-                resolve();
-            }, (message) => {
-                reject(new Error(message));
-            });
-        });
-    }
-}
-
-function loadFileAsync(url: string): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-        Tools.LoadFile(url, (data) => {
-            resolve(data as ArrayBuffer);
-        }, undefined, undefined, true, (request, exception) => {
-            reject(exception);
+function createDecoderAsync(wasmBinary?: ArrayBuffer): Promise<any> {
+    return new Promise((resolve) => {
+        DracoDecoderModule({ wasmBinary: wasmBinary }).then((module: any) => {
+            resolve({ module: module });
         });
     });
-}
-
-function createDecoderAsync(wasmUrl?: string, wasmBinary?: ArrayBuffer, fallbackUrl?: string): Promise<any> | undefined {
-    const decoderUrl = (wasmBinary && wasmUrl) || fallbackUrl;
-    if (decoderUrl) {
-        return loadScriptAsync(decoderUrl).then(() => {
-            return new Promise((resolve) => {
-                DracoDecoderModule({ wasmBinary: wasmBinary }).then((module: any) => {
-                    resolve({ module: module });
-                });
-            });
-        });
-    }
-
-    return undefined;
 }
 
 function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: { [kind: string]: number } | undefined, onIndicesData: (data: Uint32Array) => void, onAttributeData: (kind: string, data: Float32Array) => void): void {
@@ -104,11 +71,26 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
             const dracoData = new decoderModule.DracoFloat32Array();
             try {
                 decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
-                const babylonData = new Float32Array(numPoints * attribute.num_components());
-                for (let i = 0; i < babylonData.length; i++) {
-                    babylonData[i] = dracoData.GetValue(i);
+                const numComponents = attribute.num_components();
+                if (numComponents) {
+                    if (kind === "color" && numComponents === 3) {
+                        const babylonData = new Float32Array(numPoints * 4);
+                        for (let i = 0, j = 0; i < babylonData.length; i += 4, j += numComponents) {
+                            babylonData[i + 0] = dracoData.GetValue(j + 0);
+                            babylonData[i + 1] = dracoData.GetValue(j + 1);
+                            babylonData[i + 2] = dracoData.GetValue(j + 2);
+                            babylonData[i + 3] = 1;
+                        }
+                        onAttributeData(kind, babylonData);
+                    }
+                    else {
+                        const babylonData = new Float32Array(numPoints * numComponents);
+                        for (let i = 0; i < babylonData.length; i++) {
+                            babylonData[i] = dracoData.GetValue(i);
+                        }
+                        onAttributeData(kind, babylonData);
+                    }
                 }
-                onAttributeData(kind, babylonData);
             }
             finally {
                 decoderModule.destroy(dracoData);
@@ -153,14 +135,17 @@ function decodeMesh(decoderModule: any, dataView: ArrayBufferView, attributes: {
  * The worker function that gets converted to a blob url to pass into a worker.
  */
 function worker(): void {
-    let decoderPromise: Promise<any> | undefined;
+    let decoderPromise: PromiseLike<any> | undefined;
 
     onmessage = (event) => {
         const data = event.data;
         switch (data.id) {
             case "init": {
                 const decoder = data.decoder;
-                decoderPromise = createDecoderAsync(decoder.wasmUrl, decoder.wasmBinary, decoder.fallbackUrl);
+                if (decoder.url) {
+                    importScripts(decoder.url);
+                    decoderPromise = DracoDecoderModule({ wasmBinary: decoder.wasmBinary });
+                }
                 postMessage("done");
                 break;
             }
@@ -169,7 +154,7 @@ function worker(): void {
                     throw new Error("Draco decoder module is not available");
                 }
                 decoderPromise.then((decoder) => {
-                    decodeMesh(decoder.module, data.dataView, data.attributes, (indices) => {
+                    decodeMesh(decoder, data.dataView, data.attributes, (indices) => {
                         postMessage({ id: "indices", value: indices }, [indices.buffer]);
                     }, (kind, data) => {
                         postMessage({ id: kind, value: data }, [data.buffer]);
@@ -310,14 +295,18 @@ export class DracoCompression implements IDisposable {
     constructor(numWorkers = DracoCompression.DefaultNumWorkers) {
         const decoder = DracoCompression.Configuration.decoder;
 
-        const decoderWasmBinaryPromise: Promise<ArrayBuffer | undefined> =
-            (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object")
-                ? loadFileAsync(getAbsoluteUrl(decoder.wasmBinaryUrl))
-                : Promise.resolve(undefined);
+        const decoderInfo: { url: string | undefined, wasmBinaryPromise: Promise<ArrayBuffer | string | undefined> } =
+            (decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object") ? {
+                url: decoder.wasmUrl,
+                wasmBinaryPromise: Tools.LoadFileAsync(getAbsoluteUrl(decoder.wasmBinaryUrl))
+            } : {
+                url: decoder.fallbackUrl,
+                wasmBinaryPromise: Promise.resolve(undefined)
+            };
 
         if (numWorkers && typeof Worker === "function") {
-            this._workerPoolPromise = decoderWasmBinaryPromise.then((decoderWasmBinary) => {
-                const workerContent = `${loadScriptAsync}${createDecoderAsync}${decodeMesh}(${worker})()`;
+            this._workerPoolPromise = decoderInfo.wasmBinaryPromise.then((decoderWasmBinary) => {
+                const workerContent = `${decodeMesh}(${worker})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
                 const workerPromises = new Array<Promise<Worker>>(numWorkers);
                 for (let i = 0; i < workerPromises.length; i++) {
@@ -343,9 +332,8 @@ export class DracoCompression implements IDisposable {
                         worker.postMessage({
                             id: "init",
                             decoder: {
-                                wasmUrl: getAbsoluteUrl(decoder.wasmUrl),
+                                url: getAbsoluteUrl(decoderInfo.url),
                                 wasmBinary: decoderWasmBinary,
-                                fallbackUrl: getAbsoluteUrl(decoder.fallbackUrl)
                             }
                         });
                     });
@@ -357,8 +345,14 @@ export class DracoCompression implements IDisposable {
             });
         }
         else {
-            this._decoderModulePromise = decoderWasmBinaryPromise.then((decoderWasmBinary) => {
-                return createDecoderAsync(decoder.wasmUrl, decoderWasmBinary, decoder.fallbackUrl);
+            this._decoderModulePromise = decoderInfo.wasmBinaryPromise.then((decoderWasmBinary) => {
+                if (!decoderInfo.url) {
+                    throw new Error("Draco decoder module is not available");
+                }
+
+                return Tools.LoadScriptAsync(decoderInfo.url).then(() => {
+                    return createDecoderAsync(decoderWasmBinary as ArrayBuffer);
+                });
             });
         }
     }

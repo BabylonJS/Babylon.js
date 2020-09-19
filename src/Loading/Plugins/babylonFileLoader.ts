@@ -15,9 +15,7 @@ import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture";
 import { AnimationGroup } from "../../Animations/animationGroup";
 import { Light } from "../../Lights/light";
 import { SceneComponentConstants } from "../../sceneComponent";
-import { _TimeToken } from "../../Instrumentation/timeToken";
 import { SceneLoader } from "../../Loading/sceneLoader";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../States/index";
 import { AbstractScene } from "../../abstractScene";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
@@ -31,9 +29,22 @@ import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { _TypeStore } from '../../Misc/typeStore';
 import { Tools } from '../../Misc/tools';
 import { StringTools } from '../../Misc/stringTools';
+import { PostProcess } from '../../PostProcesses/postProcess';
 
 /** @hidden */
 export var _BabylonLoaderRegistered = true;
+
+/**
+ * Helps setting up some configuration for the babylon file loader.
+ */
+export class BabylonFileLoaderConfiguration {
+    /**
+     * The loader does not allow injecting custom physix engine into the plugins.
+     * Unfortunately in ES6, we need to manually inject them into the plugin.
+     * So you could set this variable to your engine import to make it work.
+     */
+    public static LoaderInjectedPhysicsEngine: any = undefined;
+}
 
 var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
     for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
@@ -289,6 +300,11 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 var parsedMesh = parsedData.meshes[index];
                 var mesh = <AbstractMesh>Mesh.Parse(parsedMesh, scene, rootUrl);
                 container.meshes.push(mesh);
+                if (mesh.hasInstances) {
+                    for (var instance of (mesh as Mesh).instances) {
+                        container.meshes.push(instance);
+                    }
+                }
                 log += (index === 0 ? "\n\tMeshes:" : "");
                 log += "\n\t\t" + mesh.toString(fullDetails);
             }
@@ -302,6 +318,19 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                 container.cameras.push(camera);
                 log += (index === 0 ? "\n\tCameras:" : "");
                 log += "\n\t\t" + camera.toString(fullDetails);
+            }
+        }
+
+        // Postprocesses
+        if (parsedData.postProcesses !== undefined && parsedData.postProcesses !== null) {
+            for (index = 0, cache = parsedData.postProcesses.length; index < cache; index++) {
+                var parsedPostProcess = parsedData.postProcesses[index];
+                var postProcess = PostProcess.Parse(parsedPostProcess, scene, rootUrl);
+                if (postProcess) {
+                    container.postProcesses.push(postProcess);
+                    log += (index === 0 ? "\n\Postprocesses:" : "");
+                    log += "\n\t\t" + postProcess.toString();
+                }
             }
         }
 
@@ -367,6 +396,11 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
                         }
                     });
                 }
+
+                if (skeleton._waitingOverrideMeshId) {
+                    skeleton.overrideMesh = scene.getMeshByID(skeleton._waitingOverrideMeshId);
+                    skeleton._waitingOverrideMeshId = null;
+                }
                 skeleton._hasWaitingData = null;
             }
         }
@@ -425,10 +459,6 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
         if (parsedData.actions !== undefined && parsedData.actions !== null) {
             ActionManager.Parse(parsedData.actions, null, scene);
         }
-
-        if (!addToScene) {
-            container.removeAllFromScene();
-        }
     } catch (err) {
         let msg = logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + log;
         if (onError) {
@@ -438,6 +468,9 @@ var loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?:
             throw err;
         }
     } finally {
+        if (!addToScene) {
+            container.removeAllFromScene();
+        }
         if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
             Logger.Log(logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
         }
@@ -610,6 +643,12 @@ SceneLoader.RegisterPlugin({
                                 }
                             });
                         }
+
+                        if (skeleton._waitingOverrideMeshId) {
+                            skeleton.overrideMesh = scene.getMeshByID(skeleton._waitingOverrideMeshId);
+                            skeleton._waitingOverrideMeshId = null;
+                        }
+
                         skeleton._hasWaitingData = null;
                     }
                 }
@@ -704,11 +743,11 @@ SceneLoader.RegisterPlugin({
             if (parsedData.physicsEnabled) {
                 var physicsPlugin;
                 if (parsedData.physicsEngine === "cannon") {
-                    physicsPlugin = new CannonJSPlugin();
+                    physicsPlugin = new CannonJSPlugin(undefined, undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine);
                 } else if (parsedData.physicsEngine === "oimo") {
-                    physicsPlugin = new OimoJSPlugin();
+                    physicsPlugin = new OimoJSPlugin(undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine);
                 } else if (parsedData.physicsEngine === "ammo") {
-                    physicsPlugin = new AmmoJSPlugin();
+                    physicsPlugin = new AmmoJSPlugin(undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine, undefined);
                 }
                 log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                 //else - default engine, which is currently oimo
@@ -739,38 +778,6 @@ SceneLoader.RegisterPlugin({
                 scene.setActiveCameraByID(parsedData.activeCameraID);
             }
 
-            // Environment texture
-            if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
-                // PBR needed for both HDR texture (gamma space) & a sky box
-                var isPBR = parsedData.isPBR !== undefined ? parsedData.isPBR : true;
-                if (parsedData.environmentTextureType && parsedData.environmentTextureType === "BABYLON.HDRCubeTexture") {
-                    var hdrSize: number = (parsedData.environmentTextureSize) ? parsedData.environmentTextureSize : 128;
-                    var hdrTexture = new HDRCubeTexture(rootUrl + parsedData.environmentTexture, scene, hdrSize, true, !isPBR);
-                    if (parsedData.environmentTextureRotationY) {
-                        hdrTexture.rotationY = parsedData.environmentTextureRotationY;
-                    }
-                    scene.environmentTexture = hdrTexture;
-                } else {
-                    if (StringTools.EndsWith(parsedData.environmentTexture, ".env")) {
-                        var compressedTexture = new CubeTexture(rootUrl + parsedData.environmentTexture, scene);
-                        if (parsedData.environmentTextureRotationY) {
-                            compressedTexture.rotationY = parsedData.environmentTextureRotationY;
-                        }
-                        scene.environmentTexture = compressedTexture;
-                    } else {
-                        var cubeTexture = CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
-                        if (parsedData.environmentTextureRotationY) {
-                            cubeTexture.rotationY = parsedData.environmentTextureRotationY;
-                        }
-                        scene.environmentTexture = cubeTexture;
-                    }
-                }
-                if (parsedData.createDefaultSkybox === true) {
-                    var skyboxScale = (scene.activeCamera !== undefined && scene.activeCamera !== null) ? (scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 : 1000;
-                    var skyboxBlurLevel = parsedData.skyboxBlurLevel || 0;
-                    scene.createDefaultSkybox(scene.environmentTexture, isPBR, skyboxScale, skyboxBlurLevel);
-                }
-            }
             // Finish
             return true;
         } catch (err) {

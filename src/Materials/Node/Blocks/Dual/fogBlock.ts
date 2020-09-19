@@ -1,8 +1,8 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
+import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
 import { Mesh } from '../../../../Meshes/mesh';
 import { Effect } from '../../../effect';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
@@ -11,6 +11,8 @@ import { MaterialHelper } from '../../../materialHelper';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
+
+import "../../../../Shaders/ShadersInclude/fogFragmentDeclaration";
 
 /**
  * Block used to add support for scene fog
@@ -31,17 +33,13 @@ export class FogBlock extends NodeMaterialBlock {
         this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
 
         // Fragment
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("fogColor", NodeMaterialBlockConnectionPointTypes.Color3, false, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
 
-        this.color.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
-        this.color.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.color.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.input.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
         this.fogColor.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
-        this.fogColor.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.fogColor.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**
@@ -69,7 +67,7 @@ export class FogBlock extends NodeMaterialBlock {
     /**
      * Gets the color input component
      */
-    public get color(): NodeMaterialConnectionPoint {
+    public get input(): NodeMaterialConnectionPoint {
         return this._inputs[2];
     }
 
@@ -87,15 +85,23 @@ export class FogBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public autoConfigure(material: NodeMaterial) {
         if (!this.view.isConnected) {
-            let viewInput = new InputBlock("view");
-            viewInput.setAsWellKnownValue(NodeMaterialWellKnownValues.View);
+            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View);
+
+            if (!viewInput) {
+                viewInput = new InputBlock("view");
+                viewInput.setAsSystemValue(NodeMaterialSystemValues.View);
+            }
             viewInput.output.connectTo(this.view);
         }
         if (!this.fogColor.isConnected) {
-            let fogColorInput = new InputBlock("fogColor", undefined, NodeMaterialBlockConnectionPointTypes.Color3);
-            fogColorInput.setAsWellKnownValue(NodeMaterialWellKnownValues.FogColor);
+            let fogColorInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.FogColor);
+
+            if (!fogColorInput) {
+                fogColorInput = new InputBlock("fogColor", undefined, NodeMaterialBlockConnectionPointTypes.Color3);
+                fogColorInput.setAsSystemValue(NodeMaterialSystemValues.FogColor);
+            }
             fogColorInput.output.connectTo(this.fogColor);
         }
     }
@@ -117,9 +123,8 @@ export class FogBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        state.sharedData.blocksWithDefines.push(this);
-
         if (state.target === NodeMaterialBlockTargets.Fragment) {
+            state.sharedData.blocksWithDefines.push(this);
             state.sharedData.bindableBlocks.push(this);
 
             state._emitFunctionFromInclude("fogFragmentDeclaration", `//${this.name}`, {
@@ -130,7 +135,7 @@ export class FogBlock extends NodeMaterialBlock {
             });
 
             let tempFogVariablename = state._getFreeVariableName("fog");
-            let color = this.color;
+            let color = this.input;
             let fogColor = this.fogColor;
             this._fogParameters = state._getFreeVariableName("fogParameters");
             let output = this._outputs[0];

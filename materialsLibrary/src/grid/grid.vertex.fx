@@ -10,11 +10,11 @@ attribute vec2 uv;
 attribute vec2 uv2;
 #endif
 
+#include<instancesDeclaration>
+
 // Uniforms
 uniform mat4 projection;
-uniform mat4 world;
 uniform mat4 view;
-uniform mat4 worldView;
 
 // Varying
 varying vec3 vPosition;
@@ -29,14 +29,13 @@ uniform vec2 vOpacityInfos;
 #endif
 
 void main(void) {
+	#include<instancesVertex>
 
-    #ifdef FOG
-    vec4 worldPos = world * vec4(position, 1.0);
-    #endif
+    vec4 worldPos = finalWorld * vec4(position, 1.0);
 
     #include<fogVertex>
 
-    vec4 cameraSpacePosition = worldView * vec4(position, 1.0);
+    vec4 cameraSpacePosition = view * worldPos;
     gl_Position = projection * cameraSpacePosition;
 
 #ifdef OPACITY

@@ -70,6 +70,9 @@ var getLowestRoot: (a: number, b: number, c: number, maxR: number) => { root: nu
 
 /** @hidden */
 export class Collider {
+    // Implementation of the "Improved Collision detection and Response" algorithm proposed by Kasper Fauerby
+    // https://www.peroxide.dk/papers/collision/collision.pdf
+
     /** Define if a collision was found */
     public collisionFound: boolean;
 
@@ -365,13 +368,18 @@ export class Collider {
             var distToCollision = t * this._velocity.length();
 
             if (!this.collisionFound || distToCollision < this._nearestDistance) {
-                if (!this.intersectionPoint) {
-                    this.intersectionPoint = this._collisionPoint.clone();
-                } else {
-                    this.intersectionPoint.copyFrom(this._collisionPoint);
+                // if collisionResponse is false, collision is not found but the collidedMesh is set anyway.
+                // onCollide observable are triggered if collideMesh is set
+                // this allow trigger volumes to be created.
+                if (hostMesh.collisionResponse) {
+                    if (!this.intersectionPoint) {
+                        this.intersectionPoint = this._collisionPoint.clone();
+                    } else {
+                        this.intersectionPoint.copyFrom(this._collisionPoint);
+                    }
+                    this._nearestDistance = distToCollision;
+                    this.collisionFound = true;
                 }
-                this._nearestDistance = distToCollision;
-                this.collisionFound = true;
                 this.collidedMesh = hostMesh;
             }
         }

@@ -12,6 +12,14 @@ import "../Engines/Extensions/engine.multiview";
  */
 export class VRMultiviewToSingleviewPostProcess extends PostProcess {
     /**
+     * Gets a string identifying the name of the class
+     * @returns "VRMultiviewToSingleviewPostProcess" string
+     */
+    public getClassName(): string {
+        return "VRMultiviewToSingleviewPostProcess";
+    }
+
+    /**
      * Initializes a VRMultiviewToSingleview
      * @param name name of the post process
      * @param camera camera to be applied to
