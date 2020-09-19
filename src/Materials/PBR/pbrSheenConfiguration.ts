@@ -20,7 +20,7 @@ export interface IMaterialSheenDefines {
     SHEEN_LINKWITHALBEDO: boolean;
     SHEEN_ROUGHNESS: boolean;
     SHEEN_ALBEDOSCALING: boolean;
-    SHEEN_USE_ROUGHNESS_FROM_TEXTURE: boolean;
+    SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
     SHEEN_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
 
     /** @hidden */
@@ -162,7 +162,7 @@ export class PBRSheenConfiguration {
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
             defines.SHEEN_ROUGHNESS = this._roughness !== null;
             defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
-            defines.SHEEN_USE_ROUGHNESS_FROM_TEXTURE = this._useRoughnessFromMainTexture;
+            defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
             defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = this.texture !== null && this.texture._texture === this.textureRoughness?._texture;
 
             if (defines._areTexturesDirty) {
@@ -187,7 +187,7 @@ export class PBRSheenConfiguration {
             defines.SHEEN_LINKWITHALBEDO = false;
             defines.SHEEN_ROUGHNESS = false;
             defines.SHEEN_ALBEDOSCALING = false;
-            defines.SHEEN_USE_ROUGHNESS_FROM_TEXTURE = false;
+            defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
             defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
         }
     }

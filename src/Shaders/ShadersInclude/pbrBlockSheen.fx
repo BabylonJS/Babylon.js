@@ -100,7 +100,7 @@
             
             #ifdef SHEEN_ROUGHNESS
                 float sheenRoughness = vSheenRoughness;
-                #if defined(SHEEN_TEXTURE) && defined(SHEEN_USE_ROUGHNESS_FROM_TEXTURE)
+                #if defined(SHEEN_TEXTURE) && defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
                     sheenRoughness *= sheenMapData.a;
                 #elif defined(SHEEN_TEXTURE_ROUGHNESS)
                     #ifdef SHEEN_TEXTURE_ROUGHNESS_IDENTICAL
