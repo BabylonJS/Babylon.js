@@ -495,7 +495,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
 
         var audioEngine = Engine.audioEngine;
-        
+
         if (!audioEngine) {
             return;
         }
