@@ -163,7 +163,7 @@ export class PBRSheenConfiguration {
             defines.SHEEN_ROUGHNESS = this._roughness !== null;
             defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
             defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
-            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = this.texture !== null && this.texture._texture === this.textureRoughness?._texture;
+            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -184,6 +184,7 @@ export class PBRSheenConfiguration {
         else {
             defines.SHEEN = false;
             defines.SHEEN_TEXTURE = false;
+            defines.SHEEN_TEXTURE_ROUGHNESS = false;
             defines.SHEEN_LINKWITHALBEDO = false;
             defines.SHEEN_ROUGHNESS = false;
             defines.SHEEN_ALBEDOSCALING = false;
@@ -226,7 +227,8 @@ export class PBRSheenConfiguration {
             if (this._texture && MaterialFlags.SheenTextureEnabled) {
                 uniformBuffer.setTexture("sheenSampler", this._texture);
             }
-            if (this.textureRoughness && (this.texture === null || this.texture._texture !== this.textureRoughness._texture) && MaterialFlags.SheenTextureEnabled) {
+
+            if (this._textureRoughness && (this._texture === null || this._texture._texture !== this._textureRoughness._texture) && MaterialFlags.SheenTextureEnabled) {
                 uniformBuffer.setTexture("sheenRoughnessSampler", this._textureRoughness);
             }
         }

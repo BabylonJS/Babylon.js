@@ -79,7 +79,7 @@ varying vec2 vBumpUV;
 #endif
 
 #ifdef CLEARCOAT
-    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+    #if (defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTUREDIRECTUV == 0 
         varying vec2 vClearCoatUV;
     #endif
 
@@ -93,7 +93,7 @@ varying vec2 vBumpUV;
 #endif
 
 #ifdef SHEEN
-    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0 
+    #if (defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)) && SHEEN_TEXTUREDIRECTUV == 0 
         varying vec2 vSheenUV;
     #endif
 #endif
@@ -351,7 +351,7 @@ void main(void) {
 #endif
 
 #ifdef CLEARCOAT
-    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+    #if (defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)) && CLEARCOAT_TEXTUREDIRECTUV == 0 
         if (vClearCoatInfos.x == 0.)
         {
             vClearCoatUV = vec2(clearCoatMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -386,7 +386,7 @@ void main(void) {
 #endif
 
 #ifdef SHEEN
-    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0 
+    #if (defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)) && SHEEN_TEXTUREDIRECTUV == 0 
         if (vSheenInfos.x == 0.)
         {
             vSheenUV = vec2(sheenMatrix * vec4(uvUpdated, 1.0, 0.0));

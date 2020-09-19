@@ -347,6 +347,10 @@ void main(void) {
             vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
         #endif
 
+        #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL)
+            vec4 clearCoatMapRoughnessData = texture2D(clearCoatRoughnessSampler, vClearCoatUV + uvOffset) * vClearCoatInfos.w;
+        #endif
+
         #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
             vec4 clearCoatTintMapData = toLinearSpace(texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset));
         #endif
@@ -360,6 +364,9 @@ void main(void) {
             geometricNormalW,
             viewDirectionW,
             vClearCoatParams,
+            #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL)
+                clearCoatMapRoughnessData,
+            #endif
             specularEnvironmentR0,
         #ifdef CLEARCOAT_TEXTURE
             clearCoatMapData,
