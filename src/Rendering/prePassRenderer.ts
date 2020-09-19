@@ -11,6 +11,8 @@ import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { Nullable } from "../types";
 import { AbstractMesh } from '../Meshes/abstractMesh';
 import { Material } from '../Materials/material';
+import { SubMesh } from '../Meshes/subMesh';
+import { GeometryBufferRenderer } from '../Rendering/geometryBufferRenderer';
 
 /**
  * Renders a pre pass of the scene
@@ -59,6 +61,13 @@ export class PrePassRenderer {
      * To save performance, we can excluded skinned meshes from the prepass
      */
     public excludedSkinnedMesh: AbstractMesh[] = [];
+
+    /**
+     * Force material to be excluded from the prepass
+     * Can be useful when `useGeometryBufferFallback` is set to `true`
+     * and you don't want a material to show in the effect.
+     */
+    public excludedMaterials: Material[] = [];
 
     private _textureIndices: number[] = [];
 
@@ -121,6 +130,34 @@ export class PrePassRenderer {
         this.prePassRT.samples = n;
     }
 
+    private _geometryBuffer: Nullable<GeometryBufferRenderer>;
+    private _useGeometryBufferFallback = false;
+    /**
+     * Uses the geometry buffer renderer as a fallback for non prepass capable effects
+     */
+    public get useGeometryBufferFallback() : boolean {
+        return this._useGeometryBufferFallback;
+    }
+
+    public set useGeometryBufferFallback(value: boolean) {
+        this._useGeometryBufferFallback = value;
+
+        if (value) {
+            this._geometryBuffer = this._scene.enableGeometryBufferRenderer();
+
+            if (!this._geometryBuffer) {
+                // Not supported
+                this._useGeometryBufferFallback = false;
+                return;
+            }
+
+            this._geometryBuffer.renderList = [];
+        } else {
+            this._geometryBuffer = null;
+            this._scene.disableGeometryBufferRenderer();
+        }
+    }
+
     /**
      * Instanciates a prepass renderer
      * @param scene The scene
@@ -171,12 +208,19 @@ export class PrePassRenderer {
      * Sets the proper output textures to draw in the engine.
      * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
      */
-    public bindAttachmentsForEffect(effect: Effect) {
+    public bindAttachmentsForEffect(effect: Effect, subMesh: SubMesh) {
         if (this.enabled) {
             if (effect._multiTarget) {
                 this._engine.bindAttachments(this._multiRenderAttachments);
             } else {
                 this._engine.bindAttachments(this._defaultAttachments);
+
+                if (this._geometryBuffer) {
+                    const material = subMesh.getMaterial();
+                    if (material && this.excludedMaterials.indexOf(material) === -1) {
+                        this._geometryBuffer.renderList.push(subMesh.getRenderingMesh());
+                    }
+                }
             }
         }
     }
@@ -187,6 +231,10 @@ export class PrePassRenderer {
     public _beforeCameraDraw() {
         if (this._isDirty) {
             this._update();
+        }
+
+        if (this._geometryBuffer) {
+            this._geometryBuffer.renderList = [];
         }
 
         this._bindFrameBuffer();
