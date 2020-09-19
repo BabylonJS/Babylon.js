@@ -359,20 +359,19 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
                 // pick grounds that are LOWER only. upper will use parabolic path
                 let pick = scene.pickWithRay(this._tmpRay, (o) => {
-                    const index = this._floorMeshes.indexOf(o);
-                    if (index === -1) {
-                        return false;
-                    }
                     // check for mesh-blockers
                     if (this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(o) !== -1) {
                         return true;
+                    }
+                    const index = this._floorMeshes.indexOf(o);
+                    if (index === -1) {
+                        return false;
                     }
                     return this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.position.y;
                 });
                 if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
                     return;
-                }
-                if (pick && pick.pickedPoint) {
+                } else if (pick && pick.pickedPoint) {
                     hitPossible = true;
                     this._setTargetMeshPosition(pick.pickedPoint);
                     this._setTargetMeshVisibility(true);
@@ -399,8 +398,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         });
                         if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
                             return;
-                        }
-                        if (pick && pick.pickedPoint) {
+                        } else if (pick && pick.pickedPoint) {
                             hitPossible = true;
                             this._setTargetMeshPosition(pick.pickedPoint);
                             this._setTargetMeshVisibility(true);
