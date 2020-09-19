@@ -1,8 +1,6 @@
 import { Tools } from "../../../Misc/tools";
 import { Scene } from "../../../scene";
 import { SceneComponentConstants, ISceneComponent } from "../../../sceneComponent";
-import { _TimeToken } from "../../../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../../../States/index";
 
 import { ProceduralTexture } from "./proceduralTexture";
 
@@ -10,7 +8,7 @@ declare module "../../../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of procedural textures added to the scene
-         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
+         * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures
          */
         proceduralTextures: Array<ProceduralTexture>;
     }

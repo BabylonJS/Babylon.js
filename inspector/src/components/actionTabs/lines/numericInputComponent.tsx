@@ -5,6 +5,7 @@ interface INumericInputComponentProps {
     value: number;
     step?: number;
     onChange: (value: number) => void;
+    precision?: number;
 }
 
 export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
@@ -17,17 +18,16 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
     constructor(props: INumericInputComponentProps) {
         super(props);
 
-        this.state = { value: this.props.value.toFixed(3) }
+        this.state = { value: this.props.value.toFixed(this.props.precision !== undefined ? this.props.precision : 3) }
     }
 
     shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: { value: string }) {
         if (this._localChange) {
-            this._localChange = false;
             return true;
         }
 
         if (nextProps.value.toString() !== nextState.value) {
-            nextState.value = nextProps.value.toFixed(3);
+            nextState.value = nextProps.value.toFixed(this.props.precision !== undefined ? this.props.precision : 3);
             return true;
         }
         return false;
@@ -52,6 +52,17 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         this.props.onChange(valueAsNumber);
     }
 
+    onBlur() {
+        this._localChange = false;
+        let valueAsNumber = parseFloat(this.state.value);
+
+        if (isNaN(valueAsNumber)) {
+            this.props.onChange(this.props.value);
+            return;
+        }
+
+        this.props.onChange(valueAsNumber);
+    }
 
     render() {
         return (
@@ -62,7 +73,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                         {`${this.props.label}: `}
                     </div>
                 }
-                <input type="number" step={this.props.step} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} />
+                <input type="number" step={this.props.step} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} onBlur={() => this.onBlur()}/>
             </div>
         )
     }

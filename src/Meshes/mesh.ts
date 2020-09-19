@@ -33,6 +33,9 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { MeshLODLevel } from './meshLODLevel';
 import { Path3D } from '../Maths/math.path';
 import { Plane } from '../Maths/math.plane';
+import { TransformNode } from './transformNode';
+import { CanvasGenerator } from '../Misc/canvasGenerator';
+import { ICreateCapsuleOptions } from './Builders/capsuleBuilder';
 
 declare type LinesMesh = import("./linesMesh").LinesMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
@@ -73,6 +76,8 @@ class _InstanceDataStorage {
     public previousBatch: Nullable<_InstancesBatch>;
     public hardwareInstancedRendering: boolean;
     public sideOrientation: number;
+    public manualUpdate: boolean;
+    public previousRenderId: number;
 }
 
 /**
@@ -83,6 +88,18 @@ export class _InstancesBatch {
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
     public renderSelf = new Array<boolean>();
     public hardwareInstancedRendering = new Array<boolean>();
+}
+
+/**
+ * @hidden
+ **/
+class _ThinInstanceDataStorage {
+    public instancesCount: number = 0;
+    public matrixBuffer: Nullable<Buffer> = null;
+    public matrixBufferSize = 32 * 16; // let's start with a maximum of 32 thin instances
+    public matrixData: Nullable<Float32Array>;
+    public boundingVectors: Array<Vector3> = [];
+    public worldMatrices: Nullable<Matrix[]> = null;
 }
 
 /**
@@ -212,6 +229,26 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Internal data
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
 
+    public get computeBonesUsingShaders(): boolean {
+        return this._internalAbstractMeshDataInfo._computeBonesUsingShaders;
+    }
+    public set computeBonesUsingShaders(value: boolean) {
+        if (this._internalAbstractMeshDataInfo._computeBonesUsingShaders === value) {
+            return;
+        }
+
+        if (value && this._internalMeshDataInfo._sourcePositions) {
+            // switch from software to GPU computation: we need to reset the vertex and normal buffers that have been updated by the software process
+            this.setVerticesData(VertexBuffer.PositionKind, this._internalMeshDataInfo._sourcePositions.slice(), true);
+            if (this._internalMeshDataInfo._sourceNormals) {
+                this.setVerticesData(VertexBuffer.NormalKind, this._internalMeshDataInfo._sourceNormals.slice(), true);
+            }
+        }
+
+        this._internalAbstractMeshDataInfo._computeBonesUsingShaders = value;
+        this._markSubMeshesAsAttributesDirty();
+    }
+
     /**
      * An event triggered before rendering the mesh
      */
@@ -272,11 +309,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this.instances.length > 0;
     }
 
+    public get hasThinInstances(): boolean {
+        return (this._thinInstanceDataStorage.instancesCount ?? 0) > 0;
+    }
+
     // Members
 
     /**
      * Gets the delay loading state of the mesh (when delay loading is turned on)
-     * @see http://doc.babylonjs.com/how_to/using_the_incremental_loading_system
+     * @see https://doc.babylonjs.com/how_to/using_the_incremental_loading_system
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
@@ -284,7 +325,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Gets the list of instances created from this mesh
      * it is not supposed to be modified manually.
      * Note also that the order of the InstancedMesh wihin the array is not significant and might change.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
      */
     public instances = new Array<InstancedMesh>();
 
@@ -298,13 +339,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * User defined function used to change how LOD level selection is done
-     * @see http://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      */
     public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
 
     /**
      * Gets or sets the morph target manager
-     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
      */
     public get morphTargetManager(): Nullable<MorphTargetManager> {
         return this._internalMeshDataInfo._morphTargetManager;
@@ -332,6 +373,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _instanceDataStorage = new _InstanceDataStorage();
 
+    /** @hidden */
+    public _thinInstanceDataStorage = new _ThinInstanceDataStorage();
+
     private _effectiveMaterial: Nullable<Material> = null;
 
     /** @hidden */
@@ -354,6 +398,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Gets the list of clones of this mesh
+     * The scene must have been constructed with useClonedMeshMap=true for this to work!
+     * Note that useClonedMeshMap=true is the default setting
+     */
+    public get cloneMeshMap(): Nullable<{ [id: string]: Mesh | undefined }> {
+        return this._internalMeshDataInfo.meshMap;
+    }
+
+    /**
      * Gets or sets a boolean indicating that this mesh does not use index buffer
      */
     public get isUnIndexed(): boolean {
@@ -365,6 +418,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._unIndexed = value;
             this._markSubMeshesAsAttributesDirty();
         }
+    }
+
+    /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
+    public get worldMatrixInstancedBuffer() {
+        return this._instanceDataStorage.instancesData;
+    }
+
+    /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
+    public get manualUpdateOfWorldMatrixInstancedBuffer() {
+        return this._instanceDataStorage.manualUpdate;
+    }
+
+    public set manualUpdateOfWorldMatrixInstancedBuffer(value: boolean) {
+        this._instanceDataStorage.manualUpdate = value;
     }
 
     /**
@@ -390,17 +457,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             // Deep copy
-            DeepCopier.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId",
-                "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
-                "onBeforeDrawObservable", "onBeforeRenderObservable", "onAfterRenderObservable", "onBeforeDraw",
-                "onAfterWorldMatrixUpdateObservable", "onCollideObservable", "onCollisionPositionChangeObservable", "onRebuildObservable",
-                "onDisposeObservable", "lightSources"
-            ],
-                ["_poseMatrix"]);
+            DeepCopier.DeepCopy(source, this, [
+                "name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata", "morphTargetManager",
+                "hasInstances", "source", "worldMatrixInstancedBuffer", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen",
+                "facetNb", "isFacetDataEnabled", "lightSources", "useBones", "isAnInstance", "collider", "edgesRenderer", "forward",
+                "up", "right", "absolutePosition", "absoluteScaling", "absoluteRotationQuaternion", "isWorldMatrixFrozen",
+                "nonUniformScaling", "behaviors", "worldMatrixFromCache", "hasThinInstances", "cloneMeshMap"
+            ], ["_poseMatrix"]);
 
             // Source mesh
             this._internalMeshDataInfo._source = source;
-            if (scene.useClonedMeshhMap) {
+            if (scene.useClonedMeshMap) {
                 if (!source._internalMeshDataInfo.meshMap) {
                     source._internalMeshDataInfo.meshMap = {};
                 }
@@ -440,6 +507,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 Tags.AddTagsTo(this, Tags.GetTags(source, true));
             }
 
+            // Enabled
+            this.setEnabled(source.isEnabled());
+
             // Parent
             this.parent = source.parent;
 
@@ -461,6 +531,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         (<any>child).clone(name + "." + child.name, this);
                     }
                 }
+            }
+
+            // Morphs
+            if (source.morphTargetManager) {
+                this.morphTargetManager = source.morphTargetManager;
             }
 
             // Physics clone
@@ -495,6 +570,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     // Methods
+    public instantiateHierarchy(newParent: Nullable<TransformNode> = null, options?: { doNotInstantiate: boolean}, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode> {
+        let instance = (this.getTotalVertices() > 0 && (!options || !options.doNotInstantiate)) ? this.createInstance("instance of " + (this.name || this.id)) :  this.clone("Clone of " +  (this.name || this.id), newParent || this.parent, true);
+
+        if (instance) {
+            instance.parent = newParent || this.parent;
+            instance.position = this.position.clone();
+            instance.scaling = this.scaling.clone();
+            if (this.rotationQuaternion)  {
+                instance.rotationQuaternion = this.rotationQuaternion.clone();
+            } else {
+                instance.rotation = this.rotation.clone();
+            }
+
+            if (onNewNodeCreated) {
+                onNewNodeCreated(this, instance);
+            }
+        }
+
+        for (var child of this.getChildTransformNodes(true)) {
+            child.instantiateHierarchy(instance, options, onNewNodeCreated);
+        }
+
+        return instance;
+    }
 
     /**
      * Gets the class name
@@ -669,7 +768,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].distance > distanceToCamera) {
             if (this.onLODLevelSelection) {
-                this.onLODLevelSelection(distanceToCamera, this, internalDataInfo._LODLevels[internalDataInfo._LODLevels.length - 1].mesh);
+                this.onLODLevelSelection(distanceToCamera, this, this);
             }
             return this;
         }
@@ -679,6 +778,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             if (level.distance < distanceToCamera) {
                 if (level.mesh) {
+                    if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+                        level.mesh._checkDelayState();
+                        return this;
+                    }
+
+                    if (level.mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+                        return this;
+                    }
+
                     level.mesh._preActivate();
                     level.mesh._updateSubMeshesBoundingInfo(this.worldMatrixFromCache);
                 }
@@ -906,7 +1014,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let engine = this.getEngine();
         let scene = this.getScene();
-        let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+        let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && (this.instances.length > 0 || this.hasThinInstances);
 
         this.computeWorldMatrix();
 
@@ -939,9 +1047,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         for (var light of this.lightSources) {
             let generator = light.getShadowGenerator();
 
-            if (generator) {
+            if (generator && (!generator.getShadowMap()?.renderList || generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1)) {
                 for (var subMesh of this.subMeshes) {
-                    if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                    if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
                         return false;
                     }
                 }
@@ -1022,11 +1130,35 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         if (!this._instanceDataStorage.visibleInstances[renderId]) {
+            if (this._instanceDataStorage.previousRenderId !== undefined && this._instanceDataStorage.isFrozen) {
+                this._instanceDataStorage.visibleInstances[this._instanceDataStorage.previousRenderId] = null;
+            }
+            this._instanceDataStorage.previousRenderId = renderId;
             this._instanceDataStorage.visibleInstances[renderId] = new Array<InstancedMesh>();
         }
 
         this._instanceDataStorage.visibleInstances[renderId].push(instance);
         return this;
+    }
+
+    protected _afterComputeWorldMatrix(): void {
+        super._afterComputeWorldMatrix();
+
+        if (!this.hasThinInstances) {
+            return;
+        }
+
+        if (!this.doNotSyncBoundingInfo) {
+            this.thinInstanceRefreshBoundingInfo(false);
+        }
+    }
+
+    /** @hidden */
+    public _postActivate(): void {
+        if (this.edgesShareWithInstances && this.edgesRenderer && this.edgesRenderer.isEnabled && this._renderingGroup) {
+            this._renderingGroup._edgesRenderers.pushNoDuplicate(this.edgesRenderer);
+            this.edgesRenderer.customInstances.push(this.getWorldMatrix());
+        }
     }
 
     /**
@@ -1067,12 +1199,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 needToRecreate = true;
             } else {
                 for (var submesh of this.subMeshes) {
-                    if (submesh.indexStart + submesh.indexCount >= totalIndices) {
+                    if (submesh.indexStart + submesh.indexCount > totalIndices) {
                         needToRecreate = true;
                         break;
                     }
 
-                    if (submesh.verticesStart + submesh.verticesCount >= totalVertices) {
+                    if (submesh.verticesStart + submesh.verticesCount > totalVertices) {
                         needToRecreate = true;
                         break;
                     }
@@ -1112,7 +1244,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 break;
             }
 
-            SubMesh.CreateFromIndices(0, offset, Math.min(subdivisionSize, totalIndices - offset), this);
+            SubMesh.CreateFromIndices(0, offset, index === count - 1 ? totalIndices - offset : subdivisionSize, this);
 
             offset += subdivisionSize;
         }
@@ -1140,7 +1272,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param stride defines the data stride size (can be null)
      * @returns the current mesh
      */
-    public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): Mesh {
+    public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): AbstractMesh {
         if (!this._geometry) {
             var vertexData = new VertexData();
             vertexData.set(data, kind);
@@ -1153,6 +1285,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._geometry.setVerticesData(kind, data, updatable, stride);
         }
         return this;
+    }
+
+    /**
+     * Delete a vertex buffer associated with this mesh
+     * @param kind defines which buffer to delete (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     */
+    public removeVerticesData(kind: string) {
+        if (!this._geometry) {
+            return;
+        }
+
+        this._geometry.removeVerticesData(kind);
     }
 
     /**
@@ -1216,7 +1372,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param makeItUnique defines if the geometry associated with the mesh must be cloned to make the change only for this mesh (and not all meshes associated with the same geometry)
      * @returns the current mesh
      */
-    public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
+    public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
         if (!this._geometry) {
             return this;
         }
@@ -1232,7 +1388,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
-     * @see http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
+     * @see https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
      * @param positionFunction is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything
      * @param computeNormals is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update
      * @returns the current mesh
@@ -1268,6 +1424,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this._geometry) {
             return this;
         }
+
+        if (this._geometry.meshes.length === 1) {
+            return this;
+        }
+
         var oldGeometry = this._geometry;
         var geometry = this._geometry.copy(Geometry.RandomId());
         oldGeometry.releaseForMesh(this, true);
@@ -1282,7 +1443,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param updatable defines if the updated index buffer must be flagged as updatable (default is false)
      * @returns the current mesh
      */
-    public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): Mesh {
+    public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): AbstractMesh {
         if (!this._geometry) {
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -1304,7 +1465,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      * @returns the current mesh
      */
-    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): Mesh {
+    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): AbstractMesh {
         if (!this._geometry) {
             return this;
         }
@@ -1425,7 +1586,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _getInstancesRenderList(subMeshId: number): _InstancesBatch {
+    public _getInstancesRenderList(subMeshId: number, isReplacementMode: boolean = false): _InstancesBatch {
         if (this._instanceDataStorage.isFrozen && this._instanceDataStorage.previousBatch) {
             return this._instanceDataStorage.previousBatch;
         }
@@ -1434,10 +1595,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const onlyForInstances = isInIntermediateRendering ? this._internalAbstractMeshDataInfo._onlyForInstancesIntermediate : this._internalAbstractMeshDataInfo._onlyForInstances;
         let batchCache = this._instanceDataStorage.batchCache;
         batchCache.mustReturn = false;
-        batchCache.renderSelf[subMeshId] = !onlyForInstances && this.isEnabled() && this.isVisible;
+        batchCache.renderSelf[subMeshId] = isReplacementMode || (!onlyForInstances && this.isEnabled() && this.isVisible);
         batchCache.visibleInstances[subMeshId] = null;
 
-        if (this._instanceDataStorage.visibleInstances) {
+        if (this._instanceDataStorage.visibleInstances && !isReplacementMode) {
             let visibleInstances = this._instanceDataStorage.visibleInstances;
             var currentRenderId = scene.getRenderId();
             var defaultRenderId = (isInIntermediateRendering ? visibleInstances.intermediateDefaultRenderId : visibleInstances.defaultRenderId);
@@ -1447,7 +1608,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 batchCache.visibleInstances[subMeshId] = visibleInstances[defaultRenderId];
             }
         }
-        batchCache.hardwareInstancedRendering[subMeshId] = this._instanceDataStorage.hardwareInstancedRendering && (batchCache.visibleInstances[subMeshId] !== null) && (batchCache.visibleInstances[subMeshId] !== undefined);
+        batchCache.hardwareInstancedRendering[subMeshId] =
+                        !isReplacementMode &&
+                        this._instanceDataStorage.hardwareInstancedRendering
+                        && (batchCache.visibleInstances[subMeshId] !== null)
+                        && (batchCache.visibleInstances[subMeshId] !== undefined);
         this._instanceDataStorage.previousBatch = batchCache;
         return batchCache;
     }
@@ -1476,23 +1641,31 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var offset = 0;
         var instancesCount = 0;
 
-        var world = this._effectiveMesh.getWorldMatrix();
-        if (batch.renderSelf[subMesh._id]) {
-            world.copyToArray(instanceStorage.instancesData, offset);
-            offset += 16;
-            instancesCount++;
-        }
+        let renderSelf = batch.renderSelf[subMesh._id];
 
-        if (visibleInstances) {
-            for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
-                var instance = visibleInstances[instanceIndex];
-                instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
+        const needUpdateBuffer =  !instancesBuffer || currentInstancesBufferSize !== instanceStorage.instancesBufferSize;
+
+        if (!this._instanceDataStorage.manualUpdate && (!instanceStorage.isFrozen || needUpdateBuffer)) {
+            var world = this._effectiveMesh.getWorldMatrix();
+            if (renderSelf) {
+                world.copyToArray(instanceStorage.instancesData, offset);
                 offset += 16;
                 instancesCount++;
             }
+
+            if (visibleInstances) {
+                for (var instanceIndex = 0; instanceIndex < visibleInstances.length; instanceIndex++) {
+                    var instance = visibleInstances[instanceIndex];
+                    instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
+                    offset += 16;
+                    instancesCount++;
+                }
+            }
+        } else {
+            instancesCount = (renderSelf ? 1 : 0) + visibleInstances.length;
         }
 
-        if (!instancesBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
+        if (needUpdateBuffer) {
             if (instancesBuffer) {
                 instancesBuffer.dispose();
             }
@@ -1505,9 +1678,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world2", 8, 4));
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
         } else {
-            instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+            if (!this._instanceDataStorage.isFrozen) {
+                instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+            }
         }
 
+        this._processInstancedBuffers(visibleInstances, renderSelf);
+
+        // Stats
+        this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+
+        // Draw
         this._bind(subMesh, effect, fillMode);
         this._draw(subMesh, fillMode, instancesCount);
 
@@ -1516,19 +1697,45 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @hidden */
-    public _processRendering(subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
+    public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine) {
+        // Stats
+        const instancesCount = this._thinInstanceDataStorage?.instancesCount ?? 0;
+
+        this.getScene()._activeIndices.addCount(subMesh.indexCount * instancesCount, false);
+
+        // Draw
+        this._bind(subMesh, effect, fillMode);
+        this._draw(subMesh, fillMode, instancesCount);
+
+        engine.unbindInstanceAttributes();
+    }
+
+    /** @hidden */
+    public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
+        // Do nothing
+    }
+
+    /** @hidden */
+    public _processRendering(renderingMesh: AbstractMesh, subMesh: SubMesh, effect: Effect, fillMode: number, batch: _InstancesBatch, hardwareInstancedRendering: boolean,
         onBeforeDraw: (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => void, effectiveMaterial?: Material): Mesh {
         var scene = this.getScene();
         var engine = scene.getEngine();
 
+        if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
+            this._renderWithThinInstances(subMesh, fillMode, effect, engine);
+            return this;
+        }
+
         if (hardwareInstancedRendering) {
             this._renderWithInstances(subMesh, fillMode, batch, effect, engine);
         } else {
+            let instanceCount = 0;
             if (batch.renderSelf[subMesh._id]) {
                 // Draw
                 if (onBeforeDraw) {
-                    onBeforeDraw(false, this._effectiveMesh.getWorldMatrix(), effectiveMaterial);
+                    onBeforeDraw(false, renderingMesh._effectiveMesh.getWorldMatrix(), effectiveMaterial);
                 }
+                instanceCount++;
 
                 this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
             }
@@ -1536,7 +1743,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             let visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
 
             if (visibleInstancesForSubMesh) {
-                for (var instanceIndex = 0; instanceIndex < visibleInstancesForSubMesh.length; instanceIndex++) {
+                let visibleInstanceCount = visibleInstancesForSubMesh.length;
+                instanceCount += visibleInstanceCount;
+
+                // Stats
+                for (var instanceIndex = 0; instanceIndex < visibleInstanceCount; instanceIndex++) {
                     var instance = visibleInstancesForSubMesh[instanceIndex];
 
                     // World
@@ -1544,11 +1755,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     if (onBeforeDraw) {
                         onBeforeDraw(true, world, effectiveMaterial);
                     }
-
                     // Draw
                     this._draw(subMesh, fillMode);
                 }
             }
+
+            // Stats
+            scene._activeIndices.addCount(subMesh.indexCount * instanceCount, false);
         }
         return this;
     }
@@ -1588,12 +1801,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
      * @returns the current mesh
      */
-    public render(subMesh: SubMesh, enableAlphaMode: boolean): Mesh {
+    public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         var scene = this.getScene();
 
-        if (scene._isInIntermediateRendering()) {
+        if (this._internalAbstractMeshDataInfo._isActiveIntermediate) {
             this._internalAbstractMeshDataInfo._isActiveIntermediate = false;
         } else {
             this._internalAbstractMeshDataInfo._isActive = false;
@@ -1604,7 +1818,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Managing instances
-        var batch = this._getInstancesRenderList(subMesh._id);
+        var batch = this._getInstancesRenderList(subMesh._id, !!effectiveMeshReplacement);
 
         if (batch.mustReturn) {
             return this;
@@ -1620,7 +1834,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         var engine = scene.getEngine();
-        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id];
+        var hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || subMesh.getRenderingMesh().hasThinInstances;
         let instanceDataStorage = this._instanceDataStorage;
 
         let material = subMesh.getMaterial();
@@ -1631,16 +1845,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Material
         if (!instanceDataStorage.isFrozen || !this._effectiveMaterial || this._effectiveMaterial !== material) {
-
-            this._effectiveMaterial = material;
-
-            if (this._effectiveMaterial._storeEffectOnSubMeshes) {
-                if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+            if (material._storeEffectOnSubMeshes) {
+                if (!material.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                     return this;
                 }
-            } else if (!this._effectiveMaterial.isReady(this, hardwareInstancedRendering)) {
+            } else if (!material.isReady(this, hardwareInstancedRendering)) {
                 return this;
             }
+
+            this._effectiveMaterial = material;
         }
 
         // Alpha mode
@@ -1663,17 +1876,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const effectiveMesh = this._effectiveMesh;
+        // Render to MRT
+        if (scene.prePassRenderer) {
+            scene.prePassRenderer.bindAttachmentsForEffect(effect);
+        }
+
+        const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
 
         var sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen) {
+        if (!instanceDataStorage.isFrozen &&
+            (this._effectiveMaterial.backFaceCulling || this.overrideMaterialSideOrientation !== null)) {
+            let mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._effectiveMaterial.sideOrientation;
-                if (effectiveMesh._getWorldMatrixDeterminant() < 0) {
-                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
-                }
+            }
+            if (mainDeterminant < 0) {
+                sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
             }
             instanceDataStorage.sideOrientation = sideOrientation!;
         } else {
@@ -1707,12 +1927,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (!this._effectiveMaterial.backFaceCulling && this._effectiveMaterial.separateCullingPass) {
             engine.setState(true, this._effectiveMaterial.zOffset, false, !reverse);
-            this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
+            this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
             engine.setState(true, this._effectiveMaterial.zOffset, false, reverse);
         }
 
         // Draw
-        this._processRendering(subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
+        this._processRendering(this, subMesh, effect, fillMode, batch, hardwareInstancedRendering, this._onBeforeDraw, this._effectiveMaterial);
 
         // Unbind
         this._effectiveMaterial.unbind();
@@ -1877,9 +2097,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let matricesIndices = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesKind));
         let matricesIndicesExtra = (<FloatArray>this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
         let numBadBoneIndices: number = 0;
-        for (var a = 0; a < numWeights; a++) {
+        for (var a = 0; a < numWeights; a += 4) {
             for (var b = 0; b < numInfluences; b++) {
-                let index = b < 4 ? matricesIndices[b] : matricesIndicesExtra[b - 4];
+                let index = b < 4 ? matricesIndices[a + b] : matricesIndicesExtra[a + b - 4];
                 if (index >= numBones || index < 0) { numBadBoneIndices++; }
             }
         }
@@ -2003,7 +2223,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The mesh normals are modified using the same transformation.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @param transform defines the transform matrix to use
-     * @see http://doc.babylonjs.com/resources/baking_transformations
+     * @see https://doc.babylonjs.com/resources/baking_transformations
      * @returns the current mesh
      */
     public bakeTransformIntoVertices(transform: Matrix): Mesh {
@@ -2050,19 +2270,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The mesh World Matrix is then reset.
      * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
-     * @see http://doc.babylonjs.com/resources/baking_transformations
+     * @see https://doc.babylonjs.com/resources/baking_transformations
+     * @param bakeIndependenlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependenlyOfChildren : boolean = true): Mesh {
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
-        this.scaling.copyFromFloats(1, 1, 1);
-        this.position.copyFromFloats(0, 0, 0);
-        this.rotation.copyFromFloats(0, 0, 0);
-        //only if quaternion is already set
-        if (this.rotationQuaternion) {
-            this.rotationQuaternion = Quaternion.Identity();
-        }
-        this._worldMatrix = Matrix.Identity();
+        this.resetLocalMatrix(bakeIndependenlyOfChildren);
         return this;
     }
 
@@ -2101,7 +2315,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
      * @returns a new mesh
      */
-    public clone(name: string = "", newParent?: Node, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
+    public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
         return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
     }
 
@@ -2136,7 +2350,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Sources
-        if (this._scene.useClonedMeshhMap) {
+        if (this._scene.useClonedMeshMap) {
             if (internalDataInfo.meshMap) {
                 for (const uniqueId in internalDataInfo.meshMap) {
                     const mesh = internalDataInfo.meshMap[uniqueId];
@@ -2164,16 +2378,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         internalDataInfo._source = null;
 
         // Instances
-        if (this._instanceDataStorage.instancesBuffer) {
-            this._instanceDataStorage.instancesBuffer.dispose();
-            this._instanceDataStorage.instancesBuffer = null;
-        }
+        this._disposeInstanceSpecificData();
 
-        while (this.instances.length) {
-            this.instances[0].dispose();
-        }
+        // Thin instances
+        this._disposeThinInstanceSpecificData();
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
+    }
+
+    /** @hidden */
+    public _disposeInstanceSpecificData() {
+        // Do nothing
+    }
+
+    /** @hidden */
+    public _disposeThinInstanceSpecificData() {
+        // Do nothing
     }
 
     /**
@@ -2192,14 +2412,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public applyDisplacementMap(url: string, minHeight: number, maxHeight: number, onSuccess?: (mesh: Mesh) => void, uvOffset?: Vector2, uvScale?: Vector2, forceUpdate = false): Mesh {
         var scene = this.getScene();
 
-        var onload = (img: HTMLImageElement) => {
+        var onload = (img: HTMLImageElement | ImageBitmap) => {
             // Getting height map data
-            var canvas = document.createElement("canvas");
-            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
             var heightMapWidth = img.width;
             var heightMapHeight = img.height;
-            canvas.width = heightMapWidth;
-            canvas.height = heightMapHeight;
+            var canvas = CanvasGenerator.CreateCanvas(heightMapWidth, heightMapHeight);
+            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
 
             context.drawImage(img, 0, 0);
 
@@ -2633,7 +2851,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var pstring: Array<string> = new Array(); //lists facet vertex positions (a,b,c) as string "a|b|c"
 
             var indexPtr: number = 0; // pointer to next available index value
-            var uniquePositions: Array<string> = new Array(); // unique vertex positions
+            var uniquePositions: { [key: string]: number } = {}; // unique vertex positions
             var ptr: number; // pointer to element in uniquePositions
             var facet: Array<number>;
 
@@ -2649,7 +2867,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         }
                         pstring[j] += currentPositions[3 * facet[j] + k] + "|";
                     }
-                    pstring[j] = pstring[j].slice(0, -1);
                 }
                 //check facet vertices to see that none are repeated
                 // do not process any facet that has a repeated vertex, ie is a line
@@ -2658,9 +2875,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     // if not listed add to uniquePositions and set index pointer
                     // if listed use its index in uniquePositions and new index pointer
                     for (var j = 0; j < 3; j++) {
-                        ptr = uniquePositions.indexOf(pstring[j]);
-                        if (ptr < 0) {
-                            uniquePositions.push(pstring[j]);
+                        ptr = uniquePositions[pstring[j]];
+                        if (ptr === undefined) {
+                            uniquePositions[pstring[j]] = indexPtr;
                             ptr = indexPtr++;
                             //not listed so add individual x, y, z coordinates to positions
                             for (var k = 0; k < 3; k++) {
@@ -2714,11 +2931,23 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Creates a new InstancedMesh object from the mesh model.
-     * @see http://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
      * @param name defines the name of the new instance
      * @returns a new InstancedMesh
      */
     public createInstance(name: string): InstancedMesh {
+        let geometry = this.geometry;
+
+        if (geometry && geometry.meshes.length > 1) {
+            let others = geometry.meshes.slice(0);
+            for (var other of others) {
+                if (other === this) {
+                    continue;
+                }
+                other.makeGeometryUnique();
+            }
+        }
+
         return Mesh._instancedMeshFactory(name, this);
     }
 
@@ -2728,6 +2957,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns the current mesh
      */
     public synchronizeInstances(): Mesh {
+        if (this._geometry && this._geometry.meshes.length !== 1 && this.instances.length) {
+            this.makeGeometryUnique();
+        }
+
         for (var instanceIndex = 0; instanceIndex < this.instances.length; instanceIndex++) {
             var instance = this.instances[instanceIndex];
             instance._syncSubMeshes();
@@ -2789,6 +3022,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public serialize(serializationObject: any): void {
         serializationObject.name = this.name;
         serializationObject.id = this.id;
+        serializationObject.uniqueId = this.uniqueId;
         serializationObject.type = this.getClassName();
 
         if (Tags && Tags.HasTags(this)) {
@@ -2822,6 +3056,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         serializationObject.checkCollisions = this.checkCollisions;
         serializationObject.isBlocker = this.isBlocker;
+        serializationObject.overrideMaterialSideOrientation = this.overrideMaterialSideOrientation;
 
         // Parent
         if (this.parent) {
@@ -2867,6 +3102,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Skeleton
         if (this.skeleton) {
             serializationObject.skeletonId = this.skeleton.id;
+            serializationObject.numBoneInfluencers = this.numBoneInfluencers;
         }
 
         // Physics
@@ -2897,6 +3133,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             var serializationInstance: any = {
                 name: instance.name,
                 id: instance.id,
+                isEnabled: instance.isEnabled(false),
+                isVisible: instance.isVisible,
+                isPickable: instance.isPickable,
+                checkCollisions: instance.checkCollisions,
                 position: instance.position.asArray(),
                 scaling: instance.scaling.asArray()
             };
@@ -2910,6 +3150,24 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             } else if (instance.rotation) {
                 serializationInstance.rotation = instance.rotation.asArray();
             }
+
+            // Physics
+            //TODO implement correct serialization for physics impostors.
+            if (this.getScene()._getComponent(SceneComponentConstants.NAME_PHYSICSENGINE)) {
+                let impostor = instance.getPhysicsImpostor();
+                if (impostor) {
+                    serializationInstance.physicsMass = impostor.getParam("mass");
+                    serializationInstance.physicsFriction = impostor.getParam("friction");
+                    serializationInstance.physicsRestitution = impostor.getParam("mass");
+                    serializationInstance.physicsImpostor = impostor.type;
+                }
+            }
+
+            // Metadata
+            if (instance.metadata) {
+                serializationInstance.metadata = instance.metadata;
+            }
+
             serializationObject.instances.push(serializationInstance);
 
             // Animations
@@ -2917,7 +3175,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             serializationInstance.ranges = instance.serializeAnimationRanges();
         }
 
-        //
+        // Thin instances
+        if (this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
+            serializationObject.thinInstances = {
+                instancesCount: this._thinInstanceDataStorage.instancesCount,
+                matrixData: Array.from(this._thinInstanceDataStorage.matrixData),
+                matrixBufferSize: this._thinInstanceDataStorage.matrixBufferSize,
+            };
+
+            if (this._userThinInstanceBuffersStorage) {
+                const userThinInstance: any = {
+                    data: {},
+                    sizes: {},
+                    strides: {},
+                };
+
+                for (const kind in this._userThinInstanceBuffersStorage.data) {
+                    userThinInstance.data[kind] = Array.from(this._userThinInstanceBuffersStorage.data[kind]);
+                    userThinInstance.sizes[kind] = this._userThinInstanceBuffersStorage.sizes[kind];
+                    userThinInstance.strides[kind] = this._userThinInstanceBuffersStorage.strides[kind];
+                }
+
+                serializationObject.thinInstances.userThinInstance = userThinInstance;
+            }
+        }
 
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
@@ -3082,6 +3363,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
+        mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
 
         if (parsedMesh.isBlocker !== undefined) {
             mesh.isBlocker = parsedMesh.isBlocker;
@@ -3190,7 +3472,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Skeleton
-        if (parsedMesh.skeletonId > -1) {
+        if (parsedMesh.skeletonId !== undefined && parsedMesh.skeletonId !== null) {
             mesh.skeleton = scene.getLastSkeletonByID(parsedMesh.skeletonId);
             if (parsedMesh.numBoneInfluencers) {
                 mesh.numBoneInfluencers = parsedMesh.numBoneInfluencers;
@@ -3262,6 +3544,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     instance._waitingParentId = parsedInstance.parentId;
                 }
 
+                if (parsedInstance.isEnabled !== undefined && parsedInstance.isEnabled !== null) {
+                    instance.setEnabled(parsedInstance.isEnabled);
+                }
+
+                if (parsedInstance.isVisible !== undefined && parsedInstance.isVisible !== null) {
+                    instance.isVisible = parsedInstance.isVisible;
+                }
+
+                if (parsedInstance.isPickable !== undefined && parsedInstance.isPickable !== null) {
+                    instance.isPickable = parsedInstance.isPickable;
+                }
+
                 if (parsedInstance.rotationQuaternion) {
                     instance.rotationQuaternion = Quaternion.FromArray(parsedInstance.rotationQuaternion);
                 } else if (parsedInstance.rotation) {
@@ -3309,12 +3603,35 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         }
 
+        // Thin instances
+        if (parsedMesh.thinInstances) {
+            const thinInstances = parsedMesh.thinInstances;
+
+            if (thinInstances.matrixData) {
+                mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16, false);
+
+                mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+                mesh._thinInstanceDataStorage.instancesCount = thinInstances.instancesCount;
+            } else {
+                mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+            }
+
+            if (parsedMesh.thinInstances.userThinInstance) {
+                const userThinInstance = parsedMesh.thinInstances.userThinInstance;
+
+                for (const kind in userThinInstance.data) {
+                    mesh.thinInstanceSetBuffer(kind, new Float32Array(userThinInstance.data[kind]), userThinInstance.strides[kind], false);
+                    mesh._userThinInstanceBuffersStorage.sizes[kind] = userThinInstance.sizes[kind];
+                }
+            }
+        }
+
         return mesh;
     }
 
     /**
      * Creates a ribbon mesh. Please consider using the same method from the MeshBuilder class instead
-     * @see http://doc.babylonjs.com/how_to/parametric_shapes
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes
      * @param name defines the name of the mesh to create
      * @param pathArray is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
      * @param closeArray creates a seam between the first and the last paths of the path array (default is false)
@@ -3322,8 +3639,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param offset is taken in account only if the `pathArray` is containing a single path
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-     * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#ribbon)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param instance defines an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#ribbon)
      * @returns a new Mesh
      */
     public static CreateRibbon(name: string, pathArray: Vector3[][], closeArray: boolean, closePath: boolean, offset: number, scene?: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
@@ -3337,7 +3654,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
       * @param tessellation sets the number of polygon sides (positive integer, default 64). So a tessellation valued to 3 will build a triangle, to 4 a square, etc
       * @param scene defines the hosting scene
       * @param updatable defines if the mesh must be flagged as updatable
-      * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+      * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
       * @returns a new Mesh
       */
     public static CreateDisc(name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh {
@@ -3350,7 +3667,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param size sets the size (float) of each box side (default 1)
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
      * @returns a new Mesh
      */
     public static CreateBox(name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh {
@@ -3364,7 +3681,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
       * @param diameter sets the diameter size (float) of the sphere (default 1)
       * @param scene defines the hosting scene
       * @param updatable defines if the mesh must be flagged as updatable
-      * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+      * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
       * @returns a new Mesh
       */
     public static CreateSphere(name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
@@ -3393,7 +3710,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param subdivisions sets the number of rings along the cylinder height (positive integer, default 1)
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
      * @returns a new Mesh
      */
     public static CreateCylinder(name: string, height: number, diameterTop: number, diameterBottom: number, tessellation: number, subdivisions: any, scene?: Scene, updatable?: any, sideOrientation?: number): Mesh {
@@ -3409,7 +3726,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param tessellation sets the number of torus sides (postive integer, default 16)
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
      * @returns a new Mesh
      */
     public static CreateTorus(name: string, diameter: number, thickness: number, tessellation: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
@@ -3427,7 +3744,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param q the number of windings on Y axis (positive integers, default 3)
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
      * @returns a new Mesh
      */
     public static CreateTorusKnot(name: string, radius: number, tube: number, radialSegments: number, tubularSegments: number, p: number, q: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
@@ -3440,7 +3757,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param points is an array successive Vector3
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
+     * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines).
      * @returns a new Mesh
      */
     public static CreateLines(name: string, points: Vector3[], scene: Nullable<Scene> = null, updatable: boolean = false, instance: Nullable<LinesMesh> = null): LinesMesh {
@@ -3456,7 +3773,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param dashNb is the intended total number of dashes (positive integer, default 200)
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
+     * @param instance is an instance of an existing LineMesh object to be updated with the passed `points` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#lines-and-dashedlines)
      * @returns a new Mesh
      */
     public static CreateDashedLines(name: string, points: Vector3[], dashSize: number, gapSize: number, dashNb: number, scene: Nullable<Scene> = null, updatable?: boolean, instance?: LinesMesh): LinesMesh {
@@ -3470,13 +3787,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * You can set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
      * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
      * Remember you can only change the shape positions, not their number when updating a polygon.
-     * @see http://doc.babylonjs.com/how_to/parametric_shapes#non-regular-polygon
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes#non-regular-polygon
      * @param name defines the name of the mesh to create
      * @param shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
      * @param scene defines the hosting scene
      * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns a new Mesh
      */
@@ -3486,14 +3803,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Creates an extruded polygon mesh, with depth in the Y direction. Please consider using the same method from the MeshBuilder class instead.
-     * @see http://doc.babylonjs.com/how_to/parametric_shapes#extruded-non-regular-polygon
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-non-regular-polygon
      * @param name defines the name of the mesh to create
      * @param shape is a required array of successive Vector3 representing the corners of the polygon in th XoZ plane, that is y = 0 for all vectors
      * @param depth defines the height of extrusion
      * @param scene defines the hosting scene
      * @param holes is a required array of arrays of successive Vector3 used to defines holes in the polygon
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
      * @param earcutInjection can be used to inject your own earcut reference
      * @returns a new Mesh
      */
@@ -3504,8 +3821,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Creates an extruded shape mesh.
      * The extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters. Please consider using the same method from the MeshBuilder class instead
-     * @see http://doc.babylonjs.com/how_to/parametric_shapes
-     * @see http://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
      * @param name defines the name of the mesh to create
      * @param shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
      * @param path is a required array of successive Vector3. This is the axis curve the shape is extruded along
@@ -3514,8 +3831,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-     * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#extruded-shape)
      * @returns a new Mesh
      */
     public static ExtrudeShape(name: string, shape: Vector3[], path: Vector3[], scale: number, rotation: number, cap: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
@@ -3527,7 +3844,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The custom extrusion is a parametric shape.
      * It has no predefined shape. Its final shape will depend on the input parameters.
      * Please consider using the same method from the MeshBuilder class instead
-     * @see http://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
      * @param name defines the name of the mesh to create
      * @param shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
      * @param path is a required array of successive Vector3. This is the axis curve the shape is extruded along
@@ -3538,8 +3855,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-     * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param instance is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters (https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape)
      * @returns a new Mesh
      */
     public static ExtrudeShapeCustom(name: string, shape: Vector3[], path: Vector3[], scaleFunction: Function, rotationFunction: Function, ribbonCloseArray: boolean, ribbonClosePath: boolean, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
@@ -3556,7 +3873,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param tessellation is the side number of the lathe.
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
      * @returns a new Mesh
      */
     public static CreateLathe(name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
@@ -3569,7 +3886,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param size sets the size (float) of both sides of the plane at once (default 1)
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
      * @returns a new Mesh
      */
     public static CreatePlane(name: string, size: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh {
@@ -3612,7 +3929,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Creates a ground mesh from a height map.
      * Please consider using the same method from the MeshBuilder class instead
-     * @see http://doc.babylonjs.com/babylon101/height_map
+     * @see https://doc.babylonjs.com/babylon101/height_map
      * @param name defines the name of the mesh to create
      * @param url sets the URL of the height map image resource
      * @param width set the ground width size
@@ -3635,7 +3952,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The tube is a parametric shape.
      * It has no predefined shape. Its final shape will depend on the input parameters.
      * Please consider using the same method from the MeshBuilder class instead
-     * @see http://doc.babylonjs.com/how_to/parametric_shapes
+     * @see https://doc.babylonjs.com/how_to/parametric_shapes
      * @param name defines the name of the mesh to create
      * @param path is a required array of successive Vector3. It is the curve used as the axis of the tube
      * @param radius sets the tube radius size
@@ -3644,8 +3961,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param cap sets the way the extruded shape is capped. Possible values : Mesh.NO_CAP (default), Mesh.CAP_START, Mesh.CAP_END, Mesh.CAP_ALL
      * @param scene defines the hosting scene
      * @param updatable defines if the mesh must be flagged as updatable
-     * @param sideOrientation defines the mesh side orientation (http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
-     * @param instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (http://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#tube)
+     * @param sideOrientation defines the mesh side orientation (https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation)
+     * @param instance is an instance of an existing Tube object to be updated with the passed `pathArray` parameter (https://doc.babylonjs.com/how_to/How_to_dynamically_morph_a_mesh#tube)
      * @returns a new Mesh
      */
     public static CreateTube(name: string, path: Vector3[], radius: number, tessellation: number, radiusFunction: { (i: number, distance: number): number; }, cap: number, scene: Scene, updatable?: boolean, sideOrientation?: number, instance?: Mesh): Mesh {
@@ -3664,7 +3981,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
       * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
       * * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored
       * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+      * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
       * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
       * @param name defines the name of the mesh to create
       * @param options defines the options used to create the mesh
@@ -3682,13 +3999,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * * The parameter `subdivisions` sets the number of subdivisions (postive integer, default 4). The more subdivisions, the more faces on the icosphere whatever its size
      * * The parameter `flat` (boolean, default true) gives each side its own normals. Set it to false to get a smooth continuous light reflection on the surface
      * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
-     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : http://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+     * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
      * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
      * @param name defines the name of the mesh
      * @param options defines the options used to create the mesh
      * @param scene defines the hosting scene
      * @returns a new Mesh
-     * @see http://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
+     * @see https://doc.babylonjs.com/how_to/polyhedra_shapes#icosphere
      */
     public static CreateIcoSphere(name: string, options: { radius?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, updatable?: boolean }, scene: Scene): Mesh {
         throw _DevTools.WarnImport("MeshBuilder");
@@ -3710,6 +4027,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         throw _DevTools.WarnImport("MeshBuilder");
     }
 
+    /** Creates a Capsule Mesh
+     * @param name defines the name of the mesh.
+     * @param options the constructors options used to shape the mesh.
+     * @param scene defines the scene the mesh is scoped to.
+     * @returns the capsule mesh
+     * @see https://doc.babylonjs.com/how_to/capsule_shape
+     */
+    public static CreateCapsule(name: string, options: ICreateCapsuleOptions, scene: Scene): Mesh {
+        throw _DevTools.WarnImport("MeshBuilder");
+    }
     // Skeletons
 
     /**
@@ -3775,15 +4102,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (!this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
             return this;
         }
-        if (!this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            return this;
-        }
         if (!this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
             return this;
         }
         if (!this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
             return this;
         }
+
+        const hasNormals = this.isVerticesDataPresent(VertexBuffer.NormalKind);
 
         let internalDataInfo = this._internalMeshDataInfo;
 
@@ -3793,7 +4119,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.subMeshes = submeshes;
         }
 
-        if (!internalDataInfo._sourceNormals) {
+        if (hasNormals && !internalDataInfo._sourceNormals) {
             this.setNormalsForCPUSkinning();
         }
 
@@ -3811,12 +4137,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // normalsData checks for not being Float32Array will only pass at most once
         var normalsData = this.getVerticesData(VertexBuffer.NormalKind);
 
-        if (!normalsData) {
-            return this;
-        }
+        if (hasNormals) {
+            if (!normalsData) {
+                return this;
+            }
 
-        if (!(normalsData instanceof Float32Array)) {
-            normalsData = new Float32Array(normalsData);
+            if (!(normalsData instanceof Float32Array)) {
+                normalsData = new Float32Array(normalsData);
+            }
         }
 
         var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
@@ -3860,14 +4188,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             Vector3.TransformCoordinatesFromFloatsToRef(internalDataInfo._sourcePositions[index], internalDataInfo._sourcePositions[index + 1], internalDataInfo._sourcePositions[index + 2], finalMatrix, tempVector3);
             tempVector3.toArray(positionsData, index);
 
-            Vector3.TransformNormalFromFloatsToRef(internalDataInfo._sourceNormals[index], internalDataInfo._sourceNormals[index + 1], internalDataInfo._sourceNormals[index + 2], finalMatrix, tempVector3);
-            tempVector3.toArray(normalsData, index);
+            if (hasNormals) {
+                Vector3.TransformNormalFromFloatsToRef(internalDataInfo._sourceNormals[index], internalDataInfo._sourceNormals[index + 1], internalDataInfo._sourceNormals[index + 2], finalMatrix, tempVector3);
+                tempVector3.toArray(normalsData!, index);
+            }
 
             finalMatrix.reset();
         }
 
         this.updateVerticesData(VertexBuffer.PositionKind, positionsData);
-        this.updateVerticesData(VertexBuffer.NormalKind, normalsData);
+        if (hasNormals) {
+            this.updateVerticesData(VertexBuffer.NormalKind, normalsData!);
+        }
 
         return this;
     }
@@ -3939,7 +4271,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (meshes[index]) {
                     totalVertices += meshes[index].getTotalVertices();
 
-                    if (totalVertices > 65536) {
+                    if (totalVertices >= 65536) {
                         Logger.Warn("Cannot merge meshes because resulting mesh will have more than 65536 vertices. Please use allow32BitsIndices = true to use 32 bits indices");
                         return null;
                     }
@@ -4022,6 +4354,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
+        meshSubclass.overrideMaterialSideOrientation = source.overrideMaterialSideOrientation;
 
         // Cleaning
         if (disposeSource) {
@@ -4084,3 +4417,5 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 }
+
+_TypeStore.RegisteredTypes["BABYLON.Mesh"] = Mesh;

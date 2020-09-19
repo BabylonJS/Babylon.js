@@ -8,6 +8,7 @@ import { Tools } from "../../Misc/tools";
 import { Nullable } from '../../types';
 import { EngineStore } from '../../Engines/engineStore';
 import { Epsilon } from '../../Maths/math.constants';
+import { CanvasGenerator } from '../../Misc/canvasGenerator';
 
 VertexData.CreateGround = function(options: { width?: number, height?: number, subdivisions?: number, subdivisionsX?: number, subdivisionsY?: number }): VertexData {
     var indices = [];
@@ -382,9 +383,12 @@ export class GroundBuilder {
 
         ground._setReady(false);
 
-        var onload = (img: HTMLImageElement) => {
+        var onload = (img: HTMLImageElement | ImageBitmap) => {
+            var bufferWidth = img.width;
+            var bufferHeight = img.height;
+
             // Getting height map data
-            var canvas = document.createElement("canvas");
+            var canvas = CanvasGenerator.CreateCanvas(bufferWidth, bufferHeight);
             var context = canvas.getContext("2d");
 
             if (!context) {
@@ -394,11 +398,6 @@ export class GroundBuilder {
             if (scene!.isDisposed) {
                 return;
             }
-
-            var bufferWidth = img.width;
-            var bufferHeight = img.height;
-            canvas.width = bufferWidth;
-            canvas.height = bufferHeight;
 
             context.drawImage(img, 0, 0);
 

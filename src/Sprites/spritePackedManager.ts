@@ -4,7 +4,7 @@ import { Texture } from "../Materials/Textures/texture";
 
 /**
  * Class used to manage multiple sprites of different sizes on the same spritesheet
- * @see http://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/babylon101/sprites
  */
 
 export class SpritePackedManager extends SpriteManager{

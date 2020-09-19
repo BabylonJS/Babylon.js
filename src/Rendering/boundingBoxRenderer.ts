@@ -18,6 +18,7 @@ import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
+import { Observable } from '../Misc/observable';
 
 declare module "../scene" {
     export interface Scene {
@@ -118,6 +119,17 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * Defines if the renderer should show the back lines or not
      */
     public showBackLines = true;
+
+    /**
+     * Observable raised before rendering a bounding box
+     */
+    public onBeforeBoxRenderingObservable = new Observable<BoundingBox>();
+
+    /**
+     * Observable raised after rendering a bounding box
+     */
+    public onAfterBoxRenderingObservable = new Observable<BoundingBox>();
+
     /**
      * @hidden
      */
@@ -180,6 +192,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 uniforms: ["world", "viewProjection", "color"]
             });
 
+        this._colorShader.reservedDataStore = {
+            hidden: true
+        };
         var engine = this.scene.getEngine();
         var boxdata = VertexData.CreateBox({ size: 1.0 });
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
@@ -234,6 +249,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
             if (boundingBox._tag !== renderingGroupId) {
                 continue;
             }
+
+            this.onBeforeBoxRenderingObservable.notifyObservers(boundingBox);
+
             var min = boundingBox.minimum;
             var max = boundingBox.maximum;
             var diff = max.subtract(min);
@@ -265,6 +283,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
             // Draw order
             engine.drawElementsType(Material.LineListDrawMode, 0, 24);
+
+            this.onAfterBoxRenderingObservable.notifyObservers(boundingBox);
         }
         this._colorShader.unbind();
         engine.setDepthFunctionToLessOrEqual();
@@ -323,6 +343,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
         if (!this._colorShader) {
             return;
         }
+
+        this.onBeforeBoxRenderingObservable.clear();
+        this.onAfterBoxRenderingObservable.clear();
 
         this.renderList.dispose();
 

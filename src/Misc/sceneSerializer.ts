@@ -248,7 +248,9 @@ export class SceneSerializer {
         // Transform nodes
         serializationObject.transformNodes = [];
         for (index = 0; index < scene.transformNodes.length; index++) {
-            serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
+            if (!scene.transformNodes[index].doNotSerialize) {
+                serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
+            }
         }
 
         // Geometries
@@ -291,7 +293,13 @@ export class SceneSerializer {
         // Particles Systems
         serializationObject.particleSystems = [];
         for (index = 0; index < scene.particleSystems.length; index++) {
-            serializationObject.particleSystems.push(scene.particleSystems[index].serialize());
+            serializationObject.particleSystems.push(scene.particleSystems[index].serialize(false));
+        }
+
+        // Post processes
+        serializationObject.postProcesses = [];
+        for (index = 0; index < scene.postProcesses.length; index++) {
+            serializationObject.postProcesses.push(scene.postProcesses[index].serialize());
         }
 
         // Action Manager

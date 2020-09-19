@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "./propertyChangedEvent";
+import { GlobalState } from '../globalState';
 
 interface IFloatLineComponentProps {
     label: string;
@@ -13,6 +14,7 @@ interface IFloatLineComponentProps {
     additionalClass?: string;
     step?: string,
     digits?: number;
+    globalState: GlobalState
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
@@ -23,7 +25,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         let currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 3)) : "0" };
+        this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 2)) : "0" };
         this._store = currentValue;
     }
 
@@ -34,7 +36,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 3) : "0";
+        const newValueString = newValue ? this.props.isInteger ? newValue.toFixed(0) : newValue.toFixed(this.props.digits || 2) : "0";
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
@@ -65,6 +67,8 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             return;
         }
 
+        valueString = valueString.replace(/(.+\...).+/, "$1");
+
         let valueAsNumber: number;
 
         if (this.props.isInteger) {
@@ -73,8 +77,9 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
             valueAsNumber = parseFloat(valueString);
         }
 
+
         this._localChange = true;
-        this.setState({ value: valueString });
+        this.setState({ value: valueString});
 
         if (isNaN(valueAsNumber)) {
             return;
@@ -95,7 +100,12 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                             {this.props.label}
                         </div>
                         <div className="value">
-                            <input type="number" step={this.props.step || "0.01"} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
+                            <input type="number" step={this.props.step || "0.01"} className="numeric-input" 
+                            onBlur={evt => {
+                                this.props.globalState.blockKeyboardEvents = false;
+                            }}
+                            onFocus={() => this.props.globalState.blockKeyboardEvents = true}
+                            value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
                 }

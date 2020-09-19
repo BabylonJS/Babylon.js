@@ -14,6 +14,9 @@ import { DirectionalLight } from '../Lights/directionalLight';
 import { SphereBuilder } from '../Meshes/Builders/sphereBuilder';
 import { HemisphereBuilder } from '../Meshes/Builders/hemisphereBuilder';
 import { SpotLight } from '../Lights/spotLight';
+import { TransformNode } from '../Meshes/transformNode';
+import { PointerEventTypes, PointerInfo } from '../Events/pointerEvents';
+import { Observer, Observable } from "../Misc/observable";
 
 /**
  * Gizmo that enables viewing a light
@@ -21,19 +24,40 @@ import { SpotLight } from '../Lights/spotLight';
 export class LightGizmo extends Gizmo {
     private _lightMesh: Mesh;
     private _material: StandardMaterial;
-    private cachedPosition = new Vector3();
-    private cachedForward = new Vector3(0, 0, 1);
+    private _cachedPosition = new Vector3();
+    private _cachedForward = new Vector3(0, 0, 1);
+    private _attachedMeshParent: TransformNode;
+    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+
+    /**
+     * Event that fires each time the gizmo is clicked
+     */
+    public onClickedObservable = new Observable<Light>();
 
     /**
      * Creates a LightGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      */
-    constructor(gizmoLayer?: UtilityLayerRenderer) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         super(gizmoLayer);
         this.attachedMesh = new AbstractMesh("", this.gizmoLayer.utilityLayerScene);
-        this._material = new StandardMaterial("light", this.gizmoLayer.originalScene);
+        this._attachedMeshParent = new TransformNode("parent", this.gizmoLayer.utilityLayerScene);
+
+        this.attachedMesh.parent = this._attachedMeshParent;
+        this._material = new StandardMaterial("light", this.gizmoLayer.utilityLayerScene);
         this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
+
+        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (!this._light) {
+                return;
+            }
+
+            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            if (this._isHovered && pointerInfo.event.button === 0) {
+                this.onClickedObservable.notifyObservers(this._light);
+            }
+        }, PointerEventTypes.POINTERDOWN);
     }
     private _light: Nullable<Light> = null;
 
@@ -73,12 +97,20 @@ export class LightGizmo extends Gizmo {
             }
             this.attachedMesh!.reservedDataStore.lightGizmo = this;
 
+            if (light.parent) {
+                this._attachedMeshParent.freezeWorldMatrix(light.parent.getWorldMatrix());
+            }
+
             // Get update position and direction if the light has it
             if ((light as any).position) {
                 this.attachedMesh!.position.copyFrom((light as any).position);
+                this.attachedMesh!.computeWorldMatrix(true);
+                this._cachedPosition.copyFrom(this.attachedMesh!.position);
             }
             if ((light as any).direction) {
                 this.attachedMesh!.setDirection((light as any).direction);
+                this.attachedMesh!.computeWorldMatrix(true);
+                this._cachedForward.copyFrom(this.attachedMesh!.forward);
             }
 
             this._update();
@@ -104,34 +136,37 @@ export class LightGizmo extends Gizmo {
         if (!this._light) {
             return;
         }
+
+        if (this._light.parent) {
+            this._attachedMeshParent.freezeWorldMatrix(this._light.parent.getWorldMatrix());
+        }
+
         if ((this._light as any).position) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
-            if (!this.attachedMesh!.position.equals(this.cachedPosition)) {
+            if (!this.attachedMesh!.position.equals(this._cachedPosition)) {
                 // update light to match gizmo
                 (this._light as any).position.copyFrom(this.attachedMesh!.position);
-                this.cachedPosition.copyFrom(this.attachedMesh!.position);
+                this._cachedPosition.copyFrom(this.attachedMesh!.position);
             } else {
                 // update gizmo to match light
                 this.attachedMesh!.position.copyFrom((this._light as any).position);
+                this.attachedMesh!.computeWorldMatrix(true);
+                this._cachedPosition.copyFrom(this.attachedMesh!.position);
             }
 
         }
         if ((this._light as any).direction) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
-            if (Vector3.DistanceSquared(this.attachedMesh!.forward, this.cachedForward) > 0.0001) {
+            if (Vector3.DistanceSquared(this.attachedMesh!.forward, this._cachedForward) > 0.0001) {
                 // update light to match gizmo
                 (this._light as any).direction.copyFrom(this.attachedMesh!.forward);
-                this.cachedForward.copyFrom(this.attachedMesh!.forward);
+                this._cachedForward.copyFrom(this.attachedMesh!.forward);
             } else if (Vector3.DistanceSquared(this.attachedMesh!.forward, (this._light as any).direction) > 0.0001) {
                 // update gizmo to match light
                 this.attachedMesh!.setDirection((this._light as any).direction);
-                this.cachedForward.copyFrom(this._lightMesh.forward);
+                this.attachedMesh!.computeWorldMatrix(true);
+                this._cachedForward.copyFrom(this.attachedMesh!.forward);
             }
-        }
-        if (!this._light.isEnabled()) {
-            this._material.diffuseColor.set(0, 0, 0);
-        } else {
-            this._material.diffuseColor.set(this._light.diffuse.r / 3, this._light.diffuse.g / 3, this._light.diffuse.b / 3);
         }
     }
 
@@ -141,7 +176,7 @@ export class LightGizmo extends Gizmo {
     /**
      * Creates the lines for a light mesh
      */
-    private static _createLightLines = (levels: number, scene: Scene) => {
+    private static _CreateLightLines = (levels: number, scene: Scene) => {
         var distFromSphere = 1.2;
 
         var root = new Mesh("root", scene);
@@ -158,7 +193,7 @@ export class LightGizmo extends Gizmo {
             return linePivot;
         }
         for (var i = 0; i < 4; i++) {
-            var l = linePivot.clone("lineParentClone");
+            var l = linePivot.clone("lineParentClone")!;
             l.rotation.z = Math.PI / 4;
             l.rotation.y = (Math.PI / 2) + (Math.PI / 2 * i);
 
@@ -202,8 +237,11 @@ export class LightGizmo extends Gizmo {
      * Disposes of the light gizmo
      */
     public dispose() {
+        this.onClickedObservable.clear();
+        this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this._material.dispose();
         super.dispose();
+        this._attachedMeshParent.dispose();
     }
 
     private static _CreateHemisphericLightMesh(scene: Scene) {
@@ -213,7 +251,7 @@ export class LightGizmo extends Gizmo {
         hemisphere.rotation.x = Math.PI / 2;
         hemisphere.parent = root;
 
-        var lines = this._createLightLines(3, scene);
+        var lines = this._CreateLightLines(3, scene);
         lines.parent = root;
         lines.position.z - 0.15;
 
@@ -229,7 +267,7 @@ export class LightGizmo extends Gizmo {
         sphere.rotation.x = Math.PI / 2;
         sphere.parent = root;
 
-        var lines = this._createLightLines(5, scene);
+        var lines = this._CreateLightLines(5, scene);
         lines.parent = root;
         root.scaling.scaleInPlace(LightGizmo._Scale);
         root.rotation.x = Math.PI / 2;
@@ -246,7 +284,7 @@ export class LightGizmo extends Gizmo {
         hemisphere.parent = root;
         hemisphere.rotation.x = -Math.PI / 2;
 
-        var lines = this._createLightLines(2, scene);
+        var lines = this._CreateLightLines(2, scene);
         lines.parent = root;
         root.scaling.scaleInPlace(LightGizmo._Scale);
         root.rotation.x = Math.PI / 2;
@@ -265,11 +303,11 @@ export class LightGizmo extends Gizmo {
         var line = Mesh.CreateCylinder(root.name, 6, 0.3, 0.3, 6, 1, scene);
         line.parent = mesh;
 
-        var left = line.clone(root.name);
+        var left = line.clone(root.name)!;
         left.scaling.y = 0.5;
         left.position.x += 1.25;
 
-        var right = line.clone(root.name);
+        var right = line.clone(root.name)!;
         right.scaling.y = 0.5;
         right.position.x += -1.25;
 

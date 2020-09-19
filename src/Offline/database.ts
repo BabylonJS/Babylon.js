@@ -11,7 +11,7 @@ Engine.OfflineProviderFactory = (urlToScene: string, callbackManifestChecked: (c
 
 /**
  * Class used to enable access to IndexedDB
- * @see http://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+ * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
  */
 export class Database implements IOfflineProvider {
     private _callbackManifestChecked: (check: boolean) => any;
@@ -25,7 +25,7 @@ export class Database implements IOfflineProvider {
     private _isSupported: boolean;
 
     // Handling various flavors of prefixed version of IndexedDB
-    private _idbFactory = <IDBFactory>(window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
+    private _idbFactory = <IDBFactory>(typeof window !== "undefined" ? window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB : indexedDB);
 
     /** Gets a boolean indicating if the user agent supports blob storage (this value will be updated after creating the first Database object) */
     private static IsUASupportingBlobStorage = true;
@@ -92,7 +92,7 @@ export class Database implements IOfflineProvider {
     }
 
     private static _ReturnFullUrlLocation = (url: string): string => {
-        if (url.indexOf("http:/") === -1 && url.indexOf("https:/") === -1) {
+        if (url.indexOf("http:/") === -1 && url.indexOf("https:/") === -1 && typeof window !== "undefined") {
             return (Database._ParseURL(window.location.href) + url);
         }
         else {
@@ -389,7 +389,7 @@ export class Database implements IOfflineProvider {
             }
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             image.src = url;
         }
     }
@@ -446,7 +446,7 @@ export class Database implements IOfflineProvider {
             }
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or BabylonJS Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             callback(-1);
         }
     }
@@ -660,7 +660,7 @@ export class Database implements IOfflineProvider {
             xhr.send();
         }
         else {
-            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js Database is not open.");
+            Logger.Error("Error: IndexedDB not supported by your browser or Babylon.js database is not open.");
             callback();
         }
     }

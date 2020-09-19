@@ -10,7 +10,7 @@ import { Vector3 } from "../../Maths/math.vector";
 
 /**
  * Listen to keyboard events to control the camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     /**

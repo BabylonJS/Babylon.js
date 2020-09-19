@@ -3,4 +3,5 @@ export class PropertyChangedEvent {
     public property: string;
     public value: any;
     public initialValue: any;
+    public allowNullValue?: boolean;
 }

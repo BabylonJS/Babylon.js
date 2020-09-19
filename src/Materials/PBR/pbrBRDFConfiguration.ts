@@ -8,6 +8,7 @@ export interface IMaterialBRDFDefines {
     BRDF_V_HEIGHT_CORRELATED: boolean;
     MS_BRDF_ENERGY_CONSERVATION: boolean;
     SPHERICAL_HARMONICS: boolean;
+    SPECULAR_GLOSSINESS_ENERGY_CONSERVATION: boolean;
 
     /** @hidden */
     _areMiscDirty: boolean;
@@ -36,6 +37,13 @@ export class PBRBRDFConfiguration {
      * less GPU intensive at the drawback of a lower quality.
      */
     public static DEFAULT_USE_SPHERICAL_HARMONICS = true;
+
+    /**
+     * Default value used for activating energy conservation for the specular workflow.
+     * If activated, the albedo color is multiplied with (1. - maxChannel(specular color)).
+     * If deactivated, a material is only physically plausible, when (albedo color + specular color) < 1.
+     */
+    public static DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION = true;
 
     private _useEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_ENERGY_CONSERVATION;
     /**
@@ -70,6 +78,17 @@ export class PBRBRDFConfiguration {
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public useSphericalHarmonics = PBRBRDFConfiguration.DEFAULT_USE_SPHERICAL_HARMONICS;
 
+    private _useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
+    /**
+     * Defines if the material uses energy conservation, when the specular workflow is active.
+     * If activated, the albedo color is multiplied with (1. - maxChannel(specular color)).
+     * If deactivated, a material is only physically plausible, when (albedo color + specular color) < 1.
+     * In the deactivated case, the material author has to ensure energy conservation, for a physically plausible rendering.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
+
     /** @hidden */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;
 
@@ -94,6 +113,7 @@ export class PBRBRDFConfiguration {
         defines.BRDF_V_HEIGHT_CORRELATED = this._useSmithVisibilityHeightCorrelated;
         defines.MS_BRDF_ENERGY_CONSERVATION = this._useEnergyConservation && this._useSmithVisibilityHeightCorrelated;
         defines.SPHERICAL_HARMONICS = this._useSphericalHarmonics;
+        defines.SPECULAR_GLOSSINESS_ENERGY_CONSERVATION = this._useSpecularGlossinessInputEnergyConservation;
     }
 
     /**

@@ -4,7 +4,7 @@ import { Matrix } from "babylonjs/Maths/math.vector";
 import { Color3 } from "babylonjs/Maths/math.color";
 import { IAnimatable } from 'babylonjs/Animations/animatable.interface';
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
-import { EffectFallbacks, EffectCreationOptions } from "babylonjs/Materials/effect";
+import { IEffectCreationOptions } from "babylonjs/Materials/effect";
 import { MaterialDefines } from "babylonjs/Materials/materialDefines";
 import { MaterialHelper } from "babylonjs/Materials/materialHelper";
 import { PushMaterial } from "babylonjs/Materials/pushMaterial";
@@ -18,6 +18,7 @@ import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 import "./normal.fragment";
 import "./normal.vertex";
+import { EffectFallbacks } from 'babylonjs/Materials/effectFallbacks';
 
 class NormalMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -25,6 +26,8 @@ class NormalMaterialDefines extends MaterialDefines {
     public CLIPPLANE2 = false;
     public CLIPPLANE3 = false;
     public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
     public ALPHATEST = false;
     public DEPTHPREPASS = false;
     public POINTSIZE = false;
@@ -103,8 +106,6 @@ export class NormalMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public maxSimultaneousLights: number;
 
-    private _renderId: number;
-
     constructor(name: string, scene: Scene) {
         super(name, scene);
     }
@@ -128,7 +129,7 @@ export class NormalMaterial extends PushMaterial {
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -140,10 +141,8 @@ export class NormalMaterial extends PushMaterial {
         var defines = <NormalMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         var engine = scene.getEngine();
@@ -221,12 +220,12 @@ export class NormalMaterial extends PushMaterial {
                 "vFogInfos", "vFogColor", "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "diffuseMatrix"
+                "vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "diffuseMatrix"
             ];
             var samplers = ["diffuseSampler"];
             var uniformBuffers = new Array<string>();
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
+            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -235,7 +234,7 @@ export class NormalMaterial extends PushMaterial {
             });
 
             subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                <EffectCreationOptions>{
+                <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
@@ -251,8 +250,8 @@ export class NormalMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }

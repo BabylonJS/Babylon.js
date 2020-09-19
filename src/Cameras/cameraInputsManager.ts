@@ -63,7 +63,7 @@ export interface CameraInputsMap<TCamera extends Camera> {
 /**
  * This represents the input manager used within a camera.
  * It helps dealing with all the different kind of input attached to a camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class CameraInputsManager<TCamera extends Camera> {
     /**
@@ -105,7 +105,7 @@ export class CameraInputsManager<TCamera extends Camera> {
 
     /**
      * Add an input method to a camera
-     * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      * @param input camera input method
      */
     public add(input: ICameraInput<TCamera>): void {

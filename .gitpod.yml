@@ -1,0 +1,14 @@
+image:
+  file: .gitpod.Dockerfile
+tasks:
+  - command: gp await-port 1338 && sleep 3 && gp preview $(gp url 1338)/sandbox/public/index-local.html
+  - before: >
+      cd Tools/Gulp &&
+      npm i typescript gulp@4.0.0 -g &&
+      npm install
+    command: npm run start 
+ports:
+  - port: 1338
+    onOpen: ignore
+  - port: 3000
+    onOpen: ignore

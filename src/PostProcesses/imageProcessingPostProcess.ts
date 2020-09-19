@@ -10,7 +10,6 @@ import { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } fr
 import { PostProcess, PostProcessOptions } from "./postProcess";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
-import { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/imageProcessing.fragment";
@@ -21,7 +20,6 @@ import "../Shaders/postprocess.vertex";
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
  */
 export class ImageProcessingPostProcess extends PostProcess {
-
     /**
      * Default configuration related to image processing available in the PBR Material.
      */
@@ -82,7 +80,12 @@ export class ImageProcessingPostProcess extends PostProcess {
                 scene = EngineStore.LastCreatedScene;
             }
 
-            this._imageProcessingConfiguration = (<Scene>scene).imageProcessingConfiguration;
+            if (scene) {
+                this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
+            }
+            else {
+                this._imageProcessingConfiguration = new ImageProcessingConfiguration();
+            }
         }
         else {
             this._imageProcessingConfiguration = configuration;
@@ -99,6 +102,14 @@ export class ImageProcessingPostProcess extends PostProcess {
         if (!doNotBuild) {
             this._updateParameters();
         }
+    }
+
+    /**
+     * If the post process is supported.
+     */
+    public get isSupported(): boolean {
+        const effect = this.getEffect();
+        return !effect || effect.isSupported;
     }
 
     /**
@@ -382,7 +393,10 @@ export class ImageProcessingPostProcess extends PostProcess {
         return "ImageProcessingPostProcess";
     }
 
-    protected _updateParameters(): void {
+    /**
+     * @hidden
+     */
+    public _updateParameters(): void {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;
         this.imageProcessingConfiguration.prepareDefines(this._defines, true);
         var defines = "";

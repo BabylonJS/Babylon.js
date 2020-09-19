@@ -7,7 +7,7 @@ import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     /**

@@ -1,5 +1,5 @@
 import { serializeAsColor4, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Color4 } from "babylonjs/Maths/math";
+import { Color4 } from "babylonjs/Maths/math.color";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { ProceduralTexture } from "babylonjs/Materials/Textures/Procedurals/proceduralTexture";
 import { Scene } from "babylonjs/scene";

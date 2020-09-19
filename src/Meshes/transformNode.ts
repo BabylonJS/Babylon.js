@@ -41,6 +41,10 @@ export class TransformNode extends Node {
      */
     public static BILLBOARDMODE_USE_POSITION = 128;
 
+    private static _TmpRotation = Quaternion.Zero();
+    private static _TmpScaling = Vector3.Zero();
+    private static _TmpTranslation = Vector3.Zero();
+
     private _forward = new Vector3(0, 0, 1);
     private _forwardInverted = new Vector3(0, 0, -1);
     private _up = new Vector3(0, 1, 0);
@@ -154,7 +158,8 @@ export class TransformNode extends Node {
     private _absoluteRotationQuaternion = Quaternion.Identity();
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
-    protected _postMultiplyPivotMatrix = false;
+    /** @hidden */
+    public _postMultiplyPivotMatrix = false;
 
     protected _isWorldMatrixFrozen = false;
 
@@ -308,19 +313,15 @@ export class TransformNode extends Node {
             return false;
         }
 
-        if (!cache.position.equals(this._position)) {
+        if (this.position._isDirty) {
             return false;
         }
 
-        if (this._rotationQuaternion) {
-            if (!cache.rotationQuaternion.equals(this._rotationQuaternion)) {
-                return false;
-            }
-        } else if (!cache.rotation.equals(this._rotation)) {
+        if (this.scaling._isDirty) {
             return false;
         }
 
-        if (!cache.scaling.equals(this._scaling)) {
+        if (this._rotationQuaternion && this._rotationQuaternion._isDirty || this.rotation._isDirty) {
             return false;
         }
 
@@ -333,10 +334,6 @@ export class TransformNode extends Node {
 
         let cache = this._cache;
         cache.localMatrixUpdated = false;
-        cache.position = Vector3.Zero();
-        cache.scaling = Vector3.Zero();
-        cache.rotation = Vector3.Zero();
-        cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
     }
@@ -421,12 +418,41 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Prevents the World matrix to be computed any longer.
+     * Instantiate (when possible) or clone that node with its hierarchy
+     * @param newParent defines the new parent to use for the instance (or clone)
+     * @param options defines options to configure how copy is done
+     * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
+     * @returns an instance (or a clone) of the current node with its hiearchy
+     */
+    public instantiateHierarchy(newParent: Nullable<TransformNode> = null, options?: { doNotInstantiate: boolean}, onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void): Nullable<TransformNode> {
+        let clone = this.clone("Clone of " +  (this.name || this.id), newParent || this.parent, true);
+
+        if (clone) {
+            if (onNewNodeCreated) {
+                onNewNodeCreated(this, clone);
+            }
+        }
+
+        for (var child of this.getChildTransformNodes(true)) {
+            child.instantiateHierarchy(clone, options, onNewNodeCreated);
+        }
+
+        return clone;
+    }
+
+    /**
+     * Prevents the World matrix to be computed any longer
+     * @param newWorldMatrix defines an optional matrix to use as world matrix
      * @returns the TransformNode.
      */
-    public freezeWorldMatrix(): TransformNode {
-        this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
-        this.computeWorldMatrix(true);
+    public freezeWorldMatrix(newWorldMatrix: Nullable<Matrix> = null): TransformNode {
+        if (newWorldMatrix) {
+            this._worldMatrix = newWorldMatrix;
+        } else {
+            this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
+            this.computeWorldMatrix(true);
+        }
+        this._isDirty = false;
         this._isWorldMatrixFrozen = true;
         return this;
     }
@@ -491,6 +517,8 @@ export class TransformNode extends Node {
             this.position.y = absolutePositionY;
             this.position.z = absolutePositionZ;
         }
+
+        this._absolutePosition.copyFrom(absolutePosition);
         return this;
     }
 
@@ -687,9 +715,6 @@ export class TransformNode extends Node {
      * @returns this TransformNode.
      */
     public getAbsolutePivotPointToRef(result: Vector3): TransformNode {
-        result.x = this._pivotMatrix.m[12];
-        result.y = this._pivotMatrix.m[13];
-        result.z = this._pivotMatrix.m[14];
         this.getPivotPointToRef(result);
         Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
         return this;
@@ -766,6 +791,8 @@ export class TransformNode extends Node {
     public attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode {
         this._transformToBoneReferal = affectedTransformNode;
         this.parent = bone;
+
+        bone.getSkeleton().prepare();
 
         if (bone.getWorldMatrix().determinant() < 0) {
             this.scalingDeterminant *= -1;
@@ -976,11 +1003,14 @@ export class TransformNode extends Node {
         this._currentRenderId = currentRenderId;
         this._childUpdateId++;
         this._isDirty = false;
+        this._position._isDirty = false;
+        this._rotation._isDirty = false;
+        this._scaling._isDirty = false;
         let parent = this._getEffectiveParent();
 
         // Scaling
-        let scaling: Vector3 = cache.scaling;
-        let translation: Vector3 = cache.position;
+        let scaling: Vector3 = TransformNode._TmpScaling;
+        let translation: Vector3 = this._position;
 
         // Translation
         if (this._infiniteDistance) {
@@ -988,20 +1018,19 @@ export class TransformNode extends Node {
                 var cameraWorldMatrix = camera.getWorldMatrix();
                 var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
 
+                translation = TransformNode._TmpTranslation;
                 translation.copyFromFloats(this._position.x + cameraGlobalPosition.x, this._position.y + cameraGlobalPosition.y, this._position.z + cameraGlobalPosition.z);
-            } else {
-                translation.copyFrom(this._position);
             }
-        } else {
-            translation.copyFrom(this._position);
         }
 
         // Scaling
         scaling.copyFromFloats(this._scaling.x * this.scalingDeterminant, this._scaling.y * this.scalingDeterminant, this._scaling.z * this.scalingDeterminant);
 
         // Rotation
-        let rotation: Quaternion = cache.rotationQuaternion;
+        let rotation: Quaternion;
         if (this._rotationQuaternion) {
+            this._rotationQuaternion._isDirty = false;
+            rotation = this._rotationQuaternion;
             if (this.reIntegrateRotationIntoRotationQuaternion) {
                 var len = this.rotation.lengthSquared();
                 if (len) {
@@ -1009,10 +1038,9 @@ export class TransformNode extends Node {
                     this._rotation.copyFromFloats(0, 0, 0);
                 }
             }
-            rotation.copyFrom(this._rotationQuaternion);
         } else {
+            rotation = TransformNode._TmpRotation;
             Quaternion.RotationYawPitchRollToRef(this._rotation.y, this._rotation.x, this._rotation.z, rotation);
-            cache.rotation.copyFrom(this._rotation);
         }
 
         // Compose
@@ -1109,7 +1137,7 @@ export class TransformNode extends Node {
 
         // Normal matrix
         if (!this.ignoreNonUniformScaling) {
-            if (this._scaling.isNonUniform) {
+            if (this._scaling.isNonUniformWithinEpsilon(0.000001)) {
                 this._updateNonUniformScalingState(true);
             } else if (parent && (<TransformNode>parent)._nonUniformScaling) {
                 this._updateNonUniformScalingState((<TransformNode>parent)._nonUniformScaling);
@@ -1137,6 +1165,42 @@ export class TransformNode extends Node {
         this._worldMatrixDeterminantIsDirty = true;
 
         return this._worldMatrix;
+    }
+
+    /**
+     * Resets this nodeTransform's local matrix to Matrix.Identity().
+     * @param independentOfChildren indicates if all child nodeTransform's world-space transform should be preserved.
+     */
+    public resetLocalMatrix(independentOfChildren : boolean = true): void
+    {
+        this.computeWorldMatrix();
+        if (independentOfChildren) {
+            let children = this.getChildren();
+            for (let i = 0; i < children.length; ++i) {
+                let child = children[i] as TransformNode;
+                if (child) {
+                    child.computeWorldMatrix();
+                    let bakedMatrix = TmpVectors.Matrix[0];
+                    child._localMatrix.multiplyToRef(this._localMatrix, bakedMatrix);
+                    let tmpRotationQuaternion = TmpVectors.Quaternion[0];
+                    bakedMatrix.decompose(child.scaling, tmpRotationQuaternion, child.position);
+                    if (child.rotationQuaternion) {
+                        child.rotationQuaternion = tmpRotationQuaternion;
+                    } else {
+                        tmpRotationQuaternion.toEulerAnglesToRef(child.rotation);
+                    }
+                }
+            }
+        }
+        this.scaling.copyFromFloats(1, 1, 1);
+        this.position.copyFromFloats(0, 0, 0);
+        this.rotation.copyFromFloats(0, 0, 0);
+
+        //only if quaternion is already set
+        if (this.rotationQuaternion) {
+            this.rotationQuaternion = Quaternion.Identity();
+        }
+        this._worldMatrix = Matrix.Identity();
     }
 
     protected _afterComputeWorldMatrix(): void {
@@ -1173,7 +1237,7 @@ export class TransformNode extends Node {
             camera = (<Camera>this.getScene().activeCamera);
         }
 
-        return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
+        return Vector3.TransformCoordinates(this.getAbsolutePosition(), camera.getViewMatrix());
     }
 
     /**
@@ -1185,7 +1249,7 @@ export class TransformNode extends Node {
         if (!camera) {
             camera = (<Camera>this.getScene().activeCamera);
         }
-        return this.absolutePosition.subtract(camera.globalPosition).length();
+        return this.getAbsolutePosition().subtract(camera.globalPosition).length();
     }
 
     /**
@@ -1195,7 +1259,7 @@ export class TransformNode extends Node {
      * @param doNotCloneChildren Do not clone children hierarchy
      * @returns the new transform node
      */
-    public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<TransformNode> {
+    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean) : Nullable<TransformNode> {
         var result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
 
         result.name = name;

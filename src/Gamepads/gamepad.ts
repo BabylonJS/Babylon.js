@@ -1,6 +1,4 @@
 import { Observable } from "../Misc/observable";
-import { _TimeToken } from "../Instrumentation/timeToken";
-import { _DepthCullingState, _StencilState, _AlphaState } from "../States/index";
 
 /**
  * Represents a gamepad control stick position

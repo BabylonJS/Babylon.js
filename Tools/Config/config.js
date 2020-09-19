@@ -52,7 +52,24 @@ config.additionalNpmPackages.forEach(package => {
     };
 });
 
+const allModules = [];
+config.modules.map(function(module) {
+    if (allModules.indexOf(module) === -1) {
+        allModules.push(module);
+    }
+});
 config.es6modules.map(function(module) {
+    if (allModules.indexOf(module) === -1) {
+        allModules.push(module);
+    }
+});
+config.apps.map(function(module) {
+    if (allModules.indexOf(module) === -1) {
+        allModules.push(module);
+    }
+});
+
+allModules.map(function(module) {
     const settings = config[module];
 
     const mainDirectory = path.resolve(rootFolder, settings.build.mainFolder);
@@ -102,13 +119,15 @@ config.es6modules.map(function(module) {
         ];
         const tsGlob = srcDirectory.replace(/\\/g, "/") + "/**/*.ts*";
 
-        for (let library of settings.libraries) {
-            if(library.entry){
-                const entryPath = path.join(srcDirectory, library.entry);
+        if (settings.libraries) {
+            for (let library of settings.libraries) {
+                if(library.entry){
+                    const entryPath = path.join(srcDirectory, library.entry);
 
-                library.computed = {
-                    entryPath
-                };
+                    library.computed = {
+                        entryPath
+                    };
+                }
             }
         }
 

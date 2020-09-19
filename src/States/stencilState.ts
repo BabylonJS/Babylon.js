@@ -2,7 +2,7 @@ import { Constants } from "../Engines/constants";
 /**
  * @hidden
  **/
-export class _StencilState {
+export class StencilState {
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
     public static readonly ALWAYS = Constants.ALWAYS;
     /** Passed to stencilOperation to specify that stencil value must be kept */
@@ -143,13 +143,13 @@ export class _StencilState {
         this._stencilTest = false;
         this._stencilMask = 0xFF;
 
-        this._stencilFunc = _StencilState.ALWAYS;
+        this._stencilFunc = StencilState.ALWAYS;
         this._stencilFuncRef = 1;
         this._stencilFuncMask = 0xFF;
 
-        this._stencilOpStencilFail = _StencilState.KEEP;
-        this._stencilOpDepthFail = _StencilState.KEEP;
-        this._stencilOpStencilDepthPass = _StencilState.REPLACE;
+        this._stencilOpStencilFail = StencilState.KEEP;
+        this._stencilOpDepthFail = StencilState.KEEP;
+        this._stencilOpStencilDepthPass = StencilState.REPLACE;
 
         this._isStencilTestDirty = true;
         this._isStencilMaskDirty = true;

@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Nullable } from "babylonjs/types";
-import { Color3 } from "babylonjs/Maths/math";
+import { Color3 } from 'babylonjs/Maths/math.color';
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { Texture } from "babylonjs/Materials/Textures/texture";
@@ -25,7 +25,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
         this.state = { isEnabled: false };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
         for (var mesh of scene.meshes) {

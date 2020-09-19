@@ -107,6 +107,17 @@ export class Geometry implements IGetSetVerticesData {
         return geometry;
     }
 
+    /** Get the list of meshes using this geometry */
+    public get meshes(): Mesh[] {
+        return this._meshes;
+    }
+
+    /**
+     * If set to true (false by defaut), the bounding info applied to the meshes sharing this geometry will be the bounding info defined at the class level
+     * and won't be computed based on the vertex positions (which is what we get when useBoundingInfoFromGeometry = false)
+     */
+    public useBoundingInfoFromGeometry = false;
+
     /**
      * Creates a new geometry
      * @param id defines the unique ID
@@ -691,11 +702,18 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     private _updateExtend(data: Nullable<FloatArray> = null) {
-        if (!data) {
-            data = this.getVerticesData(VertexBuffer.PositionKind)!;
-        }
+        if (this.useBoundingInfoFromGeometry && this._boundingInfo) {
+            this._extend = {
+                minimum: this._boundingInfo.minimum.clone(),
+                maximum: this._boundingInfo.maximum.clone()
+            };
+        } else {
+            if (!data) {
+                data = this.getVerticesData(VertexBuffer.PositionKind)!;
+            }
 
-        this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+            this._extend = extractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
+        }
     }
 
     private _applyToMesh(mesh: Mesh): void {
@@ -1199,9 +1217,22 @@ export class Geometry implements IGetSetVerticesData {
                     floatIndices.push(index & 0x000000FF);
                     floatIndices.push((index & 0x0000FF00) >> 8);
                     floatIndices.push((index & 0x00FF0000) >> 16);
-                    floatIndices.push(index >> 24);
+                    floatIndices.push((index >> 24) & 0xFF); // & 0xFF to convert to v + 256 if v < 0
                 }
                 mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, false);
+            }
+
+            if (binaryInfo.matricesIndicesExtraAttrDesc && binaryInfo.matricesIndicesExtraAttrDesc.count > 0) {
+                var matricesIndicesData = new Int32Array(parsedGeometry, binaryInfo.matricesIndicesExtraAttrDesc.offset, binaryInfo.matricesIndicesExtraAttrDesc.count);
+                var floatIndices = [];
+                for (var i = 0; i < matricesIndicesData.length; i++) {
+                    var index = matricesIndicesData[i];
+                    floatIndices.push(index & 0x000000FF);
+                    floatIndices.push((index & 0x0000FF00) >> 8);
+                    floatIndices.push((index & 0x00FF0000) >> 16);
+                    floatIndices.push((index >> 24) & 0xFF); // & 0xFF to convert to v + 256 if v < 0
+                }
+                mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, false);
             }
 
             if (binaryInfo.matricesWeightsAttrDesc && binaryInfo.matricesWeightsAttrDesc.count > 0) {
@@ -1275,7 +1306,7 @@ export class Geometry implements IGetSetVerticesData {
                         floatIndices.push(matricesIndex & 0x000000FF);
                         floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
                         floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
+                        floatIndices.push((matricesIndex >> 24) & 0xFF); // & 0xFF to convert to v + 256 if v < 0
                     }
 
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, floatIndices, parsedGeometry.matricesIndices._updatable);
@@ -1295,7 +1326,7 @@ export class Geometry implements IGetSetVerticesData {
                         floatIndices.push(matricesIndex & 0x000000FF);
                         floatIndices.push((matricesIndex & 0x0000FF00) >> 8);
                         floatIndices.push((matricesIndex & 0x00FF0000) >> 16);
-                        floatIndices.push(matricesIndex >> 24);
+                        floatIndices.push((matricesIndex >> 24) & 0xFF); // & 0xFF to convert to v + 256 if v < 0
                     }
 
                     mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, floatIndices, parsedGeometry.matricesIndicesExtra._updatable);
@@ -1330,7 +1361,7 @@ export class Geometry implements IGetSetVerticesData {
         // Flat shading
         if (mesh._shouldGenerateFlatShading) {
             mesh.convertToFlatShadedMesh();
-            delete mesh._shouldGenerateFlatShading;
+            mesh._shouldGenerateFlatShading = false;
         }
 
         // Update

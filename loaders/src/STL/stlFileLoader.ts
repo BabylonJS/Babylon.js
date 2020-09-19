@@ -16,7 +16,8 @@ import { Scene } from "babylonjs/scene";
 export class STLFileLoader implements ISceneLoaderPlugin {
 
     /** @hidden */
-    public solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
+    public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
+
     /** @hidden */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
     /** @hidden */
@@ -123,12 +124,6 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      */
     public load(scene: Scene, data: any, rootUrl: string): boolean {
         var result = this.importMesh(null, scene, data, rootUrl, null, null, null);
-
-        if (result) {
-            scene.createDefaultLight();
-            scene.createDefaultCameraOrLight();
-        }
-
         return result;
     }
 
@@ -142,8 +137,9 @@ export class STLFileLoader implements ISceneLoaderPlugin {
      */
     public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
         var container = new AssetContainer(scene);
+        scene._blockEntityCollection = true;
         this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-        container.removeAllFromScene();
+        scene._blockEntityCollection = false;
         return container;
     }
 

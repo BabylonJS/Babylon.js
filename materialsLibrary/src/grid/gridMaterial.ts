@@ -23,6 +23,8 @@ class GridMaterialDefines extends MaterialDefines {
     public PREMULTIPLYALPHA = false;
     public UV1 = false;
     public UV2 = false;
+    public INSTANCES = false;
+    public THIN_INSTANCES = false;
 
     constructor() {
         super();
@@ -91,8 +93,6 @@ export class GridMaterial extends PushMaterial {
 
     private _gridControl: Vector4 = new Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
 
-    private _renderId: number;
-
     /**
      * constructor
      * @param name The name given to the material in order to identify it afterwards.
@@ -115,7 +115,7 @@ export class GridMaterial extends PushMaterial {
 
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (this._wasPreviouslyReady && subMesh.effect) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -127,10 +127,8 @@ export class GridMaterial extends PushMaterial {
         var defines = <GridMaterialDefines>subMesh._materialDefines;
         var scene = this.getScene();
 
-        if (!this.checkReadyOnEveryCall && subMesh.effect) {
-            if (this._renderId === scene.getRenderId()) {
-                return true;
-            }
+        if (this._isReadyForSubMesh(subMesh)) {
+            return true;
         }
 
         if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
@@ -160,6 +158,9 @@ export class GridMaterial extends PushMaterial {
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
 
+        // Values that need to be evaluated on every frame
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), defines, !!useInstances);
+
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -176,11 +177,13 @@ export class GridMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.UV2Kind);
             }
 
+            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+
             // Defines
             var join = defines.toString();
             subMesh.setEffect(scene.getEngine().createEffect("grid",
                 attribs,
-                ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
+                ["projection", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view",
                     "opacityMatrix", "vOpacityInfos"],
                 ["opacitySampler"],
                 join,
@@ -193,8 +196,8 @@ export class GridMaterial extends PushMaterial {
             return false;
         }
 
-        this._renderId = scene.getRenderId();
-        this._wasPreviouslyReady = true;
+        defines._renderId = scene.getRenderId();
+        subMesh.effect._wasPreviouslyReady = true;
 
         return true;
     }
@@ -214,8 +217,9 @@ export class GridMaterial extends PushMaterial {
         this._activeEffect = effect;
 
         // Matrices
-        this.bindOnlyWorldMatrix(world);
-        this._activeEffect.setMatrix("worldView", world.multiply(scene.getViewMatrix()));
+        if (!defines.INSTANCES || defines.THIN_INSTANCE) {
+            this.bindOnlyWorldMatrix(world);
+        }
         this._activeEffect.setMatrix("view", scene.getViewMatrix());
         this._activeEffect.setMatrix("projection", scene.getProjectionMatrix());
 

@@ -17,6 +17,12 @@ config.modules.forEach(moduleName => {
 
 var validatePath = function(fileLocation, directory, module, lineNumber, errors, isExport) {
     let expressionType = isExport ? "Export" : "Import";
+
+    //Not checking svg files
+    if(module.endsWith(".svg")){
+        return;
+    }
+
     let internalModulePath = path.join(directory, module + ".ts");
 
     // Check .ts path.
@@ -55,7 +61,7 @@ var validatePath = function(fileLocation, directory, module, lineNumber, errors,
                     }
                 }
                 if (!excluded && fileLocation.indexOf("index.ts") === -1) {
-                    errors.push(`Line ${lineNumber} Imports ${module} should not be from index for tree shaking.`);
+                    errors.push(`Line ${internalModulePath} Imports ${module} should not be from index for tree shaking.`);
                 }
             }
         }

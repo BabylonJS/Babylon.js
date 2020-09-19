@@ -1,5 +1,5 @@
 import { Observable } from "babylonjs/Misc/observable";
-import { Vector2 } from "babylonjs/Maths/math";
+import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Control } from "../control";
 import { ValueAndUnit } from "../../valueAndUnit";
@@ -326,4 +326,10 @@ export class BaseSlider extends Control {
         delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
+
+    public _onCanvasBlur(): void {
+        this._forcePointerUp();
+        super._onCanvasBlur();
+    }
+
 }

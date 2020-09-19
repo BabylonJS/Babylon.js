@@ -2,12 +2,21 @@ import { NodeMaterialConnectionPoint } from './nodeMaterialBlockConnectionPoint'
 import { NodeMaterialBlock } from './nodeMaterialBlock';
 import { InputBlock } from './Blocks/Input/inputBlock';
 import { TextureBlock } from './Blocks/Dual/textureBlock';
-import { ReflectionTextureBlock } from './Blocks/Dual/reflectionTextureBlock';
+import { ReflectionTextureBaseBlock } from './Blocks/Dual/reflectionTextureBaseBlock';
+import { RefractionBlock } from './Blocks/PBR/refractionBlock';
+import { CurrentScreenBlock } from './Blocks/Dual/currentScreenBlock';
+import { ParticleTextureBlock } from './Blocks/Particle/particleTextureBlock';
+import { Scene } from '../../scene';
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
  */
 export class NodeMaterialBuildStateSharedData {
+    /**
+    * Gets the list of emitted varyings
+    */
+    public temps = new Array<string>();
+
     /**
      * Gets the list of emitted varyings
      */
@@ -26,7 +35,7 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<TextureBlock | ReflectionTextureBlock>();
+    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)
@@ -80,6 +89,9 @@ export class NodeMaterialBuildStateSharedData {
     /** Emit build activity */
     public verbose: boolean;
 
+    /** Gets or sets the hosting scene */
+    public scene: Scene;
+
     /**
      * Gets the compilation hints emitted at compilation time
      */
@@ -98,6 +110,11 @@ export class NodeMaterialBuildStateSharedData {
         emitFragment: false,
         notConnectedNonOptionalInputs: new Array<NodeMaterialConnectionPoint>()
     };
+
+    /**
+     * Is vertex program allowed to be empty?
+     */
+    public allowEmptyVertexProgram: boolean = false;
 
     /** Creates a new shared data */
     public constructor() {
@@ -120,6 +137,10 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["diffuseBase"] = 0;
         this.variableNames["specularBase"] = 0;
         this.variableNames["worldPos"] = 0;
+        this.variableNames["shadow"] = 0;
+
+        // Exclude known varyings
+        this.variableNames["vTBN"] = 0;
 
         // Exclude defines
         this.defineNames["MAINUV0"] = 0;
@@ -138,7 +159,7 @@ export class NodeMaterialBuildStateSharedData {
     public emitErrors() {
         let errorMessage = "";
 
-        if (!this.checks.emitVertex) {
+        if (!this.checks.emitVertex && !this.allowEmptyVertexProgram) {
             errorMessage += "NodeMaterial does not have a vertex output. You need to at least add a block that generates a glPosition value.\r\n";
         }
         if (!this.checks.emitFragment) {

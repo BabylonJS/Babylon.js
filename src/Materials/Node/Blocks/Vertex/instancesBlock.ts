@@ -1,13 +1,14 @@
 import { NodeMaterialBlock } from '../../nodeMaterialBlock';
-import { NodeMaterialBlockTargets } from '../../nodeMaterialBlockTargets';
-import { NodeMaterialBlockConnectionPointTypes } from '../../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from '../../Enums/nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from '../../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialConnectionPoint } from '../../nodeMaterialBlockConnectionPoint';
 import { NodeMaterialBuildState } from '../../nodeMaterialBuildState';
 import { AbstractMesh } from '../../../../Meshes/abstractMesh';
 import { NodeMaterial, NodeMaterialDefines } from '../../nodeMaterial';
-import { NodeMaterialWellKnownValues } from '../../nodeMaterialWellKnownValues';
+import { NodeMaterialSystemValues } from '../../Enums/nodeMaterialSystemValues';
 import { InputBlock } from '../Input/inputBlock';
 import { _TypeStore } from '../../../../Misc/typeStore';
+import { SubMesh } from '../../../../Meshes/subMesh';
 
 /**
  * Block used to add support for instances
@@ -28,6 +29,7 @@ export class InstancesBlock extends NodeMaterialBlock {
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, true);
 
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Matrix);
+        this.registerOutput("instanceID", NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -80,40 +82,72 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    /**
+     * Gets the isntanceID component
+     */
+    public get instanceID(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    public autoConfigure(material: NodeMaterial) {
         if (!this.world0.connectedPoint) {
-            let world0Input = new InputBlock("world0");
-            world0Input.setAsAttribute("world0");
+            let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0");
+
+            if (!world0Input) {
+                world0Input = new InputBlock("world0");
+                world0Input.setAsAttribute("world0");
+            }
             world0Input.output.connectTo(this.world0);
         }
         if (!this.world1.connectedPoint) {
-            let world1Input = new InputBlock("world1");
-            world1Input.setAsAttribute("world1");
+            let world1Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world1");
+
+            if (!world1Input) {
+                world1Input = new InputBlock("world1");
+                world1Input.setAsAttribute("world1");
+            }
             world1Input.output.connectTo(this.world1);
         }
         if (!this.world2.connectedPoint) {
-            let world2Input = new InputBlock("world2");
-            world2Input.setAsAttribute("world2");
+            let world2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world2");
+
+            if (!world2Input) {
+                world2Input = new InputBlock("world2");
+                world2Input.setAsAttribute("world2");
+            }
             world2Input.output.connectTo(this.world2);
         }
         if (!this.world3.connectedPoint) {
-            let world3Input = new InputBlock("world3");
-            world3Input.setAsAttribute("world3");
+            let world3Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world3");
+
+            if (!world3Input) {
+                world3Input = new InputBlock("world3");
+                world3Input.setAsAttribute("world3");
+            }
             world3Input.output.connectTo(this.world3);
         }
         if (!this.world.connectedPoint) {
-            let worldInput = new InputBlock("world");
-            worldInput.setAsWellKnownValue(NodeMaterialWellKnownValues.World);
+            let worldInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world");
+
+            if (!worldInput) {
+                worldInput = new InputBlock("world");
+                worldInput.setAsSystemValue(NodeMaterialSystemValues.World);
+            }
             worldInput.output.connectTo(this.world);
         }
 
-        this.world.define = "!INSTANCES";
+        this.world.define = "!INSTANCES || THIN_INSTANCES";
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false) {
+    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
         let changed = false;
         if (defines["INSTANCES"] !== useInstances) {
             defines.setValue("INSTANCES", useInstances);
+            changed = true;
+        }
+
+        if (subMesh && defines["THIN_INSTANCES"] !== !!subMesh?.getRenderingMesh().hasThinInstances) {
+            defines.setValue("THIN_INSTANCES", !!subMesh?.getRenderingMesh().hasThinInstances);
             changed = true;
         }
 
@@ -130,6 +164,7 @@ export class InstancesBlock extends NodeMaterialBlock {
 
         // Emit code
         let output = this._outputs[0];
+        let instanceID = this._outputs[1];
         let world0 = this.world0;
         let world1 = this.world1;
         let world2 = this.world2;
@@ -137,8 +172,13 @@ export class InstancesBlock extends NodeMaterialBlock {
 
         state.compilationString += `#ifdef INSTANCES\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\r\n`;
+        state.compilationString += `#ifdef THIN_INSTANCES\r\n`;
+        state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\r\n`;
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
         state.compilationString += `#else\r\n`;
         state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
         state.compilationString += `#endif\r\n`;
         return this;
     }

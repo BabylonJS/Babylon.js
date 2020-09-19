@@ -1,0 +1,135 @@
+.animationBar {
+    align-items: center;
+    color: white;
+    min-height: 30px;
+    height: var(--footer-height);
+    background-color: var(--footer-background);    
+    grid-column: 2;
+    grid-row: 1;
+    margin-left: 10px;
+    display: flex;
+
+    * {        
+        padding: 0px;
+        margin: 0px;
+    }
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        flex-grow: 10;
+        align-items: center
+    }
+
+    #playBtn {    
+        display: flex;
+        align-items: center;
+        height: var(--footer-height);
+        width: var(--footer-height);
+        border: none;
+        background-color: inherit;
+        cursor: pointer;
+
+        img {
+            width: var(--footer-height);
+            height: var(--footer-height);
+        }
+
+        &:hover {
+            background-color: var(--button-hover-color);   
+        }
+    
+        &:active {
+            background-color: var(--button-hover-background);
+        }
+    
+        &:focus {
+            outline: none !important;
+            border: none;
+        }    
+    }
+
+    .slider {
+        -webkit-appearance: none;
+        cursor: pointer;
+        width: 100%;
+        max-width: 820px;
+        height: var(--footer-height);
+        outline: none;
+        margin-left: 20px;
+        margin-right: 10px;
+        background-color: transparent;
+    }
+
+    /*Chrome -webkit */
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: var(--footer-background);
+        margin-top: -10px;
+    }
+    .slider::-webkit-slider-runnable-track {
+        height: 2px;
+        -webkit-appearance: none;
+        background-color: white;
+    }
+
+
+    /** FireFox -moz */
+    .slider::-moz-range-progress {
+    background-color: white;
+    height: 2px; 
+    }
+    .slider::-moz-range-thumb{
+        width: 20px;
+        height: 20px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: var(--footer-background);
+    }
+    .slider::-moz-range-track {
+        background: white;
+        height: 2px;
+    }
+
+    /** IE -ms */
+    .slider::-ms-track {
+        height: 2px;
+        
+        /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
+        background: transparent;
+        
+        /*leave room for the larger thumb to overflow with a transparent border */
+        border-color: transparent;
+        border-width: 10px 0;
+
+        /*remove default tick marks*/
+        color: transparent;
+    }
+    .slider::-ms-fill-lower {
+        background: white;
+        border-radius: 5px;
+    }
+    .slider::-ms-fill-upper {
+        background: white;
+        border-radius: 5px;
+    }
+    .slider::-ms-thumb {
+        width: 16px;
+        height: 16px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: var(--footer-background);
+        margin-top: 0px;
+    }
+}
+
+@media (max-width: 768px) {
+    .animationBar {       
+        margin-left: 0;
+    }
+}

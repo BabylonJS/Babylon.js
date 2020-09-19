@@ -7,7 +7,7 @@ import { Observer, Observable } from "./observable";
 
 /**
  * Defines the root class used to create scene optimization to use with SceneOptimizer
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class SceneOptimization {
     /**
@@ -43,7 +43,7 @@ export class SceneOptimization {
 
 /**
  * Defines an optimization used to reduce the size of render target textures
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class TextureOptimization extends SceneOptimization {
     /**
@@ -107,7 +107,7 @@ export class TextureOptimization extends SceneOptimization {
 
 /**
  * Defines an optimization used to increase or decrease the rendering resolution
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class HardwareScalingOptimization extends SceneOptimization {
     private _currentScale = -1;
@@ -167,7 +167,7 @@ export class HardwareScalingOptimization extends SceneOptimization {
 
 /**
  * Defines an optimization used to remove shadows
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class ShadowsOptimization extends SceneOptimization {
     /**
@@ -192,7 +192,7 @@ export class ShadowsOptimization extends SceneOptimization {
 
 /**
  * Defines an optimization used to turn post-processes off
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class PostProcessesOptimization extends SceneOptimization {
     /**
@@ -217,7 +217,7 @@ export class PostProcessesOptimization extends SceneOptimization {
 
 /**
  * Defines an optimization used to turn lens flares off
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class LensFlaresOptimization extends SceneOptimization {
     /**
@@ -242,7 +242,7 @@ export class LensFlaresOptimization extends SceneOptimization {
 
 /**
  * Defines an optimization based on user defined callback.
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class CustomOptimization extends SceneOptimization {
     /**
@@ -283,7 +283,7 @@ export class CustomOptimization extends SceneOptimization {
 
 /**
  * Defines an optimization used to turn particles off
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class ParticlesOptimization extends SceneOptimization {
     /**
@@ -308,7 +308,7 @@ export class ParticlesOptimization extends SceneOptimization {
 
 /**
  * Defines an optimization used to turn render targets off
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class RenderTargetsOptimization extends SceneOptimization {
     /**
@@ -333,7 +333,7 @@ export class RenderTargetsOptimization extends SceneOptimization {
 
 /**
  * Defines an optimization used to merge meshes with compatible materials
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class MergeMeshesOptimization extends SceneOptimization {
     private static _UpdateSelectionTree = false;
@@ -460,7 +460,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
 
 /**
  * Defines a list of options used by SceneOptimizer
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class SceneOptimizerOptions {
     /**
@@ -604,7 +604,7 @@ export class SceneOptimizerOptions {
 
 /**
  * Class used to run optimizations in order to reach a target frame rate
- * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+ * @description More details at https://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
  */
 export class SceneOptimizer implements IDisposable {
     private _isRunning = false;

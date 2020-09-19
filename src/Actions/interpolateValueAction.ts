@@ -11,7 +11,7 @@ import { _TypeStore } from '../Misc/typeStore';
 /**
  * This defines an action responsible to change the value of a property
  * by interpolating between its current value and the newly set one once triggered.
- * @see http://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/how_to/how_to_use_actions
  */
 export class InterpolateValueAction extends Action {
     /**

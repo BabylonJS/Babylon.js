@@ -1,3 +1,5 @@
+var baseConfig = require('../../../tests/karma-browsers.config')
+
 module.exports = function (config) {
     'use strict';
     config.set({
@@ -56,7 +58,6 @@ module.exports = function (config) {
             properties: {} // key value pair of properties to add to the <properties> section of the report
         },
 
-        browsers: ['Chrome']
-
+        ...baseConfig
     });
 };

@@ -4,6 +4,7 @@ import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { Control } from "./control";
 import { MultiLinePoint } from "../multiLinePoint";
 import { Measure } from "../measure";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /**
  * Class used to create multi line control
@@ -26,6 +27,7 @@ export class MultiLine extends Control {
     constructor(public name?: string) {
         super(name);
 
+        this._automaticSize = true;
         this.isHitTestVisible = false;
         this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
@@ -172,7 +174,7 @@ export class MultiLine extends Control {
         return "MultiLine";
     }
 
-    public _draw(context: CanvasRenderingContext2D): void {
+    public _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -260,5 +262,5 @@ export class MultiLine extends Control {
 
         super.dispose();
     }
-
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.MultiLine"] = MultiLine;

@@ -1,0 +1,18 @@
+.error-display {
+    position: absolute;
+    grid-column: 1 / 3;
+    grid-row: 1 / 3;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: red;
+    margin: 20px 0;
+    color: white;
+    z-index: 100;
+    display: grid;    
+    align-content: center;
+    justify-content: center;
+    user-select: none;
+    cursor: pointer;
+}

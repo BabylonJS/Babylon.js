@@ -3,7 +3,7 @@ import { DeepImmutable } from '../types';
 import { Plane } from './math.plane';
 
 /**
- * Reprasents a camera frustum
+ * Represents a camera frustum
  */
 export class Frustum {
     /**

@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { serialize, SerializationHelper } from "babylonjs/Misc/decorators";
-import { Matrix } from "babylonjs/Maths/math";
+import { Matrix } from "babylonjs/Maths/math.vector";
 import { Camera } from "babylonjs/Cameras/camera";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";

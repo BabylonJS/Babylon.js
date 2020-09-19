@@ -2,32 +2,77 @@
 export class Constants {
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
-    /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + DEST */
     public static readonly ALPHA_ADD = 1;
-    /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
     public static readonly ALPHA_COMBINE = 2;
-    /** Defines that alpha blending to DEST - SRC * DEST */
+    /** Defines that alpha blending is DEST - SRC * DEST */
     public static readonly ALPHA_SUBTRACT = 3;
-    /** Defines that alpha blending to SRC * DEST */
+    /** Defines that alpha blending is SRC * DEST */
     public static readonly ALPHA_MULTIPLY = 4;
-    /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
+    /** Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC) * DEST */
     public static readonly ALPHA_MAXIMIZED = 5;
-    /** Defines that alpha blending to SRC + DEST */
+    /** Defines that alpha blending is SRC + DEST */
     public static readonly ALPHA_ONEONE = 6;
-    /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
+    /** Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST */
     public static readonly ALPHA_PREMULTIPLIED = 7;
     /**
-     * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+     * Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST
      * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
-    /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
+    /** Defines that alpha blending is CST * SRC + (1 - CST) * DEST */
     public static readonly ALPHA_INTERPOLATE = 9;
     /**
-     * Defines that alpha blending to SRC + (1 - SRC) * DEST
+     * Defines that alpha blending is SRC + (1 - SRC) * DEST
      * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
      */
     public static readonly ALPHA_SCREENMODE = 10;
+    /**
+     * Defines that alpha blending is SRC + DST
+     * Alpha will be set to SRC ALPHA + DST ALPHA
+     */
+    public static readonly ALPHA_ONEONE_ONEONE = 11;
+    /**
+     * Defines that alpha blending is SRC * DST ALPHA + DST
+     * Alpha will be set to 0
+     */
+    public static readonly ALPHA_ALPHATOCOLOR = 12;
+    /**
+     * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+     */
+    public static readonly ALPHA_REVERSEONEMINUS = 13;
+    /**
+     * Defines that alpha blending is SRC + DST * (1 - SRC ALPHA)
+     * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
+     */
+    public static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA = 14;
+    /**
+     * Defines that alpha blending is SRC + DST
+     * Alpha will be set to SRC ALPHA
+     */
+    public static readonly ALPHA_ONEONE_ONEZERO = 15;
+    /**
+     * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+     * Alpha will be set to DST ALPHA
+     */
+    public static readonly ALPHA_EXCLUSION = 16;
+
+    /** Defines that alpha blending equation a SUM */
+    public static readonly ALPHA_EQUATION_ADD = 0;
+    /** Defines that alpha blending equation a SUBSTRACTION */
+    public static readonly ALPHA_EQUATION_SUBSTRACT = 1;
+    /** Defines that alpha blending equation a REVERSE SUBSTRACTION */
+    public static readonly ALPHA_EQUATION_REVERSE_SUBTRACT = 2;
+    /** Defines that alpha blending equation a MAX operation */
+    public static readonly ALPHA_EQUATION_MAX = 3;
+    /** Defines that alpha blending equation a MIN operation */
+    public static readonly ALPHA_EQUATION_MIN = 4;
+    /**
+     * Defines that alpha blending equation a DARKEN operation:
+     * It takes the min of the src and sums the alpha channels.
+     */
+    public static readonly ALPHA_EQUATION_DARKEN = 5;
 
     /** Defines that the ressource is not delayed*/
     public static readonly DELAYLOADSTATE_NONE = 0;
@@ -141,18 +186,21 @@ export class Constants {
     /** FLOAT_32_UNSIGNED_INT_24_8_REV */
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
 
-    /** nearest is mag = nearest and min = nearest and mip = linear */
+    /** nearest is mag = nearest and min = nearest and no mip */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
-    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    /** mag = nearest and min = nearest and mip = none */
+    public static readonly TEXTURE_NEAREST_NEAREST = 1;
+
+    /** Bilinear is mag = linear and min = linear and no mip */
     public static readonly TEXTURE_BILINEAR_SAMPLINGMODE = 2;
+    /** mag = linear and min = linear and mip = none */
+    public static readonly TEXTURE_LINEAR_LINEAR = 2;
+
     /** Trilinear is mag = linear and min = linear and mip = linear */
     public static readonly TEXTURE_TRILINEAR_SAMPLINGMODE = 3;
-    /** nearest is mag = nearest and min = nearest and mip = linear */
-    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 1;
-    /** Bilinear is mag = linear and min = linear and mip = nearest */
-    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 2;
     /** Trilinear is mag = linear and min = linear and mip = linear */
     public static readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR = 3;
+
     /** mag = nearest and min = nearest and mip = nearest */
     public static readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST = 4;
     /** mag = nearest and min = linear and mip = nearest */
@@ -161,14 +209,14 @@ export class Constants {
     public static readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR = 6;
     /** mag = nearest and min = linear and mip = none */
     public static readonly TEXTURE_NEAREST_LINEAR = 7;
-    /** mag = nearest and min = nearest and mip = none */
-    public static readonly TEXTURE_NEAREST_NEAREST = 8;
+    /** nearest is mag = nearest and min = nearest and mip = linear */
+    public static readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR = 8;
     /** mag = linear and min = nearest and mip = nearest */
     public static readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST = 9;
     /** mag = linear and min = nearest and mip = linear */
     public static readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR = 10;
-    /** mag = linear and min = linear and mip = none */
-    public static readonly TEXTURE_LINEAR_LINEAR = 11;
+    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    public static readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST = 11;
     /** mag = linear and min = nearest and mip = none */
     public static readonly TEXTURE_LINEAR_NEAREST = 12;
 
@@ -192,6 +240,18 @@ export class Constants {
     public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MODE = 8;
     /** Equirectangular Fixed Mirrored coordinates mode */
     public static readonly TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE = 9;
+
+    /** Offline (baking) quality for texture filtering */
+    public static readonly TEXTURE_FILTERING_QUALITY_OFFLINE = 4096;
+
+    /** High quality for texture filtering */
+    public static readonly TEXTURE_FILTERING_QUALITY_HIGH = 64;
+
+    /** Medium quality for texture filtering */
+    public static readonly TEXTURE_FILTERING_QUALITY_MEDIUM = 16;
+
+    /** Low quality for texture filtering */
+    public static readonly TEXTURE_FILTERING_QUALITY_LOW = 8;
 
     // Texture rescaling mode
     /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
@@ -275,88 +335,88 @@ export class Constants {
 
     /**
      * Nothing
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_NothingTrigger = 0;
     /**
      * On pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickTrigger = 1;
     /**
      * On left pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnLeftPickTrigger = 2;
     /**
      * On right pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnRightPickTrigger = 3;
     /**
      * On center pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnCenterPickTrigger = 4;
     /**
      * On pick down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickDownTrigger = 5;
     /**
      * On double pick
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnDoublePickTrigger = 6;
     /**
      * On pick up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickUpTrigger = 7;
     /**
      * On pick out.
      * This trigger will only be raised if you also declared a OnPickDown
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPickOutTrigger = 16;
     /**
      * On long press
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnLongPressTrigger = 8;
     /**
      * On pointer over
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPointerOverTrigger = 9;
     /**
      * On pointer out
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnPointerOutTrigger = 10;
     /**
      * On every frame
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnEveryFrameTrigger = 11;
     /**
      * On intersection enter
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnIntersectionEnterTrigger = 12;
     /**
      * On intersection exit
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnIntersectionExitTrigger = 13;
     /**
      * On key down
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnKeyDownTrigger = 14;
     /**
      * On key up
-     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
      */
     public static readonly ACTION_OnKeyUpTrigger = 15;
 
@@ -372,10 +432,6 @@ export class Constants {
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
-    /**
-     * Gets or sets base Assets URL
-     */
-    public static PARTICLES_BaseAssetsUrl = "https://assets.babylonjs.com/particles";
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :
@@ -428,4 +484,40 @@ export class Constants {
      * Detailled logging while loading
      */
     public static readonly SCENELOADER_DETAILED_LOGGING = 3;
+
+    /**
+     * Constant used to retrieve the irradiance texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 0;
+    /**
+     * Constant used to retrieve the position texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_POSITION_TEXTURE_INDEX)
+     */
+    public static readonly PREPASS_POSITION_TEXTURE_TYPE = 1;
+    /**
+     * Constant used to retrieve the velocity texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_VELOCITY_TEXTURE_INDEX)
+     */
+    public static readonly PREPASS_VELOCITY_TEXTURE_TYPE = 2;
+    /**
+     * Constant used to retrieve the reflectivity texture index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_REFLECTIVITY_TEXTURE_TYPE = 3;
+    /**
+     * Constant used to retrieve the lit color texture index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_COLOR_TEXTURE_TYPE = 4;
+    /**
+     * Constant used to retrieve depth + normal index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_DEPTHNORMAL_TEXTURE_TYPE = 5;
+    /**
+     * Constant used to retrieve albedo index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_ALBEDO_TEXTURE_TYPE = 6;
 }

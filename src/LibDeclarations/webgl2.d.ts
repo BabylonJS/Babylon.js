@@ -54,10 +54,13 @@ interface WebGLRenderingContext {
     readonly UNSIGNED_INT_10F_11F_11F_REV: number;
     readonly UNSIGNED_INT_5_9_9_9_REV: number;
     readonly FLOAT_32_UNSIGNED_INT_24_8_REV: number;
+    readonly DEPTH_COMPONENT32F: number;
 
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
+
+    framebufferTextureLayer(target: number, attachment: number, texture: WebGLTexture | null, level: number, layer: number): void;
 
     compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, data: ArrayBufferView, offset?: number, length?: number): void;
 

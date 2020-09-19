@@ -1,12 +1,13 @@
 import { Nullable } from "babylonjs/types";
 import { Observer } from "babylonjs/Misc/observable";
-import { Vector3, Matrix } from "babylonjs/Maths/math";
+import { Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
 import { Scene } from "babylonjs/scene";
 
 import { Control } from "./control";
 import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
+import { _TypeStore } from 'babylonjs/Misc/typeStore';
 
 /** Class used to render 2D lines */
 export class Line extends Control {
@@ -155,6 +156,8 @@ export class Line extends Control {
     constructor(public name?: string) {
         super(name);
 
+        this._automaticSize = true;
+
         this.isHitTestVisible = false;
         this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
@@ -245,3 +248,4 @@ export class Line extends Control {
         }
     }
 }
+_TypeStore.RegisteredTypes["BABYLON.GUI.Line"] = Line;

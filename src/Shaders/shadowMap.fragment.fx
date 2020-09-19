@@ -1,33 +1,29 @@
-﻿#ifndef FLOAT
-	#include<packingFunctions>
-#endif
-
-varying float vDepthMetric;
+﻿#include<shadowMapFragmentDeclaration>
 
 #ifdef ALPHATEST
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
-uniform vec3 biasAndScale;
-uniform vec2 depthValues;
+#include<clipPlaneFragmentDeclaration>
 
 void main(void)
 {
+#include<clipPlaneFragment>
+
 #ifdef ALPHATEST
-    if (texture2D(diffuseSampler, vUV).a < 0.4)
+    float alphaFromAlphaTexture = texture2D(diffuseSampler, vUV).a;
+    if (alphaFromAlphaTexture < 0.4)
         discard;
 #endif
 
-    float depth = vDepthMetric;
-
-#ifdef ESM
-    depth = clamp(exp(-min(87., biasAndScale.z * depth)), 0., 1.);
+#if SM_SOFTTRANSPARENTSHADOW == 1
+    #ifdef ALPHATEST
+        if ((bayerDither8(floor(mod(gl_FragCoord.xy, 8.0)))) / 64.0 >= softTransparentShadowSM * alphaFromAlphaTexture) discard;
+    #else
+        if ((bayerDither8(floor(mod(gl_FragCoord.xy, 8.0)))) / 64.0 >= softTransparentShadowSM) discard;
+    #endif
 #endif
 
-#ifdef FLOAT
-    gl_FragColor = vec4(depth, 1.0, 1.0, 1.0);
-#else
-    gl_FragColor = pack(depth);
-#endif
+#include<shadowMapFragment>
 }

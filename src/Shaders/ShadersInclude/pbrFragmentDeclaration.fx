@@ -5,6 +5,7 @@ uniform vec4 vAlbedoColor;
 uniform vec4 vLightingIntensity;
 
 uniform vec4 vReflectivityColor;
+uniform vec4 vMetallicReflectanceFactors;
 uniform vec3 vEmissiveColor;
 
 uniform float visibility;
@@ -51,6 +52,9 @@ uniform mat4 view;
 // Reflection
 #ifdef REFLECTION
     uniform vec2 vReflectionInfos;
+    #ifdef REALTIME_FILTERING
+        uniform vec2 vReflectionFilteringInfo;
+    #endif
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
 
@@ -100,6 +104,9 @@ uniform mat4 view;
 // Sheen
 #ifdef SHEEN
     uniform vec4 vSheenColor;
+    #ifdef SHEEN_ROUGHNESS
+        uniform float vSheenRoughness;
+    #endif
 
     #ifdef SHEEN_TEXTURE
         uniform vec2 vSheenInfos;
@@ -113,15 +120,22 @@ uniform mat4 view;
         uniform vec3 vRefractionMicrosurfaceInfos;
         uniform vec4 vRefractionInfos;
         uniform mat4 refractionMatrix;
+        #ifdef REALTIME_FILTERING
+            uniform vec2 vRefractionFilteringInfo;
+        #endif
     #endif
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE
         uniform vec2 vThicknessInfos;
-        uniform mat4 thicknessMatrix;;
+        uniform mat4 thicknessMatrix;
     #endif
 
     uniform vec2 vThicknessParam;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+
+    #ifdef SS_SCATTERING
+        uniform float scatteringDiffusionProfile;
+    #endif
 #endif

@@ -1,0 +1,8 @@
+pull_request_rules:
+  - name: Automatic merge
+    conditions:
+      - label=automerge
+      - status-success=CI
+    actions:
+      merge:
+        method: merge

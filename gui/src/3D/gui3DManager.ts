@@ -1,6 +1,6 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
-import { Vector3 } from "babylonjs/Maths/math";
+import { Vector3 } from "babylonjs/Maths/math.vector";
 import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
 import { Material } from "babylonjs/Materials/material";
 import { HemisphericLight } from "babylonjs/Lights/hemisphericLight";
@@ -14,7 +14,7 @@ import { Control3D } from "./controls/control3D";
 
 /**
  * Class used to manage 3D user interface
- * @see http://doc.babylonjs.com/how_to/gui3d
+ * @see https://doc.babylonjs.com/how_to/gui3d
  */
 export class GUI3DManager implements IDisposable {
     private _scene: Scene;
@@ -106,7 +106,7 @@ export class GUI3DManager implements IDisposable {
     }
 
     private _doPicking(pi: PointerInfo): boolean {
-        if (!this._utilityLayer || !this._utilityLayer.utilityLayerScene.activeCamera) {
+        if (!this._utilityLayer || !this._utilityLayer.shouldRender || !this._utilityLayer.utilityLayerScene.activeCamera) {
             return false;
         }
 

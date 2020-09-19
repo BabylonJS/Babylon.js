@@ -1,5 +1,5 @@
-import { NodeMaterialBlockConnectionPointTypes } from './nodeMaterialBlockConnectionPointTypes';
-import { NodeMaterialBlockTargets } from './nodeMaterialBlockTargets';
+import { NodeMaterialBlockConnectionPointTypes } from './Enums/nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockTargets } from './Enums/nodeMaterialBlockTargets';
 import { NodeMaterialBuildStateSharedData } from './nodeMaterialBuildStateSharedData';
 import { Effect } from '../effect';
 import { StringTools } from '../../Misc/stringTools';
@@ -19,9 +19,9 @@ export class NodeMaterialBuildState {
      */
     public uniforms = new Array<string>();
     /**
-     * Gets the list of emitted uniform buffers
-     */
-    public uniformBuffers = new Array<string>();
+    * Gets the list of emitted constants
+    */
+    public constants = new Array<string>();
     /**
      * Gets the list of emitted samplers
      */
@@ -30,6 +30,11 @@ export class NodeMaterialBuildState {
      * Gets the list of emitted functions
      */
     public functions: { [key: string]: string } = {};
+    /**
+     * Gets the list of emitted extensions
+     */
+    public extensions: { [key: string]: string } = {};
+
     /**
      * Gets the target of the compilation state
      */
@@ -52,9 +57,13 @@ export class NodeMaterialBuildState {
     /** @hidden */
     public _uniformDeclaration = "";
     /** @hidden */
+    public _constantDeclaration = "";
+    /** @hidden */
     public _samplerDeclaration = "";
     /** @hidden */
     public _varyingTransfer = "";
+    /** @hidden */
+    public _injectAtEnd = "";
 
     private _repeatableContentAnchorIndex = 0;
     /** @hidden */
@@ -75,6 +84,10 @@ export class NodeMaterialBuildState {
 
         this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
 
+        if (this._constantDeclaration) {
+            this.compilationString = `\r\n${emitComments ? "//Constants\r\n" : ""}${this._constantDeclaration}\r\n${this.compilationString}`;
+        }
+
         let functionCode = "";
         for (var functionName in this.functions) {
             functionCode += this.functions[functionName] + `\r\n`;
@@ -83,6 +96,10 @@ export class NodeMaterialBuildState {
 
         if (!isFragmentMode && this._varyingTransfer) {
             this.compilationString = `${this.compilationString}\r\n${this._varyingTransfer}`;
+        }
+
+        if (this._injectAtEnd) {
+            this.compilationString = `${this.compilationString}\r\n${this._injectAtEnd}`;
         }
 
         this.compilationString = `${this.compilationString}\r\n}`;
@@ -103,6 +120,11 @@ export class NodeMaterialBuildState {
             this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
         }
 
+        for (var extensionName in this.extensions) {
+            let extension = this.extensions[extensionName];
+            this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
+        }
+
         this._builtCompilationString = this.compilationString;
     }
 
@@ -113,6 +135,8 @@ export class NodeMaterialBuildState {
 
     /** @hidden */
     public _getFreeVariableName(prefix: string): string {
+        prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
+
         if (this.sharedData.variableNames[prefix] === undefined) {
             this.sharedData.variableNames[prefix] = 0;
 
@@ -146,6 +170,12 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
+    public _emit2DSampler(name: string) {
+        this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+        this.samplers.push(name);
+    }
+
+    /** @hidden */
     public _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
         switch (type) {
             case NodeMaterialBlockConnectionPointTypes.Float:
@@ -165,6 +195,18 @@ export class NodeMaterialBuildState {
         }
 
         return "";
+    }
+
+    /** @hidden */
+    public _emitExtension(name: string, extension: string, define: string = "") {
+        if (this.extensions[name]) {
+            return;
+        }
+
+        if (define) {
+            extension = `#if ${define}\r\n${extension}\r\n#endif`;
+        }
+        this.extensions[name] = extension;
     }
 
     /** @hidden */
@@ -272,6 +314,16 @@ export class NodeMaterialBuildState {
     }
 
     /** @hidden */
+    public _registerTempVariable(name: string) {
+        if (this.sharedData.temps.indexOf(name) !== -1) {
+            return false;
+        }
+
+        this.sharedData.temps.push(name);
+        return true;
+    }
+
+    /** @hidden */
     public _emitVaryingFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.sharedData.varyings.indexOf(name) !== -1) {
             return false;
@@ -303,11 +355,24 @@ export class NodeMaterialBuildState {
         this.uniforms.push(name);
 
         if (define) {
-            this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
+            if (StringTools.StartsWith(define, "defined(")) {
+                this._uniformDeclaration += `#if ${define}\r\n`;
+            } else {
+                this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
+            }
         }
         this._uniformDeclaration += `uniform ${type} ${name};\r\n`;
         if (define) {
             this._uniformDeclaration += `#endif\r\n`;
         }
+    }
+
+    /** @hidden */
+    public _emitFloat(value: number) {
+        if (value.toString() === value.toFixed(0)) {
+            return `${value}.0`;
+        }
+
+        return value.toString();
     }
 }

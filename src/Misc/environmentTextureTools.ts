@@ -3,18 +3,20 @@ import { Tools } from "./tools";
 import { Vector3 } from "../Maths/math.vector";
 import { Scalar } from "../Maths/math.scalar";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
-import { InternalTexture } from "../Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { Constants } from "../Engines/constants";
 import { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
 
-import "../Engines/Extensions/engine.renderTarget";
+import "../Engines/Extensions/engine.renderTargetCube";
+import "../Engines/Extensions/engine.readTexture";
+import "../Materials/Textures/baseTexture.polynomial";
 
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
+import { Engine } from '../Engines/engine';
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -60,7 +62,7 @@ interface BufferImageData {
  * Defines the specular data enclosed in the file.
  * This corresponds to the version 1 of the data.
  */
-interface EnvironmentTextureSpecularInfoV1 {
+export interface EnvironmentTextureSpecularInfoV1 {
     /**
      * Defines where the specular Payload is located. It is a runtime value only not stored in the file.
      */
@@ -109,8 +111,8 @@ export class EnvironmentTextureTools {
      * @param data The array buffer containing the .env bytes.
      * @returns the environment file info (the json header) if successfully parsed.
      */
-    public static GetEnvInfo(data: ArrayBuffer): Nullable<EnvironmentTextureInfo> {
-        let dataView = new DataView(data);
+    public static GetEnvInfo(data: ArrayBufferView): Nullable<EnvironmentTextureInfo> {
+        let dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
         let pos = 0;
 
         for (let i = 0; i < EnvironmentTextureTools._MagicBytes.length; i++) {
@@ -143,17 +145,13 @@ export class EnvironmentTextureTools {
      * @param texture defines the cube texture to convert in env file
      * @return a promise containing the environment data if succesfull.
      */
-    public static CreateEnvTextureAsync(texture: CubeTexture): Promise<ArrayBuffer> {
+    public static CreateEnvTextureAsync(texture: BaseTexture): Promise<ArrayBuffer> {
         let internalTexture = texture.getInternalTexture();
         if (!internalTexture) {
             return Promise.reject("The cube texture is invalid.");
         }
 
-        if (!texture._prefiltered) {
-            return Promise.reject("The cube texture is invalid (not prefiltered).");
-        }
-
-        let engine = internalTexture.getEngine();
+        let engine = internalTexture.getEngine() as Engine;
         if (engine && engine.premultipliedAlpha) {
             return Promise.reject("Env texture can only be created when the engine is created with the premultipliedAlpha option set to false.");
         }
@@ -301,7 +299,7 @@ export class EnvironmentTextureTools {
      * @param texture defines the texture containing the polynomials
      * @return the JSON representation of the spherical info
      */
-    private static _CreateEnvTextureIrradiance(texture: CubeTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
+    private static _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
         let polynmials = texture.sphericalPolynomial;
         if (polynmials == null) {
             return null;
@@ -323,22 +321,17 @@ export class EnvironmentTextureTools {
     }
 
     /**
-     * Uploads the texture info contained in the env file to the GPU.
-     * @param texture defines the internal texture to upload to
-     * @param arrayBuffer defines the buffer cotaining the data to load
-     * @param info defines the texture info retrieved through the GetEnvInfo method
-     * @returns a promise
+     * Creates the ArrayBufferViews used for initializing environment texture image data.
+     * @param data the image data
+     * @param info parameters that determine what views will be created for accessing the underlying buffer
+     * @return the views described by info providing access to the underlying buffer
      */
-    public static UploadEnvLevelsAsync(texture: InternalTexture, arrayBuffer: any, info: EnvironmentTextureInfo): Promise<void> {
+    public static CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
         if (info.version !== 1) {
             throw new Error(`Unsupported babylon environment map version "${info.version}"`);
         }
 
-        let specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
-        if (!specularInfo) {
-            // Nothing else parsed so far
-            return Promise.resolve();
-        }
+        const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
 
         // Double checks the enclosed info
         let mipmapsCount = Scalar.Log2(info.width);
@@ -347,18 +340,85 @@ export class EnvironmentTextureTools {
             throw new Error(`Unsupported specular mipmaps number "${specularInfo.mipmaps.length}"`);
         }
 
-        texture._lodGenerationScale = specularInfo.lodGenerationScale;
-
         const imageData = new Array<Array<ArrayBufferView>>(mipmapsCount);
         for (let i = 0; i < mipmapsCount; i++) {
             imageData[i] = new Array<ArrayBufferView>(6);
             for (let face = 0; face < 6; face++) {
                 const imageInfo = specularInfo.mipmaps[i * 6 + face];
-                imageData[i][face] = new Uint8Array(arrayBuffer, specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
+                imageData[i][face] = new Uint8Array(data.buffer, data.byteOffset + specularInfo.specularDataPosition! + imageInfo.position, imageInfo.length);
             }
         }
 
+        return imageData;
+    }
+
+    /**
+     * Uploads the texture info contained in the env file to the GPU.
+     * @param texture defines the internal texture to upload to
+     * @param data defines the data to load
+     * @param info defines the texture info retrieved through the GetEnvInfo method
+     * @returns a promise
+     */
+    public static UploadEnvLevelsAsync(texture: InternalTexture, data: ArrayBufferView, info: EnvironmentTextureInfo): Promise<void> {
+        if (info.version !== 1) {
+            throw new Error(`Unsupported babylon environment map version "${info.version}"`);
+        }
+
+        const specularInfo = info.specular as EnvironmentTextureSpecularInfoV1;
+        if (!specularInfo) {
+            // Nothing else parsed so far
+            return Promise.resolve();
+        }
+
+        texture._lodGenerationScale = specularInfo.lodGenerationScale;
+
+        const imageData = EnvironmentTextureTools.CreateImageDataArrayBufferViews(data, info);
+
         return EnvironmentTextureTools.UploadLevelsAsync(texture, imageData);
+    }
+
+    private static _OnImageReadyAsync(image: HTMLImageElement | ImageBitmap, engine: Engine, expandTexture: boolean,
+        rgbdPostProcess:  Nullable<PostProcess>, url: string, face: number, i: number, generateNonLODTextures: boolean,
+        lodTextures: Nullable<{ [lod: number]: BaseTexture }>, cubeRtt: Nullable<InternalTexture>, texture: InternalTexture
+        ): Promise<void> {
+            return new Promise((resolve, reject) => {
+                if (expandTexture) {
+                    let tempTexture = engine.createTexture(null, true, true, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null,
+                        (message) => {
+                            reject(message);
+                        },
+                        image);
+
+                    rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
+                        // Uncompress the data to a RTT
+                        rgbdPostProcess!.onApply = (effect) => {
+                            effect._bindTexture("textureSampler", tempTexture);
+                            effect.setFloat2("scale", 1, 1);
+                        };
+
+                        engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
+
+                        // Cleanup
+                        engine.restoreDefaultFramebuffer();
+                        tempTexture.dispose();
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    });
+                }
+                else {
+                    engine._uploadImageToTexture(texture, image, face, i);
+
+                    // Upload the face to the non lod texture support
+                    if (generateNonLODTextures) {
+                        let lodTexture = lodTextures![i];
+                        if (lodTexture) {
+                            engine._uploadImageToTexture(lodTexture._texture!, image, face, 0);
+                        }
+                    }
+                    resolve();
+                }
+            }
+        );
     }
 
     /**
@@ -375,7 +435,7 @@ export class EnvironmentTextureTools {
         const mipmapsCount = Math.round(Scalar.Log2(texture.width)) + 1;
 
         // Gets everything ready.
-        let engine = texture.getEngine();
+        let engine = texture.getEngine() as Engine;
         let expandTexture = false;
         let generateNonLODTextures = false;
         let rgbdPostProcess: Nullable<PostProcess> = null;
@@ -386,6 +446,7 @@ export class EnvironmentTextureTools {
         texture.format = Constants.TEXTUREFORMAT_RGBA;
         texture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
         texture.generateMipMaps = true;
+        texture._cachedAnisotropicFilteringLevel = null;
         engine.updateTextureSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, texture);
 
         // Add extra process if texture lod is not supported
@@ -446,7 +507,7 @@ export class EnvironmentTextureTools {
                     let lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
                     let mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-                    let glTextureFromLod = new InternalTexture(engine, InternalTexture.DATASOURCE_TEMP);
+                    let glTextureFromLod = new InternalTexture(engine, InternalTextureSource.Temp);
                     glTextureFromLod.isCube = true;
                     glTextureFromLod.invertY = true;
                     glTextureFromLod.generateMipMaps = false;
@@ -482,52 +543,30 @@ export class EnvironmentTextureTools {
                 let bytes = imageData[i][face];
                 let blob = new Blob([bytes], { type: 'image/png' });
                 let url = URL.createObjectURL(blob);
-                let image = new Image();
-                image.src = url;
+                let promise: Promise<void>;
 
-                // Enqueue promise to upload to the texture.
-                let promise = new Promise<void>((resolve, reject) => {
-                    image.onload = () => {
-                        if (expandTexture) {
-                            let tempTexture = engine.createTexture(null, true, true, null, Constants.TEXTURE_NEAREST_SAMPLINGMODE, null,
-                                (message) => {
-                                    reject(message);
-                                },
-                                image);
+                if (typeof Image === "undefined") {
+                    promise = createImageBitmap(blob).then((img) => {
+                        return this._OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
+                    });
+                } else {
+                    let image = new Image();
+                    image.src = url;
 
-                            rgbdPostProcess!.getEffect().executeWhenCompiled(() => {
-                                // Uncompress the data to a RTT
-                                rgbdPostProcess!.onApply = (effect) => {
-                                    effect._bindTexture("textureSampler", tempTexture);
-                                    effect.setFloat2("scale", 1, 1);
-                                };
-
-                                engine.scenes[0].postProcessManager.directRender([rgbdPostProcess!], cubeRtt, true, face, i);
-
-                                // Cleanup
-                                engine.restoreDefaultFramebuffer();
-                                tempTexture.dispose();
-                                window.URL.revokeObjectURL(url);
-                                resolve();
+                    // Enqueue promise to upload to the texture.
+                    promise = new Promise<void>((resolve, reject) => {
+                        image.onload = () => {
+                            this._OnImageReadyAsync(image, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture)
+                            .then(() => resolve())
+                            .catch((reason) => {
+                                reject(reason);
                             });
-                        }
-                        else {
-                            engine._uploadImageToTexture(texture, image, face, i);
-
-                            // Upload the face to the non lod texture support
-                            if (generateNonLODTextures) {
-                                let lodTexture = lodTextures![i];
-                                if (lodTexture) {
-                                    engine._uploadImageToTexture(lodTexture._texture!, image, face, 0);
-                                }
-                            }
-                            resolve();
-                        }
-                    };
-                    image.onerror = (error) => {
-                        reject(error);
-                    };
-                });
+                        };
+                        image.onerror = (error) => {
+                            reject(error);
+                        };
+                    });
+                }
                 promises.push(promise);
             }
         }
@@ -615,7 +654,7 @@ export class EnvironmentTextureTools {
 
     /** @hidden */
     public static _UpdateRGBDAsync(internalTexture: InternalTexture, data: ArrayBufferView[][], sphericalPolynomial: Nullable<SphericalPolynomial>, lodScale: number, lodOffset: number): Promise<void> {
-        internalTexture._dataSource = InternalTexture.DATASOURCE_CUBERAW_RGBD;
+        internalTexture._source = InternalTextureSource.CubeRawRGBD;
         internalTexture._bufferViewArrayArray = data;
         internalTexture._lodGenerationScale = lodScale;
         internalTexture._lodGenerationOffset = lodOffset;

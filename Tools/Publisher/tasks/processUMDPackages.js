@@ -17,6 +17,11 @@ const modules = config.modules.concat(config.viewerModules);
  */
 function processUMDPackages(version) {
     modules.forEach(moduleName => {
+        if (moduleName === "sandbox") {
+            // Do not publish apps
+            return;
+        }
+
         let module = config[moduleName];
         colorConsole.log("Process " + "UMD".magenta + " Package: " + moduleName.blue.bold);
 

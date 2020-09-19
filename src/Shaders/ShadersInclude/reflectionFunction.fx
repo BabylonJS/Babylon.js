@@ -113,7 +113,7 @@ vec3 computeProjectionCoords(vec4 worldPos, mat4 view, mat4 reflectionMatrix)
 
 vec3 computeSkyBoxCoords(vec3 positionW, mat4 reflectionMatrix)
 {
-	return vec3(reflectionMatrix * vec4(positionW, 0));
+	return vec3(reflectionMatrix * vec4(positionW, 1.));
 }
 
 #ifdef REFLECTION

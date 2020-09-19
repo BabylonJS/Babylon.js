@@ -8,7 +8,7 @@ import { _DevTools } from '../Misc/devTools';
 
 /**
  * Class used to control physics engine
- * @see http://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
  */
 export class PhysicsEngine implements IPhysicsEngine {
     /**
@@ -18,6 +18,7 @@ export class PhysicsEngine implements IPhysicsEngine {
 
     private _impostors: Array<PhysicsImpostor> = [];
     private _joints: Array<PhysicsImpostorJoint> = [];
+    private _subTimeStep: number = 0;
 
     /**
      * Gets the gravity vector used by the simulation
@@ -73,6 +74,24 @@ export class PhysicsEngine implements IPhysicsEngine {
      */
     public getTimeStep(): number {
         return this._physicsPlugin.getTimeStep();
+    }
+
+    /**
+     * Set the sub time step of the physics engine.
+     * Default is 0 meaning there is no sub steps
+     * To increase physics resolution precision, set a small value (like 1 ms)
+     * @param subTimeStep defines the new sub timestep used for physics resolution.
+     */
+    public setSubTimeStep(subTimeStep: number = 0) {
+        this._subTimeStep = subTimeStep;
+    }
+
+    /**
+     * Get the sub time step of the physics engine.
+     * @returns the current sub time step
+     */
+    public getSubTimeStep() {
+        return this._subTimeStep;
     }
 
     /**

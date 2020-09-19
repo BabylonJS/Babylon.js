@@ -3,7 +3,6 @@ attribute vec3 position;
 
 #ifdef NORMAL
     attribute vec3 normal;
-    uniform vec3 lightData;
 #endif
 
 #include<bonesDeclaration>
@@ -16,10 +15,6 @@ attribute vec3 position;
 #include<helperFunctions>
 
 uniform mat4 viewProjection;
-uniform vec3 biasAndScale;
-uniform vec2 depthValues;
-
-varying float vDepthMetric;
 
 #ifdef ALPHATEST
 varying vec2 vUV;
@@ -32,12 +27,19 @@ attribute vec2 uv2;
 #endif
 #endif
 
+#include<shadowMapVertexDeclaration>
+
+#include<clipPlaneVertexDeclaration>
+
 void main(void)
 {
 vec3 positionUpdated = position;
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif  
+#ifdef NORMAL	
+	vec3 normalUpdated = normal;
+#endif
 
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
@@ -46,40 +48,27 @@ vec3 positionUpdated = position;
 
 vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 
-// Normal inset Bias.
 #ifdef NORMAL
-    mat3 normalWorld = mat3(finalWorld);
+    mat3 normWorldSM = mat3(finalWorld);
 
-    #ifdef NONUNIFORMSCALING
-        normalWorld = transposeMat3(inverseMat3(normalWorld));
-    #endif
-
-    vec3 worldNor = normalize(normalWorld * normal);
-
-    #ifdef DIRECTIONINLIGHTDATA
-        vec3 worldLightDir = normalize(-lightData.xyz);
+    #if defined(INSTANCES) && defined(THIN_INSTANCES)
+        vec3 vNormalW = normalUpdated / vec3(dot(normWorldSM[0], normWorldSM[0]), dot(normWorldSM[1], normWorldSM[1]), dot(normWorldSM[2], normWorldSM[2]));
+        vNormalW = normalize(normWorldSM * vNormalW);
     #else
-        vec3 directionToLight = lightData.xyz - worldPos.xyz;
-        vec3 worldLightDir = normalize(directionToLight);
+        #ifdef NONUNIFORMSCALING
+            normWorldSM = transposeMat3(inverseMat3(normWorldSM));
+        #endif
+
+        vec3 vNormalW = normalize(normWorldSM * normalUpdated);
     #endif
-
-    float ndl = dot(worldNor, worldLightDir);
-    float sinNL = sqrt(1.0 - ndl * ndl);
-    float normalBias = biasAndScale.y * sinNL;
-
-    worldPos.xyz -= worldNor * normalBias;
 #endif
+
+#include<shadowMapVertexNormalBias>
 
 // Projection.
 gl_Position = viewProjection * worldPos;
 
-#ifdef DEPTHTEXTURE
-    // Depth texture Linear bias.
-    gl_Position.z += biasAndScale.x * gl_Position.w;
-#endif
-
-    // Color Texture Linear bias.
-    vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y)) + biasAndScale.x;
+#include<shadowMapVertexMetric>
 
 #ifdef ALPHATEST
     #ifdef UV1
@@ -89,4 +78,7 @@ gl_Position = viewProjection * worldPos;
         vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
     #endif
 #endif
+
+#include<clipPlaneVertex>
+
 }

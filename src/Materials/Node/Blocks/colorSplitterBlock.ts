@@ -1,7 +1,7 @@
 import { NodeMaterialBlock } from '../nodeMaterialBlock';
-import { NodeMaterialBlockConnectionPointTypes } from '../nodeMaterialBlockConnectionPointTypes';
+import { NodeMaterialBlockConnectionPointTypes } from '../Enums/nodeMaterialBlockConnectionPointTypes';
 import { NodeMaterialBuildState } from '../nodeMaterialBuildState';
-import { NodeMaterialBlockTargets } from '../nodeMaterialBlockTargets';
+import { NodeMaterialBlockTargets } from '../Enums/nodeMaterialBlockTargets';
 import { NodeMaterialConnectionPoint } from '../nodeMaterialBlockConnectionPoint';
 import { _TypeStore } from '../../../Misc/typeStore';
 
@@ -15,7 +15,7 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+        super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
         this.registerInput("rgb ", NodeMaterialBlockConnectionPointTypes.Color3, true);
@@ -25,6 +25,8 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float);
+
+        this.inputsAreExclusive = true;
     }
 
     /**
@@ -82,10 +84,28 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         return this._outputs[4];
     }
 
+    protected _inputRename(name: string) {
+        if (name === "rgb ") {
+            return "rgbIn";
+        }
+        return name;
+    }
+
+    protected _outputRename(name: string) {
+        if (name === "rgb") {
+            return "rgbOut";
+        }
+        return name;
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let input = this.rgba.isConnected ? this.rgba : this.rgbIn;
+
+        if (!input.isConnected) {
+            return;
+        }
 
         let rgbOutput = this._outputs[0];
         let rOutput = this._outputs[1];
@@ -93,19 +113,19 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         let bOutput = this._outputs[3];
         let aOutput = this._outputs[4];
 
-        if (rgbOutput.connectedBlocks.length > 0) {
+        if (rgbOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\r\n`;
         }
-        if (rOutput.connectedBlocks.length > 0) {
+        if (rOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(rOutput, state) + ` = ${input.associatedVariableName}.r;\r\n`;
         }
-        if (gOutput.connectedBlocks.length > 0) {
+        if (gOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(gOutput, state) + ` = ${input.associatedVariableName}.g;\r\n`;
         }
-        if (bOutput.connectedBlocks.length > 0) {
+        if (bOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(bOutput, state) + ` = ${input.associatedVariableName}.b;\r\n`;
         }
-        if (aOutput.connectedBlocks.length > 0) {
+        if (aOutput.hasEndpoints) {
             state.compilationString += this._declareOutput(aOutput, state) + ` = ${input.associatedVariableName}.a;\r\n`;
         }
 

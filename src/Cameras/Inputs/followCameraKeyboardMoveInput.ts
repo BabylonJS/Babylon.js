@@ -9,7 +9,7 @@ import { Scene } from "../../scene";
 
 /**
  * Manage the keyboard inputs to control the movement of a follow camera.
- * @see http://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
     /**

@@ -8,17 +8,19 @@ import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
+import { Constants } from "../Engines/constants";
 
 import { UniformBuffer } from "./uniformBuffer";
-import { Effect, EffectFallbacks, EffectCreationOptions } from "./effect";
+import { Effect, IEffectCreationOptions } from "./effect";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { WebVRFreeCamera } from '../Cameras/VR/webVRCamera';
 import { MaterialDefines } from "./materialDefines";
-import { Color3, TmpColors } from '../Maths/math.color';
+import { Color3 } from '../Maths/math.color';
+import { EffectFallbacks } from './effectFallbacks';
+import { ThinMaterialHelper } from './thinMaterialHelper';
 
 /**
- * "Static Class" containing the most commonly used helper while dealing with material for
- * rendering purpose.
+ * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
  *
  * It contains the basic tools to help defining defines, binding uniform for the common part of the materials.
  *
@@ -30,10 +32,11 @@ export class MaterialHelper {
      * Bind the current view position to an effect.
      * @param effect The effect to be bound
      * @param scene The scene the eyes position is used from
+     * @param variableName name of the shader variable that will hold the eye position
      */
-    public static BindEyePosition(effect: Effect, scene: Scene): void {
+    public static BindEyePosition(effect: Effect, scene: Scene, variableName = "vEyePosition"): void {
         if (scene._forcedViewPosition) {
-            effect.setVector3("vEyePosition", scene._forcedViewPosition);
+            effect.setVector3(variableName, scene._forcedViewPosition);
             return;
         }
         var globalPosition = scene.activeCamera!.globalPosition;
@@ -41,7 +44,7 @@ export class MaterialHelper {
             // Use WebVRFreecamera's device position as global position is not it's actual position in babylon space
             globalPosition = (scene.activeCamera! as WebVRFreeCamera).devicePosition;
         }
-        effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
+        effect.setVector3(variableName, scene._mirroredCameraPosition ? scene._mirroredCameraPosition : globalPosition);
     }
 
     /**
@@ -75,9 +78,7 @@ export class MaterialHelper {
     public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
         var matrix = texture.getTextureMatrix();
 
-        if (!matrix.isIdentityAs3x2()) {
-            uniformBuffer.updateMatrix(key + "Matrix", matrix);
-        }
+        uniformBuffer.updateMatrix(key + "Matrix", matrix);
     }
 
     /**
@@ -117,18 +118,24 @@ export class MaterialHelper {
      * @param defines specifies the list of active defines
      * @param useInstances defines if instances have to be turned on
      * @param useClipPlane defines if clip plane have to be turned on
+     * @param useInstances defines if instances have to be turned on
+     * @param useThinInstances defines if thin instances have to be turned on
      */
-    public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null): void {
+    public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null, useThinInstances: boolean = false): void {
         var changed = false;
         let useClipPlane1 = false;
         let useClipPlane2 = false;
         let useClipPlane3 = false;
         let useClipPlane4 = false;
+        let useClipPlane5 = false;
+        let useClipPlane6 = false;
 
         useClipPlane1 = useClipPlane == null ? (scene.clipPlane !== undefined && scene.clipPlane !== null) : useClipPlane;
         useClipPlane2 = useClipPlane == null ? (scene.clipPlane2 !== undefined && scene.clipPlane2 !== null) : useClipPlane;
         useClipPlane3 = useClipPlane == null ? (scene.clipPlane3 !== undefined && scene.clipPlane3 !== null) : useClipPlane;
         useClipPlane4 = useClipPlane == null ? (scene.clipPlane4 !== undefined && scene.clipPlane4 !== null) : useClipPlane;
+        useClipPlane5 = useClipPlane == null ? (scene.clipPlane5 !== undefined && scene.clipPlane5 !== null) : useClipPlane;
+        useClipPlane6 = useClipPlane == null ? (scene.clipPlane6 !== undefined && scene.clipPlane6 !== null) : useClipPlane;
 
         if (defines["CLIPPLANE"] !== useClipPlane1) {
             defines["CLIPPLANE"] = useClipPlane1;
@@ -150,6 +157,16 @@ export class MaterialHelper {
             changed = true;
         }
 
+        if (defines["CLIPPLANE5"] !== useClipPlane5) {
+            defines["CLIPPLANE5"] = useClipPlane5;
+            changed = true;
+        }
+
+        if (defines["CLIPPLANE6"] !== useClipPlane6) {
+            defines["CLIPPLANE6"] = useClipPlane6;
+            changed = true;
+        }
+
         if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
             defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
             changed = true;
@@ -157,6 +174,11 @@ export class MaterialHelper {
 
         if (defines["INSTANCES"] !== useInstances) {
             defines["INSTANCES"] = useInstances;
+            changed = true;
+        }
+
+        if (defines["THIN_INSTANCES"] !== useThinInstances) {
+            defines["THIN_INSTANCES"] = useThinInstances;
             changed = true;
         }
 
@@ -275,6 +297,52 @@ export class MaterialHelper {
     }
 
     /**
+     * Prepares the defines related to the prepass
+     * @param scene The scene we are intending to draw
+     * @param defines The defines to update
+     * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
+     */
+    public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
+        var previousPrePass = defines.PREPASS;
+
+        if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
+            defines.PREPASS = true;
+            defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
+
+            const irradianceIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE);
+            if (irradianceIndex !== -1) {
+                defines.PREPASS_IRRADIANCE = true;
+                defines.PREPASS_IRRADIANCE_INDEX = irradianceIndex;
+            } else {
+                defines.PREPASS_IRRADIANCE = false;
+            }
+
+            const albedoIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE);
+            if (albedoIndex !== -1) {
+                defines.PREPASS_ALBEDO = true;
+                defines.PREPASS_ALBEDO_INDEX = albedoIndex;
+            } else {
+                defines.PREPASS_ALBEDO = false;
+            }
+
+            const depthNormalIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+            if (depthNormalIndex !== -1) {
+                defines.PREPASS_DEPTHNORMAL = true;
+                defines.PREPASS_DEPTHNORMAL_INDEX = depthNormalIndex;
+            } else {
+                defines.PREPASS_DEPTHNORMAL = false;
+            }
+        } else {
+            defines.PREPASS = false;
+        }
+
+        if (defines.PREPASS != previousPrePass) {
+            defines.markAsUnprocessed();
+            defines.markAsImageProcessingDirty();
+        }
+    }
+
+    /**
      * Prepares the defines related to the light information passed in parameter
      * @param scene The scene we are intending to draw
      * @param mesh The mesh the effect is compiling for
@@ -330,6 +398,12 @@ export class MaterialHelper {
 
         // Shadows
         defines["SHADOW" + lightIndex] = false;
+        defines["SHADOWCSM" + lightIndex] = false;
+        defines["SHADOWCSMDEBUG" + lightIndex] = false;
+        defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
+        defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
+        defines["SHADOWCSMNOBLEND" + lightIndex] = false;
+        defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = false;
         defines["SHADOWPCF" + lightIndex] = false;
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
@@ -408,6 +482,12 @@ export class MaterialHelper {
                 defines["DIRLIGHT" + index] = false;
                 defines["SPOTLIGHT" + index] = false;
                 defines["SHADOW" + index] = false;
+                defines["SHADOWCSM" + index] = false;
+                defines["SHADOWCSMDEBUG" + index] = false;
+                defines["SHADOWCSMNUM_CASCADES" + index] = false;
+                defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
+                defines["SHADOWCSMNOBLEND" + index] = false;
+                defines["SHADOWCSM_RIGHTHANDED" + index] = false;
                 defines["SHADOWPCF" + index] = false;
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
@@ -464,6 +544,15 @@ export class MaterialHelper {
         samplersList.push("shadowSampler" + lightIndex);
         samplersList.push("depthSampler" + lightIndex);
 
+        uniformsList.push(
+            "viewFrustumZ" + lightIndex,
+            "cascadeBlendFactor" + lightIndex,
+            "lightSizeUVCorrection" + lightIndex,
+            "depthCorrection" + lightIndex,
+            "penumbraDarkness" + lightIndex,
+            "frustumLengths" + lightIndex,
+        );
+
         if (projectedLightTexture) {
             samplersList.push("projectionLightSampler" + lightIndex);
             uniformsList.push(
@@ -479,17 +568,17 @@ export class MaterialHelper {
      * @param defines The defines helping in the list generation
      * @param maxSimultaneousLights The maximum number of simultanous light allowed in the effect
      */
-    public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
+    public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
         let uniformsList: string[];
         let uniformBuffersList: Nullable<string[]> = null;
 
-        if ((<EffectCreationOptions>uniformsListOrOptions).uniformsNames) {
-            var options = <EffectCreationOptions>uniformsListOrOptions;
+        if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
+            var options = <IEffectCreationOptions>uniformsListOrOptions;
             uniformsList = options.uniformsNames;
             uniformBuffersList = options.uniformBuffersNames;
             samplersList = options.samplers;
             defines = options.defines;
-            maxSimultaneousLights = options.maxSimultaneousLights;
+            maxSimultaneousLights = options.maxSimultaneousLights || 0;
         } else {
             uniformsList = <string[]>uniformsListOrOptions;
             if (!samplersList) {
@@ -629,7 +718,7 @@ export class MaterialHelper {
      * @param defines The current MaterialDefines of the effect
      */
     public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
-        if (defines["INSTANCES"]) {
+        if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
             this.PushAttributesForInstances(attribs);
         }
     }
@@ -643,23 +732,6 @@ export class MaterialHelper {
         attribs.push("world1");
         attribs.push("world2");
         attribs.push("world3");
-    }
-
-    /**
-     * Binds the light shadow information to the effect for the given mesh.
-     * @param light The light containing the generator
-     * @param scene The scene the lights belongs to
-     * @param mesh The mesh we are binding the information to render
-     * @param lightIndex The light index in the effect used to render the mesh
-     * @param effect The effect we are binding the data to
-     */
-    public static BindLightShadow(light: Light, mesh: AbstractMesh, lightIndex: string, effect: Effect): void {
-        if (light.shadowEnabled && mesh.receiveShadows) {
-            var shadowGenerator = light.getShadowGenerator();
-            if (shadowGenerator) {
-                shadowGenerator.bindShadowLight(lightIndex, effect);
-            }
-        }
     }
 
     /**
@@ -677,31 +749,12 @@ export class MaterialHelper {
      * @param light Light to bind
      * @param lightIndex Light index
      * @param scene The scene where the light belongs to
-     * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, mesh: AbstractMesh, effect: Effect, useSpecular: boolean, usePhysicalLightFalloff = false): void {
-        let iAsString = lightIndex.toString();
-
-        let scaledIntensity = light.getScaledIntensity();
-        light._uniformBuffer.bindToEffect(effect, "Light" + iAsString);
-
-        MaterialHelper.BindLightProperties(light, effect, lightIndex);
-
-        light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-        light._uniformBuffer.updateColor4("vLightDiffuse", TmpColors.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
-        if (useSpecular) {
-            light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
-            light._uniformBuffer.updateColor3("vLightSpecular", TmpColors.Color3[1], iAsString);
-        }
-
-        // Shadows
-        if (scene.shadowsEnabled) {
-            this.BindLightShadow(light, mesh, iAsString, effect);
-        }
-        light._uniformBuffer.update();
+    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, rebuildInParallel = false): void {
+        light._bindLight(lightIndex, scene, effect, useSpecular, rebuildInParallel);
     }
 
     /**
@@ -711,15 +764,15 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
-     * @param usePhysicalLightFalloff Specifies whether the light falloff is defined physically or not
+     * @param rebuildInParallel Specifies whether the shader is rebuilding in parallel
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false): void {
+    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, rebuildInParallel = false): void {
         let len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
         for (var i = 0; i < len; i++) {
 
             let light = mesh.lightSources[i];
-            this.BindLight(light, i, scene, mesh, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], usePhysicalLightFalloff);
+            this.BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], rebuildInParallel);
         }
     }
 
@@ -807,21 +860,6 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      */
     public static BindClipPlane(effect: Effect, scene: Scene): void {
-        if (scene.clipPlane) {
-            let clipPlane = scene.clipPlane;
-            effect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane2) {
-            let clipPlane = scene.clipPlane2;
-            effect.setFloat4("vClipPlane2", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane3) {
-            let clipPlane = scene.clipPlane3;
-            effect.setFloat4("vClipPlane3", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
-        if (scene.clipPlane4) {
-            let clipPlane = scene.clipPlane4;
-            effect.setFloat4("vClipPlane4", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
-        }
+        ThinMaterialHelper.BindClipPlane(effect, scene);
     }
 }

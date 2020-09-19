@@ -9,7 +9,6 @@ import { EngineStore } from "../Engines/engineStore";
 import { ParticleSystem } from "../Particles/particleSystem";
 import { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import { Constants } from "../Engines/constants";
 
 /** Internal class used to store shapes for emitters */
 class ParticleSystemSetEmitterCreationOptions {
@@ -22,6 +21,11 @@ class ParticleSystemSetEmitterCreationOptions {
  * Represents a set of particle systems working together to create a specific effect
  */
 export class ParticleSystemSet implements IDisposable {
+    /**
+     * Gets or sets base Assets URL
+     */
+    public static BaseAssetsUrl = "https://assets.babylonjs.com/particles";
+
     private _emitterCreationOptions: ParticleSystemSetEmitterCreationOptions;
     private _emitterNode: Nullable<TransformNode>;
 
@@ -99,14 +103,15 @@ export class ParticleSystemSet implements IDisposable {
 
     /**
      * Serialize the set into a JSON compatible object
+     * @param serializeTexture defines if the texture must be serialized as well
      * @returns a JSON compatible representation of the set
      */
-    public serialize(): any {
+    public serialize(serializeTexture = false): any {
         var result: any = {};
 
         result.systems = [];
         for (var system of this.systems) {
-            result.systems.push(system.serialize());
+            result.systems.push(system.serialize(serializeTexture));
         }
 
         if (this._emitterNode) {
@@ -125,7 +130,7 @@ export class ParticleSystemSet implements IDisposable {
      */
     public static Parse(data: any, scene: Scene, gpu = false): ParticleSystemSet {
         var result = new ParticleSystemSet();
-        var rootUrl = Constants.PARTICLES_BaseAssetsUrl + "/textures/";
+        var rootUrl = this.BaseAssetsUrl + "/textures/";
 
         scene = scene || EngineStore.LastCreatedScene;
 

@@ -1,7 +1,7 @@
 import { AnimationGroup } from "babylonjs/Animations/animationGroup";
 import { IExplorerExtensibilityGroup } from "babylonjs/Debug/debugLayer";
 
-import { faFilm } from '@fortawesome/free-solid-svg-icons';
+import { faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
@@ -22,7 +22,7 @@ export class AnimationGroupItemComponent extends React.Component<IAnimationGroup
         const animationGroup = this.props.animationGroup;
         return (
             <div className="animationGroupTools">
-                <TreeItemLabelComponent label={animationGroup.name} onClick={() => this.props.onClick()} icon={faFilm} color="cornflowerblue" />
+                <TreeItemLabelComponent label={animationGroup.name} onClick={() => this.props.onClick()} icon={faLayerGroup} color="cornflowerblue" />
                 {
                     <ExtensionsComponent target={animationGroup} extensibilityGroups={this.props.extensibilityGroups} />
                 }
