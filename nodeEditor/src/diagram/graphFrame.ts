@@ -1374,14 +1374,14 @@ export class GraphFrame {
     {
         if(exposedPorts.length > 0) {
             for(let i = 0; i < exposedPorts.length; ++i) {
-                //exposedPorts[i].exposedPortPosition = i;
+                exposedPorts[i].exposedPortPosition = i;
             }
         }
     }
 
     public serialize(): IFrameData {
-        //this.serializePortData(this._exposedInPorts);
-        //this.serializePortData(this._exposedOutPorts);
+        this.serializePortData(this._exposedInPorts);
+        this.serializePortData(this._exposedOutPorts);
         return {
             x: this._x,
             y: this._y,
@@ -1426,22 +1426,35 @@ export class GraphFrame {
         } else {
             newFrame.refresh();
         }
-
-        /*for (var node of newFrame.nodes) {
+        
+        
+        for (var node of newFrame.nodes) {
             for (var port of node.outputPorts) { // Output
                 if(port.exposedOnFrame) {
                     port.isExposed = true;
-                    newFrame._exposedOutPorts[port.exposedPortPosition] = port;
+                    if(port.exposedPortPosition) { 
+                        newFrame._exposedOutPorts[port.exposedPortPosition] = port;
+                    }
+                    else {
+                        newFrame._exposedOutPorts.push(port);
+                    }
                 }
             }
 
             for (var port of node.inputPorts) { // Inports
                 if(port.exposedOnFrame) {
                     port.isExposed = true;
-                    newFrame._exposedInPorts[port.exposedPortPosition] = port;
+                    if(port.exposedPortPosition) { 
+                        newFrame._exposedInPorts[port.exposedPortPosition] = port;
+                    }
+                    else {
+                        newFrame._exposedInPorts.push(port);
+                    }
                 }
             }
-        } */       
+        }
+
+        newFrame.isCollapsed = isCollapsed;       
 
         if (isCollapsed) {
             canvas._frameIsMoving = true;

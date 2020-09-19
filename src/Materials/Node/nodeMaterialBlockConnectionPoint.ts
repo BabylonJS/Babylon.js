@@ -151,7 +151,7 @@ export class NodeMaterialConnectionPoint {
      */
     public isExposedOnFrame: boolean =  false;
 
-    //public exposedPortPosition: number = -1;
+    public exposedPortPosition: number = -1;
 
     /**
      * Gets or sets a string indicating that this uniform must be defined under a #ifdef
@@ -464,12 +464,12 @@ export class NodeMaterialConnectionPoint {
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
             serializationObject.isExposedOnFrame = true;
-            //serializationObject.exposedPortPosition = this.exposedPortPosition;
+            serializationObject.exposedPortPosition = this.exposedPortPosition;
         }
 
         if (this.isExposedOnFrame) {
             serializationObject.isExposedOnFrame = this.isExposedOnFrame;
-            //serializationObject.exposedPortPosition = this.exposedPortPosition;
+            serializationObject.exposedPortPosition = this.exposedPortPosition;
         }
 
         return serializationObject;

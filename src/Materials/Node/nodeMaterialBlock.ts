@@ -741,7 +741,7 @@ export class NodeMaterialBlock {
                 }
                 if (port.isExposedOnFrame) {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
-                   // this.inputs[i].exposedPortPosition = port.exposedPortPosition;
+                    this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
             });
         }
@@ -752,7 +752,7 @@ export class NodeMaterialBlock {
                 }
                 if (port.isExposedOnFrame) {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
-                   // this.outputs[i].exposedPortPosition = port.exposedPortPosition;
+                    this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
             });
         }
