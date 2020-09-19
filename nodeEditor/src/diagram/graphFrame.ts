@@ -1454,8 +1454,7 @@ export class GraphFrame {
             }
         }
 
-        newFrame.isCollapsed = isCollapsed;       
-
+        newFrame.isCollapsed = isCollapsed;
         if (isCollapsed) {
             canvas._frameIsMoving = true;
             newFrame._moveFrame(-(newFrame.width - newFrame.CollapsedWidth) / 2, 0);
