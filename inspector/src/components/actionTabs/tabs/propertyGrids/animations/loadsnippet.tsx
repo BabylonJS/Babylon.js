@@ -69,8 +69,7 @@ export class LoadSnippet extends React.Component<ILoadSnippetProps, { snippetId:
 
     loadFromSnippet = () => {
         if (this.state.snippetId !== "") {
-            //How to dispose() previous animations;
-            //How to notify observers
+            //Notify observers
             Animation.CreateFromSnippetAsync(this.state.snippetId)
                 .then((newAnimations) => {
                     // Explore how observers are notified from snippet

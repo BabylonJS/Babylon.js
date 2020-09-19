@@ -2319,17 +2319,7 @@ export class AnimationCurveEditorComponent extends React.Component<
                                     ) : null}
                                 </SvgDraggableArea>
                             )}
-                            <div
-                                style={{
-                                    width: 30,
-                                    height: "inherit",
-                                    position: "absolute",
-                                    zIndex: 1,
-                                    pointerEvents: "none",
-                                    backgroundColor: "rgb(188 188 188 / 11%)",
-                                    top: 40,
-                                }}
-                            ></div>
+                            <div className="rect-chart"></div>
                             <ScaleLabel current={this.state.valueScaleType} />
                         </div>
                     </div>
