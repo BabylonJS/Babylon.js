@@ -217,6 +217,15 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     /**
+     * Replaces a texture within the MRT
+     * @param texture The new texture to insert in the MRT
+     * @param index The index of the texture to replace
+     */
+    public _replaceTexture(texture: Texture, index: number) {
+        // TODO
+    }
+
+    /**
      * Define the number of samples used if MSAA is enabled.
      */
     public get samples(): number {

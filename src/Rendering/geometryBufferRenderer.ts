@@ -84,9 +84,16 @@ export class GeometryBufferRenderer {
     protected _cachedDefines: string;
 
     /**
+     * Gets the render list (meshes to be rendered) used in the G buffer.
+     */
+    public get renderList() {
+        return this._multiRenderTarget.renderList;
+    }
+
+    /**
      * Set the render list (meshes to be rendered) used in the G buffer.
      */
-    public set renderList(meshes: Mesh[]) {
+    public set renderList(meshes: Nullable<AbstractMesh[]>) {
         this._multiRenderTarget.renderList = meshes;
     }
 

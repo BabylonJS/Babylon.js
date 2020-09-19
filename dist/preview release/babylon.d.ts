@@ -52882,6 +52882,7 @@ declare module BABYLON {
         /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
+        private _currentDepthTest;
         getHardwareScalingLevel(): number;
         constructor();
         dispose(): void;
@@ -52973,6 +52974,10 @@ declare module BABYLON {
          * @returns the current depth writing state
          */
         getDepthWrite(): boolean;
+        setDepthFunctionToGreater(): void;
+        setDepthFunctionToGreaterOrEqual(): void;
+        setDepthFunctionToLess(): void;
+        setDepthFunctionToLessOrEqual(): void;
         /**
          * Enable or disable depth writing
          * @param enable defines the state to set
