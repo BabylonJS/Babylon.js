@@ -167,7 +167,7 @@ export class PrePassRenderer {
         this._engine = scene.getEngine();
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
-
+        this.useGeometryBufferFallback = true;
         this._resetLayout();
     }
 
@@ -234,7 +234,7 @@ export class PrePassRenderer {
         }
 
         if (this._geometryBuffer) {
-            this._geometryBuffer.renderList = [];
+            this._geometryBuffer.renderList.length = 0;
         }
 
         this._bindFrameBuffer();
