@@ -151,6 +151,9 @@ export class NodeMaterialConnectionPoint {
      */
     public isExposedOnFrame: boolean =  false;
 
+    /**
+     * Gets or sets number indicating the position that the port is exposed to on a frame
+     */
     public exposedPortPosition: number = -1;
 
     /**
