@@ -341,9 +341,7 @@ export class Timeline extends React.Component<
 
             if (!(framesTo >= this.state.end - 20)) {
                 let toleft =
-                    framesTo * unit +
-                    this._scrollContainer.current.getBoundingClientRect().left +
-                    this._marginScrollbar * 2;
+                    framesTo * unit + this._scrollContainer.current.getBoundingClientRect().left + this._marginScrollbar * 2;
                 if (this._scrollbarHandle.current) {
                     this._scrollbarHandle.current.style.left = toleft + "px";
                 }
@@ -393,12 +391,7 @@ export class Timeline extends React.Component<
                         scrollable={this._scrollable}
                     />
                     <div className="timeline-wrapper">
-                        <div
-                            ref={this._scrollable}
-                            className="display-line"
-                            onClick={this.setCurrentFrame}
-                            tabIndex={50}
-                        >
+                        <div ref={this._scrollable} className="display-line" onClick={this.setCurrentFrame} tabIndex={50}>
                             <svg
                                 style={{
                                     width: "100%",
@@ -415,8 +408,7 @@ export class Timeline extends React.Component<
                                         <svg key={`tl_${frame}`}>
                                             {
                                                 <>
-                                                    {frame % Math.round(this.state.selectionLength.length / 20) ===
-                                                    0 ? (
+                                                    {frame % Math.round(this.state.selectionLength.length / 20) === 0 ? (
                                                         <>
                                                             <text
                                                                 x={(i * 100) / this.state.selectionLength.length + "%"}
@@ -489,11 +481,7 @@ export class Timeline extends React.Component<
                             onDragStart={this.dragDomFalse}
                         >
                             <div className="scroll-handle" ref={this._scrollContainer} tabIndex={60}>
-                                <div
-                                    className="handle"
-                                    ref={this._scrollbarHandle}
-                                    style={{ width: this.state.scrollWidth }}
-                                >
+                                <div className="handle" ref={this._scrollbarHandle} style={{ width: this.state.scrollWidth }}>
                                     <div className="left-grabber">
                                         <div className="left-draggable">
                                             <div className="grabber"></div>
