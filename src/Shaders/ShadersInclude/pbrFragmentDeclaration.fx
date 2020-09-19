@@ -70,7 +70,7 @@ uniform mat4 view;
     uniform vec4 vClearCoatRefractionParams;
 
     #ifdef CLEARCOAT_TEXTURE
-        uniform vec2 vClearCoatInfos;
+        uniform vec4 vClearCoatInfos;
         uniform mat4 clearCoatMatrix;
     #endif
 

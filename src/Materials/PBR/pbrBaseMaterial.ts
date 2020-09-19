@@ -221,7 +221,10 @@ export class PBRMaterialDefines extends MaterialDefines
     public CLEARCOAT = false;
     public CLEARCOAT_DEFAULTIOR = false;
     public CLEARCOAT_TEXTURE = false;
+    public CLEARCOAT_TEXTURE_ROUGHNESS = false;
     public CLEARCOAT_TEXTUREDIRECTUV = 0;
+    public CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+    public CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
     public CLEARCOAT_BUMP = false;
     public CLEARCOAT_BUMPDIRECTUV = 0;
     public CLEARCOAT_TINT = false;

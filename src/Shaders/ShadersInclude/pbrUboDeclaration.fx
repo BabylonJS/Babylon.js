@@ -40,7 +40,7 @@ uniform Material
 
     uniform vec2 vClearCoatParams;
     uniform vec4 vClearCoatRefractionParams;
-    uniform vec2 vClearCoatInfos;
+    uniform vec4 vClearCoatInfos;
     uniform mat4 clearCoatMatrix;
     uniform vec2 vClearCoatBumpInfos;
     uniform vec2 vClearCoatTangentSpaceParams;

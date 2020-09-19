@@ -59,7 +59,7 @@ uniform float pointSize;
 // Clear Coat
 #ifdef CLEARCOAT
     #ifdef CLEARCOAT_TEXTURE
-        uniform vec2 vClearCoatInfos;
+        uniform vec4 vClearCoatInfos;
         uniform mat4 clearCoatMatrix;
     #endif
 
