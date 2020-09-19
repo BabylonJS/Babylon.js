@@ -42,19 +42,17 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
     moveToAnimationStart = () => {
         const startKeyframe = this.props.keyframes && this.props.keyframes[0];
         if (startKeyframe !== null) {
-            if (startKeyframe.frame !== undefined && typeof startKeyframe.frame === "number") {
+            if (typeof startKeyframe.frame === "number") {
                 this.props.onCurrentFrameChange(startKeyframe.frame);
             }
-            //this.props.repositionCanvas(startKeyframe);
         }
     };
 
     moveToAnimationEnd = () => {
         const endKeyframe = this.props.keyframes && this.props.keyframes[this.props.keyframes.length - 1];
         if (endKeyframe !== null) {
-            if (endKeyframe.frame !== undefined && typeof endKeyframe.frame === "number") {
+            if (typeof endKeyframe.frame === "number") {
                 this.props.onCurrentFrameChange(endKeyframe.frame);
-                //this.props.repositionCanvas(endKeyframe);
             }
         }
     };
@@ -64,7 +62,6 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
             let first = this.props.keyframes.find((kf) => kf.frame > this.props.currentFrame);
             if (first) {
                 this.props.onCurrentFrameChange(first.frame);
-                //this.props.repositionCanvas(first);
                 this.setState({ selected: first });
                 (this.props.scrollable.current as HTMLDivElement).scrollLeft = first.frame * this._sizeOfKeyframe;
             }
@@ -77,7 +74,6 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
             let first = keyframes.reverse().find((kf) => kf.frame < this.props.currentFrame);
             if (first) {
                 this.props.onCurrentFrameChange(first.frame);
-                //this.props.repositionCanvas(first);
                 this.setState({ selected: first });
                 (this.props.scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * this._sizeOfKeyframe);
             }
@@ -90,11 +86,13 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
                 <IconButtonLineComponent
                     tooltip="Animation Start"
                     icon="animation-start"
-                    onClick={this.moveToAnimationStart}></IconButtonLineComponent>
+                    onClick={this.moveToAnimationStart}
+                ></IconButtonLineComponent>
                 <IconButtonLineComponent
                     tooltip="Previous Keyframe"
                     icon="animation-lastkey"
-                    onClick={this.previousKeyframe}></IconButtonLineComponent>
+                    onClick={this.previousKeyframe}
+                ></IconButtonLineComponent>
                 {this.props.isPlaying ? (
                     <div className="stop-container">
                         {this.state.playingType === "reverse" ? (
@@ -102,22 +100,26 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
                                 <IconButtonLineComponent
                                     tooltip="Pause"
                                     icon="animation-stop"
-                                    onClick={this.pause}></IconButtonLineComponent>
+                                    onClick={this.pause}
+                                ></IconButtonLineComponent>
                                 <IconButtonLineComponent
                                     tooltip="Play Forward"
                                     icon="animation-playfwd"
-                                    onClick={this.play}></IconButtonLineComponent>
+                                    onClick={this.play}
+                                ></IconButtonLineComponent>
                             </>
                         ) : (
                             <>
                                 <IconButtonLineComponent
                                     tooltip="Play Reverse"
                                     icon="animation-playrev"
-                                    onClick={this.playBackwards}></IconButtonLineComponent>
+                                    onClick={this.playBackwards}
+                                ></IconButtonLineComponent>
                                 <IconButtonLineComponent
                                     tooltip="Pause"
                                     icon="animation-stop"
-                                    onClick={this.pause}></IconButtonLineComponent>
+                                    onClick={this.pause}
+                                ></IconButtonLineComponent>
                             </>
                         )}
                     </div>
@@ -126,21 +128,25 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
                         <IconButtonLineComponent
                             tooltip="Play Reverse"
                             icon="animation-playrev"
-                            onClick={this.playBackwards}></IconButtonLineComponent>
+                            onClick={this.playBackwards}
+                        ></IconButtonLineComponent>
                         <IconButtonLineComponent
                             tooltip="Play Forward"
                             icon="animation-playfwd"
-                            onClick={this.play}></IconButtonLineComponent>
+                            onClick={this.play}
+                        ></IconButtonLineComponent>
                     </div>
                 )}
                 <IconButtonLineComponent
                     tooltip="Next Keyframe"
                     icon="animation-nextkey"
-                    onClick={this.nextKeyframe}></IconButtonLineComponent>
+                    onClick={this.nextKeyframe}
+                ></IconButtonLineComponent>
                 <IconButtonLineComponent
                     tooltip="Animation End"
                     icon="animation-end"
-                    onClick={this.moveToAnimationEnd}></IconButtonLineComponent>
+                    onClick={this.moveToAnimationEnd}
+                ></IconButtonLineComponent>
             </div>
         );
     }

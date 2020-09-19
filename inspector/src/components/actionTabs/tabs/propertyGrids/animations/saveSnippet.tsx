@@ -158,9 +158,7 @@ export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAn
                     </ul>
                 </div>
                 <div className="save-buttons">
-                    {this.props.snippetId !== "" ? (
-                        <ButtonLineComponent label="Save to snippet server" onClick={this.saveToSnippet} />
-                    ) : null}
+                    {this.props.snippetId && <ButtonLineComponent label="Save to snippet server" onClick={this.saveToSnippet} />}
                     <ButtonLineComponent label="Save" onClick={this.saveToFile} />
                 </div>
                 <div className="save-server">
