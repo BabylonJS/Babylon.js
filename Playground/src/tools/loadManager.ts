@@ -11,8 +11,13 @@ export class LoadManager {
 
         globalState.onLoadRequiredObservable.add((id) => {
             globalState.onDisplayWaitRingObservable.notifyObservers(true);
+
+            let prevHash = location.hash;
             location.hash = id;
-            this._loadPlayground(id);
+
+            if(location.hash === prevHash){
+                this._loadPlayground(id);
+            }
         });
     }
 
