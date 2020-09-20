@@ -561,13 +561,13 @@ export class SkeletonViewer {
     }
 
     /** function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy. */
-    private getAbsoluteBindPoseToRef(bone: Nullable<Bone>, matrix: Matrix) {
+    private _getAbsoluteBindPoseToRef(bone: Nullable<Bone>, matrix: Matrix) {
         if (bone === null || bone._index === -1) {
             matrix.copyFrom(Matrix.Identity());
             return;
         }
 
-        this.getAbsoluteBindPoseToRef(bone.getParent(), matrix);
+        this._getAbsoluteBindPoseToRef(bone.getParent(), matrix);
         bone.getBindPose().multiplyToRef(matrix, matrix);
         return;
     }
@@ -613,17 +613,17 @@ export class SkeletonViewer {
                 }
 
                 let boneAbsoluteBindPoseTransform = new Matrix();
-                this.getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
+                this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
 
                 let anchorPoint = new Vector3();
 
                 boneAbsoluteBindPoseTransform.decompose(undefined, undefined, anchorPoint);
 
                 bone.children.forEach((bc, i) => {
-                    let childAbsoluteRestPoseTransform : Matrix = new Matrix();
-                    bc.getRestPose().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteRestPoseTransform);
+                    let childAbsoluteBindPoseTransform : Matrix = new Matrix();
+                    bc.getBindPose().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                     let childPoint = new Vector3();
-                    childAbsoluteRestPoseTransform.decompose(undefined, undefined, childPoint);
+                    childAbsoluteBindPoseTransform.decompose(undefined, undefined, childPoint);
                     let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
                     if (distanceFromParent > longestBoneLength) {
                         longestBoneLength = distanceFromParent;
@@ -779,7 +779,7 @@ export class SkeletonViewer {
             let boneAbsoluteBindPoseTransform = new Matrix();
             let boneOrigin = new Vector3();
 
-            this.getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
+            this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
             boneAbsoluteBindPoseTransform.decompose(undefined, undefined, boneOrigin);
 
             let m = bone.getBindPose().getRotationMatrix();
