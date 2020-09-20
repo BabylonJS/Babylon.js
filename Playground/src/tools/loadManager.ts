@@ -11,7 +11,7 @@ export class LoadManager {
 
         globalState.onLoadRequiredObservable.add((id) => {
             globalState.onDisplayWaitRingObservable.notifyObservers(true);
-            this._loadPlayground(id);
+            window.location.hash = id;
         });
     }
 
