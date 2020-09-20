@@ -7,11 +7,12 @@ export class LoadManager {
     public constructor(public globalState: GlobalState) {
         // Check the url to prepopulate data
         this._checkHash();
-        window.addEventListener("hashchange", () => this._checkHash());
+        window.addEventListener("hashchange", () => globalState.onLoadRequiredObservable.notifyObservers(location.hash));
 
         globalState.onLoadRequiredObservable.add((id) => {
             globalState.onDisplayWaitRingObservable.notifyObservers(true);
-            window.location.hash = id;
+            location.hash = id;
+            this._loadPlayground(id);
         });
     }
 
