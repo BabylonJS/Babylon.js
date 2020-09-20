@@ -197,6 +197,7 @@ export class PrePassRenderer {
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtFormats });
         this.prePassRT.samples = 1;
 
+        this._initializeAttachments();
         if (this._useGeometryBufferFallback && !this._geometryBuffer) {
             // Initializes the link with geometry buffer
             this.useGeometryBufferFallback = true;
