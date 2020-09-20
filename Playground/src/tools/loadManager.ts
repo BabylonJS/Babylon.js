@@ -7,7 +7,7 @@ export class LoadManager {
     public constructor(public globalState: GlobalState) {
         // Check the url to prepopulate data
         this._checkHash();
-        window.addEventListener("hashchange", () => globalState.onLoadRequiredObservable.notifyObservers(location.hash));
+        window.addEventListener("hashchange", () => this._checkHash());
 
         globalState.onLoadRequiredObservable.add((id) => {
             globalState.onDisplayWaitRingObservable.notifyObservers(true);
