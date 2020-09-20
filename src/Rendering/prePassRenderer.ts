@@ -131,7 +131,7 @@ export class PrePassRenderer {
     }
 
     private _geometryBuffer: Nullable<GeometryBufferRenderer>;
-    private _useGeometryBufferFallback = false;
+    private _useGeometryBufferFallback = true;
     /**
      * Uses the geometry buffer renderer as a fallback for non prepass capable effects
      */
@@ -152,7 +152,12 @@ export class PrePassRenderer {
             }
 
             this._geometryBuffer.renderList = [];
+            this._geometryBuffer.linkPrePassRenderer(this);
+            this._updateGeometryBufferLayout();
         } else {
+            if (this._geometryBuffer) {
+                this._geometryBuffer.unlinkPrePassRenderer();
+            }
             this._geometryBuffer = null;
             this._scene.disableGeometryBufferRenderer();
         }
@@ -167,7 +172,6 @@ export class PrePassRenderer {
         this._engine = scene.getEngine();
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
-        this.useGeometryBufferFallback = true;
         this._resetLayout();
     }
 
@@ -192,6 +196,11 @@ export class PrePassRenderer {
         this.prePassRT = new MultiRenderTarget("sceneprePassRT", { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, this.mrtCount, this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: Constants.TEXTURETYPE_UNSIGNED_INT, types: this._mrtFormats });
         this.prePassRT.samples = 1;
+
+        if (this._useGeometryBufferFallback && !this._geometryBuffer) {
+            // Initializes the link with geometry buffer
+            this.useGeometryBufferFallback = true;
+        }
 
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("sceneCompositionPass", 1, null, undefined, this._engine);
         this.imageProcessingPostProcess.autoClear = false;
@@ -218,7 +227,7 @@ export class PrePassRenderer {
                 if (this._geometryBuffer) {
                     const material = subMesh.getMaterial();
                     if (material && this.excludedMaterials.indexOf(material) === -1) {
-                        this._geometryBuffer.renderList.push(subMesh.getRenderingMesh());
+                        this._geometryBuffer.renderList!.push(subMesh.getRenderingMesh());
                     }
                 }
             }
@@ -234,7 +243,7 @@ export class PrePassRenderer {
         }
 
         if (this._geometryBuffer) {
-            this._geometryBuffer.renderList.length = 0;
+            this._geometryBuffer.renderList!.length = 0;
         }
 
         this._bindFrameBuffer();
@@ -262,6 +271,7 @@ export class PrePassRenderer {
         if (width !== requiredWidth || height !== requiredHeight) {
             this.prePassRT.resize({ width: requiredWidth, height: requiredHeight });
 
+            this._updateGeometryBufferLayout();
             this._bindPostProcessChain();
         }
     }
@@ -292,7 +302,7 @@ export class PrePassRenderer {
             // Clearing other attachment with 0 on all other attachments
             this._engine.bindAttachments(this._clearAttachments);
             this._engine.clear(this._clearColor, true, false, false);
-            this._engine.bindAttachments(this._multiRenderAttachments);
+            this._engine.bindAttachments(this._defaultAttachments);
         }
     }
 
@@ -302,6 +312,54 @@ export class PrePassRenderer {
 
         if (this.imageProcessingPostProcess) {
             this.imageProcessingPostProcess.imageProcessingConfiguration.applyByPostProcess = enabled;
+        }
+    }
+
+    private _updateGeometryBufferLayout() {
+        if (this._geometryBuffer) {
+            this._geometryBuffer.resetLayout();
+
+            const attachments = this._defaultAttachments.slice();
+            const gl = this._scene.getEngine()._gl;
+            attachments[0] = gl.NONE;
+
+            // Depth + normal is always index 0 in geometry buffer
+            let index = this.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
+            if (index !== -1) {
+                this._geometryBuffer.replaceDepthTexture(this.prePassRT.textures[index], this.prePassRT.getInternalTexture()!, false);
+            } else {
+                this._geometryBuffer.replaceDepthTexture(this.prePassRT.textures[0], this.prePassRT.getInternalTexture()!, true);
+            }
+
+            const matches = [
+                {
+                    prePassConstant: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE,
+                },
+                {
+                    prePassConstant: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.POSITION_TEXTURE_TYPE,
+                },
+                {
+                    prePassConstant: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE,
+                },
+                {
+                    prePassConstant: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+                    geometryBufferConstant: GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE,
+                }
+            ];
+
+            // replace textures in the geometryBuffer RT
+            for (let i = 0; i < matches.length; i++) {
+                const index = this._mrtLayout.indexOf(matches[i].prePassConstant);
+                if (index !== -1) {
+                    this._geometryBuffer.replaceTexture(this.prePassRT.textures[index], matches[i].geometryBufferConstant, index);
+                    attachments[index] = (<any>gl)["COLOR_ATTACHMENT" + index];
+                }
+            }
+
+            this._geometryBuffer.setAttachments(attachments);
         }
     }
 
@@ -346,6 +404,7 @@ export class PrePassRenderer {
             this.prePassRT.updateCount(this.mrtCount, { types: this._mrtFormats });
         }
 
+        this._updateGeometryBufferLayout();
         this._resetPostProcessChain();
 
         for (let i = 0; i < this._effectConfigurations.length; i++) {
@@ -466,7 +525,7 @@ export class PrePassRenderer {
 
         if (!this.enabled) {
             // Prepass disabled, we render only on 1 color attachment
-            this._engine.bindAttachments([this._engine._gl.COLOR_ATTACHMENT0]);
+            this._engine.bindAttachments([this._engine._gl.BACK]);
         }
     }
 
