@@ -1418,17 +1418,35 @@ export class WebGPUEngine extends Engine {
             gpuTexture = this._createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        // TODO WEBGPU clean this, for testing purpose only
-        /*if (!(this as any)._bitmap) {
-            (this as any)._bitmap = createImageBitmap(canvas);
-        }*/
-
         // TODO WEBGPU: handle format if <> 0
         // let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
 
+        // TODO WEBGPU remove test code
+        if (canvas.width === 2560) {
+            if ((this as any)._swap === undefined) { (this as any)._swap = 0; }
+            (this as any)._swap ^= 1;
+
+            const swap = (this as any)._swap;
+
+            if (!(this as any)._bitmap) {
+                createImageBitmap(canvas).then((imageBitmap) => {
+                    (this as any)._bitmap = imageBitmap;
+                });
+            }
+            if ((this as any)._bitmap) {
+                createImageBitmap(canvas).then((bitmap: ImageBitmap) => {
+                    this._textureHelper.updateTextureTest(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, swap, 0, this._uploadEncoder);
+                    texture.isReady = true;
+                });
+            }
+            //this._textureHelper.updateTextureTest(canvas as HTMLCanvasElement, gpuTexture, width, height, 0, 0, invertY, premulAlpha, swap, 0, this._uploadEncoder);
+            //texture.isReady = true;
+            return;
+        }
+
         if (makeDynamicTextureUpdateSynchronous) {
             this._promisesFrame.push(new Promise((resolve) => {
-                /*(this as any)._bitmap*/createImageBitmap(canvas).then((bitmap) => {
+                createImageBitmap(canvas).then((bitmap) => {
                     this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder).then(() => {
                         if (texture.generateMipMaps) {
                             this._generateMipmaps(texture, gpuTexture);
@@ -1441,7 +1459,7 @@ export class WebGPUEngine extends Engine {
             }));
         } else {
             createImageBitmap(canvas).then((bitmap) => {
-                /*(this as any)._bitmap*/this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
+                this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
                 if (texture.generateMipMaps) {
                     this._generateMipmaps(texture, gpuTexture);
                 }
