@@ -5,8 +5,10 @@ import { Mesh } from "../Meshes/mesh";
 import { Constants } from "../Engines/constants";
 import { SmartArray } from "../Misc/smartArray";
 import { Texture } from "../Materials/Textures/texture";
+import { InternalTexture } from "../Materials/Textures/internalTexture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { Effect } from "../Materials/effect";
+import { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { MaterialHelper } from "../Materials/materialHelper";
 import { Scene } from "../scene";
 import { AbstractMesh } from "../Meshes/abstractMesh";
@@ -31,6 +33,11 @@ interface ISavedTransformationMatrix {
  * This renderer is helpfull to fill one of the render target with a geometry buffer.
  */
 export class GeometryBufferRenderer {
+    /**
+     * Constant used to retrieve the depth + normal texture index in the G-Buffer textures array
+     * using getIndex(GeometryBufferRenderer.DEPTHNORMAL_TYPE)
+     */
+    public static readonly DEPTHNORMAL_TEXTURE_TYPE = 0;
     /**
      * Constant used to retrieve the position texture index in the G-Buffer textures array
      * using getIndex(GeometryBufferRenderer.POSITION_TEXTURE_INDEX)
@@ -79,9 +86,97 @@ export class GeometryBufferRenderer {
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
     private _reflectivityIndex: number = -1;
+    private _depthNormalIndex: number = -1;
+
+    private _linkedWithPrePass: boolean = false;
+    private _prePassRenderer: PrePassRenderer;
+    private _attachments: number[];
 
     protected _effect: Effect;
     protected _cachedDefines: string;
+
+
+    /**
+     * @hidden
+     * Sets up internal structures to share outputs with PrePassRenderer
+     * This method should only be called by the PrePassRenderer itself
+     */
+    public linkPrePassRenderer(prePassRenderer: PrePassRenderer) {
+        this._linkedWithPrePass = true;
+        this._prePassRenderer = prePassRenderer;
+
+        if (this._multiRenderTarget) {
+            // prevents clearing of the RT since it's done by prepass
+            this._multiRenderTarget.onClearObservable.clear();
+            this._multiRenderTarget.onClearObservable.add((engine) => {
+                // pass
+            });
+        }
+    }
+
+    /**
+     * @hidden
+     * Separates internal structures from PrePassRenderer so the geometry buffer can now operate by itself.
+     * This method should only be called by the PrePassRenderer itself
+     */
+    public unlinkPrePassRenderer() {
+        this._linkedWithPrePass = false;
+        this._createRenderTargets();
+    }
+
+    /**
+     * @hidden
+     * Resets the geometry buffer layout
+     */
+    public resetLayout() {
+        this._enablePosition = false;
+        this._enableReflectivity = false;
+        this._enableVelocity = false;
+        this._attachments = [];
+    }
+
+    /**
+     * @hidden
+     * Replaces a texture in the geometry buffer renderer
+     * Useful when linking textures of the prepass renderer
+     */
+    public replaceTexture(texture: Texture, geometryBufferType: number, index: number) {
+        if (geometryBufferType === GeometryBufferRenderer.POSITION_TEXTURE_TYPE) {
+            this._positionIndex = index;
+            this._enablePosition = true;
+        } else if (geometryBufferType === GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE) {
+            this._velocityIndex = index;
+            this._enableVelocity = true;
+        } else if (geometryBufferType === GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE) {
+            this._reflectivityIndex = index;
+            this._enableReflectivity = true;
+        } else if (geometryBufferType === GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_TYPE) {
+            this._depthNormalIndex = index;
+        }
+    }
+
+    /**
+     * @hidden
+     * Sets texture attachments
+     * Useful when linking textures of the prepass renderer
+     */
+    public setAttachments(attachments: number[]) {
+        this._attachments = attachments;
+    }
+
+    /**
+     * @hidden
+     * Replaces the first texture which is hard coded as a depth texture in the geometry buffer
+     * Useful when linking textures of the prepass renderer   
+     */
+    public replaceDepthTexture(texture: Texture, internalTexture: InternalTexture, onlyInternalTexture: boolean) {
+        // TODO change to replace framebuffer
+        // if (!onlyInternalTexture) {
+        //     this.getGBuffer().replaceTexture(texture, 0);
+        // }
+
+        this._multiRenderTarget._texture = internalTexture;
+    }
 
     /**
      * Gets the render list (meshes to be rendered) used in the G buffer.
@@ -131,8 +226,12 @@ export class GeometryBufferRenderer {
      */
     public set enablePosition(enable: boolean) {
         this._enablePosition = enable;
-        this.dispose();
-        this._createRenderTargets();
+
+        // PrePass handles index and texture links
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();            
+        }
     }
 
     /**
@@ -152,8 +251,10 @@ export class GeometryBufferRenderer {
             this._previousTransformationMatrices = {};
         }
 
-        this.dispose();
-        this._createRenderTargets();
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();            
+        }
     }
 
     /**
@@ -168,8 +269,11 @@ export class GeometryBufferRenderer {
      */
     public set enableReflectivity(enable: boolean) {
         this._enableReflectivity = enable;
-        this.dispose();
-        this._createRenderTargets();
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();            
+        }
     }
 
     /**
@@ -261,6 +365,12 @@ export class GeometryBufferRenderer {
             }
         }
 
+        // PrePass
+        if (this._linkedWithPrePass) {
+            defines.push("#define PREPASS");
+            defines.push("#define DEPTHNORMAL_INDEX " + this._depthNormalIndex);
+        }
+
         // Buffers
         if (this._enablePosition) {
             defines.push("#define POSITION");
@@ -318,7 +428,11 @@ export class GeometryBufferRenderer {
         }
 
         // Setup textures count
-        defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
+        if (this._linkedWithPrePass) {
+            defines.push("#define RENDER_TARGET_COUNT " + this._attachments.length);
+        } else {
+            defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
+        }
 
         // Get correct effect
         var join = defines.join("\n");
@@ -372,9 +486,8 @@ export class GeometryBufferRenderer {
         this.getGBuffer().dispose();
     }
 
-    protected _createRenderTargets(): void {
-        var engine = this._scene.getEngine();
-        var count = 2;
+    private _assignRenderTargetIndices() : number {
+        let count = 2;
 
         if (this._enablePosition) {
             this._positionIndex = count;
@@ -390,6 +503,13 @@ export class GeometryBufferRenderer {
             this._reflectivityIndex = count;
             count++;
         }
+
+        return count
+    }
+
+    protected _createRenderTargets(): void {
+        var engine = this._scene.getEngine();
+        var count = this._assignRenderTargetIndices();
 
         this._multiRenderTarget = new MultiRenderTarget("gBuffer",
             { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene,
@@ -525,6 +645,13 @@ export class GeometryBufferRenderer {
 
         this._multiRenderTarget.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
             var index;
+
+            if (this._linkedWithPrePass) {
+                if (!this._prePassRenderer.enabled) {
+                    return;
+                }
+                this._scene.getEngine().bindAttachments(this._attachments);
+            }
 
             if (depthOnlySubMeshes.length) {
                 engine.setColorWrite(false);
