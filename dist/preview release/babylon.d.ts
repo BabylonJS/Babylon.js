@@ -20723,6 +20723,10 @@ declare module BABYLON {
          */
         isExposedOnFrame: boolean;
         /**
+         * Gets or sets number indicating the position that the port is exposed to on a frame
+         */
+        exposedPortPosition: number;
+        /**
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
