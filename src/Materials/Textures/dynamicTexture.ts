@@ -24,10 +24,11 @@ export class DynamicTexture extends Texture {
      * @param generateMipMaps defines the use of MinMaps or not (default is false)
      * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
      * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading
      */
 
-    constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, format: number = Constants.TEXTUREFORMAT_RGBA) {
-        super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
+    constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, format: number = Constants.TEXTUREFORMAT_RGBA, invertY?: boolean) {
+        super(null, scene, !generateMipMaps, invertY, samplingMode, undefined, undefined, undefined, undefined, format);
 
         this.name = name;
         this.wrapU = Texture.CLAMP_ADDRESSMODE;
