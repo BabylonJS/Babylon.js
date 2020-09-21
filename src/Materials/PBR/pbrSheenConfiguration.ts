@@ -8,6 +8,7 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Nullable } from "../../types";
 import { IAnimatable } from '../../Animations/animatable.interface';
 import { EffectFallbacks } from '../effectFallbacks';
+import { SubMesh } from '../../Meshes/subMesh';
 
 /**
  * @hidden
@@ -17,6 +18,7 @@ export interface IMaterialSheenDefines {
     SHEEN_TEXTURE: boolean;
     SHEEN_TEXTURE_ROUGHNESS: boolean;
     SHEEN_TEXTUREDIRECTUV: number;
+    SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
     SHEEN_LINKWITHALBEDO: boolean;
     SHEEN_ROUGHNESS: boolean;
     SHEEN_ALBEDOSCALING: boolean;
@@ -163,7 +165,7 @@ export class PBRSheenConfiguration {
             defines.SHEEN_ROUGHNESS = this._roughness !== null;
             defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
             defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
-            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture;
+            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -198,15 +200,24 @@ export class PBRSheenConfiguration {
      * @param uniformBuffer defines the Uniform buffer to fill in.
      * @param scene defines the scene the material belongs to.
      * @param isFrozen defines wether the material is frozen or not.
+     * @param subMesh the submesh to bind data for
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, subMesh?: SubMesh): void {
+        const defines = subMesh!._materialDefines as unknown as IMaterialSheenDefines;
+
+        const identicalTextures = defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL;
+
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if ((this._texture || this._textureRoughness) && MaterialFlags.SheenTextureEnabled) {
-                uniformBuffer.updateFloat4("vSheenInfos", this._texture?.coordinatesIndex ?? this._textureRoughness?.coordinatesIndex ?? 0, this._texture?.level ?? 0, 0 /* not used */, this._textureRoughness?.level ?? 0);
+            if (identicalTextures) {
+                uniformBuffer.updateFloat4("vSheenInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
+                MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "sheen");
+            } else  if ((this._texture || this._textureRoughness) && MaterialFlags.SheenTextureEnabled) {
+                uniformBuffer.updateFloat4("vSheenInfos", this._texture?.coordinatesIndex ?? 0, this._texture?.level ?? 0, this._textureRoughness?.coordinatesIndex ?? 0, this._textureRoughness?.level ?? 0);
                 if (this._texture) {
                     MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "sheen");
-                } else if (this._textureRoughness) {
-                    MaterialHelper.BindTextureMatrix(this._textureRoughness, uniformBuffer, "sheen");
+                }
+                if (this._textureRoughness && !identicalTextures && !defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE) {
+                    MaterialHelper.BindTextureMatrix(this._textureRoughness, uniformBuffer, "sheenRoughness");
                 }
             }
 
@@ -228,7 +239,7 @@ export class PBRSheenConfiguration {
                 uniformBuffer.setTexture("sheenSampler", this._texture);
             }
 
-            if (this._textureRoughness && (this._texture === null || this._texture._texture !== this._textureRoughness._texture) && MaterialFlags.SheenTextureEnabled) {
+            if (this._textureRoughness && !identicalTextures && !defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.SheenTextureEnabled) {
                 uniformBuffer.setTexture("sheenRoughnessSampler", this._textureRoughness);
             }
         }
@@ -317,7 +328,7 @@ export class PBRSheenConfiguration {
      * @param uniforms defines the current uniform list.
      */
     public static AddUniforms(uniforms: string[]): void {
-        uniforms.push("vSheenColor", "vSheenRoughness", "vSheenInfos", "sheenMatrix");
+        uniforms.push("vSheenColor", "vSheenRoughness", "vSheenInfos", "sheenMatrix", "sheenRoughnessMatrix");
     }
 
     /**
@@ -329,6 +340,7 @@ export class PBRSheenConfiguration {
         uniformBuffer.addUniform("vSheenRoughness", 1);
         uniformBuffer.addUniform("vSheenInfos", 4);
         uniformBuffer.addUniform("sheenMatrix", 16);
+        uniformBuffer.addUniform("sheenRoughnessMatrix", 16);
     }
 
     /**

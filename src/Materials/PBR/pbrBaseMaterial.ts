@@ -243,6 +243,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public SHEEN_TEXTURE = false;
     public SHEEN_TEXTURE_ROUGHNESS = false;
     public SHEEN_TEXTUREDIRECTUV = 0;
+    public SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
     public SHEEN_LINKWITHALBEDO = false;
     public SHEEN_ROUGHNESS = false;
     public SHEEN_ALBEDOSCALING = false;
@@ -2007,7 +2008,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
             this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.sheen.bindForSubMesh(ubo, scene, this.isFrozen, subMesh);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);

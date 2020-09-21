@@ -129,13 +129,23 @@
 #endif
 
 #ifdef SHEEN
-    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
+    #ifdef SHEEN_TEXTURE
         #if SHEEN_TEXTUREDIRECTUV == 1
             #define vSheenUV vMainUV1
         #elif SHEEN_TEXTUREDIRECTUV == 2
             #define vSheenUV vMainUV2
         #else
             varying vec2 vSheenUV;
+        #endif
+    #endif
+
+    #ifdef SHEEN_TEXTURE_ROUGHNESS
+        #if SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 1
+            #define vSheenRoughnessUV vMainUV1
+        #elif SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 2
+            #define vSheenRoughnessUV vMainUV2
+        #else
+            varying vec2 vSheenRoughnessUV;
         #endif
     #endif
 
