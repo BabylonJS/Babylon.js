@@ -23,7 +23,7 @@ export class KhronosTextureContainer2 {
      *     URLConfig.wasmUASTCToBC7
      *     URLConfig.jsMSCTranscoder
      *     URLConfig.wasmMSCTranscoder
-     * You can see their default values in this PG: http://localhost:1338/Playground/index-local.html#EIJH8L#9
+     * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
      */
     public static URLConfig = {
         jsDecoderModule: "https://preview.babylonjs.com/babylon.ktx2Decoder.js",
