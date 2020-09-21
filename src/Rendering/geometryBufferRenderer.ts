@@ -169,12 +169,7 @@ export class GeometryBufferRenderer {
      * Replaces the first texture which is hard coded as a depth texture in the geometry buffer
      * Useful when linking textures of the prepass renderer   
      */
-    public replaceDepthTexture(texture: Texture, internalTexture: InternalTexture, onlyInternalTexture: boolean) {
-        // TODO change to replace framebuffer
-        // if (!onlyInternalTexture) {
-        //     this.getGBuffer().replaceTexture(texture, 0);
-        // }
-
+    public linkInternalTexture(internalTexture: InternalTexture) {
         this._multiRenderTarget._texture = internalTexture;
     }
 
