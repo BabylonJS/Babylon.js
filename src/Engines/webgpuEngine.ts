@@ -386,7 +386,7 @@ export class WebGPUEngine extends Engine {
         }
         else {
             this._mainColorAttachments = [{
-                attachment: this._swapChain.getCurrentTexture().createView(),
+                attachment: undefined as any,
                 loadValue: new Color4(0, 0, 0, 1),
                 storeOp: WebGPUConstants.StoreOp.Store
             }];
