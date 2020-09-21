@@ -327,9 +327,9 @@ export class PrePassRenderer {
             // Depth + normal is always index 0 in geometry buffer
             let index = this.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
             if (index !== -1) {
-                this._geometryBuffer.replaceDepthTexture(this.prePassRT.textures[index], this.prePassRT.getInternalTexture()!, false);
+                this._geometryBuffer.linkInternalTexture(this.prePassRT.getInternalTexture()!);
             } else {
-                this._geometryBuffer.replaceDepthTexture(this.prePassRT.textures[0], this.prePassRT.getInternalTexture()!, true);
+                this._geometryBuffer.linkInternalTexture(this.prePassRT.getInternalTexture()!);
             }
 
             const matches = [
