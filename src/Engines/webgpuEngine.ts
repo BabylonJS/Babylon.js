@@ -1300,9 +1300,12 @@ export class WebGPUEngine extends Engine {
 
     public setTexture(channel: number, _: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
         if (this._currentEffect) {
-            const pipeline = this._currentEffect._pipelineContext as WebGPUPipelineContext;
+            const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
-                pipeline.samplers[name] = null;
+                if (webgpuPipelineContext.samplers[name] && webgpuPipelineContext.samplers[name]!.texture) {
+                    webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                }
+                webgpuPipelineContext.samplers[name] = null;
                 return;
             }
 
@@ -1316,11 +1319,18 @@ export class WebGPUEngine extends Engine {
             if (pipeline.samplers[name]) {
                 pipeline.samplers[name]!.texture = internalTexture!;
             }
+
+            if (webgpuPipelineContext.samplers[name]) {
+                if (webgpuPipelineContext.samplers[name]!.texture !== internalTexture) {
+                    webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
+                }
+                webgpuPipelineContext.samplers[name]!.texture = internalTexture!;
+            }
             else {
                 // TODO WEBGPU. 121 mapping samplers <-> availableSamplers
-                const availableSampler = pipeline.availableSamplers[name];
+                const availableSampler = webgpuPipelineContext.availableSamplers[name];
                 if (availableSampler) {
-                    pipeline.samplers[name] = {
+                    webgpuPipelineContext.samplers[name] = {
                         setIndex: availableSampler.setIndex,
                         textureBinding: availableSampler.bindingIndex,
                         samplerBinding: availableSampler.bindingIndex + 1,
