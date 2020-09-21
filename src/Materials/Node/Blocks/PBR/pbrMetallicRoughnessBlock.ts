@@ -81,8 +81,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.registerInput("ambientColor", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.Object, false, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("reflectivity", this, NodeMaterialConnectionPointDirection.Input, ReflectivityBlock, "ReflectivityBlock"));
-        this.registerInput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Input, AmbientOcclusionBlock, "AOBlock"));
+        this.registerInput("ambientOcc", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
+            new NodeMaterialConnectionPointCustomObject("ambientOcc", this, NodeMaterialConnectionPointDirection.Input, AmbientOcclusionBlock, "AOBlock"));
         this.registerInput("reflection", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Input, ReflectionBlock, "ReflectionBlock"));
         this.registerInput("sheen", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,

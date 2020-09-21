@@ -20723,6 +20723,10 @@ declare module BABYLON {
          */
         isExposedOnFrame: boolean;
         /**
+         * Gets or sets number indicating the position that the port is exposed to on a frame
+         */
+        exposedPortPosition: number;
+        /**
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
@@ -51441,7 +51445,8 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength;
         /** function to revert the mesh and scene back to the initial state. */
         private _revert;
-        private getAbsoluteRestPose;
+        /** function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy. */
+        private _getAbsoluteBindPoseToRef;
         /** function to build and bind sphere joint points and spur bone representations. */
         private _buildSpheresAndSpurs;
         private _buildLocalAxes;
@@ -51455,6 +51460,10 @@ declare module BABYLON.Debug {
          *
          * | Option          | Type    | Default | Description |
          * | --------------- | ------- | ------- | ----------- |
+         * | midStep         | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | midStepFactor   | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereBaseSize  | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereScaleUnit | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
          * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
          * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
          *

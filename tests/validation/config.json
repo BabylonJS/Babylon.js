@@ -2,7 +2,8 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [   
         {
-            "title": "Procedural texture with NME",
+            "title": "Procedural texture with NME",       
+            "renderCount": 10,
             "playgroundId": "#8S19ZC#1",            
             "referenceImage": "procedural_nme.png"
         },   

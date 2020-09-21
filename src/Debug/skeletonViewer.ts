@@ -560,13 +560,14 @@ export class SkeletonViewer {
         }
     }
 
-    private getAbsoluteRestPose(bone: Nullable<Bone>, matrix: Matrix) {
+    /** function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy. */
+    private _getAbsoluteBindPoseToRef(bone: Nullable<Bone>, matrix: Matrix) {
         if (bone === null || bone._index === -1) {
             matrix.copyFrom(Matrix.Identity());
             return;
         }
 
-        this.getAbsoluteRestPose(bone.getParent(), matrix);
+        this._getAbsoluteBindPoseToRef(bone.getParent(), matrix);
         bone.getBindPose().multiplyToRef(matrix, matrix);
         return;
     }
@@ -611,18 +612,18 @@ export class SkeletonViewer {
                     continue;
                 }
 
-                let boneAbsoluteRestTransform = new Matrix();
-                this.getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
+                let boneAbsoluteBindPoseTransform = new Matrix();
+                this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
 
                 let anchorPoint = new Vector3();
 
-                boneAbsoluteRestTransform.decompose(undefined, undefined, anchorPoint);
+                boneAbsoluteBindPoseTransform.decompose(undefined, undefined, anchorPoint);
 
                 bone.children.forEach((bc, i) => {
-                    let childAbsoluteRestTransform : Matrix = new Matrix();
-                    bc.getRestPose().multiplyToRef(boneAbsoluteRestTransform, childAbsoluteRestTransform);
+                    let childAbsoluteBindPoseTransform : Matrix = new Matrix();
+                    bc.getBindPose().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                     let childPoint = new Vector3();
-                    childAbsoluteRestTransform.decompose(undefined, undefined, childPoint);
+                    childAbsoluteBindPoseTransform.decompose(undefined, undefined, childPoint);
                     let distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
                     if (distanceFromParent > longestBoneLength) {
                         longestBoneLength = distanceFromParent;
@@ -775,11 +776,11 @@ export class SkeletonViewer {
                 continue;
             }
 
-            let boneAbsoluteRestTransform = new Matrix();
+            let boneAbsoluteBindPoseTransform = new Matrix();
             let boneOrigin = new Vector3();
 
-            this.getAbsoluteRestPose(bone, boneAbsoluteRestTransform);
-            boneAbsoluteRestTransform.decompose(undefined, undefined, boneOrigin);
+            this._getAbsoluteBindPoseToRef(bone, boneAbsoluteBindPoseTransform);
+            boneAbsoluteBindPoseTransform.decompose(undefined, undefined, boneOrigin);
 
             let m = bone.getBindPose().getRotationMatrix();
 
@@ -864,12 +865,16 @@ export class SkeletonViewer {
     }
 
     /** Sets a display option of the skeleton viewer
-     *
+	 *
      * | Option          | Type    | Default | Description |
      * | --------------- | ------- | ------- | ----------- |
+     * | midStep         | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | midStepFactor   | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | sphereBaseSize  | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | sphereScaleUnit | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
      * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
-     * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
-     *
+	 * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
+	 *
      * @param option String of the option name
      * @param value The numerical option value
      */
