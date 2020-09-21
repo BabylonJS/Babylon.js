@@ -20,6 +20,10 @@ interface IGraphActionsBarProps {
     frameRange: { min: number | undefined; max: number | undefined };
 }
 
+/**
+ * Has the buttons and actions for the Canvas Graph.
+ * Handles input change and actions (flat, broken mode, set linear control points)
+ */
 export class GraphActionsBar extends React.Component<
     IGraphActionsBarProps,
     { frame: string; value: string; min: number | undefined; max: number | undefined }
@@ -157,7 +161,7 @@ export class GraphActionsBar extends React.Component<
                         onClick={this.props.frameSelectedKeyframes}
                     />
                     <IconButtonLineComponent
-                        tooltip={"Flat Tangents"}
+                        tooltip={this.props.brokenMode ? "Flat selected control point" : "Flat control points"}
                         icon="flat-tangent"
                         onClick={this.props.flatTangent}
                     />

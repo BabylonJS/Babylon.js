@@ -13,6 +13,9 @@ interface IControlsProps {
     scrollable: React.RefObject<HTMLDivElement>;
 }
 
+/**
+ * The playback controls for the animation editor
+ */
 export class Controls extends React.Component<IControlsProps, { selected: IAnimationKey; playingType: string }> {
     readonly _sizeOfKeyframe: number = 5;
     constructor(props: IControlsProps) {

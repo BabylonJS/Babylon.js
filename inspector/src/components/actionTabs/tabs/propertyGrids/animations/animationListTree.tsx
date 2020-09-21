@@ -45,6 +45,9 @@ interface ItemCoordinate {
     coordinate: SelectedCoordinate;
 }
 
+/**
+ * Renders a list of current animations.
+ */
 export class AnimationListTree extends React.Component<
     IAnimationListTreeProps,
     {

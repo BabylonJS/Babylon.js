@@ -3,7 +3,6 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 import { AnchorSvgPoint } from "./anchorSvgPoint";
 
 const keyInactive = require("./assets/keyInactiveIcon.svg") as string;
-//const keyActive = require("./assets/keyActiveIcon.svg") as string; uncomment when setting active multiselect
 const keySelected = require("./assets/keySelectedIcon.svg") as string;
 
 export interface IKeyframeSvgPoint {
@@ -36,6 +35,10 @@ interface IKeyframeSvgPointProps {
     framesInCanvasView: { from: number; to: number };
 }
 
+/**
+ * Renders the Keyframe as an SVG Element for the Canvas component.
+ * Holds the two control points to generate the proper curve.
+ */
 export class KeyframeSvgPoint extends React.Component<IKeyframeSvgPointProps> {
     constructor(props: IKeyframeSvgPointProps) {
         super(props);
