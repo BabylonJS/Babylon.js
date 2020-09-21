@@ -129,7 +129,7 @@ export class GraphActionsBar extends React.Component<
                     <div className="icon babylon-logo"></div>
                     <div className="title">{this.props.title}</div>
                 </div>
-                <div className="buttons-container" style={{ pointerEvents: this.props.enabled ? "all" : "none" }}>
+                <div className={`buttons-container ${this.props.enabled ? "pointer-events-enabled" : "pointer-events-disabled"}`}>
                     <div className="action-input frame-input">
                         <input
                             ref={this._frameInput}
