@@ -25,7 +25,7 @@
         const in vec4 vSheenColor,
     #ifdef SHEEN_ROUGHNESS
         const in float vSheenRoughness,
-        #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL)
+        #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
             const in vec4 sheenMapRoughnessData,
         #endif
     #endif
@@ -100,8 +100,10 @@
             
             #ifdef SHEEN_ROUGHNESS
                 float sheenRoughness = vSheenRoughness;
-                #if defined(SHEEN_TEXTURE) && defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
-                    sheenRoughness *= sheenMapData.a;
+                #ifdef SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE
+                    #if defined(SHEEN_TEXTURE)
+                        sheenRoughness *= sheenMapData.a;
+                    #endif
                 #elif defined(SHEEN_TEXTURE_ROUGHNESS)
                     #ifdef SHEEN_TEXTURE_ROUGHNESS_IDENTICAL
                         sheenRoughness *= sheenMapData.a;

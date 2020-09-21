@@ -93,8 +93,12 @@ varying vec2 vBumpUV;
 #endif
 
 #ifdef SHEEN
-    #if (defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)) && SHEEN_TEXTUREDIRECTUV == 0 
+    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0 
         varying vec2 vSheenUV;
+    #endif
+
+    #if defined(SHEEN_TEXTURE_ROUGHNESS) && SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 0 
+        varying vec2 vSheenRoughnessUV;
     #endif
 #endif
 
@@ -386,7 +390,7 @@ void main(void) {
 #endif
 
 #ifdef SHEEN
-    #if (defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)) && SHEEN_TEXTUREDIRECTUV == 0 
+    #if defined(SHEEN_TEXTURE) && SHEEN_TEXTUREDIRECTUV == 0 
         if (vSheenInfos.x == 0.)
         {
             vSheenUV = vec2(sheenMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -394,6 +398,17 @@ void main(void) {
         else
         {
             vSheenUV = vec2(sheenMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(SHEEN_TEXTURE_ROUGHNESS) && SHEEN_TEXTURE_ROUGHNESSDIRECTUV == 0 
+        if (vSheenInfos.z == 0.)
+        {
+            vSheenRoughnessUV = vec2(sheenRoughnessMatrix * vec4(uvUpdated, 1.0, 0.0));
+        }
+        else
+        {
+            vSheenRoughnessUV = vec2(sheenRoughnessMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 #endif

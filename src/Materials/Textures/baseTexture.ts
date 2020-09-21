@@ -474,6 +474,14 @@ export class BaseTexture implements IAnimatable {
     }
 
     /**
+     * Checks if the texture has the same transform matrix than another texture
+     * @param texture texture to check against
+     */
+    public checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean {
+        return texture !== null;
+    }
+
+    /**
      * Get the texture transform matrix used to offset tile the texture for istance.
      * @returns the transformation matrix
      */

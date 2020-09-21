@@ -84,9 +84,16 @@ uniform float pointSize;
 
 // Sheen
 #ifdef SHEEN
-    #ifdef SHEEN_TEXTURE
+    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
         uniform vec4 vSheenInfos;
+    #endif
+
+    #ifdef SHEEN_TEXTURE
         uniform mat4 sheenMatrix;
+    #endif
+
+    #ifdef SHEEN_TEXTURE_ROUGHNESS
+        uniform mat4 sheenRoughnessMatrix;
     #endif
 #endif
 
