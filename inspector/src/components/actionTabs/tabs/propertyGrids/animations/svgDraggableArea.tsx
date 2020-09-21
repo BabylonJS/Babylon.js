@@ -20,6 +20,11 @@ interface ISvgDraggableAreaProps {
     framesResized: number;
 }
 
+/**
+ * The SvgDraggableArea is a wrapper for SVG Canvas the interaction
+ *
+ * Here we control the drag and key behavior for the SVG components. 
+ */
 export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { panX: number; panY: number }> {
     private _active: boolean;
     private _isCurrentPointControl: string;
@@ -120,6 +125,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
             var coord = this.getMousePosition(e);
 
             if (coord !== undefined) {
+                // Handles the canvas panning
                 if ((e.target as SVGSVGElement).classList.contains("pannable")) {
                     if (this._isControlKeyPress) {
                         if (this._panStart.x !== 0 && this._panStart.y !== 0) {
@@ -131,6 +137,7 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                         }
                     }
                 }
+                // Handles the playhead dragging
                 if (
                     e.currentTarget.classList.contains("linear") &&
                     this._playheadDrag !== 0 &&
@@ -151,8 +158,8 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
                     const newFrame = Math.round(moving / unit) + initialFrame;
                     this.props.setCurrentFrame(newFrame);
                 } else {
+                    // Handles the control point dragging
                     var newPoints = [...this.props.keyframeSvgPoints];
-
                     let point = newPoints.find((kf) => kf.id === this._currentPointId);
                     if (point) {
                         if (this._isCurrentPointControl === "left") {
@@ -202,6 +209,10 @@ export class SvgDraggableArea extends React.Component<ISvgDraggableAreaProps, { 
         }
     };
 
+    /**
+    * Handles the canvas panning direction and sets the X and Y values to move the
+    * SVG canvas
+    */
     panDirection() {
         let directionX = 1;
         if (this._movedX < this._panStop.x) {

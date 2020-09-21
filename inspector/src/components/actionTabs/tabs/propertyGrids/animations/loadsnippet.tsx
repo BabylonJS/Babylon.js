@@ -24,6 +24,9 @@ interface ILoadSnippetProps {
     animationsLoaded: (numberOfAnimations: number) => void;
 }
 
+/**
+ * Loads animation locally or from the Babylon.js Snippet Server
+ */
 export class LoadSnippet extends React.Component<ILoadSnippetProps, { snippetId: string }> {
     private _serverAddress: string;
     constructor(props: ILoadSnippetProps) {

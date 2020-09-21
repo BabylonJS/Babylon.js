@@ -12,6 +12,9 @@ interface IAnchorSvgPointProps {
     framesInCanvasView: { from: number; to: number };
 }
 
+/**
+ * Renders the control point to a keyframe.
+ */
 export class AnchorSvgPoint extends React.Component<IAnchorSvgPointProps, { visiblePoint: Vector2 }> {
     constructor(props: IAnchorSvgPointProps) {
         super(props);

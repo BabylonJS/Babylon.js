@@ -20,6 +20,9 @@ interface IAddAnimationProps {
     selectedToUpdate?: Animation | undefined;
 }
 
+/**
+ * Controls the creation of a new animation
+ */
 export class AddAnimation extends React.Component<
     IAddAnimationProps,
     {

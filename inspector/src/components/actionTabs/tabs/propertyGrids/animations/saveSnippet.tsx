@@ -28,6 +28,9 @@ interface SelectedAnimation {
     selected: boolean;
 }
 
+/**
+ * Saves the animation snippet to the Babylon.js site or downloads the animation file locally
+ */
 export class SaveSnippet extends React.Component<ISaveSnippetProps, { selectedAnimations: SelectedAnimation[] }> {
     constructor(props: ISaveSnippetProps) {
         super(props);

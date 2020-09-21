@@ -17,6 +17,12 @@ interface ITimelineProps {
     resizeWindowProportion: number;
 }
 
+/**
+ * The Timeline for the curve editor
+ *
+ * Has a scrollbar that can be resized and move to left and right. 
+ * The timeline does not affect the Canvas but only the frame container.
+ */
 export class Timeline extends React.Component<
     ITimelineProps,
     {
@@ -29,14 +35,17 @@ export class Timeline extends React.Component<
         limitValue: number;
     }
 > {
+    // Div Elements to display the timeline
     private _scrollable: React.RefObject<HTMLDivElement>;
     private _scrollbarHandle: React.RefObject<HTMLDivElement>;
     private _scrollContainer: React.RefObject<HTMLDivElement>;
     private _inputAnimationLimit: React.RefObject<HTMLInputElement>;
+    // Direction of drag and resize of timeline
     private _direction: number;
     private _scrolling: boolean;
     private _shiftX: number;
     private _active: string = "";
+    // Margin of scrollbar and container
     readonly _marginScrollbar: number;
 
     constructor(props: ITimelineProps) {
@@ -51,6 +60,7 @@ export class Timeline extends React.Component<
         this._shiftX = 0;
         this._marginScrollbar = 3;
 
+        // Limit as Int because is related to Frames.
         const limit = Math.round(this.props.animationLimit / 2);
         const scrollWidth = this.calculateScrollWidth(0, limit);
 
@@ -94,7 +104,6 @@ export class Timeline extends React.Component<
 
     isEnterKeyUp(event: KeyboardEvent) {
         event.preventDefault();
-
         if (event.key === "Enter") {
             this.setControlState();
         }
@@ -127,6 +136,10 @@ export class Timeline extends React.Component<
         );
     }
 
+    /**
+    * @param {number} start Frame from which the scrollbar should begin.
+    * @param {number} end Last frame for the timeline.
+    */
     calculateScrollWidth(start: number, end: number) {
         if (this._scrollContainer.current && this.props.animationLimit !== 0) {
             const containerMarginLeftRight = this._marginScrollbar * 2;
@@ -170,6 +183,9 @@ export class Timeline extends React.Component<
         }
     };
 
+    /**
+    * Handles the change of number of frames available in the timeline.
+    */
     handleLimitChange(event: React.ChangeEvent<HTMLInputElement>) {
         event.preventDefault();
         let newLimit = parseInt(event.target.value);
@@ -209,6 +225,9 @@ export class Timeline extends React.Component<
         }
     };
 
+    /**
+    * Check if the frame is being used as a Keyframe by the animation
+    */
     isFrameBeingUsed(frame: number, direction: number) {
         let used = this.props.keyframes?.find((kf) => kf.frame === frame);
         if (used) {
@@ -270,6 +289,11 @@ export class Timeline extends React.Component<
         this._shiftX = 0;
     };
 
+    /**
+    * Sets the start, end and selection length of the scrollbar. This will control the width and
+    * height of the scrollbar as well as the number of frames available
+    * @param {number} pageX Controls the X axis of the scrollbar movement.
+    */
     moveScrollbar(pageX: number) {
         if (this._scrolling && this._scrollbarHandle.current && this._scrollContainer.current) {
             const moved = pageX - this._shiftX;
@@ -296,6 +320,9 @@ export class Timeline extends React.Component<
         }
     }
 
+    /**
+    * Controls the resizing of the scrollbar from the right handle
+    */
     resizeScrollbarRight(clientX: number) {
         if (this._scrollContainer.current && this._scrollbarHandle.current) {
             const moving = clientX - this._scrollContainer.current.getBoundingClientRect().left;
@@ -323,6 +350,9 @@ export class Timeline extends React.Component<
         }
     }
 
+    /**
+    * Controls the resizing of the scrollbar from the left handle
+    */
     resizeScrollbarLeft(clientX: number) {
         if (this._scrollContainer.current && this._scrollbarHandle.current) {
             const moving = clientX - this._scrollContainer.current.getBoundingClientRect().left;
@@ -354,6 +384,9 @@ export class Timeline extends React.Component<
         }
     }
 
+    /**
+    * Returns array with the expected length between two numbers
+    */
     range(start: number, end: number) {
         return Array.from({ length: end - start }, (_, i) => start + i * 1);
     }

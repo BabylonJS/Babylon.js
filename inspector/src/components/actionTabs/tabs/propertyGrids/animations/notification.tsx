@@ -6,6 +6,9 @@ interface IPlayheadProps {
     close: () => void;
 }
 
+/**
+ * Renders the notification for the user
+ */
 export class Notification extends React.Component<IPlayheadProps> {
     constructor(props: IPlayheadProps) {
         super(props);

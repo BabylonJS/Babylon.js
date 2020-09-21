@@ -6,6 +6,9 @@ interface ISwitchButtonProps {
     action?: (event: CurveScale) => void;
 }
 
+/**
+ * Displays the current scale
+ */
 export class ScaleLabel extends React.Component<ISwitchButtonProps, { current: CurveScale }> {
     constructor(props: ISwitchButtonProps) {
         super(props);

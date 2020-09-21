@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import { Observable } from "babylonjs/Misc/observable";
 import { PropertyChangedEvent } from "../../../../../components/propertyChangedEvent";
 import { Animation } from "babylonjs/Animations/animation";
@@ -30,6 +29,9 @@ interface IEditorControlsProps {
     fps: number;
 }
 
+/**
+ * Renders the Curve Editor controls to create, save, remove, load and edit animations
+ */
 export class EditorControls extends React.Component<
     IEditorControlsProps,
     {
@@ -66,7 +68,7 @@ export class EditorControls extends React.Component<
         }
     }
 
-    animationAdded = (animation: Animation) => {
+    onAnimationAdded = (animation: Animation) => {
         this.setState({
             animationsCount: this.recountAnimations(),
             isEditTabOpen: true,
@@ -161,7 +163,10 @@ export class EditorControls extends React.Component<
         }
     };
 
-    emptiedList = () => {
+    /**
+     * Cleans the list when has been emptied
+     */
+    onEmptiedList = () => {
         this.setState({
             animationsCount: this.recountAnimations(),
             isEditTabOpen: false,
@@ -169,6 +174,9 @@ export class EditorControls extends React.Component<
         });
     };
 
+    /**
+     * When animations have been reloaded update tabs
+     */
     animationsLoaded = (numberOfAnimations: number) => {
         this.setState({
             animationsCount: numberOfAnimations,
@@ -203,7 +211,10 @@ export class EditorControls extends React.Component<
         this.setState({ snippetId: id });
     };
 
-    closeAddAnimation = () => {
+     /**
+     * Marks animation tab closed and hides the tab
+     */
+    onCloseAddAnimation = () => {
         this.setState({ isAnimationTabOpen: false, isEditTabOpen: true });
     };
 
@@ -258,10 +269,10 @@ export class EditorControls extends React.Component<
                 {this.props.isTargetedAnimation ? null : (
                     <AddAnimation
                         isOpen={this.state.isAnimationTabOpen}
-                        close={this.closeAddAnimation}
+                        close={this.onCloseAddAnimation}
                         entity={this.props.entity as IAnimatable}
                         setNotificationMessage={this.props.setNotificationMessage}
-                        addedNewAnimation={this.animationAdded}
+                        addedNewAnimation={this.onAnimationAdded}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         fps={this.state.framesPerSecond}
                         selectedToUpdate={this.state.selected}
@@ -299,7 +310,7 @@ export class EditorControls extends React.Component<
                         entity={this.props.entity}
                         selected={this.props.selected}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        empty={this.emptiedList}
+                        empty={this.onEmptiedList}
                         selectAnimation={this.props.selectAnimation}
                         editAnimation={this.editAnimation}
                     />
