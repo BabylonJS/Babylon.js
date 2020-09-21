@@ -51441,7 +51441,8 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength;
         /** function to revert the mesh and scene back to the initial state. */
         private _revert;
-        private getAbsoluteRestPose;
+        /** function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy. */
+        private _getAbsoluteBindPoseToRef;
         /** function to build and bind sphere joint points and spur bone representations. */
         private _buildSpheresAndSpurs;
         private _buildLocalAxes;
