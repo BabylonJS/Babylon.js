@@ -97,4 +97,8 @@ void main(void) {
 #include<fogFragment>
 
 	gl_FragColor = color;
+
+#ifdef IMAGEPROCESSINGPOSTPROCESS
+	gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(2.2));
+#endif
 }
