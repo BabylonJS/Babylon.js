@@ -961,10 +961,10 @@ export class NativeEngine extends Engine {
      * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
      */
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-        if (texture) {
-            texture.isReady = true;
-        }
         // TODO: Stub! This function is needed for some GLTF validation tests.
+        // Loads a dummy 8x8 transparent png
+        const imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAQAAABuBnYAAAAAD0lEQVR42mNkQAOMAyMAAALsAAmn8BA+AAAAAElFTkSuQmCC';
+        this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
     }
 
     // TODO: Refactor to share more logic with babylon.engine.ts version.
