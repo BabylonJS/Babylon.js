@@ -157,7 +157,7 @@ export class FilesInput {
                 }
             }
 
-            if (--remaining.count) {
+            if (--remaining.count === 0) {
                 callback();
             }
         });

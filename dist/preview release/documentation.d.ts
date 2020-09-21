@@ -51455,6 +51455,10 @@ declare module BABYLON.Debug {
          *
          * | Option          | Type    | Default | Description |
          * | --------------- | ------- | ------- | ----------- |
+         * | midStep         | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | midStepFactor   | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereBaseSize  | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereScaleUnit | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
          * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
          * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
          *
@@ -52882,6 +52886,7 @@ declare module BABYLON {
         /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
+        private _currentDepthTest;
         getHardwareScalingLevel(): number;
         constructor();
         dispose(): void;
@@ -52973,6 +52978,10 @@ declare module BABYLON {
          * @returns the current depth writing state
          */
         getDepthWrite(): boolean;
+        setDepthFunctionToGreater(): void;
+        setDepthFunctionToGreaterOrEqual(): void;
+        setDepthFunctionToLess(): void;
+        setDepthFunctionToLessOrEqual(): void;
         /**
          * Enable or disable depth writing
          * @param enable defines the state to set

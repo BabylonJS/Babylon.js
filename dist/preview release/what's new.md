@@ -321,6 +321,7 @@
 - Fix issue in glTF2 `_Exporter.createSkinsAsync()` that exported an incorrect joint indexing list ([drigax](https://github.com/drigax))
 - Fix gltf2 Morph Target export code style, add additional test case for non-animation group created morph targets ([drigax](https://github.com/drigax))
 - Fix "Uncaught ReferenceError: name is not defined" ([outermeasure](https://github.com/outermeasure))
+- Fix wrong winding when applying a transform matrix on VertexData ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
