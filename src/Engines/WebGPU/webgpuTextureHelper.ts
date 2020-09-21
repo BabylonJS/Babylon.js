@@ -340,7 +340,7 @@ export class WebGPUTextureHelper {
     public updateTextureTest(imageBitmap: ImageBitmap | HTMLCanvasElement, gpuTexture: GPUTexture, width: number, height: number, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void
     {
-        let promise: Promise<ImageBitmap | HTMLCanvasElement>;
+        /*let promise: Promise<ImageBitmap | HTMLCanvasElement>;
 
         if ((invertY || premultiplyAlpha) && imageBitmap instanceof ImageBitmap) {
             promise = createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" });
@@ -348,7 +348,7 @@ export class WebGPUTextureHelper {
             promise = Promise.resolve(imageBitmap);
         }
 
-        promise.then((imageBitmap) => {
+        promise.then((imageBitmap) => {*/
             const useOwnCommandEncoder = commandEncoder === undefined;
 
             if (useOwnCommandEncoder) {
@@ -381,6 +381,7 @@ export class WebGPUTextureHelper {
                     (this as any).textureView[offsetX] = textureView;
                     (this as any).textureExtent[offsetX] = textureExtent;
                 }
+                (this as any).textureView[offsetX].texture = gpuTexture;
                 if (imageBitmap instanceof HTMLCanvasElement && (!(this as any).bufferView || !(this as any).bufferView[offsetX])) {
                     console.log("updateTextureTest create data", width, height, offsetX);
                     const canvas = imageBitmap as unknown as HTMLCanvasElement;
@@ -419,6 +420,6 @@ export class WebGPUTextureHelper {
                 this._device.defaultQueue.submit([commandEncoder!.finish()]);
                 commandEncoder = null as any;
             }
-        });
+        //});
     }
 }

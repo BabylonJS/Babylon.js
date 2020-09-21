@@ -894,6 +894,9 @@ export class WebGPUEngine extends Engine {
     public _releaseTexture(texture: InternalTexture): void {
         texture._hardwareTexture?.release();
 
+        // TODO WEBGPU remove debug code
+        (texture as any)._released = true;
+
         const index = this._internalTexturesCache.indexOf(texture);
         if (index !== -1) {
             this._internalTexturesCache.splice(index, 1);
@@ -1316,8 +1319,10 @@ export class WebGPUEngine extends Engine {
                 internalTexture._cachedWrapR = texture.wrapR;
             }
 
-            if (pipeline.samplers[name]) {
-                pipeline.samplers[name]!.texture = internalTexture!;
+            // TODO WEBGPU remove debug code
+            if ((internalTexture as any)._released) {
+                console.error("using a released texture in engine.setTexture!", internalTexture);
+                debugger;
             }
 
             if (webgpuPipelineContext.samplers[name]) {
@@ -1428,27 +1433,33 @@ export class WebGPUEngine extends Engine {
             gpuTexture = this._createGPUTextureForInternalTexture(texture, width, height);
         }
 
+        // TODO WEBGPU remove debug code
+        if ((texture as any)._released) {
+            console.log("using a released texture in updateDynamicTexture");
+        }
+
         // TODO WEBGPU: handle format if <> 0
         // let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
 
         // TODO WEBGPU remove test code
-        if (canvas.width === 2560) {
+        if (canvas.width === 25600) {
             if ((this as any)._swap === undefined) { (this as any)._swap = 0; }
             (this as any)._swap ^= 1;
 
             const swap = (this as any)._swap;
 
-            if (!(this as any)._bitmap) {
+            /*if (!(this as any)._bitmap) {
                 createImageBitmap(canvas).then((imageBitmap) => {
                     (this as any)._bitmap = imageBitmap;
                 });
-            }
-            if ((this as any)._bitmap) {
+            }*/
+            //if ((this as any)._bitmap) {
                 createImageBitmap(canvas).then((bitmap: ImageBitmap) => {
                     this._textureHelper.updateTextureTest(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, swap, 0, this._uploadEncoder);
                     texture.isReady = true;
                 });
-            }
+            //}
+
             //this._textureHelper.updateTextureTest(canvas as HTMLCanvasElement, gpuTexture, width, height, 0, 0, invertY, premulAlpha, swap, 0, this._uploadEncoder);
             //texture.isReady = true;
             return;
@@ -2313,9 +2324,9 @@ export class WebGPUEngine extends Engine {
 
     private _getRenderPipeline(topology: GPUPrimitiveTopology): GPURenderPipeline {
         // This is wrong to cache this way but workarounds the need of cache in the simple demo context.
-        const gpuPipeline = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        if (gpuPipeline.renderPipeline) {
-            return gpuPipeline.renderPipeline;
+        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+        if (webgpuPipelineContext.renderPipeline) {
+            return webgpuPipelineContext.renderPipeline;
         }
 
         // Unsupported at the moment but needs to be extracted from the MSAA param.
@@ -2326,7 +2337,7 @@ export class WebGPUEngine extends Engine {
         const inputStateDescriptor = this._getVertexInputDescriptor(topology);
         const pipelineLayout = this._getPipelineLayout();
 
-        gpuPipeline.renderPipeline = this._device.createRenderPipeline({
+        webgpuPipelineContext.renderPipeline = this._device.createRenderPipeline({
             sampleCount: this._mainPassSampleCount,
             primitiveTopology: topology,
             rasterizationState: rasterizationStateDescriptor,
@@ -2337,7 +2348,7 @@ export class WebGPUEngine extends Engine {
             vertexState: inputStateDescriptor,
             layout: pipelineLayout,
         });
-        return gpuPipeline.renderPipeline;
+        return webgpuPipelineContext.renderPipeline;
     }
 
     private _getVertexInputsToRender(): IWebGPUPipelineContextVertexInputsCache {
@@ -2451,6 +2462,11 @@ export class WebGPUEngine extends Engine {
                             debugger;
                         }
 
+                        if ((bindingInfo.texture as any)._released) {
+                            console.error("Trying to bind a released texture!", bindingInfo.texture);
+                            debugger;
+                        }
+
                         entries.push({
                             binding: bindingInfo.textureBinding,
                             resource: hardwareTexture.view!,
@@ -2516,7 +2532,7 @@ export class WebGPUEngine extends Engine {
         for (let i = 0; i < vertexInputs.vertexBuffers.length; i++) {
             const buf = vertexInputs.vertexBuffers[i];
             if (buf) {
-                renderPass.setVertexBuffer(vertexInputs.vertexStartSlot + i, vertexInputs.vertexBuffers[i], vertexInputs.vertexOffsets[i]);
+                renderPass.setVertexBuffer(vertexInputs.vertexStartSlot + i, buf, vertexInputs.vertexOffsets[i]);
             }
         }
     }
