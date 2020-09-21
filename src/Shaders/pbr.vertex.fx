@@ -79,7 +79,7 @@ varying vec2 vBumpUV;
 #endif
 
 #ifdef CLEARCOAT
-    #if (defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+    #if (defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)) && CLEARCOAT_TEXTUREDIRECTUV == 0 
         varying vec2 vClearCoatUV;
     #endif
 
