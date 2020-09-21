@@ -496,6 +496,10 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
 
         var audioEngine = Engine.audioEngine;
 
+        if (!audioEngine) {
+            return;
+        }
+
         if (audioEngine.audioContext) {
             // A custom listener position provider was set
             // Use the users provided position instead of camera's
