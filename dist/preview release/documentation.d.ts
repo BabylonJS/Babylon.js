@@ -3848,14 +3848,13 @@ declare module BABYLON {
         normalize(): Quaternion;
         /**
          * Returns a new Vector3 set with the Euler angles translated from the current quaternion
-         * @param order is a reserved parameter and is ignore for now
+         * @param order is a reserved parameter and is ignored for now
          * @returns a new Vector3 containing the Euler angles
          */
         toEulerAngles(order?: string): Vector3;
         /**
          * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
          * @param result defines the vector which will be filled with the Euler angles
-         * @param order is a reserved parameter and is ignore for now
          * @returns the current unchanged quaternion
          */
         toEulerAnglesToRef(result: Vector3): Quaternion;
@@ -6848,7 +6847,7 @@ declare module BABYLON {
         height: number;
         /** Radius of the capsule. */
         radius: number;
-        /** Height or Length of the capsule. */
+        /** Number of sub segments on the cap sections of the capsule running parallel to orientation. */
         capSubdivisions: number;
         /** Overwrite for the top radius. */
         radiusTop?: number;
@@ -20723,6 +20722,10 @@ declare module BABYLON {
          * Gets or sets a boolean indicating that this connection point is exposed on a frame
          */
         isExposedOnFrame: boolean;
+        /**
+         * Gets or sets number indicating the position that the port is exposed to on a frame
+         */
+        exposedPortPosition: number;
         /**
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
@@ -50452,10 +50455,18 @@ declare module BABYLON {
          */
         protected _scaleRatio: number;
         /**
+         * boolean updated by pointermove when a gizmo mesh is hovered
+         */
+        protected _isHovered: boolean;
+        /**
          * Ratio for the scale of the gizmo (Default: 1)
          */
         set scaleRatio(value: number);
         get scaleRatio(): number;
+        /**
+         * True when the mouse pointer is hovered a gizmo mesh
+         */
+        get isHovered(): boolean;
         /**
          * If a custom mesh has been set (Default: false)
          */
@@ -50618,6 +50629,10 @@ declare module BABYLON {
         set attachedMesh(mesh: Nullable<AbstractMesh>);
         get attachedNode(): Nullable<Node>;
         set attachedNode(node: Nullable<Node>);
+        /**
+         * True when the mouse pointer is hovering a gizmo mesh
+         */
+        get isHovered(): boolean;
         /**
          * Creates a PositionGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
@@ -51150,6 +51165,10 @@ declare module BABYLON {
         sphereScaleUnit?: number;
         /** Ratio for the Sphere Size */
         sphereFactor?: number;
+        /** Whether to show local axes or not  */
+        showLocalAxes?: boolean;
+        /** Length of each local axis */
+        localAxesSize?: number;
     }
     /**
      * Defines the constructor options for the BoneWeight Shader.
@@ -51365,6 +51384,8 @@ declare module BABYLON.Debug {
         private _debugLines;
         /** The SkeletonViewers Mesh. */
         private _debugMesh;
+        /** The local axes Meshes. */
+        private _localAxes;
         /** If SkeletonViewer is enabled. */
         private _isEnabled;
         /** If SkeletonViewer is ready. */
@@ -51424,15 +51445,28 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength;
         /** function to revert the mesh and scene back to the initial state. */
         private _revert;
+        /** function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy. */
+        private _getAbsoluteBindPoseToRef;
         /** function to build and bind sphere joint points and spur bone representations. */
         private _buildSpheresAndSpurs;
+        private _buildLocalAxes;
         /** Update the viewer to sync with current skeleton state, only used for the line display. */
         private _displayLinesUpdate;
         /** Changes the displayMode of the skeleton viewer
          * @param mode The displayMode numerical value
          */
         changeDisplayMode(mode: number): void;
-        /** Changes the displayMode of the skeleton viewer
+        /** Sets a display option of the skeleton viewer
+         *
+         * | Option          | Type    | Default | Description |
+         * | --------------- | ------- | ------- | ----------- |
+         * | midStep         | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | midStepFactor   | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereBaseSize  | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereScaleUnit | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
+         * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
+         *
          * @param option String of the option name
          * @param value The numerical option value
          */
@@ -52857,6 +52891,7 @@ declare module BABYLON {
         /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
         private readonly INVALID_HANDLE;
         private _boundBuffersVertexArray;
+        private _currentDepthTest;
         getHardwareScalingLevel(): number;
         constructor();
         dispose(): void;
@@ -52948,6 +52983,10 @@ declare module BABYLON {
          * @returns the current depth writing state
          */
         getDepthWrite(): boolean;
+        setDepthFunctionToGreater(): void;
+        setDepthFunctionToGreaterOrEqual(): void;
+        setDepthFunctionToLess(): void;
+        setDepthFunctionToLessOrEqual(): void;
         /**
          * Enable or disable depth writing
          * @param enable defines the state to set
@@ -53653,6 +53692,10 @@ declare module BABYLON {
         get attachedNode(): Nullable<Node>;
         set attachedNode(node: Nullable<Node>);
         /**
+         * True when the mouse pointer is hovering a gizmo mesh
+         */
+        get isHovered(): boolean;
+        /**
          * Creates a ScaleGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param thickness display gizmo axis thickness
@@ -53938,6 +53981,10 @@ declare module BABYLON {
         get attachedNode(): Nullable<Node>;
         set attachedNode(node: Nullable<Node>);
         /**
+         * True when the mouse pointer is hovering a gizmo mesh
+         */
+        get isHovered(): boolean;
+        /**
          * Creates a RotationGizmo
          * @param gizmoLayer The utility layer the gizmo will be added to
          * @param tessellation Amount of tessellation to be used when creating rotation circles
@@ -54021,6 +54068,10 @@ declare module BABYLON {
          * Utility layer that all gizmos besides bounding box belong to
          */
         get utilityLayer(): UtilityLayerRenderer;
+        /**
+         * True when the mouse pointer is hovering a gizmo mesh
+         */
+        get isHovered(): boolean;
         /**
          * Instatiates a gizmo manager
          * @param scene the scene to overlay the gizmos on top of
@@ -72035,9 +72086,10 @@ declare module BABYLON {
              * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
              * @param camera The camera to create the depth renderer on (default: scene's active camera)
              * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
+             * @param force32bitsFloat Forces 32 bits float when supported (else 16 bits float is prioritized over 32 bits float if supported)
              * @returns the created depth renderer
              */
-            enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean): DepthRenderer;
+            enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean, force32bitsFloat?: boolean): DepthRenderer;
             /**
              * Disables a depth renderer for a given camera
              * @param camera The camera to disable the depth renderer on (default: scene's active camera)

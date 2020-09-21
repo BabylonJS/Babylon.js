@@ -20,7 +20,7 @@ export class NodePort {
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
     protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
     protected _exposedOnFrame: boolean;
-    
+    public isExposed = false;
     public delegatedPort: Nullable<FrameNodePort> = null;
 
     public get element(): HTMLDivElement {
@@ -79,6 +79,14 @@ export class NodePort {
         this.connectionPoint.isExposedOnFrame = value;
     }
     
+    public get exposedPortPosition()
+    {
+        return this.connectionPoint.exposedPortPosition;
+    }
+
+    public set exposedPortPosition(value: number) {
+        this.connectionPoint.exposedPortPosition = value;
+    }
     
     private _isConnectedToNodeOutsideOfFrame() {
         const link = this.node.getLinksForConnectionPoint(this.connectionPoint)
