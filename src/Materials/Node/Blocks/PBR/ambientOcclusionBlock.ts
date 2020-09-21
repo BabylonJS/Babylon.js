@@ -30,7 +30,7 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
         this.registerInput("directLightIntensity", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("ambientOcclusion", NodeMaterialBlockConnectionPointTypes.Object, NodeMaterialBlockTargets.Fragment,
-            new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Output, AmbientOcclusionBlock, "AOBlock"));
+            new NodeMaterialConnectionPointCustomObject("ambientOcclusion", this, NodeMaterialConnectionPointDirection.Output, AmbientOcclusionBlock, "AOBlock", "ambientOcc"));
     }
 
     /**
