@@ -355,6 +355,7 @@
 - Fix for bug where frames without comments would display undefined at the bottom right corner ([Kyle Belfort](https://github.com/belfortk))
 - Fixed an issue in XR where one of the cameras used for rendering got the wrong framebuffer dimensions ([RaananW](https://github.com/RaananW/))
 - Fix bug in `StandardMaterial` and `PBRMaterial` where the mesh visibility value is not applied correctly when the material is frozen ([Popov72](https://github.com/Popov72))
+- Fix a bug where the engine would crash if `audioEngine` did not exist on `Engine`
 
 ## Breaking changes
 
