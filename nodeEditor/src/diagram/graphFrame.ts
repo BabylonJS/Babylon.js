@@ -1370,7 +1370,18 @@ export class GraphFrame {
         this.onExpandStateChanged.clear();
     }
 
+    private serializePortData(exposedPorts: NodePort[])
+    {
+        if(exposedPorts.length > 0) {
+            for(let i = 0; i < exposedPorts.length; ++i) {
+                exposedPorts[i].exposedPortPosition = i;
+            }
+        }
+    }
+
     public serialize(): IFrameData {
+        this.serializePortData(this._exposedInPorts);
+        this.serializePortData(this._exposedOutPorts);
         return {
             x: this._x,
             y: this._y,
@@ -1406,7 +1417,7 @@ export class GraphFrame {
             for (var blockId of serializationData.blocks) {
                 let actualId = map[blockId];
                 let node = canvas.nodes.filter(n => n.block.uniqueId === actualId);
-
+                
                 if (node.length) {
                     newFrame.nodes.push(node[0]);
                     node[0].enclosingFrameId = newFrame.id;
@@ -1415,9 +1426,35 @@ export class GraphFrame {
         } else {
             newFrame.refresh();
         }
+        
+        
+        for (var node of newFrame.nodes) {
+            for (var port of node.outputPorts) { // Output
+                if(port.exposedOnFrame) {
+                    port.isExposed = true;
+                    if(port.exposedPortPosition) { 
+                        newFrame._exposedOutPorts[port.exposedPortPosition] = port;
+                    }
+                    else {
+                        newFrame._exposedOutPorts.push(port);
+                    }
+                }
+            }
+
+            for (var port of node.inputPorts) { // Inports
+                if(port.exposedOnFrame) {
+                    port.isExposed = true;
+                    if(port.exposedPortPosition) { 
+                        newFrame._exposedInPorts[port.exposedPortPosition] = port;
+                    }
+                    else {
+                        newFrame._exposedInPorts.push(port);
+                    }
+                }
+            }
+        }
 
         newFrame.isCollapsed = isCollapsed;
-
         if (isCollapsed) {
             canvas._frameIsMoving = true;
             newFrame._moveFrame(-(newFrame.width - newFrame.CollapsedWidth) / 2, 0);
