@@ -72,7 +72,6 @@ export class DeviceSourceManager implements IDisposable {
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
     private readonly _deviceInputSystem: DeviceInputSystem;
-    private _checkForConnectedGamepads: boolean = true;
 
     /**
      * Default Constructor
@@ -100,6 +99,8 @@ export class DeviceSourceManager implements IDisposable {
                 this.getDeviceSource(deviceType, deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
             };
         }
+
+        this._deviceInputSystem.checkForConnectedDevices();
     }
 
     // Public Functions
@@ -110,11 +111,6 @@ export class DeviceSourceManager implements IDisposable {
      * @returns DeviceSource object
      */
     public getDeviceSource<T extends DeviceType>(deviceType: T, deviceSlot?: number): Nullable<DeviceSource<T>> {
-        if (this._checkForConnectedGamepads) {
-            this._deviceInputSystem.checkForConnectedGamepads();
-            this._checkForConnectedGamepads = false;
-        }
-
         if (deviceSlot === undefined) {
             if (this._firstDevice[deviceType] === undefined) {
                 return null;

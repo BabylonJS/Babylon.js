@@ -104,19 +104,14 @@ export class DeviceInputSystem implements IDisposable {
     }
 
     /**
-     * Checks for existing connections to gamepads and registers them, if necessary
+     * Checks for existing connections to devices and register them, if necessary
      */
-    public checkForConnectedGamepads() {
+    public checkForConnectedDevices() {
         const gamepads = navigator.getGamepads();
 
         for (let i = 0; i < gamepads.length; i++) {
             if (gamepads[i]) {
-            const deviceType = this._getGamepadDeviceType(gamepads[i]!.id);
-            const deviceSlot = gamepads[i]!.index;
-
-            this._registerDevice(deviceType, deviceSlot, gamepads[i]!.buttons.length + gamepads[i]!.axes.length);
-            this._gamepads = this._gamepads || new Array<DeviceType>(gamepads[i]!.index + 1);
-            this._gamepads[deviceSlot] = deviceType;
+                this._addGamePad(gamepads[i]);
             }
         }
     }
@@ -144,6 +139,15 @@ export class DeviceInputSystem implements IDisposable {
     }
 
     // Private functions
+    private _addGamePad(gamepad: any) {
+        const deviceType = this._getGamepadDeviceType(gamepad.id);
+        const deviceSlot = gamepad.index;
+
+        this._registerDevice(deviceType, deviceSlot, gamepad.buttons.length + gamepad.axes.length);
+        this._gamepads = this._gamepads || new Array<DeviceType>(gamepad.index + 1);
+        this._gamepads[deviceSlot] = deviceType;
+    }
+
     /**
      * Add device and inputs to device array
      * @param deviceType Enum specifiying device type
@@ -300,12 +304,7 @@ export class DeviceInputSystem implements IDisposable {
      */
     private _handleGamepadActions() {
         this._gamepadConnectedEvent = ((evt: any) => {
-            const deviceType = this._getGamepadDeviceType(evt.gamepad.id);
-            const deviceSlot = evt.gamepad.index;
-
-            this._registerDevice(deviceType, deviceSlot, evt.gamepad.buttons.length + evt.gamepad.axes.length);
-            this._gamepads = this._gamepads || new Array<DeviceType>(evt.gamepad.index + 1);
-            this._gamepads[deviceSlot] = deviceType;
+            this._addGamePad(evt.gamepad);
         });
 
         this._gamepadDisconnectedEvent = ((evt: any) => {
