@@ -963,7 +963,7 @@ export class NativeEngine extends Engine {
     public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
         // TODO: Stub! This function is needed for some GLTF validation tests.
         // Loads a dummy 8x8 transparent png
-        const imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAQAAABuBnYAAAAAD0lEQVR42mNkQAOMAyMAAALsAAmn8BA+AAAAAElFTkSuQmCC';
+        var imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYSURBVChTY/z//z8DPsAEpXGC4aCAgQEAGGMDDWwwgqsAAAAASUVORK5CYII=';
         this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
     }
 
