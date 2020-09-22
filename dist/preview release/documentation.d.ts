@@ -35354,6 +35354,10 @@ declare module BABYLON {
          * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
          */
         useHighPrecisionMatrix?: boolean;
+        /**
+         * Will prevent the system from falling back to software implementation if a hardware device cannot be created
+         */
+        failIfMajorPerformanceCaveat?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -36369,13 +36373,22 @@ declare module BABYLON {
          * @returns a Uint8Array containing RGBA colors
          */
         readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean): Uint8Array;
-        private static _isSupported;
+        private static _IsSupported;
+        private static _HasMajorPerformanceCaveat;
+        /**
+         * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
+         */
+        static get IsSupported(): boolean;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
          * @ignorenaming
          */
         static isSupported(): boolean;
+        /**
+         * Gets a boolean indicating if the engine can be instanciated on a performant device (ie. if a webGL context can be found and it does not use a slow implementation)
+         */
+        static get HasMajorPerformanceCaveat(): boolean;
         /**
          * Find the next highest power of two.
          * @param x Number to start search from.
@@ -51166,6 +51179,8 @@ declare module BABYLON {
         sphereScaleUnit?: number;
         /** Ratio for the Sphere Size */
         sphereFactor?: number;
+        /** Whether a spur should attach its far end to the child bone position */
+        spurFollowsChild?: boolean;
         /** Whether to show local axes or not  */
         showLocalAxes?: boolean;
         /** Length of each local axis */
@@ -51459,14 +51474,15 @@ declare module BABYLON.Debug {
         changeDisplayMode(mode: number): void;
         /** Sets a display option of the skeleton viewer
          *
-         * | Option          | Type    | Default | Description |
-         * | --------------- | ------- | ------- | ----------- |
-         * | midStep         | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-         * | midStepFactor   | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-         * | sphereBaseSize  | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-         * | sphereScaleUnit | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-         * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
-         * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
+         * | Option           | Type    | Default | Description |
+         * | ---------------- | ------- | ------- | ----------- |
+         * | midStep          | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | midStepFactor    | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereBaseSize   | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereScaleUnit  | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | spurFollowsChild | boolean | false   | Whether a spur should attach its far end to the child bone. |
+         * | showLocalAxes    | boolean | false   | Displays local axes on all bones. |
+         * | localAxesSize    | float   | 0.075   | Determines the length of each local axis. |
          *
          * @param option String of the option name
          * @param value The numerical option value
@@ -55393,6 +55409,7 @@ declare module BABYLON {
         CLEARCOAT_TEXTUREDIRECTUV: number;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_REMAP_F0: boolean;
         CLEARCOAT_TINT: boolean;
         CLEARCOAT_TINT_TEXTURE: boolean;
         CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
@@ -55434,6 +55451,11 @@ declare module BABYLON {
          * Stores the clear coat values in a texture.
          */
         texture: Nullable<BaseTexture>;
+        private _remapF0OnInterfaceChange;
+        /**
+         * Defines if the F0 value should be remapped to account for the interface change in the material.
+         */
+        remapF0OnInterfaceChange: boolean;
         private _bumpTexture;
         /**
          * Define the clear coat specific bump texture.
@@ -56656,6 +56678,7 @@ declare module BABYLON {
         CLEARCOAT_TEXTUREDIRECTUV: number;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_REMAP_F0: boolean;
         CLEARCOAT_TINT: boolean;
         CLEARCOAT_TINT_TEXTURE: boolean;
         CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
