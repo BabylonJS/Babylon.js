@@ -2,7 +2,7 @@ import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, 
 
 import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
 import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "babylonjs/Maths/math.vector";
-import { Color3 } from "babylonjs/Maths/math.color";
+import { Color3, Color4, TmpColors } from "babylonjs/Maths/math.color";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Node } from "babylonjs/node";
@@ -18,6 +18,7 @@ import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 import { Material } from "babylonjs/Materials/material";
 import { MultiMaterial } from "babylonjs/Materials/multiMaterial";
+import { StandardMaterial } from 'babylonjs/Materials/standardMaterial';
 import { Engine } from "babylonjs/Engines/engine";
 import { Scene } from "babylonjs/scene";
 
@@ -728,9 +729,28 @@ export class _Exporter {
                 break;
             }
             case VertexBuffer.ColorKind: {
+                const meshMaterial = (babylonTransformNode as Mesh).material;
+                const convertToLinear = meshMaterial ? (meshMaterial instanceof StandardMaterial) : true;
+                const tmpColor3 = TmpColors.Color3[0];
+                const tmpColor4 = TmpColors.Color4[0];
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
-                    const vertexData = stride === 3 ? Vector3.FromArray(meshAttributeArray, index) : Vector4.FromArray(meshAttributeArray, index);
+                    let vertexData;
+                    if (stride === 3) {
+                        vertexData = Vector3.FromArray(meshAttributeArray, index);
+                        if (convertToLinear) {
+                            Color3.FromArrayToRef(meshAttributeArray, index, tmpColor3);
+                            tmpColor3.toLinearSpace();
+                            vertexData.copyFromFloats(tmpColor3.r, tmpColor3.g, tmpColor3.b);
+                        }
+                    } else {
+                        vertexData = Vector4.FromArray(meshAttributeArray, index);
+                        if (convertToLinear) {
+                            Color4.FromArrayToRef(meshAttributeArray, index, tmpColor4);
+                            tmpColor4.toLinearSpace();
+                            vertexData.copyFromFloats(tmpColor4.r, tmpColor4.g, tmpColor4.b, tmpColor4.a);
+                        }
+                    }
                     vertexAttributes.push(vertexData.asArray());
                 }
                 break;
