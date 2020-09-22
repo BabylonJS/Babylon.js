@@ -20723,6 +20723,10 @@ declare module BABYLON {
          */
         isExposedOnFrame: boolean;
         /**
+         * Gets or sets number indicating the position that the port is exposed to on a frame
+         */
+        exposedPortPosition: number;
+        /**
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
@@ -46665,8 +46669,9 @@ declare module BABYLON {
          * @param generateMipMaps defines the use of MinMaps or not (default is false)
          * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading
          */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
+        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "DynamicTexture"
@@ -51441,7 +51446,8 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength;
         /** function to revert the mesh and scene back to the initial state. */
         private _revert;
-        private getAbsoluteRestPose;
+        /** function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy. */
+        private _getAbsoluteBindPoseToRef;
         /** function to build and bind sphere joint points and spur bone representations. */
         private _buildSpheresAndSpurs;
         private _buildLocalAxes;

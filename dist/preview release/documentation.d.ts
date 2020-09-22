@@ -20723,6 +20723,10 @@ declare module BABYLON {
          */
         isExposedOnFrame: boolean;
         /**
+         * Gets or sets number indicating the position that the port is exposed to on a frame
+         */
+        exposedPortPosition: number;
+        /**
          * Gets or sets a string indicating that this uniform must be defined under a #ifdef
          */
         define: string;
@@ -46665,8 +46669,9 @@ declare module BABYLON {
          * @param generateMipMaps defines the use of MinMaps or not (default is false)
          * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading
          */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
+        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "DynamicTexture"
@@ -51441,7 +51446,8 @@ declare module BABYLON.Debug {
         private _getLinesForBonesNoLength;
         /** function to revert the mesh and scene back to the initial state. */
         private _revert;
-        private getAbsoluteRestPose;
+        /** function to get the absolute bind pose of a bone by accumulating transformations up the bone hierarchy. */
+        private _getAbsoluteBindPoseToRef;
         /** function to build and bind sphere joint points and spur bone representations. */
         private _buildSpheresAndSpurs;
         private _buildLocalAxes;
@@ -77229,8 +77235,9 @@ declare module BABYLON.GUI {
        * @param scene defines the hosting scene
        * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
        * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+       * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
        */
-        constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number);
+        constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
         * Get the current class name of the texture useful for serialization or dynamic coding.
         * @returns "AdvancedDynamicTexture"
@@ -77344,9 +77351,10 @@ declare module BABYLON.GUI {
          * @param height defines the texture height (1024 by default)
          * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
          * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean): AdvancedDynamicTexture;
+        static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
