@@ -62,6 +62,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
 
         babylonMaterial.clearCoat.isEnabled = true;
         babylonMaterial.clearCoat.useRoughnessFromMainTexture = false;
+        babylonMaterial.clearCoat.remapF0OnInterfaceChange = false;
 
         if (properties.clearcoatFactor != undefined) {
             babylonMaterial.clearCoat.intensity = properties.clearcoatFactor;

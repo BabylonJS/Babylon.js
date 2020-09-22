@@ -389,6 +389,7 @@ export class SkeletonViewer {
         options.displayOptions.sphereBaseSize = options.displayOptions.sphereBaseSize ?? 0.15;
         options.displayOptions.sphereScaleUnit = options.displayOptions.sphereScaleUnit ?? 2;
         options.displayOptions.sphereFactor = options.displayOptions.sphereFactor ?? 0.865;
+        options.displayOptions.spurFollowsChild = options.displayOptions.spurFollowsChild ?? false;
         options.displayOptions.showLocalAxes = options.displayOptions.showLocalAxes ?? false;
         options.displayOptions.localAxesSize = options.displayOptions.localAxesSize ?? 0.075;
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
@@ -666,19 +667,27 @@ export class SkeletonViewer {
                         updatable: false
                     },  scene);
 
-                    spur.convertToFlatShadedMesh();
-
                     let numVertices = spur.getTotalVertices();
                     let mwk: number[] = [], mik: number[] = [];
 
                     for (let i = 0; i < numVertices; i++) {
                         mwk.push(1, 0, 0, 0);
-                        mik.push(bone.getIndex(), 0, 0, 0);
+
+                        // Select verts at end of spur (ie vert 10 to 14) and bind to child
+                        // bone if spurFollowsChild is enabled.
+                        if (displayOptions.spurFollowsChild && i > 9) {
+                            mik.push(bc.getIndex(), 0, 0, 0);
+                        }
+                        else {
+                            mik.push(bone.getIndex(), 0, 0, 0);
+                        }
                     }
+
                     spur.position = anchorPoint.clone();
 
                     spur.setVerticesData(VertexBuffer.MatricesWeightsKind, mwk, false);
                     spur.setVerticesData(VertexBuffer.MatricesIndicesKind, mik, false);
+                    spur.convertToFlatShadedMesh();
 
                     spurs.push(spur);
                 });
@@ -865,16 +874,17 @@ export class SkeletonViewer {
     }
 
     /** Sets a display option of the skeleton viewer
-	 *
-     * | Option          | Type    | Default | Description |
-     * | --------------- | ------- | ------- | ----------- |
-     * | midStep         | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-     * | midStepFactor   | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-     * | sphereBaseSize  | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-     * | sphereScaleUnit | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-     * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
-	 * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
-	 *
+     *
+     * | Option           | Type    | Default | Description |
+     * | ---------------- | ------- | ------- | ----------- |
+     * | midStep          | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | midStepFactor    | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | sphereBaseSize   | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | sphereScaleUnit  | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+     * | spurFollowsChild | boolean | false   | Whether a spur should attach its far end to the child bone. |
+     * | showLocalAxes    | boolean | false   | Displays local axes on all bones. |
+     * | localAxesSize    | float   | 0.075   | Determines the length of each local axis. |
+     *
      * @param option String of the option name
      * @param value The numerical option value
      */
