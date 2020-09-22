@@ -673,6 +673,8 @@ export class SkeletonViewer {
                     for (let i = 0; i < numVertices; i++) {
                         mwk.push(1, 0, 0, 0);
 
+                        // Select verts at end of spur (ie vert 10 to 14) and bind to child
+                        // bone if spurFollowsChild is enabled.
                         if (displayOptions.spurFollowsChild && i > 9) {
                             mik.push(bc.getIndex(), 0, 0, 0);
                         }
