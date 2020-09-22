@@ -126,6 +126,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
      */
     useHighPrecisionMatrix?: boolean;
+
+    /**
+     * Will prevent the system from falling back to software implementation if a hardware device cannot be created
+     */
+    failIfMajorPerformanceCaveat?: boolean;
 }
 
 /**
@@ -4307,25 +4312,50 @@ export class ThinEngine {
 
     // Statics
 
-    private static _isSupported: Nullable<boolean> = null;
+    private static _IsSupported: Nullable<boolean> = null;
+    private static _HasMajorPerformanceCaveat : Nullable<boolean> = null;
     /**
      * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
      * @returns true if the engine can be created
      * @ignorenaming
      */
     public static isSupported(): boolean {
-        if (this._isSupported === null) {
+        if (this._HasMajorPerformanceCaveat !== null) {
+            return !this._HasMajorPerformanceCaveat; // We know it is hardware supported
+        }
+
+        if (this._IsSupported === null) {
             try {
                 var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
-                this._isSupported = gl != null && !!window.WebGLRenderingContext;
+                this._IsSupported = gl != null && !!window.WebGLRenderingContext;
             } catch (e) {
-                this._isSupported = false;
+                this._IsSupported = false;
             }
         }
 
-        return this._isSupported;
+        return this._IsSupported;
+    }
+
+    /**
+     * Gets a boolean indicating if the engine can be instanciated on a hardware device (ie. if a webGL context can be found and it does not use a software implementation)
+     * @returns true if the engine can be created on a hardware device 
+     * @ignorenaming
+     */
+    public static IsHardwareSupported(): boolean {
+        if (this._HasMajorPerformanceCaveat === null) {
+            try {
+                var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+                var gl = tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat : true }) || (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat : true });
+
+                this._HasMajorPerformanceCaveat = !gl;
+            } catch (e) {
+                this._HasMajorPerformanceCaveat = false;
+            }
+        }
+
+        return !this._HasMajorPerformanceCaveat;
     }
 
     /**
