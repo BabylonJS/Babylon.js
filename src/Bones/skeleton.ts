@@ -416,7 +416,7 @@ export class Skeleton implements IAnimatable {
      * @returns the original skeleton
      */
     public static MakeAnimationAdditive(skeleton: Skeleton, referenceFrame = 0, range: string): Nullable<Skeleton> {
-        var rangeValue = skeleton.getAnimationRange(name);
+        var rangeValue = skeleton.getAnimationRange(range);
 
         // We can't make a range additive if it doesn't exist
         if (!rangeValue) {
