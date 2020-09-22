@@ -87,13 +87,23 @@
 #endif
 
 #ifdef CLEARCOAT
-    #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
+    #if defined(CLEARCOAT_TEXTURE)
         #if CLEARCOAT_TEXTUREDIRECTUV == 1
             #define vClearCoatUV vMainUV1
         #elif CLEARCOAT_TEXTUREDIRECTUV == 2
             #define vClearCoatUV vMainUV2
         #else
             varying vec2 vClearCoatUV;
+        #endif
+    #endif
+
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS)
+        #if CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 1
+            #define vClearCoatRoughnessUV vMainUV1
+        #elif CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 2
+            #define vClearCoatRoughnessUV vMainUV2
+        #else
+            varying vec2 vClearCoatRoughnessUV;
         #endif
     #endif
 

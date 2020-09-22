@@ -79,8 +79,12 @@ varying vec2 vBumpUV;
 #endif
 
 #ifdef CLEARCOAT
-    #if (defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
         varying vec2 vClearCoatUV;
+    #endif
+
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 0 
+        varying vec2 vClearCoatRoughnessUV;
     #endif
 
     #if defined(CLEARCOAT_BUMP) && CLEARCOAT_BUMPDIRECTUV == 0 
@@ -355,7 +359,7 @@ void main(void) {
 #endif
 
 #ifdef CLEARCOAT
-    #if (defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)) && CLEARCOAT_TEXTUREDIRECTUV == 0 
+    #if defined(CLEARCOAT_TEXTURE) && CLEARCOAT_TEXTUREDIRECTUV == 0 
         if (vClearCoatInfos.x == 0.)
         {
             vClearCoatUV = vec2(clearCoatMatrix * vec4(uvUpdated, 1.0, 0.0));
@@ -363,6 +367,17 @@ void main(void) {
         else
         {
             vClearCoatUV = vec2(clearCoatMatrix * vec4(uv2, 1.0, 0.0));
+        }
+    #endif
+
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV == 0 
+        if (vClearCoatInfos.z == 0.)
+        {
+            vClearCoatRoughnessUV = vec2(clearCoatRoughnessMatrix * vec4(uvUpdated, 1.0, 0.0));
+        }
+        else
+        {
+            vClearCoatRoughnessUV = vec2(clearCoatRoughnessMatrix * vec4(uv2, 1.0, 0.0));
         }
     #endif
 
