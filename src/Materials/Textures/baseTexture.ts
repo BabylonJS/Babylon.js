@@ -476,6 +476,7 @@ export class BaseTexture implements IAnimatable {
     /**
      * Checks if the texture has the same transform matrix than another texture
      * @param texture texture to check against
+     * @returns true if the transforms are the same, else false
      */
     public checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean {
         return texture !== null;
