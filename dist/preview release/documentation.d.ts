@@ -57973,16 +57973,30 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Class for loading KTX2 files
-     * @hidden
      */
     export class KhronosTextureContainer2 {
         private static _WorkerPoolPromise?;
         private static _Initialized;
         private static _Ktx2Decoder;
         /**
-         * URL to use when loading the KTX2 decoder module
+         * URLs to use when loading the KTX2 decoder module as well as its dependencies
+         * If a url is null, the default url is used (pointing to https://preview.babylonjs.com)
+         * Note that jsDecoderModule can't be null and that the other dependencies will only be loaded if necessary
+         * Urls you can change:
+         *     URLConfig.jsDecoderModule
+         *     URLConfig.wasmUASTCToASTC
+         *     URLConfig.wasmUASTCToBC7
+         *     URLConfig.jsMSCTranscoder
+         *     URLConfig.wasmMSCTranscoder
+         * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
          */
-        static JSModuleURL: string;
+        static URLConfig: {
+            jsDecoderModule: string;
+            wasmUASTCToASTC: null;
+            wasmUASTCToBC7: null;
+            jsMSCTranscoder: null;
+            wasmMSCTranscoder: null;
+        };
         /**
          * Default number of workers used to handle data decoding
          */
@@ -57992,9 +58006,11 @@ declare module BABYLON {
         private static _CreateWorkerPool;
         /**
          * Constructor
+         * @param engine The engine to use
          * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
          */
         constructor(engine: ThinEngine, numWorkers?: number);
+        /** @hidden */
         uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void>;
         /**
          * Stop all async operations and release resources.
@@ -58008,7 +58024,6 @@ declare module BABYLON {
          */
         static IsValid(data: ArrayBufferView): boolean;
     }
-    export function workerFunc(): void;
 }
 declare module BABYLON {
     /**
@@ -64414,7 +64429,7 @@ declare module BABYLON {
         /**
          * Gets the ambient occlusion object output component
          */
-        get ambientOcclusion(): NodeMaterialConnectionPoint;
+        get ambientOcc(): NodeMaterialConnectionPoint;
         /**
          * Gets the main code of the block (fragment side)
          * @param block instance of an AmbientOcclusionBlock or null if the code must be generated without an active ambient occlusion module
@@ -65063,7 +65078,7 @@ declare module BABYLON {
         /**
          * Gets the ambient occlusion object parameters
          */
-        get ambientOcclusion(): NodeMaterialConnectionPoint;
+        get ambientOcc(): NodeMaterialConnectionPoint;
         /**
          * Gets the reflection object parameters
          */
@@ -79599,6 +79614,8 @@ declare module BABYLON.GUI {
         /** an array of SelectionGroups */
         groups?: SelectorGroup[]);
         protected _getTypeName(): string;
+        /** Gets the (stack) panel of the SelectionPanel  */
+        get panel(): StackPanel;
         /** Gets or sets the headerColor */
         get headerColor(): string;
         set headerColor(color: string);
