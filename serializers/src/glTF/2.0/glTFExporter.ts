@@ -740,14 +740,14 @@ export class _Exporter {
                         vertexData = Vector3.FromArray(meshAttributeArray, index);
                         if (convertToLinear) {
                             Color3.FromArrayToRef(meshAttributeArray, index, tmpColor3);
-                            tmpColor3.toLinearSpace();
+                            tmpColor3.toLinearSpaceToRef(tmpColor3);
                             vertexData.copyFromFloats(tmpColor3.r, tmpColor3.g, tmpColor3.b);
                         }
                     } else {
                         vertexData = Vector4.FromArray(meshAttributeArray, index);
                         if (convertToLinear) {
                             Color4.FromArrayToRef(meshAttributeArray, index, tmpColor4);
-                            tmpColor4.toLinearSpace();
+                            tmpColor4.toLinearSpaceToRef(tmpColor4);
                             vertexData.copyFromFloats(tmpColor4.r, tmpColor4.g, tmpColor4.b, tmpColor4.a);
                         }
                     }
