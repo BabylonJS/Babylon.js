@@ -4314,6 +4314,14 @@ export class ThinEngine {
 
     private static _IsSupported: Nullable<boolean> = null;
     private static _HasMajorPerformanceCaveat : Nullable<boolean> = null;
+
+    /**
+     * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
+     */
+    public static get IsSupported(): boolean {
+        return this.isSupported(); // Backward compat
+    }
+
     /**
      * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
      * @returns true if the engine can be created
@@ -4321,7 +4329,7 @@ export class ThinEngine {
      */
     public static isSupported(): boolean {
         if (this._HasMajorPerformanceCaveat !== null) {
-            return !this._HasMajorPerformanceCaveat; // We know it is hardware supported
+            return !this._HasMajorPerformanceCaveat; // We know it is performant so WebGL is supported
         }
 
         if (this._IsSupported === null) {
@@ -4339,15 +4347,13 @@ export class ThinEngine {
     }
 
     /**
-     * Gets a boolean indicating if the engine can be instanciated on a hardware device (ie. if a webGL context can be found and it does not use a software implementation)
-     * @returns true if the engine can be created on a hardware device 
-     * @ignorenaming
+     * Gets a boolean indicating if the engine can be instanciated on a performant device (ie. if a webGL context can be found and it does not use a slow implementation)
      */
-    public static IsHardwareSupported(): boolean {
+    public static get HasMajorPerformanceCaveat(): boolean {
         if (this._HasMajorPerformanceCaveat === null) {
             try {
                 var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
-                var gl = tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat : true }) || (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat : true });
+                var gl = tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) || (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });
 
                 this._HasMajorPerformanceCaveat = !gl;
             } catch (e) {
@@ -4355,7 +4361,7 @@ export class ThinEngine {
             }
         }
 
-        return !this._HasMajorPerformanceCaveat;
+        return this._HasMajorPerformanceCaveat;
     }
 
     /**

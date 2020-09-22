@@ -224,7 +224,7 @@ export class PBRMaterialDefines extends MaterialDefines
     public CLEARCOAT_TEXTUREDIRECTUV = 0;
     public CLEARCOAT_BUMP = false;
     public CLEARCOAT_BUMPDIRECTUV = 0;
-    public CLEARCOAT_REMAPP_F0 = true;
+    public CLEARCOAT_REMAP_F0 = true;
     public CLEARCOAT_TINT = false;
     public CLEARCOAT_TINT_TEXTURE = false;
     public CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
