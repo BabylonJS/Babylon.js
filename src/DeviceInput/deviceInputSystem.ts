@@ -109,9 +109,9 @@ export class DeviceInputSystem implements IDisposable {
     public checkForConnectedDevices() {
         const gamepads = navigator.getGamepads();
 
-        for (let i = 0; i < gamepads.length; i++) {
-            if (gamepads[i]) {
-                this._addGamePad(gamepads[i]);
+        for (const gamepad of gamepads) {
+            if (gamepad) {
+                this._addGamePad(gamepad);
             }
         }
     }
