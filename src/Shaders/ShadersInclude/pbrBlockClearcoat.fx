@@ -36,7 +36,7 @@ struct clearcoatOutParams
         const in vec3 geometricNormalW,
         const in vec3 viewDirectionW,
         const in vec2 vClearCoatParams,
-    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL)
+    #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
         const in vec4 clearCoatMapRoughnessData,
     #endif
         const in vec3 specularEnvironmentR0,

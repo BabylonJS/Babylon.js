@@ -208,7 +208,7 @@ export class PBRSheenConfiguration {
         const identicalTextures = defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL;
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (identicalTextures) {
+            if (identicalTextures && MaterialFlags.SheenTextureEnabled) {
                 uniformBuffer.updateFloat4("vSheenInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
                 MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "sheen");
             } else  if ((this._texture || this._textureRoughness) && MaterialFlags.SheenTextureEnabled) {

@@ -69,9 +69,16 @@ uniform mat4 view;
     uniform vec2 vClearCoatParams;
     uniform vec4 vClearCoatRefractionParams;
 
-    #ifdef CLEARCOAT_TEXTURE
+    #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
         uniform vec4 vClearCoatInfos;
+    #endif
+
+    #ifdef CLEARCOAT_TEXTURE
         uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
+        uniform mat4 clearCoatRoughnessMatrix;
     #endif
 
     #ifdef CLEARCOAT_BUMP
