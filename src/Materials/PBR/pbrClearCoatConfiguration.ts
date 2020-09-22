@@ -26,6 +26,7 @@ export interface IMaterialClearCoatDefines {
     CLEARCOAT_BUMPDIRECTUV: number;
     CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
     CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
+    CLEARCOAT_REMAPP_F0: boolean;
 
     CLEARCOAT_TINT: boolean;
     CLEARCOAT_TINT_TEXTURE: boolean;
@@ -103,6 +104,14 @@ export class PBRClearCoatConfiguration {
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public textureRoughness: Nullable<BaseTexture> = null;
+
+    private _remapF0OnInterfaceChange = true;
+    /**
+     * Defines if the F0 value should be remapped to account for the interface change in the material.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public remapF0OnInterfaceChange = true;
 
     private _bumpTexture: Nullable<BaseTexture> = null;
     /**
@@ -219,6 +228,7 @@ export class PBRClearCoatConfiguration {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
             defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
+            defines.CLEARCOAT_REMAPP_F0 = this._remapF0OnInterfaceChange;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
