@@ -97,6 +97,7 @@ export class KhronosTextureContainer2 {
 
     /**
      * Constructor
+     * @param engine The engine to use
      * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
      */
     public constructor(engine: ThinEngine, numWorkers = KhronosTextureContainer2.DefaultNumWorkers) {
