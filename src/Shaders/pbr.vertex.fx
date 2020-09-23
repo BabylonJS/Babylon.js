@@ -33,10 +33,7 @@ attribute vec4 color;
 
 // Uniforms
 #include<instancesDeclaration>
-
-#ifdef PREPASS
-varying vec3 vViewPos;
-#endif
+#include<prePassVertexDeclaration>
 
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0
 varying vec2 vAlbedoUV;
@@ -181,13 +178,19 @@ void main(void) {
 #define CUSTOM_VERTEX_UPDATE_NORMAL
 
 #include<instancesVertex>
+
+#if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
+    // Compute velocity before bones computation
+    vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+#endif
+
 #include<bonesVertex>
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
-#ifdef PREPASS
-    vViewPos = (view * worldPos).rgb;
-#endif
+
+#include<prePassVertex>
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);
