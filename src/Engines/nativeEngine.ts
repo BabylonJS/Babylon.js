@@ -61,6 +61,10 @@ interface INativeEngine {
     readonly TEXTURE_FORMAT_RGBA8: number;
     readonly TEXTURE_FORMAT_RGBA32F: number;
 
+    readonly ATTRIB_TYPE_UINT8: number;
+    readonly ATTRIB_TYPE_INT16: number;
+    readonly ATTRIB_TYPE_FLOAT: number;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -377,6 +381,19 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
+    private _convertAttribType(type: number): number {
+        switch (type) {
+            case VertexBuffer.UNSIGNED_BYTE:
+                return this._native.ATTRIB_TYPE_UINT8;
+            case VertexBuffer.SHORT:
+                return this._native.ATTRIB_TYPE_INT16;
+            case VertexBuffer.FLOAT:
+                return this._native.ATTRIB_TYPE_FLOAT;
+            default:
+                throw new Error("Attribute type " + type + " not supported by Babylon Native.");
+        }
+    }
+
     protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (indexBuffer) {
             this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
@@ -398,7 +415,7 @@ export class NativeEngine extends Engine {
                             vertexBuffer.byteOffset,
                             vertexBuffer.byteStride,
                             vertexBuffer.getSize(),
-                            vertexBuffer.type,
+                            this._convertAttribType(vertexBuffer.type),
                             vertexBuffer.normalized);
                     }
                 }
