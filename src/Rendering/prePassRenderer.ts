@@ -5,10 +5,13 @@ import { Constants } from "../Engines/constants";
 import { ImageProcessingPostProcess } from "../PostProcesses/imageProcessingPostProcess";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Effect } from "../Materials/effect";
-import { Logger } from '../Misc/logger';
 import { _DevTools } from '../Misc/devTools';
 import { Color4 } from "../Maths/math.color";
 import { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
+import { Nullable } from "../types";
+import { AbstractMesh } from '../Meshes/abstractMesh';
+import { Material } from '../Materials/material';
+
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture
@@ -50,7 +53,12 @@ export class PrePassRenderer {
             type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_UNSIGNED_INT,
         },
-];
+    ];
+
+    /**
+     * To save performance, we can excluded skinned meshes from the prepass
+     */
+    public excludedSkinnedMesh: AbstractMesh[] = [];
 
     private _textureIndices: number[] = [];
 
@@ -85,16 +93,6 @@ export class PrePassRenderer {
      * Configuration for prepass effects
      */
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
-
-    /**
-     * Should materials render their geometry on the MRT
-     */
-    public materialsShouldRenderGeometry: boolean = false;
-
-    /**
-     * Should materials render the irradiance information on the MRT
-     */
-    public materialsShouldRenderIrradiance: boolean = false;
 
     private _mrtFormats: number[] = [];
     private _mrtLayout: number[];
@@ -259,16 +257,6 @@ export class PrePassRenderer {
         }
     }
 
-    private _checkTextureType(type: number) : boolean {
-        if (type < 0 || type >= this._textureFormats.length) {
-            Logger.Error("PrePassRenderer : Unknown texture type");
-            return false;
-        }
-
-        return true;
-
-    }
-
     /**
      * Adds an effect configuration to the prepass.
      * If an effect has already been added, it won't add it twice and will return the configuration
@@ -294,10 +282,6 @@ export class PrePassRenderer {
      * @return The index
      */
     public getIndex(type: number) : number {
-        if (!this._checkTextureType(type)) {
-            return -1;
-        }
-
         return this._textureIndices[type];
     }
 
@@ -389,9 +373,6 @@ export class PrePassRenderer {
     private _enableTextures(types: number[]) {
         for (let i = 0; i < types.length; i++) {
             let type = types[i];
-            if (!this._checkTextureType(type)) {
-                return;
-            }
 
             if (this._textureIndices[type] === -1) {
                 this._textureIndices[type] = this._mrtLayout.length;
@@ -413,13 +394,22 @@ export class PrePassRenderer {
             }
         }
 
-        const pipelines = this._scene.postProcessRenderPipelineManager.supportedPipelines;
-        for (let i = 0; i < pipelines.length; i++) {
-            if (pipelines[i].setPrePassRenderer(this)) {
-                enablePrePass = true;
+        const camera = this._scene.activeCamera;
+        if (!camera) {
+            return;
+        }
+
+        const postProcesses = (<Nullable<PostProcess[]>>camera._postProcesses.filter((pp) => { return pp != null; }));
+
+        if (postProcesses) {
+            for (let i = 0; i < postProcesses.length; i++) {
+                if (postProcesses[i].setPrePassRenderer(this)) {
+                    enablePrePass = true;
+                }
             }
         }
 
+        this._markAllMaterialsAsPrePassDirty();
         this._isDirty = false;
 
         if (enablePrePass) {
@@ -427,7 +417,16 @@ export class PrePassRenderer {
         }
 
         if (!this.enabled) {
-            this._engine.bindAttachments(this._defaultAttachments);
+            // Prepass disabled, we render only on 1 color attachment
+            this._engine.bindAttachments([this._engine._gl.COLOR_ATTACHMENT0]);
+        }
+    }
+
+    private _markAllMaterialsAsPrePassDirty() {
+        const materials = this._scene.materials;
+
+        for (let i = 0; i < materials.length; i++) {
+            materials[i].markAsDirty(Material.PrePassDirtyFlag);
         }
     }
 
@@ -436,7 +435,9 @@ export class PrePassRenderer {
      */
     public dispose() {
         for (let i = 0; i < this._effectConfigurations.length; i++) {
-            this._effectConfigurations[i].dispose();
+            if (this._effectConfigurations[i].dispose) {
+                this._effectConfigurations[i].dispose!();
+            }
         }
 
         this.imageProcessingPostProcess.dispose();
