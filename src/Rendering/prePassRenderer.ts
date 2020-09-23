@@ -217,6 +217,7 @@ export class PrePassRenderer {
     /**
      * Sets the proper output textures to draw in the engine.
      * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
+     * @param subMesh Submesh on which the effect is applied
      */
     public bindAttachmentsForEffect(effect: Effect, subMesh: SubMesh) {
         if (this.enabled) {

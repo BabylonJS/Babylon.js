@@ -29,6 +29,7 @@ class SkyMaterialDefines extends MaterialDefines {
     public FOG = false;
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
+    public IMAGEPROCESSINGPOSTPROCESS = false;
 
     constructor() {
         super();
@@ -193,6 +194,8 @@ export class SkyMaterial extends PushMaterial {
             if (defines.FOG) {
                 fallbacks.addFallback(1, "FOG");
             }
+
+            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
