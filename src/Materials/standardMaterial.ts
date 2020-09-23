@@ -1377,8 +1377,10 @@ export class StandardMaterial extends PushMaterial {
         // Matrices
         if (!defines.INSTANCES || defines.THIN_INSTANCES) {
             this.bindOnlyWorldMatrix(world);
-            this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
         }
+
+        // PrePass
+        this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
         // Normal Matrix
         if (defines.OBJECTSPACE_NORMALMAP) {

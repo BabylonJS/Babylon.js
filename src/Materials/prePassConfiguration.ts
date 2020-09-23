@@ -42,7 +42,7 @@ export class PrePassConfiguration {
 
     /**
      * Binds the material data.
-     * @param effect defines theeffect to update
+     * @param effect defines the effect to update
      * @param scene defines the scene the material belongs to.
      * @param mesh The mesh
      * @param world World matrix of this mesh
