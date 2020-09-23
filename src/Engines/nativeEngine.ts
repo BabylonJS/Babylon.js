@@ -1535,7 +1535,7 @@ export class NativeEngine extends Engine {
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
                 return this._native.SAMPLER_TRILINEAR;
             default:
-                throw new Error("Unexpected sampling mode: " + samplingMode + ".");
+                throw new Error(`Unsupported sampling mode: ${samplingMode}.`);
         }
     }
 
@@ -1547,7 +1547,7 @@ export class NativeEngine extends Engine {
             return this._native.TEXTURE_FORMAT_RGBA32F;
         }
         else {
-            throw new Error("Unexpected texture format or type: format " + format + ", type " + type + ".");
+            throw new Error(`Unsupported texture format or type: format ${format}, type ${type}.`);
         }
     }
 
@@ -1576,7 +1576,7 @@ export class NativeEngine extends Engine {
             case Constants.ALPHA_SCREENMODE:
                 return this._native.ALPHA_SCREENMODE;
             default:
-                throw new Error("Unexpected alpha mode: " + mode + ".");
+                throw new Error(`Unsupported alpha mode: ${mode}.`);
         }
     }
 
@@ -1589,7 +1589,7 @@ export class NativeEngine extends Engine {
             case VertexBuffer.FLOAT:
                 return this._native.ATTRIB_TYPE_FLOAT;
             default:
-                throw new Error("Unexpected attribute type: " + type + ".");
+                throw new Error(`Unsupported attribute type: ${type}.`);
         }
     }
 }
