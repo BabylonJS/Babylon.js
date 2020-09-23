@@ -140,7 +140,7 @@ export class ProceduralTexture extends Texture {
         this._fallbackTexture = fallbackTexture;
 
         if (isCube) {
-            this._texture = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
+            this._texture = this._fullEngine.createRenderTargetCubeTexture(size as number, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
             this.setFloat("face", 0);
         }
         else {
