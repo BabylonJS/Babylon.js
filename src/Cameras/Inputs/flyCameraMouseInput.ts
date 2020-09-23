@@ -103,7 +103,12 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         this._mousemoveCallback = (e: any) => {
             this._onMouseMove(e);
         };
-        element.addEventListener("mousemove", this._mousemoveCallback, false);
+        if (document.onpointermove === undefined){
+            element.addEventListener("mousemove", this._mousemoveCallback, false);
+        }
+        else {
+            element.addEventListener("pointermove", this._mousemoveCallback, false);
+        }
     }
 
     /**
@@ -117,7 +122,12 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             this.camera.getScene().onBeforeRenderObservable.remove(this._rollObserver);
 
             if (this._mousemoveCallback) {
-                element.removeEventListener("mousemove", this._mousemoveCallback);
+                if (document.onpointermove === undefined){
+                    element.removeEventListener("mousemove", this._mousemoveCallback);
+                }
+                else {
+                    element.removeEventListener("pointermove", this._mousemoveCallback);
+                }
             }
 
             this._observer = null;
