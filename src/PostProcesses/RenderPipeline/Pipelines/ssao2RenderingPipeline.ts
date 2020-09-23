@@ -447,7 +447,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._ssaoCombinePostProcess.samples = this.textureSamples;
 
         if (!this._forceGeometryBuffer) {
-            this._ssaoCombinePostProcess.prePassEffectConfiguration = new SSAO2Configuration();
+            this._ssaoCombinePostProcess._prePassEffectConfiguration = new SSAO2Configuration();
         }
     }
 
