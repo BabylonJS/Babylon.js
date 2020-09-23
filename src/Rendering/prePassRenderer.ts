@@ -211,7 +211,7 @@ export class PrePassRenderer {
      * Indicates if rendering a prepass is supported
      */
     public get isSupported() {
-        return this._engine.webGLVersion > 1;
+        return this._engine.webGLVersion > 1 || this._scene.getEngine().getCaps().drawBuffersExtension;
     }
 
     /**
