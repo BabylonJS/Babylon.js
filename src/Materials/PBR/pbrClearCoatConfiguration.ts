@@ -26,7 +26,7 @@ export interface IMaterialClearCoatDefines {
     CLEARCOAT_BUMPDIRECTUV: number;
     CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
     CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
-    CLEARCOAT_REMAPP_F0: boolean;
+    CLEARCOAT_REMAP_F0: boolean;
 
     CLEARCOAT_TINT: boolean;
     CLEARCOAT_TINT_TEXTURE: boolean;
@@ -228,7 +228,7 @@ export class PBRClearCoatConfiguration {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
             defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
-            defines.CLEARCOAT_REMAPP_F0 = this._remapF0OnInterfaceChange;
+            defines.CLEARCOAT_REMAP_F0 = this._remapF0OnInterfaceChange;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
