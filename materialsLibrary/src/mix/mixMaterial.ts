@@ -249,7 +249,6 @@ export class MixMaterial extends PushMaterial {
 
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
-
             //Attributes
             var attribs = [VertexBuffer.PositionKind];
 
