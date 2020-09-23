@@ -47,7 +47,7 @@ describe('Babylon glTF Serializer', () => {
 
             const metalRough = materialExporter._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
-            metalRough.baseColorFactor.should.deep.equal([0.5, 0.5, 0.5, 1]);
+            metalRough.baseColorFactor.should.deep.equal([1, 1, 1, 1]);
 
             metalRough.metallicFactor.should.be.equal(0);
 
