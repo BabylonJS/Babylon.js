@@ -41,7 +41,6 @@ class FireMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
 
-
     constructor() {
         super();
         this.rebuild();
