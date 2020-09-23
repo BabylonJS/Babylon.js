@@ -325,6 +325,8 @@ export class PrePassRenderer {
             const gl = this._scene.getEngine()._gl;
             attachments[0] = gl.NONE;
 
+            this._geometryBuffer.linkInternalTexture(this.prePassRT.getInternalTexture()!);
+
             const matches = [
                 {
                     prePassConstant: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
