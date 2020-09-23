@@ -918,6 +918,27 @@
             "playgroundId": "#EIJH8L#1",
             "referenceImage": "ktx2decoder.png",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Motion Blur",
+            "playgroundId": "#E5YGEL#2",
+            "referenceImage": "motionBlur.png",
+            "renderCount": 10,
+            "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Screen space reflections",
+            "playgroundId": "#PIZ1GK#172",
+            "referenceImage": "ssr.png",
+            "renderCount": 10,
+            "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Geometry buffer renderer",
+            "playgroundId": "#PIZ1GK#173",
+            "referenceImage": "geometrybufferrenderer.png",
+            "renderCount": 10,
+            "excludeFromAutomaticTesting": true
         }
     ]
 }
