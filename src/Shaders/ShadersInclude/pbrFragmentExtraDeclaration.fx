@@ -28,7 +28,3 @@ varying vec3 vPositionW;
 #ifdef VERTEXCOLOR
     varying vec4 vColor;
 #endif
-
-#ifdef PREPASS
-	varying vec3 vViewPos;
-#endif
