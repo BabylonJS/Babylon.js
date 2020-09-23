@@ -65,6 +65,18 @@ interface INativeEngine {
     readonly ATTRIB_TYPE_INT16: number;
     readonly ATTRIB_TYPE_FLOAT: number;
 
+    readonly ALPHA_DISABLE: number;
+    readonly ALPHA_ADD: number;
+    readonly ALPHA_COMBINE: number;
+    readonly ALPHA_SUBTRACT: number;
+    readonly ALPHA_MULTIPLY: number;
+    readonly ALPHA_MAXIMIZED: number;
+    readonly ALPHA_ONEONE: number;
+    readonly ALPHA_PREMULTIPLIED: number;
+    readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
+    readonly ALPHA_INTERPOLATE: number;
+    readonly ALPHA_SCREENMODE: number;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -716,6 +728,44 @@ export class NativeEngine extends Engine {
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
             return;
+        }
+
+        switch (mode) {
+            case Constants.ALPHA_DISABLE:
+                mode = this._native.ALPHA_DISABLE;
+                break;
+            case Constants.ALPHA_ADD:
+                mode = this._native.ALPHA_ADD;
+                break;
+            case Constants.ALPHA_COMBINE:
+                mode = this._native.ALPHA_COMBINE;
+                break;
+            case Constants.ALPHA_SUBTRACT:
+                mode = this._native.ALPHA_SUBTRACT;
+                break;
+            case Constants.ALPHA_MULTIPLY:
+                mode = this._native.ALPHA_MULTIPLY;
+                break;
+            case Constants.ALPHA_MAXIMIZED:
+                mode = this._native.ALPHA_MAXIMIZED;
+                break;
+            case Constants.ALPHA_ONEONE:
+                mode = this._native.ALPHA_ONEONE;
+                break;
+            case Constants.ALPHA_PREMULTIPLIED:
+                mode = this._native.ALPHA_PREMULTIPLIED;
+                break;
+            case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
+                mode = this._native.ALPHA_PREMULTIPLIED_PORTERDUFF;
+                break;
+            case Constants.ALPHA_INTERPOLATE:
+                mode = this._native.ALPHA_INTERPOLATE;
+                break;
+            case Constants.ALPHA_SCREENMODE:
+                mode = this._native.ALPHA_SCREENMODE;
+                break;
+            default:
+                throw new Error("Alpha mode " + mode + " not supported by Babylon Native.");
         }
 
         this._native.setBlendMode(mode);
