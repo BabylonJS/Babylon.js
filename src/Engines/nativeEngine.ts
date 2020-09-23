@@ -26,6 +26,41 @@ import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
 
 interface INativeEngine {
+
+    readonly SAMPLER_NEAREST: number;
+    readonly SAMPLER_BILINEAR: number;
+    readonly SAMPLER_TRILINEAR: number;
+    readonly SAMPLER_ANISOTROPIC: number;
+    readonly SAMPLER_POINT_COMPARE: number;
+    readonly SAMPLER_TRILINEAR_COMPARE: number;
+    readonly SAMPLER_MINBILINEAR_MAGPOINT: number;
+    readonly SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR: number;
+    readonly SAMPLER_MINPOINT_MAGLINEAR_MIPPOINT: number;
+    readonly SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR: number;
+    readonly SAMPLER_MINLINEAR_MAGPOINT_MIPPOINT: number;
+
+    readonly DEPTH_TEST_LESS: number;
+    readonly DEPTH_TEST_LEQUAL: number;
+    readonly DEPTH_TEST_EQUAL: number;
+    readonly DEPTH_TEST_GEQUAL: number;
+    readonly DEPTH_TEST_GREATER: number;
+    readonly DEPTH_TEST_NOTEQUAL: number;
+    readonly DEPTH_TEST_NEVER: number;
+    readonly DEPTH_TEST_ALWAYS: number;
+
+    readonly CLEAR_FLAG_COLOR: number;
+    readonly CLEAR_FLAG_DEPTH: number;
+    readonly CLEAR_FLAG_STENCIL: number;
+
+    readonly ADDRESS_MODE_WRAP: number;
+    readonly ADDRESS_MODE_MIRROR: number;
+    readonly ADDRESS_MODE_CLAMP: number;
+    readonly ADDRESS_MODE_BORDER: number;
+    readonly ADDRESS_MODE_MIRROR_ONCE: number;
+
+    readonly TEXTURE_FORMAT_RGBA8: number;
+    readonly TEXTURE_FORMAT_RGBA32F: number;
+
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
@@ -143,61 +178,6 @@ class NativeDataBuffer extends DataBuffer {
     public nativeVertexBuffer?: any;
 }
 
-// TODO: change this to match bgfx.
-// Must match Filter enum in SpectreEngine.h.
-class NativeFilter {
-    public static readonly POINT = 0;
-    public static readonly MINPOINT_MAGPOINT_MIPPOINT = NativeFilter.POINT;
-    public static readonly BILINEAR = 1;
-    public static readonly MINLINEAR_MAGLINEAR_MIPPOINT = NativeFilter.BILINEAR;
-    public static readonly TRILINEAR = 2;
-    public static readonly MINLINEAR_MAGLINEAR_MIPLINEAR = NativeFilter.TRILINEAR;
-    public static readonly ANISOTROPIC = 3;
-    public static readonly POINT_COMPARE = 4;
-    public static readonly TRILINEAR_COMPARE = 5;
-    public static readonly MINBILINEAR_MAGPOINT = 6;
-    public static readonly MINLINEAR_MAGPOINT_MIPLINEAR = NativeFilter.MINBILINEAR_MAGPOINT;
-    public static readonly MINPOINT_MAGPOINT_MIPLINEAR = 7;
-    public static readonly MINPOINT_MAGLINEAR_MIPPOINT = 8;
-    public static readonly MINPOINT_MAGLINEAR_MIPLINEAR = 9;
-    public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
-}
-
-// depth test values
-// Values match bgfx defines
-class DepthTest {
-    public static readonly DEPTH_TEST_LESS = 16;
-    public static readonly DEPTH_TEST_LEQUAL = 32;
-    public static readonly DEPTH_TEST_EQUAL = 48;
-    public static readonly DEPTH_TEST_GEQUAL = 64;
-    public static readonly DEPTH_TEST_GREATER = 80;
-    public static readonly DEPTH_TEST_NOTEQUAL = 96;
-    public static readonly DEPTH_TEST_NEVER = 112;
-    public static readonly DEPTH_TEST_ALWAYS = 128;
-}
-
-// these flags match bgfx.
-class NativeClearFlags
-{
-    public static readonly CLEAR_COLOR = 1;
-    public static readonly CLEAR_DEPTH = 2;
-    public static readonly CLEAR_STENCIL = 4;
-}
-// TODO: change this to match bgfx.
-// Must match AddressMode enum in SpectreEngine.h.
-class NativeAddressMode {
-    public static readonly WRAP = 0;
-    public static readonly MIRROR = 1;
-    public static readonly CLAMP = 2;
-    public static readonly BORDER = 3;
-    public static readonly MIRROR_ONCE = 4;
-}
-
-class NativeTextureFormat {
-    public static readonly RGBA8 = 0;
-    public static readonly RGBA32F = 1;
-}
-
 /** @hidden */
 class NativeTexture extends InternalTexture {
     public getInternalTexture(): InternalTexture {
@@ -218,7 +198,7 @@ export class NativeEngine extends Engine {
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
-    private _currentDepthTest: number = DepthTest.DEPTH_TEST_LEQUAL;
+    private _currentDepthTest: number = this._native.DEPTH_TEST_LEQUAL;
 
     public getHardwareScalingLevel(): number {
         return 1.0;
@@ -358,15 +338,15 @@ export class NativeEngine extends Engine {
         var mode = 0;
         if (backBuffer && color) {
             this._native.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            mode |= NativeClearFlags.CLEAR_COLOR;
+            mode |= this._native.CLEAR_FLAG_COLOR;
         }
         if (depth) {
             this._native.clearDepth(1.0);
-            mode |= NativeClearFlags.CLEAR_DEPTH;
+            mode |= this._native.CLEAR_FLAG_DEPTH;
         }
         if (stencil) {
             this._native.clearStencil(0);
-            mode |= NativeClearFlags.CLEAR_STENCIL;
+            mode |= this._native.CLEAR_FLAG_STENCIL;
         }
         this._native.clear(mode);
     }
@@ -643,7 +623,7 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthBuffer(enable: boolean): void {
-        this._native.setDepthTest(enable ? this._currentDepthTest : DepthTest.DEPTH_TEST_ALWAYS);
+        this._native.setDepthTest(enable ? this._currentDepthTest : this._native.DEPTH_TEST_ALWAYS);
     }
 
     /**
@@ -655,22 +635,22 @@ export class NativeEngine extends Engine {
     }
 
     public setDepthFunctionToGreater(): void {
-        this._currentDepthTest = DepthTest.DEPTH_TEST_GREATER;
+        this._currentDepthTest = this._native.DEPTH_TEST_GREATER;
         this._native.setDepthTest(this._currentDepthTest);
     }
 
     public setDepthFunctionToGreaterOrEqual(): void {
-        this._currentDepthTest = DepthTest.DEPTH_TEST_GEQUAL;
+        this._currentDepthTest = this._native.DEPTH_TEST_GEQUAL;
         this._native.setDepthTest(this._currentDepthTest);
     }
 
     public setDepthFunctionToLess(): void {
-        this._currentDepthTest = DepthTest.DEPTH_TEST_LESS;
+        this._currentDepthTest = this._native.DEPTH_TEST_LESS;
         this._native.setDepthTest(this._currentDepthTest);
     }
 
     public setDepthFunctionToLessOrEqual(): void {
-        this._currentDepthTest = DepthTest.DEPTH_TEST_LEQUAL;
+        this._currentDepthTest = this._native.DEPTH_TEST_LEQUAL;
         this._native.setDepthTest(this._currentDepthTest);
     }
 
@@ -1248,44 +1228,44 @@ export class NativeEngine extends Engine {
     private _getSamplingFilter(samplingMode: number): number {
         switch (samplingMode) {
             case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
-                return NativeFilter.MINLINEAR_MAGLINEAR_MIPPOINT;
+                return this._native.SAMPLER_BILINEAR;
             case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
+                return this._native.SAMPLER_TRILINEAR;
             case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
-                return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
+                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
+                return this._native.SAMPLER_NEAREST;
             case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                return NativeFilter.MINLINEAR_MAGPOINT_MIPPOINT;
+                return this._native.SAMPLER_MINLINEAR_MAGPOINT_MIPPOINT;
             case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
+                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
             case Constants.TEXTURE_NEAREST_LINEAR:
-                return NativeFilter.MINLINEAR_MAGPOINT_MIPLINEAR;
+                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
             case Constants.TEXTURE_NEAREST_NEAREST:
-                return NativeFilter.MINPOINT_MAGPOINT_MIPPOINT;
+                return this._native.SAMPLER_NEAREST;
             case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                return NativeFilter.MINPOINT_MAGLINEAR_MIPPOINT;
+                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPPOINT;
             case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
+                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_LINEAR:
-                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
+                return this._native.SAMPLER_TRILINEAR;
             case Constants.TEXTURE_LINEAR_NEAREST:
-                return NativeFilter.MINPOINT_MAGLINEAR_MIPLINEAR;
+                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
-                return NativeFilter.MINPOINT_MAGPOINT_MIPLINEAR;
+                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
-                return NativeFilter.MINLINEAR_MAGLINEAR_MIPLINEAR;
+                return this._native.SAMPLER_TRILINEAR;
             default:
                 throw new Error("Unexpected sampling mode: " + samplingMode + ".");
         }
     }
 
-    private static _GetNativeTextureFormat(format: number, type: number): number {
+    private _getNativeTextureFormat(format: number, type: number): number {
         if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
-            return NativeTextureFormat.RGBA8;
+            return this._native.TEXTURE_FORMAT_RGBA8;
         }
         else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
-            return NativeTextureFormat.RGBA32F;
+            return this._native.TEXTURE_FORMAT_RGBA32F;
         }
         else {
             throw new Error("Unexpected texture format or type: format " + format + ", type " + type + ".");
@@ -1333,7 +1313,7 @@ export class NativeEngine extends Engine {
             texture._webGLTexture!,
             width,
             height,
-            NativeEngine._GetNativeTextureFormat(fullOptions.format, fullOptions.type),
+            this._getNativeTextureFormat(fullOptions.format, fullOptions.type),
             fullOptions.samplingMode!,
             fullOptions.generateStencilBuffer ? true : false,
             fullOptions.generateDepthBuffer,
@@ -1501,11 +1481,11 @@ export class NativeEngine extends Engine {
     private _getAddressMode(wrapMode: number): number {
         switch (wrapMode) {
             case Constants.TEXTURE_WRAP_ADDRESSMODE:
-                return NativeAddressMode.WRAP;
+                return this._native.ADDRESS_MODE_WRAP;
             case Constants.TEXTURE_CLAMP_ADDRESSMODE:
-                return NativeAddressMode.CLAMP;
+                return this._native.ADDRESS_MODE_CLAMP;
             case Constants.TEXTURE_MIRROR_ADDRESSMODE:
-                return NativeAddressMode.MIRROR;
+                return this._native.ADDRESS_MODE_MIRROR;
             default:
                 throw new Error("Unexpected wrap mode: " + wrapMode + ".");
         }
