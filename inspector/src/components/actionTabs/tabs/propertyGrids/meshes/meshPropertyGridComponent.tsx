@@ -375,7 +375,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
             };});
 
         materialOptions.splice(0, 0, {
-            label: "None",
+            label: "None (Default Fallback)",
             value: -1
         });
 

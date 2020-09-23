@@ -142,7 +142,7 @@ struct clearcoatOutParams
         // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
 
         // Remap F0 to account for the change of interface within the material.
-        #ifdef CLEARCOAT_REMAPP_F0
+        #ifdef CLEARCOAT_REMAP_F0
             vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
         #else
             vec3 specularEnvironmentR0Updated = specularEnvironmentR0;
