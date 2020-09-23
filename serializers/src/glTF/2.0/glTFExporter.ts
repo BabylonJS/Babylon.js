@@ -731,24 +731,18 @@ export class _Exporter {
             case VertexBuffer.ColorKind: {
                 const meshMaterial = (babylonTransformNode as Mesh).material;
                 const convertToLinear = meshMaterial ? (meshMaterial instanceof StandardMaterial) : true;
-                const tmpColor3 = TmpColors.Color3[0];
-                const tmpColor4 = TmpColors.Color4[0];
+                const vertexData : Color3 | Color4 = stride === 3 ? new Color3() : new Color4();
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
-                    let vertexData;
                     if (stride === 3) {
-                        vertexData = Vector3.FromArray(meshAttributeArray, index);
+                        Color3.FromArrayToRef(meshAttributeArray, index, (vertexData as Color3));
                         if (convertToLinear) {
-                            Color3.FromArrayToRef(meshAttributeArray, index, tmpColor3);
-                            tmpColor3.toLinearSpaceToRef(tmpColor3);
-                            vertexData.copyFromFloats(tmpColor3.r, tmpColor3.g, tmpColor3.b);
+                            (vertexData as Color3).toLinearSpaceToRef((vertexData as Color3));
                         }
                     } else {
-                        vertexData = Vector4.FromArray(meshAttributeArray, index);
+                        Color4.FromArrayToRef(meshAttributeArray, index, (vertexData as Color4));
                         if (convertToLinear) {
-                            Color4.FromArrayToRef(meshAttributeArray, index, tmpColor4);
-                            tmpColor4.toLinearSpaceToRef(tmpColor4);
-                            vertexData.copyFromFloats(tmpColor4.r, tmpColor4.g, tmpColor4.b, tmpColor4.a);
+                            (vertexData as Color4).toLinearSpaceToRef((vertexData as Color4));
                         }
                     }
                     vertexAttributes.push(vertexData.asArray());
