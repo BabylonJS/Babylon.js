@@ -192,7 +192,7 @@ export class PostProcess {
     * Prepass configuration in case this post process needs a texture from prepass
     * @hidden
     */
-    public prePassEffectConfiguration: PrePassEffectConfiguration;
+    public _prePassEffectConfiguration: PrePassEffectConfiguration;
 
     /**
      * Returns the fragment url or shader name used in the post process.
@@ -692,9 +692,9 @@ export class PostProcess {
      * @returns true if the pre pass is needed.
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        if (this.prePassEffectConfiguration) {
-            this.prePassEffectConfiguration = prePassRenderer.addEffectConfiguration(this.prePassEffectConfiguration);
-            this.prePassEffectConfiguration.enabled = true;
+        if (this._prePassEffectConfiguration) {
+            this._prePassEffectConfiguration = prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
+            this._prePassEffectConfiguration.enabled = true;
             return true;
         }
 
