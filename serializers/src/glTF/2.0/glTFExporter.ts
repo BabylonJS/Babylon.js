@@ -2,7 +2,7 @@ import { AccessorType, IBufferView, IAccessor, INode, IScene, IMesh, IMaterial, 
 
 import { FloatArray, Nullable, IndicesArray } from "babylonjs/types";
 import { Vector2, Vector3, Vector4, Quaternion, Matrix } from "babylonjs/Maths/math.vector";
-import { Color3, Color4, TmpColors } from "babylonjs/Maths/math.color";
+import { Color3, Color4 } from "babylonjs/Maths/math.color";
 import { Tools } from "babylonjs/Misc/tools";
 import { VertexBuffer } from "babylonjs/Meshes/buffer";
 import { Node } from "babylonjs/node";
