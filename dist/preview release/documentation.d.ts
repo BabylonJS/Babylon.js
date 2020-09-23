@@ -854,6 +854,10 @@ declare module BABYLON {
          */
         static readonly MATERIAL_MiscDirtyFlag: number;
         /**
+         * The dirty prepass flag value
+         */
+        static readonly MATERIAL_PrePassDirtyFlag: number;
+        /**
          * The all dirty flag value
          */
         static readonly MATERIAL_AllDirtyFlag: number;
@@ -7997,6 +8001,8 @@ declare module BABYLON {
         /** @hidden */
         _areMiscDirty: boolean;
         /** @hidden */
+        _arePrePassDirty: boolean;
+        /** @hidden */
         _areImageProcessingDirty: boolean;
         /** @hidden */
         _normals: boolean;
@@ -8048,6 +8054,10 @@ declare module BABYLON {
          * Marks the misc state as changed
          */
         markAsMiscDirty(): void;
+        /**
+         * Marks the prepass state as changed
+         */
+        markAsPrePassDirty(): void;
         /**
          * Rebuilds the material defines
          */
@@ -18413,6 +18423,51 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Configuration needed for prepass-capable materials
+     */
+    export class PrePassConfiguration {
+        /**
+         * Previous world matrices of meshes carrying this material
+         * Used for computing velocity
+         */
+        previousWorldMatrices: {
+            [index: number]: Matrix;
+        };
+        /**
+         * Previous view project matrix
+         * Used for computing velocity
+         */
+        previousViewProjection: Matrix;
+        /**
+         * Previous bones of meshes carrying this material
+         * Used for computing velocity
+         */
+        previousBones: {
+            [index: number]: Float32Array;
+        };
+        /**
+         * Add the required uniforms to the current list.
+         * @param uniforms defines the current uniform list.
+         */
+        static AddUniforms(uniforms: string[]): void;
+        /**
+         * Add the required samplers to the current list.
+         * @param samplers defines the current sampler list.
+         */
+        static AddSamplers(samplers: string[]): void;
+        /**
+         * Binds the material data.
+         * @param effect defines the effect to update
+         * @param scene defines the scene the material belongs to.
+         * @param mesh The mesh
+         * @param world World matrix of this mesh
+         * @param isFrozen Is the material frozen
+         */
+        bindForSubMesh(effect: Effect, scene: Scene, mesh: Mesh, world: Matrix, isFrozen: boolean): void;
+    }
+}
+declare module BABYLON {
+    /**
      * A target camera takes a mesh or position as a target and continues to look at it while it moves.
      * This is the base of the follow, arc rotate cameras and Free camera
      * @see https://doc.babylonjs.com/features/cameras
@@ -20472,8 +20527,10 @@ declare module BABYLON {
          * Binds the bones information from the mesh to the effect.
          * @param mesh The mesh we are binding the information to render
          * @param effect The effect we are binding the data to
+         * @param prePassConfiguration Configuration for the prepass, in case prepass is activated
          */
-        static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void;
+        static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration): void;
+        private static _CopyBonesTransformationMatrices;
         /**
          * Binds the morph targets information from the mesh to the effect.
          * @param abstractMesh The mesh we are binding the information to render
@@ -22761,6 +22818,510 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+        interface ThinEngine {
+            /**
+             * Unbind a list of render target textures from the webGL context
+             * This is used only when drawBuffer extension or webGL2 are active
+             * @param textures defines the render target textures to unbind
+             * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
+             * @param onBeforeUnbind defines a function which will be called before the effective unbind
+             */
+            unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
+            /**
+             * Create a multi render target texture
+             * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
+             * @param size defines the size of the texture
+             * @param options defines the creation options
+             * @returns the cube texture as an InternalTexture
+             */
+            createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
+            /**
+             * Update the sample count for a given multiple render target texture
+             * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
+             * @param textures defines the textures to update
+             * @param samples defines the sample count to set
+             * @returns the effective sample count (could be 0 if multisample render targets are not supported)
+             */
+            updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
+            /**
+             * Select a subsets of attachments to draw to.
+             * @param attachments gl attachments
+             */
+            bindAttachments(attachments: number[]): void;
+        }
+}
+declare module BABYLON {
+    /**
+     * Creation options of the multi render target texture.
+     */
+    export interface IMultiRenderTargetOptions {
+        /**
+         * Define if the texture needs to create mip maps after render.
+         */
+        generateMipMaps?: boolean;
+        /**
+         * Define the types of all the draw buffers we want to create
+         */
+        types?: number[];
+        /**
+         * Define the sampling modes of all the draw buffers we want to create
+         */
+        samplingModes?: number[];
+        /**
+         * Define if a depth buffer is required
+         */
+        generateDepthBuffer?: boolean;
+        /**
+         * Define if a stencil buffer is required
+         */
+        generateStencilBuffer?: boolean;
+        /**
+         * Define if a depth texture is required instead of a depth buffer
+         */
+        generateDepthTexture?: boolean;
+        /**
+         * Define the number of desired draw buffers
+         */
+        textureCount?: number;
+        /**
+         * Define if aspect ratio should be adapted to the texture or stay the scene one
+         */
+        doNotChangeAspectRatio?: boolean;
+        /**
+         * Define the default type of the buffers we are creating
+         */
+        defaultType?: number;
+    }
+    /**
+     * A multi render target, like a render target provides the ability to render to a texture.
+     * Unlike the render target, it can render to several draw buffers in one draw.
+     * This is specially interesting in deferred rendering or for any effects requiring more than
+     * just one color from a single pass.
+     */
+    export class MultiRenderTarget extends RenderTargetTexture {
+        private _internalTextures;
+        private _textures;
+        private _multiRenderTargetOptions;
+        private _count;
+        /**
+         * Get if draw buffers are currently supported by the used hardware and browser.
+         */
+        get isSupported(): boolean;
+        /**
+         * Get the list of textures generated by the multi render target.
+         */
+        get textures(): Texture[];
+        /**
+         * Gets the number of textures in this MRT. This number can be different from `_textures.length` in case a depth texture is generated.
+         */
+        get count(): number;
+        /**
+         * Get the depth texture generated by the multi render target if options.generateDepthTexture has been set
+         */
+        get depthTexture(): Texture;
+        /**
+         * Set the wrapping mode on U of all the textures we are rendering to.
+         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
+         */
+        set wrapU(wrap: number);
+        /**
+         * Set the wrapping mode on V of all the textures we are rendering to.
+         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
+         */
+        set wrapV(wrap: number);
+        /**
+         * Instantiate a new multi render target texture.
+         * A multi render target, like a render target provides the ability to render to a texture.
+         * Unlike the render target, it can render to several draw buffers in one draw.
+         * This is specially interesting in deferred rendering or for any effects requiring more than
+         * just one color from a single pass.
+         * @param name Define the name of the texture
+         * @param size Define the size of the buffers to render to
+         * @param count Define the number of target we are rendering into
+         * @param scene Define the scene the texture belongs to
+         * @param options Define the options used to create the multi render target
+         */
+        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
+        private _initTypes;
+        /** @hidden */
+        _rebuild(forceFullRebuild?: boolean): void;
+        private _createInternalTextures;
+        private _createTextures;
+        /**
+         * Define the number of samples used if MSAA is enabled.
+         */
+        get samples(): number;
+        set samples(value: number);
+        /**
+         * Resize all the textures in the multi render target.
+         * Be careful as it will recreate all the data in the new texture.
+         * @param size Define the new size
+         */
+        resize(size: any): void;
+        /**
+         * Changes the number of render targets in this MRT
+         * Be careful as it will recreate all the data in the new texture.
+         * @param count new texture count
+         * @param options Specifies texture types and sampling modes for new textures
+         */
+        updateCount(count: number, options?: IMultiRenderTargetOptions): void;
+        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
+        /**
+         * Dispose the render targets and their associated resources
+         */
+        dispose(): void;
+        /**
+         * Release all the underlying texture used as draw buffers.
+         */
+        releaseInternalTextures(): void;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
+    export var imageProcessingPixelShader: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /**
+     * ImageProcessingPostProcess
+     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
+     */
+    export class ImageProcessingPostProcess extends PostProcess {
+        /**
+         * Default configuration related to image processing available in the PBR Material.
+         */
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        get imageProcessingConfiguration(): ImageProcessingConfiguration;
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         *
+         * If sets to null, the scene one is in use.
+         */
+        set imageProcessingConfiguration(value: ImageProcessingConfiguration);
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+        private _imageProcessingObserver;
+        /**
+         * Attaches a new image processing configuration to the PBR Material.
+         * @param configuration
+         */
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild?: boolean): void;
+        /**
+         * If the post process is supported.
+         */
+        get isSupported(): boolean;
+        /**
+         * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
+         */
+        get colorCurves(): Nullable<ColorCurves>;
+        /**
+         * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
+         */
+        set colorCurves(value: Nullable<ColorCurves>);
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        get colorCurvesEnabled(): boolean;
+        /**
+         * Sets wether the color curves effect is enabled.
+         */
+        set colorCurvesEnabled(value: boolean);
+        /**
+         * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
+         */
+        get colorGradingTexture(): Nullable<BaseTexture>;
+        /**
+         * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
+         */
+        set colorGradingTexture(value: Nullable<BaseTexture>);
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        get colorGradingEnabled(): boolean;
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        set colorGradingEnabled(value: boolean);
+        /**
+         * Gets exposure used in the effect.
+         */
+        get exposure(): number;
+        /**
+         * Sets exposure used in the effect.
+         */
+        set exposure(value: number);
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        get toneMappingEnabled(): boolean;
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        set toneMappingEnabled(value: boolean);
+        /**
+         * Gets the type of tone mapping effect.
+         */
+        get toneMappingType(): number;
+        /**
+         * Sets the type of tone mapping effect.
+         */
+        set toneMappingType(value: number);
+        /**
+         * Gets contrast used in the effect.
+         */
+        get contrast(): number;
+        /**
+         * Sets contrast used in the effect.
+         */
+        set contrast(value: number);
+        /**
+         * Gets Vignette stretch size.
+         */
+        get vignetteStretch(): number;
+        /**
+         * Sets Vignette stretch size.
+         */
+        set vignetteStretch(value: number);
+        /**
+         * Gets Vignette centre X Offset.
+         */
+        get vignetteCentreX(): number;
+        /**
+         * Sets Vignette centre X Offset.
+         */
+        set vignetteCentreX(value: number);
+        /**
+         * Gets Vignette centre Y Offset.
+         */
+        get vignetteCentreY(): number;
+        /**
+         * Sets Vignette centre Y Offset.
+         */
+        set vignetteCentreY(value: number);
+        /**
+         * Gets Vignette weight or intensity of the vignette effect.
+         */
+        get vignetteWeight(): number;
+        /**
+         * Sets Vignette weight or intensity of the vignette effect.
+         */
+        set vignetteWeight(value: number);
+        /**
+         * Gets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
+         * if vignetteEnabled is set to true.
+         */
+        get vignetteColor(): Color4;
+        /**
+         * Sets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
+         * if vignetteEnabled is set to true.
+         */
+        set vignetteColor(value: Color4);
+        /**
+         * Gets Camera field of view used by the Vignette effect.
+         */
+        get vignetteCameraFov(): number;
+        /**
+         * Sets Camera field of view used by the Vignette effect.
+         */
+        set vignetteCameraFov(value: number);
+        /**
+         * Gets the vignette blend mode allowing different kind of effect.
+         */
+        get vignetteBlendMode(): number;
+        /**
+         * Sets the vignette blend mode allowing different kind of effect.
+         */
+        set vignetteBlendMode(value: number);
+        /**
+         * Gets wether the vignette effect is enabled.
+         */
+        get vignetteEnabled(): boolean;
+        /**
+         * Sets wether the vignette effect is enabled.
+         */
+        set vignetteEnabled(value: boolean);
+        private _fromLinearSpace;
+        /**
+         * Gets wether the input of the processing is in Gamma or Linear Space.
+         */
+        get fromLinearSpace(): boolean;
+        /**
+         * Sets wether the input of the processing is in Gamma or Linear Space.
+         */
+        set fromLinearSpace(value: boolean);
+        /**
+         * Defines cache preventing GC.
+         */
+        private _defines;
+        constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, imageProcessingConfiguration?: ImageProcessingConfiguration);
+        /**
+         *  "ImageProcessingPostProcess"
+         * @returns "ImageProcessingPostProcess"
+         */
+        getClassName(): string;
+        /**
+         * @hidden
+         */
+        _updateParameters(): void;
+        dispose(camera?: Camera): void;
+    }
+}
+declare module BABYLON {
+    /**
+     * Interface for defining prepass effects in the prepass post-process pipeline
+     */
+    export interface PrePassEffectConfiguration {
+        /**
+         * Name of the effect
+         */
+        name: string;
+        /**
+         * Post process to attach for this effect
+         */
+        postProcess?: PostProcess;
+        /**
+         * Textures required in the MRT
+         */
+        texturesRequired: number[];
+        /**
+         * Is the effect enabled
+         */
+        enabled: boolean;
+        /**
+         * Disposes the effect configuration
+         */
+        dispose?: () => void;
+        /**
+         * Creates the associated post process
+         */
+        createPostProcess?: () => PostProcess;
+    }
+}
+declare module BABYLON {
+    /**
+     * Renders a pre pass of the scene
+     * This means every mesh in the scene will be rendered to a render target texture
+     * And then this texture will be composited to the rendering canvas with post processes
+     * It is necessary for effects like subsurface scattering or deferred shading
+     */
+    export class PrePassRenderer {
+        /** @hidden */
+        static _SceneComponentInitialization: (scene: Scene) => void;
+        private _textureFormats;
+        /**
+         * To save performance, we can excluded skinned meshes from the prepass
+         */
+        excludedSkinnedMesh: AbstractMesh[];
+        private _textureIndices;
+        private _scene;
+        private _engine;
+        private _isDirty;
+        /**
+         * Number of textures in the multi render target texture where the scene is directly rendered
+         */
+        mrtCount: number;
+        /**
+         * The render target where the scene is directly rendered
+         */
+        prePassRT: MultiRenderTarget;
+        private _multiRenderAttachments;
+        private _defaultAttachments;
+        private _clearAttachments;
+        private _postProcesses;
+        private readonly _clearColor;
+        /**
+         * Image processing post process for composition
+         */
+        imageProcessingPostProcess: ImageProcessingPostProcess;
+        /**
+         * Configuration for prepass effects
+         */
+        private _effectConfigurations;
+        private _mrtFormats;
+        private _mrtLayout;
+        private _enabled;
+        /**
+         * Indicates if the prepass is enabled
+         */
+        get enabled(): boolean;
+        /**
+         * How many samples are used for MSAA of the scene render target
+         */
+        get samples(): number;
+        set samples(n: number);
+        /**
+         * Instanciates a prepass renderer
+         * @param scene The scene
+         */
+        constructor(scene: Scene);
+        private _initializeAttachments;
+        private _createCompositionEffect;
+        /**
+         * Indicates if rendering a prepass is supported
+         */
+        get isSupported(): boolean;
+        /**
+         * Sets the proper output textures to draw in the engine.
+         * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
+         */
+        bindAttachmentsForEffect(effect: Effect): void;
+        /**
+         * @hidden
+         */
+        _beforeCameraDraw(): void;
+        /**
+         * @hidden
+         */
+        _afterCameraDraw(): void;
+        private _checkRTSize;
+        private _bindFrameBuffer;
+        /**
+         * Clears the scene render target (in the sense of settings pixels to the scene clear color value)
+         */
+        clear(): void;
+        private _setState;
+        /**
+         * Adds an effect configuration to the prepass.
+         * If an effect has already been added, it won't add it twice and will return the configuration
+         * already present.
+         * @param cfg the effect configuration
+         * @return the effect configuration now used by the prepass
+         */
+        addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration;
+        /**
+         * Returns the index of a texture in the multi render target texture array.
+         * @param type Texture type
+         * @return The index
+         */
+        getIndex(type: number): number;
+        private _enable;
+        private _disable;
+        private _resetLayout;
+        private _resetPostProcessChain;
+        private _bindPostProcessChain;
+        /**
+         * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
+         */
+        markAsDirty(): void;
+        /**
+         * Enables a texture on the MultiRenderTarget for prepass
+         */
+        private _enableTextures;
+        private _update;
+        private _markAllMaterialsAsPrePassDirty;
+        /**
+         * Disposes the prepass renderer.
+         */
+        dispose(): void;
+    }
+}
+declare module BABYLON {
     /**
      * Size options for a post process
      */
@@ -22888,6 +23449,11 @@ declare module BABYLON {
         private _shareOutputWithPostProcess;
         private _texelSize;
         private _forcedOutputTexture;
+        /**
+        * Prepass configuration in case this post process needs a texture from prepass
+        * @hidden
+        */
+        _prePassEffectConfiguration: PrePassEffectConfiguration;
         /**
          * Returns the fragment url or shader name used in the post process.
          * @returns the fragment url or name in the shader store.
@@ -23051,6 +23617,12 @@ declare module BABYLON {
          */
         apply(): Nullable<Effect>;
         private _disposeTextures;
+        /**
+         * Sets the required values to the prepass renderer.
+         * @param prePassRenderer defines the prepass renderer to setup.
+         * @returns true if the pre pass is needed.
+         */
+        setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean;
         /**
          * Disposes the post process.
          * @param camera The camera to dispose the post process on.
@@ -24066,514 +24638,6 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
-        interface ThinEngine {
-            /**
-             * Unbind a list of render target textures from the webGL context
-             * This is used only when drawBuffer extension or webGL2 are active
-             * @param textures defines the render target textures to unbind
-             * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
-             * @param onBeforeUnbind defines a function which will be called before the effective unbind
-             */
-            unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps: boolean, onBeforeUnbind?: () => void): void;
-            /**
-             * Create a multi render target texture
-             * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
-             * @param size defines the size of the texture
-             * @param options defines the creation options
-             * @returns the cube texture as an InternalTexture
-             */
-            createMultipleRenderTarget(size: any, options: IMultiRenderTargetOptions): InternalTexture[];
-            /**
-             * Update the sample count for a given multiple render target texture
-             * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
-             * @param textures defines the textures to update
-             * @param samples defines the sample count to set
-             * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-             */
-            updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
-            /**
-             * Select a subsets of attachments to draw to.
-             * @param attachments gl attachments
-             */
-            bindAttachments(attachments: number[]): void;
-        }
-}
-declare module BABYLON {
-    /**
-     * Creation options of the multi render target texture.
-     */
-    export interface IMultiRenderTargetOptions {
-        /**
-         * Define if the texture needs to create mip maps after render.
-         */
-        generateMipMaps?: boolean;
-        /**
-         * Define the types of all the draw buffers we want to create
-         */
-        types?: number[];
-        /**
-         * Define the sampling modes of all the draw buffers we want to create
-         */
-        samplingModes?: number[];
-        /**
-         * Define if a depth buffer is required
-         */
-        generateDepthBuffer?: boolean;
-        /**
-         * Define if a stencil buffer is required
-         */
-        generateStencilBuffer?: boolean;
-        /**
-         * Define if a depth texture is required instead of a depth buffer
-         */
-        generateDepthTexture?: boolean;
-        /**
-         * Define the number of desired draw buffers
-         */
-        textureCount?: number;
-        /**
-         * Define if aspect ratio should be adapted to the texture or stay the scene one
-         */
-        doNotChangeAspectRatio?: boolean;
-        /**
-         * Define the default type of the buffers we are creating
-         */
-        defaultType?: number;
-    }
-    /**
-     * A multi render target, like a render target provides the ability to render to a texture.
-     * Unlike the render target, it can render to several draw buffers in one draw.
-     * This is specially interesting in deferred rendering or for any effects requiring more than
-     * just one color from a single pass.
-     */
-    export class MultiRenderTarget extends RenderTargetTexture {
-        private _internalTextures;
-        private _textures;
-        private _multiRenderTargetOptions;
-        private _count;
-        /**
-         * Get if draw buffers are currently supported by the used hardware and browser.
-         */
-        get isSupported(): boolean;
-        /**
-         * Get the list of textures generated by the multi render target.
-         */
-        get textures(): Texture[];
-        /**
-         * Gets the number of textures in this MRT. This number can be different from `_textures.length` in case a depth texture is generated.
-         */
-        get count(): number;
-        /**
-         * Get the depth texture generated by the multi render target if options.generateDepthTexture has been set
-         */
-        get depthTexture(): Texture;
-        /**
-         * Set the wrapping mode on U of all the textures we are rendering to.
-         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
-         */
-        set wrapU(wrap: number);
-        /**
-         * Set the wrapping mode on V of all the textures we are rendering to.
-         * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
-         */
-        set wrapV(wrap: number);
-        /**
-         * Instantiate a new multi render target texture.
-         * A multi render target, like a render target provides the ability to render to a texture.
-         * Unlike the render target, it can render to several draw buffers in one draw.
-         * This is specially interesting in deferred rendering or for any effects requiring more than
-         * just one color from a single pass.
-         * @param name Define the name of the texture
-         * @param size Define the size of the buffers to render to
-         * @param count Define the number of target we are rendering into
-         * @param scene Define the scene the texture belongs to
-         * @param options Define the options used to create the multi render target
-         */
-        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions);
-        private _initTypes;
-        /** @hidden */
-        _rebuild(forceFullRebuild?: boolean): void;
-        private _createInternalTextures;
-        private _createTextures;
-        /**
-         * Define the number of samples used if MSAA is enabled.
-         */
-        get samples(): number;
-        set samples(value: number);
-        /**
-         * Resize all the textures in the multi render target.
-         * Be careful as it will recreate all the data in the new texture.
-         * @param size Define the new size
-         */
-        resize(size: any): void;
-        /**
-         * Changes the number of render targets in this MRT
-         * Be careful as it will recreate all the data in the new texture.
-         * @param count new texture count
-         * @param options Specifies texture types and sampling modes for new textures
-         */
-        updateCount(count: number, options?: IMultiRenderTargetOptions): void;
-        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void;
-        /**
-         * Dispose the render targets and their associated resources
-         */
-        dispose(): void;
-        /**
-         * Release all the underlying texture used as draw buffers.
-         */
-        releaseInternalTextures(): void;
-    }
-}
-declare module BABYLON {
-    /** @hidden */
-    export var imageProcessingPixelShader: {
-        name: string;
-        shader: string;
-    };
-}
-declare module BABYLON {
-    /**
-     * ImageProcessingPostProcess
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
-     */
-    export class ImageProcessingPostProcess extends PostProcess {
-        /**
-         * Default configuration related to image processing available in the PBR Material.
-         */
-        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-        /**
-         * Gets the image processing configuration used either in this material.
-         */
-        get imageProcessingConfiguration(): ImageProcessingConfiguration;
-        /**
-         * Sets the Default image processing configuration used either in the this material.
-         *
-         * If sets to null, the scene one is in use.
-         */
-        set imageProcessingConfiguration(value: ImageProcessingConfiguration);
-        /**
-         * Keep track of the image processing observer to allow dispose and replace.
-         */
-        private _imageProcessingObserver;
-        /**
-         * Attaches a new image processing configuration to the PBR Material.
-         * @param configuration
-         */
-        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild?: boolean): void;
-        /**
-         * If the post process is supported.
-         */
-        get isSupported(): boolean;
-        /**
-         * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
-         */
-        get colorCurves(): Nullable<ColorCurves>;
-        /**
-         * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
-         */
-        set colorCurves(value: Nullable<ColorCurves>);
-        /**
-         * Gets wether the color curves effect is enabled.
-         */
-        get colorCurvesEnabled(): boolean;
-        /**
-         * Sets wether the color curves effect is enabled.
-         */
-        set colorCurvesEnabled(value: boolean);
-        /**
-         * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
-         */
-        get colorGradingTexture(): Nullable<BaseTexture>;
-        /**
-         * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
-         */
-        set colorGradingTexture(value: Nullable<BaseTexture>);
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        get colorGradingEnabled(): boolean;
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        set colorGradingEnabled(value: boolean);
-        /**
-         * Gets exposure used in the effect.
-         */
-        get exposure(): number;
-        /**
-         * Sets exposure used in the effect.
-         */
-        set exposure(value: number);
-        /**
-         * Gets wether tonemapping is enabled or not.
-         */
-        get toneMappingEnabled(): boolean;
-        /**
-         * Sets wether tonemapping is enabled or not
-         */
-        set toneMappingEnabled(value: boolean);
-        /**
-         * Gets the type of tone mapping effect.
-         */
-        get toneMappingType(): number;
-        /**
-         * Sets the type of tone mapping effect.
-         */
-        set toneMappingType(value: number);
-        /**
-         * Gets contrast used in the effect.
-         */
-        get contrast(): number;
-        /**
-         * Sets contrast used in the effect.
-         */
-        set contrast(value: number);
-        /**
-         * Gets Vignette stretch size.
-         */
-        get vignetteStretch(): number;
-        /**
-         * Sets Vignette stretch size.
-         */
-        set vignetteStretch(value: number);
-        /**
-         * Gets Vignette centre X Offset.
-         */
-        get vignetteCentreX(): number;
-        /**
-         * Sets Vignette centre X Offset.
-         */
-        set vignetteCentreX(value: number);
-        /**
-         * Gets Vignette centre Y Offset.
-         */
-        get vignetteCentreY(): number;
-        /**
-         * Sets Vignette centre Y Offset.
-         */
-        set vignetteCentreY(value: number);
-        /**
-         * Gets Vignette weight or intensity of the vignette effect.
-         */
-        get vignetteWeight(): number;
-        /**
-         * Sets Vignette weight or intensity of the vignette effect.
-         */
-        set vignetteWeight(value: number);
-        /**
-         * Gets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
-         * if vignetteEnabled is set to true.
-         */
-        get vignetteColor(): Color4;
-        /**
-         * Sets Color of the vignette applied on the screen through the chosen blend mode (vignetteBlendMode)
-         * if vignetteEnabled is set to true.
-         */
-        set vignetteColor(value: Color4);
-        /**
-         * Gets Camera field of view used by the Vignette effect.
-         */
-        get vignetteCameraFov(): number;
-        /**
-         * Sets Camera field of view used by the Vignette effect.
-         */
-        set vignetteCameraFov(value: number);
-        /**
-         * Gets the vignette blend mode allowing different kind of effect.
-         */
-        get vignetteBlendMode(): number;
-        /**
-         * Sets the vignette blend mode allowing different kind of effect.
-         */
-        set vignetteBlendMode(value: number);
-        /**
-         * Gets wether the vignette effect is enabled.
-         */
-        get vignetteEnabled(): boolean;
-        /**
-         * Sets wether the vignette effect is enabled.
-         */
-        set vignetteEnabled(value: boolean);
-        private _fromLinearSpace;
-        /**
-         * Gets wether the input of the processing is in Gamma or Linear Space.
-         */
-        get fromLinearSpace(): boolean;
-        /**
-         * Sets wether the input of the processing is in Gamma or Linear Space.
-         */
-        set fromLinearSpace(value: boolean);
-        /**
-         * Defines cache preventing GC.
-         */
-        private _defines;
-        constructor(name: string, options: number | PostProcessOptions, camera?: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, imageProcessingConfiguration?: ImageProcessingConfiguration);
-        /**
-         *  "ImageProcessingPostProcess"
-         * @returns "ImageProcessingPostProcess"
-         */
-        getClassName(): string;
-        /**
-         * @hidden
-         */
-        _updateParameters(): void;
-        dispose(camera?: Camera): void;
-    }
-}
-declare module BABYLON {
-    /**
-     * Interface for defining prepass effects in the prepass post-process pipeline
-     */
-    export interface PrePassEffectConfiguration {
-        /**
-         * Name of the effect
-         */
-        name: string;
-        /**
-         * Post process to attach for this effect
-         */
-        postProcess?: PostProcess;
-        /**
-         * Textures required in the MRT
-         */
-        texturesRequired: number[];
-        /**
-         * Is the effect enabled
-         */
-        enabled: boolean;
-        /**
-         * Disposes the effect configuration
-         */
-        dispose(): void;
-        /**
-         * Creates the associated post process
-         */
-        createPostProcess?: () => PostProcess;
-    }
-}
-declare module BABYLON {
-    /**
-     * Renders a pre pass of the scene
-     * This means every mesh in the scene will be rendered to a render target texture
-     * And then this texture will be composited to the rendering canvas with post processes
-     * It is necessary for effects like subsurface scattering or deferred shading
-     */
-    export class PrePassRenderer {
-        /** @hidden */
-        static _SceneComponentInitialization: (scene: Scene) => void;
-        private _textureFormats;
-        private _textureIndices;
-        private _scene;
-        private _engine;
-        private _isDirty;
-        /**
-         * Number of textures in the multi render target texture where the scene is directly rendered
-         */
-        mrtCount: number;
-        /**
-         * The render target where the scene is directly rendered
-         */
-        prePassRT: MultiRenderTarget;
-        private _multiRenderAttachments;
-        private _defaultAttachments;
-        private _clearAttachments;
-        private _postProcesses;
-        private readonly _clearColor;
-        /**
-         * Image processing post process for composition
-         */
-        imageProcessingPostProcess: ImageProcessingPostProcess;
-        /**
-         * Configuration for prepass effects
-         */
-        private _effectConfigurations;
-        /**
-         * Should materials render their geometry on the MRT
-         */
-        materialsShouldRenderGeometry: boolean;
-        /**
-         * Should materials render the irradiance information on the MRT
-         */
-        materialsShouldRenderIrradiance: boolean;
-        private _mrtFormats;
-        private _mrtLayout;
-        private _enabled;
-        /**
-         * Indicates if the prepass is enabled
-         */
-        get enabled(): boolean;
-        /**
-         * How many samples are used for MSAA of the scene render target
-         */
-        get samples(): number;
-        set samples(n: number);
-        /**
-         * Instanciates a prepass renderer
-         * @param scene The scene
-         */
-        constructor(scene: Scene);
-        private _initializeAttachments;
-        private _createCompositionEffect;
-        /**
-         * Indicates if rendering a prepass is supported
-         */
-        get isSupported(): boolean;
-        /**
-         * Sets the proper output textures to draw in the engine.
-         * @param effect The effect that is drawn. It can be or not be compatible with drawing to several output textures.
-         */
-        bindAttachmentsForEffect(effect: Effect): void;
-        /**
-         * @hidden
-         */
-        _beforeCameraDraw(): void;
-        /**
-         * @hidden
-         */
-        _afterCameraDraw(): void;
-        private _checkRTSize;
-        private _bindFrameBuffer;
-        /**
-         * Clears the scene render target (in the sense of settings pixels to the scene clear color value)
-         */
-        clear(): void;
-        private _setState;
-        private _checkTextureType;
-        /**
-         * Adds an effect configuration to the prepass.
-         * If an effect has already been added, it won't add it twice and will return the configuration
-         * already present.
-         * @param cfg the effect configuration
-         * @return the effect configuration now used by the prepass
-         */
-        addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration;
-        /**
-         * Returns the index of a texture in the multi render target texture array.
-         * @param type Texture type
-         * @return The index
-         */
-        getIndex(type: number): number;
-        private _enable;
-        private _disable;
-        private _resetLayout;
-        private _resetPostProcessChain;
-        private _bindPostProcessChain;
-        /**
-         * Marks the prepass renderer as dirty, triggering a check if the prepass is necessary for the next rendering.
-         */
-        markAsDirty(): void;
-        /**
-         * Enables a texture on the MultiRenderTarget for prepass
-         */
-        private _enableTextures;
-        private _update;
-        /**
-         * Disposes the prepass renderer.
-         */
-        dispose(): void;
-    }
-}
-declare module BABYLON {
     /**
      * Options for compiling materials.
      */
@@ -24664,6 +24728,10 @@ declare module BABYLON {
          * The dirty misc flag value
          */
         static readonly MiscDirtyFlag: number;
+        /**
+         * The dirty prepass flag value
+         */
+        static readonly PrePassDirtyFlag: number;
         /**
          * The all dirty flag value
          */
@@ -25186,6 +25254,7 @@ declare module BABYLON {
         private static readonly _TextureDirtyCallBack;
         private static readonly _FresnelDirtyCallBack;
         private static readonly _MiscDirtyCallBack;
+        private static readonly _PrePassDirtyCallBack;
         private static readonly _LightsDirtyCallBack;
         private static readonly _AttributeDirtyCallBack;
         private static _FresnelAndMiscDirtyCallBack;
@@ -25238,6 +25307,10 @@ declare module BABYLON {
          * Indicates that misc needs to be re-calculated for all submeshes
          */
         protected _markAllSubMeshesAsMiscDirty(): void;
+        /**
+         * Indicates that prepass needs to be re-calculated for all submeshes
+         */
+        protected _markAllSubMeshesAsPrePassDirty(): void;
         /**
          * Indicates that textures and misc need to be re-calculated for all submeshes
          */
@@ -30300,7 +30373,21 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export var prePassVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
     export var bumpVertexDeclaration: {
+        name: string;
+        shader: string;
+    };
+}
+declare module BABYLON {
+    /** @hidden */
+    export var prePassVertex: {
         name: string;
         shader: string;
     };
@@ -30537,6 +30624,7 @@ declare module BABYLON {
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
         BONETEXTURE: boolean;
+        BONES_VELOCITY_ENABLED: boolean;
         INSTANCES: boolean;
         THIN_INSTANCES: boolean;
         GLOSSINESS: boolean;
@@ -30582,6 +30670,12 @@ declare module BABYLON {
         PREPASS_ALBEDO_INDEX: number;
         PREPASS_DEPTHNORMAL: boolean;
         PREPASS_DEPTHNORMAL_INDEX: number;
+        PREPASS_POSITION: boolean;
+        PREPASS_POSITION_INDEX: number;
+        PREPASS_VELOCITY: boolean;
+        PREPASS_VELOCITY_INDEX: number;
+        PREPASS_REFLECTIVITY: boolean;
+        PREPASS_REFLECTIVITY_INDEX: number;
         SCENE_MRT_COUNT: number;
         RGBDLIGHTMAP: boolean;
         RGBDREFLECTION: boolean;
@@ -30863,6 +30957,10 @@ declare module BABYLON {
          * @param configuration
          */
         protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
+        /**
+         * Defines additionnal PrePass parameters for the material.
+         */
+        readonly prePassConfiguration: PrePassConfiguration;
         /**
          * Gets wether the color curves effect is enabled.
          */
@@ -35354,6 +35452,10 @@ declare module BABYLON {
          * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
          */
         useHighPrecisionMatrix?: boolean;
+        /**
+         * Will prevent the system from falling back to software implementation if a hardware device cannot be created
+         */
+        failIfMajorPerformanceCaveat?: boolean;
     }
     /**
      * The base engine class (root of all engines)
@@ -36369,13 +36471,22 @@ declare module BABYLON {
          * @returns a Uint8Array containing RGBA colors
          */
         readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean): Uint8Array;
-        private static _isSupported;
+        private static _IsSupported;
+        private static _HasMajorPerformanceCaveat;
+        /**
+         * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
+         */
+        static get IsSupported(): boolean;
         /**
          * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
          * @returns true if the engine can be created
          * @ignorenaming
          */
         static isSupported(): boolean;
+        /**
+         * Gets a boolean indicating if the engine can be instanciated on a performant device (ie. if a webGL context can be found and it does not use a slow implementation)
+         */
+        static get HasMajorPerformanceCaveat(): boolean;
         /**
          * Find the next highest power of two.
          * @param x Number to start search from.
@@ -46669,8 +46780,9 @@ declare module BABYLON {
          * @param generateMipMaps defines the use of MinMaps or not (default is false)
          * @param samplingMode defines the sampling mode to use (default is Texture.TRILINEAR_SAMPLINGMODE)
          * @param format defines the texture format to use (default is Engine.TEXTUREFORMAT_RGBA)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading
          */
-        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number);
+        constructor(name: string, options: any, scene: Scene | null | undefined, generateMipMaps: boolean, samplingMode?: number, format?: number, invertY?: boolean);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "DynamicTexture"
@@ -51165,6 +51277,8 @@ declare module BABYLON {
         sphereScaleUnit?: number;
         /** Ratio for the Sphere Size */
         sphereFactor?: number;
+        /** Whether a spur should attach its far end to the child bone position */
+        spurFollowsChild?: boolean;
         /** Whether to show local axes or not  */
         showLocalAxes?: boolean;
         /** Length of each local axis */
@@ -51458,14 +51572,15 @@ declare module BABYLON.Debug {
         changeDisplayMode(mode: number): void;
         /** Sets a display option of the skeleton viewer
          *
-         * | Option          | Type    | Default | Description |
-         * | --------------- | ------- | ------- | ----------- |
-         * | midStep         | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-         * | midStepFactor   | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-         * | sphereBaseSize  | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-         * | sphereScaleUnit | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
-         * | showLocalAxes   | boolean | false   | Displays local axes on all bones. |
-         * | localAxesSize   | float   | 0.075   | Determines the length of each local axis. |
+         * | Option           | Type    | Default | Description |
+         * | ---------------- | ------- | ------- | ----------- |
+         * | midStep          | float   | 0.235   | A percentage between a bone and its child that determines the widest part of a spur. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | midStepFactor    | float   | 0.15    | Mid step width expressed as a factor of the length. A value of 0.5 makes the spur width half of the spur length. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereBaseSize   | float   | 2       | Sphere base size. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | sphereScaleUnit  | float   | 0.865   | Sphere scale factor used to scale spheres in relation to the longest bone. Only used when `displayMode` is set to `DISPLAY_SPHERE_AND_SPURS`. |
+         * | spurFollowsChild | boolean | false   | Whether a spur should attach its far end to the child bone. |
+         * | showLocalAxes    | boolean | false   | Displays local axes on all bones. |
+         * | localAxesSize    | float   | 0.075   | Determines the length of each local axis. |
          *
          * @param option String of the option name
          * @param value The numerical option value
@@ -55392,6 +55507,7 @@ declare module BABYLON {
         CLEARCOAT_TEXTUREDIRECTUV: number;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_REMAP_F0: boolean;
         CLEARCOAT_TINT: boolean;
         CLEARCOAT_TINT_TEXTURE: boolean;
         CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
@@ -55433,6 +55549,11 @@ declare module BABYLON {
          * Stores the clear coat values in a texture.
          */
         texture: Nullable<BaseTexture>;
+        private _remapF0OnInterfaceChange;
+        /**
+         * Defines if the F0 value should be remapped to account for the interface change in the material.
+         */
+        remapF0OnInterfaceChange: boolean;
         private _bumpTexture;
         /**
          * Define the clear coat specific bump texture.
@@ -56609,10 +56730,17 @@ declare module BABYLON {
         PREPASS_ALBEDO_INDEX: number;
         PREPASS_DEPTHNORMAL: boolean;
         PREPASS_DEPTHNORMAL_INDEX: number;
+        PREPASS_POSITION: boolean;
+        PREPASS_POSITION_INDEX: number;
+        PREPASS_VELOCITY: boolean;
+        PREPASS_VELOCITY_INDEX: number;
+        PREPASS_REFLECTIVITY: boolean;
+        PREPASS_REFLECTIVITY_INDEX: number;
         SCENE_MRT_COUNT: number;
         NUM_BONE_INFLUENCERS: number;
         BonesPerMesh: number;
         BONETEXTURE: boolean;
+        BONES_VELOCITY_ENABLED: boolean;
         NONUNIFORMSCALING: boolean;
         MORPHTARGETS: boolean;
         MORPHTARGETS_NORMAL: boolean;
@@ -56655,6 +56783,7 @@ declare module BABYLON {
         CLEARCOAT_TEXTUREDIRECTUV: number;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_REMAP_F0: boolean;
         CLEARCOAT_TINT: boolean;
         CLEARCOAT_TINT_TEXTURE: boolean;
         CLEARCOAT_TINT_TEXTUREDIRECTUV: number;
@@ -57103,6 +57232,10 @@ declare module BABYLON {
          * Defines the SubSurface parameters for the material.
          */
         readonly subSurface: PBRSubSurfaceConfiguration;
+        /**
+         * Defines additionnal PrePass parameters for the material.
+         */
+        readonly prePassConfiguration: PrePassConfiguration;
         /**
          * Defines the detail map parameters for the material.
          */
@@ -57972,16 +58105,30 @@ declare module BABYLON {
 declare module BABYLON {
     /**
      * Class for loading KTX2 files
-     * @hidden
      */
     export class KhronosTextureContainer2 {
         private static _WorkerPoolPromise?;
         private static _Initialized;
         private static _Ktx2Decoder;
         /**
-         * URL to use when loading the KTX2 decoder module
+         * URLs to use when loading the KTX2 decoder module as well as its dependencies
+         * If a url is null, the default url is used (pointing to https://preview.babylonjs.com)
+         * Note that jsDecoderModule can't be null and that the other dependencies will only be loaded if necessary
+         * Urls you can change:
+         *     URLConfig.jsDecoderModule
+         *     URLConfig.wasmUASTCToASTC
+         *     URLConfig.wasmUASTCToBC7
+         *     URLConfig.jsMSCTranscoder
+         *     URLConfig.wasmMSCTranscoder
+         * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
          */
-        static JSModuleURL: string;
+        static URLConfig: {
+            jsDecoderModule: string;
+            wasmUASTCToASTC: null;
+            wasmUASTCToBC7: null;
+            jsMSCTranscoder: null;
+            wasmMSCTranscoder: null;
+        };
         /**
          * Default number of workers used to handle data decoding
          */
@@ -57991,9 +58138,11 @@ declare module BABYLON {
         private static _CreateWorkerPool;
         /**
          * Constructor
+         * @param engine The engine to use
          * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
          */
         constructor(engine: ThinEngine, numWorkers?: number);
+        /** @hidden */
         uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void>;
         /**
          * Stop all async operations and release resources.
@@ -58007,7 +58156,6 @@ declare module BABYLON {
          */
         static IsValid(data: ArrayBufferView): boolean;
     }
-    export function workerFunc(): void;
 }
 declare module BABYLON {
     /**
@@ -64413,7 +64561,7 @@ declare module BABYLON {
         /**
          * Gets the ambient occlusion object output component
          */
-        get ambientOcclusion(): NodeMaterialConnectionPoint;
+        get ambientOcc(): NodeMaterialConnectionPoint;
         /**
          * Gets the main code of the block (fragment side)
          * @param block instance of an AmbientOcclusionBlock or null if the code must be generated without an active ambient occlusion module
@@ -65062,7 +65210,7 @@ declare module BABYLON {
         /**
          * Gets the ambient occlusion object parameters
          */
-        get ambientOcclusion(): NodeMaterialConnectionPoint;
+        get ambientOcc(): NodeMaterialConnectionPoint;
         /**
          * Gets the reflection object parameters
          */
@@ -70065,6 +70213,26 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Contains all parameters needed for the prepass to perform
+     * motion blur
+     */
+    export class MotionBlurConfiguration implements PrePassEffectConfiguration {
+        /**
+         * Is motion blur enabled
+         */
+        enabled: boolean;
+        /**
+         * Name of the configuration
+         */
+        name: string;
+        /**
+         * Textures that should be present in the MRT for this effect to work
+         */
+        readonly texturesRequired: number[];
+    }
+}
+declare module BABYLON {
         interface Scene {
             /** @hidden (Backing field) */
             _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
@@ -70151,7 +70319,9 @@ declare module BABYLON {
          */
         set motionBlurSamples(samples: number);
         private _motionBlurSamples;
+        private _forceGeometryBuffer;
         private _geometryBufferRenderer;
+        private _prePassRenderer;
         /**
          * Gets a string identifying the name of the class
          * @returns "MotionBlurPostProcess" string
@@ -70168,8 +70338,9 @@ declare module BABYLON {
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
          */
-        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean, forceGeometryBuffer?: boolean);
         /**
          * Excludes the given skinned mesh from computing bones velocities.
          * Computing bones velocities can have a cost and that cost. The cost can be saved by calling this function and by passing the skinned mesh reference to ignore.
@@ -70960,15 +71131,6 @@ declare module BABYLON {
          * Textures that should be present in the MRT for this effect to work
          */
         readonly texturesRequired: number[];
-        /**
-         * Builds a ssao2 configuration object
-         * @param scene The scene
-         */
-        constructor();
-        /**
-         * Disposes the configuration
-         */
-        dispose(): void;
     }
 }
 declare module BABYLON {
@@ -71051,7 +71213,6 @@ declare module BABYLON {
         * Dynamically generated sphere sampler.
         */
         private _sampleSphere;
-        private _ssao2PrePassConfiguration;
         /**
         * Blur filter offsets
         */
@@ -71130,12 +71291,6 @@ declare module BABYLON {
          * @returns An instantiated pipeline from the serialized object.
          */
         static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline;
-        /**
-         * Sets the required values to the prepass renderer.
-         * @param prePassRenderer defines the prepass renderer to setup
-         * @returns true if the pre pass is needed.
-         */
-        setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean;
     }
 }
 declare module BABYLON {
@@ -71239,6 +71394,26 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Contains all parameters needed for the prepass to perform
+     * screen space reflections
+     */
+    export class ScreenSpaceReflectionsConfiguration implements PrePassEffectConfiguration {
+        /**
+         * Is ssr enabled
+         */
+        enabled: boolean;
+        /**
+         * Name of the configuration
+         */
+        name: string;
+        /**
+         * Textures that should be present in the MRT for this effect to work
+         */
+        readonly texturesRequired: number[];
+    }
+}
+declare module BABYLON {
     /** @hidden */
     export var screenSpaceReflectionPixelShader: {
         name: string;
@@ -71271,7 +71446,9 @@ declare module BABYLON {
          * Gets or sets the factor applied when computing roughness. Default value is 0.2.
          */
         roughnessFactor: number;
+        private _forceGeometryBuffer;
         private _geometryBufferRenderer;
+        private _prePassRenderer;
         private _enableSmoothReflections;
         private _reflectionSamples;
         private _smoothSteps;
@@ -71291,8 +71468,9 @@ declare module BABYLON {
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+         * @param forceGeometryBuffer If this post process should use geometry buffer instead of prepass (default: false)
          */
-        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean);
+        constructor(name: string, scene: Scene, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number, blockCompilation?: boolean, forceGeometryBuffer?: boolean);
         /**
          * Gets wether or not smoothing reflections is enabled.
          * Enabling smoothing will require more GPU power and can generate a drop in FPS.
@@ -77234,8 +77412,9 @@ declare module BABYLON.GUI {
        * @param scene defines the hosting scene
        * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
        * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+       * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
        */
-        constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number);
+        constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
         * Get the current class name of the texture useful for serialization or dynamic coding.
         * @returns "AdvancedDynamicTexture"
@@ -77349,9 +77528,10 @@ declare module BABYLON.GUI {
          * @param height defines the texture height (1024 by default)
          * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
          * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean): AdvancedDynamicTexture;
+        static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
@@ -79596,6 +79776,8 @@ declare module BABYLON.GUI {
         /** an array of SelectionGroups */
         groups?: SelectorGroup[]);
         protected _getTypeName(): string;
+        /** Gets the (stack) panel of the SelectionPanel  */
+        get panel(): StackPanel;
         /** Gets or sets the headerColor */
         get headerColor(): string;
         set headerColor(color: string);

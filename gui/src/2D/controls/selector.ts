@@ -325,6 +325,11 @@ export class SelectionPanel extends Rectangle {
         return "SelectionPanel";
     }
 
+    /** Gets the (stack) panel of the SelectionPanel  */
+    public get panel(): StackPanel {
+        return this._panel;
+    }
+
     /** Gets or sets the headerColor */
     public get headerColor(): string {
         return this._headerColor;

@@ -7,7 +7,6 @@ declare var KTX2DECODER: any;
 
 /**
  * Class for loading KTX2 files
- * @hidden
  */
 export class KhronosTextureContainer2 {
     private static _WorkerPoolPromise?: Promise<WorkerPool>;
@@ -15,9 +14,24 @@ export class KhronosTextureContainer2 {
     private static _Ktx2Decoder: any; // used when no worker pool is used
 
     /**
-     * URL to use when loading the KTX2 decoder module
+     * URLs to use when loading the KTX2 decoder module as well as its dependencies
+     * If a url is null, the default url is used (pointing to https://preview.babylonjs.com)
+     * Note that jsDecoderModule can't be null and that the other dependencies will only be loaded if necessary
+     * Urls you can change:
+     *     URLConfig.jsDecoderModule
+     *     URLConfig.wasmUASTCToASTC
+     *     URLConfig.wasmUASTCToBC7
+     *     URLConfig.jsMSCTranscoder
+     *     URLConfig.wasmMSCTranscoder
+     * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
      */
-    public static JSModuleURL = "https://preview.babylonjs.com/babylon.ktx2Decoder.js";
+    public static URLConfig = {
+        jsDecoderModule: "https://preview.babylonjs.com/babylon.ktx2Decoder.js",
+        wasmUASTCToASTC: null,
+        wasmUASTCToBC7: null,
+        jsMSCTranscoder: null,
+        wasmMSCTranscoder: null
+    };
 
     /**
      * Default number of workers used to handle data decoding
@@ -66,7 +80,7 @@ export class KhronosTextureContainer2 {
 
                         worker.postMessage({
                             action: "init",
-                            jsPath: KhronosTextureContainer2.JSModuleURL
+                            urls: KhronosTextureContainer2.URLConfig
                         });
                     });
                 }
@@ -83,6 +97,7 @@ export class KhronosTextureContainer2 {
 
     /**
      * Constructor
+     * @param engine The engine to use
      * @param numWorkers The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
      */
     public constructor(engine: ThinEngine, numWorkers = KhronosTextureContainer2.DefaultNumWorkers) {
@@ -93,6 +108,7 @@ export class KhronosTextureContainer2 {
         }
     }
 
+    /** @hidden */
     public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void> {
         const caps = this._engine.getCaps();
 
@@ -237,13 +253,26 @@ declare function postMessage(message: any, transfer?: any[]): void;
 
 declare var KTX2DECODER: any;
 
-export function workerFunc(): void {
+function workerFunc(): void {
     let ktx2Decoder: any;
 
     onmessage = (event) => {
         switch (event.data.action) {
             case "init":
-                importScripts(event.data.jsPath);
+                const urls = event.data.urls;
+                importScripts(urls.jsDecoderModule);
+                if (urls.wasmUASTCToASTC !== null) {
+                    KTX2DECODER.LiteTranscoder_UASTC_ASTC.WasmModuleURL = urls.wasmUASTCToASTC;
+                }
+                if (urls.wasmUASTCToBC7 !== null) {
+                    KTX2DECODER.LiteTranscoder_UASTC_BC7.WasmModuleURL = urls.wasmUASTCToBC7;
+                }
+                if (urls.jsMSCTranscoder !== null) {
+                    KTX2DECODER.MSCTranscoder.JSModuleURL = urls.jsMSCTranscoder;
+                }
+                if (urls.wasmMSCTranscoder !== null) {
+                    KTX2DECODER.MSCTranscoder.WasmModuleURL = urls.wasmMSCTranscoder;
+                }
                 ktx2Decoder = new KTX2DECODER.KTX2Decoder();
                 postMessage({ action: "init" });
                 break;
