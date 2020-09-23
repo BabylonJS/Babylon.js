@@ -871,9 +871,7 @@ export class MaterialHelper {
 
     // Copies the bones transformation matrices into the target array and returns the target's reference
     private static _CopyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
-        for (let i = 0; i < source.length; i++) {
-            target[i] = source[i];
-        }
+        target.set(source)
 
         return target;
     }
