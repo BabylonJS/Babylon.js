@@ -393,19 +393,6 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
-    private _convertAttribType(type: number): number {
-        switch (type) {
-            case VertexBuffer.UNSIGNED_BYTE:
-                return this._native.ATTRIB_TYPE_UINT8;
-            case VertexBuffer.SHORT:
-                return this._native.ATTRIB_TYPE_INT16;
-            case VertexBuffer.FLOAT:
-                return this._native.ATTRIB_TYPE_FLOAT;
-            default:
-                throw new Error("Attribute type " + type + " not supported by Babylon Native.");
-        }
-    }
-
     protected _recordVertexArrayObject(vertexArray: any, vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<NativeDataBuffer>, effect: Effect): void {
         if (indexBuffer) {
             this._native.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer);
@@ -427,7 +414,7 @@ export class NativeEngine extends Engine {
                             vertexBuffer.byteOffset,
                             vertexBuffer.byteStride,
                             vertexBuffer.getSize(),
-                            this._convertAttribType(vertexBuffer.type),
+                            this._getNativeAttribType(vertexBuffer.type),
                             vertexBuffer.normalized);
                     }
                 }
@@ -730,43 +717,7 @@ export class NativeEngine extends Engine {
             return;
         }
 
-        switch (mode) {
-            case Constants.ALPHA_DISABLE:
-                mode = this._native.ALPHA_DISABLE;
-                break;
-            case Constants.ALPHA_ADD:
-                mode = this._native.ALPHA_ADD;
-                break;
-            case Constants.ALPHA_COMBINE:
-                mode = this._native.ALPHA_COMBINE;
-                break;
-            case Constants.ALPHA_SUBTRACT:
-                mode = this._native.ALPHA_SUBTRACT;
-                break;
-            case Constants.ALPHA_MULTIPLY:
-                mode = this._native.ALPHA_MULTIPLY;
-                break;
-            case Constants.ALPHA_MAXIMIZED:
-                mode = this._native.ALPHA_MAXIMIZED;
-                break;
-            case Constants.ALPHA_ONEONE:
-                mode = this._native.ALPHA_ONEONE;
-                break;
-            case Constants.ALPHA_PREMULTIPLIED:
-                mode = this._native.ALPHA_PREMULTIPLIED;
-                break;
-            case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
-                mode = this._native.ALPHA_PREMULTIPLIED_PORTERDUFF;
-                break;
-            case Constants.ALPHA_INTERPOLATE:
-                mode = this._native.ALPHA_INTERPOLATE;
-                break;
-            case Constants.ALPHA_SCREENMODE:
-                mode = this._native.ALPHA_SCREENMODE;
-                break;
-            default:
-                throw new Error("Alpha mode " + mode + " not supported by Babylon Native.");
-        }
+        mode = this._getNativeAlphaMode(mode);
 
         this._native.setBlendMode(mode);
 
@@ -1127,7 +1078,7 @@ export class NativeEngine extends Engine {
                     texture.height = texture.baseHeight;
                     texture.isReady = true;
 
-                    var filter = this._getSamplingFilter(samplingMode);
+                    var filter = this._getNativeSamplingMode(samplingMode);
                     this._native.setTextureSampling(webGLTexture, filter);
 
                     if (scene) {
@@ -1291,54 +1242,6 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    // Returns a NativeFilter.XXXX value.
-    private _getSamplingFilter(samplingMode: number): number {
-        switch (samplingMode) {
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
-                return this._native.SAMPLER_BILINEAR;
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                return this._native.SAMPLER_TRILINEAR;
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
-                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                return this._native.SAMPLER_NEAREST;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                return this._native.SAMPLER_MINLINEAR_MAGPOINT_MIPPOINT;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
-            case Constants.TEXTURE_NEAREST_LINEAR:
-                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
-            case Constants.TEXTURE_NEAREST_NEAREST:
-                return this._native.SAMPLER_NEAREST;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPPOINT;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
-            case Constants.TEXTURE_LINEAR_LINEAR:
-                return this._native.SAMPLER_TRILINEAR;
-            case Constants.TEXTURE_LINEAR_NEAREST:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
-                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
-            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
-                return this._native.SAMPLER_TRILINEAR;
-            default:
-                throw new Error("Unexpected sampling mode: " + samplingMode + ".");
-        }
-    }
-
-    private _getNativeTextureFormat(format: number, type: number): number {
-        if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
-            return this._native.TEXTURE_FORMAT_RGBA8;
-        }
-        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
-            return this._native.TEXTURE_FORMAT_RGBA32F;
-        }
-        else {
-            throw new Error("Unexpected texture format or type: format " + format + ", type " + type + ".");
-        }
-    }
-
     public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): NativeTexture {
         let fullOptions = new RenderTargetCreationOptions();
 
@@ -1407,7 +1310,7 @@ export class NativeEngine extends Engine {
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         if (texture._webGLTexture) {
-            var filter = this._getSamplingFilter(samplingMode);
+            var filter = this._getNativeSamplingMode(samplingMode);
             this._native.setTextureSampling(texture._webGLTexture, filter);
         }
         texture.samplingMode = samplingMode;
@@ -1597,5 +1500,96 @@ export class NativeEngine extends Engine {
     /** @hidden */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
         throw new Error("_uploadArrayBufferViewToTexture not implemented.");
+    }
+
+    // JavaScript-to-Native conversion helper functions.
+
+    private _getNativeSamplingMode(samplingMode: number): number {
+        switch (samplingMode) {
+            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
+                return this._native.SAMPLER_BILINEAR;
+            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
+                return this._native.SAMPLER_TRILINEAR;
+            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
+                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                return this._native.SAMPLER_NEAREST;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                return this._native.SAMPLER_MINLINEAR_MAGPOINT_MIPPOINT;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
+            case Constants.TEXTURE_NEAREST_LINEAR:
+                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
+            case Constants.TEXTURE_NEAREST_NEAREST:
+                return this._native.SAMPLER_NEAREST;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPPOINT;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR:
+                return this._native.SAMPLER_TRILINEAR;
+            case Constants.TEXTURE_LINEAR_NEAREST:
+                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+                return this._native.SAMPLER_TRILINEAR;
+            default:
+                throw new Error("Unexpected sampling mode: " + samplingMode + ".");
+        }
+    }
+
+    private _getNativeTextureFormat(format: number, type: number): number {
+        if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
+            return this._native.TEXTURE_FORMAT_RGBA8;
+        }
+        else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
+            return this._native.TEXTURE_FORMAT_RGBA32F;
+        }
+        else {
+            throw new Error("Unexpected texture format or type: format " + format + ", type " + type + ".");
+        }
+    }
+
+    private _getNativeAlphaMode(mode: number): number {
+        switch (mode) {
+            case Constants.ALPHA_DISABLE:
+                return this._native.ALPHA_DISABLE;
+            case Constants.ALPHA_ADD:
+                return this._native.ALPHA_ADD;
+            case Constants.ALPHA_COMBINE:
+                return this._native.ALPHA_COMBINE;
+            case Constants.ALPHA_SUBTRACT:
+                return this._native.ALPHA_SUBTRACT;
+            case Constants.ALPHA_MULTIPLY:
+                return this._native.ALPHA_MULTIPLY;
+            case Constants.ALPHA_MAXIMIZED:
+                return this._native.ALPHA_MAXIMIZED;
+            case Constants.ALPHA_ONEONE:
+                return this._native.ALPHA_ONEONE;
+            case Constants.ALPHA_PREMULTIPLIED:
+                return this._native.ALPHA_PREMULTIPLIED;
+            case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
+                return this._native.ALPHA_PREMULTIPLIED_PORTERDUFF;
+            case Constants.ALPHA_INTERPOLATE:
+                return this._native.ALPHA_INTERPOLATE;
+            case Constants.ALPHA_SCREENMODE:
+                return this._native.ALPHA_SCREENMODE;
+            default:
+                throw new Error("Unexpected alpha mode: " + mode + ".");
+        }
+    }
+
+    private _getNativeAttribType(type: number): number {
+        switch (type) {
+            case VertexBuffer.UNSIGNED_BYTE:
+                return this._native.ATTRIB_TYPE_UINT8;
+            case VertexBuffer.SHORT:
+                return this._native.ATTRIB_TYPE_INT16;
+            case VertexBuffer.FLOAT:
+                return this._native.ATTRIB_TYPE_FLOAT;
+            default:
+                throw new Error("Unexpected attribute type: " + type + ".");
+        }
     }
 }
