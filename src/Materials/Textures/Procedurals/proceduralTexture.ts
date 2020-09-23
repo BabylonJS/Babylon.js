@@ -22,6 +22,7 @@ import { _TypeStore } from '../../../Misc/typeStore';
 import { NodeMaterial } from '../../Node/nodeMaterial';
 import { RenderTargetTextureSize } from '../../../Engines/Extensions/engine.renderTarget';
 import { EngineStore } from '../../../Engines/engineStore';
+import { Constants } from '../../../Engines/constants';
 
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
@@ -114,8 +115,9 @@ export class ProceduralTexture extends Texture {
      * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
      * @param generateMipMaps Define if the texture should creates mip maps or not
      * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
+     * @param textureType The FBO internal texture type
      */
-    constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false) {
+    constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false, textureType = Constants.TEXTURETYPE_INT) {
         super(null, scene, !generateMipMaps);
 
         scene = this.getScene() || EngineStore.LastCreatedScene!;
@@ -142,7 +144,7 @@ export class ProceduralTexture extends Texture {
             this.setFloat("face", 0);
         }
         else {
-            this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false });
+            this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps: generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: textureType });
         }
 
         // VBO
