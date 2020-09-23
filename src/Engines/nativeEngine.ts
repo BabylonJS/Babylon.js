@@ -52,7 +52,7 @@ interface INativeEngine {
     setState(culling: boolean, zOffset: number, reverseSide: boolean): void;
     setZOffset(zOffset: number): void;
     getZOffset(): number;
-    setDepthTest(enable: boolean): void;
+    setDepthTest(enable: number): void;
     getDepthWrite(): boolean;
     setDepthWrite(enable: boolean): void;
     setColorWrite(enable: boolean): void;
@@ -163,6 +163,19 @@ class NativeFilter {
     public static readonly MINLINEAR_MAGPOINT_MIPPOINT = 10;
 }
 
+// depth test values
+// Values match bgfx defines
+class DepthTest {
+    public static readonly DEPTH_TEST_LESS = 16;
+    public static readonly DEPTH_TEST_LEQUAL = 32;
+    public static readonly DEPTH_TEST_EQUAL = 48;
+    public static readonly DEPTH_TEST_GEQUAL = 64;
+    public static readonly DEPTH_TEST_GREATER = 80;
+    public static readonly DEPTH_TEST_NOTEQUAL = 96;
+    public static readonly DEPTH_TEST_NEVER = 112;
+    public static readonly DEPTH_TEST_ALWAYS = 128;
+}
+
 // these flags match bgfx.
 class NativeClearFlags
 {
@@ -205,6 +218,7 @@ export class NativeEngine extends Engine {
     /** Defines the invalid handle returned by bgfx when resource creation goes wrong */
     private readonly INVALID_HANDLE = 65535;
     private _boundBuffersVertexArray: any = null;
+    private _currentDepthTest: number = DepthTest.DEPTH_TEST_LEQUAL;
 
     public getHardwareScalingLevel(): number {
         return 1.0;
@@ -258,6 +272,20 @@ export class NativeEngine extends Engine {
         };
 
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
+
+        Tools.LoadScript = function (scriptUrl, onSuccess, onError, scriptId) {
+            Tools.LoadFile(scriptUrl, (data) => {
+                Function(data as string).apply(null);
+                if (onSuccess) {
+                    onSuccess();
+                }
+            }, undefined, undefined, false,
+            (request, exception) => {
+                if (onError) {
+                    onError("LoadScript Error", exception);
+                }
+            });
+        };
 
         // Wrappers
         if (typeof URL === "undefined") {
@@ -615,7 +643,7 @@ export class NativeEngine extends Engine {
      * @param enable defines the state to set
      */
     public setDepthBuffer(enable: boolean): void {
-        this._native.setDepthTest(enable);
+        this._native.setDepthTest(enable ? this._currentDepthTest : DepthTest.DEPTH_TEST_ALWAYS);
     }
 
     /**
@@ -624,6 +652,26 @@ export class NativeEngine extends Engine {
      */
     public getDepthWrite(): boolean {
         return this._native.getDepthWrite();
+    }
+
+    public setDepthFunctionToGreater(): void {
+        this._currentDepthTest = DepthTest.DEPTH_TEST_GREATER;
+        this._native.setDepthTest(this._currentDepthTest);
+    }
+
+    public setDepthFunctionToGreaterOrEqual(): void {
+        this._currentDepthTest = DepthTest.DEPTH_TEST_GEQUAL;
+        this._native.setDepthTest(this._currentDepthTest);
+    }
+
+    public setDepthFunctionToLess(): void {
+        this._currentDepthTest = DepthTest.DEPTH_TEST_LESS;
+        this._native.setDepthTest(this._currentDepthTest);
+    }
+
+    public setDepthFunctionToLessOrEqual(): void {
+        this._currentDepthTest = DepthTest.DEPTH_TEST_LEQUAL;
+        this._native.setDepthTest(this._currentDepthTest);
     }
 
     /**
