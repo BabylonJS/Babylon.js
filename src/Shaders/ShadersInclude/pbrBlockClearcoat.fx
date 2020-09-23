@@ -128,7 +128,11 @@ struct clearcoatOutParams
         // clearCoatRoughness = mix(0.089, 0.6, clearCoatRoughness);
 
         // Remap F0 to account for the change of interface within the material.
-        vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
+        #ifdef CLEARCOAT_REMAP_F0
+            vec3 specularEnvironmentR0Updated = getR0RemappedForClearCoat(specularEnvironmentR0);
+        #else
+            vec3 specularEnvironmentR0Updated = specularEnvironmentR0;
+        #endif
         outParams.specularEnvironmentR0 = mix(specularEnvironmentR0, specularEnvironmentR0Updated, clearCoatIntensity);
 
         // Needs to use the geometric normal before bump for this.
