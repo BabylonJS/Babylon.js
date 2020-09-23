@@ -10699,6 +10699,14 @@ var SelectionPanel = /** @class */ (function (_super) {
     SelectionPanel.prototype._getTypeName = function () {
         return "SelectionPanel";
     };
+    Object.defineProperty(SelectionPanel.prototype, "panel", {
+        /** Gets the (stack) panel of the SelectionPanel  */
+        get: function () {
+            return this._panel;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(SelectionPanel.prototype, "headerColor", {
         /** Gets or sets the headerColor */
         get: function () {

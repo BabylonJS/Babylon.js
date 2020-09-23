@@ -23,19 +23,4 @@ export class SSAO2Configuration implements PrePassEffectConfiguration {
     public readonly texturesRequired: number[] = [
         Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE
     ];
-
-    /**
-     * Builds a ssao2 configuration object
-     * @param scene The scene
-     */
-    constructor() {
-
-    }
-
-    /**
-     * Disposes the configuration
-     */
-    public dispose() {
-        // pass
-    }
 }

@@ -43,6 +43,9 @@ export interface ISkeletonViewerDisplayOptions{
    /** Ratio for the Sphere Size */
    sphereFactor? : number;
 
+   /** Whether a spur should attach its far end to the child bone position */
+   spurFollowsChild? : boolean;
+
    /** Whether to show local axes or not  */
    showLocalAxes? : boolean;
 
