@@ -161,7 +161,12 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         };
 
         this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
-        element.addEventListener("mousemove", this._onMouseMove, false);
+        if (document.onpointermove === undefined){
+            element.addEventListener("mousemove", this._onMouseMove, false);
+        }
+        else {
+            element.addEventListener("pointermove", this._onMouseMove, false);
+        }
 
         element.addEventListener("contextmenu",
             <EventListener>this.onContextMenu.bind(this), false);
@@ -184,7 +189,12 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             this.camera.getScene().onPointerObservable.remove(this._observer);
 
             if (this._onMouseMove) {
-                element.removeEventListener("mousemove", this._onMouseMove);
+                if (document.onpointermove === undefined){
+                    element.removeEventListener("mousemove", this._onMouseMove);
+                }
+                else {
+                    element.removeEventListener("pointermove", this._onMouseMove);
+                }
             }
 
             if (this.onContextMenu) {
