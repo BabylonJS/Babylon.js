@@ -325,14 +325,6 @@ export class PrePassRenderer {
             const gl = this._scene.getEngine()._gl;
             attachments[0] = gl.NONE;
 
-            // Depth + normal is always index 0 in geometry buffer
-            let index = this.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
-            if (index !== -1) {
-                this._geometryBuffer.linkInternalTexture(this.prePassRT.getInternalTexture()!);
-            } else {
-                this._geometryBuffer.linkInternalTexture(this.prePassRT.getInternalTexture()!);
-            }
-
             const matches = [
                 {
                     prePassConstant: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
@@ -527,6 +519,7 @@ export class PrePassRenderer {
 
         if (!this.enabled) {
             // Prepass disabled, we render only on 1 color attachment
+            this._engine.restoreDefaultFramebuffer();
             this._engine.bindAttachments([this._engine._gl.BACK]);
         }
     }

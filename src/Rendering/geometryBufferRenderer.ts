@@ -95,7 +95,6 @@ export class GeometryBufferRenderer {
     protected _effect: Effect;
     protected _cachedDefines: string;
 
-
     /**
      * @hidden
      * Sets up internal structures to share outputs with PrePassRenderer
@@ -167,7 +166,7 @@ export class GeometryBufferRenderer {
     /**
      * @hidden
      * Replaces the first texture which is hard coded as a depth texture in the geometry buffer
-     * Useful when linking textures of the prepass renderer   
+     * Useful when linking textures of the prepass renderer
      */
     public linkInternalTexture(internalTexture: InternalTexture) {
         this._multiRenderTarget._texture = internalTexture;
@@ -225,7 +224,7 @@ export class GeometryBufferRenderer {
         // PrePass handles index and texture links
         if (!this._linkedWithPrePass) {
             this.dispose();
-            this._createRenderTargets();            
+            this._createRenderTargets();
         }
     }
 
@@ -248,7 +247,7 @@ export class GeometryBufferRenderer {
 
         if (!this._linkedWithPrePass) {
             this.dispose();
-            this._createRenderTargets();            
+            this._createRenderTargets();
         }
     }
 
@@ -267,7 +266,7 @@ export class GeometryBufferRenderer {
 
         if (!this._linkedWithPrePass) {
             this.dispose();
-            this._createRenderTargets();            
+            this._createRenderTargets();
         }
     }
 
@@ -363,7 +362,10 @@ export class GeometryBufferRenderer {
         // PrePass
         if (this._linkedWithPrePass) {
             defines.push("#define PREPASS");
-            defines.push("#define DEPTHNORMAL_INDEX " + this._depthNormalIndex);
+            if (this._depthNormalIndex !== -1) {
+                defines.push("#define DEPTHNORMAL_INDEX " + this._depthNormalIndex);
+                defines.push("#define PREPASS_DEPTHNORMAL");
+            }
         }
 
         // Buffers
@@ -499,7 +501,7 @@ export class GeometryBufferRenderer {
             count++;
         }
 
-        return count
+        return count;
     }
 
     protected _createRenderTargets(): void {
