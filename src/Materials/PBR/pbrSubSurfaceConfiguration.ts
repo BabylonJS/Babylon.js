@@ -253,6 +253,7 @@ export class PBRSubSurfaceConfiguration {
     }
     /** @hidden */
     public _markScenePrePassDirty(): void {
+        this._internalMarkAllSubMeshesAsTexturesDirty();
         this._internalMarkScenePrePassDirty();
     }
 

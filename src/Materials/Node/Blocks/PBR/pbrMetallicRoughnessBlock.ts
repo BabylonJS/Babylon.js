@@ -437,7 +437,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
      * Gets the ambient occlusion object parameters
      */
-    public get ambientOcclusion(): NodeMaterialConnectionPoint {
+    public get ambientOcc(): NodeMaterialConnectionPoint {
         return this._inputs[8];
     }
 
@@ -917,7 +917,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("depthPrePass", comments);
 
         // _____________________________ AO  _______________________________
-        const aoBlock = this.ambientOcclusion.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
+        const aoBlock = this.ambientOcc.connectedPoint?.ownerBlock as Nullable<AmbientOcclusionBlock>;
 
         state.compilationString += AmbientOcclusionBlock.GetCode(aoBlock);
 
