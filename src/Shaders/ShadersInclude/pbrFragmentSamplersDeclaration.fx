@@ -6,20 +6,7 @@
     #else
         varying vec2 vAlbedoUV;
     #endif
-
     uniform sampler2D albedoSampler;
-#endif
-
-#ifdef REFLECTIVITY
-    #if REFLECTIVITYDIRECTUV == 1
-        #define vReflectivityUV vMainUV1
-    #elif REFLECTIVITYDIRECTUV == 2
-        #define vReflectivityUV vMainUV2
-    #else
-        varying vec2 vReflectivityUV;
-    #endif
-
-    uniform sampler2D reflectivitySampler;
 #endif
 
 #ifdef AMBIENT
@@ -30,20 +17,7 @@
     #else
         varying vec2 vAmbientUV;
     #endif
-
     uniform sampler2D ambientSampler;
-#endif
-
-#ifdef EMISSIVE
-    #if EMISSIVEDIRECTUV == 1
-        #define vEmissiveUV vMainUV1
-    #elif EMISSIVEDIRECTUV == 2
-        #define vEmissiveUV vMainUV2
-    #else
-        varying vec2 vEmissiveUV;
-    #endif
-
-    uniform sampler2D emissiveSampler;
 #endif
 
 #ifdef OPACITY
@@ -57,6 +31,17 @@
     uniform sampler2D opacitySampler;
 #endif
 
+#ifdef EMISSIVE
+    #if EMISSIVEDIRECTUV == 1
+        #define vEmissiveUV vMainUV1
+    #elif EMISSIVEDIRECTUV == 2
+        #define vEmissiveUV vMainUV2
+    #else
+        varying vec2 vEmissiveUV;
+    #endif
+    uniform sampler2D emissiveSampler;
+#endif
+
 #ifdef LIGHTMAP
     #if LIGHTMAPDIRECTUV == 1
         #define vLightmapUV vMainUV1
@@ -66,6 +51,17 @@
         varying vec2 vLightmapUV;
     #endif
     uniform sampler2D lightmapSampler;
+#endif
+
+#ifdef REFLECTIVITY
+    #if REFLECTIVITYDIRECTUV == 1
+        #define vReflectivityUV vMainUV1
+    #elif REFLECTIVITYDIRECTUV == 2
+        #define vReflectivityUV vMainUV2
+    #else
+        varying vec2 vReflectivityUV;
+    #endif
+    uniform sampler2D reflectivitySampler;
 #endif
 
 #ifdef MICROSURFACEMAP
