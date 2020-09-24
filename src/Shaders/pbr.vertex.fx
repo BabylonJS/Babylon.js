@@ -38,42 +38,9 @@ attribute vec3 position;
 #include<helperFunctions>
 #include<bonesDeclaration>
 
-// Output
-varying vec3 vPositionW;
-
-#ifdef NORMAL
-    varying vec3 vNormalW;
-
-    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        varying vec3 vEnvironmentIrradiance;
-        
-        #include<harmonicsFunctions>
-    #endif
-#endif
-
-#ifdef VERTEXCOLOR
-    varying vec4 vColor;
-#endif
-
-#ifdef REFLECTIONMAP_SKYBOX
-    varying vec3 vPositionUVW;
-#endif
-
-#if DEBUGMODE > 0
-    varying vec4 vClipSpacePosition;
-#endif
-
-#ifdef MAINUV1
-    varying vec2 vMainUV1;
-#endif
-
-#ifdef MAINUV2
-    varying vec2 vMainUV2;
-#endif
-
-#ifdef PREPASS
-varying vec3 vViewPos;
-#endif
+// Uniforms
+#include<instancesDeclaration>
+#include<prePassVertexDeclaration>
 
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0
 varying vec2 vAlbedoUV;
@@ -183,13 +150,19 @@ void main(void) {
 #define CUSTOM_VERTEX_UPDATE_NORMAL
 
 #include<instancesVertex>
+
+#if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
+    // Compute velocity before bones computation
+    vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+    vPreviousPosition = previousViewProjection * previousWorld * vec4(positionUpdated, 1.0);
+#endif
+
 #include<bonesVertex>
 
     vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
     vPositionW = vec3(worldPos);
-#ifdef PREPASS
-    vViewPos = (view * worldPos).rgb;
-#endif
+
+#include<prePassVertex>
 
 #ifdef NORMAL
     mat3 normalWorld = mat3(finalWorld);

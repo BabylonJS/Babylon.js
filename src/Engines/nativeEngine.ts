@@ -755,6 +755,20 @@ export class NativeEngine extends Engine {
 
         Tools.Log("Babylon Native (v" + Engine.Version + ") launched");
 
+        Tools.LoadScript = function (scriptUrl, onSuccess, onError, scriptId) {
+            Tools.LoadFile(scriptUrl, (data) => {
+                Function(data as string).apply(null);
+                if (onSuccess) {
+                    onSuccess();
+                }
+            }, undefined, undefined, false,
+            (request, exception) => {
+                if (onError) {
+                    onError("LoadScript Error", exception);
+                }
+            });
+        };
+
         // Wrappers
         if (typeof URL === "undefined") {
             (window.URL as any) = {
