@@ -32,8 +32,6 @@ import { WebGPUHardwareTexture } from './WebGPU/webgpuHardwareTexture';
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 
-const makeDynamicTextureUpdateSynchronous = true;
-
 /**
  * Options to load the associated Glslang library
  */
@@ -1465,29 +1463,14 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        if (makeDynamicTextureUpdateSynchronous) {
-            this._promisesFrame.push(new Promise((resolve) => {
-                createImageBitmap(canvas).then((bitmap) => {
-                    this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder).then(() => {
-                        if (texture.generateMipMaps) {
-                            this._generateMipmaps(texture, gpuTexture);
-                        }
-                        resolve();
-                    });
+        createImageBitmap(canvas).then((bitmap) => {
+            this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
+            if (texture.generateMipMaps) {
+                this._generateMipmaps(texture, gpuTexture);
+            }
 
-                    texture.isReady = true;
-                });
-            }));
-        } else {
-            createImageBitmap(canvas).then((bitmap) => {
-                this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
-                if (texture.generateMipMaps) {
-                    this._generateMipmaps(texture, gpuTexture);
-                }
-
-                texture.isReady = true;
-            });
-        }
+            texture.isReady = true;
+        });
     }
 
     public updateTextureData(texture: InternalTexture, imageData: ArrayBufferView, xOffset: number, yOffset: number, width: number, height: number, faceIndex: number = 0, lod: number = 0): void {
@@ -1520,11 +1503,10 @@ export class WebGPUEngine extends Engine {
         }
 
         createImageBitmap(video).then((bitmap) => {
-            this._textureHelper.updateTexture(bitmap, gpuTexture, texture.width, texture.height, 0, 0, !invertY, false, 0, 0, this._uploadEncoder).then(() => {
-                if (texture.generateMipMaps) {
-                    this._generateMipmaps(texture, gpuTexture);
-                }
-            });
+            this._textureHelper.updateTexture(bitmap, gpuTexture, texture.width, texture.height, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
+            if (texture.generateMipMaps) {
+                this._generateMipmaps(texture, gpuTexture);
+            }
 
             texture.isReady = true;
         }).catch((msg) => {
@@ -1717,33 +1699,23 @@ export class WebGPUEngine extends Engine {
     public endFrame() {
         this._endRenderPass();
 
-        const submitQueue = () => {
-            this._commandBuffers[0] = this._uploadEncoder.finish();
-            this._commandBuffers[1] = this._renderEncoder.finish();
+        this._commandBuffers[0] = this._uploadEncoder.finish();
+        this._commandBuffers[1] = this._renderEncoder.finish();
 
-            this._device.defaultQueue.submit(this._commandBuffers);
+        this._device.defaultQueue.submit(this._commandBuffers);
 
-            const numPromises = this._promisesFrame.length;
+        const numPromises = this._promisesFrame.length;
 
-            this._promisesFrame.length = 0;
+        this._promisesFrame.length = 0;
 
-            this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
-            this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
+        this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
+        this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
 
-            super.endFrame();
+        super.endFrame();
 
-            // TODO WEBGPU debug only code
-            if (!(this as any)._count || (this as any)._count < 20) {
-                console.log("end frame. There was " + numPromises + " promises to wait on.");
-            }
-        };
-
-        if (makeDynamicTextureUpdateSynchronous) {
-            Promise.all(this._promisesFrame).then(() => {
-                submitQueue();
-            });
-        } else {
-            submitQueue();
+        // TODO WEBGPU debug only code
+        if (!(this as any)._count || (this as any)._count < 20) {
+            console.log("end frame", (this as any)._count, ". There was " + numPromises + " promises to wait on.");
         }
     }
 
