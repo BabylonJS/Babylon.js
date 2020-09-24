@@ -19,7 +19,6 @@
 // SOFTWARE.
 import * as WebGPUConstants from './webgpuConstants';
 import { Scalar } from '../../Maths/math.scalar';
-import { DataBuffer } from '../../Meshes/dataBuffer';
 import { WebGPUBufferManager } from './webgpuBufferManager';
 import { Nullable } from '../../types';
 
@@ -115,7 +114,7 @@ export class WebGPUTextureHelper {
             size: textureSize,
             dimension: WebGPUConstants.TextureDimension.E2d,
             format,
-            usage:  WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled | additionalUsages,
+            usage:  WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled | additionalUsages,
             sampleCount,
             mipLevelCount
         });
@@ -303,7 +302,7 @@ export class WebGPUTextureHelper {
     }
 
     public updateTexture(imageBitmap: ImageBitmap, gpuTexture: GPUTexture, width: number, height: number, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
-        commandEncoder?: GPUCommandEncoder): Promise<void>
+        commandEncoder?: GPUCommandEncoder): void
     {
         const textureView: GPUTextureCopyView = {
             texture: gpuTexture,
@@ -321,22 +320,16 @@ export class WebGPUTextureHelper {
             depth: 1
         };
 
-        let promise: Promise<ImageBitmap>;
-
         if (invertY || premultiplyAlpha) {
-            promise = createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" });
-        } else {
-            promise = Promise.resolve(imageBitmap);
-        }
-
-        return new Promise((resolve) => {
-            promise.then((imageBitmap) => {
+            createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
                 this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureView, textureExtent);
-                resolve();
             });
-        });
+        } else {
+            this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureView, textureExtent);
+        }
     }
 
+    // TODO WEBGPU remove this function when not needed anymore for testing
     public updateTextureTest(imageBitmap: ImageBitmap | HTMLCanvasElement, gpuTexture: GPUTexture, width: number, height: number, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void
     {
@@ -354,6 +347,8 @@ export class WebGPUTextureHelper {
             if (useOwnCommandEncoder) {
                 commandEncoder = this._device.createCommandEncoder({});
             }
+
+            let gpuBuffer;
 
             const bytesPerRow = Math.ceil(width * 4 / 256) * 256;
 
@@ -408,9 +403,27 @@ export class WebGPUTextureHelper {
                     const ctx = canvas.getContext('2d')!;
                     const data = ctx.getImageData(0, 0, width, height).data;
                     (this as any).data[offsetX] = data;*/
+
                     //this._device.defaultQueue.writeTexture({ texture: gpuTexture }, (this as any).data[offsetX], { bytesPerRow }, (this as any).textureExtent[offsetX]);
-                    this._bufferManager.setSubData((this as any).dataBuffer[offsetX], 0, (this as any).data[offsetX]);
-                    commandEncoder!.copyBufferToTexture((this as any).bufferView[offsetX], (this as any).textureView[offsetX], (this as any).textureExtent[offsetX]);
+
+                    //this._bufferManager.setSubData((this as any).dataBuffer[offsetX], 0, (this as any).data[offsetX]);
+                    //commandEncoder!.copyBufferToTexture((this as any).bufferView[offsetX], (this as any).textureView[offsetX], (this as any).textureExtent[offsetX]);
+
+                    gpuBuffer = this._device.createBuffer({
+                        mappedAtCreation: true,
+                        size: (this as any).data[offsetX].byteLength,
+                        usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC
+                      });
+                    const arrayBuffer = gpuBuffer.getMappedRange();
+                    new Uint8Array(arrayBuffer).set((this as any).data[offsetX]);
+                    gpuBuffer.unmap();
+
+                    commandEncoder!.copyBufferToTexture({
+                        buffer: gpuBuffer,
+                        bytesPerRow: bytesPerRow,
+                        rowsPerImage: height,
+                        offset: 0,
+                    }, (this as any).textureView[offsetX], (this as any).textureExtent[offsetX]);
                 } else {
                     this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap: imageBitmap as ImageBitmap }, (this as any).textureView[offsetX], (this as any).textureExtent[offsetX]);
                 }
@@ -419,6 +432,9 @@ export class WebGPUTextureHelper {
             if (useOwnCommandEncoder) {
                 this._device.defaultQueue.submit([commandEncoder!.finish()]);
                 commandEncoder = null as any;
+                if (gpuBuffer) {
+                    gpuBuffer.destroy();
+                }
             }
         //});
     }
