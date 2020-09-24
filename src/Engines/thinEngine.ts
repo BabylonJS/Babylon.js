@@ -4391,7 +4391,7 @@ export class ThinEngine {
      * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
      * @returns a Uint8Array containing RGBA colors
      */
-    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Uint8Array {
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Promise<Uint8Array> | Uint8Array {
         const numChannels = hasAlpha ? 4 : 3;
         const format = hasAlpha ? this._gl.RGBA : this._gl.RGB;
         const data = new Uint8Array(height * width * numChannels);
