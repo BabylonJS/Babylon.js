@@ -574,44 +574,56 @@ export class Tools {
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      */
-    public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
+    public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
         // Read the contents of the framebuffer
         var numberOfChannelsByLine = width * 4;
         var halfHeight = height / 2;
 
-        //Reading datas from WebGL
-        var data = engine.readPixels(0, 0, width, height);
+        engine.onScreenshotObservable.addOnce((data) => {
+            // TODO WEBGPU Would be better to test ThinEngine.Features.framebuffersHaveYTopToBottom than engine.isWebGPU...
+            if (!engine.isWebGPU) {
+                // To flip image on Y axis.
+                for (var i = 0; i < halfHeight; i++) {
+                    for (var j = 0; j < numberOfChannelsByLine; j++) {
+                        var currentCell = j + i * numberOfChannelsByLine;
+                        var targetLine = height - i - 1;
+                        var targetCell = j + targetLine * numberOfChannelsByLine;
 
-        //To flip image on Y axis.
-        for (var i = 0; i < halfHeight; i++) {
-            for (var j = 0; j < numberOfChannelsByLine; j++) {
-                var currentCell = j + i * numberOfChannelsByLine;
-                var targetLine = height - i - 1;
-                var targetCell = j + targetLine * numberOfChannelsByLine;
-
-                var temp = data[currentCell];
-                data[currentCell] = data[targetCell];
-                data[targetCell] = temp;
+                        var temp = data[currentCell];
+                        data[currentCell] = data[targetCell];
+                        data[targetCell] = temp;
+                    }
+                }
+            } else {
+                // TODO WEBGPU Add a feature in ThinEngine.Features for that?
+                // flip red and blue channels as swap chain is in BGRA format
+                for (var i = 0; i < width * height * 4; i += 4) {
+                    var temp = data[i + 0];
+                    data[i + 0] = data[i + 2];
+                    data[i + 2] = temp;
+                }
             }
-        }
 
-        // Create a 2D canvas to store the result
-        if (!Tools._ScreenshotCanvas) {
-            Tools._ScreenshotCanvas = document.createElement('canvas');
-        }
-        Tools._ScreenshotCanvas.width = width;
-        Tools._ScreenshotCanvas.height = height;
-        var context = Tools._ScreenshotCanvas.getContext('2d');
+            // Create a 2D canvas to store the result
+            if (!Tools._ScreenshotCanvas) {
+                Tools._ScreenshotCanvas = document.createElement('canvas');
+            }
+            Tools._ScreenshotCanvas.width = width;
+            Tools._ScreenshotCanvas.height = height;
+            var context = Tools._ScreenshotCanvas.getContext('2d');
 
-        if (context) {
-            // Copy the pixels to a 2D canvas
-            var imageData = context.createImageData(width, height);
-            var castData = <any>(imageData.data);
-            castData.set(data);
-            context.putImageData(imageData, 0, 0);
+            if (context) {
+                // Copy the pixels to a 2D canvas
+                var imageData = context.createImageData(width, height);
+                var castData = <any>(imageData.data);
+                castData.set(data);
+                context.putImageData(imageData, 0, 0);
 
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName);
-        }
+                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName);
+            }
+        }, {
+            width, height
+        });
     }
 
     /**
