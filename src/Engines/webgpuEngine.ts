@@ -353,6 +353,10 @@ export class WebGPUEngine extends Engine {
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.OutputAttachment | WebGPUConstants.TextureUsage.CopySrc,
         });
+        // TODO WEBGPU remove debug code
+        this._context.getSwapChainPreferredFormat(this._device).then((format) => {
+            console.log("Swap chain preferred format:", format);
+        });
     }
 
     // Set default values as WebGL with depth and stencil attachment for the broadest Compat.
@@ -380,7 +384,7 @@ export class WebGPUEngine extends Engine {
             this._mainColorAttachments = [{
                 attachment: this._mainTexture.createView(),
                 loadValue: new Color4(0, 0, 0, 1),
-                storeOp: WebGPUConstants.StoreOp.Store
+                storeOp: WebGPUConstants.StoreOp.Clear // Better than "Store" as we don't need to reuse the content of the multisampled texture
             }];
         }
         else {
@@ -1453,14 +1457,14 @@ export class WebGPUEngine extends Engine {
                 });
             }*/
             //if ((this as any)._bitmap) {
-                createImageBitmap(canvas).then((bitmap: ImageBitmap) => {
+                /*createImageBitmap(canvas).then((bitmap: ImageBitmap) => {
                     this._textureHelper.updateTextureTest(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, swap, 0, this._uploadEncoder);
                     texture.isReady = true;
-                });
+                });*/
             //}
 
-            //this._textureHelper.updateTextureTest(canvas as HTMLCanvasElement, gpuTexture, width, height, 0, 0, invertY, premulAlpha, swap, 0, this._uploadEncoder);
-            //texture.isReady = true;
+            this._textureHelper.updateTextureTest(canvas as HTMLCanvasElement, gpuTexture, width, height, 0, 0, invertY, premulAlpha, swap, 0/*, this._uploadEncoder*/);
+            texture.isReady = true;
             return;
         }
 
@@ -1483,6 +1487,7 @@ export class WebGPUEngine extends Engine {
 
         const imgData = new ImageData(new Uint8ClampedArray(imageData.buffer), width, height);
 
+        // TODO WEBGPU directly pass the Uint8ClampedArray
         createImageBitmap(imgData).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
         });
