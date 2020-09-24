@@ -135,7 +135,6 @@ export class WebGPUEngine extends Engine {
     private _mainPassSampleCount: number;
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
-    private _promisesFrame: Promise<any>[] = []; // TODO WEBGPU should we keep that?
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
@@ -1743,10 +1742,6 @@ export class WebGPUEngine extends Engine {
 
         this._device.defaultQueue.submit(this._commandBuffers);
 
-        const numPromises = this._promisesFrame.length;
-
-        this._promisesFrame.length = 0;
-
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
 
@@ -1754,7 +1749,7 @@ export class WebGPUEngine extends Engine {
 
         // TODO WEBGPU debug only code
         if (!(this as any)._count || (this as any)._count < 20) {
-            console.log("end frame", (this as any)._count, ". There was " + numPromises + " promises to wait on.");
+            console.log("end frame", (this as any)._count);
         }
     }
 
