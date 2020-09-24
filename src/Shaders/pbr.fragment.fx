@@ -24,7 +24,7 @@ precision highp float;
 // Declaration
 #include<__decl__pbrFragment>
 
-// TODO. WEBGPU. Probably create a camera ubo
+// TODO WEBGPU Probably create a camera ubo
 #define vEyePosition viewPosition
 
 #include<pbrFragmentExtraDeclaration>

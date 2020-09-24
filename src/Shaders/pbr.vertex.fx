@@ -6,40 +6,40 @@
 
 // Attributes
 attribute vec3 position;
-// #endif
-
 #ifdef NORMAL
-    attribute vec3 normal;
+attribute vec3 normal;
 #endif
-
 #ifdef TANGENT
-    attribute vec4 tangent;
+attribute vec4 tangent;
 #endif
-
 #ifdef UV1
-    attribute vec2 uv;
+attribute vec2 uv;
 #endif
-
 #ifdef UV2
-    attribute vec2 uv2;
+attribute vec2 uv2;
 #endif
-
+#ifdef MAINUV1
+varying vec2 vMainUV1;
+#endif
+#ifdef MAINUV2
+varying vec2 vMainUV2; 
+#endif 
 #ifdef VERTEXCOLOR
-    attribute vec4 color;
-#endif
-
-#ifdef INSTANCES
-    attribute vec4 world0;
-    attribute vec4 world1;
-    attribute vec4 world2;
-    attribute vec4 world3;
+attribute vec4 color;
 #endif
 
 #include<helperFunctions>
 #include<bonesDeclaration>
 
-// Uniforms
-#include<instancesDeclaration>
+// TODO WEBGPU faut-il remettre l'include et supprimer la déclaration de la world matrix ? Ca implique de passer par l'ubo du mesh aussi pour les autres types de material
+// #include<instancesDeclaration>
+#ifdef INSTANCES
+	attribute vec4 world0;
+	attribute vec4 world1;
+	attribute vec4 world2;
+	attribute vec4 world3;
+#endif
+
 #include<prePassVertexDeclaration>
 
 #if defined(ALBEDO) && ALBEDODIRECTUV == 0
@@ -114,14 +114,41 @@ varying vec2 vBumpUV;
     #endif
 #endif
 
+// Output
+varying vec3 vPositionW;
+#if DEBUGMODE > 0
+    varying vec4 vClipSpacePosition;
+#endif
+#ifdef NORMAL
+    varying vec3 vNormalW;
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
+        varying vec3 vEnvironmentIrradiance;
+        
+        #include<harmonicsFunctions>
+    #endif
+#endif
+
+#ifdef VERTEXCOLOR
+varying vec4 vColor;
+#endif
+
 #include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
+
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
-#include<logDepthDeclaration>
 
+#ifdef REFLECTIONMAP_SKYBOX
+varying vec3 vPositionUVW;
+#endif
+
+#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+varying vec3 vDirectionW;
+#endif
+
+#include<logDepthDeclaration>
 #define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {
