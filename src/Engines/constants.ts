@@ -284,9 +284,13 @@ export class Constants {
      */
     public static readonly MATERIAL_MiscDirtyFlag = 16;
     /**
+     * The dirty prepass flag value
+     */
+    public static readonly MATERIAL_PrePassDirtyFlag = 32;
+    /**
      * The all dirty flag value
      */
-    public static readonly MATERIAL_AllDirtyFlag = 31;
+    public static readonly MATERIAL_AllDirtyFlag = 63;
 
     /**
      * Returns the triangle fill mode

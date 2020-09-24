@@ -23,7 +23,7 @@ export interface PrePassEffectConfiguration {
     /**
      * Disposes the effect configuration
      */
-    dispose(): void;
+    dispose?: () => void;
     /**
      * Creates the associated post process
      */

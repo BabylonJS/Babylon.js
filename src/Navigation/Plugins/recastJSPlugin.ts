@@ -92,7 +92,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                     continue;
                 }
 
-                const wm = mesh.computeWorldMatrix(false);
+                const wm = mesh.computeWorldMatrix(true);
 
                 for (tri = 0; tri < meshIndices.length; tri++) {
                     indices.push(meshIndices[tri] + offset);

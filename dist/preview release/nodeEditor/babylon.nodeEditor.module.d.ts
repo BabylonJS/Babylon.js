@@ -361,6 +361,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _expandRight;
         private _expandBottom;
         dispose(): void;
+        private serializePortData;
         serialize(): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
@@ -399,6 +400,8 @@ declare module "babylonjs-node-editor/diagram/nodePort" {
         hasLabel(): boolean;
         get exposedOnFrame(): boolean;
         set exposedOnFrame(value: boolean);
+        get exposedPortPosition(): number;
+        set exposedPortPosition(value: number);
         private _isConnectedToNodeOutsideOfFrame;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
@@ -2173,6 +2176,7 @@ declare module NODEEDITOR {
         private _expandRight;
         private _expandBottom;
         dispose(): void;
+        private serializePortData;
         serialize(): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
@@ -2200,6 +2204,8 @@ declare module NODEEDITOR {
         hasLabel(): boolean;
         get exposedOnFrame(): boolean;
         set exposedOnFrame(value: boolean);
+        get exposedPortPosition(): number;
+        set exposedPortPosition(value: number);
         private _isConnectedToNodeOutsideOfFrame;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
