@@ -196,6 +196,7 @@ export class WebGPUEngine extends Engine {
 
         ThinEngine.Features.forceBitmapOverHTMLImageElement = true;
         ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = false; // TODO WEBGPU should be true but needs RTT support first for env texture to be generated correctly with this flag on
+        ThinEngine.Features.framebuffersHaveYTopToBottom = true;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
