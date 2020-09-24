@@ -322,6 +322,7 @@
 - Fix gltf2 Morph Target export code style, add additional test case for non-animation group created morph targets ([drigax](https://github.com/drigax))
 - Fix "Uncaught ReferenceError: name is not defined" ([outermeasure](https://github.com/outermeasure))
 - Fix wrong winding when applying a transform matrix on VertexData ([Popov72](https://github.com/Popov72))
+- Fix exporting vertex color of mesh with `StandardMaterial` when exporting to glTF ([Drigax](https://github.com/drigax))
 
 ## Breaking changes
 - `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))
