@@ -527,12 +527,6 @@ export class ThinEngine {
     }
 
     /**
-     * Observable raised when a screenshot has been taken
-     * Note that a screenshot will be taken only if the observable is not empty!
-     */
-    public onScreenshotObservable = new Observable<Uint8Array>();
-
-    /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which alreay used the WebGL context
      * @param antialias defines enable antialiasing (default: false)
@@ -1333,31 +1327,6 @@ export class ThinEngine {
         // Force a flush in case we are using a bad OS.
         if (this._badOS) {
             this.flushFramebuffer();
-        }
-
-        if (this.onScreenshotObservable.hasObservers()) {
-            const observers = this.onScreenshotObservable.observers;
-            for (const observer of observers) {
-                let width: Nullable<number> = observer.customData?.width,
-                    height: Nullable<number> = observer.customData?.height;
-
-                if (width === null) {
-                    width = this.getRenderWidth();
-                }
-                if (height === null) {
-                    height = this.getRenderHeight();
-                }
-
-                let data = this.readPixels(0, 0, width, height);
-
-                if ((data as Uint8Array).byteLength !== undefined) {
-                    this.onScreenshotObservable.notifyObserver(observer, data as Uint8Array);
-                } else {
-                    (data as Promise<Uint8Array>).then((data) => {
-                        this.onScreenshotObservable.notifyObserver(observer, data);
-                    });
-                }
-            }
         }
     }
 

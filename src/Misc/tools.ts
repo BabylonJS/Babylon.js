@@ -579,7 +579,15 @@ export class Tools {
         var numberOfChannelsByLine = width * 4;
         var halfHeight = height / 2;
 
-        engine.onScreenshotObservable.addOnce((data) => {
+        engine.onEndFrameObservable.addOnce(async () => {
+            let data = engine.readPixels(0, 0, width, height);
+
+            if ((data as Uint8Array).byteLength === undefined) {
+                data = await data;
+            }
+
+            data = data as Uint8Array;
+
             // TODO WEBGPU Would be better to test ThinEngine.Features.framebuffersHaveYTopToBottom than engine.isWebGPU...
             if (!engine.isWebGPU) {
                 // To flip image on Y axis.
@@ -621,8 +629,6 @@ export class Tools {
 
                 Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName);
             }
-        }, {
-            width, height
         });
     }
 
