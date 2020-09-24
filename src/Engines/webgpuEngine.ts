@@ -131,6 +131,7 @@ export class WebGPUEngine extends Engine {
     private _device: GPUDevice;
     private _context: GPUCanvasContext;
     private _swapChain: GPUSwapChain;
+    private _swapChainTexture: GPUTexture;
     private _mainPassSampleCount: number;
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
@@ -1571,6 +1572,38 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.updateTexture(bitmap, gpuTexture, width, height, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
+    public readPixels(x: number, y: number, width: number, height: number, hasAlpha = true): Promise<Uint8Array> | Uint8Array {
+        const numChannels = 4; // no RGB format in WebGPU
+        const size = height * width * numChannels;
+
+        const buffer = this._bufferManager.createRawBuffer(size, GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST);
+
+        const commandEncoder = this._device.createCommandEncoder({});
+
+        commandEncoder.copyTextureToBuffer({
+            texture: this._swapChainTexture,
+            mipLevel: 0,
+            origin: {
+                x,
+                y,
+                z: 0
+            }
+        }, {
+            buffer: buffer,
+            offset: 0,
+            bytesPerRow: width * numChannels,
+            rowsPerImage: height
+        }, {
+            width,
+            height,
+            depth: 1
+        });
+
+        this._device.defaultQueue.submit([commandEncoder!.finish()]);
+
+        return this._bufferManager.readDataFromBuffer(buffer, size);
+    }
+
     /** @hidden */
     public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
         console.warn("_readTexturePixels not implemented yet in WebGPU");
@@ -1734,12 +1767,14 @@ export class WebGPUEngine extends Engine {
             this._endRenderPass();
         }
 
+        this._swapChainTexture = this._swapChain.getCurrentTexture();
+
         // Resolve in case of MSAA
         if (this._options.antialiasing) {
-            this._mainColorAttachments[0].resolveTarget = this._swapChain.getCurrentTexture().createView();
+            this._mainColorAttachments[0].resolveTarget = this._swapChainTexture.createView();
         }
         else {
-            this._mainColorAttachments[0].attachment = this._swapChain.getCurrentTexture().createView();
+            this._mainColorAttachments[0].attachment = this._swapChainTexture.createView();
         }
 
         this._currentRenderPass = this._renderEncoder.beginRenderPass({
