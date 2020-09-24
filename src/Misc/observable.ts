@@ -88,7 +88,11 @@ export class Observer<T> {
         /**
          * Defines the current scope used to restore the JS context
          */
-        public scope: any = null) {
+        public scope: any = null,
+        /**
+         * Defines custom data attached to this observer
+         */
+        public customData: any = null) {
     }
 }
 
@@ -181,12 +185,12 @@ export class Observable<T> {
      * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
      * @returns the new observer created for the callback
      */
-    public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null, unregisterOnFirstCall = false): Nullable<Observer<T>> {
+    public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null, unregisterOnFirstCall = false, customData: any = null): Nullable<Observer<T>> {
         if (!callback) {
             return null;
         }
 
-        var observer = new Observer(callback, mask, scope);
+        var observer = new Observer(callback, mask, scope, customData);
         observer.unregisterOnNextCall = unregisterOnFirstCall;
 
         if (insertFirst) {
@@ -207,8 +211,8 @@ export class Observable<T> {
      * @param callback the callback that will be executed for that Observer
      * @returns the new observer created for the callback
      */
-    public addOnce(callback: (eventData: T, eventState: EventState) => void): Nullable<Observer<T>> {
-        return this.add(callback, undefined, undefined, undefined, true);
+    public addOnce(callback: (eventData: T, eventState: EventState) => void, customData: any = null): Nullable<Observer<T>> {
+        return this.add(callback, undefined, undefined, undefined, true, customData);
     }
 
     /**
@@ -406,11 +410,19 @@ export class Observable<T> {
      * @param mask is used to filter observers defaults to -1
      */
     public notifyObserver(observer: Observer<T>, eventData: T, mask: number = -1): void {
+        if (observer._willBeUnregistered) {
+            return;
+        }
+
         let state = this._eventState;
         state.mask = mask;
         state.skipNextObservers = false;
 
         observer.callback(eventData, state);
+
+        if (observer.unregisterOnNextCall) {
+            this._deferUnregister(observer);
+        }
     }
 
     /**
