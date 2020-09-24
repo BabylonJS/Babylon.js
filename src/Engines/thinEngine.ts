@@ -172,6 +172,7 @@ export class ThinEngine {
     public static Features: EngineFeatures = {
         forceBitmapOverHTMLImageElement: false,
         supportRenderAndCopyToLodForFloatTextures: false,
+        framebuffersHaveYTopToBottom: false,
     };
 
     /**
