@@ -88,11 +88,7 @@ export class Observer<T> {
         /**
          * Defines the current scope used to restore the JS context
          */
-        public scope: any = null,
-        /**
-         * Defines custom data attached to this observer
-         */
-        public customData: any = null) {
+        public scope: any = null) {
     }
 }
 
@@ -185,12 +181,12 @@ export class Observable<T> {
      * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
      * @returns the new observer created for the callback
      */
-    public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null, unregisterOnFirstCall = false, customData: any = null): Nullable<Observer<T>> {
+    public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null, unregisterOnFirstCall = false): Nullable<Observer<T>> {
         if (!callback) {
             return null;
         }
 
-        var observer = new Observer(callback, mask, scope, customData);
+        var observer = new Observer(callback, mask, scope);
         observer.unregisterOnNextCall = unregisterOnFirstCall;
 
         if (insertFirst) {
@@ -211,8 +207,8 @@ export class Observable<T> {
      * @param callback the callback that will be executed for that Observer
      * @returns the new observer created for the callback
      */
-    public addOnce(callback: (eventData: T, eventState: EventState) => void, customData: any = null): Nullable<Observer<T>> {
-        return this.add(callback, undefined, undefined, undefined, true, customData);
+    public addOnce(callback: (eventData: T, eventState: EventState) => void): Nullable<Observer<T>> {
+        return this.add(callback, undefined, undefined, undefined, true);
     }
 
     /**
