@@ -117,7 +117,7 @@ export class ProceduralTexture extends Texture {
      * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
      * @param textureType The FBO internal texture type
      */
-    constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false, textureType = Constants.TEXTURETYPE_INT) {
+    constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, isCube = false, textureType = Constants.TEXTURETYPE_UNSIGNED_INT) {
         super(null, scene, !generateMipMaps);
 
         scene = this.getScene() || EngineStore.LastCreatedScene!;
