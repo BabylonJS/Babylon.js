@@ -10,18 +10,26 @@ export class WebGPUBufferManager {
         this._device = device;
     }
 
-    public createBuffer(view: ArrayBufferView, flags: GPUBufferUsageFlags): DataBuffer {
-        const alignedLength = (view.byteLength + 3) & ~3; // 4 bytes alignments (because of the upload which requires this)
+    public createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): GPUBuffer {
+        const alignedLength = (viewOrSize as ArrayBufferView).byteLength !== undefined ? ((viewOrSize as ArrayBufferView).byteLength + 3) & ~3 : ((viewOrSize as number) + 3) & ~3; // 4 bytes alignments (because of the upload which requires this)
         const verticesBufferDescriptor = {
             size: alignedLength,
             usage: flags
         };
-        const buffer = this._device.createBuffer(verticesBufferDescriptor);
+
+        return this._device.createBuffer(verticesBufferDescriptor);
+    }
+
+    public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): DataBuffer {
+        const isView = (viewOrSize as ArrayBufferView).byteLength !== undefined;
+        const buffer = this.createRawBuffer(viewOrSize, flags);
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
-        dataBuffer.capacity = view.byteLength;
+        dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : viewOrSize as number;
 
-        this.setSubData(dataBuffer, 0, view);
+        if (isView) {
+            this.setSubData(dataBuffer, 0, viewOrSize as ArrayBufferView);
+        }
 
         return dataBuffer;
     }
@@ -61,4 +69,18 @@ export class WebGPUBufferManager {
         this._device.defaultQueue.writeBuffer(buffer, dstByteOffset + offset, src.buffer, chunkStart + offset, byteLength - offset);
     }
 
+    public readDataFromBuffer(buffer: GPUBuffer, size: number, offset = 0, destroyBuffer = true): Promise<Uint8Array> {
+        return new Promise((resolve, reject) => {
+            buffer.mapAsync(GPUMapMode.READ, offset, size).then(() => {
+                const copyArrayBuffer = buffer.getMappedRange(offset, size);
+                const data = new Uint8Array(size);
+                data.set(new Uint8Array(copyArrayBuffer));
+                buffer.unmap();
+                if (destroyBuffer) {
+                    buffer.destroy();
+                }
+                resolve(data);
+            }, (reason) => reject(reason));
+        });
+    }
 }
