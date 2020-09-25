@@ -364,10 +364,10 @@ export class WebGPUEngine extends Engine {
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
-            textureFloat: false,
+            textureFloat: true,
             textureFloatLinearFiltering: false,
             textureFloatRender: false,
-            textureHalfFloat: false,
+            textureHalfFloat: true,
             textureHalfFloatLinearFiltering: false,
             textureHalfFloatRender: false,
             textureLOD: true,
@@ -1267,6 +1267,8 @@ export class WebGPUEngine extends Engine {
                     texture.height = imageBitmap.height;
                     texture.format = format ?? -1;
 
+                    processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
+
                     if (!texture._hardwareTexture?.underlyingResource) { // the texture could have been created before reaching this point so don't recreate it if already existing
                         const gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, imageBitmap.width, imageBitmap.height);
 
@@ -1283,8 +1285,6 @@ export class WebGPUEngine extends Engine {
                     if (scene) {
                         scene._removePendingData(texture);
                     }
-
-                    processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
                     texture.isReady = true;
 
@@ -1535,12 +1535,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture);
         }
 
-        const imgData = new ImageData(new Uint8ClampedArray(imageData.buffer), width, height);
-
-        // TODO WEBGPU directly pass the Uint8ClampedArray? invertY needs to be handled by updateTexture...
-        createImageBitmap(imgData).then((bitmap) => {
-            this._textureHelper.updateTexture(bitmap, gpuTextureWrapper?.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
-        });
+        this._textureHelper.updateTexture(new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength), gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
@@ -1581,7 +1576,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        this._textureHelper.updateTexture(new Uint8Array(data.buffer), gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        this._textureHelper.updateTexture(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -1599,12 +1594,7 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        const imgData = new ImageData(new Uint8ClampedArray(imageData.buffer, 0, imageData.byteLength), width, height);
-
-        // TODO WEBGPU don't convert to image bitmap and directly pass the Uint8ClampedArray? updateTexture needs to handle invertY...
-        createImageBitmap(imgData).then((bitmap) => {
-            this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
-        });
+        this._textureHelper.updateTexture(new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength), gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */

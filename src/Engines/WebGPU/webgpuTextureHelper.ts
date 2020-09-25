@@ -305,6 +305,7 @@ export class WebGPUTextureHelper {
         };
 
         if ((imageBitmap as Uint8Array).byteLength !== undefined) {
+            // TODO WEBGPU handle invertY / premultiplyAlpha
             imageBitmap = imageBitmap as Uint8Array;
 
             const aligned = Math.ceil(width * 4 / 256) * 256 === width * 4;
