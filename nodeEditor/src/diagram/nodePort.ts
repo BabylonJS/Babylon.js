@@ -20,7 +20,6 @@ export class NodePort {
     protected _onCandidateLinkMovedObserver: Nullable<Observer<Nullable<Vector2>>>;
     protected _onSelectionChangedObserver: Nullable<Observer<Nullable<GraphFrame | GraphNode | NodeLink | NodePort | FramePortData>>>;
     protected _exposedOnFrame: boolean;
-    public isExposed = false;
     public delegatedPort: Nullable<FrameNodePort> = null;
 
     public get element(): HTMLDivElement {
