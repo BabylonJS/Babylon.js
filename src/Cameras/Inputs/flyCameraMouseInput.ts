@@ -59,7 +59,6 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     @serialize()
     public angularSensibility = 1000.0;
 
-    private _mousemoveCallback: (e: MouseEvent) => void;
     private _observer: Nullable<Observer<PointerInfo>>;
     private _rollObserver: Nullable<Observer<Scene>>;
     private previousPosition: Nullable<{ x: number, y: number }> = null;
@@ -98,12 +97,6 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
                 }
             }
         );
-
-        // Helper function to keep 'this'.
-        this._mousemoveCallback = (e: any) => {
-            this._onMouseMove(e);
-        };
-        element.addEventListener("mousemove", this._mousemoveCallback, false);
     }
 
     /**
@@ -115,10 +108,6 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             this.camera.getScene().onPointerObservable.remove(this._observer);
 
             this.camera.getScene().onBeforeRenderObservable.remove(this._rollObserver);
-
-            if (this._mousemoveCallback) {
-                element.removeEventListener("mousemove", this._mousemoveCallback);
-            }
 
             this._observer = null;
             this._rollObserver = null;
@@ -184,6 +173,11 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
                 e.preventDefault();
                 this.element.focus();
             }
+
+            // This is required to move while pointer button is down
+            if (engine.isPointerLock) {
+                this._onMouseMove(p.event);
+            }
         } else
             // Mouse up.
             if (p.type === PointerEventTypes.POINTERUP && srcElement) {
@@ -202,7 +196,11 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             } else
                 // Mouse move.
                 if (p.type === PointerEventTypes.POINTERMOVE) {
-                    if (!this.previousPosition || engine.isPointerLock) {
+                    if (!this.previousPosition) {
+                        if (engine.isPointerLock) {
+                            this._onMouseMove(p.event);
+                        }
+
                         return;
                     }
 
