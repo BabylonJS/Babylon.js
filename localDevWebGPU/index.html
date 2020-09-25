@@ -136,7 +136,18 @@
                         engine = createEngine();
                         engine.initAsync(glslangOptions).then(() => onLoad(engine));
                     } else {
-                        engine = new BABYLON.WebGPUEngine(canvas);
+                        engine = new BABYLON.WebGPUEngine(canvas, {
+                            deviceDescriptor: {
+                                extensions: [
+                                    "texture-compression-bc",
+                                    "timestamp-query",
+                                    "pipeline-statistics-query",
+                                    "depth-clamping",
+                                    "depth24unorm-stencil8",
+                                    "depth32float-stencil8"
+                                ]
+                            }
+                        });
                         engine.initAsync(glslangOptions).then(() => onLoad(engine));
                     }
 
