@@ -407,7 +407,7 @@ export class VertexData {
      * @returns the VertexData
      */
     public transform(matrix: Matrix): VertexData {
-        var flip = matrix.m[0] * matrix.m[5] * matrix.m[10] < 0;
+        var flip = matrix.determinant() < 0;
         var transformed = Vector3.Zero();
         var index: number;
         if (this.positions) {

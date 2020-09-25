@@ -1751,10 +1751,6 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/mat
     import { IToolData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
     export const Floodfill: IToolData;
 }
-declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/defaultTools/contrast" {
-    import { IToolData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
-    export const Contrast: IToolData;
-}
 declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/defaultTools/rectangleSelect" {
     import { IToolData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
     export const RectangleSelect: IToolData;
@@ -4237,6 +4233,10 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/ani
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/defaultTools/contrast" {
+    import { IToolData } from "babylonjs-inspector/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent";
+    export const Contrast: IToolData;
+}
 declare module "babylonjs-inspector/legacy/legacy" {
     export * from "babylonjs-inspector/index";
 }
@@ -5797,9 +5797,6 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Floodfill: IToolData;
-}
-declare module INSPECTOR {
-    export const Contrast: IToolData;
 }
 declare module INSPECTOR {
     export const RectangleSelect: IToolData;
@@ -7743,4 +7740,7 @@ declare module INSPECTOR {
         calculateMove(): string;
         render(): JSX.Element;
     }
+}
+declare module INSPECTOR {
+    export const Contrast: IToolData;
 }

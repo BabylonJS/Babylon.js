@@ -64766,7 +64766,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M7.13,13.61a.76.76,0,0,0,.06,1.06,1.6,1.6,0,0,1,.51.88l1,4.68A2.26,2.26,0,0,0,10.92,22h2.16a2.26,2.26,0,0,0,2.19-1.76l1-4.68a1.6,1.6,0,0,1,.51-.88,7.18,7.18,0,0,0,2.42-5,7.26,7.26,0,0,0-2-5.4A7.13,7.13,0,0,0,12,2,6.9,6.9,0,0,0,7.13,3.94a.75.75,0,1,0,1,1.1A5.35,5.35,0,0,1,12,3.51a5.67,5.67,0,0,1,4.16,1.8,5.8,5.8,0,0,1,1.58,4.28,5.7,5.7,0,0,1-1.93,3.95,3.18,3.18,0,0,0-1,1.69L14.45,17H9.55l-.38-1.77a3.16,3.16,0,0,0-1-1.68A.75.75,0,0,0,7.13,13.61Zm3.06,6.29-.3-1.4h4.23l-.31,1.4a.76.76,0,0,1-.73.59H10.92A.76.76,0,0,1,10.19,19.9Z' style='fill:white'/%3E%3Cpath d='M2.23,8.86,4.87,6.23a.75.75,0,0,1,1.06,0,.74.74,0,0,1,0,1.06L4.58,8.64h7.11a.75.75,0,0,1,0,1.5H4.58l1.35,1.35a.74.74,0,0,1,0,1.06.75.75,0,0,1-.53.22.74.74,0,0,1-.53-.22L2.23,9.92a.75.75,0,0,1,0-1.06Z' style='fill:white'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M15.81,13.55a3.16,3.16,0,0,0-1,1.68L14.45,17H9.55l-.38-1.77a3.18,3.18,0,0,0-1-1.69A5.7,5.7,0,0,1,6.26,9.59,5.8,5.8,0,0,1,7.84,5.31,5.67,5.67,0,0,1,12,3.51,5.35,5.35,0,0,1,15.85,5a.75.75,0,0,0,1-1.1A6.9,6.9,0,0,0,12,2,7.13,7.13,0,0,0,6.75,4.28a7.26,7.26,0,0,0-2,5.4,7.18,7.18,0,0,0,2.42,5,1.6,1.6,0,0,1,.51.88l1,4.68A2.26,2.26,0,0,0,10.92,22h2.16a2.26,2.26,0,0,0,2.19-1.76l1-4.68a1.6,1.6,0,0,1,.51-.88.76.76,0,0,0,.06-1.06A.75.75,0,0,0,15.81,13.55Zm-2.73,6.94H10.92a.76.76,0,0,1-.73-.59l-.31-1.4h4.23l-.3,1.4A.76.76,0,0,1,13.08,20.49Z' style='fill:white'/%3E%3Cpath d='M21.77,8.86,19.13,6.23a.75.75,0,0,0-1.06,0,.74.74,0,0,0,0,1.06l1.35,1.35H12.31a.75.75,0,0,0,0,1.5h7.11l-1.35,1.35a.74.74,0,0,0,0,1.06.75.75,0,0,0,.53.22.74.74,0,0,0,.53-.22l2.64-2.63a.75.75,0,0,0,0-1.06Z' style='fill:white'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -64777,7 +64777,7 @@ module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M15.81,13.55a3.16,3.16,0,0,0-1,1.68L14.45,17H9.55l-.38-1.77a3.18,3.18,0,0,0-1-1.69A5.7,5.7,0,0,1,6.26,9.59,5.8,5.8,0,0,1,7.84,5.31,5.67,5.67,0,0,1,12,3.51,5.35,5.35,0,0,1,15.85,5a.75.75,0,0,0,1-1.1A6.9,6.9,0,0,0,12,2,7.13,7.13,0,0,0,6.75,4.28a7.26,7.26,0,0,0-2,5.4,7.18,7.18,0,0,0,2.42,5,1.6,1.6,0,0,1,.51.88l1,4.68A2.26,2.26,0,0,0,10.92,22h2.16a2.26,2.26,0,0,0,2.19-1.76l1-4.68a1.6,1.6,0,0,1,.51-.88.76.76,0,0,0,.06-1.06A.75.75,0,0,0,15.81,13.55Zm-2.73,6.94H10.92a.76.76,0,0,1-.73-.59l-.31-1.4h4.23l-.3,1.4A.76.76,0,0,1,13.08,20.49Z' style='fill:white'/%3E%3Cpath d='M21.77,8.86,19.13,6.23a.75.75,0,0,0-1.06,0,.74.74,0,0,0,0,1.06l1.35,1.35H12.31a.75.75,0,0,0,0,1.5h7.11l-1.35,1.35a.74.74,0,0,0,0,1.06.75.75,0,0,0,.53.22.74.74,0,0,0,.53-.22l2.64-2.63a.75.75,0,0,0,0-1.06Z' style='fill:white'/%3E%3C/svg%3E"
+module.exports = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M7.13,13.61a.76.76,0,0,0,.06,1.06,1.6,1.6,0,0,1,.51.88l1,4.68A2.26,2.26,0,0,0,10.92,22h2.16a2.26,2.26,0,0,0,2.19-1.76l1-4.68a1.6,1.6,0,0,1,.51-.88,7.18,7.18,0,0,0,2.42-5,7.26,7.26,0,0,0-2-5.4A7.13,7.13,0,0,0,12,2,6.9,6.9,0,0,0,7.13,3.94a.75.75,0,1,0,1,1.1A5.35,5.35,0,0,1,12,3.51a5.67,5.67,0,0,1,4.16,1.8,5.8,5.8,0,0,1,1.58,4.28,5.7,5.7,0,0,1-1.93,3.95,3.18,3.18,0,0,0-1,1.69L14.45,17H9.55l-.38-1.77a3.16,3.16,0,0,0-1-1.68A.75.75,0,0,0,7.13,13.61Zm3.06,6.29-.3-1.4h4.23l-.31,1.4a.76.76,0,0,1-.73.59H10.92A.76.76,0,0,1,10.19,19.9Z' style='fill:white'/%3E%3Cpath d='M2.23,8.86,4.87,6.23a.75.75,0,0,1,1.06,0,.74.74,0,0,1,0,1.06L4.58,8.64h7.11a.75.75,0,0,1,0,1.5H4.58l1.35,1.35a.74.74,0,0,1,0,1.06.75.75,0,0,1-.53.22.74.74,0,0,1-.53-.22L2.23,9.92a.75.75,0,0,1,0-1.06Z' style='fill:white'/%3E%3C/svg%3E"
 
 /***/ }),
 
@@ -65205,7 +65205,7 @@ var PropertyTabComponent = /** @class */ (function (_super) {
             else if (Object(_diagram_graphCanvas__WEBPACK_IMPORTED_MODULE_23__["isFramePortData"])(selection)) {
                 _this.setState({ currentNode: null, currentFrame: selection.frame, currentFrameNodePort: selection.port, currentNodePort: null });
             }
-            else if (selection instanceof _diagram_nodePort__WEBPACK_IMPORTED_MODULE_22__["NodePort"] && selection.hasLabel()) {
+            else if (selection instanceof _diagram_nodePort__WEBPACK_IMPORTED_MODULE_22__["NodePort"]) {
                 _this.setState({ currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: selection });
             }
             else {
@@ -66246,9 +66246,6 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
                         _this._selectedNodes = [selection];
                     }
                 }
-                else if (selection instanceof _nodePort__WEBPACK_IMPORTED_MODULE_6__["NodePort"] && !selection.hasLabel()) { // if node port is uneditable, select graphNode instead
-                    props.globalState.onSelectionChangedObservable.notifyObservers(selection.node);
-                }
                 else if (selection instanceof _nodePort__WEBPACK_IMPORTED_MODULE_6__["NodePort"]) {
                     _this._selectedNodes = [];
                     _this._selectedFrame = null;
@@ -67077,6 +67074,8 @@ var GraphFrame = /** @class */ (function () {
         this._frameInPorts = [];
         this._frameOutPorts = [];
         this._controlledPorts = []; // Ports on Nodes that are shown on outside of frame
+        this._exposedInPorts = [];
+        this._exposedOutPorts = [];
         this._minFrameHeight = 40;
         this._minFrameWidth = 220;
         this.onExpandStateChanged = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Observable"]();
@@ -67716,6 +67715,10 @@ var GraphFrame = /** @class */ (function () {
         this._frameInPorts.push(localPort);
         port.delegatedPort = localPort;
         this._controlledPorts.push(port);
+        if (!port.isExposed) {
+            port.isExposed = true;
+            this._exposedInPorts.push(port);
+        }
     };
     // Mark ports with FramePortPosition for re-arrangement support
     GraphFrame.prototype._markFramePortPositions = function () {
@@ -67759,67 +67762,124 @@ var GraphFrame = /** @class */ (function () {
         }
     };
     GraphFrame.prototype._createFramePorts = function () {
-        var _this_1 = this;
         for (var _i = 0, _a = this._nodes; _i < _a.length; _i++) {
             var node = _a[_i];
             node.isVisible = false;
-            for (var _b = 0, _c = node.outputPorts; _b < _c.length; _b++) { // Output
-                var port = _c[_b];
-                if (port.connectionPoint.hasEndpoints) {
-                    var portAdded = false;
-                    for (var _d = 0, _e = node.links; _d < _e.length; _d++) {
-                        var link = _e[_d];
-                        if (link.portA === port && this.nodes.indexOf(link.nodeB) === -1 || (link.portA === port && port.exposedOnFrame)) {
-                            var localPort = void 0;
-                            if (!portAdded) {
-                                portAdded = true;
-                                localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, link.nodeA, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
-                                this._frameOutPorts.push(localPort);
-                                link.isVisible = true;
-                                var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
-                                    _this_1._redrawFramePorts();
-                                });
-                                this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
-                            }
-                            else if (this.nodes.indexOf(link.nodeB) === -1) {
-                                link.isVisible = true;
-                                localPort = this.ports.filter(function (p) { return p.connectionPoint === port.connectionPoint; })[0];
-                            }
-                            else {
-                                localPort = this.ports.filter(function (p) { return p.connectionPoint === port.connectionPoint; })[0];
-                            }
-                            port.delegatedPort = localPort;
-                            this._controlledPorts.push(port);
-                        }
+        }
+        for (var _b = 0, _c = this._exposedOutPorts; _b < _c.length; _b++) { // Output
+            var port = _c[_b];
+            if (port.node === null || port.node.enclosingFrameId != this.id) {
+                var index = this._exposedOutPorts.findIndex(function (nodePort) { return nodePort === port; });
+                this._exposedOutPorts.splice(index, 1);
+                port.isExposed = false;
+            }
+            else {
+                this.createOutputPorts(port, port.node);
+            }
+        }
+        for (var _d = 0, _e = this._exposedInPorts; _d < _e.length; _d++) { // Input
+            var port = _e[_d];
+            if (port.node === null || port.node.enclosingFrameId != this.id) {
+                var index = this._exposedInPorts.findIndex(function (nodePort) { return nodePort === port; });
+                this._exposedInPorts.splice(index, 1);
+                port.isExposed = false;
+            }
+            else {
+                this.createInputPorts(port, port.node);
+            }
+        }
+        for (var _f = 0, _g = this._nodes; _f < _g.length; _f++) {
+            var node = _g[_f];
+            for (var _h = 0, _j = node.outputPorts; _h < _j.length; _h++) { // Output
+                var port = _j[_h];
+                if (!port.isExposed) {
+                    if (this.createOutputPorts(port, node)) {
+                        this._exposedOutPorts.push(port);
+                        port.isExposed = true;
                     }
-                }
-                else if (port.exposedOnFrame) {
-                    var localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
-                    this._frameOutPorts.push(localPort);
-                    port.delegatedPort = localPort;
-                    this._controlledPorts.push(port);
                 }
             }
-            for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Input
-                var port = _g[_f];
-                if (port.connectionPoint.isConnected) {
-                    for (var _h = 0, _j = node.links; _h < _j.length; _h++) {
-                        var link = _j[_h];
-                        if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
-                            this._createInputPort(port, node);
-                            link.isVisible = true;
-                            var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
-                                _this_1._redrawFramePorts();
-                            });
-                            this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
-                        }
-                    }
-                }
-                else if (port.exposedOnFrame) {
-                    this._createInputPort(port, node);
+            for (var _k = 0, _l = node.inputPorts; _k < _l.length; _k++) { // Input
+                var port = _l[_k];
+                if (!port.isExposed) {
+                    this.createInputPorts(port, node);
                 }
             }
         }
+    };
+    GraphFrame.prototype.removePortFromExposed = function (nodeLink, exposedPorts) {
+        var aPort = exposedPorts.findIndex(function (nodePort) { return nodePort === nodeLink.portA; });
+        var bPort = exposedPorts.findIndex(function (nodePort) { return nodePort === nodeLink.portB; });
+        if (aPort >= 0) {
+            exposedPorts.splice(aPort, 1);
+            nodeLink.portA.isExposed = false;
+        }
+        else if (bPort >= 0) {
+            exposedPorts.splice(bPort, 1);
+            if (nodeLink.portB)
+                nodeLink.portB.isExposed = false;
+        }
+    };
+    GraphFrame.prototype.createInputPorts = function (port, node) {
+        var _this_1 = this;
+        if (port.connectionPoint.isConnected) {
+            for (var _i = 0, _a = node.links; _i < _a.length; _i++) {
+                var link = _a[_i];
+                if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
+                    this._createInputPort(port, node);
+                    link.isVisible = true;
+                    var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
+                        _this_1.removePortFromExposed(nodeLink, _this_1._exposedInPorts);
+                        _this_1._redrawFramePorts();
+                    });
+                    this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
+                }
+            }
+        }
+        else if (port.exposedOnFrame) {
+            this._createInputPort(port, node);
+        }
+    };
+    GraphFrame.prototype.createOutputPorts = function (port, node) {
+        var _this_1 = this;
+        if (port.connectionPoint.hasEndpoints) {
+            var portAdded = false;
+            for (var _i = 0, _a = node.links; _i < _a.length; _i++) {
+                var link = _a[_i];
+                if (link.portA === port && this.nodes.indexOf(link.nodeB) === -1 || (link.portA === port && port.exposedOnFrame)) {
+                    var localPort = void 0;
+                    if (!portAdded) {
+                        portAdded = true;
+                        localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, link.nodeA, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+                        this._frameOutPorts.push(localPort);
+                        link.isVisible = true;
+                        var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
+                            _this_1.removePortFromExposed(nodeLink, _this_1._exposedOutPorts);
+                            _this_1._redrawFramePorts();
+                        });
+                        this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
+                    }
+                    else if (this.nodes.indexOf(link.nodeB) === -1) {
+                        link.isVisible = true;
+                        localPort = this.ports.filter(function (p) { return p.connectionPoint === port.connectionPoint; })[0];
+                    }
+                    else {
+                        localPort = this.ports.filter(function (p) { return p.connectionPoint === port.connectionPoint; })[0];
+                    }
+                    port.delegatedPort = localPort;
+                    this._controlledPorts.push(port);
+                    return true;
+                }
+            }
+        }
+        else if (port.exposedOnFrame) {
+            var localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+            this._frameOutPorts.push(localPort);
+            port.delegatedPort = localPort;
+            this._controlledPorts.push(port);
+            return true;
+        }
+        return false;
     };
     GraphFrame.prototype._redrawFramePorts = function () {
         if (!this.isCollapsed) {
@@ -68055,12 +68115,15 @@ var GraphFrame = /** @class */ (function () {
         evt.stopPropagation();
     };
     GraphFrame.prototype.moveFramePortUp = function (nodePort) {
+        var _a, _b;
         var elementsArray;
         if (nodePort.isInput) {
             if (this._inputPortContainer.children.length < 2) {
                 return;
             }
             elementsArray = Array.from(this._inputPortContainer.childNodes);
+            var indexInContainer = this._frameInPorts.findIndex(function (framePort) { return framePort === nodePort; });
+            _a = [this._exposedInPorts[indexInContainer], this._exposedInPorts[indexInContainer - 1]], this._exposedInPorts[indexInContainer - 1] = _a[0], this._exposedInPorts[indexInContainer] = _a[1]; // swap idicies
             this._movePortUp(elementsArray, nodePort, this._frameInPorts);
         }
         else {
@@ -68068,6 +68131,8 @@ var GraphFrame = /** @class */ (function () {
                 return;
             }
             elementsArray = Array.from(this._outputPortContainer.childNodes);
+            var indexInContainer = this._frameOutPorts.findIndex(function (framePort) { return framePort === nodePort; });
+            _b = [this._exposedOutPorts[indexInContainer], this._exposedOutPorts[indexInContainer - 1]], this._exposedOutPorts[indexInContainer - 1] = _b[0], this._exposedOutPorts[indexInContainer] = _b[1]; // swap idicies
             this._movePortUp(elementsArray, nodePort, this._frameOutPorts);
         }
         this.ports.forEach(function (framePort) { return framePort.node._refreshLinks(); });
@@ -68107,12 +68172,15 @@ var GraphFrame = /** @class */ (function () {
         }
     };
     GraphFrame.prototype.moveFramePortDown = function (nodePort) {
+        var _a, _b;
         var elementsArray;
         if (nodePort.isInput) {
             if (this._inputPortContainer.children.length < 2) {
                 return;
             }
             elementsArray = Array.from(this._inputPortContainer.childNodes);
+            var indexInContainer = this._frameInPorts.findIndex(function (framePort) { return framePort === nodePort; });
+            _a = [this._exposedInPorts[indexInContainer + 1], this._exposedInPorts[indexInContainer]], this._exposedInPorts[indexInContainer] = _a[0], this._exposedInPorts[indexInContainer + 1] = _a[1]; // swap idicies
             this._movePortDown(elementsArray, nodePort, this._frameInPorts);
         }
         else {
@@ -68120,6 +68188,8 @@ var GraphFrame = /** @class */ (function () {
                 return;
             }
             elementsArray = Array.from(this._outputPortContainer.childNodes);
+            var indexInContainer = this._frameOutPorts.findIndex(function (framePort) { return framePort === nodePort; });
+            _b = [this._exposedOutPorts[indexInContainer + 1], this._exposedOutPorts[indexInContainer]], this._exposedOutPorts[indexInContainer] = _b[0], this._exposedOutPorts[indexInContainer + 1] = _b[1]; // swap idicies
             this._movePortDown(elementsArray, nodePort, this._frameOutPorts);
         }
         this.ports.forEach(function (framePort) { return framePort.node._refreshLinks(); });
@@ -68196,10 +68266,17 @@ var GraphFrame = /** @class */ (function () {
     };
     GraphFrame.prototype.dispose = function () {
         var _a;
-        this.isCollapsed = false;
-        this._nodes.forEach(function (node) {
-            node.enclosingFrameId = -1;
-        });
+        if (this.isCollapsed) {
+            while (this._nodes.length > 0) {
+                this._nodes[0].dispose();
+            }
+            this.isCollapsed = false;
+        }
+        else {
+            this._nodes.forEach(function (node) {
+                node.enclosingFrameId = -1;
+            });
+        }
         if (this._onSelectionChangedObserver) {
             this._ownerCanvas.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
         }
@@ -68216,7 +68293,16 @@ var GraphFrame = /** @class */ (function () {
         this._ownerCanvas.frames.splice(this._ownerCanvas.frames.indexOf(this), 1);
         this.onExpandStateChanged.clear();
     };
+    GraphFrame.prototype.serializePortData = function (exposedPorts) {
+        if (exposedPorts.length > 0) {
+            for (var i = 0; i < exposedPorts.length; ++i) {
+                exposedPorts[i].exposedPortPosition = i;
+            }
+        }
+    };
     GraphFrame.prototype.serialize = function () {
+        this.serializePortData(this._exposedInPorts);
+        this.serializePortData(this._exposedOutPorts);
         return {
             x: this._x,
             y: this._y,
@@ -68224,7 +68310,7 @@ var GraphFrame = /** @class */ (function () {
             height: this._height,
             color: this._color.asArray(),
             name: this.name,
-            isCollapsed: false,
+            isCollapsed: true,
             blocks: this.nodes.map(function (n) { return n.block.uniqueId; }),
             comments: this._comments
         };
@@ -68247,10 +68333,10 @@ var GraphFrame = /** @class */ (function () {
         if (serializationData.blocks && map) {
             var _loop_1 = function () {
                 var actualId = map[blockId];
-                var node = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
-                if (node.length) {
-                    newFrame.nodes.push(node[0]);
-                    node[0].enclosingFrameId = newFrame.id;
+                var node_1 = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
+                if (node_1.length) {
+                    newFrame.nodes.push(node_1[0]);
+                    node_1[0].enclosingFrameId = newFrame.id;
                 }
             };
             for (var _i = 0, _a = serializationData.blocks; _i < _a.length; _i++) {
@@ -68261,6 +68347,33 @@ var GraphFrame = /** @class */ (function () {
         else {
             newFrame.refresh();
         }
+        for (var _b = 0, _c = newFrame.nodes; _b < _c.length; _b++) {
+            var node = _c[_b];
+            for (var _d = 0, _e = node.outputPorts; _d < _e.length; _d++) { // Output
+                var port = _e[_d];
+                if (port.exposedOnFrame) {
+                    port.isExposed = true;
+                    if (port.exposedPortPosition) {
+                        newFrame._exposedOutPorts[port.exposedPortPosition] = port;
+                    }
+                    else {
+                        newFrame._exposedOutPorts.push(port);
+                    }
+                }
+            }
+            for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Inports
+                var port = _g[_f];
+                if (port.exposedOnFrame) {
+                    port.isExposed = true;
+                    if (port.exposedPortPosition) {
+                        newFrame._exposedInPorts[port.exposedPortPosition] = port;
+                    }
+                    else {
+                        newFrame._exposedInPorts.push(port);
+                    }
+                }
+            }
+        }
         newFrame.isCollapsed = isCollapsed;
         if (isCollapsed) {
             canvas._frameIsMoving = true;
@@ -68268,8 +68381,8 @@ var GraphFrame = /** @class */ (function () {
             var diff = serializationData.x - newFrame.x;
             newFrame._moveFrame(diff, 0);
             newFrame.cleanAccumulation();
-            for (var _b = 0, _c = newFrame.nodes; _b < _c.length; _b++) {
-                var selectedNode = _c[_b];
+            for (var _h = 0, _j = newFrame.nodes; _h < _j.length; _h++) {
+                var selectedNode = _j[_h];
                 selectedNode.refresh();
             }
             canvas._frameIsMoving = false;
@@ -68920,6 +69033,7 @@ var NodePort = /** @class */ (function () {
         var _this = this;
         this.connectionPoint = connectionPoint;
         this.node = node;
+        this.isExposed = false;
         this.delegatedPort = null;
         this._element = portContainer.ownerDocument.createElement("div");
         this._element.classList.add("port");
@@ -69016,6 +69130,16 @@ var NodePort = /** @class */ (function () {
                 return;
             }
             this.connectionPoint.isExposedOnFrame = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(NodePort.prototype, "exposedPortPosition", {
+        get: function () {
+            return this.connectionPoint.exposedPortPosition;
+        },
+        set: function (value) {
+            this.connectionPoint.exposedPortPosition = value;
         },
         enumerable: false,
         configurable: true
@@ -69965,6 +70089,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../sharedComponents/lineContainerComponent */ "./sharedComponents/lineContainerComponent.tsx");
 /* harmony import */ var _sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../sharedComponents/textInputLineComponent */ "./sharedComponents/textInputLineComponent.tsx");
 /* harmony import */ var _sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../sharedComponents/checkBoxLineComponent */ "./sharedComponents/checkBoxLineComponent.tsx");
+/* harmony import */ var _sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../sharedComponents/textLineComponent */ "./sharedComponents/textLineComponent.tsx");
+
 
 
 
@@ -69984,14 +70110,17 @@ var NodePortPropertyTabComponent = /** @class */ (function (_super) {
     };
     NodePortPropertyTabComponent.prototype.render = function () {
         var _this = this;
+        var info = this.props.nodePort.hasLabel() ?
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](react__WEBPACK_IMPORTED_MODULE_1__["Fragment"], null,
+                this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
+                this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })) :
+            react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textLineComponent__WEBPACK_IMPORTED_MODULE_5__["TextLineComponent"], { label: "This node is a constant input node and cannot be exposed to the frame.", value: " " });
         return (react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "propertyTab" },
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "header" },
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("img", { id: "logo", src: "https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" }),
                 react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", { id: "title" }, "NODE MATERIAL EDITOR")),
             react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null,
-                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" },
-                    this.props.nodePort.hasLabel() && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_textInputLineComponent__WEBPACK_IMPORTED_MODULE_3__["TextInputLineComponent"], { globalState: this.props.globalState, label: "Port Label", propertyName: "portName", target: this.props.nodePort }),
-                    this.props.nodePort.node.enclosingFrameId !== -1 && react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_checkBoxLineComponent__WEBPACK_IMPORTED_MODULE_4__["CheckBoxLineComponent"], { label: "Expose Port on Frame", target: this.props.nodePort, isSelected: function () { return _this.props.nodePort.exposedOnFrame; }, onSelect: function (value) { return _this.toggleExposeOnFrame(value); }, propertyName: "exposedOnFrame", disabled: this.props.nodePort.disabled })))));
+                react__WEBPACK_IMPORTED_MODULE_1__["createElement"](_sharedComponents_lineContainerComponent__WEBPACK_IMPORTED_MODULE_2__["LineContainerComponent"], { title: "GENERAL" }, info))));
     };
     return NodePortPropertyTabComponent;
 }(react__WEBPACK_IMPORTED_MODULE_1__["Component"]));
@@ -71989,7 +72118,12 @@ var ColorPickerLineComponent = /** @class */ (function (_super) {
             || nextState.hex !== this.state.hex
             || nextState.pickerEnabled !== this.state.pickerEnabled;
         if (result) {
-            nextState.color = nextProps.value;
+            nextState.color = {
+                r: nextProps.value.r * 255,
+                g: nextProps.value.g * 255,
+                b: nextProps.value.b * 255,
+                a: nextProps.value instanceof babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"] ? nextProps.value.a : 1,
+            };
             nextState.hex = nextProps.value.toHexString();
         }
         return result;

@@ -9,6 +9,7 @@ import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Meshes/buffer";
 import { Light } from "../Lights/light";
 import { Constants } from "../Engines/constants";
+import { PrePassConfiguration } from "../Materials/prePassConfiguration";
 
 import { UniformBuffer } from "./uniformBuffer";
 import { Effect, IEffectCreationOptions } from "./effect";
@@ -203,6 +204,12 @@ export class MaterialHelper {
             } else {
                 defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
                 defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+
+                const prePassRenderer = mesh.getScene().prePassRenderer;
+                if (prePassRenderer && prePassRenderer.enabled) {
+                    const nonExcluded = prePassRenderer.excludedSkinnedMesh.indexOf(mesh) === -1;
+                    defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
+                }
             }
         } else {
             defines["NUM_BONE_INFLUENCERS"] = 0;
@@ -303,37 +310,63 @@ export class MaterialHelper {
      * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
      */
     public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
-        var previousPrePass = defines.PREPASS;
+        const previousPrePass = defines.PREPASS;
+
+        if (!defines._arePrePassDirty) {
+            return;
+        }
+
+        const texturesList = [
+        {
+            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+            define: "PREPASS_POSITION",
+            index: "PREPASS_POSITION_INDEX",
+        },
+        {
+            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+            define: "PREPASS_VELOCITY",
+            index: "PREPASS_VELOCITY_INDEX",
+        },
+        {
+            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+            define: "PREPASS_REFLECTIVITY",
+            index: "PREPASS_REFLECTIVITY_INDEX",
+        },
+        {
+            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            define: "PREPASS_IRRADIANCE",
+            index: "PREPASS_IRRADIANCE_INDEX",
+        },
+        {
+            type: Constants.PREPASS_ALBEDO_TEXTURE_TYPE,
+            define: "PREPASS_ALBEDO",
+            index: "PREPASS_ALBEDO_INDEX",
+        },
+        {
+            type: Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE,
+            define: "PREPASS_DEPTHNORMAL",
+            index: "PREPASS_DEPTHNORMAL_INDEX",
+        }];
 
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
 
-            const irradianceIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE);
-            if (irradianceIndex !== -1) {
-                defines.PREPASS_IRRADIANCE = true;
-                defines.PREPASS_IRRADIANCE_INDEX = irradianceIndex;
-            } else {
-                defines.PREPASS_IRRADIANCE = false;
+            for (let i = 0; i < texturesList.length; i++) {
+                const index = scene.prePassRenderer.getIndex(texturesList[i].type);
+                if (index !== -1) {
+                    defines[texturesList[i].define] = true;
+                    defines[texturesList[i].index] = index;
+                } else {
+                    defines[texturesList[i].define] = false;
+                }
             }
 
-            const albedoIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_ALBEDO_TEXTURE_TYPE);
-            if (albedoIndex !== -1) {
-                defines.PREPASS_ALBEDO = true;
-                defines.PREPASS_ALBEDO_INDEX = albedoIndex;
-            } else {
-                defines.PREPASS_ALBEDO = false;
-            }
-
-            const depthNormalIndex = scene.prePassRenderer.getIndex(Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE);
-            if (depthNormalIndex !== -1) {
-                defines.PREPASS_DEPTHNORMAL = true;
-                defines.PREPASS_DEPTHNORMAL_INDEX = depthNormalIndex;
-            } else {
-                defines.PREPASS_DEPTHNORMAL = false;
-            }
         } else {
             defines.PREPASS = false;
+            for (let i = 0; i < texturesList.length; i++) {
+                defines[texturesList[i].define] = false;
+            }
         }
 
         if (defines.PREPASS != previousPrePass) {
@@ -802,8 +835,9 @@ export class MaterialHelper {
      * Binds the bones information from the mesh to the effect.
      * @param mesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
+     * @param prePassConfiguration Configuration for the prepass, in case prepass is activated
      */
-    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
+    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration): void {
         if (!effect || !mesh) {
             return;
         }
@@ -823,9 +857,23 @@ export class MaterialHelper {
 
                 if (matrices) {
                     effect.setMatrices("mBones", matrices);
+                    if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
+                        if (prePassConfiguration.previousBones[mesh.uniqueId]) {
+                            effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+                        }
+
+                        MaterialHelper._CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
+                    }
                 }
             }
         }
+    }
+
+    // Copies the bones transformation matrices into the target array and returns the target's reference
+    private static _CopyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
+        target.set(source);
+
+        return target;
     }
 
     /**
