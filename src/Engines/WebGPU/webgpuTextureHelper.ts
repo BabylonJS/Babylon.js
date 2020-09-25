@@ -20,7 +20,6 @@
 import * as WebGPUConstants from './webgpuConstants';
 import { Scalar } from '../../Maths/math.scalar';
 import { WebGPUBufferManager } from './webgpuBufferManager';
-import { Nullable } from '../../types';
 
 export class WebGPUTextureHelper {
 
@@ -90,16 +89,16 @@ export class WebGPUTextureHelper {
         });
     }
 
-    private _isImageBitmap(imageBitmap: ImageBitmap | { width: number, height: number }): imageBitmap is ImageBitmap {
+    public isImageBitmap(imageBitmap: ImageBitmap | { width: number, height: number }): imageBitmap is ImageBitmap {
         return (imageBitmap as ImageBitmap).close !== undefined;
     }
 
-    private _isImageBitmapArray(imageBitmap: ImageBitmap[] | { width: number, height: number }): imageBitmap is ImageBitmap[] {
+    public isImageBitmapArray(imageBitmap: ImageBitmap[] | { width: number, height: number }): imageBitmap is ImageBitmap[] {
         return Array.isArray(imageBitmap as ImageBitmap[]) && (imageBitmap as ImageBitmap[])[0].close !== undefined;
     }
 
-    public createTexture(imageBitmap: ImageBitmap | { width: number, height: number }, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
-        sampleCount = 1, commandEncoder?: GPUCommandEncoder): [GPUTexture, Nullable<Promise<void>>]
+    public createTexture(imageBitmap: ImageBitmap | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
+        sampleCount = 1, commandEncoder?: GPUCommandEncoder): GPUTexture
     {
         let textureSize = {
             width: imageBitmap.width,
@@ -107,8 +106,8 @@ export class WebGPUTextureHelper {
             depth: 1,
         };
 
-        const mipLevelCount = generateMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
-        const additionalUsages = generateMipmaps ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
+        const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
+        const additionalUsages = hasMipmaps ? WebGPUConstants.TextureUsage.CopySrc /*| WebGPUConstants.TextureUsage.OutputAttachment*/ : 0;
 
         const gpuTexture = this._device.createTexture({
             size: textureSize,
@@ -119,50 +118,25 @@ export class WebGPUTextureHelper {
             mipLevelCount
         });
 
-        if (this._isImageBitmap(imageBitmap)) {
-            let promise: Promise<ImageBitmap>;
+        if (this.isImageBitmap(imageBitmap)) {
+            this.updateTexture(imageBitmap, gpuTexture, imageBitmap.width, imageBitmap.height, format, 0, 0, invertY, premultiplyAlpha, 0, 0, commandEncoder);
 
-            if (invertY || premultiplyAlpha) {
-                promise = createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" });
-            } else {
-                promise = Promise.resolve(imageBitmap);
+            if (hasMipmaps && generateMipmaps) {
+                this.generateMipmaps(gpuTexture, mipLevelCount, 0, commandEncoder);
             }
-
-            return [gpuTexture, new Promise((resolve) => {
-                promise.then((imageBitmap) => {
-                    this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, { texture: gpuTexture }, textureSize);
-
-                    if (generateMipmaps) {
-                        const useOwnCommandEncoder = commandEncoder === undefined;
-
-                        if (useOwnCommandEncoder) {
-                            commandEncoder = this._device.createCommandEncoder({});
-                        }
-
-                        this.generateMipmaps(gpuTexture, mipLevelCount, 0, commandEncoder);
-
-                        if (useOwnCommandEncoder) {
-                            this._device.defaultQueue.submit([commandEncoder!.finish()]);
-                            commandEncoder = null as any;
-                        }
-                    }
-
-                    resolve();
-                });
-            })];
         }
 
-        return [gpuTexture, null];
+        return gpuTexture;
     }
 
-    public createCubeTexture(imageBitmaps: ImageBitmap[] | { width: number, height: number }, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
-        sampleCount = 1, commandEncoder?: GPUCommandEncoder): [GPUTexture, Nullable<Promise<void>>]
+    public createCubeTexture(imageBitmaps: ImageBitmap[] | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
+        sampleCount = 1, commandEncoder?: GPUCommandEncoder): GPUTexture
     {
-        const width = this._isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
-        const height = this._isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
+        const width = this.isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
+        const height = this.isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
 
-        const mipLevelCount = generateMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(width, height) : 1;
-        const additionalUsages = generateMipmaps ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
+        const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(width, height) : 1;
+        const additionalUsages = hasMipmaps ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
         const gpuTexture = this._device.createTexture({
             size: {
@@ -177,71 +151,15 @@ export class WebGPUTextureHelper {
             mipLevelCount
         });
 
-        if (this._isImageBitmapArray(imageBitmaps)) {
-            const textureSizeFace = {
-                width,
-                height,
-                depth: 1,
-            };
+        if (this.isImageBitmapArray(imageBitmaps)) {
+            this.updateCubeTextures(imageBitmaps, gpuTexture, width, height, format, invertY, premultiplyAlpha, 0, 0, commandEncoder);
 
-            const textureView: GPUTextureCopyView = {
-                texture: gpuTexture,
-                origin: {
-                    x: 0,
-                    y: 0,
-                    z: 0
-                },
-                mipLevel: 0
-            };
-
-            const faces = [0, 3, 1, 4, 2, 5];
-
-            const promises: Promise<void>[] = [];
-
-            for (let f = 0; f < faces.length; ++f) {
-                let imageBitmap = imageBitmaps[faces[f]];
-
-                let promise: Promise<ImageBitmap>;
-
-                if (invertY || premultiplyAlpha) {
-                    promise = createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" });
-                } else {
-                    promise = Promise.resolve(imageBitmap);
-                }
-
-                promises.push(new Promise((resolve) => {
-                    promise.then((imageBitmap) => {
-                        (textureView.origin as GPUOrigin3DDict).z = f;
-
-                        this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureView, textureSizeFace);
-
-                        resolve();
-                    });
-                }));
+            if (hasMipmaps && generateMipmaps) {
+                this.generateCubeMipmaps(gpuTexture, mipLevelCount, commandEncoder);
             }
-
-            return [gpuTexture, new Promise((resolve) => {
-                Promise.all(promises).then(() => {
-                    if (generateMipmaps) {
-                        const useOwnCommandEncoder = commandEncoder === undefined;
-
-                        if (useOwnCommandEncoder) {
-                            commandEncoder = this._device.createCommandEncoder({});
-                        }
-
-                        this.generateCubeMipmaps(gpuTexture, mipLevelCount, commandEncoder);
-
-                        if (useOwnCommandEncoder) {
-                            this._device.defaultQueue.submit([commandEncoder!.finish()]);
-                            commandEncoder = null as any;
-                        }
-                    }
-                    resolve();
-                });
-            })];
         }
 
-        return [gpuTexture, null];
+        return gpuTexture;
     }
 
     public generateCubeMipmaps(gpuTexture: GPUTexture, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void {
@@ -301,10 +219,51 @@ export class WebGPUTextureHelper {
         }
     }
 
-    public updateTexture(imageBitmap: ImageBitmap, gpuTexture: GPUTexture, width: number, height: number, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
+    private _getBlockInformationFromFormat(format: GPUTextureFormat): { width: number, height: number, length: number } {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.BC7RGBAUNORM:
+            case WebGPUConstants.TextureFormat.BC7RGBAUNORMSRGB:
+                return { width: 4, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.BC6HRGBUFLOAT:
+                return { width: 4, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.BC6HRGBSFLOAT:
+                return { width: 4, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.BC3RGBAUNORM:
+            case WebGPUConstants.TextureFormat.BC3RGBAUNORMSRGB:
+                return { width: 4, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.BC2RGBAUNORM:
+            case WebGPUConstants.TextureFormat.BC2RGBAUNORMSRGB:
+                return { width: 4, height: 4, length: 16 };
+            case WebGPUConstants.TextureFormat.BC1RGBAUNORM:
+            case WebGPUConstants.TextureFormat.BC1RGBAUNORMSRGB:
+                return { width: 4, height: 4, length: 8 };
+
+            case WebGPUConstants.TextureFormat.RGBA16Float:
+                return { width: 1, height: 1, length: 8 };
+            case WebGPUConstants.TextureFormat.RGBA32Float:
+                return { width: 1, height: 1, length: 16 };
+        }
+
+        return { width: 1, height: 1, length: 4 };
+    }
+
+    public updateCubeTextures(imageBitmaps: ImageBitmap[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
+        commandEncoder?: GPUCommandEncoder): void {
+        const faces = [0, 3, 1, 4, 2, 5];
+
+        for (let f = 0; f < faces.length; ++f) {
+            let imageBitmap = imageBitmaps[faces[f]];
+
+            this.updateTexture(imageBitmap, gpuTexture, width, height, format, f, 0, invertY, premultiplyAlpha, offsetX, offsetY, commandEncoder);
+        }
+    }
+
+    public updateTexture(imageBitmap: ImageBitmap | Uint8Array, gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void
     {
-        const textureView: GPUTextureCopyView = {
+        const blockInformation = this._getBlockInformationFromFormat(format);
+
+        const textureCopyView: GPUTextureCopyView = {
             texture: gpuTexture,
             origin: {
                 x: offsetX,
@@ -315,17 +274,53 @@ export class WebGPUTextureHelper {
         };
 
         const textureExtent = {
-            width,
-            height,
+            width: Math.ceil(width / blockInformation.width) * blockInformation.width,
+            height: Math.ceil(height / blockInformation.height) * blockInformation.height,
             depth: 1
         };
 
-        if (invertY || premultiplyAlpha) {
-            createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
-                this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureView, textureExtent);
-            });
+        if ((imageBitmap as Uint8Array).byteLength !== undefined) {
+            imageBitmap = imageBitmap as Uint8Array;
+
+            const aligned = Math.ceil(width * 4 / 256) * 256 === width * 4;
+
+            if (aligned) {
+                const buffer = this._bufferManager.createRawBuffer(imageBitmap.byteLength, GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC, true);
+
+                const arrayBuffer = buffer.getMappedRange();
+
+                new Uint8Array(arrayBuffer).set(imageBitmap);
+
+                buffer.unmap();
+
+                // TODO WEBGPU should we reuse the passed in commandEncoder (if defined)? If yes, we must delay the destroying of the buffer until after the commandEncoder has been submitted...
+                const copyCommandEncoder = this._device.createCommandEncoder({});
+
+                copyCommandEncoder.copyBufferToTexture({
+                    buffer: buffer,
+                    offset: 0,
+                    bytesPerRow: Math.ceil(width / blockInformation.width) * blockInformation.length
+                }, textureCopyView, textureExtent);
+
+                this._device.defaultQueue.submit([copyCommandEncoder.finish()]);
+
+                buffer.destroy();
+            } else {
+                this._device.defaultQueue.writeTexture(textureCopyView, imageBitmap, {
+                    offset: 0,
+                    bytesPerRow: Math.ceil(width / blockInformation.width) * blockInformation.length
+                }, textureExtent);
+            }
         } else {
-            this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureView, textureExtent);
+            imageBitmap = imageBitmap as ImageBitmap;
+
+            if (invertY || premultiplyAlpha) {
+                createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" }).then((imageBitmap) => {
+                    this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+                });
+            } else {
+                this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
+            }
         }
     }
 

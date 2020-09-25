@@ -1,5 +1,6 @@
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
 import { Nullable } from '../../types';
+import * as WebGPUConstants from './webgpuConstants';
 
 /** @hidden */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
@@ -19,6 +20,8 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     public get sampler(): Nullable<GPUSampler> {
         return this._webgpuSampler;
     }
+
+    public format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
 
     constructor(existingTexture: Nullable<GPUTexture> = null) {
         this._webgpuTexture = existingTexture;
@@ -48,4 +51,4 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         this._webgpuTexture?.destroy();
         this.reset();
     }
-};
+}

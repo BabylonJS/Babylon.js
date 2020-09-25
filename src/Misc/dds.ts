@@ -450,7 +450,7 @@ export class DDSTools {
         if (info.sphericalPolynomial) {
             sphericalPolynomialFaces = new Array<ArrayBufferView>();
         }
-        var ext = engine.getCaps().s3tc;
+        var ext = !!engine.getCaps().s3tc;
 
         var header = new Int32Array(data.buffer, data.byteOffset, headerLengthInt);
         var fourCC: number, width: number, height: number, dataLength: number = 0, dataOffset: number;
@@ -483,15 +483,15 @@ export class DDSTools {
             switch (fourCC) {
                 case FOURCC_DXT1:
                     blockBytes = 8;
-                    internalCompressedFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT1_EXT;
+                    internalCompressedFormat = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1;
                     break;
                 case FOURCC_DXT3:
                     blockBytes = 16;
-                    internalCompressedFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT3_EXT;
+                    internalCompressedFormat = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3;
                     break;
                 case FOURCC_DXT5:
                     blockBytes = 16;
-                    internalCompressedFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                    internalCompressedFormat = Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5;
                     break;
                 case FOURCC_D3DFMT_R16G16B16A16F:
                     computeFormats = true;
