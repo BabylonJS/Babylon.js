@@ -5,7 +5,7 @@
 - Added particle editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
 - Added sprite editor to the Inspector ([Deltakosh](https://github.com/deltakosh))
 - Added the `ShadowDepthWrapper` class to support accurate shadow generation for custom as well as node material shaders. [Doc](https://doc.babylonjs.com/babylon101/shadows#custom-shadow-map-shaders) ([Popov72](https://github.com/Popov72))
-- Added HDR texture filtering tools to the sandbox ([Sebavan](https://github.com/sebavan/))
+- Added HDR texture filtering tools to the sandbox. [Doc](https://medium.com/@babylonjs/real-time-pbr-filtering-is-coming-to-babylon-cb0e81159d79) ([Sebavan](https://github.com/sebavan/))
 - Reflection probes can now be used to give accurate shading with PBR ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added SubSurfaceScattering on PBR materials ([CraigFeldpsar](https://github.com/craigfeldspar) and ([Sebavan](https://github.com/sebavan/)))
 - Added edition of PBR materials, Post processes and Particle fragment shaders in the node material editor ([Popov72](https://github.com/Popov72))
@@ -243,7 +243,7 @@
 
 ### Post Processes
 
-- SSAO 2 is now using the brand new `PrePassRenderer` to avoid rendering the scene twice ([CraigFeldpsar](https://github.com/craigfeldspar)
+- SSAO 2, motion blur and screen space reflections are now using the brand new `PrePassRenderer` to avoid rendering the scene twice ([CraigFeldpsar](https://github.com/craigfeldspar)
 - Added Screen Space Curvature post process: [Doc](https://doc.babylonjs.com/how_to/how_to_use_postprocesses#screen-space-curvature) ([Popov72](https://github.com/Popov72) and [Sebavan](https://github.com/sebavan/))
 
 ## Bugs
@@ -322,6 +322,8 @@
 - Fix gltf2 Morph Target export code style, add additional test case for non-animation group created morph targets ([drigax](https://github.com/drigax))
 - Fix "Uncaught ReferenceError: name is not defined" ([outermeasure](https://github.com/outermeasure))
 - Fix wrong winding when applying a transform matrix on VertexData ([Popov72](https://github.com/Popov72))
+- Fix exporting vertex color of mesh with `StandardMaterial` when exporting to glTF ([Drigax](https://github.com/drigax))
+- Changed use of mousemove to pointermove in freeCameraMouseInput and flyCameraMouseInput to fix issue with Firefox ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 - `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))

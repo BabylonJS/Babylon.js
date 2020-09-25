@@ -342,7 +342,7 @@ export class WebXRFeaturesManager implements IDisposable {
 
             if (attachIfPossible) {
                 // if session started already, request and enable
-                if (this._xrSessionManager.session && !feature.featureImplementation.attached) {
+                if (this._xrSessionManager.session && !this._features[name].featureImplementation.attached) {
                     // enable feature
                     this.attachFeature(name);
                 }

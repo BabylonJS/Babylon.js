@@ -2076,6 +2076,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @hidden
@@ -2611,9 +2612,23 @@ var _Exporter = /** @class */ (function () {
                 break;
             }
             case babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["VertexBuffer"].ColorKind: {
+                var meshMaterial = babylonTransformNode.material;
+                var convertToLinear = meshMaterial ? (meshMaterial instanceof babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]) : true;
+                var vertexData = stride === 3 ? new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"]() : new babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color4"]();
                 for (var k = 0, length_5 = meshAttributeArray.length / stride; k < length_5; ++k) {
                     index = k * stride;
-                    var vertexData = stride === 3 ? babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector3"].FromArray(meshAttributeArray, index) : babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Vector4"].FromArray(meshAttributeArray, index);
+                    if (stride === 3) {
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color3"].FromArrayToRef(meshAttributeArray, index, vertexData);
+                        if (convertToLinear) {
+                            vertexData.toLinearSpaceToRef(vertexData);
+                        }
+                    }
+                    else {
+                        babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["Color4"].FromArrayToRef(meshAttributeArray, index, vertexData);
+                        if (convertToLinear) {
+                            vertexData.toLinearSpaceToRef(vertexData);
+                        }
+                    }
                     vertexAttributes.push(vertexData.asArray());
                 }
                 break;

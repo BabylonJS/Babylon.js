@@ -134,8 +134,10 @@ uniform mat4 view;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+#endif
 
-    #ifdef SS_SCATTERING
+#ifdef PREPASS
+    #ifdef PREPASS_IRRADIANCE
         uniform float scatteringDiffusionProfile;
     #endif
 #endif
