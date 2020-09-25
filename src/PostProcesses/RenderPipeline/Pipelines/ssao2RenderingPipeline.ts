@@ -119,8 +119,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     */
     private _sampleSphere: number[];
 
-    private _ssao2PrePassConfiguration: SSAO2Configuration;
-
     /**
     * Blur filter offsets
     */
@@ -212,7 +210,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             scene.enableGeometryBufferRenderer();
         } else {
             this._prePassRenderer = <PrePassRenderer>scene.enablePrePassRenderer();
-            this._prePassRenderer.markAsDirty();
         }
 
         this._createRandomTexture();
@@ -235,7 +232,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (cameras) {
             scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
         }
-
     }
 
     // Public Methods
@@ -269,7 +265,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         }
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
-        this._ssao2PrePassConfiguration.enabled = false;
 
         super.dispose();
     }
@@ -450,6 +445,10 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
         };
         this._ssaoCombinePostProcess.samples = this.textureSamples;
+
+        if (!this._forceGeometryBuffer) {
+            this._ssaoCombinePostProcess._prePassEffectConfiguration = new SSAO2Configuration();
+        }
     }
 
     private _createRandomTexture(): void {
@@ -507,22 +506,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
         return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
-    }
-
-    /**
-     * Sets the required values to the prepass renderer.
-     * @param prePassRenderer defines the prepass renderer to setup
-     * @returns true if the pre pass is needed.
-     */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
-        let cfg = this._ssao2PrePassConfiguration;
-        if (!cfg) {
-            cfg = new SSAO2Configuration();
-        }
-
-        cfg.enabled = true;
-        this._ssao2PrePassConfiguration = prePassRenderer.addEffectConfiguration(cfg);
-        return true;
     }
 }
 

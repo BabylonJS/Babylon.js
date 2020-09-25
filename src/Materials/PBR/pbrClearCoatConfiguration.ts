@@ -21,7 +21,7 @@ export interface IMaterialClearCoatDefines {
     CLEARCOAT_TEXTUREDIRECTUV: number;
     CLEARCOAT_BUMP: boolean;
     CLEARCOAT_BUMPDIRECTUV: number;
-    CLEARCOAT_REMAPP_F0: boolean;
+    CLEARCOAT_REMAP_F0: boolean;
 
     CLEARCOAT_TINT: boolean;
     CLEARCOAT_TINT_TEXTURE: boolean;
@@ -195,7 +195,7 @@ export class PBRClearCoatConfiguration {
     public prepareDefines(defines: IMaterialClearCoatDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
-            defines.CLEARCOAT_REMAPP_F0 = this._remapF0OnInterfaceChange;
+            defines.CLEARCOAT_REMAP_F0 = this._remapF0OnInterfaceChange;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
