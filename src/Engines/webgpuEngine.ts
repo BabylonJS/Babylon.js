@@ -28,6 +28,7 @@ import { WebGPUBufferManager } from './WebGPU/webgpuBufferManager';
 import { DepthTextureCreationOptions } from './depthTextureCreationOptions';
 import { HardwareTextureWrapper } from '../Materials/Textures/hardwareTextureWrapper';
 import { WebGPUHardwareTexture } from './WebGPU/webgpuHardwareTexture';
+import { IColor4Like } from '../Maths/math.like';
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
 
@@ -544,12 +545,14 @@ export class WebGPUEngine extends Engine {
         this._currentRenderPass!.setScissorRect(0, 0, this.getRenderWidth(), this.getRenderHeight());
     }
 
-    public clear(color: Color4, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         // Some PGs are using color3...
-        if (color.a === undefined) {
+        if (color && color.a === undefined) {
             color.a = 1;
         }
-        this._mainColorAttachments[0].loadValue = backBuffer ? color : WebGPUConstants.LoadOp.Load;
+
+        // TODO WEBGPU handle calling this function multiple times in a frame (for eg in the case of multi cameras) - handle reverse depth buffer
+        this._mainColorAttachments[0].loadValue = backBuffer && color ? color : WebGPUConstants.LoadOp.Load;
 
         this._mainDepthAttachment.depthLoadValue = depth ? this._clearDepthValue : WebGPUConstants.LoadOp.Load;
         this._mainDepthAttachment.stencilLoadValue = stencil ? this._clearStencilValue : WebGPUConstants.LoadOp.Load;
