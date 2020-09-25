@@ -27,17 +27,18 @@ import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
 
 interface INativeEngine {
 
-    readonly SAMPLER_NEAREST: number;
-    readonly SAMPLER_BILINEAR: number;
-    readonly SAMPLER_TRILINEAR: number;
-    readonly SAMPLER_ANISOTROPIC: number;
-    readonly SAMPLER_POINT_COMPARE: number;
-    readonly SAMPLER_TRILINEAR_COMPARE: number;
-    readonly SAMPLER_MINBILINEAR_MAGPOINT: number;
-    readonly SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR: number;
-    readonly SAMPLER_MINPOINT_MAGLINEAR_MIPPOINT: number;
-    readonly SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR: number;
-    readonly SAMPLER_MINLINEAR_MAGPOINT_MIPPOINT: number;
+    readonly TEXTURE_NEAREST_NEAREST: number;
+    readonly TEXTURE_LINEAR_LINEAR: number;
+    readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
+    readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
+    readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
+    readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
+    readonly TEXTURE_NEAREST_LINEAR: number;
+    readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
+    readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
+    readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
+    readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
+    readonly TEXTURE_LINEAR_NEAREST: number;
 
     readonly DEPTH_TEST_LESS: number;
     readonly DEPTH_TEST_LEQUAL: number;
@@ -1506,34 +1507,30 @@ export class NativeEngine extends Engine {
 
     private _getNativeSamplingMode(samplingMode: number): number {
         switch (samplingMode) {
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
-                return this._native.SAMPLER_BILINEAR;
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                return this._native.SAMPLER_TRILINEAR;
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
-                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                return this._native.SAMPLER_NEAREST;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                return this._native.SAMPLER_MINLINEAR_MAGPOINT_MIPPOINT;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
-            case Constants.TEXTURE_NEAREST_LINEAR:
-                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
             case Constants.TEXTURE_NEAREST_NEAREST:
-                return this._native.SAMPLER_NEAREST;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPPOINT;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
+                return this._native.TEXTURE_NEAREST_NEAREST;
             case Constants.TEXTURE_LINEAR_LINEAR:
-                return this._native.SAMPLER_TRILINEAR;
-            case Constants.TEXTURE_LINEAR_NEAREST:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
+                return this._native.TEXTURE_LINEAR_LINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+                return this._native.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                return this._native.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                return this._native.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                return this._native.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_LINEAR:
+                return this._native.TEXTURE_NEAREST_LINEAR;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
-                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
+                return this._native.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                return this._native.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                return this._native.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
-                return this._native.SAMPLER_TRILINEAR;
+                return this._native.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
+            case Constants.TEXTURE_LINEAR_NEAREST:
+                return this._native.TEXTURE_LINEAR_NEAREST;
             default:
                 throw new Error(`Unsupported sampling mode: ${samplingMode}.`);
         }
