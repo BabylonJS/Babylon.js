@@ -10,9 +10,10 @@ export class WebGPUBufferManager {
         this._device = device;
     }
 
-    public createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): GPUBuffer {
+    public createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, mappedAtCreation = false): GPUBuffer {
         const alignedLength = (viewOrSize as ArrayBufferView).byteLength !== undefined ? ((viewOrSize as ArrayBufferView).byteLength + 3) & ~3 : ((viewOrSize as number) + 3) & ~3; // 4 bytes alignments (because of the upload which requires this)
         const verticesBufferDescriptor = {
+            mappedAtCreation,
             size: alignedLength,
             usage: flags
         };
