@@ -24,6 +24,8 @@ import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
+import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
+import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 
 interface INativeEngine {
     dispose(): void;
@@ -77,6 +79,7 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
+    createDepthTexture(texture: WebGLTexture, width: number, height: number): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
     loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, onSuccess: () => void, onError: () => void): void;
@@ -1122,6 +1125,25 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
+    _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): NativeTexture {
+        var texture = new NativeTexture(this, InternalTextureSource.Depth);
+
+        const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
+        const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
+
+        var framebuffer = this._native.createDepthTexture(
+            texture._webGLTexture!,
+            width,
+            height);
+
+        texture._framebuffer = framebuffer;
+        return texture;
+    }
+
+    public _releaseFramebufferObjects(texture: InternalTexture): void {
+        // TODO
+    }
+
     /**
      * Creates a cube texture
      * @param rootUrl defines the url where the files to load is located
@@ -1378,10 +1400,14 @@ export class NativeEngine extends Engine {
         }
 
         if (forceFullscreenViewport) {
-            throw new Error("forceFullscreenViewport for frame buffers not yet supported in NativeEngine.");
+            //Not supported yet but don't stop rendering
         }
 
-        this._bindUnboundFramebuffer(texture._framebuffer);
+        if (texture._depthStencilTexture) {
+            this._bindUnboundFramebuffer(texture._depthStencilTexture._framebuffer);
+        } else {
+            this._bindUnboundFramebuffer(texture._framebuffer);
+        }
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
@@ -1515,7 +1541,11 @@ export class NativeEngine extends Engine {
 
     /** @hidden */
     public _bindTexture(channel: number, texture: InternalTexture): void {
-        throw new Error("_bindTexture not implemented.");
+        let uniform = this._boundUniforms[channel];
+        if (!uniform) {
+            return ;
+        }
+        this._native.setTexture(uniform, texture._webGLTexture);
     }
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
