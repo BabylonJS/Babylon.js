@@ -452,6 +452,9 @@ export class DDSTools {
         }
         var ext = !!engine.getCaps().s3tc;
 
+        // TODO WEBGPU Once generateMipMaps is split into generateMipMaps + hasMipMaps in InternalTexture this line can be removed
+        texture.generateMipMaps = loadMipmaps;
+
         var header = new Int32Array(data.buffer, data.byteOffset, headerLengthInt);
         var fourCC: number, width: number, height: number, dataLength: number = 0, dataOffset: number;
         var byteArray: Uint8Array, mipmapCount: number, mip: number;
