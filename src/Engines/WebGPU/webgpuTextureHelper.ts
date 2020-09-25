@@ -21,6 +21,9 @@ import * as WebGPUConstants from './webgpuConstants';
 import { Scalar } from '../../Maths/math.scalar';
 import { WebGPUBufferManager } from './webgpuBufferManager';
 
+// TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
+// see https://github.com/toji/web-texture-tool/tree/main/src
+
 export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
@@ -97,6 +100,28 @@ export class WebGPUTextureHelper {
         return Array.isArray(imageBitmap as ImageBitmap[]) && (imageBitmap as ImageBitmap[])[0].close !== undefined;
     }
 
+    public isCompressedFormat(format: GPUTextureFormat): boolean {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC6HRGBSFloat:
+            case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
+            case WebGPUConstants.TextureFormat.BC5RGSnorm:
+            case WebGPUConstants.TextureFormat.BC5RGUnorm:
+            case WebGPUConstants.TextureFormat.BC4RSnorm:
+            case WebGPUConstants.TextureFormat.BC4RUnorm:
+            case WebGPUConstants.TextureFormat.BC3RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
+            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+                return true;
+        }
+
+        return false;
+    }
+
     public createTexture(imageBitmap: ImageBitmap | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
         sampleCount = 1, commandEncoder?: GPUCommandEncoder): GPUTexture
     {
@@ -107,7 +132,7 @@ export class WebGPUTextureHelper {
         };
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
-        const additionalUsages = hasMipmaps ? WebGPUConstants.TextureUsage.CopySrc /*| WebGPUConstants.TextureUsage.OutputAttachment*/ : 0;
+        const additionalUsages = hasMipmaps && !this.isCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
         const gpuTexture = this._device.createTexture({
             size: textureSize,
@@ -136,7 +161,7 @@ export class WebGPUTextureHelper {
         const height = this.isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(width, height) : 1;
-        const additionalUsages = hasMipmaps ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
+        const additionalUsages = hasMipmaps && !this.isCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
         const gpuTexture = this._device.createTexture({
             size: {
