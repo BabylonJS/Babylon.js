@@ -48,7 +48,9 @@ declare global {
     | "texture-compression-bc"
     | "timestamp-query"
     | "pipeline-statistics-query"
-    | "depth-clamping";
+    | "depth-clamping"
+    | "depth24unorm-stencil8"
+    | "depth32float-stencil8";
   export type GPUAddressMode = "clamp-to-edge" | "repeat" | "mirror-repeat";
   export type GPUBindingType =
     | "uniform-buffer"
