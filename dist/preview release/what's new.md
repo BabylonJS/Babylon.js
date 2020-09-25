@@ -323,6 +323,7 @@
 - Fix "Uncaught ReferenceError: name is not defined" ([outermeasure](https://github.com/outermeasure))
 - Fix wrong winding when applying a transform matrix on VertexData ([Popov72](https://github.com/Popov72))
 - Fix exporting vertex color of mesh with `StandardMaterial` when exporting to glTF ([Drigax](https://github.com/drigax))
+- Changed use of mousemove to pointermove in freeCameraMouseInput and flyCameraMouseInput to fix issue with Firefox ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 - `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))

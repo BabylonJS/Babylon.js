@@ -67715,9 +67715,10 @@ var GraphFrame = /** @class */ (function () {
         this._frameInPorts.push(localPort);
         port.delegatedPort = localPort;
         this._controlledPorts.push(port);
-        if (!port.isExposed) {
-            port.isExposed = true;
+        port.exposedPortPosition = this._exposedInPorts.findIndex(function (nodePort) { return nodePort === port; });
+        if (port.exposedPortPosition < 0) {
             this._exposedInPorts.push(port);
+            port.exposedPortPosition = this._exposedInPorts.length - 1;
         }
     };
     // Mark ports with FramePortPosition for re-arrangement support
@@ -67766,79 +67767,107 @@ var GraphFrame = /** @class */ (function () {
             var node = _a[_i];
             node.isVisible = false;
         }
-        for (var _b = 0, _c = this._exposedOutPorts; _b < _c.length; _b++) { // Output
-            var port = _c[_b];
+        for (var i = 0; i < this._exposedOutPorts.length;) { // Output
+            var port = this._exposedOutPorts[i];
             if (port.node === null || port.node.enclosingFrameId != this.id) {
-                var index = this._exposedOutPorts.findIndex(function (nodePort) { return nodePort === port; });
-                this._exposedOutPorts.splice(index, 1);
-                port.isExposed = false;
+                if (this.removePortFromExposedWithNode(port, this._exposedOutPorts))
+                    continue;
             }
             else {
-                this.createOutputPorts(port, port.node);
-            }
-        }
-        for (var _d = 0, _e = this._exposedInPorts; _d < _e.length; _d++) { // Input
-            var port = _e[_d];
-            if (port.node === null || port.node.enclosingFrameId != this.id) {
-                var index = this._exposedInPorts.findIndex(function (nodePort) { return nodePort === port; });
-                this._exposedInPorts.splice(index, 1);
-                port.isExposed = false;
-            }
-            else {
-                this.createInputPorts(port, port.node);
-            }
-        }
-        for (var _f = 0, _g = this._nodes; _f < _g.length; _f++) {
-            var node = _g[_f];
-            for (var _h = 0, _j = node.outputPorts; _h < _j.length; _h++) { // Output
-                var port = _j[_h];
-                if (!port.isExposed) {
-                    if (this.createOutputPorts(port, node)) {
-                        this._exposedOutPorts.push(port);
-                        port.isExposed = true;
-                    }
+                if (!this.createOutputPorts(port, port.node) && this.removePortFromExposedWithNode(port, this._exposedOutPorts)) {
+                    continue;
                 }
             }
-            for (var _k = 0, _l = node.inputPorts; _k < _l.length; _k++) { // Input
-                var port = _l[_k];
-                if (!port.isExposed) {
+            ++i;
+        }
+        for (var i = 0; i < this._exposedInPorts.length;) { // Input
+            var port = this._exposedInPorts[i];
+            if (port.node === null || port.node.enclosingFrameId != this.id) {
+                if (this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
+                    continue;
+                }
+            }
+            else {
+                if (!this.createInputPorts(port, port.node) && this.removePortFromExposedWithNode(port, this._exposedInPorts)) {
+                    continue;
+                }
+            }
+            ++i;
+        }
+        for (var _b = 0, _c = this._nodes; _b < _c.length; _b++) {
+            var node = _c[_b];
+            var _loop_1 = function (port_1) {
+                port_1.exposedPortPosition = this_1._exposedOutPorts.findIndex(function (nodePort) { return nodePort === port_1; });
+                if (port_1.exposedPortPosition < 0) {
+                    if (this_1.createOutputPorts(port_1, node)) {
+                        port_1.node.enclosingFrameId = this_1.id;
+                        this_1._exposedOutPorts.push(port_1);
+                        port_1.exposedPortPosition = this_1._exposedOutPorts.length - 1;
+                    }
+                }
+            };
+            var this_1 = this;
+            for (var _d = 0, _e = node.outputPorts; _d < _e.length; _d++) {
+                var port_1 = _e[_d];
+                _loop_1(port_1);
+            }
+            for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Input
+                var port = _g[_f];
+                port.exposedPortPosition = this._exposedInPorts.findIndex(function (nodePort) { return nodePort === port; });
+                if (port.exposedPortPosition < 0) {
                     this.createInputPorts(port, node);
                 }
             }
         }
     };
-    GraphFrame.prototype.removePortFromExposed = function (nodeLink, exposedPorts) {
+    GraphFrame.prototype.removePortFromExposedWithNode = function (port, exposedPorts) {
+        var index = exposedPorts.findIndex(function (nodePort) { return nodePort === port; });
+        if (index >= 0) {
+            exposedPorts.splice(index, 1);
+            port.exposedPortPosition = -1;
+            return true;
+        }
+        return false;
+    };
+    GraphFrame.prototype.removePortFromExposedWithLink = function (nodeLink, exposedPorts) {
         var aPort = exposedPorts.findIndex(function (nodePort) { return nodePort === nodeLink.portA; });
         var bPort = exposedPorts.findIndex(function (nodePort) { return nodePort === nodeLink.portB; });
         if (aPort >= 0) {
             exposedPorts.splice(aPort, 1);
-            nodeLink.portA.isExposed = false;
+            nodeLink.portA.exposedPortPosition = -1;
         }
         else if (bPort >= 0) {
             exposedPorts.splice(bPort, 1);
-            if (nodeLink.portB)
-                nodeLink.portB.isExposed = false;
+            if (nodeLink.portB) {
+                nodeLink.portB.exposedPortPosition = -1;
+            }
         }
     };
     GraphFrame.prototype.createInputPorts = function (port, node) {
         var _this_1 = this;
         if (port.connectionPoint.isConnected) {
+            var portAdded = false;
             for (var _i = 0, _a = node.links; _i < _a.length; _i++) {
                 var link = _a[_i];
                 if (link.portB === port && this.nodes.indexOf(link.nodeA) === -1) {
                     this._createInputPort(port, node);
                     link.isVisible = true;
+                    portAdded = true;
                     var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
-                        _this_1.removePortFromExposed(nodeLink, _this_1._exposedInPorts);
+                        _this_1.removePortFromExposedWithLink(nodeLink, _this_1._exposedInPorts);
                         _this_1._redrawFramePorts();
                     });
                     this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
                 }
             }
+            if (portAdded)
+                return true;
         }
         else if (port.exposedOnFrame) {
             this._createInputPort(port, node);
+            return true;
         }
+        return false;
     };
     GraphFrame.prototype.createOutputPorts = function (port, node) {
         var _this_1 = this;
@@ -67846,7 +67875,7 @@ var GraphFrame = /** @class */ (function () {
             var portAdded = false;
             for (var _i = 0, _a = node.links; _i < _a.length; _i++) {
                 var link = _a[_i];
-                if (link.portA === port && this.nodes.indexOf(link.nodeB) === -1 || (link.portA === port && port.exposedOnFrame)) {
+                if (link.portA === port && this.nodes.indexOf(link.nodeB) === -1) {
                     var localPort = void 0;
                     if (!portAdded) {
                         portAdded = true;
@@ -67854,7 +67883,7 @@ var GraphFrame = /** @class */ (function () {
                         this._frameOutPorts.push(localPort);
                         link.isVisible = true;
                         var onLinkDisposedObserver = link.onDisposedObservable.add(function (nodeLink) {
-                            _this_1.removePortFromExposed(nodeLink, _this_1._exposedOutPorts);
+                            _this_1.removePortFromExposedWithLink(nodeLink, _this_1._exposedOutPorts);
                             _this_1._redrawFramePorts();
                         });
                         this._onNodeLinkDisposedObservers.push(onLinkDisposedObserver);
@@ -67868,9 +67897,17 @@ var GraphFrame = /** @class */ (function () {
                     }
                     port.delegatedPort = localPort;
                     this._controlledPorts.push(port);
-                    return true;
+                }
+                else if (port.exposedPortPosition >= 0 && !portAdded) {
+                    var localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
+                    this._frameOutPorts.push(localPort);
+                    port.delegatedPort = localPort;
+                    this._controlledPorts.push(port);
+                    portAdded = true;
                 }
             }
+            if (portAdded)
+                return true;
         }
         else if (port.exposedOnFrame) {
             var localPort = _frameNodePort__WEBPACK_IMPORTED_MODULE_3__["FrameNodePort"].CreateFrameNodePortElement(port.connectionPoint, node, this._outputPortContainer, null, this._ownerCanvas.globalState, false, GraphFrame._FramePortCounter++, this.id);
@@ -68331,7 +68368,7 @@ var GraphFrame = /** @class */ (function () {
         newFrame.color = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["Color3"].FromArray(serializationData.color);
         newFrame.comments = serializationData.comments;
         if (serializationData.blocks && map) {
-            var _loop_1 = function () {
+            var _loop_2 = function () {
                 var actualId = map[blockId];
                 var node_1 = canvas.nodes.filter(function (n) { return n.block.uniqueId === actualId; });
                 if (node_1.length) {
@@ -68341,7 +68378,7 @@ var GraphFrame = /** @class */ (function () {
             };
             for (var _i = 0, _a = serializationData.blocks; _i < _a.length; _i++) {
                 var blockId = _a[_i];
-                _loop_1();
+                _loop_2();
             }
         }
         else {
@@ -68352,24 +68389,16 @@ var GraphFrame = /** @class */ (function () {
             for (var _d = 0, _e = node.outputPorts; _d < _e.length; _d++) { // Output
                 var port = _e[_d];
                 if (port.exposedOnFrame) {
-                    port.isExposed = true;
-                    if (port.exposedPortPosition) {
+                    if (port.exposedPortPosition !== -1) {
                         newFrame._exposedOutPorts[port.exposedPortPosition] = port;
-                    }
-                    else {
-                        newFrame._exposedOutPorts.push(port);
                     }
                 }
             }
             for (var _f = 0, _g = node.inputPorts; _f < _g.length; _f++) { // Inports
                 var port = _g[_f];
                 if (port.exposedOnFrame) {
-                    port.isExposed = true;
-                    if (port.exposedPortPosition) {
+                    if (port.exposedPortPosition !== -1) {
                         newFrame._exposedInPorts[port.exposedPortPosition] = port;
-                    }
-                    else {
-                        newFrame._exposedInPorts.push(port);
                     }
                 }
             }
@@ -69033,7 +69062,6 @@ var NodePort = /** @class */ (function () {
         var _this = this;
         this.connectionPoint = connectionPoint;
         this.node = node;
-        this.isExposed = false;
         this.delegatedPort = null;
         this._element = portContainer.ownerDocument.createElement("div");
         this._element.classList.add("port");
