@@ -12,6 +12,7 @@ import { PhysicsImpostor } from "../../Physics/physicsImpostor";
 import { WebXRFeaturesManager } from "../webXRFeaturesManager";
 import { IDisposable } from "../../scene";
 import { Observable } from "../../Misc/observable";
+import { InstancedMesh } from "../../Meshes/instancedMesh";
 
 declare const XRHand: XRHand;
 
@@ -38,6 +39,13 @@ export interface IWebXRHandTrackingOptions {
          * It should have the general size of a single unit, as the instances will be scaled according to the provided radius
          */
         sourceMesh?: Mesh;
+
+        /**
+         * This function will be called after a mesh was created for a specific joint.
+         * Using this function you can either manipulate the instance or return a new mesh.
+         * When returning a new mesh it is the developer's responsibility to dispose the mesh instance!
+         */
+        onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => Mesh | undefined;
         /**
          * Should the source mesh stay visible. Defaults to false
          */
@@ -235,7 +243,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
      */
     public isCompatible(): boolean {
-        return (typeof XRHand !== 'undefined');
+        return typeof XRHand !== "undefined";
     }
 
     /**
@@ -325,7 +333,13 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         const originalMesh = this.options.jointMeshes?.sourceMesh || SphereBuilder.CreateSphere("jointParent", { diameter: 1 });
         originalMesh.isVisible = !!this.options.jointMeshes?.keepOriginalVisible;
         for (let i = 0; i < hand.length; ++i) {
-            const newInstance = originalMesh.createInstance(`${xrController.uniqueId}-handJoint-${i}`);
+            let newInstance: AbstractMesh = originalMesh.createInstance(`${xrController.uniqueId}-handJoint-${i}`);
+            if (this.options.jointMeshes?.onHandJointMeshGenerated) {
+                const returnedMesh = this.options.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, xrController.uniqueId);
+                if (returnedMesh) {
+                    newInstance = returnedMesh;
+                }
+            }
             newInstance.isPickable = false;
             if (this.options.jointMeshes?.enablePhysics) {
                 const props = this.options.jointMeshes.physicsProps || {};
