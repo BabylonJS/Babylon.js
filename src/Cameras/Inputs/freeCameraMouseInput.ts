@@ -94,6 +94,11 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         evt.preventDefault();
                         element.focus();
                     }
+
+                    // This is required to move while pointer button is down
+                    if (engine.isPointerLock && this._onMouseMove) {
+                        this._onMouseMove(p.event);
+                    }
                 }
                 else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                     try {
