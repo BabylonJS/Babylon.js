@@ -1272,6 +1272,9 @@ export class WebGPUEngine extends Engine {
 
                         if (this._textureHelper.isImageBitmap(imageBitmap)) {
                             this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
+                            if (!noMipmap && !isCompressed) {
+                                this._generateMipmaps(texture, texture._hardwareTexture!.underlyingResource);
+                            }
                         }
                     } else if (!noMipmap && !isCompressed) {
                         this._generateMipmaps(texture, texture._hardwareTexture!.underlyingResource);
