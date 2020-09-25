@@ -188,7 +188,9 @@ export class KhronosTextureContainer2 {
     }
 
     protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture) {
-        this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
+        const oglTexture2D = 3553;
+
+        this._engine._bindTextureDirectly(oglTexture2D, internalTexture);
 
         if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
             internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -198,6 +200,7 @@ export class KhronosTextureContainer2 {
         }
 
         internalTexture._gammaSpace = data.isInGammaSpace;
+        internalTexture.generateMipMaps = data.mipmaps.length > 1;
 
         if (data.errors) {
             throw new Error("KTX2 container - could not transcode the data. " + data.errors);
@@ -223,10 +226,9 @@ export class KhronosTextureContainer2 {
 
         internalTexture.width = data.mipmaps[0].width;
         internalTexture.height = data.mipmaps[0].height;
-        internalTexture.generateMipMaps = data.mipmaps.length > 1;
         internalTexture.isReady = true;
 
-        this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, null);
+        this._engine._bindTextureDirectly(oglTexture2D, null);
     }
 
     /**
