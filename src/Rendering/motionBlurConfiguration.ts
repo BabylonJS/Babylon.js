@@ -4,23 +4,23 @@ import { _DevTools } from '../Misc/devTools';
 
 /**
  * Contains all parameters needed for the prepass to perform
- * screen space subsurface scattering
+ * motion blur
  */
-export class SSAO2Configuration implements PrePassEffectConfiguration {
+export class MotionBlurConfiguration implements PrePassEffectConfiguration {
     /**
-     * Is subsurface enabled
+     * Is motion blur enabled
      */
     public enabled = false;
 
     /**
      * Name of the configuration
      */
-    public name = "ssao2";
+    public name = "motionBlur";
 
     /**
      * Textures that should be present in the MRT for this effect to work
      */
     public readonly texturesRequired: number[] = [
-        Constants.PREPASS_DEPTHNORMAL_TEXTURE_TYPE
+        Constants.PREPASS_VELOCITY_TEXTURE_TYPE
     ];
 }
