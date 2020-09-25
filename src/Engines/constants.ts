@@ -153,6 +153,19 @@ export class Constants {
     /** RGBA_INTEGER */
     public static readonly TEXTUREFORMAT_RGBA_INTEGER = 11;
 
+    /** Compressed BC7 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
+    /** Compressed BC6 unsigned float */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495;
+    /** Compressed BC6 signed float */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494;
+    /** Compressed BC3 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
+    /** Compressed BC2 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
+    /** Compressed BC1 */
+    public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33776; // TODO WEBGPU it should be 33777 but the ktx2decoder returns the wrong value! Correct the ktx2 decoder and update the value here
+
     /** UNSIGNED_BYTE */
     public static readonly TEXTURETYPE_UNSIGNED_BYTE = 0;
     /** UNSIGNED_BYTE (2nd reference) */
