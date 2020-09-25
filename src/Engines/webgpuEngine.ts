@@ -685,6 +685,7 @@ export class WebGPUEngine extends Engine {
     }
 
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
+        // TODO WEBGPU why not caching also effect?
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
     }
@@ -852,6 +853,11 @@ export class WebGPUEngine extends Engine {
             webGpuContext.sources = shader.sources;
         }
         else {
+            webGpuContext.sources = {
+                fragment: fragmentSourceCode,
+                vertex: vertexSourceCode
+            };
+
             if (createAsRaw) {
                 webGpuContext.stages = this._compileRawPipelineStageDescriptor(vertexSourceCode, fragmentSourceCode);
             }
@@ -868,10 +874,7 @@ export class WebGPUEngine extends Engine {
                 orderedUBOsAndSamplers: webGpuContext.orderedUBOsAndSamplers,
                 leftOverUniforms: webGpuContext.leftOverUniforms,
                 leftOverUniformsByName: webGpuContext.leftOverUniformsByName,
-                sources: {
-                    fragment: fragmentSourceCode,
-                    vertex: vertexSourceCode
-                }
+                sources: webGpuContext.sources
             };
         }
     }
