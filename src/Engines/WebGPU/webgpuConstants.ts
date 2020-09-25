@@ -1,5 +1,10 @@
 export enum ExtensionName {
-    TextureCompressionBC = "texture-compression-bc"
+    DepthClamping = "depth-clamping",
+    Depth24UnormStencil8 = "depth24unorm-stencil8",
+    Depth32FloatStencil8 = "depth32float-stencil8",
+    PipelineStatisticsQuery = "pipeline-statistics-query",
+    TextureCompressionBC = "texture-compression-bc",
+    TimestampQuery = "timestamp-query"
 }
 export enum AddressMode {
     ClampToEdge = "clamp-to-edge",
@@ -136,7 +141,21 @@ export enum TextureFormat {
     RGBA32Float = "rgba32float",
     Depth32Float = "depth32float",
     Depth24Plus = "depth24plus",
-    Depth24PlusStencil8 = "depth24plus-stencil8"
+    Depth24PlusStencil8 = "depth24plus-stencil8",
+    BC1RGBAUNORM = "bc1-rgba-unorm",
+    BC1RGBAUNORMSRGB = "bc1-rgba-unorm-srgb",
+    BC2RGBAUNORM = "bc2-rgba-unorm",
+    BC2RGBAUNORMSRGB = "bc2-rgba-unorm-srgb",
+    BC3RGBAUNORM = "bc3-rgba-unorm",
+    BC3RGBAUNORMSRGB = "bc3-rgba-unorm-srgb",
+    BC4RUNORM = "bc4-r-unorm",
+    BC4RSNORM = "bc4-r-snorm",
+    BC5RGUNORM = "bc5-rg-unorm",
+    BC5RGSNORM = "bc5-rg-snorm",
+    BC6HRGBUFLOAT = "bc6h-rgb-ufloat",
+    BC6HRGBSFLOAT = "bc6h-rgb-sfloat",
+    BC7RGBAUNORM = "bc7-rgba-unorm",
+    BC7RGBAUNORMSRGB = "bc7-rgba-unorm-srgb"
 }
 export enum TextureComponentType {
     Float = "float",
