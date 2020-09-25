@@ -579,13 +579,14 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
    * @param scene defines the hosting scene
    * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+   * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
    */
-    function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode) {
+    function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode, invertY) {
         if (width === void 0) { width = 0; }
         if (height === void 0) { height = 0; }
         if (generateMipMaps === void 0) { generateMipMaps = false; }
         if (samplingMode === void 0) { samplingMode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE; }
-        var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA) || this;
+        var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA, invertY) || this;
         _this._isDirty = false;
         /** @hidden */
         _this._rootContainer = new _controls_container__WEBPACK_IMPORTED_MODULE_2__["Container"]("root");
@@ -1457,14 +1458,15 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      * @returns a new AdvancedDynamicTexture
      */
-    AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove, onlyAlphaTesting) {
+    AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove, onlyAlphaTesting, invertY) {
         if (width === void 0) { width = 1024; }
         if (height === void 0) { height = 1024; }
         if (supportPointerMove === void 0) { supportPointerMove = true; }
         if (onlyAlphaTesting === void 0) { onlyAlphaTesting = false; }
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE);
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
         var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
@@ -10697,6 +10699,14 @@ var SelectionPanel = /** @class */ (function (_super) {
     SelectionPanel.prototype._getTypeName = function () {
         return "SelectionPanel";
     };
+    Object.defineProperty(SelectionPanel.prototype, "panel", {
+        /** Gets the (stack) panel of the SelectionPanel  */
+        get: function () {
+            return this._panel;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(SelectionPanel.prototype, "headerColor", {
         /** Gets or sets the headerColor */
         get: function () {
