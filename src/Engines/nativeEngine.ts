@@ -1531,14 +1531,6 @@ export class NativeEngine extends Engine {
                 return this._native.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
             case Constants.TEXTURE_LINEAR_NEAREST:
                 return this._native.TEXTURE_LINEAR_NEAREST;
-
-            // Legacy constants
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
-                return this._native.TEXTURE_NEAREST_NEAREST;
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
-                return this._native.TEXTURE_LINEAR_LINEAR;
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                return this._native.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
             default:
                 throw new Error(`Unsupported sampling mode: ${samplingMode}.`);
         }
