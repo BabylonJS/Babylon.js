@@ -1056,17 +1056,17 @@ export class WebGPUEngine extends Engine {
     private _getWebGPUTextureFormat(type: number, format: number): GPUTextureFormat {
         switch (format) {
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
-                return WebGPUConstants.TextureFormat.BC7RGBAUNORM;
+                return WebGPUConstants.TextureFormat.BC7RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
-                return WebGPUConstants.TextureFormat.BC6HRGBUFLOAT;
+                return WebGPUConstants.TextureFormat.BC6HRGBUFloat;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
-                return WebGPUConstants.TextureFormat.BC6HRGBSFLOAT;
+                return WebGPUConstants.TextureFormat.BC6HRGBSFloat;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
-                return WebGPUConstants.TextureFormat.BC3RGBAUNORM;
+                return WebGPUConstants.TextureFormat.BC3RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
-                return WebGPUConstants.TextureFormat.BC2RGBAUNORM;
+                return WebGPUConstants.TextureFormat.BC2RGBAUnorm;
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
-                return WebGPUConstants.TextureFormat.BC1RGBAUNORM;
+                return WebGPUConstants.TextureFormat.BC1RGBAUNorm;
         }
 
         switch (type) {

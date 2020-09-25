@@ -221,21 +221,21 @@ export class WebGPUTextureHelper {
 
     private _getBlockInformationFromFormat(format: GPUTextureFormat): { width: number, height: number, length: number } {
         switch (format) {
-            case WebGPUConstants.TextureFormat.BC7RGBAUNORM:
-            case WebGPUConstants.TextureFormat.BC7RGBAUNORMSRGB:
+            case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 16 };
-            case WebGPUConstants.TextureFormat.BC6HRGBUFLOAT:
+            case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
                 return { width: 4, height: 4, length: 16 };
-            case WebGPUConstants.TextureFormat.BC6HRGBSFLOAT:
+            case WebGPUConstants.TextureFormat.BC6HRGBSFloat:
                 return { width: 4, height: 4, length: 16 };
-            case WebGPUConstants.TextureFormat.BC3RGBAUNORM:
-            case WebGPUConstants.TextureFormat.BC3RGBAUNORMSRGB:
+            case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC3RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 16 };
-            case WebGPUConstants.TextureFormat.BC2RGBAUNORM:
-            case WebGPUConstants.TextureFormat.BC2RGBAUNORMSRGB:
+            case WebGPUConstants.TextureFormat.BC2RGBAUnorm:
+            case WebGPUConstants.TextureFormat.BC2RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 16 };
-            case WebGPUConstants.TextureFormat.BC1RGBAUNORM:
-            case WebGPUConstants.TextureFormat.BC1RGBAUNORMSRGB:
+            case WebGPUConstants.TextureFormat.BC1RGBAUNorm:
+            case WebGPUConstants.TextureFormat.BC1RGBAUnormSRGB:
                 return { width: 4, height: 4, length: 8 };
 
             case WebGPUConstants.TextureFormat.RGBA16Float:
