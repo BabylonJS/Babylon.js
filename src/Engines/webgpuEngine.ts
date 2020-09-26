@@ -522,7 +522,7 @@ export class WebGPUEngine extends Engine {
         //     this._gl.viewport(x, y, width, height);
         // }
         if (!this._currentRenderPass) {
-            this._startMainRenderPass();
+            this._startRenderPass();
         }
         // TODO WEBGPU. Viewport.
         // Use 0 1 like the default webgl values.
@@ -531,7 +531,7 @@ export class WebGPUEngine extends Engine {
 
     public enableScissor(x: number, y: number, width: number, height: number): void {
         if (!this._currentRenderPass) {
-            this._startMainRenderPass();
+            this._startRenderPass();
         }
 
         this._currentRenderPass!.setScissorRect(x, y, width, height);
@@ -539,7 +539,7 @@ export class WebGPUEngine extends Engine {
 
     public disableScissor() {
         if (!this._currentRenderPass) {
-            this._startMainRenderPass();
+            this._startRenderPass();
         }
 
         this._currentRenderPass!.setScissorRect(0, 0, this.getRenderWidth(), this.getRenderHeight());
@@ -898,7 +898,11 @@ export class WebGPUEngine extends Engine {
         return results;
     }
 
-    public enableEffect(effect: Effect): void {
+    public enableEffect(effect: Nullable<Effect>): void {
+        if (!effect || effect === this._currentEffect) {
+            return;
+        }
+
         this._currentEffect = effect;
 
         if (effect.onBind) {
@@ -1305,8 +1309,8 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean) {
         texture.samplingMode = loadMipmap ? Engine.TEXTURE_TRILINEAR_SAMPLINGMODE : Engine.TEXTURE_BILINEAR_SAMPLINGMODE;
-
-        // TODO WEBGPU the webgl code also sets wraps / wrapt to CLAMP_TO_EDGE by calling gl.texParameteri but we can't do it as wrapu/wraps are properties of BaseTexture
+        texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     }
 
     public createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
@@ -1320,8 +1324,7 @@ export class WebGPUEngine extends Engine {
                 const width = imageBitmaps[0].width;
                 const height = width;
 
-                // TODO WEBGPU. Cube Texture Sampling Mode.
-                texture.samplingMode = noMipmap ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+                this._setCubeMapTextureParams(texture, !noMipmap);
                 texture.format = format ?? -1;
 
                 const gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
@@ -1348,12 +1351,29 @@ export class WebGPUEngine extends Engine {
                 gpuTexture = this._createGPUTextureForInternalTexture(texture);
             }
 
-            this._textureHelper.generateCubeMipmaps(gpuTexture, WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height), this._uploadEncoder);
+            this._generateMipmaps(texture, gpuTexture);
         }
     }
 
-    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
+    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
+        if (generateMipMaps) {
+            texture.generateMipMaps = true;
+            this._generateMipmaps(texture, texture._hardwareTexture!.underlyingResource);
+        }
+
         texture.samplingMode = samplingMode;
+    }
+
+    public updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV: Nullable<number> = null, wrapR: Nullable<number> = null): void {
+        if (wrapU !== null) {
+            texture._cachedWrapU = wrapU;
+        }
+        if (wrapV !== null) {
+            texture._cachedWrapV = wrapV;
+        }
+        if ((texture.is2DArray || texture.is3D) && (wrapR !== null)) {
+            texture._cachedWrapR = wrapR;
+        }
     }
 
     public setTexture(channel: number, _: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
@@ -1412,7 +1432,7 @@ export class WebGPUEngine extends Engine {
 
     public bindSamplers(effect: Effect): void { }
 
-    public _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
+    public _bindTextureDirectly(target: number, texture: InternalTexture, forTextureDataUpdate = false, force = false): boolean {
         if (this._boundTexturesCache[this._activeChannel] !== texture) {
             this._boundTexturesCache[this._activeChannel] = texture;
             return true;
@@ -1422,9 +1442,15 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _bindTexture(channel: number, texture: InternalTexture): void {
-        if (channel < 0) {
+        if (channel === undefined) {
             return;
         }
+
+        if (texture) {
+            texture._associatedChannel = channel;
+        }
+
+        this._activeChannel = channel;
 
         this._bindTextureDirectly(0, texture);
     }
@@ -1497,9 +1523,6 @@ export class WebGPUEngine extends Engine {
             console.log("using a released texture in updateDynamicTexture");
         }
 
-        // TODO WEBGPU: handle format if <> 0
-        // let internalFormat = format ? this._getInternalFormat(format) : this._gl.RGBA;
-
         // TODO WEBGPU remove test code
         if (canvas.width === 25600) {
             if ((this as any)._swap === undefined) { (this as any)._swap = 0; }
@@ -1541,7 +1564,9 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture);
         }
 
-        this._textureHelper.updateTexture(new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength), gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
+
+        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, xOffset, yOffset, this._uploadEncoder);
     }
 
     public updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
@@ -1574,7 +1599,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /** @hidden */
-    public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, data: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
+    public _uploadCompressedDataToTextureDirectly(texture: InternalTexture, internalFormat: number, width: number, height: number, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0) {
         let gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
 
         if (!texture._hardwareTexture?.underlyingResource) {
@@ -1582,12 +1607,15 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        this._textureHelper.updateTexture(new Uint8Array(data.buffer, data.byteOffset, data.byteLength), gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
+
+        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
     public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0, babylonInternalFormat?: number, useTextureWidthAndHeight = false): void {
-        // TODO WEBPU what to do with babylonInternalFormat? Texture format is set at creation time and can't be changed afterwards...
+        // TODO WEBPU babylonInternalFormat not handled.
+        // Note that it is used only by BasisTools.LoadTextureFromTranscodeResult when transcoding could not be done, and in that case the texture format used (TEXTURETYPE_UNSIGNED_SHORT_5_6_5) is not compatible with WebGPU...
         const lodMaxWidth = Math.round(Math.log(texture.width) * Math.LOG2E);
         const lodMaxHeight = Math.round(Math.log(texture.height) * Math.LOG2E);
 
@@ -1600,7 +1628,9 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        this._textureHelper.updateTexture(new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength), gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
+        const data = new Uint8Array(imageData.buffer, imageData.byteOffset, imageData.byteLength);
+
+        this._textureHelper.updateTexture(data, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, faceIndex, lod, texture.invertY, false, 0, 0, this._uploadEncoder);
     }
 
     /** @hidden */
@@ -1658,6 +1688,7 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
+        // TODO WEBGPU Implement the method, the problem being it is "synchronous" in the webgl case...
         console.warn("_readTexturePixels not implemented yet in WebGPU");
 
         return null as any;
@@ -1771,7 +1802,7 @@ export class WebGPUEngine extends Engine {
      * Begin a new frame
      */
     public beginFrame(): void {
-        // TODO WEBGPU debug only code
+        // TODO WEBGPU remove debug code when not needed anymore
         if (!(this as any)._count || (this as any)._count < 20) {
             if (!(this as any)._count) {
                 (this as any)._count = 1;
@@ -1800,7 +1831,7 @@ export class WebGPUEngine extends Engine {
 
         super.endFrame();
 
-        // TODO WEBGPU debug only code
+        // TODO WEBGPU remove debug code when not needed anymore
         if (!(this as any)._count || (this as any)._count < 20) {
             console.log("end frame", (this as any)._count);
         }
@@ -1810,7 +1841,7 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _startMainRenderPass(): void {
+    private _startRenderPass(): void {
         if (this._currentRenderPass) {
             this._endRenderPass();
         }
@@ -1838,7 +1869,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+    public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
@@ -1846,6 +1877,21 @@ export class WebGPUEngine extends Engine {
         this._currentFramebuffer = texture._MSAAFramebuffer ? texture._MSAAFramebuffer : texture._framebuffer;
         if (this._cachedViewport && !forceFullscreenViewport) {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
+        } else {
+            if (!requiredWidth) {
+                requiredWidth = texture.width;
+                if (lodLevel) {
+                    requiredWidth = requiredWidth / Math.pow(2, lodLevel);
+                }
+            }
+            if (!requiredHeight) {
+                requiredHeight = texture.height;
+                if (lodLevel) {
+                    requiredHeight = requiredHeight / Math.pow(2, lodLevel);
+                }
+            }
+
+            this._viewport(0, 0, requiredWidth, requiredHeight);
         }
     }
 
@@ -2196,8 +2242,8 @@ export class WebGPUEngine extends Engine {
     }
 
     private _getStages(): IWebGPURenderPipelineStageDescriptor {
-        const gpuPipeline = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
-        return gpuPipeline.stages!;
+        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+        return webgpuPipelineContext.stages!;
     }
 
     private _getVertexInputDescriptorFormat(vertexBuffer: VertexBuffer): GPUVertexFormat {
@@ -2414,9 +2460,9 @@ export class WebGPUEngine extends Engine {
 
     private _getVertexInputsToRender(): IWebGPUPipelineContextVertexInputsCache {
         const effect = this._currentEffect!;
-        const gpuContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
-        let vertexInputs = gpuContext.vertexInputs;
+        let vertexInputs = webgpuPipelineContext.vertexInputs;
         if (vertexInputs) {
             return vertexInputs;
         }
@@ -2429,7 +2475,7 @@ export class WebGPUEngine extends Engine {
             vertexBuffers: [],
             vertexOffsets: [],
         };
-        gpuContext.vertexInputs = vertexInputs;
+        webgpuPipelineContext.vertexInputs = vertexInputs;
 
         if (this._currentIndexBuffer) {
             // TODO WEBGPU. Check if cache would be worth it.
@@ -2694,7 +2740,7 @@ export class WebGPUEngine extends Engine {
      */
     public executeBundles(bundles: GPURenderBundle[]): void {
         if (!this._currentRenderPass) {
-            this._startMainRenderPass();
+            this._startRenderPass();
         }
 
         this._currentRenderPass!.executeBundles(bundles);
