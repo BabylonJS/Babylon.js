@@ -164,6 +164,7 @@
 - Added the possibility to update the shader code before being compiled ([Popov72](https://github.com/Popov72))
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 - Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
+- Added `muted` setting to `VideoTexture`, fix autoplay in Chrome ([simonihmig](https://github.com/simonihmig))
 
 ### Meshes
 
