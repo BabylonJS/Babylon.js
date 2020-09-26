@@ -1545,7 +1545,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             if (!material) {
                 continue;
             }
-            if (this.getIndices() && (material.fillMode == Constants.MATERIAL_TriangleStripDrawMode)) {
+            if (this.getIndices()?.length && (material.fillMode == Constants.MATERIAL_TriangleStripDrawMode)) {
                 anySubmeshSupportInterect = true;
                 break;
             }
