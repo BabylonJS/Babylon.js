@@ -123,7 +123,7 @@ export class WebGPUTextureHelper {
     }
 
     public createTexture(imageBitmap: ImageBitmap | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
-        sampleCount = 1, commandEncoder?: GPUCommandEncoder): GPUTexture
+        sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1): GPUTexture
     {
         let textureSize = {
             width: imageBitmap.width,
@@ -132,13 +132,14 @@ export class WebGPUTextureHelper {
         };
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
+        const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled;
         const additionalUsages = hasMipmaps && !this.isCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
         const gpuTexture = this._device.createTexture({
             size: textureSize,
             dimension: WebGPUConstants.TextureDimension.E2d,
             format,
-            usage:  WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled | additionalUsages,
+            usage:  usages | additionalUsages,
             sampleCount,
             mipLevelCount
         });
@@ -155,12 +156,13 @@ export class WebGPUTextureHelper {
     }
 
     public createCubeTexture(imageBitmaps: ImageBitmap[] | { width: number, height: number }, hasMipmaps = false, generateMipmaps = false, invertY = false, premultiplyAlpha = false, format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm,
-        sampleCount = 1, commandEncoder?: GPUCommandEncoder): GPUTexture
+        sampleCount = 1, commandEncoder?: GPUCommandEncoder, usage = -1): GPUTexture
     {
         const width = this.isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
         const height = this.isImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
 
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.computeNumMipmapLevels(width, height) : 1;
+        const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled;
         const additionalUsages = hasMipmaps && !this.isCompressedFormat(format) ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.OutputAttachment : 0;
 
         const gpuTexture = this._device.createTexture({
@@ -171,7 +173,7 @@ export class WebGPUTextureHelper {
             },
             dimension: WebGPUConstants.TextureDimension.E2d,
             format,
-            usage: WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.Sampled | additionalUsages,
+            usage: usages | additionalUsages,
             sampleCount,
             mipLevelCount
         });
