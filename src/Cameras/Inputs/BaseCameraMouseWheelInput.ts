@@ -43,7 +43,9 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param element Defines the element the controls should be listened from
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+     * @param noPreventDefault Defines whether event caught by the controls
+     *   should call preventdefault().
+     *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
         this._wheel = (pointer, _) => {
@@ -52,38 +54,39 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
 
             const event = <MouseWheelEvent>pointer.event;
 
-            // Chrome, Safari: event.deltaY
-            // IE: event.wheelDelta
-            // Firefox: event.detail (inverted)
-            //const wheelDelta = Math.max(-1, Math.min(1,
-            //    (event.deltaY || (<any>event).wheelDelta || -event.detail)));
-
-            const platformScale = 
+            const platformScale =
                 event.deltaMode === WheelEvent.DOM_DELTA_LINE ? this._ffMultiplier : 1;
 
-            if(event.deltaY !== undefined ) {
+            if (event.deltaY !== undefined) {
                 // Most recent browsers versions have delta properties.
                 // Firefox >= v17  (Has WebGL >= v4)
                 // Chrome >=  v31  (Has WebGL >= v8)
                 // Edge >=    v12  (Has WebGl >= v12)
                 // https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent
-                this._wheelDeltaX += this.wheelPrecisionX * platformScale * event.deltaX;
-                this._wheelDeltaY -= this.wheelPrecisionY * platformScale * event.deltaY;
-                this._wheelDeltaZ += this.wheelPrecisionZ * platformScale * event.deltaZ;
-            } else if((<any>event).wheelDeltaY !== undefined ) {
+                this._wheelDeltaX +=
+                    this.wheelPrecisionX * platformScale * event.deltaX / this._normalize;
+                this._wheelDeltaY -=
+                    this.wheelPrecisionY * platformScale * event.deltaY / this._normalize;
+                this._wheelDeltaZ +=
+                    this.wheelPrecisionZ * platformScale * event.deltaZ / this._normalize;
+            } else if ((<any>event).wheelDeltaY !== undefined) {
                 // Unsure whether these catch anything more. Documentation
                 // online is contradictory.
                 this._wheelDeltaX +=
-                    this.wheelPrecisionX * platformScale * (<any>event).wheelDeltaX;
+                    this.wheelPrecisionX * platformScale * 
+                    (<any>event).wheelDeltaX / this._normalize;
                 this._wheelDeltaY -=
-                    this.wheelPrecisionY * platformScale * (<any>event).wheelDeltaY;
+                    this.wheelPrecisionY * platformScale *
+                    (<any>event).wheelDeltaY / this._normalize;
                 this._wheelDeltaZ +=
-                    this.wheelPrecisionZ * platformScale * (<any>event).wheelDeltaZ;
-            } else if((<any>event).wheelDelta) {
+                    this.wheelPrecisionZ * platformScale *
+                    (<any>event).wheelDeltaZ / this._normalize;
+            } else if ((<any>event).wheelDelta) {
                 // IE >= v9   (Has WebGL >= v11)
                 // Maybe others?
-                this._wheelDeltaY -= this.wheelPrecisionY * (<any>event).wheelDelta;
-            } else if(event.detail) {
+                this._wheelDeltaY -=
+                    this.wheelPrecisionY * (<any>event).wheelDelta / this._normalize;
+            } else if (event.detail) {
                 // Firefox < v17  (Has WebGL >= v4)
                 // TODO How should we scale this?
                 // Since it's Firefox, it's probably the same as
@@ -91,6 +94,11 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 // ie: we can presume it needs scaled to match per-pixel.
                 this._wheelDeltaY +=
                     this.wheelPrecisionY * this._ffMultiplier * event.detail;
+                if ( "axis" in event && 
+                      (<any>event).axis === (<any>event).HORIZONTAL_AXIS ) {
+                    this._wheelDeltaX = this._wheelDeltaY;
+                    this._wheelDeltaY = 0;
+                }
             }
 
             if (event.preventDefault) {
@@ -151,7 +159,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      */
     protected _wheelDeltaZ: number = 0;
 
-    /*
+    /**
      * Firefox uses a different scheme to report scroll distances to other
      * browsers. Rather than use complicated methods to calculate the exact
      * multiple we need to apply, let's just cheat and use a constant.
@@ -159,4 +167,11 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
      */
     private readonly _ffMultiplier = 12;
+
+    /**
+     * Different event attributes for wheel data fall into a few set ranges.
+     * Some relevant but dated date here:
+     * https://stackoverflow.com/questions/5527601/normalizing-mousewheel-speed-across-browsers
+     */
+    private readonly _normalize = 120;
 }
