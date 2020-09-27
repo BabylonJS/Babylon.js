@@ -1280,7 +1280,7 @@ export class ThinEngine {
         this._gl.clear(mode);
     }
 
-    private _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
+    protected _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
 
     /** @hidden */
     public _viewport(x: number, y: number, width: number, height: number): void {
@@ -3591,6 +3591,8 @@ export class ThinEngine {
         if (texture._irradianceTexture) {
             texture._irradianceTexture.dispose();
         }
+
+        texture._depthStencilTexture?.dispose();
     }
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
@@ -3670,7 +3672,7 @@ export class ThinEngine {
     }
 
     /** @hidden */
-    public _bindTexture(channel: number, texture: Nullable<InternalTexture>): void {
+    public _bindTexture(channel: number, texture: Nullable<InternalTexture>, name: string): void {
         if (channel === undefined) {
             return;
         }
