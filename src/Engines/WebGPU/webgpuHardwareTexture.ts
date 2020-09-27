@@ -6,27 +6,19 @@ import * as WebGPUConstants from './webgpuConstants';
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
     private _webgpuTexture: Nullable<GPUTexture>;
-    private _webgpuTextureView: Nullable<GPUTextureView>;
-    private _webgpuSampler: Nullable<GPUSampler>;
 
     public get underlyingResource(): Nullable<GPUTexture> {
         return this._webgpuTexture;
     }
 
-    public get view(): Nullable<GPUTextureView> {
-        return this._webgpuTextureView;
-    }
-
-    public get sampler(): Nullable<GPUSampler> {
-        return this._webgpuSampler;
-    }
-
+    public view: Nullable<GPUTextureView>;
+    public sampler: Nullable<GPUSampler>;
     public format: GPUTextureFormat = WebGPUConstants.TextureFormat.RGBA8Unorm;
 
     constructor(existingTexture: Nullable<GPUTexture> = null) {
         this._webgpuTexture = existingTexture;
-        this._webgpuTextureView = null;
-        this._webgpuSampler = null;
+        this.view = null;
+        this.sampler = null;
     }
 
     public set(hardwareTexture: GPUTexture) {
@@ -34,17 +26,13 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     }
 
     public createView(descriptor?: GPUTextureViewDescriptor) {
-        this._webgpuTextureView = this._webgpuTexture!.createView(descriptor);
-    }
-
-    public setSampler(sampler: GPUSampler) {
-        this._webgpuSampler = sampler;
+        this.view = this._webgpuTexture!.createView(descriptor);
     }
 
     public reset() {
         this._webgpuTexture = null;
-        this._webgpuTextureView = null as any;
-        this._webgpuSampler = null as any;
+        this.view = null;
+        this.sampler = null;
     }
 
     public release() {
