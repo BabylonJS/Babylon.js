@@ -1175,8 +1175,8 @@ export class Engine extends ThinEngine {
      * @param channel defines the channel to use
      * @param postProcess defines the source postprocess
      */
-    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void {
-        this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
+    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null, name);
     }
 
     /**
@@ -1184,8 +1184,8 @@ export class Engine extends ThinEngine {
      * @param channel The channel the texture should be bound to
      * @param postProcess The post process which's output should be bound
      */
-    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void {
-        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
+    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        this._bindTexture(channel, postProcess ? postProcess._outputTexture : null, name);
     }
 
     protected _rebuildBuffers(): void {

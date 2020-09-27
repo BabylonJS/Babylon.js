@@ -367,6 +367,8 @@ export class RenderTargetTexture extends Texture {
             return;
         }
 
+        internalTexture._depthStencilTexture?.dispose();
+
         var engine = this.getScene()!.getEngine();
         internalTexture._depthStencilTexture = engine.createDepthStencilTexture(this._size, {
             bilinearFiltering,
