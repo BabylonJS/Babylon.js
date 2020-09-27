@@ -217,7 +217,7 @@ export class FreeCamera extends TargetCamera {
     constructor(name: string, position: Vector3, scene: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, position, scene, setActiveOnSceneIfNoneActive);
         this.inputs = new FreeCameraInputsManager(this);
-        this.inputs.addKeyboard().addMouse();
+        this.inputs.addKeyboard().addMouse().addMouseWheel();
     }
 
     /**
