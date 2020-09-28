@@ -84,6 +84,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     * An event triggered when the system is disposed
     */
     public onDisposeObservable = new Observable<IParticleSystem>();
+    /**
+    * An event triggered when the system is stopped
+    */
+    public onStoppedObservable = new Observable<IParticleSystem>();
 
     private _onDisposeObserver: Nullable<Observer<IParticleSystem>>;
     /**
@@ -1187,6 +1191,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param stopSubEmitters if true it will stop the current system and all created sub-Systems if false it will stop the current root system only, this param is used by the root particle system only. the default value is true.
      */
     public stop(stopSubEmitters = true): void {
+        if (this._stopped) {
+            return;
+        }
+
+        this.onStoppedObservable.notifyObservers(this);
+
         this._stopped = true;
 
         if (stopSubEmitters) {
@@ -2068,6 +2078,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+        this.onStoppedObservable.clear();
 
         this.reset();
     }
