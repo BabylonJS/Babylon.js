@@ -10,6 +10,7 @@ declare module "babylonjs-materials/cell/cell.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var cellPixelShader: {
         name: string;
@@ -223,6 +224,7 @@ declare module "babylonjs-materials/fire/fire.fragment" {
     import "babylonjs/Shaders/ShadersInclude/clipPlaneFragment";
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var firePixelShader: {
         name: string;
@@ -299,6 +301,7 @@ declare module "babylonjs-materials/fur/fur.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var furPixelShader: {
         name: string;
@@ -396,6 +399,7 @@ declare module "babylonjs-materials/gradient/gradient.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var gradientPixelShader: {
         name: string;
@@ -465,6 +469,7 @@ declare module "babylonjs-materials/gradient/index" {
 declare module "babylonjs-materials/grid/grid.fragment" {
     import "babylonjs/Shaders/ShadersInclude/fogFragmentDeclaration";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var gridPixelShader: {
         name: string;
@@ -572,6 +577,7 @@ declare module "babylonjs-materials/lava/lava.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var lavaPixelShader: {
         name: string;
@@ -658,6 +664,7 @@ declare module "babylonjs-materials/mix/mix.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var mixPixelShader: {
         name: string;
@@ -764,6 +771,7 @@ declare module "babylonjs-materials/normal/normal.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var normalPixelShader: {
         name: string;
@@ -840,6 +848,7 @@ declare module "babylonjs-materials/shadowOnly/shadowOnly.fragment" {
     import "babylonjs/Shaders/ShadersInclude/clipPlaneFragment";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var shadowOnlyPixelShader: {
         name: string;
@@ -911,6 +920,7 @@ declare module "babylonjs-materials/simple/simple.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var simplePixelShader: {
         name: string;
@@ -980,6 +990,7 @@ declare module "babylonjs-materials/sky/sky.fragment" {
     import "babylonjs/Shaders/ShadersInclude/fogFragmentDeclaration";
     import "babylonjs/Shaders/ShadersInclude/clipPlaneFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var skyPixelShader: {
         name: string;
@@ -1156,6 +1167,7 @@ declare module "babylonjs-materials/terrain/terrain.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var terrainPixelShader: {
         name: string;
@@ -1247,6 +1259,7 @@ declare module "babylonjs-materials/triPlanar/triplanar.fragment" {
     import "babylonjs/Shaders/ShadersInclude/depthPrePass";
     import "babylonjs/Shaders/ShadersInclude/lightFragment";
     import "babylonjs/Shaders/ShadersInclude/fogFragment";
+    import "babylonjs/Shaders/ShadersInclude/imageProcessingCompatibility";
     /** @hidden */
     export var triplanarPixelShader: {
         name: string;
