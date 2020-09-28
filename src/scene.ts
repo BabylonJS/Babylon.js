@@ -3440,6 +3440,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
      * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
+     * @param onSuccess optional success callback
+     * @param onError optional error callback
      * @returns the current scene
      */
     public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void): Scene {
