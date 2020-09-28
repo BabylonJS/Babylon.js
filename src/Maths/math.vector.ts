@@ -1091,6 +1091,60 @@ export class Vector3 {
     }
 
     /**
+     * Returns this Vector3 after being multiplied by a quaternion.
+     * @param quat the quaternion to multiply the vector by
+     * @returns this Vector3
+     */
+    public multiplyByQuat(quat: Quaternion): Vector3 {
+        let num = quat.x * 2,
+        num2 = quat.y * 2,
+        num3 = quat.z * 2,
+        num4 = quat.x * num,
+        num5 = quat.y * num2,
+        num6 = quat.z * num3,
+        num7 = quat.x * num2,
+        num8 = quat.x * num3,
+        num9 = quat.y * num3,
+        num10 = quat.w * num,
+        num11 = quat.w * num2,
+        num12 = quat.w * num3;
+
+        let x = (((1 - (num5 + num6)) * this.x) + ((num7 - num12) * this.y)) + ((num8 + num11) * this.z),
+        y = (((num7 + num12) * this.x) + ((1 - (num4 + num6)) * this.y)) + ((num9 - num10) * this.z),
+        z = (((num8 - num11) * this.x) + ((num9 + num10) * this.y)) + ((1 - (num4 + num5)) * this.z);
+
+        this.set(x, y, z);
+
+        return this;
+    }
+
+    /**
+     * Returns the referenced Vector3 after being multiplied by a quaternion.
+     * @param quat the quaternion to multiply the vector by
+     * @param ref the vector to apply the results to
+     */
+    public multiplyByQuatToRef(quat: Quaternion, ref: Vector3): void {
+        let num = quat.x * 2,
+        num2 = quat.y * 2,
+        num3 = quat.z * 2,
+        num4 = quat.x * num,
+        num5 = quat.y * num2,
+        num6 = quat.z * num3,
+        num7 = quat.x * num2,
+        num8 = quat.x * num3,
+        num9 = quat.y * num3,
+        num10 = quat.w * num,
+        num11 = quat.w * num2,
+        num12 = quat.w * num3;
+
+        let x = (((1 - (num5 + num6)) * this.x) + ((num7 - num12) * this.y)) + ((num8 + num11) * this.z),
+        y = (((num7 + num12) * this.x) + ((1 - (num4 + num6)) * this.y)) + ((num9 - num10) * this.z),
+        z = (((num8 - num11) * this.x) + ((num9 + num10) * this.y)) + ((1 - (num4 + num5)) * this.z);
+
+        ref.set(x, y, z);
+    }
+
+    /**
      * Returns a new Vector3 set with the result of the division of the current Vector3 coordinates by the given ones
      * @param otherVector defines the second operand
      * @returns the new Vector3
