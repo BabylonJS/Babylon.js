@@ -9,7 +9,7 @@ import { IEffectCreationOptions, Effect } from "../Materials/effect";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { _TimeToken } from "../Instrumentation/timeToken";
 import { Constants } from "./constants";
-import * as WebGPUConstants from './webGPU/webgpuConstants';
+import * as WebGPUConstants from './WebGPU/webgpuConstants';
 import { VertexBuffer } from "../Meshes/buffer";
 import { WebGPUPipelineContext, IWebGPUPipelineContextVertexInputsCache, IWebGPURenderPipelineStageDescriptor } from './WebGPU/webgpuPipelineContext';
 import { IPipelineContext } from './IPipelineContext';
@@ -111,6 +111,11 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Defines wether MSAA is enabled on the canvas.
      */
     antialiasing?: boolean;
+
+    /**
+     * Defines wether the stencil buffer should be enabled.
+     */
+    stencil?: boolean;
 }
 
 /**
@@ -224,6 +229,7 @@ export class WebGPUEngine extends Engine {
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
         options.antialiasing = false;//options.antialiasing === undefined ? true : options.antialiasing;
+        options.stencil = options.stencil ?? true;
 
         Logger.Log(`Babylon.js v${Engine.Version} - WebGPU engine`);
         if (!navigator.gpu) {
@@ -257,6 +263,7 @@ export class WebGPUEngine extends Engine {
 
         this._hardwareScalingLevel = 1;
         this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
+        this._isStencilEnable = options.stencil;
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
 
@@ -453,7 +460,7 @@ export class WebGPUEngine extends Engine {
             mipLevelCount: 1,
             sampleCount: this._mainPassSampleCount,
             dimension: WebGPUConstants.TextureDimension.E2d,
-            format: WebGPUConstants.TextureFormat.Depth24PlusStencil8,
+            format: this.isStencilEnable ? WebGPUConstants.TextureFormat.Depth24PlusStencil8 : WebGPUConstants.TextureFormat.Depth32Float,
             usage:  WebGPUConstants.TextureUsage.OutputAttachment
         };
 
