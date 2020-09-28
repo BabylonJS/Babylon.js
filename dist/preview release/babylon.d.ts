@@ -35259,6 +35259,10 @@ declare module BABYLON {
          */
         autoPlay?: boolean;
         /**
+         * Applies `muted` to video, if specified
+         */
+        muted?: boolean;
+        /**
          * Applies `loop` to video, if specified
          */
         loop?: boolean;
@@ -41189,9 +41193,11 @@ declare module BABYLON {
         /**
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
          * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
+         * @param onSuccess optional success callback
+         * @param onError optional error callback
          * @returns the current scene
          */
-        freezeActiveMeshes(skipEvaluateActiveMeshes?: boolean): Scene;
+        freezeActiveMeshes(skipEvaluateActiveMeshes?: boolean, onSuccess?: () => void, onError?: (message: string) => void): Scene;
         /**
          * Use this function to restart evaluating active meshes on every frame
          * @returns the current scene
@@ -75727,6 +75733,12 @@ declare module BABYLON {
              * It should have the general size of a single unit, as the instances will be scaled according to the provided radius
              */
             sourceMesh?: Mesh;
+            /**
+             * This function will be called after a mesh was created for a specific joint.
+             * Using this function you can either manipulate the instance or return a new mesh.
+             * When returning a new mesh the instance created before will be disposed
+             */
+            onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => Mesh | undefined;
             /**
              * Should the source mesh stay visible. Defaults to false
              */
