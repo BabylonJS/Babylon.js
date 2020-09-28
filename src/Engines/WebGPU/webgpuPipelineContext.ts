@@ -228,7 +228,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setArray(uniformName: string, array: number[]): void {
-        throw "setArray not Supported in LeftOver UBO.";
+        if (!this.uniformBuffer || !this.leftOverUniformsByName[uniformName]) {
+            return;
+        }
+        this.uniformBuffer.updateArray(uniformName, array);
     }
 
     /**
@@ -237,7 +240,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setArray2(uniformName: string, array: number[]): void {
-        throw "setArray2 not Supported in LeftOver UBO.";
+        this.setArray(uniformName, array);
     }
 
     /**
@@ -247,7 +250,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @returns this effect.
      */
     public setArray3(uniformName: string, array: number[]): void {
-        throw "setArray3 not Supported in LeftOver UBO.";
+        this.setArray(uniformName, array);
     }
 
     /**
@@ -256,7 +259,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setArray4(uniformName: string, array: number[]): void {
-        throw "setArray4 not Supported in LeftOver UBO.";
+        this.setArray(uniformName, array);
     }
 
     /**

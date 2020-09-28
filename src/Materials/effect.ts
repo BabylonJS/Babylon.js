@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { Nullable } from "../types";
+import { FloatArray, Nullable } from "../types";
 import { Constants } from "../Engines/constants";
 import { DomManagement } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
@@ -950,7 +950,7 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setFloatArray(uniformName: string, array: Float32Array): Effect {
+    public setFloatArray(uniformName: string, array: FloatArray): Effect {
         this._pipelineContext!.setArray(uniformName, array);
         return this;
     }
@@ -961,7 +961,7 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setFloatArray2(uniformName: string, array: Float32Array): Effect {
+    public setFloatArray2(uniformName: string, array: FloatArray): Effect {
         this._pipelineContext!.setArray2(uniformName, array);
         return this;
     }
@@ -972,7 +972,7 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setFloatArray3(uniformName: string, array: Float32Array): Effect {
+    public setFloatArray3(uniformName: string, array: FloatArray): Effect {
         this._pipelineContext!.setArray3(uniformName, array);
         return this;
     }
@@ -983,7 +983,7 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setFloatArray4(uniformName: string, array: Float32Array): Effect {
+    public setFloatArray4(uniformName: string, array: FloatArray): Effect {
         this._pipelineContext!.setArray4(uniformName, array);
         return this;
     }

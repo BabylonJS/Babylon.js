@@ -91,6 +91,13 @@ export class UniformBuffer {
     public updateFloatArray: (name: string, array: Float32Array) => void;
 
     /**
+     * Lambda to Update an array of number in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+    public updateArray: (name: string, array: number[]) => void;
+
+    /**
      * Lambda to Update a 4x4 Matrix in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
@@ -166,6 +173,7 @@ export class UniformBuffer {
             this.updateFloat3 = this._updateFloat3ForEffect;
             this.updateFloat4 = this._updateFloat4ForEffect;
             this.updateFloatArray = this._updateFloatArrayForEffect;
+            this.updateArray = this._updateArrayForEffect;
             this.updateMatrix = this._updateMatrixForEffect;
             this.updateMatrices = this._updateMatricesForEffect;
             this.updateVector3 = this._updateVector3ForEffect;
@@ -182,6 +190,7 @@ export class UniformBuffer {
             this.updateFloat3 = this._updateFloat3ForUniform;
             this.updateFloat4 = this._updateFloat4ForUniform;
             this.updateFloatArray = this._updateFloatArrayForUniform;
+            this.updateArray = this._updateArrayForUniform;
             this.updateMatrix = this._updateMatrixForUniform;
             this.updateMatrices = this._updateMatricesForUniform;
             this.updateVector3 = this._updateVector3ForUniform;
@@ -288,6 +297,8 @@ export class UniformBuffer {
             if (size instanceof Array) {
                 throw "addUniform should not be use with Array in UBO: " + name;
             }
+
+            this._fillAlignment(4);
 
             this._uniformArraySizes[name] = { strideSize: size, arraySize };
             if (size == 16) {
@@ -656,6 +667,14 @@ export class UniformBuffer {
     }
 
     private _updateFloatArrayForUniform(name: string, array: Float32Array) {
+        this.updateUniformArray(name, array, array.length);
+    }
+
+    private _updateArrayForEffect(name: string, array: number[]) {
+        this._currentEffect.setArray(name, array);
+    }
+
+    private _updateArrayForUniform(name: string, array: number[]) {
         this.updateUniformArray(name, array, array.length);
     }
 
