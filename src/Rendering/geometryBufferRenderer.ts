@@ -35,7 +35,7 @@ interface ISavedTransformationMatrix {
 export class GeometryBufferRenderer {
     /**
      * Constant used to retrieve the depth + normal texture index in the G-Buffer textures array
-     * using getIndex(GeometryBufferRenderer.DEPTHNORMAL_TYPE)
+     * using getIndex(GeometryBufferRenderer.DEPTHNORMAL_TEXTURE_INDEX)
      */
     public static readonly DEPTHNORMAL_TEXTURE_TYPE = 0;
     /**
@@ -100,7 +100,7 @@ export class GeometryBufferRenderer {
      * Sets up internal structures to share outputs with PrePassRenderer
      * This method should only be called by the PrePassRenderer itself
      */
-    public linkPrePassRenderer(prePassRenderer: PrePassRenderer) {
+    public _linkPrePassRenderer(prePassRenderer: PrePassRenderer) {
         this._linkedWithPrePass = true;
         this._prePassRenderer = prePassRenderer;
 
@@ -118,7 +118,7 @@ export class GeometryBufferRenderer {
      * Separates internal structures from PrePassRenderer so the geometry buffer can now operate by itself.
      * This method should only be called by the PrePassRenderer itself
      */
-    public unlinkPrePassRenderer() {
+    public _unlinkPrePassRenderer() {
         this._linkedWithPrePass = false;
         this._createRenderTargets();
     }
@@ -127,7 +127,7 @@ export class GeometryBufferRenderer {
      * @hidden
      * Resets the geometry buffer layout
      */
-    public resetLayout() {
+    public _resetLayout() {
         this._enablePosition = false;
         this._enableReflectivity = false;
         this._enableVelocity = false;
@@ -139,7 +139,7 @@ export class GeometryBufferRenderer {
      * Replaces a texture in the geometry buffer renderer
      * Useful when linking textures of the prepass renderer
      */
-    public replaceTexture(texture: Texture, geometryBufferType: number, index: number) {
+    public _forceTextureType(geometryBufferType: number, index: number) {
         if (geometryBufferType === GeometryBufferRenderer.POSITION_TEXTURE_TYPE) {
             this._positionIndex = index;
             this._enablePosition = true;
@@ -159,7 +159,7 @@ export class GeometryBufferRenderer {
      * Sets texture attachments
      * Useful when linking textures of the prepass renderer
      */
-    public setAttachments(attachments: number[]) {
+    public _setAttachments(attachments: number[]) {
         this._attachments = attachments;
     }
 
@@ -168,7 +168,7 @@ export class GeometryBufferRenderer {
      * Replaces the first texture which is hard coded as a depth texture in the geometry buffer
      * Useful when linking textures of the prepass renderer
      */
-    public linkInternalTexture(internalTexture: InternalTexture) {
+    public _linkInternalTexture(internalTexture: InternalTexture) {
         this._multiRenderTarget._texture = internalTexture;
     }
 

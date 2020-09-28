@@ -152,11 +152,11 @@ export class PrePassRenderer {
             }
 
             this._geometryBuffer.renderList = [];
-            this._geometryBuffer.linkPrePassRenderer(this);
+            this._geometryBuffer._linkPrePassRenderer(this);
             this._updateGeometryBufferLayout();
         } else {
             if (this._geometryBuffer) {
-                this._geometryBuffer.unlinkPrePassRenderer();
+                this._geometryBuffer._unlinkPrePassRenderer();
             }
             this._geometryBuffer = null;
             this._scene.disableGeometryBufferRenderer();
@@ -176,20 +176,22 @@ export class PrePassRenderer {
     }
 
     private _initializeAttachments() {
-        let gl = this._engine._gl;
-
-        this._multiRenderAttachments = [];
-        this._clearAttachments = [gl.NONE];
-        this._defaultAttachments = [gl.COLOR_ATTACHMENT0];
+        const multiRenderLayout = [];
+        const clearLayout = [false];
+        const defaultLayout = [true];
 
         for (let i = 0; i < this.mrtCount; i++) {
-            this._multiRenderAttachments.push((<any>gl)["COLOR_ATTACHMENT" + i]);
+            multiRenderLayout.push(true);
 
             if (i > 0) {
-                this._clearAttachments.push((<any>gl)["COLOR_ATTACHMENT" + i]);
-                this._defaultAttachments.push(gl.NONE);
+                clearLayout.push(true);
+                defaultLayout.push(false);
             }
         }
+
+        this._multiRenderAttachments = this._engine.buildTextureLayout(multiRenderLayout);
+        this._clearAttachments = this._engine.buildTextureLayout(clearLayout);
+        this._defaultAttachments = this._engine.buildTextureLayout(defaultLayout);
     }
 
     private _createCompositionEffect() {
@@ -319,13 +321,15 @@ export class PrePassRenderer {
 
     private _updateGeometryBufferLayout() {
         if (this._geometryBuffer) {
-            this._geometryBuffer.resetLayout();
+            this._geometryBuffer._resetLayout();
 
-            const attachments = this._defaultAttachments.slice();
-            const gl = this._scene.getEngine()._gl;
-            attachments[0] = gl.NONE;
+            const texturesActivated = [];
 
-            this._geometryBuffer.linkInternalTexture(this.prePassRT.getInternalTexture()!);
+            for (let i = 0; i < this._mrtLayout.length; i++) {
+                texturesActivated.push(false);
+            }
+
+            this._geometryBuffer._linkInternalTexture(this.prePassRT.getInternalTexture()!);
 
             const matches = [
                 {
@@ -350,12 +354,12 @@ export class PrePassRenderer {
             for (let i = 0; i < matches.length; i++) {
                 const index = this._mrtLayout.indexOf(matches[i].prePassConstant);
                 if (index !== -1) {
-                    this._geometryBuffer.replaceTexture(this.prePassRT.textures[index], matches[i].geometryBufferConstant, index);
-                    attachments[index] = (<any>gl)["COLOR_ATTACHMENT" + index];
+                    this._geometryBuffer._forceTextureType(matches[i].geometryBufferConstant, index);
+                    texturesActivated[index] = true;
                 }
             }
 
-            this._geometryBuffer.setAttachments(attachments);
+            this._geometryBuffer._setAttachments(this._engine.buildTextureLayout(texturesActivated));
         }
     }
 
@@ -522,7 +526,7 @@ export class PrePassRenderer {
         if (!this.enabled) {
             // Prepass disabled, we render only on 1 color attachment
             this._engine.restoreDefaultFramebuffer();
-            this._engine.bindAttachments([this._engine._gl.BACK]);
+            this._engine.restoreSingleAttachment();
         }
     }
 
