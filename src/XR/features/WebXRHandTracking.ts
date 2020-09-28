@@ -43,7 +43,7 @@ export interface IWebXRHandTrackingOptions {
         /**
          * This function will be called after a mesh was created for a specific joint.
          * Using this function you can either manipulate the instance or return a new mesh.
-         * When returning a new mesh it is the developer's responsibility to dispose the mesh instance!
+         * When returning a new mesh the instance created before will be disposed
          */
         onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => Mesh | undefined;
         /**
@@ -337,7 +337,10 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             if (this.options.jointMeshes?.onHandJointMeshGenerated) {
                 const returnedMesh = this.options.jointMeshes.onHandJointMeshGenerated(newInstance as InstancedMesh, i, xrController.uniqueId);
                 if (returnedMesh) {
-                    newInstance = returnedMesh;
+                    if (returnedMesh !== newInstance) {
+                        newInstance.dispose();
+                        newInstance = returnedMesh;
+                    }
                 }
             }
             newInstance.isPickable = false;
