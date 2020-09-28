@@ -299,7 +299,7 @@ export class ThinEngine {
     protected _hardwareScalingLevel: number;
     /** @hidden */
     public _caps: EngineCapabilities;
-    private _isStencilEnable: boolean;
+    protected _isStencilEnable: boolean;
 
     private _glVersion: string;
     private _glRenderer: string;
