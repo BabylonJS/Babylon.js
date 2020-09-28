@@ -35259,6 +35259,10 @@ declare module BABYLON {
          */
         autoPlay?: boolean;
         /**
+         * Applies `muted` to video, if specified
+         */
+        muted?: boolean;
+        /**
          * Applies `loop` to video, if specified
          */
         loop?: boolean;
@@ -41189,9 +41193,11 @@ declare module BABYLON {
         /**
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
          * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
+         * @param onSuccess optional success callback
+         * @param onError optional error callback
          * @returns the current scene
          */
-        freezeActiveMeshes(skipEvaluateActiveMeshes?: boolean): Scene;
+        freezeActiveMeshes(skipEvaluateActiveMeshes?: boolean, onSuccess?: () => void, onError?: (message: string) => void): Scene;
         /**
          * Use this function to restart evaluating active meshes on every frame
          * @returns the current scene
@@ -53164,6 +53170,16 @@ declare module BABYLON {
         _createTexture(): WebGLTexture;
         protected _deleteTexture(texture: Nullable<WebGLTexture>): void;
         /**
+         * Update the content of a dynamic texture
+         * @param texture defines the texture to update
+         * @param canvas defines the canvas containing the source
+         * @param invertY defines if data must be stored with Y axis inverted
+         * @param premulAlpha defines if alpha is stored as premultiplied
+         * @param format defines the format of the data
+         * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+         */
+        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        /**
          * Usually called from Texture.ts.
          * Passed information to create a WebGLTexture
          * @param url defines a value which contains one of the following:
@@ -53184,6 +53200,8 @@ declare module BABYLON {
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
         createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
+        _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): NativeTexture;
+        _releaseFramebufferObjects(texture: InternalTexture): void;
         /**
          * Creates a cube texture
          * @param rootUrl defines the url where the files to load is located
@@ -75727,6 +75745,12 @@ declare module BABYLON {
              * It should have the general size of a single unit, as the instances will be scaled according to the provided radius
              */
             sourceMesh?: Mesh;
+            /**
+             * This function will be called after a mesh was created for a specific joint.
+             * Using this function you can either manipulate the instance or return a new mesh.
+             * When returning a new mesh the instance created before will be disposed
+             */
+            onHandJointMeshGenerated?: (meshInstance: InstancedMesh, jointId: number, controllerId: string) => Mesh | undefined;
             /**
              * Should the source mesh stay visible. Defaults to false
              */

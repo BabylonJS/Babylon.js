@@ -1535,6 +1535,35 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         var subMeshes = this._scene.getIntersectingSubMeshCandidates(this, ray);
         var len: number = subMeshes.length;
+
+        // Check if all submeshes are using a material that don't allow picking (point/lines rendering)
+        // if no submesh can be picked that way, then fallback to BBox picking
+        var anySubmeshSupportIntersect = false;
+        for (var index = 0; index < len; index++) {
+            var subMesh = subMeshes.data[index];
+            var material = subMesh.getMaterial();
+            if (!material) {
+                continue;
+            }
+            if (this.getIndices()?.length && (material.fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
+                    material.fillMode == Constants.MATERIAL_TriangleFillMode ||
+                    material.fillMode == Constants.MATERIAL_WireFrameFillMode ||
+                    material.fillMode == Constants.MATERIAL_PointFillMode)) {
+                anySubmeshSupportIntersect = true;
+                break;
+            }
+        }
+
+        // no sub mesh support intersection, fallback to BBox that has already be done
+        if (!anySubmeshSupportIntersect) {
+            pickingInfo.hit = true;
+            pickingInfo.pickedMesh = this;
+            pickingInfo.distance = Vector3.Distance(ray.origin, boundingInfo.boundingSphere.center);
+            pickingInfo.subMeshId = -1;
+            return pickingInfo;
+        }
+
+        // at least 1 submesh supports intersection, keep going
         for (var index = 0; index < len; index++) {
             var subMesh = subMeshes.data[index];
 

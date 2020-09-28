@@ -31,6 +31,7 @@
 - Added support for `material.disableColorWrite` ([Deltakosh](https://github.com/deltakosh))
 - The Mesh Asset Task also accepts File as sceneInput ([RaananW](https://github.com/RaananW))
 - Gizmo axis thickness ([cedricguillemet](https://github.com/cedricguillemet))
+- When no submesh can be picked(pointcloud), falls back to bbox intersection ([cedricguillemet](https://github.com/cedricguillemet))
 - Added support preserving vert colors for CSG objects ([PirateJC](https://github.com/PirateJC))
 - Added `boundingBoxRenderer.onBeforeBoxRenderingObservable` and `boundingBoxRenderer.onAfterBoxRenderingObservable` ([Deltakosh](https://github.com/deltakosh))
 - Better plane handling for PointerDragBehavior when camera direction colinear to axis ([cedricguillemet](https://github.com/cedricguillemet))
@@ -49,6 +50,7 @@
 - Added support for multi-pointer mesh selection and pointer over/out triggers ([#8820](https://github.com/BabylonJS/Babylon.js/issues/8820)) ([RaananW](https://github.com/RaananW))
 - Changed DeviceSourceManager getInput contract to no longer return nullable values for reals this time. Also added proper cleanup for DeviceSourceManager observables ([Drigax](https://github.com/drigax))
 - Default Loading screen supports any image size and ratio ([#8845](https://github.com/BabylonJS/Babylon.js/issues/8845)) ([RaananW](https://github.com/RaananW))
+- Added optional success and error callbacks for freezeActiveMeshes ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -166,6 +168,7 @@
 - Added the possibility to update the shader code before being compiled ([Popov72](https://github.com/Popov72))
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 - Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
+- Added `muted` setting to `VideoTexture`, fix autoplay in Chrome ([simonihmig](https://github.com/simonihmig))
 
 ### Meshes
 
