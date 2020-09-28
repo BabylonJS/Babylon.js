@@ -853,7 +853,7 @@ export class Effect implements IDisposable {
      * @param postProcess Post process to get the input texture from.
      */
     public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
-        this._engine.setTextureFromPostProcess(this._samplers[channel], postProcess, name);
+        this._engine.setTextureFromPostProcess(this._samplers[channel], postProcess, channel);
     }
 
     /**
@@ -863,7 +863,7 @@ export class Effect implements IDisposable {
      * @param postProcess Post process to get the output texture from.
      */
     public setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void {
-        this._engine.setTextureFromPostProcessOutput(this._samplers[channel], postProcess, name);
+        this._engine.setTextureFromPostProcessOutput(this._samplers[channel], postProcess, channel);
     }
 
     /**
