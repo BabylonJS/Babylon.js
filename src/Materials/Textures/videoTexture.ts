@@ -18,6 +18,11 @@ export interface VideoTextureSettings {
     autoPlay?: boolean;
 
     /**
+     * Applies `muted` to video, if specified
+     */
+    muted?: boolean;
+
+    /**
      * Applies `loop` to video, if specified
      */
     loop?: boolean;
@@ -110,12 +115,14 @@ export class VideoTexture extends Texture {
         if (settings.poster) {
             this.video.poster = settings.poster;
         }
-
         if (settings.autoPlay !== undefined) {
             this.video.autoplay = settings.autoPlay;
         }
         if (settings.loop !== undefined) {
             this.video.loop = settings.loop;
+        }
+        if (settings.muted !== undefined) {
+            this.video.muted = settings.muted;
         }
 
         this.video.setAttribute("playsinline", "");
@@ -125,6 +132,10 @@ export class VideoTexture extends Texture {
         this.video.addEventListener("emptied", this.reset);
         this._createInternalTextureOnEvent = (settings.poster && !settings.autoPlay) ? "play" : "canplay";
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
+
+        if (settings.autoPlay) {
+            this.video.play();
+        }
 
         const videoHasEnoughData = (this.video.readyState >= this.video.HAVE_CURRENT_DATA);
         if (settings.poster &&
