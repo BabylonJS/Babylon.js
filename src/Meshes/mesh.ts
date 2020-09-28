@@ -1878,7 +1878,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Render to MRT
         if (scene.prePassRenderer) {
-            scene.prePassRenderer.bindAttachmentsForEffect(effect);
+            scene.prePassRenderer.bindAttachmentsForEffect(effect, subMesh);
         }
 
         const effectiveMesh = effectiveMeshReplacement || this._effectiveMesh;
