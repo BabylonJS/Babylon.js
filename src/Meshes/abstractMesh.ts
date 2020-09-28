@@ -1538,7 +1538,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         // Check if all submeshes are using a material that don't allow picking (point/lines rendering)
         // if no submesh can be picked that way, then fallback to BBox picking
-        var anySubmeshSupportInterect = false;
+        var anySubmeshSupportIntersect = false;
         for (var index = 0; index < len; index++) {
             var subMesh = subMeshes.data[index];
             var material = subMesh.getMaterial();
@@ -1549,17 +1549,17 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     material.fillMode == Constants.MATERIAL_TriangleFillMode ||
                     material.fillMode == Constants.MATERIAL_WireFrameFillMode ||
                     material.fillMode == Constants.MATERIAL_PointFillMode)) {
-                anySubmeshSupportInterect = true;
+                anySubmeshSupportIntersect = true;
                 break;
             }
         }
 
         // no sub mesh support intersection, fallback to BBox that has already be done
-        if (!anySubmeshSupportInterect) {
+        if (!anySubmeshSupportIntersect) {
             pickingInfo.hit = true;
             pickingInfo.pickedMesh = this;
             pickingInfo.distance = Vector3.Distance(ray.origin, boundingInfo.boundingSphere.center);
-            pickingInfo.subMeshId = 0;
+            pickingInfo.subMeshId = -1;
             return pickingInfo;
         }
 
