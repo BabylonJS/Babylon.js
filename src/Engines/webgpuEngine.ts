@@ -259,6 +259,9 @@ export class WebGPUEngine extends Engine {
         this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
 
         this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
+
+        // TODO. WEBGPU. Use real way to do it.
+        this._canvas.style.transform = "scaleY(-1)";
     }
 
     //------------------------------------------------------------------------------
@@ -2251,9 +2254,9 @@ export class WebGPUEngine extends Engine {
     private _getFrontFace(): GPUFrontFace {
         switch (this._depthCullingState.frontFace) {
             case 1:
-                return WebGPUConstants.FrontFace.CW;
-            default:
                 return WebGPUConstants.FrontFace.CCW;
+            default:
+                return WebGPUConstants.FrontFace.CW;
         }
     }
 
