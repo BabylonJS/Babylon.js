@@ -6,9 +6,18 @@ import { BaseCameraMouseWheelInput } from "../../Cameras/Inputs/BaseCameraMouseW
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 
 /**
- * A user configurable callback to be called on mouse wheel movement.
+ * For setting which camera parameter to alter in response to mouse wheel movement.
  */
-export interface FreeCameraMouseWheelCustomCallback {
+export enum AXIS {
+    X,
+    Y,
+    Z
+}
+
+/**
+ * An interface for user definable callback to be called on mouse wheel movement.
+ */
+export interface IFreeCameraMouseWheelCustomCallback {
     /**
      * @param camera The camera instance the mouse wheel is attached to.
      * @param wheelDeltaX The change in value of the mouse wheel's X axis since last called.
@@ -37,41 +46,247 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
         return "FreeCameraMouseWheelInput";
     }
 
-    private _moveRelative = Vector3.Zero();
-    private _rotateRelative = Vector3.Zero();
-    private _moveScene = Vector3.Zero();
+    /**
+     * Set which movement axis (relative to camera's orientation) the mouse
+     * wheel's X axis controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelXMoveRelative(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelXAction !== this._moveRelative) {
+            // Attempting to clear different _wheelXAction.
+            return;
+        }
+        this._wheelXAction = this._moveRelative;
+        this._wheelXActionProperty = axis;
+    }
 
-    private _wheelXAction: Nullable<Vector3> = this._moveRelative;
-    private _wheelXActionProperty: Nullable<number> = 0;
-    private _wheelYAction: Nullable<Vector3> = this._moveRelative;
-    private _wheelYActionProperty: Nullable<number> = 2;
-    private _wheelZAction: Nullable<Vector3> = null;
-    private _wheelZActionProperty: Nullable<number> = null;
+    /**
+     * Get the configured movement axis (relative to camera's orientation) the
+     * mouse wheel's X axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelXMoveRelative(): Nullable<AXIS> {
+        if(this._wheelXAction !== this._moveRelative) {
+            return null;
+        }
+        return this._wheelXActionProperty;
+    }
 
-    private _updateCamera(
-        value: number, action: Nullable<Vector3>, property: Nullable<number>): void {
-            if(value === 0) {
-                // Wheel has not moved.
-                return;
-            }
-            if(action === null || property === null) {
-                // Wheel axis not configured.
-                return;
-            }
+    /**
+     * Set which movement axis (relative to camera's orientation) the mouse
+     * wheel's Y axis controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelYMoveRelative(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelYAction !== this._moveRelative) {
+            // Attempting to clear different _wheelYAction.
+            return;
+        }
+        this._wheelYAction = this._moveRelative;
+        this._wheelYActionProperty = axis;
+    }
 
-            switch(property) {
-                case 0:
-                    action.set(value, 0, 0);
-                    break;
-                case 1:
-                    action.set(0, value, 0);
-                    break;
-                case 2:
-                    action.set(0, 0, value);
-                    break;
-                default:
-                    console.warn("Invalid value");
-            }
+    /**
+     * Get the configured movement axis (relative to camera's orientation) the
+     * mouse wheel's Y axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelYMoveRelative(): Nullable<AXIS> {
+        if(this._wheelYAction !== this._moveRelative) {
+            return null;
+        }
+        return this._wheelYActionProperty;
+    }
+
+    /**
+     * Set which movement axis (relative to camera's orientation) the mouse
+     * wheel's Z axis controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelZMoveRelative(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelZAction !== this._moveRelative) {
+            // Attempting to clear different _wheelZAction.
+            return;
+        }
+        this._wheelZAction = this._moveRelative;
+        this._wheelZActionProperty = axis;
+    }
+    
+    /**
+     * Get the configured movement axis (relative to camera's orientation) the
+     * mouse wheel's Z axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelZMoveRelative(): Nullable<AXIS> {
+        if(this._wheelZAction !== this._moveRelative) {
+            return null;
+        }
+        return this._wheelZActionProperty;
+    }
+
+    /**
+     * Set which rotation axis (relative to camera's orientation) the mouse
+     * wheel's X axis controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelXRotateRelative(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelXAction !== this._rotateRelative) {
+            // Attempting to clear different _wheelXAction.
+            return;
+        }
+        this._wheelXAction = this._rotateRelative;
+        this._wheelXActionProperty = axis;
+    }
+
+    /**
+     * Get the configured rotation axis (relative to camera's orientation) the
+     * mouse wheel's X axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelXRotateRelative(): Nullable<AXIS> {
+        if(this._wheelXAction !== this._rotateRelative) {
+            return null;
+        }
+        return this._wheelXActionProperty;
+    }
+
+    /**
+     * Set which rotation axis (relative to camera's orientation) the mouse
+     * wheel's Y axis controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelYRotateRelative(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelYAction !== this._rotateRelative) {
+            // Attempting to clear different _wheelYAction.
+            return;
+        }
+        this._wheelYAction = this._rotateRelative;
+        this._wheelYActionProperty = axis;
+    }
+
+    /**
+     * Get the configured rotation axis (relative to camera's orientation) the
+     * mouse wheel's Y axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelYRotateRelative(): Nullable<AXIS> {
+        if(this._wheelYAction !== this._rotateRelative) {
+            return null;
+        }
+        return this._wheelYActionProperty;
+    }
+
+    /**
+     * Set which rotation axis (relative to camera's orientation) the mouse
+     * wheel's Z axis controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelZRotateRelative(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelZAction !== this._rotateRelative) {
+            // Attempting to clear different _wheelZAction.
+            return;
+        }
+        this._wheelZAction = this._rotateRelative;
+        this._wheelZActionProperty = axis;
+    }
+
+    /**
+     * Get the configured rotation axis (relative to camera's orientation) the
+     * mouse wheel's Z axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelZRotateRelative(): Nullable<AXIS> {
+        if(this._wheelZAction !== this._rotateRelative) {
+            return null;
+        }
+        return this._wheelZActionProperty;
+    }
+    
+    /**
+     * Set which movement axis (relative to the scene) the mouse wheel's X axis
+     * controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelXMoveScene(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelXAction !== this._rotateRelative) {
+            // Attempting to clear different _wheelXAction.
+            return;
+        }
+        this._wheelXAction = this._moveScene;
+        this._wheelXActionProperty = axis;
+    }
+
+    /**
+     * Get the configured movement axis (relative to the scene) the mouse wheel's
+     * X axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelXMoveScene(): Nullable<AXIS> {
+        if(this._wheelXAction !== this._moveScene) {
+            return null;
+        }
+        return this._wheelXActionProperty;
+    }
+
+    /**
+     * Set which movement axis (relative to the scene) the mouse wheel's Y axis
+     * controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelYMoveScene(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelYAction !== this._rotateRelative) {
+            // Attempting to clear different _wheelYAction.
+            return;
+        }
+        this._wheelYAction = this._moveScene;
+        this._wheelYActionProperty = axis;
+    }
+
+    /**
+     * Get the configured movement axis (relative to the scene) the mouse wheel's
+     * Y axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelYMoveScene(): Nullable<AXIS> {
+        if(this._wheelYAction !== this._moveScene) {
+            return null;
+        }
+        return this._wheelYActionProperty;
+    }
+
+    /**
+     * Set which movement axis (relative to the scene) the mouse wheel's Z axis
+     * controls.
+     * @param axis The axis to be moved. Set null to clear.
+     */
+    @serialize()
+    public set wheelZMoveScene(axis: Nullable<AXIS>) {
+        if(axis === null && this._wheelZAction !== this._rotateRelative) {
+            // Attempting to clear different _wheelZAction.
+            return;
+        }
+        this._wheelZAction = this._moveScene;
+        this._wheelZActionProperty = axis;
+    }
+
+    /**
+     * Get the configured movement axis (relative to the scene) the mouse wheel's
+     * Z axis controls.
+     * @returns The configured axis or null if none.
+     */
+    public get wheelZMoveScene(): Nullable<AXIS> {
+        if(this._wheelZAction !== this._moveScene) {
+            return null;
+        }
+        return this._wheelZActionProperty;
     }
 
     /**
@@ -80,7 +295,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * change the required camera parameter by default.
      */
     @serialize()
-    public customCallback: Nullable<FreeCameraMouseWheelCustomCallback> = null;
+    public customCallback: Nullable<IFreeCameraMouseWheelCustomCallback> = null;
 
     /**
      * Called for each rendered frame.
@@ -130,6 +345,49 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
         this._wheelDeltaY = 0;
         this._wheelDeltaZ = 0;
     }
+    
+    private _moveRelative = Vector3.Zero();
+    private _rotateRelative = Vector3.Zero();
+    private _moveScene = Vector3.Zero();
+
+    /**
+     * These are set to the desired default behaviour.
+     */
+    private _wheelXAction: Nullable<Vector3> = this._moveRelative;
+    private _wheelXActionProperty: Nullable<AXIS> = AXIS.X;
+    private _wheelYAction: Nullable<Vector3> = this._moveRelative;
+    private _wheelYActionProperty: Nullable<AXIS> = AXIS.Z;
+    private _wheelZAction: Nullable<Vector3> = null;
+    private _wheelZActionProperty: Nullable<AXIS> = null;
+
+    /**
+     * Called once per mouse wheel axis. Will update the camera according to any
+     * configured properties for that axis.
+     */
+    private _updateCamera(
+        value: number, action: Nullable<Vector3>, property: Nullable<number>): void {
+            if(value === 0) {
+                // Mouse wheel has not moved.
+                return;
+            }
+            if(action === null || property === null) {
+                // Mouse wheel axis not configured.
+                return;
+            }
+
+            switch(property) {
+                case AXIS.X:
+                    action.set(value, 0, 0);
+                    break;
+                case AXIS.Y:
+                    action.set(0, value, 0);
+                    break;
+                case AXIS.Z:
+                    action.set(0, 0, value);
+                    break;
+            }
+    }
+
 }
 
 (<any>CameraInputTypes)["FreeCameraMouseWheelInput"] = FreeCameraMouseWheelInput;
