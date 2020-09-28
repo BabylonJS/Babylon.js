@@ -12,9 +12,9 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
-precision highp float;
-
 #include<prePassDeclaration>[SCENE_MRT_COUNT]
+
+precision highp float;
 
 // Forces linear space for image processing
 #ifndef FROMLINEARSPACE
@@ -554,6 +554,8 @@ void main(void) {
     #endif
 #endif
 
+#if !defined(PREPASS) || defined(WEBGL2) 
     gl_FragColor = finalColor;
+#endif
     #include<pbrDebug>
 }
