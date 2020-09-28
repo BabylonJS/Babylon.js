@@ -470,8 +470,8 @@ export class NodeMaterialConnectionPoint {
             serializationObject.exposedPortPosition = this.exposedPortPosition;
         }
 
-        if (this.isExposedOnFrame) {
-            serializationObject.isExposedOnFrame = this.isExposedOnFrame;
+        if (this.isExposedOnFrame || this.exposedPortPosition >= 0) {
+            serializationObject.isExposedOnFrame = true;
             serializationObject.exposedPortPosition = this.exposedPortPosition;
         }
 

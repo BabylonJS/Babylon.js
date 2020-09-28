@@ -11796,8 +11796,9 @@ declare module BABYLON {
          * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
          * @param generateMipMaps Define if the texture should creates mip maps or not
          * @param isCube Define if the texture is a cube texture or not (this will render each faces of the cube)
+         * @param textureType The FBO internal texture type
          */
-        constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean);
+        constructor(name: string, size: RenderTargetTextureSize, fragment: any, scene: Nullable<Scene>, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean, textureType?: number);
         /**
          * The effect that is created when initializing the post process.
          * @returns The created effect corresponding the the postprocess.
@@ -44330,7 +44331,6 @@ declare module BABYLON {
          * Higher values reduce its sensitivity.
          */
         angularSensibility: number;
-        private _mousemoveCallback;
         private _observer;
         private _rollObserver;
         private previousPosition;
@@ -53201,8 +53201,6 @@ declare module BABYLON {
          * @returns the cube texture as an InternalTexture
          */
         createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, fallback?: Nullable<InternalTexture>): InternalTexture;
-        private _getSamplingFilter;
-        private static _GetNativeTextureFormat;
         createRenderTargetTexture(size: number | {
             width: number;
             height: number;
@@ -53235,6 +53233,10 @@ declare module BABYLON {
         _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex?: number, lod?: number): void;
         /** @hidden */
         _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex?: number, lod?: number): void;
+        private _getNativeSamplingMode;
+        private _getNativeTextureFormat;
+        private _getNativeAlphaMode;
+        private _getNativeAttribType;
     }
 }
 declare module BABYLON {

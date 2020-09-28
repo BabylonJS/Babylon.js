@@ -49,6 +49,7 @@
 - Added support for multi-pointer mesh selection and pointer over/out triggers ([#8820](https://github.com/BabylonJS/Babylon.js/issues/8820)) ([RaananW](https://github.com/RaananW))
 - Changed DeviceSourceManager getInput contract to no longer return nullable values for reals this time. Also added proper cleanup for DeviceSourceManager observables ([Drigax](https://github.com/drigax))
 - Default Loading screen supports any image size and ratio ([#8845](https://github.com/BabylonJS/Babylon.js/issues/8845)) ([RaananW](https://github.com/RaananW))
+- Added optional success and error callbacks for freezeActiveMeshes ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
@@ -166,6 +167,7 @@
 - Added the possibility to update the shader code before being compiled ([Popov72](https://github.com/Popov72))
 - Added the `shadowOnly` property to the `BackgroundMaterial` class ([Popov72](https://github.com/Popov72))
 - Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
+- Added `muted` setting to `VideoTexture`, fix autoplay in Chrome ([simonihmig](https://github.com/simonihmig))
 
 ### Meshes
 
@@ -322,6 +324,8 @@
 - Fix gltf2 Morph Target export code style, add additional test case for non-animation group created morph targets ([drigax](https://github.com/drigax))
 - Fix "Uncaught ReferenceError: name is not defined" ([outermeasure](https://github.com/outermeasure))
 - Fix wrong winding when applying a transform matrix on VertexData ([Popov72](https://github.com/Popov72))
+- Fix exporting vertex color of mesh with `StandardMaterial` when exporting to glTF ([Drigax](https://github.com/drigax))
+- Changed use of mousemove to pointermove in freeCameraMouseInput and flyCameraMouseInput to fix issue with Firefox ([PolygonalSun](https://github.com/PolygonalSun))
 
 ## Breaking changes
 - `FollowCamera.target` was renamed to `FollowCamera.meshTarget` to not be in conflict with `TargetCamera.target` ([Deltakosh](https://github.com/deltakosh))
