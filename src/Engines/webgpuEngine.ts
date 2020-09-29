@@ -1536,13 +1536,15 @@ export class WebGPUEngine extends Engine {
             texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment :
             texture._source === InternalTextureSource.Depth ? /*WebGPUConstants.TextureUsage.Sampled |*/ WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
+        const generateMipMaps = InternalTextureSource.RenderTarget ? false : texture.generateMipMaps;
+
         if (texture.isCube) {
             const gpuTexture = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView({
                 dimension: WebGPUConstants.TextureViewDimension.Cube,
-                mipLevelCount: texture.generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
+                mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
                 aspect: WebGPUConstants.TextureAspect.All
@@ -1551,7 +1553,13 @@ export class WebGPUEngine extends Engine {
             const gpuTexture = this._textureHelper.createTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
 
             gpuTextureWrapper.set(gpuTexture);
-            gpuTextureWrapper.createView();
+            gpuTextureWrapper.createView({
+                dimension: WebGPUConstants.TextureViewDimension.E2d,
+                mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
+                baseArrayLayer: 0,
+                baseMipLevel: 0,
+                aspect: WebGPUConstants.TextureAspect.All
+            });
         }
 
         texture.width = texture.baseWidth = width;
@@ -1974,17 +1982,17 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     private _createRenderPassForRenderTarget(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean = false): GPURenderPassEncoder {
-        const colorTexture = internalTexture._hardwareTexture!.underlyingResource;
+        const colorTextureView = (internalTexture._hardwareTexture as WebGPUHardwareTexture).view!;
         const depthTexture = internalTexture._depthStencilTexture?._hardwareTexture?.underlyingResource;
 
         const renderPass = this._renderTargetEncoder.beginRenderPass({
             colorAttachments: [{
-                attachment: colorTexture.createView(),
+                attachment: colorTextureView,
                 loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store
             }],
-            depthStencilAttachment: internalTexture._generateDepthBuffer || internalTexture._generateStencilBuffer ? {
-                attachment: depthTexture.createView(),
+            depthStencilAttachment: (internalTexture._generateDepthBuffer || internalTexture._generateStencilBuffer) && depthTexture ? {
+                attachment: (internalTexture._depthStencilTexture?._hardwareTexture as WebGPUHardwareTexture).view!,
                 depthLoadValue: clearDepth && internalTexture._generateDepthBuffer ? this._clearDepthValue : WebGPUConstants.LoadOp.Load,
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
                 stencilLoadValue: clearStencil && internalTexture._generateStencilBuffer ? this._clearStencilValue : WebGPUConstants.LoadOp.Load,
