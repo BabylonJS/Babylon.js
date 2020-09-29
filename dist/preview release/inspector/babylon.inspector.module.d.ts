@@ -559,6 +559,7 @@ declare module "babylonjs-inspector/components/actionTabs/lines/floatLineCompone
         digits?: number;
         useEuler?: boolean;
         min?: number;
+        max?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
@@ -4735,6 +4736,7 @@ declare module INSPECTOR {
         digits?: number;
         useEuler?: boolean;
         min?: number;
+        max?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;

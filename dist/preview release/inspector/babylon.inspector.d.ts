@@ -490,6 +490,7 @@ declare module INSPECTOR {
         digits?: number;
         useEuler?: boolean;
         min?: number;
+        max?: number;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
