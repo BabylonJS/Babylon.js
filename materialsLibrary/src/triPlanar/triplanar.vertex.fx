@@ -93,7 +93,7 @@ void main(void)
 	   
 	worldTangent = (world * vec4(worldTangent, 1.0)).xyz;
     worldBinormal = (world * vec4(worldBinormal, 1.0)).xyz;
-	vec3 worldNormal = normalize(cross(worldTangent, worldBinormal));
+	vec3 worldNormal = (world * vec4(normalize(normal), 1.0)).xyz;
 
 	tangentSpace[0] = worldTangent;
     tangentSpace[1] = worldBinormal;
