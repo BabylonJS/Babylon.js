@@ -28072,6 +28072,10 @@ declare module BABYLON {
          */
         wRotationCenter: number;
         /**
+         * Sets this property to true to avoid deformations when rotating the texture with non-uniform scaling
+         */
+        homogeneousRotationInUVTransform: boolean;
+        /**
          * Are mip maps generated for this texture or not.
          */
         get noMipmap(): boolean;
@@ -28097,6 +28101,10 @@ declare module BABYLON {
         private _cachedVAng;
         private _cachedWAng;
         private _cachedProjectionMatrixId;
+        private _cachedURotationCenter;
+        private _cachedVRotationCenter;
+        private _cachedWRotationCenter;
+        private _cachedHomogeneousRotationInUVTransform;
         private _cachedCoordinatesMode;
         /** @hidden */
         protected _initialSamplingMode: number;

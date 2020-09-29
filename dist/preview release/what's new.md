@@ -225,6 +225,7 @@
 ### Textures
 
 - .HDR environment files will now give accurate PBR reflections ([CraigFeldpsar](https://github.com/craigfeldspar))
+- Added a `homogeneousRotationInUVTransform` property in the `Texture` to avoid deformations when rotating the texture with non-uniform scaling ([Popov72](https://github.com/Popov72))
 
 ### Audio
 
