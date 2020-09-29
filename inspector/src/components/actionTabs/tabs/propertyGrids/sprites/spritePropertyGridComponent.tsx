@@ -176,8 +176,8 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                     <CheckBoxLineComponent label="Invert V axis" target={sprite} propertyName="invertV" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCALE">
-                    <FloatLineComponent label="Width" target={sprite} propertyName="width" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
-                    <FloatLineComponent label="Height" target={sprite} propertyName="height" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <FloatLineComponent label="Width" lockObject={this.props.lockObject} target={sprite} propertyName="width" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <FloatLineComponent label="Height" lockObject={this.props.lockObject} target={sprite} propertyName="height" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="ANIMATION">
                     <SliderLineComponent label="Start cell" decimalCount={0} target={sprite} propertyName="fromIndex" minimum={0} maximum={maxCellCount} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
