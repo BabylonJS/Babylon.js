@@ -13,10 +13,22 @@ declare const _native: any;
  * pointer device and one keyboard.
  */
 export class DeviceInputSystem implements IDisposable {
+
+    // Setter/Getter for onDeviceConnected property
     /**
-     * Callback to be triggered when a device is connected
+     * Returns onDeviceConnected callback property
+     * @returns Callback with function to execute when a device is connected
      */
-    public onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
+    public get onDeviceConnected() { return this._onDeviceConnected; }
+
+    /**
+     * Sets callback function when a device is connected
+     * @param callback Function to execute when a device is connected
+     */
+    public set onDeviceConnected(callback) {
+        this._onDeviceConnected = callback;
+        this._checkForConnectedDevices();
+    }
 
     /**
      * Callback to be triggered when a device is disconnected
@@ -45,11 +57,14 @@ export class DeviceInputSystem implements IDisposable {
     private _gamepadConnectedEvent = (evt: any) => { };
     private _gamepadDisconnectedEvent = (evt: any) => { };
 
+    private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void = () => { };
+
     private static _MAX_KEYCODES: number = 255;
     private static _MAX_POINTER_INPUTS: number = 7;
 
     private constructor(engine: Engine) {
         const inputElement = engine.getInputElement();
+
         if (inputElement) {
             this._elementToAttachTo = inputElement;
             this._handleKeyActions();
@@ -104,19 +119,6 @@ export class DeviceInputSystem implements IDisposable {
     }
 
     /**
-     * Checks for existing connections to devices and register them, if necessary
-     */
-    public checkForConnectedDevices() {
-        const gamepads = navigator.getGamepads();
-
-        for (const gamepad of gamepads) {
-            if (gamepad) {
-                this._addGamePad(gamepad);
-            }
-        }
-    }
-
-    /**
      * Dispose of all the eventlisteners
      */
     public dispose() {
@@ -136,6 +138,19 @@ export class DeviceInputSystem implements IDisposable {
         // Gamepad Events
         window.removeEventListener("gamepadconnected", this._gamepadConnectedEvent);
         window.removeEventListener("gamepaddisconnected", this._gamepadDisconnectedEvent);
+    }
+
+    /**
+     * Checks for existing connections to devices and register them, if necessary
+     */
+    private _checkForConnectedDevices() {
+        const gamepads = navigator.getGamepads();
+
+        for (const gamepad of gamepads) {
+            if (gamepad) {
+                this._addGamePad(gamepad);
+            }
+        }
     }
 
     // Private functions

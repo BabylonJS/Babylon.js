@@ -49,9 +49,16 @@ export class DeviceSource<T extends DeviceType> {
 export class DeviceSourceManager implements IDisposable {
     // Public Members
     /**
-     * Observable to be triggered when before a device is connected
+     * Observable to be triggered when before a device is connected, any new observers added will be triggered against already connected devices
      */
-    public readonly onBeforeDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onBeforeDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>((observer) => {
+        this.getListofDevices().forEach((device) => {
+            const deviceType: DeviceType = device.deviceType;
+            const deviceSlot: number = device.deviceSlot;
+
+            this.onBeforeDeviceConnectedObservable.notifyObserver(observer, { deviceType, deviceSlot });
+        });
+    });
 
     /**
      * Observable to be triggered when before a device is disconnected
@@ -59,9 +66,16 @@ export class DeviceSourceManager implements IDisposable {
     public readonly onBeforeDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
 
     /**
-     * Observable to be triggered when after a device is connected
+     * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
      */
-    public readonly onAfterDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onAfterDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>((observer) => {
+        this.getListofDevices().forEach((device) => {
+            const deviceType: DeviceType = device.deviceType;
+            const deviceSlot: number = device.deviceSlot;
+
+            this.onAfterDeviceConnectedObservable.notifyObserver(observer, { deviceType, deviceSlot });
+        });
+    });
 
     /**
      * Observable to be triggered when after a device is disconnected
@@ -99,8 +113,6 @@ export class DeviceSourceManager implements IDisposable {
                 this.getDeviceSource(deviceType, deviceSlot)?.onInputChangedObservable.notifyObservers({ inputIndex, previousState, currentState });
             };
         }
-
-        this._deviceInputSystem.checkForConnectedDevices();
     }
 
     // Public Functions
@@ -133,6 +145,24 @@ export class DeviceSourceManager implements IDisposable {
      */
     public getDeviceSources<T extends DeviceType>(deviceType: T): ReadonlyArray<DeviceSource<T>> {
         return this._devices[deviceType].filter((source) => { return !!source; });
+    }
+
+    /**
+     * Returns a read-only list of all available devices
+     * @returns Read-only array with active devices
+     */
+    public getListofDevices(): ReadonlyArray<{ deviceType: DeviceType, deviceSlot: number }> {
+        let deviceArray: Array<{ deviceType: DeviceType, deviceSlot: number }> = new Array<{ deviceType: DeviceType, deviceSlot: number }>();
+        this._devices.forEach((deviceSet) => {
+            deviceSet.forEach((device) => {
+                const deviceType: DeviceType = device.deviceType;
+                const deviceSlot: number = device.deviceSlot;
+
+                deviceArray.push({ deviceType, deviceSlot });
+            });
+        });
+
+        return deviceArray;
     }
 
     /**
