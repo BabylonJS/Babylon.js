@@ -66662,6 +66662,9 @@ var GraphCanvasComponent = /** @class */ (function (_super) {
         // Update graph
         var dagreNodes = graph.nodes().map(function (node) { return graph.node(node); });
         dagreNodes.forEach(function (dagreNode) {
+            if (!dagreNode) {
+                return;
+            }
             if (dagreNode.type === "node") {
                 for (var _i = 0, _a = _this._nodes; _i < _a.length; _i++) {
                     var node = _a[_i];
