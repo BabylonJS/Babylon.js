@@ -497,8 +497,8 @@ export class Texture extends BaseTexture {
         Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix!);
 
         if (this.homogeneousRotationInUVTransform) {
-            Matrix.TranslationToRef(-this.uRotationCenter, -this.vRotationCenter, -this.wRotationCenter, TmpVectors.Matrix[0]);
-            Matrix.TranslationToRef(this.uRotationCenter, this.vRotationCenter, this.wRotationCenter, TmpVectors.Matrix[1]);
+            Matrix.TranslationToRef(-this._cachedURotationCenter, -this._cachedVRotationCenter, -this._cachedWRotationCenter, TmpVectors.Matrix[0]);
+            Matrix.TranslationToRef(this._cachedURotationCenter, this._cachedVRotationCenter, this._cachedWRotationCenter, TmpVectors.Matrix[1]);
             Matrix.ScalingToRef(this._cachedUScale, this._cachedVScale, 0, TmpVectors.Matrix[2]);
             Matrix.TranslationToRef(this._cachedUOffset, this._cachedVOffset, 0, TmpVectors.Matrix[3]);
 
