@@ -6,11 +6,20 @@ import { BaseCameraMouseWheelInput } from "../../Cameras/Inputs/BaseCameraMouseW
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 
 /**
- * For setting which camera parameter to alter in response to mouse wheel movement.
+ * Defines the potential axis to be altered in a transform operation.
  */
 export enum AXIS {
+    /**
+     * X axis.
+     */
     X,
+    /**
+     * Y axis.
+     */
     Y,
+    /**
+     * Z axis.
+     */
     Z
 }
 
@@ -32,7 +41,7 @@ export interface IFreeCameraMouseWheelCustomCallback {
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
 export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
-    
+
     /**
      * Defines the camera the input is attached to.
      */
@@ -53,7 +62,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelXMoveRelative(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelXAction !== this._moveRelative) {
+        if (axis === null && this._wheelXAction !== this._moveRelative) {
             // Attempting to clear different _wheelXAction.
             return;
         }
@@ -67,7 +76,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelXMoveRelative(): Nullable<AXIS> {
-        if(this._wheelXAction !== this._moveRelative) {
+        if (this._wheelXAction !== this._moveRelative) {
             return null;
         }
         return this._wheelXActionProperty;
@@ -80,7 +89,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelYMoveRelative(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelYAction !== this._moveRelative) {
+        if (axis === null && this._wheelYAction !== this._moveRelative) {
             // Attempting to clear different _wheelYAction.
             return;
         }
@@ -94,7 +103,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelYMoveRelative(): Nullable<AXIS> {
-        if(this._wheelYAction !== this._moveRelative) {
+        if (this._wheelYAction !== this._moveRelative) {
             return null;
         }
         return this._wheelYActionProperty;
@@ -107,21 +116,21 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelZMoveRelative(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelZAction !== this._moveRelative) {
+        if (axis === null && this._wheelZAction !== this._moveRelative) {
             // Attempting to clear different _wheelZAction.
             return;
         }
         this._wheelZAction = this._moveRelative;
         this._wheelZActionProperty = axis;
     }
-    
+
     /**
      * Get the configured movement axis (relative to camera's orientation) the
      * mouse wheel's Z axis controls.
      * @returns The configured axis or null if none.
      */
     public get wheelZMoveRelative(): Nullable<AXIS> {
-        if(this._wheelZAction !== this._moveRelative) {
+        if (this._wheelZAction !== this._moveRelative) {
             return null;
         }
         return this._wheelZActionProperty;
@@ -134,7 +143,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelXRotateRelative(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelXAction !== this._rotateRelative) {
+        if (axis === null && this._wheelXAction !== this._rotateRelative) {
             // Attempting to clear different _wheelXAction.
             return;
         }
@@ -148,7 +157,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelXRotateRelative(): Nullable<AXIS> {
-        if(this._wheelXAction !== this._rotateRelative) {
+        if (this._wheelXAction !== this._rotateRelative) {
             return null;
         }
         return this._wheelXActionProperty;
@@ -161,7 +170,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelYRotateRelative(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelYAction !== this._rotateRelative) {
+        if (axis === null && this._wheelYAction !== this._rotateRelative) {
             // Attempting to clear different _wheelYAction.
             return;
         }
@@ -175,7 +184,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelYRotateRelative(): Nullable<AXIS> {
-        if(this._wheelYAction !== this._rotateRelative) {
+        if (this._wheelYAction !== this._rotateRelative) {
             return null;
         }
         return this._wheelYActionProperty;
@@ -188,7 +197,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelZRotateRelative(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelZAction !== this._rotateRelative) {
+        if (axis === null && this._wheelZAction !== this._rotateRelative) {
             // Attempting to clear different _wheelZAction.
             return;
         }
@@ -202,12 +211,12 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelZRotateRelative(): Nullable<AXIS> {
-        if(this._wheelZAction !== this._rotateRelative) {
+        if (this._wheelZAction !== this._rotateRelative) {
             return null;
         }
         return this._wheelZActionProperty;
     }
-    
+
     /**
      * Set which movement axis (relative to the scene) the mouse wheel's X axis
      * controls.
@@ -215,7 +224,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelXMoveScene(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelXAction !== this._rotateRelative) {
+        if (axis === null && this._wheelXAction !== this._rotateRelative) {
             // Attempting to clear different _wheelXAction.
             return;
         }
@@ -229,7 +238,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelXMoveScene(): Nullable<AXIS> {
-        if(this._wheelXAction !== this._moveScene) {
+        if (this._wheelXAction !== this._moveScene) {
             return null;
         }
         return this._wheelXActionProperty;
@@ -242,7 +251,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelYMoveScene(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelYAction !== this._rotateRelative) {
+        if (axis === null && this._wheelYAction !== this._rotateRelative) {
             // Attempting to clear different _wheelYAction.
             return;
         }
@@ -256,7 +265,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelYMoveScene(): Nullable<AXIS> {
-        if(this._wheelYAction !== this._moveScene) {
+        if (this._wheelYAction !== this._moveScene) {
             return null;
         }
         return this._wheelYActionProperty;
@@ -269,7 +278,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelZMoveScene(axis: Nullable<AXIS>) {
-        if(axis === null && this._wheelZAction !== this._rotateRelative) {
+        if (axis === null && this._wheelZAction !== this._rotateRelative) {
             // Attempting to clear different _wheelZAction.
             return;
         }
@@ -283,7 +292,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelZMoveScene(): Nullable<AXIS> {
-        if(this._wheelZAction !== this._moveScene) {
+        if (this._wheelZAction !== this._moveScene) {
             return null;
         }
         return this._wheelZActionProperty;
@@ -345,7 +354,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
         this._wheelDeltaY = 0;
         this._wheelDeltaZ = 0;
     }
-    
+
     private _moveRelative = Vector3.Zero();
     private _rotateRelative = Vector3.Zero();
     private _moveScene = Vector3.Zero();
@@ -366,16 +375,16 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     private _updateCamera(
         value: number, action: Nullable<Vector3>, property: Nullable<number>): void {
-            if(value === 0) {
+            if (value === 0) {
                 // Mouse wheel has not moved.
                 return;
             }
-            if(action === null || property === null) {
+            if (action === null || property === null) {
                 // Mouse wheel axis not configured.
                 return;
             }
 
-            switch(property) {
+            switch (property) {
                 case AXIS.X:
                     action.set(value, 0, 0);
                     break;

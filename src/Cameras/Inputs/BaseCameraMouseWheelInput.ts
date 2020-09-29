@@ -73,7 +73,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 // Unsure whether these catch anything more. Documentation
                 // online is contradictory.
                 this._wheelDeltaX +=
-                    this.wheelPrecisionX * platformScale * 
+                    this.wheelPrecisionX * platformScale *
                     (<any>event).wheelDeltaX / this._normalize;
                 this._wheelDeltaY -=
                     this.wheelPrecisionY * platformScale *
@@ -94,8 +94,8 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 // ie: we can presume it needs scaled to match per-pixel.
                 this._wheelDeltaY +=
                     this.wheelPrecisionY * this._ffMultiplier * event.detail;
-                if ( "axis" in event && 
-                      (<any>event).axis === (<any>event).HORIZONTAL_AXIS ) {
+                if ("axis" in event &&
+                      (<any>event).axis === (<any>event).HORIZONTAL_AXIS) {
                     this._wheelDeltaX = this._wheelDeltaY;
                     this._wheelDeltaY = 0;
                 }
