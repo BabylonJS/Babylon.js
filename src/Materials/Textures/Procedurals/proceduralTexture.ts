@@ -77,6 +77,7 @@ export class ProceduralTexture extends Texture {
 
     @serialize()
     private _size: RenderTargetTextureSize;
+    private _textureType: number;
     private _currentRefreshId = -1;
     private _frameId = -1;
     private _refreshRate = 1;
@@ -98,7 +99,7 @@ export class ProceduralTexture extends Texture {
     private _fallbackTextureUsed = false;
     private _fullEngine: Engine;
 
-    private _cachedDefines = "";
+    private _cachedDefines: Nullable<string> = null;
 
     private _contentUpdateId = -1;
     private _contentData: Nullable<ArrayBufferView>;
@@ -133,6 +134,7 @@ export class ProceduralTexture extends Texture {
         this.name = name;
         this.isRenderTarget = true;
         this._size = size;
+        this._textureType = textureType;
         this._generateMipMaps = generateMipMaps;
 
         this.setFragment(fragment);
@@ -260,25 +262,28 @@ export class ProceduralTexture extends Texture {
             shaders = { vertex: "procedural", fragment: this._fragment };
         }
 
-        this._cachedDefines = defines;
+        if (this._cachedDefines !== defines) {
+            this._cachedDefines = defines;
 
-        this._effect = engine.createEffect(shaders,
-            [VertexBuffer.PositionKind],
-            this._uniforms,
-            this._samplers,
-            defines, undefined, undefined, () => {
-                this.releaseInternalTexture();
+            this._effect = engine.createEffect(shaders,
+                [VertexBuffer.PositionKind],
+                this._uniforms,
+                this._samplers,
+                defines, undefined, undefined, () => {
+                    this.releaseInternalTexture();
 
-                if (this._fallbackTexture) {
-                    this._texture = this._fallbackTexture._texture;
+                    if (this._fallbackTexture) {
+                        this._texture = this._fallbackTexture._texture;
 
-                    if (this._texture) {
-                        this._texture.incrementReferences();
+                        if (this._texture) {
+                            this._texture.incrementReferences();
+                        }
                     }
-                }
 
-                this._fallbackTextureUsed = true;
-            });
+                    this._fallbackTextureUsed = true;
+                }
+            );
+        }
 
         return this._effect.isReady();
     }
@@ -361,7 +366,7 @@ export class ProceduralTexture extends Texture {
         }
 
         this.releaseInternalTexture();
-        this._texture = this._fullEngine.createRenderTargetTexture(size, generateMipMaps);
+        this._texture = this._fullEngine.createRenderTargetTexture(size, { generateMipMaps, generateDepthBuffer: false, generateStencilBuffer: false, type: this._textureType });
 
         // Update properties
         this._size = size;
