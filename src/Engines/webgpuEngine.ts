@@ -726,7 +726,6 @@ export class WebGPUEngine extends Engine {
     }
 
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
-        // TODO WEBGPU why not caching also effect?
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
     }
@@ -894,8 +893,9 @@ export class WebGPUEngine extends Engine {
             webGpuContext.sources = shader.sources;
         }
         else {
-            //!console.log(vertexSourceCode);
-            //!console.log(fragmentSourceCode);
+            //console.log(defines);
+            //console.log(vertexSourceCode);
+            //console.log(fragmentSourceCode);
 
             webGpuContext.sources = {
                 fragment: fragmentSourceCode,
