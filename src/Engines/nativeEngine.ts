@@ -24,20 +24,23 @@ import { IWebRequest } from '../Misc/interfaces/iWebRequest';
 import { EngineStore } from './engineStore';
 import { ShaderCodeInliner } from "./Processors/shaderCodeInliner";
 import { WebGL2ShaderProcessor } from '../Engines/WebGL/webGL2ShaderProcessors';
+import { RenderTargetTextureSize } from '../Engines/Extensions/engine.renderTarget';
+import { DepthTextureCreationOptions } from '../Engines/depthTextureCreationOptions';
 
 interface INativeEngine {
 
-    readonly SAMPLER_NEAREST: number;
-    readonly SAMPLER_BILINEAR: number;
-    readonly SAMPLER_TRILINEAR: number;
-    readonly SAMPLER_ANISOTROPIC: number;
-    readonly SAMPLER_POINT_COMPARE: number;
-    readonly SAMPLER_TRILINEAR_COMPARE: number;
-    readonly SAMPLER_MINBILINEAR_MAGPOINT: number;
-    readonly SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR: number;
-    readonly SAMPLER_MINPOINT_MAGLINEAR_MIPPOINT: number;
-    readonly SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR: number;
-    readonly SAMPLER_MINLINEAR_MAGPOINT_MIPPOINT: number;
+    readonly TEXTURE_NEAREST_NEAREST: number;
+    readonly TEXTURE_LINEAR_LINEAR: number;
+    readonly TEXTURE_LINEAR_LINEAR_MIPLINEAR: number;
+    readonly TEXTURE_NEAREST_NEAREST_MIPNEAREST: number;
+    readonly TEXTURE_NEAREST_LINEAR_MIPNEAREST: number;
+    readonly TEXTURE_NEAREST_LINEAR_MIPLINEAR: number;
+    readonly TEXTURE_NEAREST_LINEAR: number;
+    readonly TEXTURE_NEAREST_NEAREST_MIPLINEAR: number;
+    readonly TEXTURE_LINEAR_NEAREST_MIPNEAREST: number;
+    readonly TEXTURE_LINEAR_NEAREST_MIPLINEAR: number;
+    readonly TEXTURE_LINEAR_LINEAR_MIPNEAREST: number;
+    readonly TEXTURE_LINEAR_NEAREST: number;
 
     readonly DEPTH_TEST_LESS: number;
     readonly DEPTH_TEST_LEQUAL: number;
@@ -128,6 +131,7 @@ interface INativeEngine {
     setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
 
     createTexture(): WebGLTexture;
+    createDepthTexture(texture: WebGLTexture, width: number, height: number): WebGLTexture;
     loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, onSuccess: () => void, onError: () => void): void;
     loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, onSuccess: () => void, onError: () => void): void;
     loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, onSuccess: () => void, onError: () => void): void;
@@ -963,6 +967,22 @@ export class NativeEngine extends Engine {
         this._native.deleteTexture(texture);
     }
 
+    /**
+     * Update the content of a dynamic texture
+     * @param texture defines the texture to update
+     * @param canvas defines the canvas containing the source
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param premulAlpha defines if alpha is stored as premultiplied
+     * @param format defines the format of the data
+     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+     */
+    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
+        // TODO: Stub! This function is needed for some GLTF validation tests.
+        // Loads a dummy 8x8 transparent png
+        var imageData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYSURBVChTY/z//z8DPsAEpXGC4aCAgQEAGGMDDWwwgqsAAAAASUVORK5CYII=';
+        this.createTexture('data:my_image_name', true, invertY, null, Texture.BILINEAR_SAMPLINGMODE, undefined, undefined, imageData, texture, NativeEngine.TEXTUREFORMAT_RGBA, null, undefined);
+    }
+
     // TODO: Refactor to share more logic with babylon.engine.ts version.
     /**
      * Usually called from Texture.ts.
@@ -1116,6 +1136,25 @@ export class NativeEngine extends Engine {
         }
 
         return texture;
+    }
+
+    _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): NativeTexture {
+        var texture = new NativeTexture(this, InternalTextureSource.Depth);
+
+        const width = (<{ width: number, height: number, layers?: number }>size).width || <number>size;
+        const height = (<{ width: number, height: number, layers?: number }>size).height || <number>size;
+
+        var framebuffer = this._native.createDepthTexture(
+            texture._webGLTexture!,
+            width,
+            height);
+
+        texture._framebuffer = framebuffer;
+        return texture;
+    }
+
+    public _releaseFramebufferObjects(texture: InternalTexture): void {
+        // TODO
     }
 
     /**
@@ -1326,10 +1365,14 @@ export class NativeEngine extends Engine {
         }
 
         if (forceFullscreenViewport) {
-            throw new Error("forceFullscreenViewport for frame buffers not yet supported in NativeEngine.");
+            //Not supported yet but don't stop rendering
         }
 
-        this._bindUnboundFramebuffer(texture._framebuffer);
+        if (texture._depthStencilTexture) {
+            this._bindUnboundFramebuffer(texture._depthStencilTexture._framebuffer);
+        } else {
+            this._bindUnboundFramebuffer(texture._framebuffer);
+        }
     }
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
@@ -1463,7 +1506,11 @@ export class NativeEngine extends Engine {
 
     /** @hidden */
     public _bindTexture(channel: number, texture: InternalTexture): void {
-        throw new Error("_bindTexture not implemented.");
+        let uniform = this._boundUniforms[channel];
+        if (!uniform) {
+            return ;
+        }
+        this._native.setTexture(uniform, texture._webGLTexture);
     }
 
     protected _deleteBuffer(buffer: NativeDataBuffer): void {
@@ -1506,34 +1553,30 @@ export class NativeEngine extends Engine {
 
     private _getNativeSamplingMode(samplingMode: number): number {
         switch (samplingMode) {
-            case Constants.TEXTURE_BILINEAR_SAMPLINGMODE:
-                return this._native.SAMPLER_BILINEAR;
-            case Constants.TEXTURE_TRILINEAR_SAMPLINGMODE:
-                return this._native.SAMPLER_TRILINEAR;
-            case Constants.TEXTURE_NEAREST_SAMPLINGMODE:
-                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                return this._native.SAMPLER_NEAREST;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                return this._native.SAMPLER_MINLINEAR_MAGPOINT_MIPPOINT;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
-            case Constants.TEXTURE_NEAREST_LINEAR:
-                return this._native.SAMPLER_MINBILINEAR_MAGPOINT;
             case Constants.TEXTURE_NEAREST_NEAREST:
-                return this._native.SAMPLER_NEAREST;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPPOINT;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
+                return this._native.TEXTURE_NEAREST_NEAREST;
             case Constants.TEXTURE_LINEAR_LINEAR:
-                return this._native.SAMPLER_TRILINEAR;
-            case Constants.TEXTURE_LINEAR_NEAREST:
-                return this._native.SAMPLER_MINPOINT_MAGLINEAR_MIPLINEAR;
+                return this._native.TEXTURE_LINEAR_LINEAR;
+            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+                return this._native.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+                return this._native.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+                return this._native.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
+            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+                return this._native.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
+            case Constants.TEXTURE_NEAREST_LINEAR:
+                return this._native.TEXTURE_NEAREST_LINEAR;
             case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
-                return this._native.SAMPLER_MINPOINT_MAGPOINT_MIPLINEAR;
+                return this._native.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+                return this._native.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
+            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+                return this._native.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
             case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
-                return this._native.SAMPLER_TRILINEAR;
+                return this._native.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
+            case Constants.TEXTURE_LINEAR_NEAREST:
+                return this._native.TEXTURE_LINEAR_NEAREST;
             default:
                 throw new Error(`Unsupported sampling mode: ${samplingMode}.`);
         }

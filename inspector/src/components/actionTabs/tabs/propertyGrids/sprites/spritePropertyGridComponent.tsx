@@ -176,14 +176,14 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                     <CheckBoxLineComponent label="Invert V axis" target={sprite} propertyName="invertV" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="SCALE">
-                    <FloatLineComponent label="Width" target={sprite} propertyName="width" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
-                    <FloatLineComponent label="Height" target={sprite} propertyName="height" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <FloatLineComponent label="Width" lockObject={this.props.lockObject} target={sprite} propertyName="width" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <FloatLineComponent label="Height" lockObject={this.props.lockObject} target={sprite} propertyName="height" min={0} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                 </LineContainerComponent>
                 <LineContainerComponent globalState={this.props.globalState} title="ANIMATION">
-                    <SliderLineComponent label="Start cell" decimalCount={0} target={sprite} propertyName="fromIndex" minimum={0} maximum={maxCellCount} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <SliderLineComponent label="End cell" decimalCount={0} target={sprite} propertyName="toIndex" minimum={0} maximum={maxCellCount} step={1} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent label="Start cell" isInteger={true} lockObject={this.props.lockObject} target={sprite} propertyName="fromIndex" min={0} max={maxCellCount} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <FloatLineComponent label="End cell" isInteger={true} lockObject={this.props.lockObject} target={sprite} propertyName="toIndex" min={0} max={maxCellCount} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <CheckBoxLineComponent label="Loop" target={sprite} propertyName="loopAnimation" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <FloatLineComponent label="Delay" target={sprite} propertyName="delay" digits={0} min={0} isInteger={true} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
+                    <FloatLineComponent label="Delay" lockObject={this.props.lockObject} target={sprite} propertyName="delay" digits={0} min={0} isInteger={true} onPropertyChangedObservable={this.props.onPropertyChangedObservable}/>
                     <ButtonLineComponent label={sprite.animationStarted ? "Stop" : "Start"} onClick={() => this.switchPlayStopState()} />
                 </LineContainerComponent>
             </div>

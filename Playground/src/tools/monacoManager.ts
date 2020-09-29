@@ -131,6 +131,11 @@ var createScene = function() {
 
     //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+
+    // This targets the camera to scene origin
+    camera.setTarget(BABYLON.Vector3.Zero());
+
+    // This attaches the camera to the canvas
     camera.attachControl(canvas, true);
 
     return scene;
@@ -145,6 +150,11 @@ class Playground {
 
         //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+
+        // This targets the camera to scene origin
+        camera.setTarget(BABYLON.Vector3.Zero());
+
+        // This attaches the camera to the canvas
         camera.attachControl(canvas, true);
 
         return scene;
