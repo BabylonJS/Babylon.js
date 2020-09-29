@@ -512,6 +512,9 @@ color.rgb = max(color.rgb, 0.);
         #endif
     #endif
 #endif
+
+#if !defined(PREPASS) || defined(WEBGL2) 
 	gl_FragColor = color;
+#endif
 
 }

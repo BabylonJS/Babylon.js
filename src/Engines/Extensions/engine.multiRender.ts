@@ -39,8 +39,42 @@ declare module "../../Engines/thinEngine" {
          * @param attachments gl attachments
          */
         bindAttachments(attachments: number[]) : void;
+
+        /**
+         * Creates a layout object to draw/clear on specific textures in a MRT
+         * @param textureStatus textureStatus[i] indicates if the i-th is active
+         * @returns A layout to be fed to the engine, calling `bindAttachments`.
+         */
+        buildTextureLayout(textureStatus: boolean[]) : number[];
+
+        /**
+         * Restores the webgl state to only draw on the main color attachment
+         */
+        restoreSingleAttachment() : void;
     }
 }
+
+ThinEngine.prototype.restoreSingleAttachment = function(): void {
+    const gl = this._gl;
+
+    this.bindAttachments([gl.BACK]);
+};
+
+ThinEngine.prototype.buildTextureLayout = function(textureStatus: boolean[]): number[] {
+    const gl = this._gl;
+
+    const result = [];
+
+    for (let i = 0; i < textureStatus.length; i++) {
+        if (textureStatus[i]) {
+            result.push((<any>gl)["COLOR_ATTACHMENT" + i]);
+        } else {
+            result.push(gl.NONE);
+        }
+    }
+
+    return result;
+};
 
 ThinEngine.prototype.bindAttachments = function(attachments: number[]): void {
     const gl = this._gl;
