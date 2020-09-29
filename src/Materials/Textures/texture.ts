@@ -1,7 +1,7 @@
 import { serialize, SerializationHelper } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
 import { Nullable } from "../../types";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { _TypeStore } from '../../Misc/typeStore';
@@ -182,6 +182,12 @@ export class Texture extends BaseTexture {
     public wRotationCenter = 0.5;
 
     /**
+     * Sets this property to true to avoid deformations when rotating the texture with non-uniform scaling
+     */
+    @serialize()
+    public homogeneousRotationInUVTransform = false;
+
+    /**
      * Are mip maps generated for this texture or not.
      */
     get noMipmap(): boolean {
@@ -212,6 +218,10 @@ export class Texture extends BaseTexture {
     private _cachedVAng: number = -1;
     private _cachedWAng: number = -1;
     private _cachedProjectionMatrixId: number = -1;
+    private _cachedURotationCenter: number = -1;
+    private _cachedVRotationCenter: number = -1;
+    private _cachedWRotationCenter: number = -1;
+    private _cachedHomogeneousRotationInUVTransform: boolean = false;
     private _cachedCoordinatesMode: number = -1;
 
     /** @hidden */
@@ -456,7 +466,11 @@ export class Texture extends BaseTexture {
             this.vScale === this._cachedVScale &&
             this.uAng === this._cachedUAng &&
             this.vAng === this._cachedVAng &&
-            this.wAng === this._cachedWAng) {
+            this.wAng === this._cachedWAng &&
+            this.uRotationCenter === this._cachedURotationCenter &&
+            this.vRotationCenter === this._cachedVRotationCenter &&
+            this.wRotationCenter === this._cachedWRotationCenter &&
+            this.homogeneousRotationInUVTransform === this._cachedHomogeneousRotationInUVTransform) {
             return this._cachedTextureMatrix!;
         }
 
@@ -467,6 +481,10 @@ export class Texture extends BaseTexture {
         this._cachedUAng = this.uAng;
         this._cachedVAng = this.vAng;
         this._cachedWAng = this.wAng;
+        this._cachedURotationCenter = this.uRotationCenter;
+        this._cachedVRotationCenter = this.vRotationCenter;
+        this._cachedWRotationCenter = this.wRotationCenter;
+        this._cachedHomogeneousRotationInUVTransform = this.homogeneousRotationInUVTransform;
 
         if (!this._cachedTextureMatrix) {
             this._cachedTextureMatrix = Matrix.Zero();
@@ -478,20 +496,33 @@ export class Texture extends BaseTexture {
 
         Matrix.RotationYawPitchRollToRef(this.vAng, this.uAng, this.wAng, this._rowGenerationMatrix!);
 
-        this._prepareRowForTextureGeneration(0, 0, 0, this._t0!);
-        this._prepareRowForTextureGeneration(1.0, 0, 0, this._t1!);
-        this._prepareRowForTextureGeneration(0, 1.0, 0, this._t2!);
+        if (this.homogeneousRotationInUVTransform) {
+            Matrix.TranslationToRef(-this.uRotationCenter, -this.vRotationCenter, -this.wRotationCenter, TmpVectors.Matrix[0]);
+            Matrix.TranslationToRef(this.uRotationCenter, this.vRotationCenter, this.wRotationCenter, TmpVectors.Matrix[1]);
+            Matrix.ScalingToRef(this._cachedUScale, this._cachedVScale, 0, TmpVectors.Matrix[2]);
 
-        this._t1!.subtractInPlace(this._t0!);
-        this._t2!.subtractInPlace(this._t0!);
+            TmpVectors.Matrix[0].multiplyToRef(this._rowGenerationMatrix!, this._cachedTextureMatrix);
+            this._cachedTextureMatrix.multiplyToRef(TmpVectors.Matrix[1], this._cachedTextureMatrix);
+            this._cachedTextureMatrix.multiplyToRef(TmpVectors.Matrix[2], this._cachedTextureMatrix);
 
-        Matrix.FromValuesToRef(
-            this._t1!.x, this._t1!.y, this._t1!.z, 0.0,
-            this._t2!.x, this._t2!.y, this._t2!.z, 0.0,
-            this._t0!.x, this._t0!.y, this._t0!.z, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            this._cachedTextureMatrix
-        );
+            // copy the translation row to the 3rd row of the matrix so that we don't need to update the shaders (which expects the translation to be on the 3rd row)
+            this._cachedTextureMatrix.setRowFromFloats(2, this._cachedTextureMatrix.m[12], this._cachedTextureMatrix.m[13], this._cachedTextureMatrix.m[14], 1);
+        } else {
+            this._prepareRowForTextureGeneration(0, 0, 0, this._t0!);
+            this._prepareRowForTextureGeneration(1.0, 0, 0, this._t1!);
+            this._prepareRowForTextureGeneration(0, 1.0, 0, this._t2!);
+
+            this._t1!.subtractInPlace(this._t0!);
+            this._t2!.subtractInPlace(this._t0!);
+
+            Matrix.FromValuesToRef(
+                this._t1!.x, this._t1!.y, this._t1!.z, 0.0,
+                this._t2!.x, this._t2!.y, this._t2!.z, 0.0,
+                this._t0!.x, this._t0!.y, this._t0!.z, 0.0,
+                0.0, 0.0, 0.0, 1.0,
+                this._cachedTextureMatrix
+            );
+        }
 
         let scene = this.getScene();
 
