@@ -2664,7 +2664,7 @@ export class WebGPUEngine extends Engine {
         const pipelineLayout = this._getPipelineLayout();
 
         webgpuPipelineContext.renderPipeline = this._device.createRenderPipeline({
-            sampleCount: this._mainPassSampleCount,
+            sampleCount: this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount,
             primitiveTopology: topology,
             rasterizationState: rasterizationStateDescriptor,
             depthStencilState: depthStateDescriptor,
