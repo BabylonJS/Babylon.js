@@ -501,7 +501,7 @@ export class WebGPUEngine extends Engine {
         }
         this.resetTextureCache();
 
-        this._currentEffect = null;
+        //this._currentEffect = null; // can't reset _currentEffect, else some crashes can occur (for eg in ProceduralTexture which calls bindFrameBuffer (which calls wipeCaches) after having called enableEffect and before drawing into the texture)
         this._viewportCached.x = 0;
         this._viewportCached.y = 0;
         this._viewportCached.z = 0;
