@@ -39,6 +39,8 @@ function assert(condition: any, msg?: string): asserts condition {
     }
 }
 
+const dbgShowShaderCode = false;
+
 /**
  * Options to load the associated Glslang library
  */
@@ -172,6 +174,8 @@ export class WebGPUEngine extends Engine {
     // Frame Buffer Life Cycle (recreated for each render target pass)
     private _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
     private _mainRenderPass: Nullable<GPURenderPassEncoder> = null;
+    private _currentRenderTargetFaceIndex: number = 0;
+    private _currentRenderTargetViewDescriptor: GPUTextureViewDescriptor;
 
     // DrawCall Life Cycle
     // Effect is on the parent class
@@ -894,9 +898,11 @@ export class WebGPUEngine extends Engine {
             webGpuContext.sources = shader.sources;
         }
         else {
-            //console.log(defines);
-            //console.log(vertexSourceCode);
-            //console.log(fragmentSourceCode);
+            if (dbgShowShaderCode) {
+                console.log(defines);
+                console.log(vertexSourceCode);
+                console.log(fragmentSourceCode);
+            }
 
             webGpuContext.sources = {
                 fragment: fragmentSourceCode,
@@ -1582,6 +1588,10 @@ export class WebGPUEngine extends Engine {
 
         const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height);
 
+        if (!(this as any)._count || (this as any)._count < 20) {
+            console.log("generate mipmap", (this as any)._count, texture.width, texture.height, texture.isCube);
+        }
+
         if (texture.isCube) {
             this._textureHelper.generateCubeMipmaps(gpuTexture, mipmapCount, this._uploadEncoder);
         } else {
@@ -2010,7 +2020,9 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     private _createRenderPassForRenderTarget(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean = false): GPURenderPassEncoder {
-        const colorTextureView = (internalTexture._hardwareTexture as WebGPUHardwareTexture).view!;
+        const gpuTexture = (internalTexture._hardwareTexture as WebGPUHardwareTexture).underlyingResource!;
+
+        const colorTextureView = gpuTexture.createView(this._currentRenderTargetViewDescriptor);
         const depthTexture = internalTexture._depthStencilTexture?._hardwareTexture?.underlyingResource;
 
         const renderPass = this._renderTargetEncoder.beginRenderPass({
@@ -2094,6 +2106,17 @@ export class WebGPUEngine extends Engine {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = texture;
+
+        // TODO WEBGPU handle array layer
+        const bindWithMipMaps = texture.generateMipMaps && texture._source !== InternalTextureSource.RenderTarget;
+        this._currentRenderTargetViewDescriptor = {
+            dimension: texture.isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
+            mipLevelCount: bindWithMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height) : 1,
+            baseArrayLayer: this._currentRenderTargetFaceIndex,
+            baseMipLevel: 0,
+            arrayLayerCount: 1,
+            aspect: WebGPUConstants.TextureAspect.All
+        }
 
         this._currentRenderPass = null; // lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
 
