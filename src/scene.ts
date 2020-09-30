@@ -1171,6 +1171,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
+    private _sceneUbos: Array<UniformBuffer> = [];
+    private _sceneUboIndex = 0;
 
     /** @hidden */
     public _viewMatrix: Matrix;
@@ -1409,9 +1411,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (DomManagement.IsWindowObjectExist()) {
             this.attachControl();
         }
-
-        // Uniform Buffer
-        this._createUbo();
 
         // Default Image processing definition
         if (ImageProcessingConfiguration) {
@@ -1654,11 +1653,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._renderId++;
     }
 
-    private _createUbo(): void {
-        this._sceneUbo = new UniformBuffer(this._engine, undefined, true);
-        this._sceneUbo.addUniform("viewProjection", 16);
-        this._sceneUbo.addUniform("view", 16);
-        this._sceneUbo.addUniform("viewPosition", 4);
+    private _createUbo(): UniformBuffer {
+        const ubo = new UniformBuffer(this._engine, undefined, true);
+
+        ubo.addUniform("viewProjection", 16);
+        ubo.addUniform("view", 16);
+        ubo.addUniform("viewPosition", 4);
+
+        return ubo;
     }
 
     /**
@@ -2021,21 +2023,34 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         if (this._multiviewSceneUbo && this._multiviewSceneUbo.useUbo) {
+            // TODO WEBGPU handle multiview ubo the same way we handle scene ubo
             this._updateMultiviewUbo(viewR, projectionR);
-        } else if (this._sceneUbo.useUbo) {
-            this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
-            this._sceneUbo.updateMatrix("view", this._viewMatrix);
+        } else {
+            this._setSceneUniformBuffer();
 
-            const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
-            const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
-            this._sceneUbo.updateFloat4("viewPosition",
-                eyePosition.x,
-                eyePosition.y,
-                eyePosition.z,
-                invertNormal ? -1 : 1);
+            if (this._sceneUbo.useUbo) {
+                this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+                this._sceneUbo.updateMatrix("view", this._viewMatrix);
 
-            this._sceneUbo.update();
+                const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
+                const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
+                this._sceneUbo.updateFloat4("viewPosition",
+                    eyePosition.x,
+                    eyePosition.y,
+                    eyePosition.z,
+                    invertNormal ? -1 : 1);
+
+                this._sceneUbo.update();
+            }
         }
+    }
+
+    private _setSceneUniformBuffer() {
+        if (this._sceneUboIndex == this._sceneUbos.length) {
+            this._sceneUbos.push(this._createUbo());
+        }
+
+        this._sceneUbo = this._sceneUbos[this._sceneUboIndex++];
     }
 
     /**
@@ -3960,6 +3975,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._frameId++;
+        this._sceneUboIndex = 0;
 
         // Register components that have been associated lately to the scene.
         this._registerTransientComponents();
