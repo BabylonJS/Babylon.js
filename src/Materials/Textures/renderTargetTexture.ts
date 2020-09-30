@@ -899,12 +899,20 @@ export class RenderTargetTexture extends Texture {
             step.action(this);
         }
 
+        const saveGenerateMipMaps = this._texture.generateMipMaps;
+
+        this._texture.generateMipMaps = false;  // if left true, the mipmaps will be generated (if this._texture.generateMipMaps = true) when the first post process binds its own RTT: by doing so it will unbind the current RTT,
+                                                // which will trigger a mipmap generation. We don't want this because it's a wasted work, we will do an unbind of the current RTT at the end of the process (see unbindFrameBuffer) which will
+                                                // trigger the generation of the final mipmaps
+
         if (this._postProcessManager) {
             this._postProcessManager._finalizeFrame(false, this._texture, faceIndex, this._postProcesses, this.ignoreCameraViewport);
         }
         else if (useCameraPostProcess) {
             scene.postProcessManager._finalizeFrame(false, this._texture, faceIndex);
         }
+
+        this._texture.generateMipMaps = saveGenerateMipMaps;
 
         if (!this._doNotChangeAspectRatio) {
             scene.updateTransformMatrix(true);
