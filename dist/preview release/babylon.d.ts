@@ -17964,6 +17964,11 @@ declare module BABYLON {
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
+         * Gets or sets the size of the texture what stores the shadows
+         */
+        get mapSize(): number;
+        set mapSize(size: number);
+        /**
          * Creates a ShadowGenerator object.
          * A ShadowGenerator is the required tool to use the shadows.
          * Each light casting shadows needs to use its own ShadowGenerator.
