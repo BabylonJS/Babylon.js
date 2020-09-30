@@ -1339,11 +1339,11 @@ export class WebGPUEngine extends Engine {
                         if (this._textureHelper.isImageBitmap(imageBitmap)) {
                             this._textureHelper.updateTexture(imageBitmap, gpuTextureWrapper.underlyingResource!, imageBitmap.width, imageBitmap.height, gpuTextureWrapper.format, 0, 0, invertY, false, 0, 0, this._uploadEncoder);
                             if (!noMipmap && !isCompressed) {
-                                this._generateMipmaps(texture, texture._hardwareTexture!.underlyingResource);
+                                this._generateMipmaps(texture);
                             }
                         }
                     } else if (!noMipmap && !isCompressed) {
-                        this._generateMipmaps(texture, texture._hardwareTexture!.underlyingResource);
+                        this._generateMipmaps(texture);
                     }
 
                     if (scene) {
@@ -1385,6 +1385,10 @@ export class WebGPUEngine extends Engine {
 
                 this._textureHelper.updateCubeTextures(imageBitmaps, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, false, false, 0, 0, this._uploadEncoder);
 
+                if (!noMipmap) {
+                    this._generateMipmaps(texture);
+                }
+
                 texture.isReady = true;
 
                 texture.onLoadedObservable.notifyObservers(texture);
@@ -1402,17 +1406,17 @@ export class WebGPUEngine extends Engine {
             let gpuTexture = texture._hardwareTexture?.underlyingResource;
 
             if (!gpuTexture) {
-                gpuTexture = this._createGPUTextureForInternalTexture(texture);
+                this._createGPUTextureForInternalTexture(texture);
             }
 
-            this._generateMipmaps(texture, gpuTexture);
+            this._generateMipmaps(texture);
         }
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
         if (generateMipMaps) {
             texture.generateMipMaps = true;
-            this._generateMipmaps(texture, texture._hardwareTexture!.underlyingResource);
+            this._generateMipmaps(texture);
         }
 
         texture.samplingMode = samplingMode;
@@ -1569,7 +1573,13 @@ export class WebGPUEngine extends Engine {
         return gpuTextureWrapper;
     }
 
-    private _generateMipmaps(texture: InternalTexture, gpuTexture: GPUTexture) {
+    private _generateMipmaps(texture: InternalTexture) {
+        const gpuTexture = texture._hardwareTexture?.underlyingResource;
+
+        if (!gpuTexture) {
+            return;
+        }
+
         const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height);
 
         if (texture.isCube) {
@@ -1624,7 +1634,7 @@ export class WebGPUEngine extends Engine {
         createImageBitmap(canvas).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
-                this._generateMipmaps(texture, gpuTextureWrapper.underlyingResource!);
+                this._generateMipmaps(texture);
             }
 
             texture.isReady = true;
@@ -1661,7 +1671,7 @@ export class WebGPUEngine extends Engine {
         createImageBitmap(video).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
-                this._generateMipmaps(texture, gpuTextureWrapper.underlyingResource!);
+                this._generateMipmaps(texture);
             }
 
             texture.isReady = true;
@@ -2117,6 +2127,10 @@ export class WebGPUEngine extends Engine {
 
         if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPass) {
             this._currentRenderPass.endPass();
+        }
+
+        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+            this._generateMipmaps(texture);
         }
 
         if (onBeforeUnbind) {
