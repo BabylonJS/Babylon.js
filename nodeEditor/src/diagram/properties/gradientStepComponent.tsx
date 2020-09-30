@@ -66,11 +66,11 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                         onPointerUp={evt => this.onPointerUp()}
                         onChange={evt => this.updateStep(parseFloat(evt.target.value))} />
                 </div>
-                <div className="gradient-delete" onClick={() => this.props.onDelete()} title={"Delete Step"}>
-                    <img className="img" src={deleteButton}/>
-                </div>
                 <div className="gradient-copy" onClick={() => {if(this.props.onCopy) this.props.onCopy()}} title="Copy Step">
                     <img className="img" src={copyIcon} />
+                </div>
+                <div className="gradient-delete" onClick={() => this.props.onDelete()} title={"Delete Step"}>
+                    <img className="img" src={deleteButton}/>
                 </div>
             </div>
         )
