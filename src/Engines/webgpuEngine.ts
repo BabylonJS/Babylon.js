@@ -2141,6 +2141,10 @@ export class WebGPUEngine extends Engine {
         this.wipeCaches();
     }
 
+    /** @hidden */
+    public _releaseFramebufferObjects(texture: InternalTexture): void {
+    }
+
     //------------------------------------------------------------------------------
     //                              Render
     //------------------------------------------------------------------------------
