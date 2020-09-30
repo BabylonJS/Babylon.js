@@ -247,6 +247,7 @@ export class WebGPUTextureHelper {
     }
 
     private _getBlockInformationFromFormat(format: GPUTextureFormat): { width: number, height: number, length: number } {
+        // TODO WEBGPU support other formats?
         switch (format) {
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
@@ -310,7 +311,8 @@ export class WebGPUTextureHelper {
             // TODO WEBGPU handle invertY / premultiplyAlpha
             imageBitmap = imageBitmap as Uint8Array;
 
-            const aligned = Math.ceil(width * 4 / 256) * 256 === width * 4;
+            const bytesPerRow = Math.ceil(width / blockInformation.width) * blockInformation.length;
+            const aligned = Math.ceil(bytesPerRow / 256) * 256 === bytesPerRow;
 
             if (aligned) {
                 const buffer = this._bufferManager.createRawBuffer(imageBitmap.byteLength, GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC, true);
@@ -336,7 +338,7 @@ export class WebGPUTextureHelper {
             } else {
                 this._device.defaultQueue.writeTexture(textureCopyView, imageBitmap, {
                     offset: 0,
-                    bytesPerRow: Math.ceil(width / blockInformation.width) * blockInformation.length
+                    bytesPerRow
                 }, textureExtent);
             }
         } else {
