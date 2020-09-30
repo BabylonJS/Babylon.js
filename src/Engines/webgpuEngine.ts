@@ -151,6 +151,7 @@ export class WebGPUEngine extends Engine {
     private _mainPassSampleCount: number;
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
+    private _deferredReleaseTextures: Array<[InternalTexture, Nullable<HardwareTextureWrapper>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
@@ -383,10 +384,10 @@ export class WebGPUEngine extends Engine {
             etc2: null,
             bptc: this._deviceEnabledExtensions.indexOf(WebGPUConstants.ExtensionName.TextureCompressionBC) >= 0 ? true : undefined,
             maxAnisotropy: 0,  // TODO: Retrieve this smartly. Currently set to D3D11 maximum allowable value.
-            uintIndices: false,
+            uintIndices: true,
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
-            colorBufferFloat: false,
+            colorBufferFloat: true,
             textureFloat: true,
             textureFloatLinearFiltering: true,
             textureFloatRender: true,
@@ -399,7 +400,7 @@ export class WebGPUEngine extends Engine {
             vertexArrayObject: false,
             instancedArrays: true,
             canUseTimestampForTimerQuery: false,
-            blendMinMax: false,
+            blendMinMax: true,
             maxMSAASamples: 1
         };
 
@@ -986,17 +987,17 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _releaseTexture(texture: InternalTexture): void {
-        texture._hardwareTexture?.release();
-        texture._irradianceTexture?.dispose();
-        texture._depthStencilTexture?.dispose();
-
-        // TODO WEBGPU remove debug code
-        (texture as any)._released = true;
+        const hardwareTexture = texture._hardwareTexture;
+        const irradianceTexture = texture._irradianceTexture;
+        const depthStencilTexture = texture._depthStencilTexture;
 
         const index = this._internalTexturesCache.indexOf(texture);
         if (index !== -1) {
             this._internalTexturesCache.splice(index, 1);
         }
+
+        // We can't destroy the objects just now because they could be used in the current frame - we delay the destroying after the end of the frame
+        this._deferredReleaseTextures.push([texture, hardwareTexture, irradianceTexture, depthStencilTexture]);
     }
 
     private _getSamplerFilterDescriptor(internalTexture: InternalTexture): {
@@ -1964,6 +1965,23 @@ export class WebGPUEngine extends Engine {
         this._commandBuffers[2] = this._renderEncoder.finish();
 
         this._device.defaultQueue.submit(this._commandBuffers);
+
+        for (let i = 0; i < this._deferredReleaseTextures.length; ++i) {
+            const [texture, hardwareTexture, irradianceTexture, depthStencilTexture] = this._deferredReleaseTextures[i];
+
+            hardwareTexture?.release();
+            irradianceTexture?.dispose();
+            depthStencilTexture?.dispose();
+
+            // TODO WEBGPU remove debug code
+            if ((texture as any)._swapped) {
+                delete (texture as any)._swapped;
+            } else {
+                (texture as any)._released = true;
+            }
+        }
+
+        this._deferredReleaseTextures.length = 0;
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
