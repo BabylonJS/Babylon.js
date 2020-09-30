@@ -1537,7 +1537,7 @@ export class WebGPUEngine extends Engine {
             texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment :
             texture._source === InternalTextureSource.Depth ? /*WebGPUConstants.TextureUsage.Sampled |*/ WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
-        const generateMipMaps = InternalTextureSource.RenderTarget ? false : texture.generateMipMaps;
+        const generateMipMaps = texture._source === InternalTextureSource.RenderTarget ? false : texture.generateMipMaps;
 
         if (texture.isCube) {
             const gpuTexture = this._textureHelper.createCubeTexture({ width, height }, texture.generateMipMaps, texture.generateMipMaps, texture.invertY, false, gpuTextureWrapper.format, texture.samples || 1, this._uploadEncoder, textureUsages);
