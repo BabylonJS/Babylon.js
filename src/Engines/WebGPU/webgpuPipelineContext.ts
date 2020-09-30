@@ -399,7 +399,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param color3 Value to be set.
      */
     public setColor3(uniformName: string, color3: IColor3Like): void {
-        this.setFloat3(uniformName, color3.b, color3.g, color3.b);
+        this.setFloat3(uniformName, color3.r, color3.g, color3.b);
     }
 
     /**
@@ -409,7 +409,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param alpha Alpha value to be set.
      */
     public setColor4(uniformName: string, color3: IColor3Like, alpha: number): void {
-        this.setFloat4(uniformName, color3.b, color3.g, color3.b, alpha);
+        this.setFloat4(uniformName, color3.r, color3.g, color3.b, alpha);
     }
 
     /**
