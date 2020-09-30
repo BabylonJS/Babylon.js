@@ -547,7 +547,7 @@ export class EnvironmentTextureTools {
                 let promise: Promise<void>;
 
                 if (typeof Image === "undefined" || ThinEngine.Features.forceBitmapOverHTMLImageElement) {
-                    promise = createImageBitmap(blob).then((img) => {
+                    promise = createImageBitmap(blob, { premultiplyAlpha: "none" }).then((img) => {
                         return this._OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                     });
                 } else {
