@@ -166,7 +166,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
             faceForward?: boolean;
             useDirectMapping?: boolean;
             halfDomeMode?: boolean;
-            noMipMap?: boolean;
+            generateMipMaps?: boolean;
         },
         scene: Scene,
         protected onError: Nullable<(message?: string, exception?: any) => void> = null
