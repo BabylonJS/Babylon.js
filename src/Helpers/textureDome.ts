@@ -232,7 +232,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         this._halfDome = !!options.halfDomeMode;
         // enable or disable according to the settings
         this._halfDomeMask.setEnabled(this._halfDome);
-        this._crossEye = !!options.crossEye;
+        this._crossEye = !!options.crossEyeMode;
 
         // create
         this._texture.anisotropicFilteringLevel = 1;
