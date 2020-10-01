@@ -972,7 +972,7 @@ export class ShadowGenerator implements IShadowGenerator {
         var targetSize = this._mapSize / this.blurScale;
 
         if (!this.useKernelBlur || this.blurScale !== 1.0) {
-            this._shadowMap2 = new RenderTargetTexture(this._light.name + "_shadowMap2", targetSize, this._scene, false, true, this._textureType);
+            this._shadowMap2 = new RenderTargetTexture(this._light.name + "_shadowMap2", targetSize, this._scene, false, true, this._textureType, undefined, undefined, false);
             this._shadowMap2.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap2.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap2.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
