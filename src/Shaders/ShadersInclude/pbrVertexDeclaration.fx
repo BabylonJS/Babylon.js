@@ -58,9 +58,16 @@ uniform float pointSize;
 
 // Clear Coat
 #ifdef CLEARCOAT
+    #if defined(CLEARCOAT_TEXTURE) || defined(CLEARCOAT_TEXTURE_ROUGHNESS)
+        uniform vec4 vClearCoatInfos;
+    #endif
+
     #ifdef CLEARCOAT_TEXTURE
-        uniform vec2 vClearCoatInfos;
         uniform mat4 clearCoatMatrix;
+    #endif
+
+    #ifdef CLEARCOAT_TEXTURE_ROUGHNESS
+        uniform mat4 clearCoatRoughnessMatrix;
     #endif
 
     #ifdef CLEARCOAT_BUMP
@@ -84,9 +91,16 @@ uniform float pointSize;
 
 // Sheen
 #ifdef SHEEN
+    #if defined(SHEEN_TEXTURE) || defined(SHEEN_TEXTURE_ROUGHNESS)
+        uniform vec4 vSheenInfos;
+    #endif
+
     #ifdef SHEEN_TEXTURE
-        uniform vec2 vSheenInfos;
         uniform mat4 sheenMatrix;
+    #endif
+
+    #ifdef SHEEN_TEXTURE_ROUGHNESS
+        uniform mat4 sheenRoughnessMatrix;
     #endif
 #endif
 
