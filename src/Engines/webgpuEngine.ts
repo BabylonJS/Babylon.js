@@ -31,6 +31,7 @@ import { WebGPUHardwareTexture } from './WebGPU/webgpuHardwareTexture';
 import { IColor4Like } from '../Maths/math.like';
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
+declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 
 // TODO WEBGPU remove when not needed anymore
 function assert(condition: any, msg?: string): asserts condition {
@@ -230,10 +231,12 @@ export class WebGPUEngine extends Engine {
         ThinEngine.Features.forceBitmapOverHTMLImageElement = true;
         ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = false; // TODO WEBGPU should be true but needs RTT support first for env texture to be generated correctly with this flag on
         ThinEngine.Features.framebuffersHaveYTopToBottom = true;
+        ThinEngine.Features.supportDepthStencilTexture = true;
+        ThinEngine.Features.supportShadowSamplers = true;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
-        options.antialiasing = false;//options.antialiasing === undefined ? true : options.antialiasing;
+        options.antialiasing = false; //options.antialiasing === undefined ? true : options.antialiasing;
         options.stencil = options.stencil ?? true;
 
         Logger.Log(`Babylon.js v${Engine.Version} - WebGPU engine`);
@@ -465,7 +468,7 @@ export class WebGPUEngine extends Engine {
             mipLevelCount: 1,
             sampleCount: this._mainPassSampleCount,
             dimension: WebGPUConstants.TextureDimension.E2d,
-            format: this.isStencilEnable ? WebGPUConstants.TextureFormat.Depth24PlusStencil8 : WebGPUConstants.TextureFormat.Depth32Float,
+            format: this._getDepthTextureFormat(),
             usage:  WebGPUConstants.TextureUsage.OutputAttachment
         };
 
@@ -526,7 +529,7 @@ export class WebGPUEngine extends Engine {
             this._alphaMode = Constants.ALPHA_ADD;
             this._alphaEquation = Constants.ALPHA_DISABLE;
 
-            this._colorWrite = true;
+            this.__colorWrite = true;
             this._colorWriteChanged = true;
         }
 
@@ -985,6 +988,10 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
     //                              Textures
     //------------------------------------------------------------------------------
+
+    private _getDepthTextureFormat(): GPUTextureFormat {
+        return this.isStencilEnable ? WebGPUConstants.TextureFormat.Depth24PlusStencil8 : WebGPUConstants.TextureFormat.Depth32Float;
+    }
 
     /** @hidden */
     public _createHardwareTexture(): HardwareTextureWrapper {
@@ -1467,6 +1474,10 @@ export class WebGPUEngine extends Engine {
     }
 
     public setTexture(channel: number, _: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>, name: string): void {
+        this._setTexture(channel, texture, false, false, name);
+    }
+
+    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
         if (this._currentEffect) {
             const webgpuPipelineContext = this._currentEffect._pipelineContext as WebGPUPipelineContext;
             if (!texture) {
@@ -1474,10 +1485,51 @@ export class WebGPUEngine extends Engine {
                     webgpuPipelineContext.bindGroups = null as any; // the bind groups need to be rebuilt (at least the bind group owning this texture, but it's easier to just have them all rebuilt)
                 }
                 webgpuPipelineContext.samplers[name] = null;
-                return;
+                return false;
             }
 
-            const internalTexture = texture!.getInternalTexture();
+            // Video
+            if ((<VideoTexture>texture).video) {
+                this._activeChannel = channel;
+                (<VideoTexture>texture).update();
+            } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) { // Delay loading
+                texture.delayLoad();
+                return false;
+            }
+
+            let internalTexture: InternalTexture;
+            if (depthStencilTexture) {
+                internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
+            }
+            else if (texture.isReady()) {
+                internalTexture = <InternalTexture>texture.getInternalTexture();
+            }
+            else if (texture.isCube) {
+                internalTexture = this.emptyCubeTexture;
+            }
+            else if (texture.is3D) {
+                internalTexture = this.emptyTexture3D;
+            }
+            else if (texture.is2DArray) {
+                internalTexture = this.emptyTexture2DArray;
+            }
+            else {
+                internalTexture = this.emptyTexture;
+            }
+
+            if (internalTexture && !internalTexture.isMultiview) {
+                // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
+                if (internalTexture.isCube && internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
+                    internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
+
+                    const textureWrapMode = (texture.coordinatesMode !== Constants.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Constants.TEXTURE_SKYBOX_MODE) ? Constants.TEXTURE_WRAP_ADDRESSMODE : Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                    texture.wrapU = textureWrapMode;
+                    texture.wrapV = textureWrapMode;
+                }
+
+                this._setAnisotropicLevel(0, internalTexture, texture.anisotropicFilteringLevel);
+            }
+
             if (internalTexture) {
                 internalTexture._cachedWrapU = texture.wrapU;
                 internalTexture._cachedWrapV = texture.wrapV;
@@ -1491,15 +1543,23 @@ export class WebGPUEngine extends Engine {
             }
 
             this._setInternalTexture(name, internalTexture);
+        }
 
-            // Video
-            if ((<VideoTexture>texture).video) {
-                this._activeChannel = channel;
-                (<VideoTexture>texture).update();
-            } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) { // Delay loading
-                texture.delayLoad();
-                return;
-            }
+        return true;
+    }
+
+    /** @hidden */
+    public _setAnisotropicLevel(target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number) {
+        if (internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST
+            && internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR
+            && internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR) {
+            anisotropicFilteringLevel = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
+        }
+
+        if (internalTexture._cachedAnisotropicFilteringLevel !== anisotropicFilteringLevel) {
+            //this._setTextureParameterFloat(target, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(anisotropicFilteringLevel, this._caps.maxAnisotropy), internalTexture);
+            internalTexture._cachedAnisotropicFilteringLevel = anisotropicFilteringLevel;
+            console.warn("_setAnisotropicLevel not implemented yet");
         }
     }
 
@@ -1546,7 +1606,7 @@ export class WebGPUEngine extends Engine {
 
         const textureUsages =
             texture._source === InternalTextureSource.RenderTarget ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment :
-            texture._source === InternalTextureSource.Depth ? /*WebGPUConstants.TextureUsage.Sampled |*/ WebGPUConstants.TextureUsage.OutputAttachment : -1;
+            texture._source === InternalTextureSource.Depth ? WebGPUConstants.TextureUsage.Sampled | WebGPUConstants.TextureUsage.OutputAttachment : -1;
 
         const generateMipMaps = texture._source === InternalTextureSource.RenderTarget ? false : texture.generateMipMaps;
 
@@ -1896,7 +1956,7 @@ export class WebGPUEngine extends Engine {
             ...options
         };
 
-        internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+        internalTexture.format = internalOptions.generateStencil && this.isStencilEnable ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
 
         this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
 
@@ -2000,7 +2060,9 @@ export class WebGPUEngine extends Engine {
         const gpuTexture = (internalTexture._hardwareTexture as WebGPUHardwareTexture).underlyingResource!;
 
         const colorTextureView = gpuTexture.createView(this._currentRenderTargetViewDescriptor);
-        const depthTexture = internalTexture._depthStencilTexture?._hardwareTexture?.underlyingResource;
+
+        const depthStencilTexture = internalTexture._depthStencilTexture;
+        const gpuDepthStencilTexture = depthStencilTexture?._hardwareTexture?.underlyingResource;
 
         const renderPass = this._renderTargetEncoder.beginRenderPass({
             colorAttachments: [{
@@ -2008,11 +2070,11 @@ export class WebGPUEngine extends Engine {
                 loadValue: clearColor !== null ? clearColor : WebGPUConstants.LoadOp.Load,
                 storeOp: WebGPUConstants.StoreOp.Store
             }],
-            depthStencilAttachment: (internalTexture._generateDepthBuffer || internalTexture._generateStencilBuffer) && depthTexture ? {
-                attachment: (internalTexture._depthStencilTexture?._hardwareTexture as WebGPUHardwareTexture).view!,
-                depthLoadValue: clearDepth && internalTexture._generateDepthBuffer ? this._clearDepthValue : WebGPUConstants.LoadOp.Load,
+            depthStencilAttachment: depthStencilTexture && gpuDepthStencilTexture ? {
+                attachment: (depthStencilTexture._hardwareTexture as WebGPUHardwareTexture).view!,
+                depthLoadValue: clearDepth && depthStencilTexture._generateDepthBuffer ? this._clearDepthValue : WebGPUConstants.LoadOp.Load,
                 depthStoreOp: WebGPUConstants.StoreOp.Store,
-                stencilLoadValue: clearStencil && internalTexture._generateStencilBuffer ? this._clearStencilValue : WebGPUConstants.LoadOp.Load,
+                stencilLoadValue: clearStencil && depthStencilTexture._generateStencilBuffer ? this._clearStencilValue : WebGPUConstants.LoadOp.Load,
                 stencilStoreOp: WebGPUConstants.StoreOp.Store,
             } : undefined
         });
@@ -2121,7 +2183,7 @@ export class WebGPUEngine extends Engine {
 
     public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         // TODO WEBGPU remove the assert debugging code
-        assert(texture === this._currentRenderTarget);
+        assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we wan't to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
 
         this._currentRenderTarget = null;
 
@@ -2262,8 +2324,8 @@ export class WebGPUEngine extends Engine {
 
         return {
             depthWriteEnabled: this.getDepthWrite(),
-            depthCompare: this._getCompareFunction(this.getDepthFunction()),
-            format: this._currentRenderTarget && this._currentRenderTarget._depthStencilTexture ? this._getWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : WebGPUConstants.TextureFormat.Depth24PlusStencil8,
+            depthCompare: this.getDepthBuffer() ? this._getCompareFunction(this.getDepthFunction()) : WebGPUConstants.CompareFunction.Always,
+            format: this._currentRenderTarget && this._currentRenderTarget._depthStencilTexture ? this._getWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format) : this._getDepthTextureFormat(),
             stencilFront: stencilFrontBack,
             stencilBack: stencilFrontBack,
             stencilReadMask: this._stencilState.stencilFuncMask,

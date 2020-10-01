@@ -178,6 +178,8 @@ export class ThinEngine {
         forceBitmapOverHTMLImageElement: false,
         supportRenderAndCopyToLodForFloatTextures: false,
         framebuffersHaveYTopToBottom: false,
+        supportDepthStencilTexture: false,
+        supportShadowSamplers: false,
     };
 
     /**
@@ -715,6 +717,8 @@ export class ThinEngine {
         }
 
         ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = this._webGLVersion !== 1;
+        ThinEngine.Features.supportDepthStencilTexture = this._webGLVersion !== 1;
+        ThinEngine.Features.supportShadowSamplers = this._webGLVersion !== 1;
 
         // Ensures a consistent color space unpacking of textures cross browser.
         this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
@@ -3741,7 +3745,7 @@ export class ThinEngine {
         return this._gl.REPEAT;
     }
 
-    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
+    protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
         // Not ready?
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {

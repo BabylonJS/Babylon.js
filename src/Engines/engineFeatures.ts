@@ -7,4 +7,10 @@ export interface EngineFeatures {
 
     /** Indicates that framebuffers have Y going from top to bottom for increasing y values */
     framebuffersHaveYTopToBottom: boolean;
+
+    /** Indicates that the engine support handling depth/stencil textures */
+    supportDepthStencilTexture: boolean;
+
+    /** Indicates that the engine support shadow samplers */
+    supportShadowSamplers: boolean;
 }
