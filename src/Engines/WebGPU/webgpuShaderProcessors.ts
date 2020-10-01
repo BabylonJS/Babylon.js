@@ -25,6 +25,7 @@ const _samplerFunctionByWebGLSamplerType: { [key: string]: string } = {
     "textureCube": "samplerCube",
     "texture2D": "sampler2D",
     "sampler2D": "sampler2D",
+    "sampler2DShadow": "sampler2DShadow",
     "samplerCube": "samplerCube"
 };
 
@@ -32,12 +33,23 @@ const _textureTypeByWebGLSamplerType: { [key: string]: string } = {
     "textureCube": "textureCube",
     "texture2D": "texture2D",
     "sampler2D": "texture2D",
+    "sampler2DShadow": "texture2D",
     "samplerCube": "textureCube"
 };
 
 const _gpuTextureViewDimensionByWebGPUTextureType: { [key: string]: GPUTextureViewDimension } = {
     "textureCube": WebGPUConstants.TextureViewDimension.Cube,
     "texture2D": WebGPUConstants.TextureViewDimension.E2d,
+};
+
+// if the webgl sampler type is not listed in this array, "sampler" is taken by default
+const _samplerTypeByWebGLSamplerType: { [key: string]: string } = {
+    "sampler2DShadow": "samplerShadow",
+};
+
+const _comparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
+    "samplerShadow": true,
+    "sampler": false,
 };
 
 /** @hidden */
@@ -104,12 +116,13 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 const textureBindingIndex = samplerInfo.bindingIndex;
                 const samplerBindingIndex = samplerInfo.bindingIndex + 1;
                 const samplerFunction = _samplerFunctionByWebGLSamplerType[uniformType];
+                const samplerType = _samplerTypeByWebGLSamplerType[uniformType] ?? "sampler";
                 const textureType = _textureTypeByWebGLSamplerType[uniformType];
                 const textureDimension = _gpuTextureViewDimensionByWebGPUTextureType[textureType];
 
                 // Manage textures and samplers.
                 uniform = `layout(set = ${setIndex}, binding = ${textureBindingIndex}) uniform ${textureType} ${name}Texture;
-                    layout(set = ${setIndex}, binding = ${samplerBindingIndex}) uniform sampler ${name}Sampler;
+                    layout(set = ${setIndex}, binding = ${samplerBindingIndex}) uniform ${samplerType} ${name}Sampler;
                     #define ${name} ${samplerFunction}(${name}Texture, ${name}Sampler)`;
 
                 webgpuProcessingContext.availableSamplers[name] = samplerInfo;
@@ -118,6 +131,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
                 }
                 webgpuProcessingContext.orderedUBOsAndSamplers[setIndex][textureBindingIndex] = {
                     isSampler: true,
+                    isComparisonSampler: _comparisonSamplerByWebGPUSamplerType[samplerType] ?? false,
                     textureDimension,
                     name,
                 };
