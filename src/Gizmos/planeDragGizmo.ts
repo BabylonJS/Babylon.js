@@ -35,6 +35,7 @@ export class PlaneDragGizmo extends Gizmo {
     private _plane: TransformNode;
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
+    private _disableMaterial: StandardMaterial;
 
     private _isEnabled: boolean = false;
     private _parent: Nullable<PositionGizmo> = null;
@@ -75,7 +76,11 @@ export class PlaneDragGizmo extends Gizmo {
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
+        this._hoverMaterial.diffuseColor = Color3.Yellow();
+        
+        this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.alpha = 0.4;
 
         // Build plane mesh on root node
         this._plane = PlaneDragGizmo._CreatePlane(gizmoLayer.utilityLayerScene, this._coloredMaterial);
@@ -117,19 +122,16 @@ export class PlaneDragGizmo extends Gizmo {
             }
         });
 
-        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (this._customMeshSet) {
-                return;
-            }
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
-            var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
-            this._rootMesh.getChildMeshes().forEach((m) => {
-                m.material = material;
-            });
-        });
-
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
+
+        const cache: any = {
+            material: this._coloredMaterial,
+            hoverMaterial: this._hoverMaterial,
+            disableMaterial: this._disableMaterial,
+            active: false
+        };
+        this._parent?.addToAxisCache((this._plane as Mesh), cache);
     }
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {

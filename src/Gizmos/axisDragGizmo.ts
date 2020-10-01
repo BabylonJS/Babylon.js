@@ -5,7 +5,6 @@ import { Vector3 } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import { LinesMesh } from "../Meshes/linesMesh";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "./gizmo";
@@ -36,25 +35,34 @@ export class AxisDragGizmo extends Gizmo {
     private _isEnabled: boolean = true;
     private _parent: Nullable<PositionGizmo> = null;
 
-    private _arrow: TransformNode;
+    private _gizmoMesh: Mesh;
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
+    private _disableMaterial: StandardMaterial;
 
     /** @hidden */
-    public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1): TransformNode {
-        var arrow = new TransformNode("arrow", scene);
+    public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): Mesh {
+        var arrow = new Mesh("arrow", scene);
         var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375 * (1 + (thickness - 1) / 4), tessellation: 96 }, scene);
         var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, scene);
-        line.material = material;
-        cylinder.parent = arrow;
-        line.parent = arrow;
 
         // Position arrow pointing in its drag axis
+        cylinder.parent = arrow;
         cylinder.material = material;
         cylinder.rotation.x = Math.PI / 2;
         cylinder.position.z += 0.3;
+        
+        line.parent = arrow;
+        line.material = material;
         line.position.z += 0.275 / 2;
         line.rotation.x = Math.PI / 2;
+
+        if (isCollider) {
+            line.name = 'ignore';
+            line.visibility = 0;
+            cylinder.name = 'ignore';
+            cylinder.visibility = 0;
+        }
         return arrow;
     }
 
@@ -78,20 +86,32 @@ export class AxisDragGizmo extends Gizmo {
     constructor(dragAxis: Vector3, color: Color3 = Color3.Gray(), gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, parent: Nullable<PositionGizmo> = null, thickness: number = 1) {
         super(gizmoLayer);
         this._parent = parent;
+
         // Create Material
         this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         this._coloredMaterial.diffuseColor = color;
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = color.add(new Color3(0.3, 0.3, 0.3));
+        this._hoverMaterial.diffuseColor = Color3.Yellow();
 
-        // Build mesh on root node
-        this._arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness);
+        this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
+        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.alpha = 0.4;
 
-        this._arrow.lookAt(this._rootMesh.position.add(dragAxis));
-        this._arrow.scaling.scaleInPlace(1 / 3);
-        this._arrow.parent = this._rootMesh;
+        // Build Mesh + Collider
+        const arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness);
+        const collider = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness * 4, true);
+        
+        // Add to Root Node
+        this._gizmoMesh = new Mesh("", gizmoLayer.utilityLayerScene);
+        [...arrow.getChildMeshes(), ...collider.getChildMeshes()].forEach(mesh => {
+            this._gizmoMesh.addChild(mesh);
+        });
+
+        this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
+        this._gizmoMesh.scaling.scaleInPlace(1 / 3);
+        this._gizmoMesh.parent = this._rootMesh;
 
         var currentSnapDragDistance = 0;
         var tmpVector = new Vector3();
@@ -133,22 +153,16 @@ export class AxisDragGizmo extends Gizmo {
             }
         });
 
-        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (this._customMeshSet) {
-                return;
-            }
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
-            var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
-            this._rootMesh.getChildMeshes().forEach((m) => {
-                m.material = material;
-                if ((<LinesMesh>m).color) {
-                    (<LinesMesh>m).color = material.diffuseColor;
-                }
-            });
-        });
-
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
+
+        const cache: any = {
+            material: this._coloredMaterial,
+            hoverMaterial: this._hoverMaterial,
+            disableMaterial: this._disableMaterial,
+            active: false
+        };
+        this._parent?.addToAxisCache((this._gizmoMesh as Mesh), cache);
     }
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
@@ -183,10 +197,10 @@ export class AxisDragGizmo extends Gizmo {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
-        if (this._arrow) {
-            this._arrow.dispose();
+        if (this._gizmoMesh) {
+            this._gizmoMesh.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {
+        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
             if (matl) {
                 matl.dispose();
             }
