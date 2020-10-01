@@ -139,7 +139,7 @@ declare global {
     | "bgra8unorm"
     | "bgra8unorm-srgb"
     | "rgb10a2unorm"
-    | "rg11b10float"
+    | "rg11b10ufloat"
     | "rg32uint"
     | "rg32sint"
     | "rg32float"
