@@ -455,6 +455,22 @@ export class Texture extends BaseTexture {
     }
 
     /**
+     * Checks if the texture has the same transform matrix than another texture
+     * @param texture texture to check against
+     * @returns true if the transforms are the same, else false
+     */
+    public checkTransformsAreIdentical(texture: Nullable<Texture>): boolean {
+        return texture !== null &&
+                this.uOffset === texture.uOffset &&
+                this.vOffset === texture.vOffset &&
+                this.uScale === texture.uScale &&
+                this.vScale === texture.vScale &&
+                this.uAng === texture.uAng &&
+                this.vAng === texture.vAng &&
+                this.wAng === texture.wAng;
+    }
+
+    /**
      * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
      * @returns the transform matrix of the texture.
      */
