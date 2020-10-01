@@ -72073,8 +72073,8 @@ var Color4LineComponent = /** @class */ (function (_super) {
         return _this;
     }
     Color4LineComponent.prototype.shouldComponentUpdate = function (nextProps, nextState) {
-        var value = this.props.target[this.props.propertyName];
-        var currentColor = value.getClassName() === "Color4" ? value : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](value.r, value.g, value.b, 1.0);
+        var currentState = nextProps.target[nextProps.propertyName];
+        var currentColor = currentState.getClassName() === "Color4" ? currentState : new babylonjs_Maths_math_color__WEBPACK_IMPORTED_MODULE_2__["Color4"](currentState.r, currentState.g, currentState.b, 1.0);
         if (!currentColor.equals(nextState.color) || this._localChange) {
             nextState.color = currentColor.clone();
             this._localChange = false;
