@@ -51,6 +51,7 @@
 - Changed DeviceSourceManager getInput contract to no longer return nullable values for reals this time. Also added proper cleanup for DeviceSourceManager observables ([Drigax](https://github.com/drigax))
 - Default Loading screen supports any image size and ratio ([#8845](https://github.com/BabylonJS/Babylon.js/issues/8845)) ([RaananW](https://github.com/RaananW))
 - Added optional success and error callbacks for freezeActiveMeshes ([RaananW](https://github.com/RaananW))
+- Allow cross-eye mode in photo and video dome ([#8897](https://github.com/BabylonJS/Babylon.js/issues/8897)) ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
