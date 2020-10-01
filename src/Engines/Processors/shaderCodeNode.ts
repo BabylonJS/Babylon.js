@@ -28,7 +28,7 @@ export class ShaderCodeNode {
                 } else if (processor.varyingProcessor && StringTools.StartsWith(this.line, "varying")) {
                     value = processor.varyingProcessor(this.line, options.isFragment, options.processingContext);
                 } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StringTools.StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
-                    let regex = /uniform\s+(\S+)\s+(\S+)\s*;/;
+                    let regex = /uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
 
                     if (regex.test(this.line)) { // uniform
                         if (processor.uniformProcessor) {

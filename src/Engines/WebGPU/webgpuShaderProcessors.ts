@@ -84,7 +84,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     public uniformProcessor(uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>): string {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
-        const uniformRegex = new RegExp(/\s*uniform\s+(\S+)\s+(\S+)\s*;/gm);
+        const uniformRegex = new RegExp(/\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm);
 
         const match = uniformRegex.exec(uniform);
         if (match != null) {
