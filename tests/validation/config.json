@@ -607,7 +607,8 @@
             "title": "GLTF ClearCoat",
             "playgroundId": "#YG3BBF#4",
             "referenceImage": "glTFClearCoat.png",
-            "renderCount": 50
+            "renderCount": 50,
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "GLTF Serializer with Negative World Matrix",
