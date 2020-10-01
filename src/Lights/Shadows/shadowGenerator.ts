@@ -28,6 +28,7 @@ import { Observable } from '../../Misc/observable';
 import { _DevTools } from '../../Misc/devTools';
 import { EffectFallbacks } from '../../Materials/effectFallbacks';
 import { RenderingManager } from '../../Rendering/renderingManager';
+import { ThinEngine } from '../../Engines/thinEngine';
 
 const tmpMatrix = new Matrix(),
       tmpMatrix2 = new Matrix();
@@ -413,7 +414,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         // Weblg1 fallback for PCF.
         if (value === ShadowGenerator.FILTER_PCF || value === ShadowGenerator.FILTER_PCSS) {
-            if (this._scene.getEngine().webGLVersion === 1) {
+            if (!ThinEngine.Features.supportShadowSamplers) {
                 this.usePoissonSampling = true;
                 return;
             }
@@ -860,8 +861,7 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _createTargetRenderTexture(): void {
-        let engine = this._scene.getEngine();
-        if (engine.webGLVersion > 1) {
+        if (ThinEngine.Features.supportDepthStencilTexture) {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube(), undefined, false, false);
             this._shadowMap.createDepthStencilTexture(Constants.LESS, true);
         }

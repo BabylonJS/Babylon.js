@@ -819,7 +819,7 @@ export class Effect implements IDisposable {
      * @param texture Texture to set.
      */
     public setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void {
-        this._engine.setDepthStencilTexture(this._samplers[channel], this._uniforms[channel], texture);
+        this._engine.setDepthStencilTexture(this._samplers[channel], this._uniforms[channel], texture, channel);
     }
 
     /**
