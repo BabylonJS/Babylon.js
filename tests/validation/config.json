@@ -599,6 +599,18 @@
             "referenceImage": "gltfTextureSampler1.png"
         },
         {
+            "title": "GLTF Sheen",
+            "playgroundId": "#YG3BBF#2",
+            "referenceImage": "glTFSheen.png"
+        },
+        {
+            "title": "GLTF ClearCoat",
+            "playgroundId": "#YG3BBF#4",
+            "referenceImage": "glTFClearCoat.png",
+            "renderCount": 50,
+            "excludeFromAutomaticTesting": true
+        },
+        {
             "title": "GLTF Serializer with Negative World Matrix",
             "playgroundId": "#KX53VK#35",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",

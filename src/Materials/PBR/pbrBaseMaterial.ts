@@ -229,7 +229,11 @@ export class PBRMaterialDefines extends MaterialDefines
     public CLEARCOAT = false;
     public CLEARCOAT_DEFAULTIOR = false;
     public CLEARCOAT_TEXTURE = false;
+    public CLEARCOAT_TEXTURE_ROUGHNESS = false;
     public CLEARCOAT_TEXTUREDIRECTUV = 0;
+    public CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV = 0;
+    public CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+    public CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
     public CLEARCOAT_BUMP = false;
     public CLEARCOAT_BUMPDIRECTUV = 0;
     public CLEARCOAT_REMAP_F0 = true;
@@ -247,10 +251,14 @@ export class PBRMaterialDefines extends MaterialDefines
 
     public SHEEN = false;
     public SHEEN_TEXTURE = false;
+    public SHEEN_TEXTURE_ROUGHNESS = false;
     public SHEEN_TEXTUREDIRECTUV = 0;
+    public SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
     public SHEEN_LINKWITHALBEDO = false;
     public SHEEN_ROUGHNESS = false;
     public SHEEN_ALBEDOSCALING = false;
+    public SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
+    public SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
 
     public SUBSURFACE = false;
 
@@ -2020,9 +2028,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
             this.detailMap.bindForSubMesh(ubo, scene, this.isFrozen);
             this.subSurface.bindForSubMesh(ubo, scene, engine, this.isFrozen, defines.LODBASEDMICROSFURACE, this.realTimeFiltering);
-            this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY);
+            this.clearCoat.bindForSubMesh(ubo, scene, engine, this._disableBumpMap, this.isFrozen, this._invertNormalMapX, this._invertNormalMapY, subMesh);
             this.anisotropy.bindForSubMesh(ubo, scene, this.isFrozen);
-            this.sheen.bindForSubMesh(ubo, scene, this.isFrozen);
+            this.sheen.bindForSubMesh(ubo, scene, this.isFrozen, subMesh);
 
             // Clip plane
             MaterialHelper.BindClipPlane(this._activeEffect, scene);
