@@ -17964,6 +17964,11 @@ declare module BABYLON {
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
+         * Gets or sets the size of the texture what stores the shadows
+         */
+        get mapSize(): number;
+        set mapSize(size: number);
+        /**
          * Creates a ShadowGenerator object.
          * A ShadowGenerator is the required tool to use the shadows.
          * Each light casting shadows needs to use its own ShadowGenerator.
@@ -28072,6 +28077,10 @@ declare module BABYLON {
          */
         wRotationCenter: number;
         /**
+         * Sets this property to true to avoid deformations when rotating the texture with non-uniform scaling
+         */
+        homogeneousRotationInUVTransform: boolean;
+        /**
          * Are mip maps generated for this texture or not.
          */
         get noMipmap(): boolean;
@@ -28097,6 +28106,10 @@ declare module BABYLON {
         private _cachedVAng;
         private _cachedWAng;
         private _cachedProjectionMatrixId;
+        private _cachedURotationCenter;
+        private _cachedVRotationCenter;
+        private _cachedWRotationCenter;
+        private _cachedHomogeneousRotationInUVTransform;
         private _cachedCoordinatesMode;
         /** @hidden */
         protected _initialSamplingMode: number;
@@ -57952,6 +57965,7 @@ declare module BABYLON {
          */
         static readonly MODE_SIDEBYSIDE: number;
         private _halfDome;
+        private _crossEye;
         protected _useDirectMapping: boolean;
         /**
          * The texture being displayed on the sphere
@@ -57997,7 +58011,7 @@ declare module BABYLON {
         get textureMode(): number;
         /**
          * Sets the current texture mode for the texture. It can be:
-          * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
+         * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
          * * TextureDome.MODE_TOPBOTTOM  : Define the texture source as a Stereoscopic TopBottom/OverUnder panoramic 360.
          * * TextureDome.MODE_SIDEBYSIDE : Define the texture source as a Stereoscopic Side by Side panoramic 360.
          */
@@ -58010,6 +58024,14 @@ declare module BABYLON {
          * Set the halfDome mode. If set, only the front (180 degrees) will be displayed and the back will be blacked out.
          */
         set halfDome(enabled: boolean);
+        /**
+         * Set the cross-eye mode. If set, images that can be seen when crossing eyes will render correctly
+         */
+        set crossEye(enabled: boolean);
+        /**
+         * Is it a cross-eye texture?
+         */
+        get crossEye(): boolean;
         /**
          * Oberserver used in Stereoscopic VR Mode.
          */
@@ -58034,6 +58056,8 @@ declare module BABYLON {
             faceForward?: boolean;
             useDirectMapping?: boolean;
             halfDomeMode?: boolean;
+            crossEyeMode?: boolean;
+            generateMipMaps?: boolean;
         }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
         protected abstract _initTexture(urlsOrElement: string | string[] | HTMLElement, scene: Scene, options: any): T;
         protected _changeTextureMode(value: number): void;

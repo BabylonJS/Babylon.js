@@ -6,6 +6,9 @@ interface IPlayheadProps {
   onCurrentFrameChange: (frame: number) => void;
 }
 
+/**
+ * Renders the Playhead
+ */
 export class Playhead extends React.Component<IPlayheadProps> {
   private _direction: number;
   private _active: boolean;
