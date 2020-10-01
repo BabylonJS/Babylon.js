@@ -1316,6 +1316,7 @@ export class WebGPUEngine extends Engine {
         return {
             ...this._getSamplerFilterDescriptor(internalTexture),
             ...this._getSamplerWrappingDescriptor(internalTexture),
+            compare: internalTexture._comparisonFunction ? this._getCompareFunction(internalTexture._comparisonFunction) : undefined,
         };
     }
 
@@ -2659,7 +2660,7 @@ export class WebGPUEngine extends Engine {
                         // TODO WEBGPU. No Magic + 1 (coming from current 1 texture 1 sampler startegy).
                         binding: j + 1,
                         visibility: WebGPUConstants.ShaderStage.Vertex | WebGPUConstants.ShaderStage.Fragment,
-                        type: WebGPUConstants.BindingType.Sampler
+                        type: bindingDefinition.isComparisonSampler ? WebGPUConstants.BindingType.ComparisonSampler : WebGPUConstants.BindingType.Sampler
                     });
                 }
                 else {
