@@ -90,6 +90,10 @@ declare module BABYLON {
          * If it is the first function in the callback chain it will be the event data.
          */
         lastReturnValue?: any;
+        /**
+        * User defined information that will be sent to observers
+        */
+        userInfo?: any;
     }
     /**
      * Represent an Observer registered to a given Observable object.
@@ -222,9 +226,10 @@ declare module BABYLON {
          * @param mask defines the mask of the current notification (observers with incompatible mask (ie mask & observer.mask === 0) will not be notified)
          * @param target defines the original target of the state
          * @param currentTarget defines the current target of the state
+         * @param userInfo defines any user info to send to observers
          * @returns false if the complete observer chain was not processed (because one observer set the skipNextObservers to true)
          */
-        notifyObservers(eventData: T, mask?: number, target?: any, currentTarget?: any): boolean;
+        notifyObservers(eventData: T, mask?: number, target?: any, currentTarget?: any, userInfo?: any): boolean;
         /**
          * Calling this will execute each callback, expecting it to be a promise or return a value.
          * If at any point in the chain one function fails, the promise will fail and the execution will not continue.
@@ -236,9 +241,10 @@ declare module BABYLON {
          * @param mask is used to filter observers defaults to -1
          * @param target defines the callback target (see EventState)
          * @param currentTarget defines he current object in the bubbling phase
+         * @param userInfo defines any user info to send to observers
          * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
          */
-        notifyObserversWithPromise(eventData: T, mask?: number, target?: any, currentTarget?: any): Promise<T>;
+        notifyObserversWithPromise(eventData: T, mask?: number, target?: any, currentTarget?: any, userInfo?: any): Promise<T>;
         /**
          * Notify a specific observer
          * @param observer defines the observer to notify
