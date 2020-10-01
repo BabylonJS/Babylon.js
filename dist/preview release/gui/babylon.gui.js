@@ -1223,7 +1223,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this._lastControlDown[pointerId] = control;
         this.onControlPickedObservable.notifyObservers(control);
     };
-    AdvancedDynamicTexture.prototype._doPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    AdvancedDynamicTexture.prototype._doPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -1237,15 +1237,15 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
-            this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
+            this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
         this._cursorChanged = false;
-        if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+        if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
             this._changeCursor("");
             if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);
                     delete this._lastControlOver[pointerId];
                 }
             }
@@ -1312,7 +1312,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             _this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             var pointerId = pi.event.pointerId || _this._defaultMousePointerId;
-            _this._doPicking(x, y, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
+            _this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (_this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = _this._shouldBlockPointer;
@@ -1360,7 +1360,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     var size = _this.getSize();
-                    _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pointerId, pi.event.button);
+                    _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
                 }
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP) {
@@ -1393,7 +1393,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (_this._lastControlOver[pointerId]) {
-                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], true);
+                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], pi, true);
                 }
                 delete _this._lastControlOver[pointerId];
             }
@@ -1431,7 +1431,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         var _this = this;
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function (pointerEvent) {
             if (_this._lastControlOver[pointerEvent.pointerId]) {
-                _this._lastControlOver[pointerEvent.pointerId]._onPointerOut(_this._lastControlOver[pointerEvent.pointerId]);
+                _this._lastControlOver[pointerEvent.pointerId]._onPointerOut(_this._lastControlOver[pointerEvent.pointerId], null);
             }
             delete _this._lastControlOver[pointerEvent.pointerId];
             if (_this._lastControlDown[pointerEvent.pointerId] && _this._lastControlDown[pointerEvent.pointerId] !== _this._capturingControl[pointerEvent.pointerId]) {
@@ -1603,7 +1603,7 @@ var Button = /** @class */ (function (_super) {
     };
     // While being a container, the button behaves like a control.
     /** @hidden */
-    Button.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Button.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -1623,12 +1623,12 @@ var Button = /** @class */ (function (_super) {
                 return false;
             }
         }
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerEnter = function (target) {
-        if (!_super.prototype._onPointerEnter.call(this, target)) {
+    Button.prototype._onPointerEnter = function (target, pi) {
+        if (!_super.prototype._onPointerEnter.call(this, target, pi)) {
             return false;
         }
         if (this.pointerEnterAnimation) {
@@ -1637,16 +1637,16 @@ var Button = /** @class */ (function (_super) {
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerOut = function (target, force) {
+    Button.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
-        _super.prototype._onPointerOut.call(this, target, force);
+        _super.prototype._onPointerOut.call(this, target, pi, force);
     };
     /** @hidden */
-    Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         if (this.pointerDownAnimation) {
@@ -1655,11 +1655,11 @@ var Button = /** @class */ (function (_super) {
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         if (this.pointerUpAnimation) {
             this.pointerUpAnimation();
         }
-        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
     };
     // Statics
     /**
@@ -1895,8 +1895,8 @@ var Checkbox = /** @class */ (function (_super) {
     };
     // Events
     /** @hidden */
-    Checkbox.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    Checkbox.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this.isChecked = !this.isChecked;
@@ -2269,8 +2269,8 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         return false;
     };
-    ColorPicker.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    ColorPicker.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._pointerIsDown = true;
@@ -2291,7 +2291,7 @@ var ColorPicker = /** @class */ (function (_super) {
         this._lastPointerDownID = pointerId;
         return true;
     };
-    ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownID) {
             return;
@@ -2303,12 +2303,12 @@ var ColorPicker = /** @class */ (function (_super) {
         if (this._pointerIsDown) {
             this._updateValueFromPointer(x, y);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
-    ColorPicker.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    ColorPicker.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         this._pointerIsDown = false;
         delete this._host._capturingControl[pointerId];
-        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
     };
     ColorPicker.prototype._onCanvasBlur = function () {
         this._forcePointerUp();
@@ -3705,7 +3705,7 @@ var Container = /** @class */ (function (_super) {
         }
     };
     /** @hidden */
-    Container.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Container.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -3715,7 +3715,7 @@ var Container = /** @class */ (function (_super) {
         // Checking backwards to pick closest first
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
-            if (child._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+            if (child._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
                 }
@@ -3725,7 +3725,7 @@ var Container = /** @class */ (function (_super) {
         if (!this.isHitTestVisible) {
             return false;
         }
-        return this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        return this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
     };
     /** @hidden */
     Container.prototype._additionalProcessing = function (parentMeasure, context) {
@@ -5382,7 +5382,7 @@ var Control = /** @class */ (function () {
         return true;
     };
     /** @hidden */
-    Control.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Control.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled) {
             return false;
         }
@@ -5392,18 +5392,18 @@ var Control = /** @class */ (function () {
         if (!this.contains(x, y)) {
             return false;
         }
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerMove = function (target, coordinates, pointerId) {
-        var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
+    Control.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
+        var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerMove(target, coordinates, pointerId);
+            this.parent._onPointerMove(target, coordinates, pointerId, pi);
         }
     };
     /** @hidden */
-    Control.prototype._onPointerEnter = function (target) {
+    Control.prototype._onPointerEnter = function (target, pi) {
         if (!this._isEnabled) {
             return false;
         }
@@ -5414,14 +5414,14 @@ var Control = /** @class */ (function () {
             this._enterCount = 0;
         }
         this._enterCount++;
-        var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+        var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerEnter(target);
+            this.parent._onPointerEnter(target, pi);
         }
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerOut = function (target, force) {
+    Control.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
         if (!force && (!this._isEnabled || target === this)) {
             return;
@@ -5429,17 +5429,17 @@ var Control = /** @class */ (function () {
         this._enterCount = 0;
         var canNotify = true;
         if (!target.isAscendant(this)) {
-            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this, pi);
         }
         if (canNotify && this.parent != null) {
-            this.parent._onPointerOut(target, force);
+            this.parent._onPointerOut(target, pi, force);
         }
     };
     /** @hidden */
-    Control.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    Control.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         // Prevent pointerout to lose control context.
         // Event redundancy is checked inside the function.
-        this._onPointerEnter(this);
+        this._onPointerEnter(this, pi);
         if (this._downCount !== 0) {
             return false;
         }
@@ -5447,12 +5447,12 @@ var Control = /** @class */ (function () {
         this._downPointerIds[pointerId] = true;
         var canNotify = this.onPointerDownObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex);
+            this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
         }
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    Control.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         if (!this._isEnabled) {
             return;
         }
@@ -5460,11 +5460,11 @@ var Control = /** @class */ (function () {
         delete this._downPointerIds[pointerId];
         var canNotifyClick = notifyClick;
         if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
-            canNotifyClick = this.onPointerClickObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
+            canNotifyClick = this.onPointerClickObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this, pi);
         }
-        var canNotify = this.onPointerUpObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
+        var canNotify = this.onPointerUpObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
+            this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
         }
     };
     /** @hidden */
@@ -5492,32 +5492,32 @@ var Control = /** @class */ (function () {
     /** @hidden */
     Control.prototype._onCanvasBlur = function () { };
     /** @hidden */
-    Control.prototype._processObservables = function (type, x, y, pointerId, buttonIndex, deltaX, deltaY) {
+    Control.prototype._processObservables = function (type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled) {
             return false;
         }
         this._dummyVector2.copyFromFloats(x, y);
         if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
-            this._onPointerMove(this, this._dummyVector2, pointerId);
+            this._onPointerMove(this, this._dummyVector2, pointerId, pi);
             var previousControlOver = this._host._lastControlOver[pointerId];
             if (previousControlOver && previousControlOver !== this) {
-                previousControlOver._onPointerOut(this);
+                previousControlOver._onPointerOut(this, pi);
             }
             if (previousControlOver !== this) {
-                this._onPointerEnter(this);
+                this._onPointerEnter(this, pi);
             }
             this._host._lastControlOver[pointerId] = this;
             return true;
         }
         if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN) {
-            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
+            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex, pi);
             this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
         }
         if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
             if (this._host._lastControlDown[pointerId]) {
-                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true);
+                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true, pi);
             }
             delete this._host._lastControlDown[pointerId];
             return true;
@@ -8415,8 +8415,8 @@ var InputText = /** @class */ (function (_super) {
         }
         context.restore();
     };
-    InputText.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    InputText.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._clickedCoordinate = coordinates.x;
@@ -8437,13 +8437,13 @@ var InputText = /** @class */ (function (_super) {
         this._host.focusedControl = this;
         return true;
     };
-    InputText.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    InputText.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         if (this._host.focusedControl === this && this._isPointerDown) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
     InputText.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._isPointerDown = false;
@@ -9173,8 +9173,8 @@ var RadioButton = /** @class */ (function (_super) {
         context.restore();
     };
     // Events
-    RadioButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    RadioButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         if (!this.isChecked) {
@@ -11297,8 +11297,8 @@ var BaseSlider = /** @class */ (function (_super) {
         var mult = (1 / this._step) | 0;
         this.value = this._step ? ((value * mult) | 0) / mult : value;
     };
-    BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._pointerIsDown = true;
@@ -11307,7 +11307,7 @@ var BaseSlider = /** @class */ (function (_super) {
         this._lastPointerDownID = pointerId;
         return true;
     };
-    BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownID) {
             return;
@@ -11315,7 +11315,7 @@ var BaseSlider = /** @class */ (function (_super) {
         if (this._pointerIsDown) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
     BaseSlider.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._pointerIsDown = false;
@@ -11770,9 +11770,9 @@ var ImageScrollBar = /** @class */ (function (_super) {
         this._originX = x;
         this._originY = y;
     };
-    ImageScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    ImageScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         this._first = true;
-        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex);
+        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
     };
     return ImageScrollBar;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
@@ -11916,9 +11916,9 @@ var ScrollBar = /** @class */ (function (_super) {
         this._originX = x;
         this._originY = y;
     };
-    ScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    ScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         this._first = true;
-        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex);
+        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
     };
     return ScrollBar;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
