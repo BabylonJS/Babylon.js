@@ -308,7 +308,7 @@ export class WebGPUTextureHelper {
         };
 
         if ((imageBitmap as Uint8Array).byteLength !== undefined) {
-            // TODO WEBGPU handle invertY / premultiplyAlpha
+            // Note that we can't honor the invertY / premultiplyAlpha flags as we don't know the format of the array
             imageBitmap = imageBitmap as Uint8Array;
 
             const bytesPerRow = Math.ceil(width / blockInformation.width) * blockInformation.length;
@@ -352,115 +352,5 @@ export class WebGPUTextureHelper {
                 this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap }, textureCopyView, textureExtent);
             }
         }
-    }
-
-    // TODO WEBGPU remove this function when not needed anymore for testing
-    public updateTextureTest(imageBitmap: ImageBitmap | HTMLCanvasElement, gpuTexture: GPUTexture, width: number, height: number, faceIndex: number = 0, mipLevel: number = 0, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
-        commandEncoder?: GPUCommandEncoder): void
-    {
-        /*let promise: Promise<ImageBitmap | HTMLCanvasElement>;
-
-        if ((invertY || premultiplyAlpha) && imageBitmap instanceof ImageBitmap) {
-            promise = createImageBitmap(imageBitmap, { imageOrientation: invertY ? "flipY" : "none", premultiplyAlpha: premultiplyAlpha ? "premultiply" : "none" });
-        } else {
-            promise = Promise.resolve(imageBitmap);
-        }
-
-        promise.then((imageBitmap) => {*/
-            const useOwnCommandEncoder = commandEncoder === undefined;
-
-            if (useOwnCommandEncoder) {
-                commandEncoder = this._device.createCommandEncoder({});
-            }
-
-            let gpuBuffer;
-
-            const bytesPerRow = Math.ceil(width * 4 / 256) * 256;
-
-            if (bytesPerRow === width * 4) {
-                if (!(this as any).textureView || !(this as any).textureView[offsetX]) {
-                    console.log("updateTextureTest create texture view and extent", width, height);
-                    const textureView = {
-                        texture: gpuTexture,
-                        origin: {
-                            x: 0/*offsetX*/,
-                            y: offsetY,
-                            z: Math.max(faceIndex, 0)
-                        },
-                        mipLevel: mipLevel
-                    };
-                    const textureExtent = {
-                        width,
-                        height,
-                        depth: 1
-                    };
-                    if (!(this as any).textureView) {
-                        (this as any).textureView = [];
-                        (this as any).textureExtent = [];
-                    }
-                    (this as any).textureView[offsetX] = textureView;
-                    (this as any).textureExtent[offsetX] = textureExtent;
-                }
-                (this as any).textureView[offsetX].texture = gpuTexture;
-                if (imageBitmap instanceof HTMLCanvasElement && (!(this as any).bufferView || !(this as any).bufferView[offsetX])) {
-                    console.log("updateTextureTest create data", width, height, offsetX);
-                    const canvas = imageBitmap as unknown as HTMLCanvasElement;
-                    const ctx = canvas.getContext('2d')!;
-                    const data = ctx.getImageData(0, 0, width, height).data;
-                    const dataBuffer = this._bufferManager.createBuffer(data, WebGPUConstants.BufferUsage.CopySrc | WebGPUConstants.BufferUsage.CopyDst);
-                    const bufferView: GPUBufferCopyView = {
-                        buffer: dataBuffer.underlyingResource,
-                        bytesPerRow: bytesPerRow,
-                        rowsPerImage: height,
-                        offset: 0,
-                    };
-                    if (!(this as any).bufferView) {
-                        (this as any).bufferView = [];
-                        (this as any).dataBuffer = [];
-                        (this as any).data = [];
-                    }
-                    (this as any).bufferView[offsetX] = bufferView;
-                    (this as any).dataBuffer[offsetX] = dataBuffer;
-                    (this as any).data[offsetX] = data;
-                }
-                if ((this as any).bufferView) {
-                    /*const canvas = imageBitmap as unknown as HTMLCanvasElement;
-                    const ctx = canvas.getContext('2d')!;
-                    const data = ctx.getImageData(0, 0, width, height).data;
-                    (this as any).data[offsetX] = data;*/
-
-                    //this._device.defaultQueue.writeTexture({ texture: gpuTexture }, (this as any).data[offsetX], { bytesPerRow }, (this as any).textureExtent[offsetX]);
-
-                    //this._bufferManager.setSubData((this as any).dataBuffer[offsetX], 0, (this as any).data[offsetX]);
-                    //commandEncoder!.copyBufferToTexture((this as any).bufferView[offsetX], (this as any).textureView[offsetX], (this as any).textureExtent[offsetX]);
-
-                    gpuBuffer = this._device.createBuffer({
-                        mappedAtCreation: true,
-                        size: (this as any).data[offsetX].byteLength,
-                        usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC
-                      });
-                    const arrayBuffer = gpuBuffer.getMappedRange();
-                    new Uint8Array(arrayBuffer).set((this as any).data[offsetX]);
-                    gpuBuffer.unmap();
-
-                    commandEncoder!.copyBufferToTexture({
-                        buffer: gpuBuffer,
-                        bytesPerRow: bytesPerRow,
-                        rowsPerImage: height,
-                        offset: 0,
-                    }, (this as any).textureView[offsetX], (this as any).textureExtent[offsetX]);
-                } else {
-                    this._device.defaultQueue.copyImageBitmapToTexture({ imageBitmap: imageBitmap as ImageBitmap }, (this as any).textureView[offsetX], (this as any).textureExtent[offsetX]);
-                }
-            }
-
-            if (useOwnCommandEncoder) {
-                this._device.defaultQueue.submit([commandEncoder!.finish()]);
-                commandEncoder = null as any;
-                if (gpuBuffer) {
-                    gpuBuffer.destroy();
-                }
-            }
-        //});
     }
 }

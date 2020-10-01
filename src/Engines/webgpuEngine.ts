@@ -1617,30 +1617,6 @@ export class WebGPUEngine extends Engine {
             console.log("using a released texture in updateDynamicTexture");
         }
 
-        // TODO WEBGPU remove test code
-        if (canvas.width === 25600) {
-            if ((this as any)._swap === undefined) { (this as any)._swap = 0; }
-            (this as any)._swap ^= 1;
-
-            const swap = (this as any)._swap;
-
-            /*if (!(this as any)._bitmap) {
-                createImageBitmap(canvas).then((imageBitmap) => {
-                    (this as any)._bitmap = imageBitmap;
-                });
-            }*/
-            //if ((this as any)._bitmap) {
-                /*createImageBitmap(canvas).then((bitmap: ImageBitmap) => {
-                    this._textureHelper.updateTextureTest(bitmap, gpuTexture, width, height, 0, 0, invertY, premulAlpha, swap, 0, this._uploadEncoder);
-                    texture.isReady = true;
-                });*/
-            //}
-
-            this._textureHelper.updateTextureTest(canvas as HTMLCanvasElement, gpuTextureWrapper.underlyingResource!, width, height, 0, 0, invertY, premulAlpha, swap, 0/*, this._uploadEncoder*/);
-            texture.isReady = true;
-            return;
-        }
-
         createImageBitmap(canvas).then((bitmap) => {
             this._textureHelper.updateTexture(bitmap, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, this._uploadEncoder);
             if (texture.generateMipMaps) {
@@ -2116,7 +2092,7 @@ export class WebGPUEngine extends Engine {
             baseMipLevel: 0,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All
-        }
+        };
 
         this._currentRenderPass = null; // lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
 
