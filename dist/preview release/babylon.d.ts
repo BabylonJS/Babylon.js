@@ -24472,9 +24472,13 @@ declare module BABYLON {
         CLEARCOAT: boolean;
         CLEARCOAT_DEFAULTIOR: boolean;
         CLEARCOAT_TEXTURE: boolean;
+        CLEARCOAT_TEXTURE_ROUGHNESS: boolean;
         CLEARCOAT_TEXTUREDIRECTUV: number;
+        CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV: number;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+        CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
         CLEARCOAT_REMAP_F0: boolean;
         CLEARCOAT_TINT: boolean;
         CLEARCOAT_TINT_TEXTURE: boolean;
@@ -24514,9 +24518,23 @@ declare module BABYLON {
         indexOfRefraction: number;
         private _texture;
         /**
-         * Stores the clear coat values in a texture.
+         * Stores the clear coat values in a texture (red channel is intensity and green channel is roughness)
+         * If useRoughnessFromMainTexture is false, the green channel of texture is not used and the green channel of textureRoughness is used instead
+         * if textureRoughness is not empty, else no texture roughness is used
          */
         texture: Nullable<BaseTexture>;
+        private _useRoughnessFromMainTexture;
+        /**
+         * Indicates that the green channel of the texture property will be used for roughness (default: true)
+         * If false, the green channel from textureRoughness is used for roughness
+         */
+        useRoughnessFromMainTexture: boolean;
+        private _textureRoughness;
+        /**
+         * Stores the clear coat roughness in a texture (green channel)
+         * Not used if useRoughnessFromMainTexture is true
+         */
+        textureRoughness: Nullable<BaseTexture>;
         private _remapF0OnInterfaceChange;
         /**
          * Defines if the F0 value should be remapped to account for the interface change in the material.
@@ -24588,8 +24606,9 @@ declare module BABYLON {
          * @param isFrozen defines wether the material is frozen or not.
          * @param invertNormalMapX If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
          * @param invertNormalMapY If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+         * @param subMesh the submesh to bind data for
          */
-        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean): void;
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean, subMesh?: SubMesh): void;
         /**
          * Checks to see if a texture is used in the material.
          * @param texture - Base texture to use.
@@ -24908,10 +24927,14 @@ declare module BABYLON {
     export interface IMaterialSheenDefines {
         SHEEN: boolean;
         SHEEN_TEXTURE: boolean;
+        SHEEN_TEXTURE_ROUGHNESS: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
+        SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
         SHEEN_ROUGHNESS: boolean;
         SHEEN_ALBEDOSCALING: boolean;
+        SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+        SHEEN_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -24941,9 +24964,16 @@ declare module BABYLON {
         /**
          * Stores the sheen tint values in a texture.
          * rgb is tint
-         * a is a intensity or roughness if roughness has been defined
+         * a is a intensity or roughness if the roughness property has been defined and useRoughnessFromTexture is true (in that case, textureRoughness won't be used)
+         * If the roughness property has been defined and useRoughnessFromTexture is false then the alpha channel is not used to modulate roughness
          */
         texture: Nullable<BaseTexture>;
+        private _useRoughnessFromMainTexture;
+        /**
+         * Indicates that the alpha channel of the texture property will be used for roughness.
+         * Has no effect if the roughness (and texture!) property is not defined
+         */
+        useRoughnessFromMainTexture: boolean;
         private _roughness;
         /**
          * Defines the sheen roughness.
@@ -24951,6 +24981,12 @@ declare module BABYLON {
          * To stay backward compatible, material roughness is used instead if sheen roughness = null
          */
         roughness: Nullable<number>;
+        private _textureRoughness;
+        /**
+         * Stores the sheen roughness in a texture.
+         * alpha channel is the roughness. This texture won't be used if the texture property is not empty and useRoughnessFromTexture is true
+         */
+        textureRoughness: Nullable<BaseTexture>;
         private _albedoScaling;
         /**
          * If true, the sheen effect is layered above the base BRDF with the albedo-scaling technique.
@@ -24985,8 +25021,9 @@ declare module BABYLON {
          * @param uniformBuffer defines the Uniform buffer to fill in.
          * @param scene defines the scene the material belongs to.
          * @param isFrozen defines wether the material is frozen or not.
+         * @param subMesh the submesh to bind data for
          */
-        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, subMesh?: SubMesh): void;
         /**
          * Checks to see if a texture is used in the material.
          * @param texture - Base texture to use.
@@ -26034,7 +26071,11 @@ declare module BABYLON {
         CLEARCOAT: boolean;
         CLEARCOAT_DEFAULTIOR: boolean;
         CLEARCOAT_TEXTURE: boolean;
+        CLEARCOAT_TEXTURE_ROUGHNESS: boolean;
         CLEARCOAT_TEXTUREDIRECTUV: number;
+        CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV: number;
+        CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+        CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
         CLEARCOAT_REMAP_F0: boolean;
@@ -26049,10 +26090,14 @@ declare module BABYLON {
         SPECULAR_GLOSSINESS_ENERGY_CONSERVATION: boolean;
         SHEEN: boolean;
         SHEEN_TEXTURE: boolean;
+        SHEEN_TEXTURE_ROUGHNESS: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
+        SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
         SHEEN_ROUGHNESS: boolean;
         SHEEN_ALBEDOSCALING: boolean;
+        SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+        SHEEN_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
@@ -28177,6 +28222,12 @@ declare module BABYLON {
          */
         delayLoad(): void;
         private _prepareRowForTextureGeneration;
+        /**
+         * Checks if the texture has the same transform matrix than another texture
+         * @param texture texture to check against
+         * @returns true if the transforms are the same, else false
+         */
+        checkTransformsAreIdentical(texture: Nullable<Texture>): boolean;
         /**
          * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
          * @returns the transform matrix of the texture.
@@ -37169,6 +37220,12 @@ declare module BABYLON {
         getScene(): Nullable<Scene>;
         /** @hidden */
         protected _getEngine(): Nullable<ThinEngine>;
+        /**
+         * Checks if the texture has the same transform matrix than another texture
+         * @param texture texture to check against
+         * @returns true if the transforms are the same, else false
+         */
+        checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean;
         /**
          * Get the texture transform matrix used to offset tile the texture for istance.
          * @returns the transformation matrix
