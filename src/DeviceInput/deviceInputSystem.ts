@@ -13,8 +13,6 @@ declare const _native: any;
  * pointer device and one keyboard.
  */
 export class DeviceInputSystem implements IDisposable {
-
-    // Setter/Getter for onDeviceConnected property
     /**
      * Returns onDeviceConnected callback property
      * @returns Callback with function to execute when a device is connected
