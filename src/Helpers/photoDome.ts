@@ -55,7 +55,7 @@ export class PhotoDome extends TextureDome<Texture> {
     }
 
     protected _initTexture(urlsOrElement: string, scene: Scene, options: any): Texture {
-        return new Texture(urlsOrElement, scene, options.noMipMap, !this._useDirectMapping, undefined, undefined, (message, exception) => {
+        return new Texture(urlsOrElement, scene, !options.generateMipMaps, !this._useDirectMapping, undefined, undefined, (message, exception) => {
             this.onLoadErrorObservable.notifyObservers(message || "Unknown error occured");
 
             if (this.onError) {
