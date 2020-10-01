@@ -663,6 +663,7 @@ declare module "babylonjs-gui/2D/controls/control" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
     import { Scene } from "babylonjs/scene";
     import { Container } from "babylonjs-gui/2D/controls/container";
@@ -1238,17 +1239,17 @@ declare module "babylonjs-gui/2D/controls/control" {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void;
         /** @hidden */
-        _onPointerEnter(target: Control): boolean;
+        _onPointerEnter(target: Control, pi: PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerOut(target: Control, force?: boolean): void;
+        _onPointerOut(target: Control, pi: Nullable<PointerInfoBase>, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: PointerInfoBase): void;
         /** @hidden */
         _forcePointerUp(pointerId?: Nullable<number>): void;
         /** @hidden */
@@ -1256,7 +1257,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         /** @hidden */
         _onCanvasBlur(): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -1308,6 +1309,7 @@ declare module "babylonjs-gui/2D/controls/container" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     /**
      * Root class for 2D containers
      * @see https://doc.babylonjs.com/how_to/gui#containers
@@ -1409,7 +1411,7 @@ declare module "babylonjs-gui/2D/controls/container" {
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -1802,6 +1804,7 @@ declare module "babylonjs-gui/2D/controls/button" {
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { TextBlock } from "babylonjs-gui/2D/controls/textBlock";
     import { Image } from "babylonjs-gui/2D/controls/image";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     /**
      * Class used to create 2D buttons
      */
@@ -1844,15 +1847,15 @@ declare module "babylonjs-gui/2D/controls/button" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerEnter(target: Control): boolean;
+        _onPointerEnter(target: Control, pi: PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerOut(target: Control, force?: boolean): void;
+        _onPointerOut(target: Control, pi: PointerInfoBase, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
@@ -1935,6 +1938,7 @@ declare module "babylonjs-gui/2D/controls/checkbox" {
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
     import { Nullable } from 'babylonjs/types';
     import { Measure } from "babylonjs-gui/2D/measure";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     /**
      * Class used to represent a 2D checkbox
      */
@@ -1969,7 +1973,7 @@ declare module "babylonjs-gui/2D/controls/checkbox" {
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /**
          * Utility function to easily create a checkbox with a header
          * @param title defines the label to use for the header
@@ -2081,6 +2085,7 @@ declare module "babylonjs-gui/2D/controls/inputText" {
     import { Nullable } from "babylonjs/types";
     import { Observable } from "babylonjs/Misc/observable";
     import { Vector2 } from "babylonjs/Maths/math.vector";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { IFocusableControl } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { VirtualKeyboard } from "babylonjs-gui/2D/controls/virtualKeyboard";
@@ -2239,8 +2244,8 @@ declare module "babylonjs-gui/2D/controls/inputText" {
         /** @hidden */
         private _onPasteText;
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Nullable<Measure>): void;
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         protected _beforeRenderText(text: string): string;
         dispose(): void;
@@ -2379,6 +2384,7 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
     import { Measure } from "babylonjs-gui/2D/measure";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
     import { Color3 } from 'babylonjs/Maths/math.color';
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     /** Class used to create color pickers */
     export class ColorPicker extends Control {
         name?: string | undefined;
@@ -2436,9 +2442,9 @@ declare module "babylonjs-gui/2D/controls/colorpicker" {
         private _updateValueFromPointer;
         private _isPointOnSquare;
         private _isPointOnWheel;
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: PointerInfoBase): void;
         _onCanvasBlur(): void;
         /**
          * This function expands the color picker by creating a color picker dialog with manual
@@ -2691,6 +2697,7 @@ declare module "babylonjs-gui/2D/controls/radioButton" {
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { StackPanel } from "babylonjs-gui/2D/controls/stackPanel";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     /**
      * Class used to create radio button controls
      */
@@ -2723,7 +2730,7 @@ declare module "babylonjs-gui/2D/controls/radioButton" {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(context: CanvasRenderingContext2D): void;
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
         /**
          * Utility function to easily create a radio button with a header
          * @param title defines the label to use for the header
@@ -2740,6 +2747,7 @@ declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { ValueAndUnit } from "babylonjs-gui/2D/valueAndUnit";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     /**
      * Class used to create slider controls
      */
@@ -2808,8 +2816,8 @@ declare module "babylonjs-gui/2D/controls/sliders/baseSlider" {
         private _pointerIsDown;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         _onCanvasBlur(): void;
     }
@@ -3113,6 +3121,7 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
     import { Vector2 } from "babylonjs/Maths/math.vector";
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
     import { Control } from "babylonjs-gui/2D/controls/control";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     /**
      * Class used to create slider controls
      */
@@ -3140,7 +3149,7 @@ declare module "babylonjs-gui/2D/controls/sliders/scrollBar" {
         private _originY;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
     }
 }
 declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
@@ -3148,6 +3157,7 @@ declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
     import { BaseSlider } from "babylonjs-gui/2D/controls/sliders/baseSlider";
     import { Control } from "babylonjs-gui/2D/controls/control";
     import { Image } from "babylonjs-gui/2D/controls/image";
+    import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
     /**
      * Class used to create slider controls
      */
@@ -3201,7 +3211,7 @@ declare module "babylonjs-gui/2D/controls/sliders/imageScrollBar" {
         private _originY;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean;
     }
 }
 declare module "babylonjs-gui/2D/controls/scrollViewers/scrollViewer" {
@@ -5633,17 +5643,17 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         /** @hidden */
-        _onPointerEnter(target: Control): boolean;
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerOut(target: Control, force?: boolean): void;
+        _onPointerOut(target: Control, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: BABYLON.PointerInfoBase): void;
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
@@ -5651,7 +5661,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onCanvasBlur(): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -5800,7 +5810,7 @@ declare module BABYLON.GUI {
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -6219,15 +6229,15 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerEnter(target: Control): boolean;
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerOut(target: Control, force?: boolean): void;
+        _onPointerOut(target: Control, pi: BABYLON.PointerInfoBase, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
@@ -6336,7 +6346,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
          * Utility function to easily create a checkbox with a header
          * @param title defines the label to use for the header
@@ -6595,8 +6605,8 @@ declare module BABYLON.GUI {
         /** @hidden */
         private _onPasteText;
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         protected _beforeRenderText(text: string): string;
         dispose(): void;
@@ -6781,9 +6791,9 @@ declare module BABYLON.GUI {
         private _updateValueFromPointer;
         private _isPointOnSquare;
         private _isPointOnWheel;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
         _onCanvasBlur(): void;
         /**
          * This function expands the color picker by creating a color picker dialog with manual
@@ -7047,7 +7057,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(context: CanvasRenderingContext2D): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
          * Utility function to easily create a radio button with a header
          * @param title defines the label to use for the header
@@ -7128,8 +7138,8 @@ declare module BABYLON.GUI {
         private _pointerIsDown;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         _onCanvasBlur(): void;
     }
@@ -7450,7 +7460,7 @@ declare module BABYLON.GUI {
         private _originY;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
     }
 }
 declare module BABYLON.GUI {
@@ -7507,7 +7517,7 @@ declare module BABYLON.GUI {
         private _originY;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
     }
 }
 declare module BABYLON.GUI {

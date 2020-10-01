@@ -287,11 +287,17 @@ void main(void) {
         #ifdef SHEEN_TEXTURE
             vec4 sheenMapData = toLinearSpace(texture2D(sheenSampler, vSheenUV + uvOffset)) * vSheenInfos.y;
         #endif
+        #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
+            vec4 sheenMapRoughnessData = texture2D(sheenRoughnessSampler, vSheenRoughnessUV + uvOffset) * vSheenInfos.w;
+        #endif
 
         sheenBlock(
             vSheenColor,
         #ifdef SHEEN_ROUGHNESS
             vSheenRoughness,
+            #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
+                sheenMapRoughnessData,
+            #endif
         #endif
             roughness,
         #ifdef SHEEN_TEXTURE
@@ -342,6 +348,10 @@ void main(void) {
             vec2 clearCoatMapData = texture2D(clearCoatSampler, vClearCoatUV + uvOffset).rg * vClearCoatInfos.y;
         #endif
 
+        #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+            vec4 clearCoatMapRoughnessData = texture2D(clearCoatRoughnessSampler, vClearCoatRoughnessUV + uvOffset) * vClearCoatInfos.w;
+        #endif
+
         #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
             vec4 clearCoatTintMapData = toLinearSpace(texture2D(clearCoatTintSampler, vClearCoatTintUV + uvOffset));
         #endif
@@ -355,6 +365,9 @@ void main(void) {
             geometricNormalW,
             viewDirectionW,
             vClearCoatParams,
+            #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
+                clearCoatMapRoughnessData,
+            #endif
             specularEnvironmentR0,
         #ifdef CLEARCOAT_TEXTURE
             clearCoatMapData,
