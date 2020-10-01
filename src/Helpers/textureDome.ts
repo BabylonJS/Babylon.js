@@ -181,8 +181,8 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
             faceForward?: boolean;
             useDirectMapping?: boolean;
             halfDomeMode?: boolean;
-            noMipMap?: boolean;
             crossEyeMode?: boolean;
+            generateMipMaps?: boolean;
         },
         scene: Scene,
         protected onError: Nullable<(message?: string, exception?: any) => void> = null
@@ -232,6 +232,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         this._halfDome = !!options.halfDomeMode;
         // enable or disable according to the settings
         this._halfDomeMask.setEnabled(this._halfDome);
+        this._crossEye = !!options.crossEye;
 
         // create
         this._texture.anisotropicFilteringLevel = 1;
