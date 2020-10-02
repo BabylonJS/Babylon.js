@@ -72,7 +72,7 @@ export class RotationGizmo extends Gizmo {
 
     protected _checkBillboardTransform() {
         if (this._nodeAttached && (<TransformNode>this._nodeAttached).billboardMode) {
-            console.log("Rotation Gizmo will not work with transforms in billboard mode.")
+            console.log("Rotation Gizmo will not work with transforms in billboard mode.");
         }
     }
 
