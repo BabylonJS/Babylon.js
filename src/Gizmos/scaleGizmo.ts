@@ -109,7 +109,7 @@ export class ScaleGizmo extends Gizmo {
         this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
         this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
         this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this, thickness);
-        this.uniformScaleGizmo = this.createUniformScaleMesh();
+        this.uniformScaleGizmo = this._createUniformScaleMesh();
 
         // Relay drag events
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
@@ -126,7 +126,7 @@ export class ScaleGizmo extends Gizmo {
         this.subscribeToPointerObserver();
     }
 
-    createUniformScaleMesh() {
+    private _createUniformScaleMesh(): AxisScaleGizmo {
         this._coloredMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
         this._coloredMaterial.diffuseColor = Color3.Gray();
 
