@@ -41,6 +41,9 @@ export class ScaleGizmo extends Gizmo {
     private _uniformScalingMesh: Mesh;
     private _octahedron: Mesh;
     private _sensitivity: number = 1;
+    private _coloredMaterial: StandardMaterial;
+    private _hoverMaterial: StandardMaterial;
+    private _disableMaterial: StandardMaterial;
     private _observables: Nullable<Observer<PointerInfo>>[] = [];
 
     /** Gizmo state variables used for UI behavior */
@@ -124,15 +127,15 @@ export class ScaleGizmo extends Gizmo {
     }
 
     createUniformScaleMesh() {
-        const coloredMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
-        coloredMaterial.diffuseColor = Color3.Gray();
+        this._coloredMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
+        this._coloredMaterial.diffuseColor = Color3.Gray();
 
-        const hoverMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
-        hoverMaterial.diffuseColor = Color3.Yellow();
+        this._hoverMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
+        this._hoverMaterial.diffuseColor = Color3.Yellow();
 
-        const disableMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
-        disableMaterial.diffuseColor = Color3.Gray();
-        disableMaterial.alpha = 0.4;
+        this._disableMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
+        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.alpha = 0.4;
 
         const uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Gray().scale(0.5), this.gizmoLayer, this);
         uniformScaleGizmo.updateGizmoRotationToMatchAttachedMesh = false;
@@ -159,9 +162,9 @@ export class ScaleGizmo extends Gizmo {
         });
 
         const cache = {
-            material: coloredMaterial,
-            hoverMaterial,
-            disableMaterial,
+            material: this._coloredMaterial,
+            hoverMaterial: this._hoverMaterial,
+            disableMaterial: this._disableMaterial,
             active: false
         };
 
@@ -241,9 +244,10 @@ export class ScaleGizmo extends Gizmo {
         this.gizmoAxisCache.set(mesh, cache);
     }
 
+    /**
+     * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
+     */
     public subscribeToPointerObserver(): void {
-        // Assumption, if user sets custom mesh, it will be disposed and pointerInfo will never hold reference to that mesh.
-        // Will be equivilent to if (this._customMeshSet) return;
         const pointerObserver = this.gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.pickInfo) {
                 // On Hover Logic
@@ -322,10 +326,14 @@ export class ScaleGizmo extends Gizmo {
         });
         this.onDragStartObservable.clear();
         this.onDragEndObservable.clear();
-
         [this._uniformScalingMesh, this._octahedron].forEach((msh) => {
             if (msh) {
                 msh.dispose();
+            }
+        });
+        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
+            if (matl) {
+                matl.dispose();
             }
         });
     }

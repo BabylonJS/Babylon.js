@@ -160,9 +160,10 @@ export class RotationGizmo extends Gizmo {
         this.gizmoAxisCache.set(mesh, cache);
     }
 
+    /**
+     * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
+     */
     public subscribeToPointerObserver(): void {
-        // Assumption, if user sets custom mesh, it will be disposed and pointerInfo will never hold reference to that mesh.
-        // Will be equivilent to if (this._customMeshSet) return;
         const pointerObserver = this.gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.pickInfo) {
                 // On Hover Logic
