@@ -441,6 +441,7 @@ export class MaterialHelper {
         defines["SHADOWPCSS" + lightIndex] = false;
         defines["SHADOWPOISSON" + lightIndex] = false;
         defines["SHADOWESM" + lightIndex] = false;
+        defines["SHADOWCLOSEESM" + lightIndex] = false;
         defines["SHADOWCUBE" + lightIndex] = false;
         defines["SHADOWLOWQUALITY" + lightIndex] = false;
         defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
@@ -525,6 +526,7 @@ export class MaterialHelper {
                 defines["SHADOWPCSS" + index] = false;
                 defines["SHADOWPOISSON" + index] = false;
                 defines["SHADOWESM" + index] = false;
+                defines["SHADOWCLOSEESM" + index] = false;
                 defines["SHADOWCUBE" + index] = false;
                 defines["SHADOWLOWQUALITY" + index] = false;
                 defines["SHADOWMEDIUMQUALITY" + index] = false;
@@ -670,6 +672,10 @@ export class MaterialHelper {
 
                 if (defines["SHADOWESM" + lightIndex]) {
                     fallbacks.addFallback(rank, "SHADOWESM" + lightIndex);
+                }
+
+                if (defines["SHADOWCLOSEESM" + lightIndex]) {
+                    fallbacks.addFallback(rank, "SHADOWCLOSEESM" + lightIndex);
                 }
             }
         }

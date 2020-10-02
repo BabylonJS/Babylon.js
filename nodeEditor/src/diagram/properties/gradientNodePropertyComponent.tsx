@@ -53,6 +53,16 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         }
     }
 
+    copyStep(step: GradientBlockColorStep) {
+        let gradientBlock = this.props.block as GradientBlock;
+
+        let newStep = new GradientBlockColorStep(1.0, step.color);
+        gradientBlock.colorSteps.push(newStep);
+        gradientBlock.colorStepsUpdated();
+        this.forceRebuild();
+        this.forceUpdate();
+    }
+
     addNewStep() {
         let gradientBlock = this.props.block as GradientBlock;
 
@@ -130,7 +140,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                                 <GradientStepComponent globalState={this.props.globalState}
                                 onCheckForReOrder={() => this.checkForReOrder()}
                                 onUpdateStep={() => this.forceRebuild()}
-                                key={"step-" + i} lineIndex={i} step={c} onDelete={() => this.deleteStep(c)}/>
+                                key={"step-" + i} lineIndex={i} step={c} onCopy={() => this.copyStep(c)} onDelete={() => this.deleteStep(c)}/>
                             );
                         })
                     }

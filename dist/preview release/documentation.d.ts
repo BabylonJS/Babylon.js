@@ -90,6 +90,10 @@ declare module BABYLON {
          * If it is the first function in the callback chain it will be the event data.
          */
         lastReturnValue?: any;
+        /**
+        * User defined information that will be sent to observers
+        */
+        userInfo?: any;
     }
     /**
      * Represent an Observer registered to a given Observable object.
@@ -222,9 +226,10 @@ declare module BABYLON {
          * @param mask defines the mask of the current notification (observers with incompatible mask (ie mask & observer.mask === 0) will not be notified)
          * @param target defines the original target of the state
          * @param currentTarget defines the current target of the state
+         * @param userInfo defines any user info to send to observers
          * @returns false if the complete observer chain was not processed (because one observer set the skipNextObservers to true)
          */
-        notifyObservers(eventData: T, mask?: number, target?: any, currentTarget?: any): boolean;
+        notifyObservers(eventData: T, mask?: number, target?: any, currentTarget?: any, userInfo?: any): boolean;
         /**
          * Calling this will execute each callback, expecting it to be a promise or return a value.
          * If at any point in the chain one function fails, the promise will fail and the execution will not continue.
@@ -236,9 +241,10 @@ declare module BABYLON {
          * @param mask is used to filter observers defaults to -1
          * @param target defines the callback target (see EventState)
          * @param currentTarget defines he current object in the bubbling phase
+         * @param userInfo defines any user info to send to observers
          * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
          */
-        notifyObserversWithPromise(eventData: T, mask?: number, target?: any, currentTarget?: any): Promise<T>;
+        notifyObserversWithPromise(eventData: T, mask?: number, target?: any, currentTarget?: any, userInfo?: any): Promise<T>;
         /**
          * Notify a specific observer
          * @param observer defines the observer to notify
@@ -17964,6 +17970,11 @@ declare module BABYLON {
         /** @hidden */
         static _SceneComponentInitialization: (scene: Scene) => void;
         /**
+         * Gets or sets the size of the texture what stores the shadows
+         */
+        get mapSize(): number;
+        set mapSize(size: number);
+        /**
          * Creates a ShadowGenerator object.
          * A ShadowGenerator is the required tool to use the shadows.
          * Each light casting shadows needs to use its own ShadowGenerator.
@@ -24461,9 +24472,13 @@ declare module BABYLON {
         CLEARCOAT: boolean;
         CLEARCOAT_DEFAULTIOR: boolean;
         CLEARCOAT_TEXTURE: boolean;
+        CLEARCOAT_TEXTURE_ROUGHNESS: boolean;
         CLEARCOAT_TEXTUREDIRECTUV: number;
+        CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV: number;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
+        CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+        CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
         CLEARCOAT_REMAP_F0: boolean;
         CLEARCOAT_TINT: boolean;
         CLEARCOAT_TINT_TEXTURE: boolean;
@@ -24503,9 +24518,23 @@ declare module BABYLON {
         indexOfRefraction: number;
         private _texture;
         /**
-         * Stores the clear coat values in a texture.
+         * Stores the clear coat values in a texture (red channel is intensity and green channel is roughness)
+         * If useRoughnessFromMainTexture is false, the green channel of texture is not used and the green channel of textureRoughness is used instead
+         * if textureRoughness is not empty, else no texture roughness is used
          */
         texture: Nullable<BaseTexture>;
+        private _useRoughnessFromMainTexture;
+        /**
+         * Indicates that the green channel of the texture property will be used for roughness (default: true)
+         * If false, the green channel from textureRoughness is used for roughness
+         */
+        useRoughnessFromMainTexture: boolean;
+        private _textureRoughness;
+        /**
+         * Stores the clear coat roughness in a texture (green channel)
+         * Not used if useRoughnessFromMainTexture is true
+         */
+        textureRoughness: Nullable<BaseTexture>;
         private _remapF0OnInterfaceChange;
         /**
          * Defines if the F0 value should be remapped to account for the interface change in the material.
@@ -24577,8 +24606,9 @@ declare module BABYLON {
          * @param isFrozen defines wether the material is frozen or not.
          * @param invertNormalMapX If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
          * @param invertNormalMapY If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+         * @param subMesh the submesh to bind data for
          */
-        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean): void;
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, disableBumpMap: boolean, isFrozen: boolean, invertNormalMapX: boolean, invertNormalMapY: boolean, subMesh?: SubMesh): void;
         /**
          * Checks to see if a texture is used in the material.
          * @param texture - Base texture to use.
@@ -24897,10 +24927,14 @@ declare module BABYLON {
     export interface IMaterialSheenDefines {
         SHEEN: boolean;
         SHEEN_TEXTURE: boolean;
+        SHEEN_TEXTURE_ROUGHNESS: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
+        SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
         SHEEN_ROUGHNESS: boolean;
         SHEEN_ALBEDOSCALING: boolean;
+        SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+        SHEEN_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
         /** @hidden */
         _areTexturesDirty: boolean;
     }
@@ -24930,9 +24964,16 @@ declare module BABYLON {
         /**
          * Stores the sheen tint values in a texture.
          * rgb is tint
-         * a is a intensity or roughness if roughness has been defined
+         * a is a intensity or roughness if the roughness property has been defined and useRoughnessFromTexture is true (in that case, textureRoughness won't be used)
+         * If the roughness property has been defined and useRoughnessFromTexture is false then the alpha channel is not used to modulate roughness
          */
         texture: Nullable<BaseTexture>;
+        private _useRoughnessFromMainTexture;
+        /**
+         * Indicates that the alpha channel of the texture property will be used for roughness.
+         * Has no effect if the roughness (and texture!) property is not defined
+         */
+        useRoughnessFromMainTexture: boolean;
         private _roughness;
         /**
          * Defines the sheen roughness.
@@ -24940,6 +24981,12 @@ declare module BABYLON {
          * To stay backward compatible, material roughness is used instead if sheen roughness = null
          */
         roughness: Nullable<number>;
+        private _textureRoughness;
+        /**
+         * Stores the sheen roughness in a texture.
+         * alpha channel is the roughness. This texture won't be used if the texture property is not empty and useRoughnessFromTexture is true
+         */
+        textureRoughness: Nullable<BaseTexture>;
         private _albedoScaling;
         /**
          * If true, the sheen effect is layered above the base BRDF with the albedo-scaling technique.
@@ -24974,8 +25021,9 @@ declare module BABYLON {
          * @param uniformBuffer defines the Uniform buffer to fill in.
          * @param scene defines the scene the material belongs to.
          * @param isFrozen defines wether the material is frozen or not.
+         * @param subMesh the submesh to bind data for
          */
-        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean): void;
+        bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, isFrozen: boolean, subMesh?: SubMesh): void;
         /**
          * Checks to see if a texture is used in the material.
          * @param texture - Base texture to use.
@@ -26023,7 +26071,11 @@ declare module BABYLON {
         CLEARCOAT: boolean;
         CLEARCOAT_DEFAULTIOR: boolean;
         CLEARCOAT_TEXTURE: boolean;
+        CLEARCOAT_TEXTURE_ROUGHNESS: boolean;
         CLEARCOAT_TEXTUREDIRECTUV: number;
+        CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV: number;
+        CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+        CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
         CLEARCOAT_BUMP: boolean;
         CLEARCOAT_BUMPDIRECTUV: number;
         CLEARCOAT_REMAP_F0: boolean;
@@ -26038,10 +26090,14 @@ declare module BABYLON {
         SPECULAR_GLOSSINESS_ENERGY_CONSERVATION: boolean;
         SHEEN: boolean;
         SHEEN_TEXTURE: boolean;
+        SHEEN_TEXTURE_ROUGHNESS: boolean;
         SHEEN_TEXTUREDIRECTUV: number;
+        SHEEN_TEXTURE_ROUGHNESSDIRECTUV: number;
         SHEEN_LINKWITHALBEDO: boolean;
         SHEEN_ROUGHNESS: boolean;
         SHEEN_ALBEDOSCALING: boolean;
+        SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE: boolean;
+        SHEEN_TEXTURE_ROUGHNESS_IDENTICAL: boolean;
         SUBSURFACE: boolean;
         SS_REFRACTION: boolean;
         SS_TRANSLUCENCY: boolean;
@@ -28166,6 +28222,12 @@ declare module BABYLON {
          */
         delayLoad(): void;
         private _prepareRowForTextureGeneration;
+        /**
+         * Checks if the texture has the same transform matrix than another texture
+         * @param texture texture to check against
+         * @returns true if the transforms are the same, else false
+         */
+        checkTransformsAreIdentical(texture: Nullable<Texture>): boolean;
         /**
          * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
          * @returns the transform matrix of the texture.
@@ -37158,6 +37220,12 @@ declare module BABYLON {
         getScene(): Nullable<Scene>;
         /** @hidden */
         protected _getEngine(): Nullable<ThinEngine>;
+        /**
+         * Checks if the texture has the same transform matrix than another texture
+         * @param texture texture to check against
+         * @returns true if the transforms are the same, else false
+         */
+        checkTransformsAreIdentical(texture: Nullable<BaseTexture>): boolean;
         /**
          * Get the texture transform matrix used to offset tile the texture for istance.
          * @returns the transformation matrix
@@ -56727,6 +56795,7 @@ declare module BABYLON {
         set attachedMesh(mesh: Nullable<AbstractMesh>);
         get attachedNode(): Nullable<Node>;
         set attachedNode(node: Nullable<Node>);
+        protected _checkBillboardTransform(): void;
         /**
          * True when the mouse pointer is hovering a gizmo mesh
          */
@@ -57960,6 +58029,7 @@ declare module BABYLON {
          */
         static readonly MODE_SIDEBYSIDE: number;
         private _halfDome;
+        private _crossEye;
         protected _useDirectMapping: boolean;
         /**
          * The texture being displayed on the sphere
@@ -58005,7 +58075,7 @@ declare module BABYLON {
         get textureMode(): number;
         /**
          * Sets the current texture mode for the texture. It can be:
-          * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
+         * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
          * * TextureDome.MODE_TOPBOTTOM  : Define the texture source as a Stereoscopic TopBottom/OverUnder panoramic 360.
          * * TextureDome.MODE_SIDEBYSIDE : Define the texture source as a Stereoscopic Side by Side panoramic 360.
          */
@@ -58018,6 +58088,14 @@ declare module BABYLON {
          * Set the halfDome mode. If set, only the front (180 degrees) will be displayed and the back will be blacked out.
          */
         set halfDome(enabled: boolean);
+        /**
+         * Set the cross-eye mode. If set, images that can be seen when crossing eyes will render correctly
+         */
+        set crossEye(enabled: boolean);
+        /**
+         * Is it a cross-eye texture?
+         */
+        get crossEye(): boolean;
         /**
          * Oberserver used in Stereoscopic VR Mode.
          */
@@ -58042,6 +58120,8 @@ declare module BABYLON {
             faceForward?: boolean;
             useDirectMapping?: boolean;
             halfDomeMode?: boolean;
+            crossEyeMode?: boolean;
+            generateMipMaps?: boolean;
         }, scene: Scene, onError?: Nullable<(message?: string, exception?: any) => void>);
         protected abstract _initTexture(urlsOrElement: string | string[] | HTMLElement, scene: Scene, options: any): T;
         protected _changeTextureMode(value: number): void;
@@ -78248,17 +78328,17 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         /** @hidden */
-        _onPointerEnter(target: Control): boolean;
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerOut(target: Control, force?: boolean): void;
+        _onPointerOut(target: Control, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: BABYLON.PointerInfoBase): void;
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
@@ -78266,7 +78346,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onCanvasBlur(): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -78415,7 +78495,7 @@ declare module BABYLON.GUI {
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -78834,15 +78914,15 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerEnter(target: Control): boolean;
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerOut(target: Control, force?: boolean): void;
+        _onPointerOut(target: Control, pi: BABYLON.PointerInfoBase, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
@@ -78951,7 +79031,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
          * Utility function to easily create a checkbox with a header
          * @param title defines the label to use for the header
@@ -79210,8 +79290,8 @@ declare module BABYLON.GUI {
         /** @hidden */
         private _onPasteText;
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         protected _beforeRenderText(text: string): string;
         dispose(): void;
@@ -79396,9 +79476,9 @@ declare module BABYLON.GUI {
         private _updateValueFromPointer;
         private _isPointOnSquare;
         private _isPointOnWheel;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
         _onCanvasBlur(): void;
         /**
          * This function expands the color picker by creating a color picker dialog with manual
@@ -79662,7 +79742,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(context: CanvasRenderingContext2D): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
          * Utility function to easily create a radio button with a header
          * @param title defines the label to use for the header
@@ -79743,8 +79823,8 @@ declare module BABYLON.GUI {
         private _pointerIsDown;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         _onCanvasBlur(): void;
     }
@@ -80065,7 +80145,7 @@ declare module BABYLON.GUI {
         private _originY;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
     }
 }
 declare module BABYLON.GUI {
@@ -80122,7 +80202,7 @@ declare module BABYLON.GUI {
         private _originY;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
     }
 }
 declare module BABYLON.GUI {
@@ -86045,8 +86125,9 @@ declare module BABYLON.GLTF2 {
     /** @hidden */
     interface IKHRMaterialsSheen {
         sheenColorFactor?: number[];
-        sheenTexture?: ITextureInfo;
+        sheenColorTexture?: ITextureInfo;
         sheenRoughnessFactor?: number;
+        sheenRoughnessTexture?: ITextureInfo;
     }
 
     /**
@@ -87119,60 +87200,64 @@ declare module BABYLON {
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
         /**
-        * @param {number}: Represents the wind force
-        */
+         * Defines the wind force.
+         */
         windForce: number;
         /**
-        * @param {Vector2}: The direction of the wind in the plane (X, Z)
-        */
+         * Defines the direction of the wind in the plane (X, Z).
+         */
         windDirection: BABYLON.Vector2;
         /**
-        * @param {number}: Wave height, represents the height of the waves
-        */
+         * Defines the height of the waves.
+         */
         waveHeight: number;
         /**
-        * @param {number}: Bump height, represents the bump height related to the bump map
-        */
+         * Defines the bump height related to the bump map.
+         */
         bumpHeight: number;
         /**
-         * @param {boolean}: Add a smaller moving bump to less steady waves.
+         * Defines wether or not: to add a smaller moving bump to less steady waves.
          */
         private _bumpSuperimpose;
         bumpSuperimpose: boolean;
         /**
-         * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+         * Defines wether or not color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
          */
         private _fresnelSeparate;
         fresnelSeparate: boolean;
         /**
-         * @param {boolean}: bump Waves modify the reflection.
+         * Defines wether or not bump Wwves modify the reflection.
          */
         private _bumpAffectsReflection;
         bumpAffectsReflection: boolean;
         /**
-        * @param {number}: The water color blended with the refraction (near)
-        */
+         * Defines the water color blended with the refraction (near).
+         */
         waterColor: BABYLON.Color3;
         /**
-        * @param {number}: The blend factor related to the water color
-        */
+         * Defines the blend factor related to the water color.
+         */
         colorBlendFactor: number;
         /**
-         * @param {number}: The water color blended with the reflection (far)
+         * Defines the water color blended with the reflection (far).
          */
         waterColor2: BABYLON.Color3;
         /**
-         * @param {number}: The blend factor related to the water color (reflection, far)
+         * Defines the blend factor related to the water color (reflection, far).
          */
         colorBlendFactor2: number;
         /**
-        * @param {number}: Represents the maximum length of a wave
-        */
+         * Defines the maximum length of a wave.
+         */
         waveLength: number;
         /**
-        * @param {number}: Defines the waves speed
-        */
+         * Defines the waves speed.
+         */
         waveSpeed: number;
+        /**
+         * Defines the number of times waves are repeated. This is typically used to adjust waves count according to the ground's size where the material is applied on.
+         */
+        waveCount: number;
         /**
          * Sets or gets whether or not automatic clipping should be enabled or not. Setting to true will save performances and
          * will avoid calculating useless pixels in the pixel shader of the water material.

@@ -808,6 +808,19 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
+     * Gets or sets the size of the texture what stores the shadows
+     */
+    public get mapSize(): number {
+        return this._mapSize;
+    }
+
+    public set mapSize(size: number) {
+        this._mapSize = size;
+        this._light._markMeshesAsLightDirty();
+        this.recreateShadowMap();
+    }
+
+    /**
      * Creates a ShadowGenerator object.
      * A ShadowGenerator is the required tool to use the shadows.
      * Each light casting shadows needs to use its own ShadowGenerator.

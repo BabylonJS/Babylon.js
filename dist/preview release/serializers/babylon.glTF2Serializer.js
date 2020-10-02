@@ -667,7 +667,19 @@ var KHR_materials_sheen = /** @class */ (function () {
                 if (babylonMaterial.sheen.texture) {
                     var textureIndex = _this._getTextureIndex(babylonMaterial.sheen.texture);
                     if (textureIndex > -1) {
-                        sheenInfo.sheenTexture = _this._textureInfos[textureIndex];
+                        sheenInfo.sheenColorTexture = _this._textureInfos[textureIndex];
+                    }
+                }
+                if (babylonMaterial.sheen.textureRoughness && !babylonMaterial.sheen.useRoughnessFromMainTexture) {
+                    var textureIndex = _this._getTextureIndex(babylonMaterial.sheen.textureRoughness);
+                    if (textureIndex > -1) {
+                        sheenInfo.sheenRoughnessTexture = _this._textureInfos[textureIndex];
+                    }
+                }
+                else if (babylonMaterial.sheen.texture && babylonMaterial.sheen.useRoughnessFromMainTexture) {
+                    var textureIndex = _this._getTextureIndex(babylonMaterial.sheen.texture);
+                    if (textureIndex > -1) {
+                        sheenInfo.sheenRoughnessTexture = _this._textureInfos[textureIndex];
                     }
                 }
                 node.extensions[NAME] = sheenInfo;

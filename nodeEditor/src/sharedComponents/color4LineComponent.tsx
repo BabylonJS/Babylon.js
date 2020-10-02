@@ -30,8 +30,8 @@ export class Color4LineComponent extends React.Component<IColor4LineComponentPro
     }
 
     shouldComponentUpdate(nextProps: IColor4LineComponentProps, nextState: { color: Color4 }) {
-        let value = this.props.target[this.props.propertyName];
-        let currentColor = value.getClassName() === "Color4" ? value : new Color4(value.r, value.g, value.b, 1.0);
+        const currentState = nextProps.target[nextProps.propertyName];
+        let currentColor = currentState.getClassName() === "Color4" ? currentState : new Color4(currentState.r, currentState.g, currentState.b, 1.0);  
 
         if (!currentColor.equals(nextState.color) || this._localChange) {
             nextState.color = currentColor.clone();
