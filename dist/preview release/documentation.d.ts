@@ -56795,6 +56795,7 @@ declare module BABYLON {
         set attachedMesh(mesh: Nullable<AbstractMesh>);
         get attachedNode(): Nullable<Node>;
         set attachedNode(node: Nullable<Node>);
+        protected _checkBillboardTransform(): void;
         /**
          * True when the mouse pointer is hovering a gizmo mesh
          */
