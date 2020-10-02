@@ -13,6 +13,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
 import { PositionGizmo } from "./positionGizmo";
+import { LinesMesh } from 'Meshes/linesMesh';
 /**
  * Single plane drag gizmo
  */
@@ -32,7 +33,7 @@ export class PlaneDragGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
-    private _plane: TransformNode;
+    private _gizmoMesh: TransformNode;
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
@@ -50,7 +51,7 @@ export class PlaneDragGizmo extends Gizmo {
         dragPlane.parent = plane;
         return plane;
     }
-    
+
     /**
      * Creates a PlaneDragGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
@@ -73,11 +74,11 @@ export class PlaneDragGizmo extends Gizmo {
         this._disableMaterial.alpha = 0.4;
 
         // Build plane mesh on root node
-        this._plane = PlaneDragGizmo._CreatePlane(gizmoLayer.utilityLayerScene, this._coloredMaterial);
+        this._gizmoMesh = PlaneDragGizmo._CreatePlane(gizmoLayer.utilityLayerScene, this._coloredMaterial);
 
-        this._plane.lookAt(this._rootMesh.position.add(dragPlaneNormal));
-        this._plane.scaling.scaleInPlace(1 / 3);
-        this._plane.parent = this._rootMesh;
+        this._gizmoMesh.lookAt(this._rootMesh.position.add(dragPlaneNormal));
+        this._gizmoMesh.scaling.scaleInPlace(1 / 3);
+        this._gizmoMesh.parent = this._rootMesh;
 
         var currentSnapDragDistance = 0;
         var tmpVector = new Vector3();
@@ -112,6 +113,22 @@ export class PlaneDragGizmo extends Gizmo {
             }
         });
 
+        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (this._customMeshSet) {
+                return;
+            }
+            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            if (!this._parent) {
+                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
+                this._rootMesh.getChildMeshes().forEach((m) => {
+                    m.material = material;
+                    if ((<LinesMesh>m).color) {
+                        (<LinesMesh>m).color = material.diffuseColor;
+                    }
+                });
+            }
+        });
+
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
@@ -121,7 +138,7 @@ export class PlaneDragGizmo extends Gizmo {
             disableMaterial: this._disableMaterial,
             active: false
         };
-        this._parent?.addToAxisCache((this._plane as Mesh), cache);
+        this._parent?.addToAxisCache((this._gizmoMesh as Mesh), cache);
     }
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
@@ -154,10 +171,10 @@ export class PlaneDragGizmo extends Gizmo {
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
         super.dispose();
-        if (this._plane) {
-            this._plane.dispose();
+        if (this._gizmoMesh) {
+            this._gizmoMesh.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {
+        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
             if (matl) {
                 matl.dispose();
             }

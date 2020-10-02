@@ -180,7 +180,6 @@ export class AxisScaleGizmo extends Gizmo {
             }
             this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
             if (!this._parent) {
-                // Enable Hover Events for AxisViewer use-case
                 var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
                 this._rootMesh.getChildMeshes().forEach((m) => {
                     m.material = material;
@@ -258,7 +257,7 @@ export class AxisScaleGizmo extends Gizmo {
         if (this._gizmoMesh) {
             this._gizmoMesh.dispose();
         }
-        [this._coloredMaterial, this._hoverMaterial].forEach((matl) => {
+        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
             if (matl) {
                 matl.dispose();
             }

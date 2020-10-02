@@ -39,6 +39,7 @@ export class PlaneRotationGizmo extends Gizmo {
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
+    private _gizmoMesh: Mesh;
 
     private circleConstants = {
         radius: 0.3,
@@ -71,17 +72,17 @@ export class PlaneRotationGizmo extends Gizmo {
         this._disableMaterial.alpha = 0.4;
 
         // Build mesh on root node
-        var parentMesh = new AbstractMesh("", gizmoLayer.utilityLayerScene);
-        this._createGizmoMesh(parentMesh, thickness, tessellation);
+        this._gizmoMesh = new Mesh("", gizmoLayer.utilityLayerScene);
+        this._createGizmoMesh(this._gizmoMesh, thickness, tessellation);
 
         // Axis Gizmo Closures
         let dragDistance = 0;
         const rotationCirclePaths: any[] = [];
-        const rotationCircle: Mesh = this.setupRotationCircle(rotationCirclePaths, parentMesh);
+        const rotationCircle: Mesh = this.setupRotationCircle(rotationCirclePaths, this._gizmoMesh);
 
-        parentMesh.lookAt(this._rootMesh.position.add(planeNormal));
-        this._rootMesh.addChild(parentMesh);
-        parentMesh.scaling.scaleInPlace(1 / 3);
+        this._gizmoMesh.lookAt(this._rootMesh.position.add(planeNormal));
+        this._rootMesh.addChild(this._gizmoMesh);
+        this._gizmoMesh.scaling.scaleInPlace(1 / 3);
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragPlaneNormal: planeNormal });
         this.dragBehavior.moveAttached = false;
@@ -107,7 +108,7 @@ export class PlaneRotationGizmo extends Gizmo {
                 direction.normalize();
 
                 // Remove Rotation Circle from parent mesh before drag interaction
-                parentMesh.removeChild(rotationCircle);
+                this._gizmoMesh.removeChild(rotationCircle);
                 
                 lastDragPosition.copyFrom(e.dragPlanePoint);
                 dragPlanePoint = e.dragPlanePoint;
@@ -127,7 +128,7 @@ export class PlaneRotationGizmo extends Gizmo {
         this.dragBehavior.onDragEndObservable.add(() => {
             dragDistance = 0;
             this.updateRotationCircle(rotationCircle, rotationCirclePaths, dragDistance, dragPlanePoint);
-            parentMesh.addChild(rotationCircle);    // Add rotation circle back to parent mesh after drag behavior
+            this._gizmoMesh.addChild(rotationCircle);    // Add rotation circle back to parent mesh after drag behavior
         });
 
         // var rotationMatrix = new Matrix();
@@ -228,7 +229,6 @@ export class PlaneRotationGizmo extends Gizmo {
             }
             this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
             if (!this._parent) {
-                // Enable Hover Events for AxisViewer use-case
                 var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
                 this._rootMesh.getChildMeshes().forEach((m) => {
                     m.material = material;
@@ -248,7 +248,7 @@ export class PlaneRotationGizmo extends Gizmo {
             disableMaterial: this._disableMaterial,
             active: false
         };
-        this._parent?.addToAxisCache((parentMesh as Mesh), cache);
+        this._parent?.addToAxisCache(this._gizmoMesh, cache);
     }
 
     private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number){
@@ -389,6 +389,14 @@ export class PlaneRotationGizmo extends Gizmo {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
+        if (this._gizmoMesh) {
+            this._gizmoMesh.dispose();
+        }
+        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
+            if (matl) {
+                matl.dispose();
+            }
+        });
         super.dispose();
     }
 }

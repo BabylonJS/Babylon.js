@@ -42,8 +42,8 @@ export class AxisDragGizmo extends Gizmo {
     private _disableMaterial: StandardMaterial;
 
     /** @hidden */
-    public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): Mesh {
-        var arrow = new Mesh("arrow", scene);
+    public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): TransformNode {
+        var arrow = new TransformNode("arrow", scene);
         var cylinder = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375 * (1 + (thickness - 1) / 4), tessellation: 96 }, scene);
         var line = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, scene);
 
@@ -160,7 +160,6 @@ export class AxisDragGizmo extends Gizmo {
             }
             this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
             if (!this._parent) {
-                // Enable Hover Events for AxisViewer use-case
                 var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
                 this._rootMesh.getChildMeshes().forEach((m) => {
                     m.material = material;
@@ -181,7 +180,7 @@ export class AxisDragGizmo extends Gizmo {
             disableMaterial: this._disableMaterial,
             active: false
         };
-        this._parent?.addToAxisCache((this._gizmoMesh as Mesh), cache);
+        this._parent?.addToAxisCache(this._gizmoMesh, cache);
     }
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
