@@ -45,7 +45,7 @@ export class AxisScaleGizmo extends Gizmo {
     private _isEnabled: boolean = true;
     private _parent: Nullable<ScaleGizmo> = null;
 
-    private _gizmoMesh: AbstractMesh;
+    private _gizmoMesh: Mesh;
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
@@ -75,7 +75,7 @@ export class AxisScaleGizmo extends Gizmo {
         this._disableMaterial.alpha = 0.4;
 
         // Build mesh + Collider
-        this._gizmoMesh = new AbstractMesh("axis", gizmoLayer.utilityLayerScene);
+        this._gizmoMesh = new Mesh("axis", gizmoLayer.utilityLayerScene);
         const { arrowMesh, arrowTail } = this._createGizmoMesh(this._gizmoMesh, thickness);
         this._createGizmoMesh(this._gizmoMesh, thickness * 4, true);
 
@@ -157,11 +157,11 @@ export class AxisScaleGizmo extends Gizmo {
             }
         });
         // On Drag Listener: to move gizmo mesh with user action
-        this.dragBehavior.onDragObservable.add(e => increaseGizmoMesh(e.dragDistance));
+        this.dragBehavior.onDragObservable.add((e) => increaseGizmoMesh(e.dragDistance));
         this.dragBehavior.onDragEndObservable.add(resetGizmoMesh);
 
         // Listeners for Universal Scalar
-        document.addEventListener('universalGizmoDrag', e => increaseGizmoMesh((e as any).detail));
+        document.addEventListener('universalGizmoDrag', (e) => increaseGizmoMesh((e as any).detail));
         document.addEventListener('universalGizmoEnd', resetGizmoMesh);
         this._eventListeners.push({listener: 'universalGizmoDrag', fn: increaseGizmoMesh });
         this._eventListeners.push({listener: 'universalGizmoEnd', fn: resetGizmoMesh });
@@ -172,7 +172,7 @@ export class AxisScaleGizmo extends Gizmo {
             disableMaterial: this._disableMaterial,
             active: false
         };
-        this._parent?.addToAxisCache((this._gizmoMesh as Mesh), cache);
+        this._parent?.addToAxisCache(this._gizmoMesh, cache);
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (this._customMeshSet) {
@@ -262,7 +262,7 @@ export class AxisScaleGizmo extends Gizmo {
                 matl.dispose();
             }
         });
-        this._eventListeners.forEach(e => {
+        this._eventListeners.forEach((e) => {
             document.addEventListener(e.listener, e.fn, false);
         });
         super.dispose();

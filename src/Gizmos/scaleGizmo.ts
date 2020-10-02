@@ -151,13 +151,13 @@ export class ScaleGizmo extends Gizmo {
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._octahedron);
 
         // Drag Event Listeners
-        uniformScaleGizmo.dragBehavior.onDragObservable.add(e => {
+        uniformScaleGizmo.dragBehavior.onDragObservable.add((e) => {
             document.dispatchEvent(new CustomEvent('universalGizmoDrag', {
                 detail: e.delta.y
             }));
         });
 
-        uniformScaleGizmo.dragBehavior.onDragEndObservable.add(e => {
+        uniformScaleGizmo.dragBehavior.onDragEndObservable.add((e) => {
             document.dispatchEvent(new CustomEvent('universalGizmoEnd'));
         });
 
@@ -321,7 +321,7 @@ export class ScaleGizmo extends Gizmo {
                 gizmo.dispose();
             }
         });
-        this._observables.forEach(obs => {
+        this._observables.forEach((obs) => {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
         });
         this.onDragStartObservable.clear();
