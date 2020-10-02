@@ -252,10 +252,12 @@ export class Gizmo implements IDisposable {
             } else {
                 this._attachedNode._worldMatrix.decompose(transform.scaling, this._tempQuaternion, transform.position);
             }
-            if (transform.rotationQuaternion) {
-                transform.rotationQuaternion.copyFrom(this._tempQuaternion);
-            } else {
-                transform.rotation = this._tempQuaternion.toEulerAngles();
+            if (!transform.billboardMode) {
+                if (transform.rotationQuaternion) {
+                    transform.rotationQuaternion.copyFrom(this._tempQuaternion);
+                } else {
+                    transform.rotation = this._tempQuaternion.toEulerAngles();
+                }
             }
         } else if (this._attachedNode.getClassName() === "Bone") {
             var bone = this._attachedNode as Bone;
