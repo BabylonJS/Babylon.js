@@ -13,6 +13,7 @@ declare const _native: any;
  * pointer device and one keyboard.
  */
 export class DeviceInputSystem implements IDisposable {
+
     /**
      * Returns onDeviceConnected callback property
      * @returns Callback with function to execute when a device is connected
@@ -20,12 +21,22 @@ export class DeviceInputSystem implements IDisposable {
     public get onDeviceConnected() { return this._onDeviceConnected; }
 
     /**
-     * Sets callback function when a device is connected
+     * Sets callback function when a device is connected and executes against all connected devices
      * @param callback Function to execute when a device is connected
      */
     public set onDeviceConnected(callback) {
         this._onDeviceConnected = callback;
-        this._checkForConnectedDevices();
+
+        // Iterate through each active device and rerun new callback
+        for (let deviceType = 0; deviceType < this._inputs.length; deviceType++) {
+            if (this._inputs[deviceType]) {
+                for (let deviceSlot = 0; deviceSlot < this._inputs[deviceType].length; deviceSlot++) {
+                    if (this._inputs[deviceType][deviceSlot]) {
+                        this._onDeviceConnected(deviceType, deviceSlot);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -68,6 +79,9 @@ export class DeviceInputSystem implements IDisposable {
             this._handleKeyActions();
             this._handlePointerActions();
             this._handleGamepadActions();
+
+            // Check for devices that are already connected but aren't registered.
+            this._checkForConnectedDevices();
         }
     }
 
@@ -149,9 +163,18 @@ export class DeviceInputSystem implements IDisposable {
                 this._addGamePad(gamepad);
             }
         }
+
+        // If the device in use has mouse capabilities, pre-register mouse
+        if (matchMedia('(pointer:fine)').matches) {
+            this._addPointerDevice(DeviceType.Mouse, 0, 0, 0);
+        }
     }
 
     // Private functions
+    /**
+     * Add a gamepad to the DeviceInputSystem
+     * @param gamepad A single DOM Gamepad object
+     */
     private _addGamePad(gamepad: any) {
         const deviceType = this._getGamepadDeviceType(gamepad.id);
         const deviceSlot = gamepad.index;
@@ -159,6 +182,21 @@ export class DeviceInputSystem implements IDisposable {
         this._registerDevice(deviceType, deviceSlot, gamepad.buttons.length + gamepad.axes.length);
         this._gamepads = this._gamepads || new Array<DeviceType>(gamepad.index + 1);
         this._gamepads[deviceSlot] = deviceType;
+    }
+
+    /**
+     * Add pointer device to DeviceInputSystem
+     * @param deviceType Type of Pointer to add
+     * @param deviceSlot Pointer ID (0 for mouse, pointerId for Touch)
+     * @param currentX Current X at point of adding
+     * @param currentY Current Y at point of adding
+     */
+    private _addPointerDevice(deviceType: DeviceType, deviceSlot: number, currentX: number, currentY: number) {
+        this._pointerActive = true;
+        this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
+        const pointer = this._inputs[deviceType][deviceSlot]; /* initalize our pointer position immediately after registration */
+        pointer[0] = currentX;
+        pointer[1] = currentY;
     }
 
     /**
@@ -242,11 +280,7 @@ export class DeviceInputSystem implements IDisposable {
             }
 
             if (!this._inputs[deviceType][deviceSlot]) {
-                this._pointerActive = true;
-                this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
-                const pointer = this._inputs[deviceType][deviceSlot]; /* initalize our pointer position immediately after registration */
-                pointer[0] = evt.clientX;
-                pointer[1] = evt.clientY;
+                this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
@@ -269,11 +303,7 @@ export class DeviceInputSystem implements IDisposable {
             }
 
             if (!this._inputs[deviceType][deviceSlot]) {
-                this._pointerActive = true;
-                this._registerDevice(deviceType, deviceSlot, DeviceInputSystem._MAX_POINTER_INPUTS);
-                const pointer = this._inputs[deviceType][deviceSlot]; /* initalize our pointer position immediately after registration */
-                pointer[0] = evt.clientX;
-                pointer[1] = evt.clientY;
+                this._addPointerDevice(deviceType, deviceSlot, evt.clientX, evt.clientY);
             }
 
             const pointer = this._inputs[deviceType][deviceSlot];
@@ -298,6 +328,9 @@ export class DeviceInputSystem implements IDisposable {
                 if (this.onInputChanged) {
                     this.onInputChanged(deviceType, deviceSlot, evt.button + 2, pointer[evt.button + 2], 0);
                 }
+
+                pointer[0] = evt.clientX;
+                pointer[1] = evt.clientY;
                 pointer[evt.button + 2] = 0;
             }
             // We don't want to unregister the mouse because we may miss input data when a mouse is moving after a click

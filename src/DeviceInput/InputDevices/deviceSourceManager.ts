@@ -159,8 +159,10 @@ export class DeviceSourceManager implements IDisposable {
             this._devices[deviceType] = new Array<DeviceSource<DeviceType>>();
         }
 
-        this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
-        this._updateFirstDevices(deviceType);
+        if (!this._devices[deviceType][deviceSlot]) {
+            this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
+            this._updateFirstDevices(deviceType);
+        }
     }
 
     /**
