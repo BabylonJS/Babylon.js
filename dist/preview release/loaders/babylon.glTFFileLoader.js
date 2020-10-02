@@ -3324,6 +3324,7 @@ var KHR_materials_clearcoat = /** @class */ (function () {
         }
         var promises = new Array();
         babylonMaterial.clearCoat.isEnabled = true;
+        babylonMaterial.clearCoat.useRoughnessFromMainTexture = false;
         babylonMaterial.clearCoat.remapF0OnInterfaceChange = false;
         if (properties.clearcoatFactor != undefined) {
             babylonMaterial.clearCoat.intensity = properties.clearcoatFactor;
@@ -3346,7 +3347,7 @@ var KHR_materials_clearcoat = /** @class */ (function () {
         if (properties.clearcoatRoughnessTexture) {
             promises.push(this._loader.loadTextureInfoAsync(context + "/clearcoatRoughnessTexture", properties.clearcoatRoughnessTexture, function (texture) {
                 texture.name = babylonMaterial.name + " (ClearCoat Roughness)";
-                babylonMaterial.clearCoat.texture = texture;
+                babylonMaterial.clearCoat.textureRoughness = texture;
             }));
         }
         if (properties.clearcoatNormalTexture) {
@@ -3594,8 +3595,8 @@ var KHR_materials_sheen = /** @class */ (function () {
         else {
             babylonMaterial.sheen.color = babylonjs_Materials_PBR_pbrMaterial__WEBPACK_IMPORTED_MODULE_0__["Color3"].Black();
         }
-        if (properties.sheenTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(context + "/sheenTexture", properties.sheenTexture, function (texture) {
+        if (properties.sheenColorTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(context + "/sheenColorTexture", properties.sheenColorTexture, function (texture) {
                 texture.name = babylonMaterial.name + " (Sheen Color)";
                 babylonMaterial.sheen.texture = texture;
             }));
@@ -3606,7 +3607,14 @@ var KHR_materials_sheen = /** @class */ (function () {
         else {
             babylonMaterial.sheen.roughness = 0;
         }
+        if (properties.sheenRoughnessTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(context + "/sheenRoughnessTexture", properties.sheenRoughnessTexture, function (texture) {
+                texture.name = babylonMaterial.name + " (Sheen Roughness)";
+                babylonMaterial.sheen.textureRoughness = texture;
+            }));
+        }
         babylonMaterial.sheen.albedoScaling = true;
+        babylonMaterial.sheen.useRoughnessFromMainTexture = false;
         return Promise.all(promises).then(function () { });
     };
     return KHR_materials_sheen;
