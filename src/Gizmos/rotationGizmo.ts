@@ -9,6 +9,8 @@ import { Gizmo } from "./gizmo";
 import { PlaneRotationGizmo } from "./planeRotationGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Node } from "../node";
+import { TransformNode } from "../Meshes/transformNode";
+
 /**
  * Gizmo that enables rotating a mesh along 3 axis
  */
@@ -40,6 +42,7 @@ export class RotationGizmo extends Gizmo {
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
+        this._checkBillboardTransform();
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
@@ -56,6 +59,7 @@ export class RotationGizmo extends Gizmo {
     public set attachedNode(node: Nullable<Node>) {
         this._meshAttached = null;
         this._nodeAttached = node;
+        this._checkBillboardTransform();
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
@@ -64,6 +68,12 @@ export class RotationGizmo extends Gizmo {
                 gizmo.attachedNode = null;
             }
         });
+    }
+
+    protected _checkBillboardTransform() {
+        if (this._nodeAttached && (<TransformNode>this._nodeAttached).billboardMode) {
+            console.log("Rotation Gizmo will not work with transforms in billboard mode.");
+        }
     }
 
     /**
