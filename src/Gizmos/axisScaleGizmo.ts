@@ -49,7 +49,6 @@ export class AxisScaleGizmo extends Gizmo {
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
-
     private _eventListeners: any[] = [];
 
     /**

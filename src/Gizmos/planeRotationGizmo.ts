@@ -4,15 +4,16 @@ import { PointerInfo } from "../Events/pointerEvents";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
+import { LinesMesh } from '../Meshes/linesMesh';
 import { Mesh } from "../Meshes/mesh";
 import { Node } from "../node";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
+import "../Meshes/Builders/linesBuilder";   // Why
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { RotationGizmo } from "./rotationGizmo";
 import { Angle } from '../Maths/math.path';
-import { LinesMesh } from 'Meshes/linesMesh';
 
 /**
  * Single plane rotation gizmo
