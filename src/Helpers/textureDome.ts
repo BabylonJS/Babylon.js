@@ -33,6 +33,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     public static readonly MODE_SIDEBYSIDE = 2;
 
     private _halfDome: boolean = false;
+    private _crossEye: boolean = false;
 
     protected _useDirectMapping = false;
 
@@ -111,7 +112,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     }
     /**
      * Sets the current texture mode for the texture. It can be:
-      * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
+     * * TextureDome.MODE_MONOSCOPIC : Define the texture source as a Monoscopic panoramic 360.
      * * TextureDome.MODE_TOPBOTTOM  : Define the texture source as a Stereoscopic TopBottom/OverUnder panoramic 360.
      * * TextureDome.MODE_SIDEBYSIDE : Define the texture source as a Stereoscopic Side by Side panoramic 360.
      */
@@ -136,6 +137,20 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     public set halfDome(enabled: boolean) {
         this._halfDome = enabled;
         this._halfDomeMask.setEnabled(enabled);
+    }
+
+    /**
+     * Set the cross-eye mode. If set, images that can be seen when crossing eyes will render correctly
+     */
+    public set crossEye(enabled: boolean) {
+        this._crossEye = enabled;
+    }
+
+    /**
+     * Is it a cross-eye texture?
+     */
+    public get crossEye(): boolean {
+        return this._crossEye;
     }
 
     /**
@@ -166,6 +181,8 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
             faceForward?: boolean;
             useDirectMapping?: boolean;
             halfDomeMode?: boolean;
+            crossEyeMode?: boolean;
+            generateMipMaps?: boolean;
         },
         scene: Scene,
         protected onError: Nullable<(message?: string, exception?: any) => void> = null
@@ -215,6 +232,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         this._halfDome = !!options.halfDomeMode;
         // enable or disable according to the settings
         this._halfDomeMask.setEnabled(this._halfDome);
+        this._crossEye = !!options.crossEyeMode;
 
         // create
         this._texture.anisotropicFilteringLevel = 1;
@@ -247,6 +265,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
         this._texture.vScale = 1;
         this._texture.uOffset = 0;
         this._texture.vOffset = 0;
+        this._texture.vAng = 0;
 
         switch (value) {
             case TextureDome.MODE_MONOSCOPIC:
@@ -260,9 +279,17 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
                 // Use 0.99999 to boost perf by not switching program
                 this._texture.uScale = this._halfDome ? 0.99999 : 0.5;
                 const rightOffset = this._halfDome ? 0.0 : 0.5;
-                const leftOffset = this._halfDome ? 0.5 : 0.0;
+                const leftOffset = this._halfDome ? -0.5 : 0.0;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
-                    this._texture.uOffset = camera.isRightCamera ? rightOffset : leftOffset;
+                    let isRightCamera = camera.isRightCamera;
+                    if (this._crossEye) {
+                        isRightCamera = !isRightCamera;
+                    }
+                    if (isRightCamera) {
+                        this._texture.uOffset = rightOffset;
+                    } else {
+                        this._texture.uOffset = leftOffset;
+                    }
                 });
                 break;
             case TextureDome.MODE_TOPBOTTOM:
@@ -270,7 +297,12 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
                 // Use 0.99999 to boost perf by not switching program
                 this._texture.vScale = this._halfDome ? 0.99999 : 0.5;
                 this._onBeforeCameraRenderObserver = this._scene.onBeforeCameraRenderObservable.add((camera) => {
-                    this._texture.vOffset = camera.isRightCamera ? 0.5 : 0.0;
+                    let isRightCamera = camera.isRightCamera;
+                    // allow "cross-eye" if left and right were switched in this mode
+                    if (this._crossEye) {
+                        isRightCamera = !isRightCamera;
+                    }
+                    this._texture.vOffset = isRightCamera ? 0.5 : 0.0;
                 });
                 break;
         }

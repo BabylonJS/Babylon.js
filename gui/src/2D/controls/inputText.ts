@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector2 } from "babylonjs/Maths/math.vector";
 import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
-import { PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerInfo, PointerEventTypes, PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 
 import { Control } from "./control";
 import { IFocusableControl } from "../advancedDynamicTexture";
@@ -973,8 +973,8 @@ export class InputText extends Control implements IFocusableControl {
         context.restore();
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
-        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
 
@@ -997,13 +997,13 @@ export class InputText extends Control implements IFocusableControl {
 
         return true;
     }
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         if (this._host.focusedControl === this && this._isPointerDown) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
         }
-        super._onPointerMove(target, coordinates, pointerId);
+        super._onPointerMove(target, coordinates, pointerId, pi);
     }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
