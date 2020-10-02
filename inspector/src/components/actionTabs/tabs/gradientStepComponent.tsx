@@ -4,9 +4,8 @@ import { Color3 } from 'babylonjs/Maths/math.color';
 import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { ColorPickerLineComponent } from '../lines/colorPickerComponent';
 
-
-const deleteButton = require('../../../../../nodeEditor/imgs/delete.svg');
-const copyIcon = require('../../../../../nodeEditor/src/sharedComponents/copy.svg');
+const deleteButton = require('../lines/delete.svg');
+const copyIcon = require('../lines/copyStep.svg');
 
 interface IGradientStepComponentProps {
     globalState: GlobalState;
