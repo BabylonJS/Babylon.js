@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { EventState, Observer } from "../../Misc/observable";
+import { EventState, Observable, Observer } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
@@ -36,6 +36,12 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      */
     @serialize()
     public wheelPrecisionZ = 3.0;
+
+    /**
+     * Observable for when a mouse wheel move event occurs.
+     */
+    public onChangedObservable = new Observable<
+        {wheelDeltaX: number, wheelDeltaY: number, wheelDeltaZ: number}>(); 
 
     private _wheel: Nullable<(pointer: PointerInfo, _: EventState) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
@@ -123,6 +129,25 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
             this._observer = null;
             this._wheel = null;
         }
+        if (this.onChangedObservable) {
+            this.onChangedObservable.clear();
+        }
+    }
+
+    /**
+     * Called for each rendered frame.
+     */
+    public checkInputs(): void {
+        this.onChangedObservable.notifyObservers({
+            wheelDeltaX: this._wheelDeltaX,
+            wheelDeltaY: this._wheelDeltaY,
+            wheelDeltaZ: this._wheelDeltaZ
+        });
+
+        // Clear deltas.
+        this._wheelDeltaX = 0;
+        this._wheelDeltaY = 0;
+        this._wheelDeltaZ = 0;
     }
 
     /**
