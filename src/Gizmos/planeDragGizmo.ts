@@ -50,17 +50,7 @@ export class PlaneDragGizmo extends Gizmo {
         dragPlane.parent = plane;
         return plane;
     }
-
-    /** @hidden */
-    public static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode {
-        const instance = new TransformNode("arrow", scene);
-        for (const mesh of arrow.getChildMeshes()) {
-            const childInstance = (mesh as Mesh).createInstance(mesh.name);
-            childInstance.parent = instance;
-        }
-        return instance;
-    }
-
+    
     /**
      * Creates a PlaneDragGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
