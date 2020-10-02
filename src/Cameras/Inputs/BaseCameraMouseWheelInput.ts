@@ -41,7 +41,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      * Observable for when a mouse wheel move event occurs.
      */
     public onChangedObservable = new Observable<
-        {wheelDeltaX: number, wheelDeltaY: number, wheelDeltaZ: number}>(); 
+        {wheelDeltaX: number, wheelDeltaY: number, wheelDeltaZ: number}>();
 
     private _wheel: Nullable<(pointer: PointerInfo, _: EventState) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
