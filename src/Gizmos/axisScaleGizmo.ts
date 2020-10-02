@@ -193,6 +193,7 @@ export class AxisScaleGizmo extends Gizmo {
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes());
     }
 
+    /** Create Geometry for Gizmo */
     private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
         var arrowMesh = BoxBuilder.CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
         var arrowTail = CylinderBuilder.CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, this.gizmoLayer.utilityLayerScene);

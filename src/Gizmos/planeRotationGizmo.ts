@@ -248,6 +248,7 @@ export class PlaneRotationGizmo extends Gizmo {
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
     }
 
+    /** Create Geometry for Gizmo */
     private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
         let drag = Mesh.CreateTorus("ignore", 0.6, 0.03 * thickness, tessellation, this.gizmoLayer.utilityLayerScene);
         drag.visibility = 0;

@@ -126,6 +126,7 @@ export class ScaleGizmo extends Gizmo {
         this.subscribeToPointerObserver();
     }
 
+    /** Create Geometry for Gizmo */
     private _createUniformScaleMesh(): AxisScaleGizmo {
         this._coloredMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
         this._coloredMaterial.diffuseColor = Color3.Gray();
