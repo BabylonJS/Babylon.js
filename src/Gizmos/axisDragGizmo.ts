@@ -13,6 +13,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
 import { PositionGizmo } from "./positionGizmo";
 import { Color3 } from '../Maths/math.color';
+import { LinesMesh } from 'Meshes/linesMesh';
 /**
  * Single axis drag gizmo
  */
@@ -152,6 +153,24 @@ export class AxisDragGizmo extends Gizmo {
                 this._matrixChanged();
             }
         });
+
+        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (this._customMeshSet) {
+                return;
+            }
+            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            if (!this._parent) {
+                // Enable Hover Events for AxisViewer use-case
+                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
+                this._rootMesh.getChildMeshes().forEach((m) => {
+                    m.material = material;
+                    if ((<LinesMesh>m).color) {
+                        (<LinesMesh>m).color = material.diffuseColor;
+                    }
+                });
+            }
+        });
+
 
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));

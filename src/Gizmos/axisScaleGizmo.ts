@@ -174,6 +174,23 @@ export class AxisScaleGizmo extends Gizmo {
         };
         this._parent?.addToAxisCache((this._gizmoMesh as Mesh), cache);
 
+        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (this._customMeshSet) {
+                return;
+            }
+            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            if (!this._parent) {
+                // Enable Hover Events for AxisViewer use-case
+                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
+                this._rootMesh.getChildMeshes().forEach((m) => {
+                    m.material = material;
+                    if ((<LinesMesh>m).color) {
+                        (<LinesMesh>m).color = material.diffuseColor;
+                    }
+                });
+            }
+        });
+
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes());
     }
