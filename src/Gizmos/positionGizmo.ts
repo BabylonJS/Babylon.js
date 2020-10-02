@@ -285,7 +285,7 @@ export class PositionGizmo extends Gizmo {
                 gizmo.dispose();
             }
         });
-        this._observables.forEach(obs => {
+        this._observables.forEach((obs) => {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
         });
         this.onDragStartObservable.clear();

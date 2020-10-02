@@ -103,13 +103,13 @@ export class PlaneRotationGizmo extends Gizmo {
 
                 // This is for instantiation location of rotation circle
                 // Rotation Circle Forward Vector
-                const forward = new Vector3(0, 0, 1);		
+                const forward = new Vector3(0, 0, 1);
                 const direction = rotationCircle.getDirection(forward);
                 direction.normalize();
 
                 // Remove Rotation Circle from parent mesh before drag interaction
                 this._gizmoMesh.removeChild(rotationCircle);
-                
+
                 lastDragPosition.copyFrom(e.dragPlanePoint);
                 dragPlanePoint = e.dragPlanePoint;
                 const origin = rotationCircle.getAbsolutePosition().clone();
@@ -130,10 +130,6 @@ export class PlaneRotationGizmo extends Gizmo {
             this.updateRotationCircle(rotationCircle, rotationCirclePaths, dragDistance, dragPlanePoint);
             this._gizmoMesh.addChild(rotationCircle);    // Add rotation circle back to parent mesh after drag behavior
         });
-
-        // var rotationMatrix = new Matrix();
-        // var planeNormalTowardsCamera = new Vector3();
-        // var localPlaneNormalTowardsCamera = new Vector3();
 
         var tmpSnapEvent = { snapDistance: 0 };
         var currentSnapDragDistance = 0;
@@ -188,7 +184,7 @@ export class PlaneRotationGizmo extends Gizmo {
                     }
                 }
 
-                dragDistance += cameraFlipped ? -angle: angle;
+                dragDistance += cameraFlipped ? -angle : angle;
                 this.updateRotationCircle(rotationCircle, rotationCirclePaths, dragDistance, dragPlanePoint);
 
                 // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
@@ -251,7 +247,7 @@ export class PlaneRotationGizmo extends Gizmo {
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
     }
 
-    private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number){
+    private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
         let drag = Mesh.CreateTorus("ignore", 0.6, 0.03 * thickness, tessellation, this.gizmoLayer.utilityLayerScene);
         drag.visibility = 0;
         let rotationMesh = Mesh.CreateTorus("", 0.6, 0.005 * thickness, tessellation, this.gizmoLayer.utilityLayerScene);
@@ -304,7 +300,7 @@ export class PlaneRotationGizmo extends Gizmo {
         const step = this.circleConstants.pi2 / this.circleConstants.tessellation;
         for (let p = -Math.PI / 2; p < Math.PI / 2 - 1.5; p += step / 2) {
             const path = [];
-            for (let i = 0; i < this.circleConstants.pi2; i += step ) {
+            for (let i = 0; i < this.circleConstants.pi2; i += step) {
                 if (i < fillRadians) {
                     const x = this.circleConstants.radius * Math.sin(i) * Math.cos(p);
                     const z = this.circleConstants.radius * Math.cos(i) * Math.cos(p);
@@ -337,7 +333,7 @@ export class PlaneRotationGizmo extends Gizmo {
             const path = pathArr[tessellationCounter];
             if (path) {
                 let radianCounter = 0;
-                for (let i = 0; i < this.circleConstants.pi2; i += step ) {
+                for (let i = 0; i < this.circleConstants.pi2; i += step) {
                     if (path[radianCounter]) {
                         if (i < Math.abs(newFill)) {
                             const eie = (newFill > 0) ? i : i * -1;

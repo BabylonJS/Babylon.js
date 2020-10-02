@@ -237,7 +237,7 @@ export class RotationGizmo extends Gizmo {
         this.zGizmo.dispose();
         this.onDragStartObservable.clear();
         this.onDragEndObservable.clear();
-        this._observables.forEach(obs => {
+        this._observables.forEach((obs) => {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
         });
     }

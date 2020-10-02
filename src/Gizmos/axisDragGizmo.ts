@@ -5,6 +5,7 @@ import { Vector3 } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
+import { LinesMesh } from 'Meshes/linesMesh';
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "./gizmo";
@@ -13,7 +14,6 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
 import { PositionGizmo } from "./positionGizmo";
 import { Color3 } from '../Maths/math.color';
-import { LinesMesh } from 'Meshes/linesMesh';
 /**
  * Single axis drag gizmo
  */
@@ -52,7 +52,7 @@ export class AxisDragGizmo extends Gizmo {
         cylinder.material = material;
         cylinder.rotation.x = Math.PI / 2;
         cylinder.position.z += 0.3;
-        
+
         line.parent = arrow;
         line.material = material;
         line.position.z += 0.275 / 2;
@@ -103,10 +103,10 @@ export class AxisDragGizmo extends Gizmo {
         // Build Mesh + Collider
         const arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness);
         const collider = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness * 4, true);
-        
+
         // Add to Root Node
         this._gizmoMesh = new Mesh("", gizmoLayer.utilityLayerScene);
-        [...arrow.getChildMeshes(), ...collider.getChildMeshes()].forEach(mesh => {
+        [...arrow.getChildMeshes(), ...collider.getChildMeshes()].forEach((mesh) => {
             this._gizmoMesh.addChild(mesh);
         });
 
@@ -169,7 +169,6 @@ export class AxisDragGizmo extends Gizmo {
                 });
             }
         });
-
 
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));

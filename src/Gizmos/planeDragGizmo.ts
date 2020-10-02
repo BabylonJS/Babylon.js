@@ -13,7 +13,6 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
 import { PositionGizmo } from "./positionGizmo";
-import { LinesMesh } from 'Meshes/linesMesh';
 /**
  * Single plane drag gizmo
  */
@@ -68,7 +67,7 @@ export class PlaneDragGizmo extends Gizmo {
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         this._hoverMaterial.diffuseColor = Color3.Yellow();
-        
+
         this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         this._disableMaterial.diffuseColor = Color3.Gray();
         this._disableMaterial.alpha = 0.4;
@@ -122,9 +121,6 @@ export class PlaneDragGizmo extends Gizmo {
                 var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
                 this._rootMesh.getChildMeshes().forEach((m) => {
                     m.material = material;
-                    if ((<LinesMesh>m).color) {
-                        (<LinesMesh>m).color = material.diffuseColor;
-                    }
                 });
             }
         });
