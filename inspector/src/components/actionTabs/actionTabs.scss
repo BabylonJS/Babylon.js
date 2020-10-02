@@ -142,7 +142,7 @@ $line-padding-left: 2px;
             .gradient-step {
                 display: grid;
                 grid-template-rows: 100%;
-                grid-template-columns: 25px 50px 55px 40px auto 20px 5px;
+                grid-template-columns: 20px 30px 40px auto 20px 30px;
                 padding-top: 5px;
                 padding-left: 5px;
                 padding-bottom: 5px;    
@@ -191,14 +191,14 @@ $line-padding-left: 2px;
                 .step-value {       
                     margin-left: 5px;     
                     grid-row: 1;
-                    grid-column: 4;
+                    grid-column: 3;
                     text-align: right;
                     margin-right: 5px;
                 }
         
                 .step-slider {            
                     grid-row: 1;
-                    grid-column: 5;
+                    grid-column: 4;
                     display: grid;
                     justify-content: stretch;
                     align-content: center;
@@ -243,13 +243,37 @@ $line-padding-left: 2px;
 
                 }
                
+
+                .gradient-copy {            
+                    grid-row: 1;
+                    grid-column: 5;
+                    display: grid;
+                    align-content: center;
+                    justify-content: center;
+         
+                    .img {
+                        height: 20px;
+                        width: 20px;
+                    }
+                    .img:hover {
+                        cursor: pointer;
+                    }
         
+                }
                 .gradient-delete {            
                     grid-row: 1;
                     grid-column: 6;
                     display: grid;
                     align-content: center;
-                    justify-content: center;
+                    justify-content: center;;
+                    .img {
+                        height: 20px;
+                        width: 20px;
+                    }
+                    .img:hover {
+                        cursor: pointer;
+                    }
+        
                 }
             }
 
