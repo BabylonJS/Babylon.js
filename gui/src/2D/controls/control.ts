@@ -1,7 +1,7 @@
 import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
-import { PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerEventTypes, PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { Logger } from "babylonjs/Misc/logger";
 import { Tools } from "babylonjs/Misc/tools";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -1735,7 +1735,7 @@ export class Control {
     }
 
     /** @hidden */
-    public _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1747,20 +1747,20 @@ export class Control {
             return false;
         }
 
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
 
         return true;
     }
 
     /** @hidden */
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
-        var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
+        var canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerMove(target, coordinates, pointerId); }
+        if (canNotify && this.parent != null) { this.parent._onPointerMove(target, coordinates, pointerId, pi); }
     }
 
     /** @hidden */
-    public _onPointerEnter(target: Control): boolean {
+    public _onPointerEnter(target: Control, pi: PointerInfoBase): boolean {
         if (!this._isEnabled) {
             return false;
         }
@@ -1773,15 +1773,15 @@ export class Control {
         }
         this._enterCount++;
 
-        var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+        var canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerEnter(target); }
+        if (canNotify && this.parent != null) { this.parent._onPointerEnter(target, pi); }
 
         return true;
     }
 
     /** @hidden */
-    public _onPointerOut(target: Control, force = false): void {
+    public _onPointerOut(target: Control, pi: Nullable<PointerInfoBase>, force = false): void {
         if (!force && (!this._isEnabled || target === this)) {
             return;
         }
@@ -1790,19 +1790,19 @@ export class Control {
         var canNotify: boolean = true;
 
         if (!target.isAscendant(this)) {
-            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this, pi);
         }
 
         if (canNotify && this.parent != null) {
-            this.parent._onPointerOut(target, force);
+            this.parent._onPointerOut(target, pi, force);
         }
     }
 
     /** @hidden */
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         // Prevent pointerout to lose control context.
         // Event redundancy is checked inside the function.
-        this._onPointerEnter(this);
+        this._onPointerEnter(this, pi);
 
         if (this._downCount !== 0) {
             return false;
@@ -1814,13 +1814,13 @@ export class Control {
 
         var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex); }
+        if (canNotify && this.parent != null) { this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi); }
 
         return true;
     }
 
     /** @hidden */
-    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: PointerInfoBase): void {
         if (!this._isEnabled) {
             return;
         }
@@ -1830,11 +1830,11 @@ export class Control {
 
         var canNotifyClick: boolean = notifyClick;
         if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
-            canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+            canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
         }
-        var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+        var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null) { this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick); }
+        if (canNotify && this.parent != null) { this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi); }
     }
 
     /** @hidden */
@@ -1862,21 +1862,21 @@ export class Control {
     public _onCanvasBlur(): void {}
 
     /** @hidden */
-    public _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public _processObservables(type: number, x: number, y: number, pi: PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
             return false;
         }
         this._dummyVector2.copyFromFloats(x, y);
         if (type === PointerEventTypes.POINTERMOVE) {
-            this._onPointerMove(this, this._dummyVector2, pointerId);
+            this._onPointerMove(this, this._dummyVector2, pointerId, pi);
 
             var previousControlOver = this._host._lastControlOver[pointerId];
             if (previousControlOver && previousControlOver !== this) {
-                previousControlOver._onPointerOut(this);
+                previousControlOver._onPointerOut(this, pi);
             }
 
             if (previousControlOver !== this) {
-                this._onPointerEnter(this);
+                this._onPointerEnter(this, pi);
             }
 
             this._host._lastControlOver[pointerId] = this;
@@ -1884,7 +1884,7 @@ export class Control {
         }
 
         if (type === PointerEventTypes.POINTERDOWN) {
-            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
+            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex, pi);
             this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
@@ -1892,7 +1892,7 @@ export class Control {
 
         if (type === PointerEventTypes.POINTERUP) {
             if (this._host._lastControlDown[pointerId]) {
-                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true);
+                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true, pi);
             }
             delete this._host._lastControlDown[pointerId];
             return true;

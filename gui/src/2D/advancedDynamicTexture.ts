@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
-import { PointerInfoPre, PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerInfoPre, PointerInfo, PointerEventTypes, PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
 import { KeyboardInfoPre, KeyboardEventTypes } from "babylonjs/Events/keyboardEvents";
 import { Camera } from "babylonjs/Cameras/camera";
@@ -644,7 +644,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._lastControlDown[pointerId] = control;
         this.onControlPickedObservable.notifyObservers(control);
     }
-    private _doPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
+    private _doPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -658,16 +658,16 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
-            this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
+            this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
 
         this._cursorChanged = false;
-        if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+        if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
             this._changeCursor("");
             if (type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);
                     delete this._lastControlOver[pointerId];
                 }
             }
@@ -739,7 +739,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             let pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
-            this._doPicking(x, y, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
+            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
@@ -807,7 +807,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     let size = this.getSize();
-                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pointerId, pi.event.button);
+                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
                 }
             } else if (pi.type === PointerEventTypes.POINTERUP) {
                 if (this._lastControlDown[pointerId]) {
@@ -837,7 +837,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 }
             } else if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], true);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi, true);
                 }
                 delete this._lastControlOver[pointerId];
             }
@@ -874,7 +874,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _attachToOnPointerOut(scene: Scene): void {
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add((pointerEvent) => {
             if (this._lastControlOver[pointerEvent.pointerId]) {
-                this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId]);
+                this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId], null);
             }
             delete this._lastControlOver[pointerEvent.pointerId];
             if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {

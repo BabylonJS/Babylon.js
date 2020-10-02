@@ -7,6 +7,7 @@ import { TextBlock } from "./textBlock";
 import { _TypeStore } from 'babylonjs/Misc/typeStore';
 import { Nullable } from 'babylonjs/types';
 import { Measure } from '../measure';
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 
 /**
  * Class used to represent a 2D checkbox
@@ -138,8 +139,8 @@ export class Checkbox extends Control {
     // Events
 
     /** @hidden */
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
-        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
 

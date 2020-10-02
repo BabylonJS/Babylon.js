@@ -71,8 +71,8 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             babylonMaterial.sheen.color = Color3.Black();
         }
 
-        if (properties.sheenTexture) {
-            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenTexture`, properties.sheenTexture, (texture) => {
+        if (properties.sheenColorTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenColorTexture`, properties.sheenColorTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Sheen Color)`;
                 babylonMaterial.sheen.texture = texture;
             }));
@@ -84,7 +84,15 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             babylonMaterial.sheen.roughness = 0;
         }
 
+        if (properties.sheenRoughnessTexture) {
+            promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
+                texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
+                babylonMaterial.sheen.textureRoughness = texture;
+            }));
+        }
+
         babylonMaterial.sheen.albedoScaling = true;
+        babylonMaterial.sheen.useRoughnessFromMainTexture = false;
 
         return Promise.all(promises).then(() => { });
     }
