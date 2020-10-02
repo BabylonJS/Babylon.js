@@ -5,7 +5,7 @@ import { Vector3 } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
-import { LinesMesh } from '../Meshes/linesMesh';
+import { LinesMesh } from "../Meshes/linesMesh";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo } from "./gizmo";
