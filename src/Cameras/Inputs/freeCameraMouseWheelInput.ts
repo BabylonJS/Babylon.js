@@ -24,19 +24,6 @@ export enum AXIS {
 }
 
 /**
- * An interface for user definable callback to be called on mouse wheel movement.
- */
-export interface IFreeCameraMouseWheelCustomCallback {
-    /**
-     * @param camera The camera instance the mouse wheel is attached to.
-     * @param wheelDeltaX The change in value of the mouse wheel's X axis since last called.
-     * @param wheelDeltaY The change in value of the mouse wheel's X axis since last called.
-     * @param wheelDeltaZ The change in value of the mouse wheel's X axis since last called.
-     */
-    (camera: FreeCamera, wheelDeltaX: number, wheelDeltaY: number, wheelDeltaZ: number): void;
-}
-
-/**
  * Manage the mouse wheel inputs to control a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
  */
@@ -299,14 +286,6 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
     }
 
     /**
-     * A user configurable callback to be called on mouse wheel movement.
-     * To be used whenever the default functionality of this class does not
-     * change the required camera parameter by default.
-     */
-    @serialize()
-    public customCallback: Nullable<IFreeCameraMouseWheelCustomCallback> = null;
-
-    /**
      * Called for each rendered frame.
      */
     public checkInputs(): void {
@@ -343,16 +322,8 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
         this.camera.cameraDirection.addInPlace(transformedDirection);
         this.camera.cameraDirection.addInPlace(this._moveScene);
 
-        // Do the user defined customCallback if set.
-        if (this.customCallback !== null) {
-            this.customCallback(
-                this.camera, this._wheelDeltaX, this._wheelDeltaY, this._wheelDeltaZ);
-        }
-
-        // Clear deltas.
-        this._wheelDeltaX = 0;
-        this._wheelDeltaY = 0;
-        this._wheelDeltaZ = 0;
+        // Call the base class implementation to handle observers and do cleanup.
+        super.checkInputs();
     }
 
     private _moveRelative = Vector3.Zero();
