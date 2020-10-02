@@ -80,7 +80,7 @@ export class DeviceInputSystem implements IDisposable {
             this._handlePointerActions();
             this._handleGamepadActions();
 
-            // Check for devices that are already connected but aren't registered.
+            // Check for devices that are already connected but aren't registered. Currently, only checks for gamepads and mouse
             this._checkForConnectedDevices();
         }
     }
@@ -154,6 +154,7 @@ export class DeviceInputSystem implements IDisposable {
 
     /**
      * Checks for existing connections to devices and register them, if necessary
+     * Currently handles gamepads and mouse
      */
     private _checkForConnectedDevices() {
         const gamepads = navigator.getGamepads();
