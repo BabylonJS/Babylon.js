@@ -1,5 +1,5 @@
 import { Logger } from "../Misc/logger";
-import { Observable } from "../Misc/observable";
+import { Observable, Observer } from "../Misc/observable";
 import { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
@@ -10,6 +10,9 @@ import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Mesh } from "../Meshes/mesh";
 import { Node } from "../node";
+import { PointerEventTypes, PointerInfo } from "../Events/pointerEvents";
+import { LinesMesh } from "../Meshes/linesMesh";
+import { StandardMaterial } from "../Materials/standardMaterial";
 /**
  * Gizmo that enables scaling a mesh along 3 axis
  */
@@ -38,6 +41,12 @@ export class ScaleGizmo extends Gizmo {
     private _uniformScalingMesh: Mesh;
     private _octahedron: Mesh;
     private _sensitivity: number = 1;
+    private _observables: Nullable<Observer<PointerInfo>>[] = [];
+
+    /** Gizmo state variables used for UI behavior */
+    private dragging = false;
+    /** Node Caching for quick lookup */
+    private gizmoAxisCache: Map<Mesh, any> = new Map();
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
@@ -97,20 +106,7 @@ export class ScaleGizmo extends Gizmo {
         this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
         this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
         this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this, thickness);
-
-        // Create uniform scale gizmo
-        this.uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Yellow().scale(0.5), gizmoLayer, this);
-        this.uniformScaleGizmo.updateGizmoRotationToMatchAttachedMesh = false;
-        this.uniformScaleGizmo.uniformScaling = true;
-        this._uniformScalingMesh = PolyhedronBuilder.CreatePolyhedron("", { type: 1 }, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
-        this._uniformScalingMesh.scaling.scaleInPlace(0.02);
-        this._uniformScalingMesh.visibility = 0;
-        this._octahedron = PolyhedronBuilder.CreatePolyhedron("", { type: 1 }, this.uniformScaleGizmo.gizmoLayer.utilityLayerScene);
-        this._octahedron.scaling.scaleInPlace(0.007);
-        this._uniformScalingMesh.addChild(this._octahedron);
-        this.uniformScaleGizmo.setCustomMesh(this._uniformScalingMesh, true);
-        var light = gizmoLayer._getSharedGizmoLight();
-        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._octahedron);
+        this.uniformScaleGizmo = this.createUniformScaleMesh();
 
         // Relay drag events
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
@@ -124,6 +120,54 @@ export class ScaleGizmo extends Gizmo {
 
         this.attachedMesh = null;
         this.attachedNode = null;
+        this.subscribeToPointerObserver();
+    }
+
+    createUniformScaleMesh() {
+        const coloredMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
+        coloredMaterial.diffuseColor = Color3.Gray();
+
+        const hoverMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
+        hoverMaterial.diffuseColor = Color3.Yellow();
+
+        const disableMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
+        disableMaterial.diffuseColor = Color3.Gray();
+        disableMaterial.alpha = 0.4;
+
+        const uniformScaleGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Gray().scale(0.5), this.gizmoLayer, this);
+        uniformScaleGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+        uniformScaleGizmo.uniformScaling = true;
+        this._uniformScalingMesh = PolyhedronBuilder.CreatePolyhedron("uniform", { type: 1 }, uniformScaleGizmo.gizmoLayer.utilityLayerScene);
+        this._uniformScalingMesh.scaling.scaleInPlace(0.02);
+        this._uniformScalingMesh.visibility = 0;
+        this._octahedron = PolyhedronBuilder.CreatePolyhedron("", { type: 1 }, uniformScaleGizmo.gizmoLayer.utilityLayerScene);
+        this._octahedron.scaling.scaleInPlace(0.007);
+        this._uniformScalingMesh.addChild(this._octahedron);
+        uniformScaleGizmo.setCustomMesh(this._uniformScalingMesh, true);
+        var light = this.gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._octahedron);
+
+        // Drag Event Listeners
+        uniformScaleGizmo.dragBehavior.onDragObservable.add(e => {
+            document.dispatchEvent(new CustomEvent('universalGizmoDrag', {
+                detail: e.delta.y
+            }));
+        });
+
+        uniformScaleGizmo.dragBehavior.onDragEndObservable.add(e => {
+            document.dispatchEvent(new CustomEvent('universalGizmoEnd'));
+        });
+
+        const cache = {
+            material: coloredMaterial,
+            hoverMaterial,
+            disableMaterial,
+            active: false
+        };
+
+        this.addToAxisCache(uniformScaleGizmo._rootMesh, cache);
+
+        return uniformScaleGizmo;
     }
 
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
@@ -189,6 +233,82 @@ export class ScaleGizmo extends Gizmo {
     }
 
     /**
+     * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
+     * @param mesh Axis gizmo mesh
+      @param cache display gizmo axis thickness
+     */
+    public addToAxisCache(mesh: Mesh, cache: any) {
+        this.gizmoAxisCache.set(mesh, cache);
+    }
+
+    public subscribeToPointerObserver(): void {
+        // Assumption, if user sets custom mesh, it will be disposed and pointerInfo will never hold reference to that mesh.
+        // Will be equivilent to if (this._customMeshSet) return;
+        const pointerObserver = this.gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (pointerInfo.pickInfo) {
+                // On Hover Logic
+                console.log(pointerInfo.pickInfo.pickedMesh?.id);
+                if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
+                    if (this.dragging) { return; }
+                    this.gizmoAxisCache.forEach((statusMap, parentMesh) => {
+                        const isHovered = pointerInfo.pickInfo && (parentMesh.getChildMeshes().indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
+                        const material = isHovered || statusMap.active ? statusMap.hoverMaterial : statusMap.material;
+                        parentMesh.getChildMeshes().forEach((m) => {
+                            if (m.name !== 'ignore') {
+                                m.material = material;
+                                if ((m as LinesMesh).color) {
+                                    (m as LinesMesh).color = material.diffuseColor;
+                                }
+                            }
+                        });
+                    });
+                }
+
+                // On Mouse Down
+                if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+                    // If user Clicked Gizmo
+                    if (this.gizmoAxisCache.has(pointerInfo.pickInfo.pickedMesh?.parent as Mesh)) {
+                        this.dragging = true;
+                        const statusMap = this.gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
+                        statusMap!.active = true;
+                        console.log(this.gizmoAxisCache);
+                        this.gizmoAxisCache.forEach((statusMap, parentMesh) => {
+                            const isHovered = pointerInfo.pickInfo && (parentMesh.getChildMeshes().indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
+                            const material = isHovered || statusMap.active ? statusMap.hoverMaterial : statusMap.disableMaterial;
+                            parentMesh.getChildMeshes().forEach((m) => {
+                                if (m.name !== 'ignore') {
+                                    m.material = material;
+                                    if ((m as LinesMesh).color) {
+                                        (m as LinesMesh).color = material.diffuseColor;
+                                    }
+                                }
+                            });
+                        });
+                    }
+                }
+
+                // On Mouse Up
+                if (pointerInfo.type === PointerEventTypes.POINTERUP) {
+                    this.gizmoAxisCache.forEach((statusMap, parentMesh) => {
+                        statusMap.active = false;
+                        this.dragging = false;
+                        parentMesh.getChildMeshes().forEach((m) => {
+                            if (m.name !== 'ignore') {
+                                m.material = statusMap.material;
+                                if ((m as LinesMesh).color) {
+                                    (m as LinesMesh).color = statusMap.material.diffuseColor;
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+        });
+
+        this._observables = [pointerObserver];
+    }
+
+    /**
      * Disposes of the gizmo
      */
     public dispose() {
@@ -196,6 +316,9 @@ export class ScaleGizmo extends Gizmo {
             if (gizmo) {
                 gizmo.dispose();
             }
+        });
+        this._observables.forEach(obs => {
+            this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
         });
         this.onDragStartObservable.clear();
         this.onDragEndObservable.clear();
