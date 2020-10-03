@@ -182,6 +182,11 @@ export class Effect implements IDisposable {
     /** @hidden */
     public _fragmentSourceCode: string = "";
 
+    /** @hidden */
+    private _rawVertexSourceCode: string = "";
+    /** @hidden */
+    private _rawFragmentSourceCode: string = "";
+
     private static _baseCache: { [key: number]: DataBuffer } = {};
     private _processingContext: Nullable<ShaderProcessingContext>;
 
@@ -205,8 +210,10 @@ export class Effect implements IDisposable {
         engine?: ThinEngine, defines: Nullable<string> = null,
         fallbacks: Nullable<IEffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any, key: string = "",
         sources?: {
-            vertex: string
+            vertex: string,
             fragment: string,
+            rawVertex: string,
+            rawFragment: string,
         }) {
         this.name = baseName;
         this._key = key;
@@ -258,6 +265,8 @@ export class Effect implements IDisposable {
         if (sources) {
             this._fragmentSourceCode = sources.fragment;
             this._vertexSourceCode = sources.vertex;
+            this._rawFragmentSourceCode = sources.rawFragment;
+            this._rawVertexSourceCode = sources.rawVertex;
             this._prepareEffect();
             return;
         }
@@ -324,6 +333,7 @@ export class Effect implements IDisposable {
         };
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
             ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
+                this._rawVertexSourceCode = vertexCode;
                 if (processFinalCode) {
                     migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
                 }
@@ -332,6 +342,7 @@ export class Effect implements IDisposable {
             });
         });
         this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
+            this._rawFragmentSourceCode = fragmentCode;
             shaderCodes[1] = fragmentCode;
             shadersLoaded();
         });
@@ -583,14 +594,28 @@ export class Effect implements IDisposable {
      * Gets the vertex shader source code of this effect
      */
     public get vertexSourceCode(): string {
-        return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._vertexSourceCodeOverride : this._vertexSourceCode;
+        return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._vertexSourceCodeOverride : (this._pipelineContext?._getVertexShaderCode() ?? this._vertexSourceCode);
     }
 
     /**
      * Gets the fragment shader source code of this effect
      */
     public get fragmentSourceCode(): string {
-        return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._fragmentSourceCodeOverride : this._fragmentSourceCode;
+        return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride ? this._fragmentSourceCodeOverride : (this._pipelineContext?._getFragmentShaderCode() ?? this._fragmentSourceCode);
+    }
+
+    /**
+     * Gets the vertex shader source code before it has been processed by the preprocessor
+     */
+    public get rawVertexSourceCode(): string {
+        return this._rawVertexSourceCode;
+    }
+
+    /**
+     * Gets the fragment shader source code before it has been processed by the preprocessor
+     */
+    public get rawFragmentSourceCode(): string {
+        return this._rawFragmentSourceCode;
     }
 
     /**
@@ -642,10 +667,10 @@ export class Effect implements IDisposable {
 
             let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, true, rebuildRebind, null, this._transformFeedbackVaryings, this._key);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, true, this._rawVertexSourceCode, this._rawFragmentSourceCode, rebuildRebind, null, this._transformFeedbackVaryings, this._key);
             }
             else {
-                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCode, this._fragmentSourceCode, false, rebuildRebind, defines, this._transformFeedbackVaryings, this._key);
+                engine._preparePipelineContext(this._pipelineContext, this._vertexSourceCode, this._fragmentSourceCode, false, this._rawVertexSourceCode, this._rawFragmentSourceCode, rebuildRebind, defines, this._transformFeedbackVaryings, this._key);
             }
 
             engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
