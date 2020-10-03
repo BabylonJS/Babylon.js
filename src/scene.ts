@@ -2031,7 +2031,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // TODO WEBGPU handle multiview ubo the same way we handle scene ubo
             this._updateMultiviewUbo(viewR, projectionR);
         } else if (this._engine.supportsUniformBuffers) {
-            this._setNextSceneUniformBuffer();
+            this._getNewSceneUniformBuffer(false);
 
             this._sceneUbo.viewUpdateFlag = viewL.updateFlag;
             this._sceneUbo.projectionUpdateFlag = projectionL.updateFlag;
@@ -2052,7 +2052,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /** @hidden */
-    public _setNextSceneUniformBuffer(resetFlags = false) {
+    public _getNewSceneUniformBuffer(resetFlags = true): UniformBuffer {
         if (this._sceneUboNextIndex == this._sceneUbos.length) {
             this._sceneUbos.push({ viewUpdateFlag: -1, projectionUpdateFlag: -1, index: this._sceneUboNextIndex, buffer: this._createUbo() });
         }
@@ -2061,6 +2061,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (resetFlags) {
             this._sceneUbo.viewUpdateFlag = this._sceneUbo.projectionUpdateFlag = -1;
         }
+
+        return this._sceneUbo.buffer;
     }
 
     private _resetSceneUniformBuffer() {
