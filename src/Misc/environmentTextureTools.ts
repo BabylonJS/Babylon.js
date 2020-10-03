@@ -433,7 +433,7 @@ export class EnvironmentTextureTools {
             throw new Error("Texture size must be a power of two");
         }
 
-        const mipmapsCount = Math.round(Scalar.Log2(texture.width)) + 1;
+        const mipmapsCount = Scalar.ILog2(texture.width) + 1;
 
         // Gets everything ready.
         let engine = texture.getEngine() as Engine;

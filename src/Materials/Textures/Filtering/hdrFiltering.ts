@@ -92,7 +92,7 @@ export class HDRFiltering {
 
     private _prefilterInternal(texture: BaseTexture): BaseTexture {
         const width = texture.getSize().width;
-        const mipmapsCount = Math.round(Scalar.Log2(width)) + 1;
+        const mipmapsCount = Scalar.ILog2(width) + 1;
 
         const effect = this._effectWrapper.effect;
         const outputTexture = this._createRenderTarget(width);

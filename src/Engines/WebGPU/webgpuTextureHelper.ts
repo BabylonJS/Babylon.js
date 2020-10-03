@@ -32,7 +32,7 @@ export class WebGPUTextureHelper {
     private _mipmapPipeline: GPURenderPipeline;
 
     public static computeNumMipmapLevels(width: number, height: number) {
-        return Math.round(Scalar.Log2(Math.max(width, height))) + 1;
+        return Scalar.ILog2(Math.max(width, height)) + 1;
     }
 
     constructor(device: GPUDevice, glslang: any, bufferManager: WebGPUBufferManager) {
