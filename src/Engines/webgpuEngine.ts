@@ -233,6 +233,7 @@ export class WebGPUEngine extends Engine {
         ThinEngine.Features.framebuffersHaveYTopToBottom = true;
         ThinEngine.Features.supportDepthStencilTexture = true;
         ThinEngine.Features.supportShadowSamplers = true;
+        ThinEngine.Features.uniformBufferHardCheckMatrix = true;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;

@@ -13,4 +13,7 @@ export interface EngineFeatures {
 
     /** Indicates that the engine support shadow samplers */
     supportShadowSamplers: boolean;
+
+    /** Indicates to check the matrix bytes per bytes to know if it has changed or not. If false, only the updateFlag of the matrix is checked */
+    uniformBufferHardCheckMatrix: boolean;
 }
