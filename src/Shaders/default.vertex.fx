@@ -25,7 +25,14 @@ attribute vec4 color;
 #include<bonesDeclaration>
 
 // Uniforms
-#include<instancesDeclaration>
+// TODO WEBGPU faut-il remettre l'include et supprimer la déclaration de la world matrix ? Ca implique de passer par l'ubo du mesh aussi pour les autres types de material
+// #include<instancesDeclaration>
+#ifdef INSTANCES
+	attribute vec4 world0;
+	attribute vec4 world1;
+	attribute vec4 world2;
+	attribute vec4 world3;
+#endif
 #include<prePassVertexDeclaration>
 
 #ifdef MAINUV1
