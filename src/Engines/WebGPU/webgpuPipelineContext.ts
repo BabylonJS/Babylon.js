@@ -58,8 +58,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public leftOverUniformsByName: { [name: string]: string };
 
     public sources: {
-        vertex: string
+        vertex: string,
         fragment: string,
+        rawVertex: string,
+        rawFragment: string,
     };
 
     public stages: Nullable<IWebGPURenderPipelineStageDescriptor>;
@@ -422,10 +424,10 @@ export class WebGPUPipelineContext implements IPipelineContext {
     }
 
     public _getVertexShaderCode(): string | null {
-        return this.sources?.vertex ?? "<vertex shader code not available>";
+        return this.sources?.vertex;
     }
 
     public _getFragmentShaderCode(): string | null {
-        return this.sources?.fragment ?? "<fragment shader code not available>";
+        return this.sources?.fragment;
     }
 }

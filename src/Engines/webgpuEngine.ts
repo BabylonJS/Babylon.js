@@ -197,8 +197,10 @@ export class WebGPUEngine extends Engine {
         leftOverUniforms: { name: string, type: string, length: number }[],
         leftOverUniformsByName: { [name: string]: string },
         sources: {
-            vertex: string
+            vertex: string,
             fragment: string,
+            rawVertex: string,
+            rawFragment: string,
         }
     } } = {};
 
@@ -881,7 +883,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /** @hidden */
-    public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean,
+    public _preparePipelineContext(pipelineContext: IPipelineContext, vertexSourceCode: string, fragmentSourceCode: string, createAsRaw: boolean, rawVertexSourceCode: string, rawFragmentSourceCode: string,
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
@@ -910,7 +912,9 @@ export class WebGPUEngine extends Engine {
 
             webGpuContext.sources = {
                 fragment: fragmentSourceCode,
-                vertex: vertexSourceCode
+                vertex: vertexSourceCode,
+                rawVertex: rawVertexSourceCode,
+                rawFragment: rawFragmentSourceCode,
             };
 
             if (createAsRaw) {
@@ -1498,14 +1502,15 @@ export class WebGPUEngine extends Engine {
                 return false;
             }
 
-            let internalTexture: InternalTexture;
+            let internalTexture: Nullable<InternalTexture> = null;
             if (depthStencilTexture) {
                 internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
             }
             else if (texture.isReady()) {
                 internalTexture = <InternalTexture>texture.getInternalTexture();
             }
-            else if (texture.isCube) {
+            // TODO WEBGPU uncomment when raw textures are handled
+            /*!else if (texture.isCube) {
                 internalTexture = this.emptyCubeTexture;
             }
             else if (texture.is3D) {
@@ -1516,7 +1521,7 @@ export class WebGPUEngine extends Engine {
             }
             else {
                 internalTexture = this.emptyTexture;
-            }
+            }*/
 
             if (internalTexture && !internalTexture.isMultiview) {
                 // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
@@ -1538,7 +1543,7 @@ export class WebGPUEngine extends Engine {
             }
 
             // TODO WEBGPU remove debug code
-            if ((internalTexture as any)._released) {
+            if (internalTexture && (internalTexture as any)._released) {
                 console.error("using a released texture in engine.setTexture!", internalTexture);
                 debugger;
             }
@@ -2065,6 +2070,8 @@ export class WebGPUEngine extends Engine {
         const depthStencilTexture = internalTexture._depthStencilTexture;
         const gpuDepthStencilTexture = depthStencilTexture?._hardwareTexture?.underlyingResource;
 
+        this._renderTargetEncoder.pushDebugGroup("start render target rendering");
+
         const renderPass = this._renderTargetEncoder.beginRenderPass({
             colorAttachments: [{
                 attachment: colorTextureView,
@@ -2190,6 +2197,7 @@ export class WebGPUEngine extends Engine {
 
         if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPass) {
             this._currentRenderPass.endPass();
+            this._renderTargetEncoder.popDebugGroup();
         }
 
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {

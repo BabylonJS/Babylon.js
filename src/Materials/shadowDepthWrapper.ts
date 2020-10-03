@@ -199,8 +199,8 @@ export class ShadowDepthWrapper {
         params.depthDefines = join;
 
         // the depth effect is either out of date or has not been created yet
-        let vertexCode = origEffect.vertexSourceCode,
-            fragmentCode = origEffect.fragmentSourceCode;
+        let vertexCode = origEffect.rawVertexSourceCode,
+            fragmentCode = origEffect.rawFragmentSourceCode;
 
         // vertex code
         const vertexNormalBiasCode = this._options && this._options.remappedVariables ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})` : Effect.IncludesShadersStore["shadowMapVertexNormalBias"],
