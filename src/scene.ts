@@ -1170,9 +1170,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _activeAnimatables = new Array<Animatable>();
 
     private _transformMatrix = Matrix.Zero();
-    private _sceneUbo: UniformBuffer;
-    private _sceneUbos: Array<UniformBuffer> = [];
-    private _sceneUboIndex = 0;
+    private _sceneUbo: { viewUpdateFlag: number, projectionUpdateFlag: number, index: number, buffer: UniformBuffer };
+    private _sceneUbos: Array<{ viewUpdateFlag: number, projectionUpdateFlag: number, index: number, buffer: UniformBuffer }> = [];
+    private _sceneUboNextIndex = 0;
 
     /** @hidden */
     public _viewMatrix: Matrix;
@@ -2004,7 +2004,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
+        if (this._engine.supportsUniformBuffers) {
+            if (this._sceneUbo && this._sceneUbo.viewUpdateFlag === viewL.updateFlag && this._sceneUbo.projectionUpdateFlag === projectionL.updateFlag) {
+                this._sceneUboNextIndex = this._sceneUbo.index + 1;
+                return;
+            }
+        } else if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
 
@@ -2025,40 +2030,49 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this._multiviewSceneUbo && this._multiviewSceneUbo.useUbo) {
             // TODO WEBGPU handle multiview ubo the same way we handle scene ubo
             this._updateMultiviewUbo(viewR, projectionR);
-        } else {
-            this._setSceneUniformBuffer();
+        } else if (this._engine.supportsUniformBuffers) {
+            this._setNextSceneUniformBuffer();
 
-            if (this._sceneUbo.useUbo) {
-                this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
-                this._sceneUbo.updateMatrix("view", this._viewMatrix);
+            this._sceneUbo.viewUpdateFlag = viewL.updateFlag;
+            this._sceneUbo.projectionUpdateFlag = projectionL.updateFlag;
 
-                const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
-                const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
-                this._sceneUbo.updateFloat4("viewPosition",
-                    eyePosition.x,
-                    eyePosition.y,
-                    eyePosition.z,
-                    invertNormal ? -1 : 1);
+            this._sceneUbo.buffer.updateMatrix("viewProjection", this._transformMatrix);
+            this._sceneUbo.buffer.updateMatrix("view", this._viewMatrix);
 
-                this._sceneUbo.update();
-            }
+            const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
+            const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
+            this._sceneUbo.buffer.updateFloat4("viewPosition",
+                eyePosition.x,
+                eyePosition.y,
+                eyePosition.z,
+                invertNormal ? -1 : 1);
+
+            this._sceneUbo.buffer.update();
         }
     }
 
-    private _setSceneUniformBuffer() {
-        if (this._sceneUboIndex == this._sceneUbos.length) {
-            this._sceneUbos.push(this._createUbo());
+    /** @hidden */
+    public _setNextSceneUniformBuffer(resetFlags = false) {
+        if (this._sceneUboNextIndex == this._sceneUbos.length) {
+            this._sceneUbos.push({ viewUpdateFlag: -1, projectionUpdateFlag: -1, index: this._sceneUboNextIndex, buffer: this._createUbo() });
         }
 
-        this._sceneUbo = this._sceneUbos[this._sceneUboIndex++];
+        this._sceneUbo = this._sceneUbos[this._sceneUboNextIndex++];
+        if (resetFlags) {
+            this._sceneUbo.viewUpdateFlag = this._sceneUbo.projectionUpdateFlag = -1;
+        }
     }
 
+    private _resetSceneUniformBuffer() {
+        this._sceneUboNextIndex = 0;
+        this._sceneUbo = this._sceneUbos[0];
+    }
     /**
      * Gets the uniform buffer used to store scene data
      * @returns a UniformBuffer
      */
     public getSceneUniformBuffer(): UniformBuffer {
-        return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
+        return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo.buffer;
     }
 
     /**
@@ -3975,7 +3989,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._frameId++;
-        this._sceneUboIndex = 0;
+        this._resetSceneUniformBuffer();
 
         // Register components that have been associated lately to the scene.
         this._registerTransientComponents();
@@ -4374,7 +4388,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Release UBO
-        this._sceneUbo.dispose();
+        if (this._sceneUbos) {
+            for (let i = 0; i < this._sceneUbos.length; ++i) {
+                this._sceneUbos[i].buffer.dispose();
+            }
+        }
 
         if (this._multiviewSceneUbo) {
             this._multiviewSceneUbo.dispose();
