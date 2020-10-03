@@ -1199,7 +1199,7 @@ export class StandardMaterial extends PushMaterial {
                 "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler",
                 "refractionCubeSampler", "refraction2DSampler", "boneSampler"];
 
-            var uniformBuffers = ["Material", "Scene"];
+            var uniformBuffers = ["Material", "Scene", "Mesh"];
 
             DetailMapConfiguration.AddUniforms(uniforms);
             DetailMapConfiguration.AddSamplers(samplers);
@@ -1322,7 +1322,6 @@ export class StandardMaterial extends PushMaterial {
         ubo.addUniform("vRefractionInfos", 4);
         ubo.addUniform("vSpecularColor", 4);
         ubo.addUniform("vEmissiveColor", 3);
-        ubo.addUniform("visibility", 1);
         ubo.addUniform("vDiffuseColor", 4);
 
         DetailMapConfiguration.PrepareUniformBuffer(ubo);
@@ -1374,10 +1373,10 @@ export class StandardMaterial extends PushMaterial {
         }
         this._activeEffect = effect;
 
-        // Matrices
-        if (!defines.INSTANCES || defines.THIN_INSTANCES) {
-            this.bindOnlyWorldMatrix(world);
-        }
+        // Matrices Mesh.
+        mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
+        mesh.transferToEffect(world);
+
 
         // PrePass
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
@@ -1511,9 +1510,6 @@ export class StandardMaterial extends PushMaterial {
                 // Diffuse
                 ubo.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha);
             }
-
-            // Visibility
-            ubo.updateFloat("visibility", mesh.visibility);
 
             // Textures
             if (scene.texturesEnabled) {

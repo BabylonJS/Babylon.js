@@ -22,16 +22,6 @@ layout(std140, column_major) uniform;
 //     uniform vec3 vSphericalZX;
 // }
 
-uniform Scene {
-    mat4 viewProjection;
-#ifdef MULTIVIEW
-	mat4 viewProjectionR;
-#endif 
-    mat4 view;
-    vec4 viewPosition;
-};
-
-
 uniform Material {
     vec2 vAlbedoInfos;
     vec4 vAmbientInfos;
@@ -127,8 +117,5 @@ uniform Material {
     vec3 vSphericalZX;
 };
 
-uniform Mesh
-{
-    mat4 world;
-    float visibility;
-};
+#include<sceneUboDeclaration>
+#include<meshUboDeclaration>
