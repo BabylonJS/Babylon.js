@@ -12,7 +12,7 @@ import { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { MaterialHelper } from "../../Materials/materialHelper";
-import { Effect } from "../../Materials/effect";
+import { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 
@@ -221,8 +221,16 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public static readonly QUALITY_LOW = 2;
 
+    private _id: string;
     /** Gets or set the id of the shadow generator. It will be the one from the light if not defined */
-    public id: string;
+    public get id(): string {
+        return this._id;
+    }
+
+    public set id(id: string) {
+        this._id = id;
+        this._nameForCustomEffect = "shadowgenerator_" + id;
+    }
 
     /** Gets or sets the custom shader name to use */
     public customShaderOptions: ICustomShaderOptions;
@@ -802,6 +810,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _textureType: number;
     protected _defaultTextureMatrix = Matrix.Identity();
     protected _storedUniqueId: Nullable<number>;
+    protected _nameForCustomEffect: string;
 
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
@@ -905,8 +914,8 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
             }
-            if (this._scene.getSceneUniformBuffer().useUbo) {
-                const sceneUBO = this._scene.getSceneUniformBuffer();
+            if (engine.supportsUniformBuffers) {
+                const sceneUBO = this._scene._getNewSceneUniformBuffer(); // get a new scene ubo for the shadow pass
                 sceneUBO.updateMatrix("viewProjection", this.getTransformMatrix());
                 sceneUBO.updateMatrix("view", this._viewMatrix);
                 sceneUBO.update();
@@ -915,11 +924,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
         // Blur if required afer render.
         this._shadowMap.onAfterUnbindObservable.add(() => {
-            if (this._scene.getSceneUniformBuffer().useUbo) {
-                const sceneUBO = this._scene.getSceneUniformBuffer();
-                sceneUBO.updateMatrix("viewProjection", this._scene.getTransformMatrix());
-                sceneUBO.updateMatrix("view", this._scene.getViewMatrix());
-                sceneUBO.update();
+            if (engine.supportsUniformBuffers) {
+                this._scene.updateTransformMatrix(); // reset the view/projection matrices
             }
 
             if (this._filter === ShadowGenerator.FILTER_PCF) {
@@ -1089,7 +1095,7 @@ export class ShadowGenerator implements IShadowGenerator {
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
             const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
 
-            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? this._effect;
+            let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? subMesh._getCustomEffect(this._nameForCustomEffect, false)!.effect;
 
             engine.enableEffect(effect);
 
@@ -1314,6 +1320,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
 
+        const subMeshEffect = subMesh._getCustomEffect(this._nameForCustomEffect)!;
+
+        let { effect, defines: cachedDefines } = subMeshEffect;
+
         if (shadowDepthWrapper) {
             if (!shadowDepthWrapper.isReadyForSubMesh(subMesh, defines, this, useInstances)) {
                 return false;
@@ -1434,8 +1444,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
             // Get correct effect
             var join = defines.join("\n");
-            if (this._cachedDefines !== join) {
-                this._cachedDefines = join;
+            if (cachedDefines !== join) {
+                cachedDefines = join;
 
                 let shaderName = "shadowMap";
                 let uniforms = ["world", "mBones", "viewProjection", "diffuseMatrix", "lightDataSM", "depthValuesSM", "biasAndScaleSM", "morphTargetInfluences", "boneTextureWidth",
@@ -1471,13 +1481,25 @@ export class ShadowGenerator implements IShadowGenerator {
                     }
                 }
 
-                this._effect = this._scene.getEngine().createEffect(shaderName,
-                    attribs, uniforms,
-                    samplers, join,
-                    fallbacks, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+                const engine = this._scene.getEngine();
+
+                effect = engine.createEffect(shaderName, <IEffectCreationOptions>{
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: [],
+                    samplers: samplers,
+                    defines: join,
+                    fallbacks: fallbacks,
+                    onCompiled: null,
+                    onError: null,
+                    indexParameters: { maxSimultaneousMorphTargets: morphInfluencers },
+                }, engine);
             }
 
-            if (!this._effect.isReady()) {
+            subMeshEffect.effect = effect;
+            subMeshEffect.defines = cachedDefines;
+
+            if (!effect.isReady()) {
                 return false;
             }
         }
@@ -1734,7 +1756,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         serializationObject.className = this.getClassName();
         serializationObject.lightId = this._light.id;
-        serializationObject.id = this._light.id;
+        serializationObject.id = this.id;
         serializationObject.mapSize = shadowMap.getRenderSize();
         serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
         serializationObject.darkness = this.getDarkness();
