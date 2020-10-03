@@ -7,6 +7,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import { DataBuffer } from '../Meshes/dataBuffer';
 import { Color3 } from '../Maths/math.color';
 import { IMatrixLike } from '../Maths/math.like';
+import { ThinEngine } from '../Engines/thinEngine';
 
 import "../Engines/Extensions/engine.uniformBuffer";
 
@@ -507,7 +508,7 @@ export class UniformBuffer {
             var changed = false;
 
             for (var i = 0; i < size; i++) {
-                if (size === 16 || this._bufferData[location + i] !== data[i]) {
+                if ((size === 16 && !ThinEngine.Features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== data[i]) {
                     changed = true;
                     this._bufferData[location + i] = data[i];
                 }

@@ -180,6 +180,7 @@ export class ThinEngine {
         framebuffersHaveYTopToBottom: false,
         supportDepthStencilTexture: false,
         supportShadowSamplers: false,
+        uniformBufferHardCheckMatrix: false,
     };
 
     /**
