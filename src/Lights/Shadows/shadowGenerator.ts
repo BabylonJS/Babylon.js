@@ -914,19 +914,13 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
             }
-            if (engine.supportsUniformBuffers) {
-                const sceneUBO = this._scene._getNewSceneUniformBuffer(); // get a new scene ubo for the shadow pass
-                sceneUBO.updateMatrix("viewProjection", this.getTransformMatrix());
-                sceneUBO.updateMatrix("view", this._viewMatrix);
-                sceneUBO.update();
-            }
+            this.getTransformMatrix(); // generate the view/projection matrix
+            this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
         });
 
         // Blur if required afer render.
         this._shadowMap.onAfterUnbindObservable.add(() => {
-            if (engine.supportsUniformBuffers) {
-                this._scene.updateTransformMatrix(); // reset the view/projection matrices
-            }
+            this._scene.updateTransformMatrix(); // restore the view/projection matrices of the active camera
 
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(true);
