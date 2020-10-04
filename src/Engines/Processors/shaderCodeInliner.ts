@@ -334,7 +334,41 @@ export class ShaderCodeInliner {
                 const callParams = this._sourceCode.substring(callParamsStartIndex + 1, callParamsEndIndex);
 
                 // process the parameter call: extract each names
-                const params = this._removeComments(callParams).split(",");
+
+                // this function split the parameter list used in the function call at ',' boundaries by taking care of potential parenthesis like in:
+                //      myfunc(a, vec2(1., 0.), 4.)
+                const splitParameterCall = (s: string) => {
+                    const parameters = [];
+                    let curIdx = 0, startParamIdx = 0;
+                    while (curIdx < s.length) {
+                        if (s.charAt(curIdx) === '(') {
+                            const idx2 = this._extractBetweenMarkers('(', ')', s, curIdx);
+                            if (idx2 < 0) {
+                                return null;
+                            }
+                            curIdx = idx2;
+                        } else if (s.charAt(curIdx) === ',') {
+                            parameters.push(s.substring(startParamIdx, curIdx));
+                            startParamIdx = curIdx + 1;
+                        }
+                        curIdx++;
+                    }
+                    if (startParamIdx < curIdx) {
+                        parameters.push(s.substring(startParamIdx, curIdx));
+                    }
+                    return parameters;
+                };
+
+                const params = splitParameterCall(this._removeComments(callParams));
+
+                if (params === null) {
+                    if (this.debug) {
+                        console.warn(`Invalid function call: can't extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}, callParams=` + callParams);
+                    }
+                    startIndex = functionCallIndex + name.length;
+                    continue;
+                }
+
                 const paramNames = [];
 
                 for (let p = 0; p < params.length; ++p) {
