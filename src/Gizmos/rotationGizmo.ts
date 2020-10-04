@@ -176,7 +176,6 @@ export class RotationGizmo extends Gizmo {
         const pointerObserver = this.gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.pickInfo) {
                 // On Hover Logic
-                console.log(pointerInfo.pickInfo.pickedMesh?.id);
                 if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
                     if (this.dragging) { return; }
                     this.gizmoAxisCache.forEach((statusMap, parentMesh) => {
@@ -200,7 +199,6 @@ export class RotationGizmo extends Gizmo {
                         this.dragging = true;
                         const statusMap = this.gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
                         statusMap!.active = true;
-                        console.log(this.gizmoAxisCache);
                         this.gizmoAxisCache.forEach((statusMap, parentMesh) => {
                             const isHovered = pointerInfo.pickInfo && (parentMesh.getChildMeshes().indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
                             const material = isHovered || statusMap.active ? statusMap.hoverMaterial : statusMap.disableMaterial;

@@ -88,12 +88,16 @@ export class AxisScaleGizmo extends Gizmo {
         const lineScale = arrowTail.scaling.clone();
 
         const increaseGizmoMesh = (dragDistance: number) => {
-            const scalar = 0.15; // This will increase the rate of gizmo size on drag
+            const dragStrength = this.sensitivity * dragDistance * ((this.scaleRatio * 3) / this._rootMesh.scaling.length());
+            const scalar = 1; // This will increase the rate of gizmo size on drag
             const originalScale = arrowTail.scaling.y;
-            const newScale = originalScale + dragDistance * scalar;
-            arrowMesh.position.z += ((newScale - originalScale) / 4);
-            arrowTail.scaling.y = newScale;
-            arrowTail.position.z = arrowMesh.position.z / 2;
+            const newScale = originalScale + dragStrength * scalar;
+            const newMeshPosition = arrowMesh.position.z + ((newScale - originalScale) / 4);
+            if (newMeshPosition >= 0) {
+                arrowMesh.position.z = newMeshPosition;
+                arrowTail.scaling.y = newScale;
+                arrowTail.position.z = arrowMesh.position.z / 2;
+            }
         };
 
         const resetGizmoMesh = () => {
