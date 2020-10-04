@@ -677,6 +677,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
     }
 
+    public isReady() {
+        if (this._environmentBRDFTexture && !this._environmentBRDFTexture.isReady()) {
+            return false;
+        }
+
+        return true;
+    }
+
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
@@ -819,6 +827,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // Fragment
         state.sharedData.bindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
+        state.sharedData.blockingBlocks.push(this);
 
         let comments = `//${this.name}`;
         let worldPosVarName = "v_" + this.worldPosition.associatedVariableName;
