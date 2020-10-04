@@ -175,7 +175,6 @@ export class WebGPUEngine extends Engine {
     // Frame Buffer Life Cycle (recreated for each render target pass)
     private _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
     private _mainRenderPass: Nullable<GPURenderPassEncoder> = null;
-    private _currentRenderTargetFaceIndex: number = 0;
     private _currentRenderTargetViewDescriptor: GPUTextureViewDescriptor;
 
     // DrawCall Life Cycle
@@ -513,10 +512,7 @@ export class WebGPUEngine extends Engine {
         this.resetTextureCache();
 
         //this._currentEffect = null; // can't reset _currentEffect, else some crashes can occur (for eg in ProceduralTexture which calls bindFrameBuffer (which calls wipeCaches) after having called enableEffect and before drawing into the texture)
-        this._viewportCached.x = 0;
-        this._viewportCached.y = 0;
-        this._viewportCached.z = 0;
-        this._viewportCached.w = 0;
+        this._resetCachedViewport();
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
 
@@ -553,20 +549,26 @@ export class WebGPUEngine extends Engine {
     //                              Dynamic WebGPU States
     //------------------------------------------------------------------------------
 
+    private _resetCachedViewport() {
+        this._viewportCached.x = 0;
+        this._viewportCached.y = 0;
+        this._viewportCached.z = 0;
+        this._viewportCached.w = 0;
+    }
+
     /** @hidden */
     public _viewport(x: number, y: number, width: number, height: number): void {
-        if (x !== this._viewportCached.x ||
-            y !== this._viewportCached.y ||
-            width !== this._viewportCached.z ||
-            height !== this._viewportCached.w) {
-             this._viewportCached.x = x;
-             this._viewportCached.y = y;
-             this._viewportCached.z = width;
-             this._viewportCached.w = height;
+        if (!this._currentRenderPass) {
+            // we want to set the viewport for the main pass or for a render target but the render pass has not been created yet: let's postpone the update of the viewport when the pass is created
+        } else  if (x !== this._viewportCached.x || y !== this._viewportCached.y || width !== this._viewportCached.z || height !== this._viewportCached.w) {
+            this._viewportCached.x = x;
+            this._viewportCached.y = y;
+            this._viewportCached.z = width;
+            this._viewportCached.w = height;
 
-             const renderPass = this._getCurrentRenderPass();
+            const renderPass = this._getCurrentRenderPass();
 
-             renderPass.setViewport(x, y, width, height, 0, 1);
+            renderPass.setViewport(x, y, width, height, 0, 1);
         }
     }
 
@@ -591,9 +593,9 @@ export class WebGPUEngine extends Engine {
         // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
         if (this._currentRenderTarget) {
             if (this._currentRenderPass) {
-                this._currentRenderPass.endPass();
+                this._endRenderTargetRenderPass();
             }
-            this._currentRenderPass = this._createRenderPassForRenderTarget(this._currentRenderTarget!, backBuffer ? color : null, depth, stencil);
+            this._startRenderTargetRenderPass(this._currentRenderTarget!, backBuffer ? color : null, depth, stencil);
         } else {
             if (this.useReverseDepthBuffer) {
                 this._depthCullingState.depthFunc = Constants.GREATER;
@@ -2062,13 +2064,17 @@ export class WebGPUEngine extends Engine {
     //                              Render Pass
     //------------------------------------------------------------------------------
 
-    private _createRenderPassForRenderTarget(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean = false): GPURenderPassEncoder {
+    private _startRenderTargetRenderPass(internalTexture: InternalTexture, clearColor: Nullable<IColor4Like>, clearDepth: boolean, clearStencil: boolean = false) {
         const gpuTexture = (internalTexture._hardwareTexture as WebGPUHardwareTexture).underlyingResource!;
 
         const colorTextureView = gpuTexture.createView(this._currentRenderTargetViewDescriptor);
 
         const depthStencilTexture = internalTexture._depthStencilTexture;
         const gpuDepthStencilTexture = depthStencilTexture?._hardwareTexture?.underlyingResource;
+
+        if (!(this as any)._count || (this as any)._count < 20) {
+            console.log("render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, " - ", (this as any)._count);
+        }
 
         this._renderTargetEncoder.pushDebugGroup("start render target rendering");
 
@@ -2087,12 +2093,29 @@ export class WebGPUEngine extends Engine {
             } : undefined
         });
 
-        return renderPass;
+        this._currentRenderPass = renderPass;
+
+        if (this._cachedViewport) {
+            this.setViewport(this._cachedViewport);
+        }
+
+        // TODO WEBGPU set the scissor rect and the stencil reference value
+    }
+
+    private _endRenderTargetRenderPass() {
+        if (this._currentRenderPass) {
+            this._currentRenderPass.endPass();
+            if (!(this as any)._count || (this as any)._count < 20) {
+                console.log("render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId, " - ", (this as any)._count);
+            }
+            this._renderTargetEncoder.popDebugGroup();
+            this._resetCachedViewport();
+        }
     }
 
     private _getCurrentRenderPass(): GPURenderPassEncoder {
         if (this._currentRenderTarget && !this._currentRenderPass) {
-            this._currentRenderPass = this._createRenderPassForRenderTarget(this._currentRenderTarget, null, false, false);
+            this._startRenderTargetRenderPass(this._currentRenderTarget, null, false, false);
         } else if (!this._currentRenderPass) {
             this._startMainRenderPass();
         }
@@ -2101,7 +2124,7 @@ export class WebGPUEngine extends Engine {
     }
 
     private _startMainRenderPass(): void {
-        if (this._currentRenderPass) {
+        if (this._currentRenderPass && !this._currentRenderTarget) {
             this._endMainRenderPass();
         }
 
@@ -2114,6 +2137,12 @@ export class WebGPUEngine extends Engine {
         else {
             this._mainColorAttachments[0].attachment = this._swapChainTexture.createView();
         }
+
+        if (!(this as any)._count || (this as any)._count < 20) {
+            console.log("main begin pass - ", (this as any)._count);
+        }
+
+        this._renderEncoder.pushDebugGroup("start main rendering");
 
         this._currentRenderPass = this._renderEncoder.beginRenderPass({
             colorAttachments: this._mainColorAttachments,
@@ -2134,6 +2163,11 @@ export class WebGPUEngine extends Engine {
     private _endMainRenderPass(): void {
         if (this._currentRenderPass === this._mainRenderPass && this._currentRenderPass !== null) {
             this._currentRenderPass.endPass();
+            if (!(this as any)._count || (this as any)._count < 20) {
+                console.log("main end pass - ", (this as any)._count);
+            }
+            this._renderEncoder.popDebugGroup();
+            this._resetCachedViewport();
             this._currentRenderPass = null;
             this._mainRenderPass = null;
         }
@@ -2159,7 +2193,7 @@ export class WebGPUEngine extends Engine {
         this._currentRenderTargetViewDescriptor = {
             dimension: texture.isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: bindWithMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height) : 1,
-            baseArrayLayer: this._currentRenderTargetFaceIndex,
+            baseArrayLayer: faceIndex,
             baseMipLevel: 0,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All
@@ -2196,8 +2230,7 @@ export class WebGPUEngine extends Engine {
         this._currentRenderTarget = null;
 
         if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPass) {
-            this._currentRenderPass.endPass();
-            this._renderTargetEncoder.popDebugGroup();
+            this._endRenderTargetRenderPass();
         }
 
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
