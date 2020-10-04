@@ -41,6 +41,12 @@ function assert(condition: any, msg?: string): asserts condition {
 }
 
 const dbgShowShaderCode = false;
+const dbgSanityChecks = true;
+const dbgGenerateLogs = true;
+const dbgVerboseLogsForFirstFrames = false;
+const dbgVerboseLogsNumFrames = 20;
+const dbgShowWarningsNotImplemented = true;
+export const dbgShowDebugInliningProcess = false;
 
 /**
  * Options to load the associated Glslang library
@@ -424,10 +430,11 @@ export class WebGPUEngine extends Engine {
             format: this._options.swapChainFormat!,
             usage: WebGPUConstants.TextureUsage.OutputAttachment | WebGPUConstants.TextureUsage.CopySrc,
         });
-        // TODO WEBGPU remove debug code
-        this._context.getSwapChainPreferredFormat(this._device).then((format) => {
-            console.log("Swap chain preferred format:", format);
-        });
+        if (dbgGenerateLogs) {
+            this._context.getSwapChainPreferredFormat(this._device).then((format) => {
+                console.log("Swap chain preferred format:", format);
+            });
+        }
     }
 
     // Set default values as WebGL with depth and stencil attachment for the broadest Compat.
@@ -1512,6 +1519,10 @@ export class WebGPUEngine extends Engine {
             else if (texture.isReady()) {
                 internalTexture = <InternalTexture>texture.getInternalTexture();
             }
+            // TODO WEBGPU remove this when raw textures are handled
+            else {
+                internalTexture = <InternalTexture>texture.getInternalTexture();
+            }
             // TODO WEBGPU uncomment when raw textures are handled
             /*!else if (texture.isCube) {
                 internalTexture = this.emptyCubeTexture;
@@ -1545,8 +1556,7 @@ export class WebGPUEngine extends Engine {
                 internalTexture._cachedWrapR = texture.wrapR;
             }
 
-            // TODO WEBGPU remove debug code
-            if (internalTexture && (internalTexture as any)._released) {
+            if (dbgSanityChecks && internalTexture && (internalTexture as any)._released) {
                 console.error("using a released texture in engine.setTexture!", internalTexture);
                 debugger;
             }
@@ -1568,7 +1578,9 @@ export class WebGPUEngine extends Engine {
         if (internalTexture._cachedAnisotropicFilteringLevel !== anisotropicFilteringLevel) {
             //this._setTextureParameterFloat(target, anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(anisotropicFilteringLevel, this._caps.maxAnisotropy), internalTexture);
             internalTexture._cachedAnisotropicFilteringLevel = anisotropicFilteringLevel;
-            console.warn("_setAnisotropicLevel not implemented yet");
+            if (dbgShowWarningsNotImplemented) {
+                console.warn("_setAnisotropicLevel not implemented yet");
+            }
         }
     }
 
@@ -1658,8 +1670,10 @@ export class WebGPUEngine extends Engine {
 
         const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height);
 
-        if (!(this as any)._count || (this as any)._count < 20) {
-            console.log("generate mipmap", (this as any)._count, texture.width, texture.height, texture.isCube);
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("generate mipmaps called frame #" + (this as any)._count, " - width=", texture.width, "height=", texture.height, "isCube=", texture.isCube);
+            }
         }
 
         if (texture.isCube) {
@@ -1682,9 +1696,8 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._createGPUTextureForInternalTexture(texture, width, height);
         }
 
-        // TODO WEBGPU remove debug code
-        if ((texture as any)._released) {
-            console.log("using a released texture in updateDynamicTexture");
+        if (dbgSanityChecks && (texture as any)._released) {
+            console.error("Using a released texture in updateDynamicTexture!", texture, gpuTextureWrapper);
         }
 
         createImageBitmap(canvas).then((bitmap) => {
@@ -1829,7 +1842,9 @@ export class WebGPUEngine extends Engine {
     /** @hidden */
     public _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex = -1, level = 0, buffer: Nullable<ArrayBufferView> = null): ArrayBufferView {
         // TODO WEBGPU Implement the method, the problem being it is "synchronous" in the webgl case...
-        console.warn("_readTexturePixels not implemented yet in WebGPU");
+        if (dbgShowWarningsNotImplemented) {
+            console.warn("_readTexturePixels not implemented yet in WebGPU");
+        }
 
         return null as any;
         /*let readType = (texture.type !== undefined) ? this._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
@@ -1874,10 +1889,6 @@ export class WebGPUEngine extends Engine {
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
         }
-
-        // TODO WEBGPU remove two lines
-        //fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-        //fullOptions.format = Constants.TEXTUREFORMAT_BGRA;
 
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
 
@@ -1927,7 +1938,9 @@ export class WebGPUEngine extends Engine {
 
         this._internalTexturesCache.push(texture);
 
-        console.warn("createRenderTargetCubeTexture not implemented yet in WebGPU");
+        if (dbgShowWarningsNotImplemented) {
+            console.warn("createRenderTargetCubeTexture not implemented yet in WebGPU");
+        }
 
         return texture;
     }
@@ -1979,7 +1992,9 @@ export class WebGPUEngine extends Engine {
         var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown);
         internalTexture.isCube = true;
 
-        console.warn("_createDepthStencilCubeTexture not implemented yet in WebGPU");
+        if (dbgShowWarningsNotImplemented) {
+            console.warn("_createDepthStencilCubeTexture not implemented yet in WebGPU");
+        }
 
         return internalTexture;
     }
@@ -2007,14 +2022,15 @@ export class WebGPUEngine extends Engine {
      * Begin a new frame
      */
     public beginFrame(): void {
-        // TODO WEBGPU remove debug code when not needed anymore
-        if (!(this as any)._count || (this as any)._count < 20) {
-            if (!(this as any)._count) {
-                (this as any)._count = 1;
-             } else {
-                 (this as any)._count++;
-             }
-            console.log("begin frame", (this as any)._count);
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                if (!(this as any)._count) {
+                    (this as any)._count = 1;
+                } else {
+                    (this as any)._count++;
+                }
+                console.log("begin frame #" + (this as any)._count);
+            }
         }
 
         super.beginFrame();
@@ -2061,9 +2077,10 @@ export class WebGPUEngine extends Engine {
 
         super.endFrame();
 
-        // TODO WEBGPU remove debug code when not needed anymore
-        if (!(this as any)._count || (this as any)._count < 20) {
-            console.log("end frame", (this as any)._count);
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("end frame #" + (this as any)._count);
+            }
         }
     }
 
@@ -2079,8 +2096,10 @@ export class WebGPUEngine extends Engine {
         const depthStencilTexture = internalTexture._depthStencilTexture;
         const gpuDepthStencilTexture = depthStencilTexture?._hardwareTexture?.underlyingResource;
 
-        if (!(this as any)._count || (this as any)._count < 20) {
-            console.log("render target begin pass - internalTexture.uniqueId=", internalTexture.uniqueId, " - ", (this as any)._count);
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("render target begin pass frame #" + (this as any)._count, " - internalTexture.uniqueId=", internalTexture.uniqueId);
+            }
         }
 
         this._renderTargetEncoder.pushDebugGroup("start render target rendering");
@@ -2112,8 +2131,10 @@ export class WebGPUEngine extends Engine {
     private _endRenderTargetRenderPass() {
         if (this._currentRenderPass) {
             this._currentRenderPass.endPass();
-            if (!(this as any)._count || (this as any)._count < 20) {
-                console.log("render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId, " - ", (this as any)._count);
+            if (dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                    console.log("render target end pass frame #" + (this as any)._count, " - internalTexture.uniqueId=", this._currentRenderTarget?.uniqueId);
+                }
             }
             this._renderTargetEncoder.popDebugGroup();
             this._resetCachedViewport();
@@ -2145,8 +2166,10 @@ export class WebGPUEngine extends Engine {
             this._mainColorAttachments[0].attachment = this._swapChainTexture.createView();
         }
 
-        if (!(this as any)._count || (this as any)._count < 20) {
-            console.log("main begin pass - ", (this as any)._count);
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("main begin pass frame #" + (this as any)._count);
+            }
         }
 
         this._renderEncoder.pushDebugGroup("start main rendering");
@@ -2170,8 +2193,10 @@ export class WebGPUEngine extends Engine {
     private _endMainRenderPass(): void {
         if (this._currentRenderPass === this._mainRenderPass && this._currentRenderPass !== null) {
             this._currentRenderPass.endPass();
-            if (!(this as any)._count || (this as any)._count < 20) {
-                console.log("main end pass - ", (this as any)._count);
+            if (dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                    console.log("main end pass frame #" + (this as any)._count);
+                }
             }
             this._renderEncoder.popDebugGroup();
             this._resetCachedViewport();
@@ -2185,8 +2210,9 @@ export class WebGPUEngine extends Engine {
         const gpuTexture = hardwareTexture?.underlyingResource as Nullable<GPUTexture>;
 
         if (!hardwareTexture || !gpuTexture) {
-            // TODO WEBGPU remove this log
-            console.error("bindFramebuffer: Trying to bind a texture that does not have a hardware texture or that has a webgpu texture empty!", texture, hardwareTexture, gpuTexture);
+            if (dbgSanityChecks) {
+                console.error("bindFramebuffer: Trying to bind a texture that does not have a hardware texture or that has a webgpu texture empty!", texture, hardwareTexture, gpuTexture);
+            }
             return;
         }
 
@@ -2922,6 +2948,10 @@ export class WebGPUEngine extends Engine {
                 if (bindingDefinition.isSampler) {
                     const bindingInfo = webgpuPipelineContext.samplers[bindingDefinition.name];
                     if (bindingInfo) {
+                        if (dbgSanityChecks && bindingInfo.texture === null) {
+                            console.error("Trying to bind a null texture! bindingDefinition=", bindingDefinition, " | bindingInfo=", bindingInfo);
+                            debugger;
+                        }
                         const hardwareTexture = bindingInfo.texture._hardwareTexture as WebGPUHardwareTexture;
                         if (!hardwareTexture.sampler) {
                             const samplerDescriptor: GPUSamplerDescriptor = this._getSamplerDescriptor(bindingInfo.texture!);
@@ -2929,14 +2959,14 @@ export class WebGPUEngine extends Engine {
                             hardwareTexture.sampler = gpuSampler;
                         }
 
-                        // TODO WEBGPU Remove this when all testings are ok
-                        if (!hardwareTexture.view) {
-                            console.error("Trying to bind a null gpu texture! bindingDefinition=", bindingDefinition, " | bindingInfo=", bindingInfo);
+                        if (dbgSanityChecks && !hardwareTexture.view) {
+                            console.error("Trying to bind a null gpu texture! bindingDefinition=", bindingDefinition, " | bindingInfo=", bindingInfo, " | isReady=", bindingInfo.texture.isReady);
                             debugger;
                         }
 
+                        // TODO WEBGPU remove this code
                         if ((bindingInfo.texture as any)._released) {
-                            console.error("Trying to bind a released texture!", bindingInfo.texture);
+                            console.error("Trying to bind a released texture!", bindingInfo.texture, bindingInfo);
                             debugger;
                         }
 

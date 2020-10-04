@@ -4,6 +4,7 @@ import { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import { WebGPUShaderProcessingContext } from './webgpuShaderProcessingContext';
 import * as WebGPUConstants from './webgpuConstants';
 import { ShaderCodeInliner } from '../Processors/shaderCodeInliner';
+import { dbgShowDebugInliningProcess } from '../webgpuEngine';
 
 const _knownUBOs: { [key: string]: { setIndex: number, bindingIndex: number} } = {
     "Scene": { setIndex: 0, bindingIndex: 0 },
@@ -243,6 +244,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
         } else {
+            code = code.replace(/gl_InstanceID/g, "gl_InstanceIndex");
             var hasMultiviewExtension = defines.indexOf("#define MULTIVIEW") !== -1;
             if (hasMultiviewExtension) {
                 return "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + code;
@@ -259,7 +261,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
         }
 
         let sci = new ShaderCodeInliner(code);
-        // sci.debug = true;
+        sci.debug = dbgShowDebugInliningProcess;
         sci.processCode();
         return sci.code;
     }
