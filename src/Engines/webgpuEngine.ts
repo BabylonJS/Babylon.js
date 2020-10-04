@@ -155,6 +155,7 @@ export class WebGPUEngine extends Engine {
     private _textureHelper: WebGPUTextureHelper;
     private _bufferManager: WebGPUBufferManager;
     private _deferredReleaseTextures: Array<[InternalTexture, Nullable<HardwareTextureWrapper>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
+    private _deferredReleaseBuffers: Array<GPUBuffer> = [];
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
@@ -748,7 +749,7 @@ export class WebGPUEngine extends Engine {
         buffer.references--;
 
         if (buffer.references === 0) {
-            (buffer.underlyingResource as GPUBuffer).destroy();
+            this._deferredReleaseBuffers.push(buffer.underlyingResource as GPUBuffer);
             return true;
         }
 
@@ -2047,6 +2048,12 @@ export class WebGPUEngine extends Engine {
         }
 
         this._deferredReleaseTextures.length = 0;
+
+        for (let i = 0; i < this._deferredReleaseBuffers.length; ++i) {
+            this._deferredReleaseBuffers[i].destroy();
+        }
+
+        this._deferredReleaseBuffers.length = 0;
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
