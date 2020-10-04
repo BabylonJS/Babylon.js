@@ -106,6 +106,8 @@
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 - Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
+- Make base class supporting FreeCamera and ArkRotateCamera use checkInputs() method. ([mrdunk](https://github.com/mrdunk))
+- Added Observables to base class supporting FreeCamera and ArkRotateCamera. ([mrdunk](https://github.com/mrdunk))
 
 ### Debug
 - Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))

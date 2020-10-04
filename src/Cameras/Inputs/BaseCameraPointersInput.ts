@@ -168,7 +168,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                             0,  // pinchSquaredDistance
                             previousMultiTouchPanPosition,
                             null  // multiTouchPanPosition
-                        ]]
+                        ]];
                     this._allEvents.push(event);
                     previousPinchSquaredDistance = 0;
                     previousMultiTouchPanPosition = null;
@@ -217,7 +217,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                             pinchSquaredDistance,
                             previousMultiTouchPanPosition,
                             multiTouchPanPosition
-                        ]]
+                        ]];
                     this._allEvents.push(event);
 
                     previousMultiTouchPanPosition = multiTouchPanPosition;
@@ -281,19 +281,19 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._shiftKey = false;
         this._buttonsPressed = 0;
 
-        if(this.onDoubleTapObservable) {
+        if (this.onDoubleTapObservable) {
             this.onDoubleTapObservable.clear();
         }
-        if(this.onButtonUpObservable) {
+        if (this.onButtonUpObservable) {
             this.onButtonUpObservable.clear();
         }
-        if(this.onButtonDownObservable) {
+        if (this.onButtonDownObservable) {
             this.onButtonDownObservable.clear();
         }
-        if(this.onTouchObservable) {
+        if (this.onTouchObservable) {
             this.onTouchObservable.clear();
         }
-        if(this.onMultiTouchObservable) {
+        if (this.onMultiTouchObservable) {
             this.onMultiTouchObservable.clear();
         }
     }
@@ -305,11 +305,11 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * possible.
      */
     public checkInputs(): void {
-        while(this._allEvents.length > 0) {
+        while (this._allEvents.length > 0) {
             const [eventName, event] = <_Event>(this._allEvents.shift());
 
             // A previous iteration of this code called the event handlers from
-            // within this._pointerInput.
+            // within `this._pointerInput()`.
             // Now we call them from here we face the challenge of maintaining
             // the order of the events across event types.
             // Eg: A user clicking the mouse twice needs to cause
@@ -322,7 +322,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             //
             // TODO: Seek advice from reviewer that i'm not missing a way to
             // check types at runtime in Typescript.
-            switch(eventName) {
+            switch (eventName) {
                 case _EventType.DoubleTapEvent:
                     this.onDoubleTap(<string>event);
                     this.onDoubleTapObservable.notifyObservers({event: <string>event});
