@@ -280,6 +280,22 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         this._metaKey = false;
         this._shiftKey = false;
         this._buttonsPressed = 0;
+
+        if(this.onDoubleTapObservable) {
+            this.onDoubleTapObservable.clear();
+        }
+        if(this.onButtonUpObservable) {
+            this.onButtonUpObservable.clear();
+        }
+        if(this.onButtonDownObservable) {
+            this.onButtonDownObservable.clear();
+        }
+        if(this.onTouchObservable) {
+            this.onTouchObservable.clear();
+        }
+        if(this.onMultiTouchObservable) {
+            this.onMultiTouchObservable.clear();
+        }
     }
 
     /**
