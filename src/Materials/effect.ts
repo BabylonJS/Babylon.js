@@ -332,6 +332,7 @@ export class Effect implements IDisposable {
 
         };
         this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
+            ShaderProcessor.Initialize(processorOptions);
             ShaderProcessor.Process(vertexCode, processorOptions, (migratedVertexCode) => {
                 this._rawVertexSourceCode = vertexCode;
                 if (processFinalCode) {

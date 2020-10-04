@@ -55,6 +55,12 @@ const _comparisonSamplerByWebGPUSamplerType: { [key: string]: boolean } = {
 /** @hidden */
 export class WebGPUShaderProcessor implements IShaderProcessor {
 
+    protected _missingVaryings: Array<string> = [];
+
+    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+        this._missingVaryings.length = 0;
+    }
+
     public varyingProcessor(varying: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
 
@@ -65,10 +71,12 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             let location: number;
             if (isFragment) {
                 location = webgpuProcessingContext.availableVaryings[name];
+                this._missingVaryings[location] = "";
             }
             else {
                 location = webgpuProcessingContext.varyingNextLocation++;
                 webgpuProcessingContext.availableVaryings[name] = location;
+                this._missingVaryings.push(`layout(location = ${location}) in ${match[1]} ${name};`);
             }
 
             varying = varying.replace(match[0], `layout(location = ${location}) ${isFragment ? "in" : "out"} ${match[1]} ${name};`);
@@ -257,8 +265,17 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>): { vertexCode: string, fragmentCode: string } {
-        // Builds the leftover UBOs.
         const webgpuProcessingContext = processingContext! as WebGPUShaderProcessingContext;
+
+        // inject the missing varying in the fragment shader
+        for (let i = 0; i < this._missingVaryings.length; ++i) {
+            const decl = this._missingVaryings[i];
+            if (decl.length > 0) {
+                fragmentCode = decl + "\n" + fragmentCode;
+            }
+        }
+
+        // Builds the leftover UBOs.
         if (webgpuProcessingContext.leftOverUniforms.length) {
             const name = "LeftOver";
             let availableUBO = webgpuProcessingContext.availableUBOs[name];

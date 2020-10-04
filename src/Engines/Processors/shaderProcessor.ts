@@ -20,6 +20,12 @@ const regexSERevert = /defined\s*?\[(.+?)\]/g;
 
 /** @hidden */
 export class ShaderProcessor {
+    public static Initialize(options: ProcessingOptions): void {
+        if (options.processor && options.processor.initializeShaders) {
+            options.processor.initializeShaders(options.processingContext);
+        }
+    }
+
     public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void) {
         this._ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
             let migratedCode = this._ProcessShaderConversion(codeWithIncludes, options);
