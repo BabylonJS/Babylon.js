@@ -239,6 +239,14 @@ export class ShaderCodeInliner {
         return index;
     }
 
+    private _isIdentifierChar(c: string): boolean {
+        const v = c.charCodeAt(0);
+        return (v >= 48 && v <= 57) || // 0-9
+            (v >= 65 && v <= 90) || // A-Z
+            (v >= 97 && v <= 122) || // a-z
+            (v == 95); // _
+    }
+
     private _removeComments(block: string): string {
         let currPos = 0,
             waitForChar = '',
@@ -313,6 +321,12 @@ export class ShaderCodeInliner {
 
                 if (functionCallIndex < 0) {
                     break;
+                }
+
+                // Make sure "name" is not part of a bigger string
+                if (functionCallIndex === 0 || this._isIdentifierChar(this._sourceCode.charAt(functionCallIndex - 1))) {
+                    startIndex = functionCallIndex + name.length;
+                    continue;
                 }
 
                 // Find the opening parenthesis
