@@ -747,7 +747,6 @@ export class SkeletonViewer {
             }
 
             const light = this.utilityLayer!._getSharedGizmoLight();
-            light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this.debugMesh!);
             light.intensity = 0.7;
 
             this._revert(animationState);
