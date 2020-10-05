@@ -207,6 +207,7 @@
 - Fixed an issue with moving backwards in XR ([#8854](https://github.com/BabylonJS/Babylon.js/issues/8854)) ([RaananW](https://github.com/RaananW))
 - Hit-Test results can be an empty array ([#8887](https://github.com/BabylonJS/Babylon.js/issues/8887)) ([RaananW](https://github.com/RaananW))
 - XR's main camera uses the first eye's projection matrix ([#8944](https://github.com/BabylonJS/Babylon.js/issues/8944)) ([RaananW](https://github.com/RaananW))
+- pointerX and pointerY of the scene are now updated when using the pointer selection feature ([#8879](https://github.com/BabylonJS/Babylon.js/issues/8879)) ([RaananW](https://github.com/RaananW))
 - XR tracking state was added to the camera ([#9076](https://github.com/BabylonJS/Babylon.js/issues/9076)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
