@@ -939,7 +939,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return false;
         }
 
-        return this._albedoTexture != null && this._albedoTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
+        return this._hasAlphaChannel() && (this._transparencyMode == null || this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
     }
 
     /**
@@ -947,6 +947,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     protected _shouldUseAlphaFromAlbedoTexture(): boolean {
         return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
+    }
+
+    /**
+     * Specifies whether or not there is a usable alpha channel for transparency.
+     */
+    protected _hasAlphaChannel(): boolean {
+        return (this._albedoTexture != null && this._albedoTexture.hasAlpha) || this._opacityTexture != null;
     }
 
     /**
