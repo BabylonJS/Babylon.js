@@ -12695,6 +12695,7 @@ declare module BABYLON {
         private _currentRenderId;
         private _alive;
         private _useInstancing;
+        private _vertexArrayObject;
         private _started;
         private _stopped;
         private _actualFrame;
