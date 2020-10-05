@@ -120,6 +120,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _currentRenderId = -1;
     private _alive: boolean;
     private _useInstancing = false;
+    private _vertexArrayObject: Nullable<WebGLVertexArrayObject>;
 
     private _started = false;
     private _stopped = false;
@@ -290,6 +291,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         } else {
             this._engine = (sceneOrEngine as ThinEngine);
             this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100);
+        }
+
+        if (this._engine.getCaps().vertexArrayObject) {
+            this._vertexArrayObject = null;
         }
 
         // Setup the default processing configuration to the scene.
@@ -981,6 +986,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (this._spriteBuffer) {
             this._spriteBuffer.dispose();
             this._spriteBuffer = null;
+        }
+
+        if (this._vertexArrayObject) {
+            this._engine.releaseVertexArrayObject(this._vertexArrayObject);
+            this._vertexArrayObject = null;
         }
 
         this._createVertexBuffers();
@@ -1941,7 +1951,15 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             effect.setMatrix("invView", TmpVectors.Matrix[0]);
         }
 
-        engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
+        if (this._vertexArrayObject !== undefined) {
+            if (!this._vertexArrayObject) {
+                this._vertexArrayObject = this._engine.recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
+            }
+
+            this._engine.bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
+        } else {
+            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
+        }
 
         // image processing
         if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
@@ -2027,6 +2045,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (this._indexBuffer) {
             this._engine._releaseBuffer(this._indexBuffer);
             this._indexBuffer = null;
+        }
+
+        if (this._vertexArrayObject) {
+            this._engine.releaseVertexArrayObject(this._vertexArrayObject);
+            this._vertexArrayObject = null;
         }
 
         if (disposeTexture && this.particleTexture) {
