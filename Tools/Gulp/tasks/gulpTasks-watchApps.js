@@ -44,7 +44,7 @@ gulp.task("watchApps", function startWatch() {
                 return `${mapPathPrefix}${path.relative(config.computed.rootFolder, info.resourcePath).replace(/\\/g, "/")}`;
             };
 
-            const outputDirectory = settings.distDirectory;
+            const outputDirectory = moduleConfig.tempFileName ? settings.localDevAppDirectory : settings.distDirectory;
             tasks.push(
                 webpackStream(wpConfig , webpack)
                     .pipe(gulp.dest(outputDirectory))
