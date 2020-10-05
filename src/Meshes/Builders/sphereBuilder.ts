@@ -4,7 +4,7 @@ import { VertexData } from "../mesh.vertexData";
 import { Scene } from "../../scene";
 import { Nullable } from '../../types';
 
-VertexData.CreateSphere = function(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
+VertexData.CreateSphere = function(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, dedupTopBottomIndices?: boolean }): VertexData {
     var segments: number = options.segments || 32;
     var diameterX: number = options.diameterX || options.diameter || 1;
     var diameterY: number = options.diameterY || options.diameter || 1;
@@ -12,6 +12,7 @@ VertexData.CreateSphere = function(options: { segments?: number, diameter?: numb
     var arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
     var slice: number = options.slice && (options.slice <= 0) ? 1.0 : options.slice || 1.0;
     var sideOrientation = (options.sideOrientation === 0) ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+    var dedupTopBottomIndices = !!options.dedupTopBottomIndices;
 
     var radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
 
@@ -48,15 +49,26 @@ VertexData.CreateSphere = function(options: { segments?: number, diameter?: numb
         if (zRotationStep > 0) {
             var verticesCount = positions.length / 3;
             for (var firstIndex = verticesCount - 2 * (totalYRotationSteps + 1); (firstIndex + totalYRotationSteps + 2) < verticesCount; firstIndex++) {
-                if (zRotationStep > 1) {
-                    indices.push((firstIndex));
-                    indices.push((firstIndex + 1));
-                    indices.push(firstIndex + totalYRotationSteps + 1);
+                if (dedupTopBottomIndices) {
+                    if (zRotationStep > 1) {
+                        indices.push((firstIndex));
+                        indices.push((firstIndex + 1));
+                        indices.push(firstIndex + totalYRotationSteps + 1);
+                    }
+                    if (zRotationStep < totalZRotationSteps || slice < 1.0) {
+                        indices.push((firstIndex + totalYRotationSteps + 1));
+                        indices.push((firstIndex + 1));
+                        indices.push((firstIndex + totalYRotationSteps + 2));
+                    }
                 }
-                if (zRotationStep < totalZRotationSteps || slice < 1.0) {
-                    indices.push((firstIndex + totalYRotationSteps + 1));
-                    indices.push((firstIndex + 1));
-                    indices.push((firstIndex + totalYRotationSteps + 2));
+                else {
+                    indices.push(firstIndex);
+                    indices.push(firstIndex + 1);
+                    indices.push(firstIndex + totalYRotationSteps + 1);
+
+                    indices.push(firstIndex + totalYRotationSteps + 1);
+                    indices.push(firstIndex + 1);
+                    indices.push(firstIndex + totalYRotationSteps + 2);
                 }
             }
         }
