@@ -16,4 +16,7 @@ export interface EngineFeatures {
 
     /** Indicates to check the matrix bytes per bytes to know if it has changed or not. If false, only the updateFlag of the matrix is checked */
     uniformBufferHardCheckMatrix: boolean;
+
+    /** Indicates that prefiltered mipmaps can be generated in some processes (for eg when loading an HDR cube texture) */
+    allowTexturePrefiltering: boolean;
 }

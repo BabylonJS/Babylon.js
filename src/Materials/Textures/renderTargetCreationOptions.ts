@@ -4,7 +4,11 @@
  */
 export class RenderTargetCreationOptions {
     /**
-     * Specifies is mipmaps must be generated
+     * Specifies if mipmaps must be created. If undefined, the value from generateMipMaps is taken instead
+     */
+    createMipMaps?: boolean;
+    /**
+     * Specifies if mipmaps must be generated
      */
     generateMipMaps?: boolean;
     /** Specifies whether or not a depth should be allocated in the texture (true by default) */

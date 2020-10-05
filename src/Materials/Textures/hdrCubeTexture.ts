@@ -237,7 +237,7 @@ export class HDRCubeTexture extends BaseTexture {
             return results;
         };
 
-        if (this._getEngine()!.webGLVersion >= 2 && this._prefilterOnLoad) {
+        if (ThinEngine.Features.allowTexturePrefiltering && this._prefilterOnLoad) {
             const previousOnLoad = this._onLoad;
             const hdrFiltering = new HDRFiltering(engine);
             this._onLoad = () => {
