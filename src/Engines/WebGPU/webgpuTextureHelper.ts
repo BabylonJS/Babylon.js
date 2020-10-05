@@ -24,12 +24,41 @@ import { WebGPUBufferManager } from './webgpuBufferManager';
 // TODO WEBGPU improve mipmap generation by not using the OutputAttachment flag
 // see https://github.com/toji/web-texture-tool/tree/main/src
 
+const mipmapVertexSource = `
+    #version 450
+
+    const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
+    const vec2 tex[4] = vec2[4](vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f));
+
+    layout(location = 0) out vec2 vTex;
+
+    void main() {
+        vTex = tex[gl_VertexIndex];
+        gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+    }
+    `;
+
+const mipmapFragmentSource = `
+    #version 450
+
+    layout(set = 0, binding = 0) uniform sampler imgSampler;
+    layout(set = 0, binding = 1) uniform texture2D img;
+
+    layout(location = 0) in vec2 vTex;
+    layout(location = 0) out vec4 outColor;
+
+    void main() {
+        outColor = texture(sampler2D(img, imgSampler), vTex);
+    }
+    `;
+
 export class WebGPUTextureHelper {
 
     private _device: GPUDevice;
+    private _glslang: any;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
-    private _mipmapPipeline: GPURenderPipeline;
+    private _mipmapPipelines: { [format: string]: GPURenderPipeline } = {};
 
     public static computeNumMipmapLevels(width: number, height: number) {
         return Scalar.ILog2(Math.max(width, height)) + 1;
@@ -37,59 +66,40 @@ export class WebGPUTextureHelper {
 
     constructor(device: GPUDevice, glslang: any, bufferManager: WebGPUBufferManager) {
         this._device = device;
+        this._glslang = glslang;
         this._bufferManager = bufferManager;
-
-        const mipmapVertexSource = `
-            #version 450
-
-            const vec2 pos[4] = vec2[4](vec2(-1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(-1.0f, -1.0f), vec2(1.0f, -1.0f));
-            const vec2 tex[4] = vec2[4](vec2(0.0f, 0.0f), vec2(1.0f, 0.0f), vec2(0.0f, 1.0f), vec2(1.0f, 1.0f));
-
-            layout(location = 0) out vec2 vTex;
-
-            void main() {
-                vTex = tex[gl_VertexIndex];
-                gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
-            }
-        `;
-
-        const mipmapFragmentSource = `
-            #version 450
-
-            layout(set = 0, binding = 0) uniform sampler imgSampler;
-            layout(set = 0, binding = 1) uniform texture2D img;
-
-            layout(location = 0) in vec2 vTex;
-            layout(location = 0) out vec4 outColor;
-
-            void main() {
-                outColor = texture(sampler2D(img, imgSampler), vTex);
-            }
-        `;
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
 
-        this._mipmapPipeline = device.createRenderPipeline({
-            vertexStage: {
-                module: device.createShaderModule({
-                    code: glslang.compileGLSL(mipmapVertexSource, 'vertex')
-                }),
-                entryPoint: 'main'
-            },
-            fragmentStage: {
-                module: device.createShaderModule({
-                    code: glslang.compileGLSL(mipmapFragmentSource, 'fragment')
-                }),
-                entryPoint: 'main'
-            },
-            primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
-            vertexState: {
-                indexFormat: WebGPUConstants.IndexFormat.Uint16
-            },
-            colorStates: [{
-                format: WebGPUConstants.TextureFormat.RGBA8Unorm,
-            }]
-        });
+        this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
+    }
+
+    private _getPipeline(format: GPUTextureFormat): GPURenderPipeline {
+        let pipeline = this._mipmapPipelines[format];
+        if (!pipeline) {
+            pipeline = this._mipmapPipelines[format] = this._device.createRenderPipeline({
+                vertexStage: {
+                    module: this._device.createShaderModule({
+                        code: this._glslang.compileGLSL(mipmapVertexSource, 'vertex')
+                    }),
+                    entryPoint: 'main'
+                },
+                fragmentStage: {
+                    module: this._device.createShaderModule({
+                        code: this._glslang.compileGLSL(mipmapFragmentSource, 'fragment')
+                    }),
+                    entryPoint: 'main'
+                },
+                primitiveTopology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
+                vertexState: {
+                    indexFormat: WebGPUConstants.IndexFormat.Uint16
+                },
+                colorStates: [{
+                    format: format,
+                }]
+            });
+        }
+        return pipeline;
     }
 
     public isImageBitmap(imageBitmap: ImageBitmap | { width: number, height: number }): imageBitmap is ImageBitmap {
@@ -148,7 +158,7 @@ export class WebGPUTextureHelper {
             this.updateTexture(imageBitmap, gpuTexture, imageBitmap.width, imageBitmap.height, format, 0, 0, invertY, premultiplyAlpha, 0, 0, commandEncoder);
 
             if (hasMipmaps && generateMipmaps) {
-                this.generateMipmaps(gpuTexture, mipLevelCount, 0, commandEncoder);
+                this.generateMipmaps(gpuTexture, format, mipLevelCount, 0, commandEncoder);
             }
         }
 
@@ -182,22 +192,23 @@ export class WebGPUTextureHelper {
             this.updateCubeTextures(imageBitmaps, gpuTexture, width, height, format, invertY, premultiplyAlpha, 0, 0, commandEncoder);
 
             if (hasMipmaps && generateMipmaps) {
-                this.generateCubeMipmaps(gpuTexture, mipLevelCount, commandEncoder);
+                this.generateCubeMipmaps(gpuTexture, format, mipLevelCount, commandEncoder);
             }
         }
 
         return gpuTexture;
     }
 
-    public generateCubeMipmaps(gpuTexture: GPUTexture, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void {
+    public generateCubeMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void {
         for (let f = 0; f < 6; ++f) {
-            this.generateMipmaps(gpuTexture, mipLevelCount, f, commandEncoder);
+            this.generateMipmaps(gpuTexture, format, mipLevelCount, f, commandEncoder);
         }
     }
 
-    public generateMipmaps(gpuTexture: GPUTexture, mipLevelCount: number, faceIndex= 0, commandEncoder?: GPUCommandEncoder): void {
+    public generateMipmaps(gpuTexture: GPUTexture, format: GPUTextureFormat, mipLevelCount: number, faceIndex= 0, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
-        const bindGroupLayout = this._mipmapPipeline.getBindGroupLayout(0);
+        const pipeline = this._getPipeline(format);
+        const bindGroupLayout = pipeline.getBindGroupLayout(0);
 
         if (useOwnCommandEncoder) {
             commandEncoder = this._device.createCommandEncoder({});
@@ -234,7 +245,7 @@ export class WebGPUTextureHelper {
                 }],
             });
 
-            passEncoder.setPipeline(this._mipmapPipeline);
+            passEncoder.setPipeline(pipeline);
             passEncoder.setBindGroup(0, bindGroup);
             passEncoder.draw(4, 1, 0, 0);
             passEncoder.endPass();
@@ -275,7 +286,7 @@ export class WebGPUTextureHelper {
         return { width: 1, height: 1, length: 4 };
     }
 
-    public updateCubeTextures(imageBitmaps: ImageBitmap[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
+    public updateCubeTextures(imageBitmaps: ImageBitmap[] | Uint8Array[], gpuTexture: GPUTexture, width: number, height: number, format: GPUTextureFormat, invertY = false, premultiplyAlpha = false, offsetX = 0, offsetY = 0,
         commandEncoder?: GPUCommandEncoder): void {
         const faces = [0, 3, 1, 4, 2, 5];
 

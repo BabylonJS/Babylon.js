@@ -1668,6 +1668,7 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
+        const format = (texture._hardwareTexture as WebGPUHardwareTexture).format;
         const mipmapCount = WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height);
 
         if (dbgVerboseLogsForFirstFrames) {
@@ -1677,9 +1678,9 @@ export class WebGPUEngine extends Engine {
         }
 
         if (texture.isCube) {
-            this._textureHelper.generateCubeMipmaps(gpuTexture, mipmapCount, this._uploadEncoder);
+            this._textureHelper.generateCubeMipmaps(gpuTexture, format, mipmapCount, this._uploadEncoder);
         } else {
-            this._textureHelper.generateMipmaps(gpuTexture, mipmapCount, 0, this._uploadEncoder);
+            this._textureHelper.generateMipmaps(gpuTexture, format, mipmapCount, 0, this._uploadEncoder);
         }
     }
 
