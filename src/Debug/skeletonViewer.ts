@@ -558,7 +558,7 @@ export class SkeletonViewer {
     private _revert(animationState: boolean): void {
         if (this.options.pauseAnimations) {
             this.scene.animationsEnabled = animationState;
-            this.utilityLayer?.utilityLayerScene!.animationsEnabled = animationState;
+            this.utilityLayer!.utilityLayerScene!.animationsEnabled = animationState;
         }
     }
 
