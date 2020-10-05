@@ -558,6 +558,7 @@ export class SkeletonViewer {
     private _revert(animationState: boolean): void {
         if (this.options.pauseAnimations) {
             this.scene.animationsEnabled = animationState;
+            this.utilityLayer!.utilityLayerScene!.animationsEnabled = animationState;
         }
     }
 
@@ -583,16 +584,17 @@ export class SkeletonViewer {
         }
 
         this._ready = false;
-        let scene = this.scene;
+        let utilityLayerScene = this.utilityLayer?.utilityLayerScene!;
         let bones: Bone[] = this.skeleton.bones;
         let spheres: Array<[Mesh, Bone]> = [];
         let spurs: Mesh[] = [];
 
-        const animationState = scene.animationsEnabled;
+        const animationState = this.scene.animationsEnabled;
 
         try {
             if (this.options.pauseAnimations) {
-                scene.animationsEnabled = false;
+                this.scene.animationsEnabled = false;
+                utilityLayerScene.animationsEnabled = false;
             }
 
             if (this.options.returnToRest) {
@@ -665,7 +667,7 @@ export class SkeletonViewer {
                                 },
                         sideOrientation: Mesh.DEFAULTSIDE,
                         updatable: false
-                    },  scene);
+                    },  utilityLayerScene);
 
                     let numVertices = spur.getTotalVertices();
                     let mwk: number[] = [], mik: number[] = [];
@@ -698,7 +700,7 @@ export class SkeletonViewer {
                     segments: 6,
                     diameter: sphereBaseSize,
                     updatable: true
-                }, scene);
+                }, utilityLayerScene);
 
                 const numVertices = sphere.getTotalVertices();
 
@@ -743,6 +745,9 @@ export class SkeletonViewer {
                 this.debugMesh.computeBonesUsingShaders = this.options.computeBonesUsingShaders ?? true;
                 this.debugMesh.alwaysSelectAsActiveMesh = true;
             }
+
+            const light = this.utilityLayer!._getSharedGizmoLight();
+            light.intensity = 0.7;
 
             this._revert(animationState);
             this.ready = true;
