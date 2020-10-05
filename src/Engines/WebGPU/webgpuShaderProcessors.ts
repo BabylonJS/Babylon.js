@@ -245,6 +245,7 @@ export class WebGPUShaderProcessor implements IShaderProcessor {
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
         } else {
             code = code.replace(/gl_InstanceID/g, "gl_InstanceIndex");
+            code = code.replace(/gl_VertexID/g, "gl_VertexIndex");
             var hasMultiviewExtension = defines.indexOf("#define MULTIVIEW") !== -1;
             if (hasMultiviewExtension) {
                 return "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + code;
