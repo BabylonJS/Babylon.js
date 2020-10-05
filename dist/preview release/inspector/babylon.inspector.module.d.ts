@@ -3323,6 +3323,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/gradientStepCompo
         onDelete: () => void;
         onUpdateStep: () => void;
         onCheckForReOrder: () => void;
+        onCopy?: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -3351,6 +3352,7 @@ declare module "babylonjs-inspector/components/actionTabs/tabs/gradientNodePrope
         constructor(props: IPropertyComponentProps);
         forceRebuild(): void;
         deleteStep(step: GradientBlockColorStep): void;
+        copyStep(step: GradientBlockColorStep): void;
         addNewStep(): void;
         checkForReOrder(): void;
         render(): JSX.Element;
@@ -7345,6 +7347,7 @@ declare module INSPECTOR {
         onDelete: () => void;
         onUpdateStep: () => void;
         onCheckForReOrder: () => void;
+        onCopy?: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -7368,6 +7371,7 @@ declare module INSPECTOR {
         constructor(props: IPropertyComponentProps);
         forceRebuild(): void;
         deleteStep(step: BABYLON.GradientBlockColorStep): void;
+        copyStep(step: BABYLON.GradientBlockColorStep): void;
         addNewStep(): void;
         checkForReOrder(): void;
         render(): JSX.Element;

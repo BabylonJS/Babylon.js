@@ -3135,6 +3135,16 @@ declare module BABYLON {
          * @returns the new Vector3
          */
         static Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3;
+        /**
+         * Project a Vector3 onto screen space to reference
+         * @param vector defines the Vector3 to project
+         * @param world defines the world matrix to use
+         * @param transform defines the transform (view x projection) matrix to use
+         * @param viewport defines the screen viewport to use
+         * @param result the vector in which the screen space will be stored
+         * @returns the new Vector3
+         */
+        static ProjectToRef(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>, result: DeepImmutable<Vector3>): Vector3;
         /** @hidden */
         static _UnprojectFromInvertedMatrixToRef(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: Vector3): void;
         /**
@@ -24293,7 +24303,14 @@ declare module BABYLON {
          * @returns a boolean specifying if an alpha test is needed.
          */
         needAlphaTesting(): boolean;
+        /**
+         * Specifies whether or not the alpha value of the diffuse texture should be used for alpha blending.
+         */
         protected _shouldUseAlphaFromDiffuseTexture(): boolean;
+        /**
+         * Specifies whether or not there is a usable alpha channel for transparency.
+         */
+        protected _hasAlphaChannel(): boolean;
         /**
          * Get the texture used for alpha test purpose.
          * @returns the diffuse texture in case of the standard material.
@@ -26579,6 +26596,10 @@ declare module BABYLON {
          * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
          */
         protected _shouldUseAlphaFromAlbedoTexture(): boolean;
+        /**
+         * Specifies whether or not there is a usable alpha channel for transparency.
+         */
+        protected _hasAlphaChannel(): boolean;
         /**
          * Gets the texture used for the alpha test.
          */
@@ -31939,7 +31960,7 @@ declare module BABYLON {
         private _onAfterPhysicsStepCallbacks;
         /** @hidden */
         _onPhysicsCollideCallbacks: Array<{
-            callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void;
+            callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void;
             otherImpostors: Array<PhysicsImpostor>;
         }>;
         private _deltaPosition;
@@ -32192,6 +32213,7 @@ declare module BABYLON {
          */
         onCollide: (e: {
             body: any;
+            point: Nullable<Vector3>;
         }) => void;
         /**
          * Apply a force
@@ -49846,6 +49868,23 @@ declare module BABYLON {
         NOT_IN_XR = 3
     }
     /**
+     * The state of the XR camera's tracking
+     */
+    export enum WebXRTrackingState {
+        /**
+         * No transformation received, device is not being tracked
+         */
+        NOT_TRACKING = 0,
+        /**
+         * Tracking lost - using emulated position
+         */
+        TRACKING_LOST = 1,
+        /**
+         * Transformation tracking works normally
+         */
+        TRACKING = 2
+    }
+    /**
      * Abstraction of the XR render target
      */
     export interface WebXRRenderTarget extends IDisposable {
@@ -50084,6 +50123,7 @@ declare module BABYLON {
         private _referencedPosition;
         private _xrInvPositionCache;
         private _xrInvQuaternionCache;
+        private _trackingState;
         /**
          * Observable raised before camera teleportation
          */
@@ -50092,6 +50132,11 @@ declare module BABYLON {
          *  Observable raised after camera teleportation
          */
         onAfterCameraTeleport: Observable<Vector3>;
+        /**
+         * Notifies when the camera's tracking state has changed.
+         * Notice - will also be triggered when tracking has started (at the beginning of the session)
+         */
+        onTrackingStateChanged: Observable<WebXRTrackingState>;
         /**
          * Should position compensation execute on first frame.
          * This is used when copying the position from a native (non XR) camera
@@ -50104,6 +50149,11 @@ declare module BABYLON {
          * @param _xrSessionManager a constructed xr session manager
          */
         constructor(name: string, scene: Scene, _xrSessionManager: WebXRSessionManager);
+        /**
+         * Get the current XR tracking state of the camera
+         */
+        get trackingState(): WebXRTrackingState;
+        private _setTrackingState;
         /**
          * Return the user's height, unrelated to the current ground.
          * This will be the y position of this camera, when ground level is 0.
@@ -51920,6 +51970,13 @@ declare module BABYLON {
          * the xr input to use with this pointer selection
          */
         xrInput: WebXRInput;
+        /**
+         * Should the scene pointerX and pointerY update be disabled
+         * This is required for fullscreen AR GUI, but might slow down other experiences.
+         * Disable in VR, if not needed.
+         * The first rig camera (left eye) will be used to calculate the projection
+         */
+        disableScenePointerVectorUpdate: boolean;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
@@ -52012,6 +52069,9 @@ declare module BABYLON {
          * @returns the controller that correlates to this id or null if not found
          */
         getXRControllerByPointerId(id: number): Nullable<WebXRInputSource>;
+        private _identityMatrix;
+        private _screenCoordinatesRef;
+        private _viewportRef;
         protected _onXRFrame(_xrFrame: XRFrame): void;
         private _attachGazeMode;
         private _attachScreenRayMode;
@@ -58097,6 +58157,10 @@ declare module BABYLON {
          */
         get crossEye(): boolean;
         /**
+         * The background material of this dome.
+         */
+        get material(): BackgroundMaterial;
+        /**
          * Oberserver used in Stereoscopic VR Mode.
          */
         private _onBeforeCameraRenderObserver;
@@ -61490,6 +61554,7 @@ declare module BABYLON {
         private _tmpAmmoVectorRCA;
         private _tmpAmmoVectorRCB;
         private _raycastResult;
+        private _tmpContactPoint;
         private static readonly DISABLE_COLLISION_FLAG;
         private static readonly KINEMATIC_FLAG;
         private static readonly DISABLE_DEACTIVATION_FLAG;
