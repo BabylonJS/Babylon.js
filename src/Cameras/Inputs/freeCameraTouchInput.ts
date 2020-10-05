@@ -163,19 +163,24 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
      */
     public checkInputs(): void {
-        if (this._offsetX && this._offsetY) {
-            var camera = this.camera;
-            camera.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
+        if (this._offsetX === null || this._offsetY === null) {
+            return;
+        }
+        if (this._offsetX === 0 && this._offsetY === 0) {
+            return;
+        }
 
-            if (this._pointerPressed.length > 1) {
-                camera.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
-            } else {
-                var speed = camera._computeLocalCameraSpeed();
-                var direction = new Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
+        var camera = this.camera;
+        camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
 
-                Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-                camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
-            }
+        if (this._pointerPressed.length > 1) {
+            camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
+        } else {
+            var speed = camera._computeLocalCameraSpeed();
+            var direction = new Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
+
+            Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
+            camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
         }
     }
 

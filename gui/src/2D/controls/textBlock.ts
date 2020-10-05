@@ -384,6 +384,8 @@ export class TextBlock extends Control {
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
             context.strokeStyle = this.outlineColor;
+            context.lineJoin = 'miter';
+            context.miterLimit = 2;
         }
     }
 
