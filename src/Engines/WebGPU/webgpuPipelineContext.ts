@@ -150,6 +150,11 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.buildUniformLayout();
     }
 
+    /** @hidden */
+    public _useNewBindings(): void {
+        this.buildUniformLayout();
+    }
+
     /**
      * Build the uniform buffer used in the material.
      */
@@ -158,16 +163,33 @@ export class WebGPUPipelineContext implements IPipelineContext {
             return;
         }
 
-        this.uniformBuffer = new UniformBuffer(this.engine);
+        if (this.uniformBuffer) {
+            // If the uniform buffer is already existing it means one wants to do multiple rendering with the same pipeline context
+            // we need to have a new uniform buffer for the new rendering, else all the rendering will end up using the same uniform buffer.
+            // Calling _rebuild() is enough to recreate the underlying hardware buffer without removing any other data.
+            // That means the user does not need to re-set all the uniforms of the buffer, the new buffer is in the same state than the previous one.
 
-        for (let leftOverUniform of this.leftOverUniforms) {
-            const size = _uniformSizes[leftOverUniform.type];
-            this.uniformBuffer.addUniform(leftOverUniform.name, size, leftOverUniform.length);
-            // TODO WEBGPU. Replace with info from uniform buffer class
-            this.leftOverUniformsByName[leftOverUniform.name] = leftOverUniform.type;
+            // TODO WEBGPU don't recreate a new buffer each time (it is created in _rebuild()), keeps an array of buffers and reuse them. It means
+            // we need to be notified when a frame starts so that we can reset the pointer into this array
+            const buffer = this.uniformBuffer.getBuffer();
+            if (buffer) {
+                this.engine._releaseBuffer(buffer);
+            }
+            this.uniformBuffer._rebuild();
+        } else {
+            this.uniformBuffer = new UniformBuffer(this.engine);
+
+            for (let leftOverUniform of this.leftOverUniforms) {
+                const size = _uniformSizes[leftOverUniform.type];
+                this.uniformBuffer.addUniform(leftOverUniform.name, size, leftOverUniform.length);
+                // TODO WEBGPU. Replace with info from uniform buffer class
+                this.leftOverUniformsByName[leftOverUniform.name] = leftOverUniform.type;
+            }
+
+            this.uniformBuffer.create();
         }
 
-        this.uniformBuffer.create();
+        this.bindGroups = null as any;
     }
 
     /**
