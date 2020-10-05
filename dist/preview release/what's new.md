@@ -324,7 +324,7 @@
 - Fix issue in `GLTFLoader._updateBoneMatrices()` where bone rest position was not set. ([drigax](https://github.com/drigax))
 - Fix the bounding box of instances that does not match the instance position / rotation / scaling ([Popov72](https://github.com/Popov72))
 - Fix an issue with sound updateOptions not updating the underlying sound buffer/html element ([RaananW](https://github.com/RaananW))
-- Fixed bug in sphereBuilder where top and bottom segments added 6 indices per triangle instead of 3. ([aWeirdo](https://github.com/aWeirdo))
+- Fixed bug in sphereBuilder where top and bottom segments added 6 indices per triangle instead of 3. (use option dedupTopBottomIndices to enable it) ([aWeirdo](https://github.com/aWeirdo))
 - Fixed issue with Babylon scene export of loaded glTF meshes.([Drigax]/(https://github.com/drigax))
 - Fixed an issue with text block wrap and unicode strings (not working in IE11) ([#8822](https://github.com/BabylonJS/Babylon.js/issues/8822)) ([RaananW](https://github.com/RaananW))
 - Fixed an issue with compound initialization that has rotation ([#8744](https://github.com/BabylonJS/Babylon.js/issues/8744)) ([RaananW](https://github.com/RaananW))
@@ -336,6 +336,7 @@
 - Fix exporting vertex color of mesh with `StandardMaterial` when exporting to glTF ([Drigax](https://github.com/drigax))
 - Changed use of mousemove to pointermove in freeCameraMouseInput and flyCameraMouseInput to fix issue with Firefox ([PolygonalSun](https://github.com/PolygonalSun))
 - Fixed `TriPlanarMaterial` to compute the right world normals ([julien-moreau](https://github.com/julien-moreau))
+- Fix `SkeletonViewer` to use utillity layer with custom lighting to improve debug mesh visibility ([Drigax](https://github.com/drigax))
 
 ## Breaking changes
 
