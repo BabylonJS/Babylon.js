@@ -6,6 +6,7 @@ import { TargetCamera } from "../Cameras/targetCamera";
 import { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
 import { Observable } from "../Misc/observable";
+import { WebXRTrackingState } from "./webXRTypes";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -17,6 +18,7 @@ export class WebXRCamera extends FreeCamera {
     private _referencedPosition: Vector3 = new Vector3();
     private _xrInvPositionCache: Vector3 = new Vector3();
     private _xrInvQuaternionCache = Quaternion.Identity();
+    private _trackingState: WebXRTrackingState = WebXRTrackingState.NOT_TRACKING;
 
     /**
      * Observable raised before camera teleportation
@@ -28,6 +30,11 @@ export class WebXRCamera extends FreeCamera {
      */
     public onAfterCameraTeleport = new Observable<Vector3>();
 
+    /**
+     * Notifies when the camera's tracking state has changed.
+     * Notice - will also be triggered when tracking has started (at the beginning of the session)
+     */
+    public onTrackingStateChanged = new Observable<WebXRTrackingState>();
     /**
      * Should position compensation execute on first frame.
      * This is used when copying the position from a native (non XR) camera
@@ -72,6 +79,17 @@ export class WebXRCamera extends FreeCamera {
             undefined,
             true
         );
+    }
+
+    public get trackingState(): WebXRTrackingState {
+        return this._trackingState;
+    }
+
+    public set trackingState(newState: WebXRTrackingState) {
+        if (this._trackingState !== newState) {
+            this._trackingState = newState;
+            this.onTrackingStateChanged.notifyObservers(newState);
+        }
     }
 
     /**
@@ -133,9 +151,15 @@ export class WebXRCamera extends FreeCamera {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
 
         if (!pose) {
+            this.trackingState = WebXRTrackingState.NOT_TRACKING;
             return;
         }
 
+        // Set the tracking state. if it didn't change it is a no-op
+        const trackingState = pose.emulatedPosition ? WebXRTrackingState.TRACKING_LOST : WebXRTrackingState.TRACKING;
+        if (trackingState !== this._trackingState) {
+            this.trackingState = trackingState;
+        }
         if (pose.transform) {
             const pos = pose.transform.position;
             this._referencedPosition.set(pos.x, pos.y, pos.z);
