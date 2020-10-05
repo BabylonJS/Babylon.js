@@ -273,6 +273,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
                 // Draw order
                 engine.drawElementsType(Material.LineListDrawMode, 0, 24);
+
+                this._colorShader.getEffect()?.useNewBindings();
             }
 
             // Front
