@@ -642,6 +642,7 @@
         }
     },
     "ktx2Decoder": {
+        "tempFileName": "babylon.ktx2Decoder.js",
         "distFile": "/dist/preview release/babylon.ktx2Decoder.js",
         "build": {
             "ignoreInWorkerMode": true,
