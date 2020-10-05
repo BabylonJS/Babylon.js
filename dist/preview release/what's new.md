@@ -337,6 +337,8 @@
 - Changed use of mousemove to pointermove in freeCameraMouseInput and flyCameraMouseInput to fix issue with Firefox ([PolygonalSun](https://github.com/PolygonalSun))
 - Fixed `TriPlanarMaterial` to compute the right world normals ([julien-moreau](https://github.com/julien-moreau))
 - Fix `SkeletonViewer` to use utillity layer with custom lighting to improve debug mesh visibility ([Drigax](https://github.com/drigax))
+- Fix same sub mesh being rendered multiple times in the shadow map ([Popov72](https://github.com/Popov72))
+- Fix incorrect shadows on the master mesh when using a lod mesh ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 

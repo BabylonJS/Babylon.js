@@ -86,6 +86,7 @@ class _InternalAbstractMeshDataInfo {
     public _isActiveIntermediate = false;
     public _onlyForInstancesIntermediate = false;
     public _actAsRegularMesh = false;
+    public _currentLOD: Nullable<AbstractMesh> = null;
 }
 
 /**
