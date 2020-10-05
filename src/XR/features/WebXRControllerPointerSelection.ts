@@ -7,7 +7,7 @@ import { WebXRInputSource } from "../webXRInputSource";
 import { Scene } from "../../scene";
 import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
 import { Nullable } from "../../types";
-import { Vector3 } from "../../Maths/math.vector";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
@@ -72,6 +72,14 @@ export interface IWebXRControllerPointerSelectionOptions {
      * the xr input to use with this pointer selection
      */
     xrInput: WebXRInput;
+
+    /**
+     * Should the scene pointerX and pointerY update be disabled
+     * This is required for fullscreen AR GUI, but might slow down other experiences.
+     * Disable in VR, if not needed.
+     * The first rig camera (left eye) will be used to calculate the projection
+     */
+    disableScenePointerVectorUpdate: boolean;
 }
 
 /**
@@ -281,17 +289,35 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
+    private _identityMatrix = Matrix.Identity();
+    private _screenCoordinatesRef = Vector3.Zero();
+
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
             const controllerData = this._controllers[id];
 
+            let controllerGlobalPosition: Vector3;
+
             // Every frame check collisions/input
             if (controllerData.xrController) {
+                controllerGlobalPosition = controllerData.xrController.pointer.position;
                 controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
             } else if (controllerData.webXRCamera) {
+                controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
             } else {
                 return;
+            }
+            // update pointerX and pointerY of the scene. Only if the flag is set to true!
+            if (!this._options.disableScenePointerVectorUpdate && controllerGlobalPosition) {
+                const scene = this._xrSessionManager.scene;
+                const camera = this._options.xrInput.xrCamera.rigCameras[0];
+                if (camera) {
+                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), camera.viewport.toGlobal(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight()), this._screenCoordinatesRef);
+
+                    scene.pointerX = this._screenCoordinatesRef.x;
+                    scene.pointerY = this._screenCoordinatesRef.y;
+                }
             }
             controllerData.pick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
 
