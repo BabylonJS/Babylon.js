@@ -43,10 +43,21 @@ function assert(condition: any, msg?: string): asserts condition {
 const dbgShowShaderCode = false;
 const dbgSanityChecks = true;
 const dbgGenerateLogs = true;
-const dbgVerboseLogsForFirstFrames = false;
+const dbgVerboseLogsForFirstFrames = true;
 const dbgVerboseLogsNumFrames = 20;
 const dbgShowWarningsNotImplemented = true;
 export const dbgShowDebugInliningProcess = false;
+
+const enum RenderPipelineDirtyFlags {
+    rasterizationState = 1,
+    colorStates = 2,
+    depthStencilState = 4,
+    vertexState = 8,
+    sampleCount = 16,
+    sampleMask = 32,
+    alphaToCoverageEnabled = 64,
+    all = 0xFFFF
+}
 
 /**
  * Options to load the associated Glslang library
@@ -162,6 +173,12 @@ export class WebGPUEngine extends Engine {
     private _bufferManager: WebGPUBufferManager;
     private _deferredReleaseTextures: Array<[InternalTexture, Nullable<HardwareTextureWrapper>, Nullable<BaseTexture>, Nullable<InternalTexture>]> = [];
     private _deferredReleaseBuffers: Array<GPUBuffer> = [];
+    private _renderPipelineDirtyFlags = 0;
+    private _counters: {
+        numPipelineDescriptorCreation: number;
+    } = {
+        numPipelineDescriptorCreation: 0
+    };
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
@@ -523,6 +540,7 @@ export class WebGPUEngine extends Engine {
         this._resetCachedViewport();
         this._currentIndexBuffer = null;
         this._currentVertexBuffers = null;
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.all);
 
         if (bruteForce) {
             this._currentProgram = null;
@@ -537,7 +555,6 @@ export class WebGPUEngine extends Engine {
             this._alphaEquation = Constants.ALPHA_DISABLE;
 
             this.__colorWrite = true;
-            this._colorWriteChanged = true;
         }
 
         this._cachedVertexBuffers = null;
@@ -547,6 +564,7 @@ export class WebGPUEngine extends Engine {
 
     public setColorWrite(enable: boolean): void {
         this.__colorWrite = enable;
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.colorStates);
     }
 
     public getColorWrite(): boolean {
@@ -749,6 +767,7 @@ export class WebGPUEngine extends Engine {
     public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<DataBuffer>, effect: Effect): void {
         this._currentIndexBuffer = indexBuffer;
         this._currentVertexBuffers = vertexBuffers;
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.vertexState);
     }
 
     /** @hidden */
@@ -2023,6 +2042,8 @@ export class WebGPUEngine extends Engine {
      * Begin a new frame
      */
     public beginFrame(): void {
+        this._counters.numPipelineDescriptorCreation = 0;
+
         if (dbgVerboseLogsForFirstFrames) {
             if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
                 if (!(this as any)._count) {
@@ -2301,6 +2322,131 @@ export class WebGPUEngine extends Engine {
     //                              Render
     //------------------------------------------------------------------------------
 
+    private _renderPipelineSetDirtyFlags(flags: number): void {
+        this._renderPipelineDirtyFlags |= flags;
+    }
+
+    // TODO WEBGPU make sure all state changes are handled
+    public setZOffset(value: number): void {
+        if (value !== this._depthCullingState.zOffset) {
+            this._depthCullingState.zOffset = value;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.rasterizationState);
+        }
+    }
+
+    public setDepthBuffer(enable: boolean): void {
+        if (this._depthCullingState.depthTest !== enable) {
+            this._depthCullingState.depthTest = enable;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setDepthWrite(enable: boolean): void {
+        if (this._depthCullingState.depthMask !== enable) {
+            this._depthCullingState.depthMask = enable;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setStencilBuffer(enable: boolean): void {
+        if (this._stencilState.stencilTest !== enable) {
+            this._stencilState.stencilTest = enable;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setStencilMask(mask: number): void {
+        if (this._stencilState.stencilMask !== mask) {
+            this._stencilState.stencilMask = mask;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setStencilFunction(stencilFunc: number) {
+        if (this._stencilState.stencilFunc !== stencilFunc) {
+            this._stencilState.stencilFunc = stencilFunc;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setStencilFunctionReference(reference: number) {
+        if (this._stencilState.stencilFuncRef !== reference) {
+            this._stencilState.stencilFuncRef = reference;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setStencilFunctionMask(mask: number) {
+        if (this._stencilState.stencilFuncMask !== mask) {
+            this._stencilState.stencilFuncMask = mask;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setStencilOperationFail(operation: number): void {
+        if (this._stencilState.stencilOpStencilFail !== operation) {
+            this._stencilState.stencilOpStencilFail = operation;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setStencilOperationDepthFail(operation: number): void {
+        if (this._stencilState.stencilOpDepthFail !== operation) {
+            this._stencilState.stencilOpDepthFail = operation;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setStencilOperationPass(operation: number): void {
+        if (this._stencilState.stencilOpStencilDepthPass !== operation) {
+            this._stencilState.stencilOpStencilDepthPass = operation;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setDitheringState(value: boolean): void {
+        // Does not exist in WebGPU
+    }
+
+    public setRasterizerState(value: boolean): void {
+        // Does not exist in WebGPU
+    }
+
+    public setDepthFunction(depthFunc: number) {
+        if (this._depthCullingState.depthFunc !== depthFunc) {
+            this._depthCullingState.depthFunc = depthFunc;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setDepthFunctionToGreater(): void {
+        if (this._depthCullingState.depthFunc !== Constants.GREATER) {
+            this._depthCullingState.depthFunc = Constants.GREATER;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setDepthFunctionToGreaterOrEqual(): void {
+        if (this._depthCullingState.depthFunc !== Constants.GEQUAL) {
+            this._depthCullingState.depthFunc = Constants.GEQUAL;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setDepthFunctionToLess(): void {
+        if (this._depthCullingState.depthFunc !== Constants.LESS) {
+            this._depthCullingState.depthFunc = Constants.LESS;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
+    public setDepthFunctionToLessOrEqual(): void {
+        if (this._depthCullingState.depthFunc !== Constants.LEQUAL) {
+            this._depthCullingState.depthFunc = Constants.LEQUAL;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.depthStencilState);
+        }
+    }
+
     private _indexFormatInRenderPass(topology: GPUPrimitiveTopology): boolean {
         return  topology === WebGPUConstants.PrimitiveTopology.PointList ||
                 topology === WebGPUConstants.PrimitiveTopology.LineList ||
@@ -2420,6 +2566,7 @@ export class WebGPUEngine extends Engine {
         // Culling
         if (this._depthCullingState.cull !== culling || force) {
             this._depthCullingState.cull = culling;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.rasterizationState);
         }
 
         // Cull face
@@ -2427,6 +2574,7 @@ export class WebGPUEngine extends Engine {
         var cullFace = this.cullBackFaces ? 1 : 2;
         if (this._depthCullingState.cullFace !== cullFace || force) {
             this._depthCullingState.cullFace = cullFace;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.rasterizationState);
         }
 
         // Z offset
@@ -2437,6 +2585,7 @@ export class WebGPUEngine extends Engine {
         var frontFace = reverseSide ? 1 : 2;
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
+            this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.rasterizationState);
         }
     }
 
@@ -2549,6 +2698,7 @@ export class WebGPUEngine extends Engine {
             this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
         }
         this._alphaMode = mode;
+        this._renderPipelineSetDirtyFlags(RenderPipelineDirtyFlags.colorStates);
     }
 
     private _getAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
@@ -2829,6 +2979,8 @@ export class WebGPUEngine extends Engine {
             return webgpuPipelineContext.renderPipeline;
         }
 
+        this._counters.numPipelineDescriptorCreation++;
+
         // Unsupported at the moment but needs to be extracted from the MSAA param.
         const rasterizationStateDescriptor = this._getRasterizationStateDescriptor();
         const depthStateDescriptor = this._getDepthStencilStateDescriptor();
@@ -3050,6 +3202,8 @@ export class WebGPUEngine extends Engine {
     }
 
     private _setRenderPipeline(fillMode: number): void {
+        this.applyStates();
+
         const renderPass = this._bundleEncoder || this._getCurrentRenderPass();
 
         const topology = this._getTopology(fillMode);
@@ -3217,12 +3371,19 @@ export class WebGPUEngine extends Engine {
 
     public _unpackFlipY(value: boolean) { }
 
-    // TODO WEBGPU. All of the below should go once engine split with baseEngine.
-
     public applyStates() {
-        // Apply States dynamically.
-        // This is done at the pipeline creation level for the moment...
+        if (!this._currentEffect || !this._renderPipelineDirtyFlags) {
+            return;
+        }
+
+        // We can't update only a part of the pipeline descriptor, we must recreate the whole pipeline if any setting changes
+        const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
+        webgpuPipelineContext.renderPipeline = null as any;
+
+        this._renderPipelineDirtyFlags = 0;
     }
+
+    // TODO WEBGPU. All of the below should go once engine split with baseEngine.
 
     /** @hidden */
     public _getSamplingParameters(samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
