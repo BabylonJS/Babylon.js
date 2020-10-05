@@ -173,6 +173,7 @@
 - Added support for lightmaps in unlit PBR materials ([Popov72](https://github.com/Popov72))
 - Added `muted` setting to `VideoTexture`, fix autoplay in Chrome ([simonihmig](https://github.com/simonihmig))
 - Added `waveCount` to `WaterMaterial` used to adjust waves count according to the ground's size where the material is applied on ([julien-moreau](https://github.com/julien-moreau))
+- Alpha test `transparencyMode` no-longer requires a diffuse/albedo texture if `opacityTexture` is present ([metaobjects](https://github.com/metaobjects))
 
 ### Meshes
 
