@@ -1859,6 +1859,7 @@ export class WebGPUEngine extends Engine {
                 mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width!, height!) : 1,
                 baseArrayLayer: 0,
                 baseMipLevel: 0,
+                arrayLayerCount: 0,
                 aspect: WebGPUConstants.TextureAspect.All
             });
         } else {
@@ -2215,18 +2216,70 @@ export class WebGPUEngine extends Engine {
             });
         }
 
+        if (options !== undefined && typeof options === "object" && options.createMipMaps && !fullOptions.generateMipMaps) {
+            texture.generateMipMaps = true;
+        }
+
         this._createGPUTextureForInternalTexture(texture);
+
+        if (options !== undefined && typeof options === "object" && options.createMipMaps && !fullOptions.generateMipMaps) {
+            texture.generateMipMaps = false;
+        }
 
         return texture;
     }
 
     public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
-        var texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        let fullOptions = {
+            generateMipMaps: true,
+            generateDepthBuffer: true,
+            generateStencilBuffer: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            ...options
+        };
+        fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
+
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+
+        texture.width = size;
+        texture.height = size;
+        texture.depth = 0;
+        texture.isReady = true;
+        texture.isCube = true;
+        texture.samples = 1;
+        texture.generateMipMaps = fullOptions.generateMipMaps;
+        texture.samplingMode = fullOptions.samplingMode;
+        texture.type = fullOptions.type;
+        texture.format = fullOptions.format;
+        texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+        texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
         this._internalTexturesCache.push(texture);
 
-        if (dbgShowWarningsNotImplemented) {
-            console.warn("createRenderTargetCubeTexture not implemented yet in WebGPU");
+        if (texture._generateDepthBuffer || texture._generateStencilBuffer) {
+            texture._depthStencilTexture = this.createDepthStencilTexture({ width: texture.width, height: texture.height, layers: texture.depth }, {
+                bilinearFiltering:
+                    fullOptions.samplingMode === undefined ||
+                    fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
+                    fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
+                    fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST || fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
+                    fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR || fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+                comparisonFunction: 0,
+                generateStencil: texture._generateStencilBuffer,
+                isCube: texture.isCube
+            });
+        }
+
+        if (options && options.createMipMaps && !fullOptions.generateMipMaps) {
+            texture.generateMipMaps = true;
+        }
+
+        this._createGPUTextureForInternalTexture(texture);
+
+        if (options && options.createMipMaps && !fullOptions.generateMipMaps) {
+            texture.generateMipMaps = false;
         }
 
         return texture;
@@ -2276,12 +2329,22 @@ export class WebGPUEngine extends Engine {
 
     /** @hidden */
     public _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture {
-        var internalTexture = new InternalTexture(this, InternalTextureSource.Unknown);
+        const internalTexture = new InternalTexture(this, InternalTextureSource.Depth);
+
         internalTexture.isCube = true;
 
-        if (dbgShowWarningsNotImplemented) {
-            console.warn("_createDepthStencilCubeTexture not implemented yet in WebGPU");
-        }
+        const internalOptions = {
+            bilinearFiltering: false,
+            comparisonFunction: 0,
+            generateStencil: false,
+            ...options
+        };
+
+        internalTexture.format = internalOptions.generateStencil && this.isStencilEnable ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+
+        this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
+
+        this._createGPUTextureForInternalTexture(internalTexture);
 
         return internalTexture;
     }
@@ -2494,7 +2557,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
+    public bindFramebuffer(texture: InternalTexture, faceIndex: number = 0, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, lodLevel = 0, layer = 0): void {
         const hardwareTexture = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuTexture = hardwareTexture?.underlyingResource as Nullable<GPUTexture>;
 
@@ -2509,17 +2572,22 @@ export class WebGPUEngine extends Engine {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = texture;
-
         // TODO WEBGPU handle array layer
         const bindWithMipMaps = texture.generateMipMaps && texture._source !== InternalTextureSource.RenderTarget;
         this._currentRenderTargetViewDescriptor = {
-            dimension: texture.isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
-            mipLevelCount: bindWithMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height) : 1,
+            dimension: WebGPUConstants.TextureViewDimension.E2d,
+            mipLevelCount: bindWithMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(texture.width, texture.height) - lodLevel : 1,
             baseArrayLayer: faceIndex,
-            baseMipLevel: 0,
+            baseMipLevel: lodLevel,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All
         };
+
+        if (dbgVerboseLogsForFirstFrames) {
+            if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                console.log("bindFramebuffer called in frame #" + (this as any)._count, "face=", faceIndex, "lodLevel=", lodLevel, "bindWithMipMaps=", bindWithMipMaps, "texture.generateMipMaps=", texture.generateMipMaps, this._currentRenderTargetViewDescriptor);
+            }
+        }
 
         this._currentRenderPass = null; // lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
 
@@ -3163,7 +3231,7 @@ export class WebGPUEngine extends Engine {
 
         if (!this._currentIndexBuffer) {
             return {
-                indexFormat: WebGPUConstants.IndexFormat.Uint32,
+                indexFormat: !this._indexFormatInRenderPass(topology) ? WebGPUConstants.IndexFormat.Uint32 : undefined,
                 vertexBuffers: descriptors
             };
         }
