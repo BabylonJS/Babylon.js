@@ -154,6 +154,13 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     }
 
     /**
+     * The background material of this dome.
+     */
+    public get material(): BackgroundMaterial {
+        return this._material;
+    }
+
+    /**
      * Oberserver used in Stereoscopic VR Mode.
      */
     private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
