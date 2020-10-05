@@ -1233,6 +1233,13 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Instructs the underlying rendering system that we want to use a new set of parameter bindings for the next rendering operation using this effect
+     */
+    public useNewBindings(): void {
+        this._pipelineContext!._useNewBindings();
+    }
+
+    /**
      * Release all associated resources.
      **/
     public dispose() {
