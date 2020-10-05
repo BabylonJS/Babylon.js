@@ -1085,7 +1085,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         effectiveMesh._internalAbstractMeshDataInfo._isActiveIntermediate = false;
 
-        if (!material || subMesh.verticesCount === 0) {
+        if (!material || subMesh.verticesCount === 0 || subMesh._renderId === scene.getRenderId()) {
             return;
         }
 
@@ -1100,6 +1100,8 @@ export class ShadowGenerator implements IShadowGenerator {
 
         var hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null && batch.visibleInstances[subMesh._id] !== undefined || renderingMesh.hasThinInstances);
         if (this.isReady(subMesh, hardwareInstancedRendering, isTransparent)) {
+            subMesh._renderId = scene.getRenderId();
+
             const shadowDepthWrapper = renderingMesh.material?.shadowDepthWrapper;
 
             let effect = shadowDepthWrapper?.getEffect(subMesh, this) ?? this._effect;
