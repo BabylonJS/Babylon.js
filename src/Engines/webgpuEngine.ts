@@ -582,10 +582,33 @@ export class WebGPUEngine extends Engine {
         this._viewportCached.w = 0;
     }
 
+    private _transientViewport: { x: number, y: number, z: number, w: number } = { x: Infinity, y: 0, z: 0, w: 0 };
+
     /** @hidden */
     public _viewport(x: number, y: number, width: number, height: number): void {
         if (!this._currentRenderPass) {
             // we want to set the viewport for the main pass or for a render target but the render pass has not been created yet: let's postpone the update of the viewport when the pass is created
+            this._transientViewport.x = x;
+            this._transientViewport.y = y;
+            this._transientViewport.z = width;
+            this._transientViewport.w = height;
+            if (dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                    console.log("_viewport called but _currentRenderPass is null", x, y, width, height);
+                }
+            }
+        } else  if (this._transientViewport.x !== Infinity) {
+            const renderPass = this._getCurrentRenderPass();
+
+            renderPass.setViewport(this._transientViewport.x, this._transientViewport.y, this._transientViewport.z, this._transientViewport.w, 0, 1);
+
+            if (dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                    console.log("_viewport called and transient viewport set", this._transientViewport.x, this._transientViewport.y, this._transientViewport.z, this._transientViewport.w, "current pass is main pass=" + (renderPass === this._mainRenderPass));
+                }
+            }
+
+            this._transientViewport.x = Infinity;
         } else  if (x !== this._viewportCached.x || y !== this._viewportCached.y || width !== this._viewportCached.z || height !== this._viewportCached.w) {
             this._viewportCached.x = x;
             this._viewportCached.y = y;
@@ -595,6 +618,18 @@ export class WebGPUEngine extends Engine {
             const renderPass = this._getCurrentRenderPass();
 
             renderPass.setViewport(x, y, width, height, 0, 1);
+
+            if (dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                    console.log("_viewport called and viewport set", x, y, width, height, "current pass is main pass=" + (renderPass === this._mainRenderPass));
+                }
+            }
+        } else {
+            if (dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                    console.log("_viewport called and viewport NOT set because cached", x, y, width, height, "current pass is main pass=" + (this._currentRenderPass === this._mainRenderPass));
+                }
+            }
         }
     }
 
@@ -2201,6 +2236,8 @@ export class WebGPUEngine extends Engine {
             depthStencilAttachment: this._mainDepthAttachment
         });
 
+        this._mainRenderPass = this._currentRenderPass;
+
         if (this._cachedViewport) {
             this.setViewport(this._cachedViewport);
         }
@@ -2208,8 +2245,6 @@ export class WebGPUEngine extends Engine {
         this._currentRenderPass.setBlendColor(this._alphaState._blendConstants as any);
 
         // TODO WEBGPU set the scissor rect and the stencil reference value
-
-        this._mainRenderPass = this._currentRenderPass;
     }
 
     private _endMainRenderPass(): void {
@@ -2282,11 +2317,12 @@ export class WebGPUEngine extends Engine {
         // TODO WEBGPU remove the assert debugging code
         assert(this._currentRenderTarget === null || (this._currentRenderTarget !== null && texture === this._currentRenderTarget), "unBindFramebuffer - the texture we wan't to unbind is not the same than the currentRenderTarget! texture=" + texture + ", this._currentRenderTarget=" + this._currentRenderTarget);
 
-        this._currentRenderTarget = null;
-
         if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPass) {
             this._endRenderTargetRenderPass();
         }
+
+        this._transientViewport.x = Infinity;
+        this._currentRenderTarget = null;
 
         if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
             this._generateMipmaps(texture);
@@ -2305,6 +2341,7 @@ export class WebGPUEngine extends Engine {
         } else {
             this._currentRenderPass = this._mainRenderPass;
         }
+        this._transientViewport.x = Infinity;
         if (this._currentRenderPass) {
             if (this._cachedViewport) {
                 this.setViewport(this._cachedViewport);
