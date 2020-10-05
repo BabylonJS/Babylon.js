@@ -100,6 +100,8 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
 
     this._bindTextureDirectly(target, null);
 
+    const currentFrameBuffer = this._currentFramebuffer;
+
     // Create the framebuffer
     const framebuffer = gl.createFramebuffer();
     this._bindUnboundFramebuffer(framebuffer);
@@ -110,7 +112,7 @@ ThinEngine.prototype.createRenderTargetTexture = function(this: ThinEngine, size
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._webGLTexture, 0);
     }
 
-    this._bindUnboundFramebuffer(null);
+    this._bindUnboundFramebuffer(currentFrameBuffer);
 
     texture._framebuffer = framebuffer;
     texture.baseWidth = width;

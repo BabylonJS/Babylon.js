@@ -222,7 +222,7 @@ export class PhysicsImpostor {
     private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     /** @hidden */
-    public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void; otherImpostors: Array<PhysicsImpostor> }> = [];
+    public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void; otherImpostors: Array<PhysicsImpostor> }> = [];
 
     private _deltaPosition: Vector3 = Vector3.Zero();
     private _deltaRotation: Quaternion;
@@ -885,7 +885,7 @@ export class PhysicsImpostor {
     /**
      * event and body object due to cannon's event-based architecture.
      */
-    public onCollide = (e: { body: any }) => {
+    public onCollide = (e: { body: any, point: Nullable<Vector3> }) => {
         if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {
             return;
         }
@@ -904,7 +904,7 @@ export class PhysicsImpostor {
                     return obj.otherImpostors.indexOf(<PhysicsImpostor>otherImpostor) !== -1;
                 })
                 .forEach((obj) => {
-                    obj.callback(this, <PhysicsImpostor>otherImpostor);
+                    obj.callback(this, <PhysicsImpostor>otherImpostor, e.point);
                 });
         }
     };
