@@ -14,13 +14,13 @@ export class EnvironmentTools {
         "https://assets.babylonjs.com/environments/environmentSpecular.env",
         "https://assets.babylonjs.com/environments/studio.env",
     ];
-    
+
     public static SkyboxesNames = [
         "Default",
         "Studio",
-    ];    
+    ];
 
-    public static LoadSkyboxPathTexture(scene: Scene) {                
+    public static LoadSkyboxPathTexture(scene: Scene) {
         var defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
         let path = this.SkyboxPath || this.Skyboxes[defaultSkyboxIndex];
         if (path.indexOf(".hdr") === (path.length - 4)) {
@@ -30,7 +30,7 @@ export class EnvironmentTools {
     }
 
     public static HookWithEnvironmentChange(globalState: GlobalState) {
-        globalState.onEnvironmentChanged.add(option => {
+        globalState.onEnvironmentChanged.add((option) => {
             this.SkyboxPath = "";
             let index = EnvironmentTools.SkyboxesNames.indexOf(option);
 
@@ -52,6 +52,6 @@ export class EnvironmentTools {
                     }
                 }
             }
-        });        
+        });
     }
 }
