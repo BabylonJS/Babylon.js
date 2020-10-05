@@ -75,6 +75,7 @@ export class HDRFiltering {
         const texture = this._engine.createRenderTargetCubeTexture(size, {
             format: Constants.TEXTUREFORMAT_RGBA,
             type: textureType,
+            createMipMaps: true,
             generateMipMaps: false,
             generateDepthBuffer: false,
             generateStencilBuffer: false,
@@ -198,7 +199,7 @@ export class HDRFiltering {
       * @return Promise called when prefiltering is done
       */
     public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null) {
-        if (this._engine.webGLVersion === 1) {
+        if (!ThinEngine.Features.allowTexturePrefiltering) {
             Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
             return;
         }

@@ -181,6 +181,7 @@ export class ThinEngine {
         supportDepthStencilTexture: false,
         supportShadowSamplers: false,
         uniformBufferHardCheckMatrix: false,
+        allowTexturePrefiltering: false,
     };
 
     /**
@@ -720,6 +721,7 @@ export class ThinEngine {
         ThinEngine.Features.supportRenderAndCopyToLodForFloatTextures = this._webGLVersion !== 1;
         ThinEngine.Features.supportDepthStencilTexture = this._webGLVersion !== 1;
         ThinEngine.Features.supportShadowSamplers = this._webGLVersion !== 1;
+        ThinEngine.Features.allowTexturePrefiltering = this._webGLVersion !== 1;
 
         // Ensures a consistent color space unpacking of textures cross browser.
         this._gl.pixelStorei(this._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, this._gl.NONE);
