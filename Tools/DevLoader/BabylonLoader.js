@@ -221,7 +221,7 @@ var BABYLONDEVTOOLS;
         }
 
         Loader.prototype.loadCoreDev = function() {
-            if (typeof document === "undefined" || isIE) {                
+            if (typeof document === "undefined" || isIE) {
                 this.loadScript(babylonJSPath + "/dist/preview release/babylon.max.js");
                 return;
             }
@@ -244,7 +244,14 @@ var BABYLONDEVTOOLS;
             if (!window || !window.location || window.location.pathname.toLowerCase().indexOf(appName.toLowerCase()) === -1) {
                 return;
             }
-            this.loadScript(app.distFile);
+
+            if (!useDist && app.tempFileName) {
+                var tempDirectory = '/.temp/' + localDevUMDFolderName + appName + "/";
+                this.loadScript(tempDirectory + app.tempFileName);
+            }
+            else {
+                this.loadScript(app.distFile);
+            }
         }
 
         Loader.prototype.processDependency = function(settings, dependency, filesToLoad) {
@@ -286,6 +293,7 @@ var BABYLONDEVTOOLS;
                     localDevUMDFolderName = data.build.localDevUMDFolderName;
 
                     self.loadBJSScripts(data);
+
                     if (dependencies) {
                         self.loadScripts(dependencies);
                     }
