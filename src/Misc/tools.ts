@@ -588,22 +588,21 @@ export class Tools {
 
             data = data as Uint8Array;
 
-            // TODO WEBGPU Would be better to test ThinEngine.Features.framebuffersHaveYTopToBottom than engine.isWebGPU...
-            if (!engine.isWebGPU) {
-                // To flip image on Y axis.
-                for (var i = 0; i < halfHeight; i++) {
-                    for (var j = 0; j < numberOfChannelsByLine; j++) {
-                        var currentCell = j + i * numberOfChannelsByLine;
-                        var targetLine = height - i - 1;
-                        var targetCell = j + targetLine * numberOfChannelsByLine;
+            // To flip image on Y axis.
+            for (var i = 0; i < halfHeight; i++) {
+                for (var j = 0; j < numberOfChannelsByLine; j++) {
+                    var currentCell = j + i * numberOfChannelsByLine;
+                    var targetLine = height - i - 1;
+                    var targetCell = j + targetLine * numberOfChannelsByLine;
 
-                        var temp = data[currentCell];
-                        data[currentCell] = data[targetCell];
-                        data[targetCell] = temp;
-                    }
+                    var temp = data[currentCell];
+                    data[currentCell] = data[targetCell];
+                    data[targetCell] = temp;
                 }
-            } else {
-                // TODO WEBGPU Add a feature in ThinEngine.Features for that?
+            }
+
+            // TODO WEBGPU Add a feature in ThinEngine.Features for that instead of testing isWebGPU?
+            if (engine.isWebGPU) {
                 // flip red and blue channels as swap chain is in BGRA format
                 for (var i = 0; i < width * height * 4; i += 4) {
                     var temp = data[i + 0];
