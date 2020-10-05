@@ -265,11 +265,10 @@ export class EffectWrapper {
                 creationOptions.onCompiled
             );
         } else {
-            this.effect = new Effect(effectCreationOptions,
+            this.effect = creationOptions.engine.createEffect(effectCreationOptions,
                 creationOptions.attributeNames || ["position"],
                 uniformNames,
                 creationOptions.samplerNames,
-                creationOptions.engine,
                 defines,
                 undefined,
                 creationOptions.onCompiled,
