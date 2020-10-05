@@ -764,7 +764,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
     private _teleportForward(controllerId: string) {
         const controllerData = this._controllers[controllerId];
-        if (!controllerData.teleportationState.forward) {
+        if (!controllerData || !controllerData.teleportationState.forward) {
             return;
         }
         controllerData.teleportationState.forward = false;
