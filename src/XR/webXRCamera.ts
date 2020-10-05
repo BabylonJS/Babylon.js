@@ -81,11 +81,14 @@ export class WebXRCamera extends FreeCamera {
         );
     }
 
+    /**
+     * Get the current XR tracking state of the camera
+     */
     public get trackingState(): WebXRTrackingState {
         return this._trackingState;
     }
 
-    public set trackingState(newState: WebXRTrackingState) {
+    private _setTrackingState(newState: WebXRTrackingState) {
         if (this._trackingState !== newState) {
             this._trackingState = newState;
             this.onTrackingStateChanged.notifyObservers(newState);
@@ -151,15 +154,14 @@ export class WebXRCamera extends FreeCamera {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
 
         if (!pose) {
-            this.trackingState = WebXRTrackingState.NOT_TRACKING;
+            this._setTrackingState(WebXRTrackingState.NOT_TRACKING);
             return;
         }
 
         // Set the tracking state. if it didn't change it is a no-op
         const trackingState = pose.emulatedPosition ? WebXRTrackingState.TRACKING_LOST : WebXRTrackingState.TRACKING;
-        if (trackingState !== this._trackingState) {
-            this.trackingState = trackingState;
-        }
+        this._setTrackingState(trackingState);
+
         if (pose.transform) {
             const pos = pose.transform.position;
             this._referencedPosition.set(pos.x, pos.y, pos.z);
