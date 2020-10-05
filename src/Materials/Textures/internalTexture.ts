@@ -456,6 +456,8 @@ export class InternalTexture {
     public _swapAndDie(target: InternalTexture): void {
         // TODO what about refcount on target?
 
+        this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.isCube, this.width, this.height);
+
         target._hardwareTexture = this._hardwareTexture;
         target._isRGBD = this._isRGBD;
 

@@ -1,6 +1,8 @@
 import { HardwareTextureWrapper } from '../../Materials/Textures/hardwareTextureWrapper';
+import { InternalTextureSource } from '../../Materials/Textures/internalTexture';
 import { Nullable } from '../../types';
 import * as WebGPUConstants from './webgpuConstants';
+import { WebGPUTextureHelper } from './webgpuTextureHelper';
 
 /** @hidden */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
@@ -21,21 +23,33 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         this.sampler = null;
     }
 
-    public set(hardwareTexture: GPUTexture) {
+    public set(hardwareTexture: GPUTexture): void {
         this._webgpuTexture = hardwareTexture;
     }
 
-    public createView(descriptor?: GPUTextureViewDescriptor) {
+    public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
+        generateMipMaps = textureSource === InternalTextureSource.RenderTarget ? false : generateMipMaps;
+
+        this.createView({
+            dimension: isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
+            mipLevelCount: generateMipMaps ? WebGPUTextureHelper.computeNumMipmapLevels(width, height) : 1,
+            baseArrayLayer: 0,
+            baseMipLevel: 0,
+            aspect: WebGPUConstants.TextureAspect.All
+        });
+    }
+
+    public createView(descriptor?: GPUTextureViewDescriptor): void {
         this.view = this._webgpuTexture!.createView(descriptor);
     }
 
-    public reset() {
+    public reset(): void {
         this._webgpuTexture = null;
         this.view = null;
         this.sampler = null;
     }
 
-    public release() {
+    public release(): void {
         this._webgpuTexture?.destroy();
         this.reset();
     }

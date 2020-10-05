@@ -22,6 +22,9 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
         this.set(existingTexture);
     }
 
+    public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
+    }
+
     public set(hardwareTexture: WebGLTexture) {
         this._webGLTexture = hardwareTexture;
     }
