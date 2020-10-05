@@ -72,8 +72,8 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                 continue;
             }
 
-            mainImpostor.onCollide({ body: collidingImpostor.physicsBody });
-            collidingImpostor.onCollide({ body: mainImpostor.physicsBody });
+            mainImpostor.onCollide({ body: collidingImpostor.physicsBody, point: null});
+            collidingImpostor.onCollide({ body: mainImpostor.physicsBody, point: null });
             contact = contact.next;
         }
     }
