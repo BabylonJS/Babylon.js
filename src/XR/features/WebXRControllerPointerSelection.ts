@@ -20,6 +20,7 @@ import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
 import { WebXRCamera } from "../webXRCamera";
 import { Node } from "../../node";
+import { Viewport } from "../../Maths/math.viewport";
 
 /**
  * Options interface for the pointer selection module
@@ -291,6 +292,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     private _identityMatrix = Matrix.Identity();
     private _screenCoordinatesRef = Vector3.Zero();
+    private _viewportRef = new Viewport(0, 0, 0, 0);
 
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
@@ -311,9 +313,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // update pointerX and pointerY of the scene. Only if the flag is set to true!
             if (!this._options.disableScenePointerVectorUpdate && controllerGlobalPosition) {
                 const scene = this._xrSessionManager.scene;
-                const camera = this._options.xrInput.xrCamera.rigCameras[0];
+                const camera = this._options.xrInput.xrCamera;
                 if (camera) {
-                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), camera.viewport.toGlobal(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight()), this._screenCoordinatesRef);
+                    camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight(), this._viewportRef);
+                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), this._viewportRef, this._screenCoordinatesRef);
 
                     scene.pointerX = this._screenCoordinatesRef.x;
                     scene.pointerY = this._screenCoordinatesRef.y;
