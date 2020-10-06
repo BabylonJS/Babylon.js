@@ -16,7 +16,6 @@ import { PointerInfo } from 'babylonjs/Events/pointerEvents';
 
 import { PopupComponent } from '../../../../../popupComponent';
 import { ToolSettings } from './toolSettings';
-import { constants } from 'buffer';
 import { Constants } from 'babylonjs/Engines/constants';
 
 require('./textureEditor.scss');
