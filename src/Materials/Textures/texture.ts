@@ -234,6 +234,7 @@ export class Texture extends BaseTexture {
     private _delayedOnLoad: Nullable<() => void> = null;
     private _delayedOnError: Nullable<() => void> = null;
     private _mimeType?: string;
+    private _loaderOptions?: any;
 
     /** Returns the texture mime type if it was defined by a loader (undefined else) */
     public get mimeType() {
@@ -291,8 +292,12 @@ export class Texture extends BaseTexture {
      * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
      * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      * @param mimeType defines an optional mime type information
+     * @param loaderOptions options to be passed to the loader
      */
-    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, deleteBuffer: boolean = false, format?: number, mimeType?: string) {
+    constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+            onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+            deleteBuffer: boolean = false, format?: number, mimeType?: string, loaderOptions?: any)
+    {
         super(sceneOrEngine);
 
         this.name = url || "";
@@ -303,6 +308,7 @@ export class Texture extends BaseTexture {
         this._buffer = buffer;
         this._deleteBuffer = deleteBuffer;
         this._mimeType = mimeType;
+        this._loaderOptions = loaderOptions;
         if (format) {
             this._format = format;
         }
@@ -359,7 +365,7 @@ export class Texture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
-                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType);
+                this._texture = engine.createTexture(this.url, noMipmap, invertY, scene, samplingMode, load, onError, this._buffer, undefined, this._format, null, mimeType, loaderOptions);
                 if (deleteBuffer) {
                     this._buffer = null;
                 }
@@ -421,7 +427,7 @@ export class Texture extends BaseTexture {
         this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY);
 
         if (!this._texture) {
-            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType);
+            this._texture = scene.getEngine().createTexture(this.url, this._noMipmap, this._invertY, scene, this.samplingMode, this._delayedOnLoad, this._delayedOnError, this._buffer, null, this._format, null, this._mimeType, this._loaderOptions);
             if (this._deleteBuffer) {
                 this._buffer = null;
             }
