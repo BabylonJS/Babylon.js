@@ -13,7 +13,6 @@ import { SceneExplorerComponent } from "./components/sceneExplorer/sceneExplorer
 import { EmbedHostComponent } from "./components/embedHost/embedHostComponent";
 import { PropertyChangedEvent } from "./components/propertyChangedEvent";
 import { GlobalState } from "./components/globalState";
-import { GLTFFileLoader } from "babylonjs-loaders/glTF/index";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -335,7 +334,7 @@ export class Inspector {
     public static EarlyAttachToLoader() {
         if (!this._GlobalState.onPluginActivatedObserver) {
             this._GlobalState.onPluginActivatedObserver = SceneLoader.OnPluginActivatedObservable.add((rawLoader) => {
-                const loader = rawLoader as GLTFFileLoader;
+                const loader = rawLoader as import("babylonjs-loaders/glTF/index").GLTFFileLoader;
                 if (loader.name === "gltf") {
                     this._GlobalState.prepareGLTFPlugin(loader);
                 }
