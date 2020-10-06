@@ -33,6 +33,12 @@ export class Transcoder {
         return false;
     }
 
+    public static Name = "Transcoder";
+
+    public getName(): string {
+        return Transcoder.Name;
+    }
+
     public initialize(): void {
     }
 

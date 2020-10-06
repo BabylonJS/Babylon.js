@@ -18,7 +18,7 @@ import { ZSTDDecoder } from './zstddec';
 
 const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8E8C;
 const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
-const COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F0;
+const COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F1;
 const COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
 const COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
 const COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
@@ -34,6 +34,7 @@ export interface IDecodedData {
     mipmaps: Array<IMipmap>;
     isInGammaSpace: boolean;
     errors?: string;
+    transcoderName?: string;
 }
 
 export interface IMipmap {
@@ -51,13 +52,29 @@ export interface ICompressedFormatCapabilities {
     etc1?: boolean;
 }
 
+export interface IKTX2DecoderOptions {
+    /** use RGBA format if UASTC and BC7 are not available as transcoded format */
+    useRGBAIfUASTCBC7NotAvailable?: boolean;
+
+    /** force to always use RGBA for transcoded format */
+    forceRGBA?: boolean;
+
+    /**
+     * list of transcoders to bypass when looking for a suitable transcoder. The available transcoders are:
+     *      UniversalTranscoder_UASTC_ASTC
+     *      UniversalTranscoder_UASTC_BC7
+     *      MSCTranscoder
+    */
+    bypassTranscoders?: string[];
+}
+
 const isPowerOfTwo = (value: number)  => {
     return (value & (value - 1)) === 0 && value !== 0;
 };
 
 /**
  * Class for decoding KTX2 files
- * 
+ *
  */
 export class KTX2Decoder {
 
@@ -68,7 +85,7 @@ export class KTX2Decoder {
         this._transcoderMgr = new TranscoderManager();
     }
 
-    public decode(data: Uint8Array, caps: ICompressedFormatCapabilities): Promise<IDecodedData | null> {
+    public decode(data: Uint8Array, caps: ICompressedFormatCapabilities, options?: IKTX2DecoderOptions): Promise<IDecodedData | null> {
         return Promise.resolve().then(() => {
             const kfr = new KTX2FileReader(data);
 
@@ -84,17 +101,17 @@ export class KTX2Decoder {
                 }
 
                 return this._zstdDecoder.init().then(() => {
-                    return this._decodeData(kfr, caps);
+                    return this._decodeData(kfr, caps, options);
                 });
             }
 
-            return this._decodeData(kfr, caps);
+            return this._decodeData(kfr, caps, options);
         });
     }
 
-    private _decodeData(kfr: KTX2FileReader, caps: ICompressedFormatCapabilities): Promise<IDecodedData> {
-        const width = kfr.header.pixelWidth;
-        const height = kfr.header.pixelHeight;
+    private _decodeData(kfr: KTX2FileReader, caps: ICompressedFormatCapabilities, options?: IKTX2DecoderOptions): Promise<IDecodedData> {
+        let width = kfr.header.pixelWidth;
+        let height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;
 
         // PVRTC1 transcoders (from both ETC1S and UASTC) only support power of 2 dimensions.
@@ -102,13 +119,22 @@ export class KTX2Decoder {
 
         let targetFormat = -1;
         let transcodedFormat = -1;
+        let roundToMultiple4 = true;
 
-        if (caps.astc) {
+        if (options?.forceRGBA) {
+            targetFormat = transcodeTarget.RGBA32;
+            transcodedFormat = RGBA8Format;
+            roundToMultiple4 = false;
+        } else if (caps.astc) {
             targetFormat = transcodeTarget.ASTC_4x4_RGBA;
             transcodedFormat = COMPRESSED_RGBA_ASTC_4x4_KHR;
         } else if (caps.bptc) {
             targetFormat = transcodeTarget.BC7_RGBA;
             transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
+        } else if (options?.useRGBAIfUASTCBC7NotAvailable) {
+            targetFormat = transcodeTarget.RGBA32;
+            transcodedFormat = RGBA8Format;
+            roundToMultiple4 = false;
         } else if (caps.s3tc) {
             targetFormat = kfr.hasAlpha ? transcodeTarget.BC3_RGBA : transcodeTarget.BC1_RGB;
             transcodedFormat = kfr.hasAlpha ? COMPRESSED_RGBA_S3TC_DXT5_EXT : COMPRESSED_RGB_S3TC_DXT1_EXT;
@@ -124,9 +150,10 @@ export class KTX2Decoder {
         } else {
             targetFormat = transcodeTarget.RGBA32;
             transcodedFormat = RGBA8Format;
+            roundToMultiple4 = false;
         }
 
-        const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, targetFormat);
+        const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, targetFormat, options?.bypassTranscoders);
 
         if (transcoder === null) {
             throw new Error(`no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[targetFormat]}"`);
@@ -135,7 +162,7 @@ export class KTX2Decoder {
         const mipmaps: Array<IMipmap> = [];
         const dataPromises: Array<Promise<Uint8Array | null>> = [];
         const mipmapBuffers: Array<ArrayBuffer> = [];
-        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace };
+        const decodedData: IDecodedData = { width: 0, height: 0, transcodedFormat, mipmaps, isInGammaSpace: kfr.isInGammaSpace, transcoderName: transcoder.getName() };
 
         let firstImageDescIndex = 0;
 
@@ -144,8 +171,8 @@ export class KTX2Decoder {
                 firstImageDescIndex += Math.max(kfr.header.layerCount, 1) * kfr.header.faceCount * Math.max(kfr.header.pixelDepth >> (level - 1), 1);
             }
 
-            const levelWidth = Math.ceil(width / (1 << level));
-            const levelHeight = Math.ceil(height / (1 << level));
+            const levelWidth = Math.floor(width / (1 << level));
+            const levelHeight = Math.floor(height / (1 << level));
 
             const numImagesInLevel = kfr.header.faceCount; // note that cubemap are not supported yet (see KTX2FileReader), so faceCount == 1
             const levelImageByteLength = ((levelWidth + 3) >> 2) * ((levelHeight + 3) >> 2) * kfr.dfdBlock.bytesPlane[0];
@@ -163,8 +190,8 @@ export class KTX2Decoder {
             }
 
             if (level === 0) {
-                decodedData.width = levelWidth;
-                decodedData.height = levelHeight;
+                decodedData.width = roundToMultiple4 ? (levelWidth + 3) & ~3 : levelWidth;
+                decodedData.height = roundToMultiple4 ? (levelHeight + 3) & ~3 : levelHeight;
             }
 
             for (let imageIndex = 0; imageIndex < numImagesInLevel; imageIndex ++) {

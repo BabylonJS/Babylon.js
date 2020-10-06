@@ -14,6 +14,12 @@ export class LiteTranscoder_UASTC_ASTC extends LiteTranscoder {
         return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.ASTC_4x4_RGBA;
     }
 
+    public static Name = "UniversalTranscoder_UASTC_ASTC";
+
+    public getName(): string {
+        return LiteTranscoder_UASTC_ASTC.Name;
+    }
+
     public initialize(): void {
         this.setModulePath(LiteTranscoder_UASTC_ASTC.WasmModuleURL);
     }
