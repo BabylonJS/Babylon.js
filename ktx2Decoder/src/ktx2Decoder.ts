@@ -110,8 +110,8 @@ export class KTX2Decoder {
     }
 
     private _decodeData(kfr: KTX2FileReader, caps: ICompressedFormatCapabilities, options?: IKTX2DecoderOptions): Promise<IDecodedData> {
-        let width = kfr.header.pixelWidth;
-        let height = kfr.header.pixelHeight;
+        const width = kfr.header.pixelWidth;
+        const height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;
 
         // PVRTC1 transcoders (from both ETC1S and UASTC) only support power of 2 dimensions.
