@@ -470,7 +470,7 @@ export class InputManager {
 
         if (!elementToAttachTo) {
             return;
-        }        
+        }
 
         if (this._alreadyAttached) {
             this.detachControl();
@@ -816,7 +816,7 @@ export class InputManager {
         // Keyboard events
         this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(
             (() => {
-                
+
                 if (document.activeElement === elementToAttachTo) {
                     attachedFunction();
                 }

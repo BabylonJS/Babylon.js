@@ -33,7 +33,7 @@ declare module INSPECTOR {
         };
         validationResults: BABYLON.Nullable<BABYLON.GLTF2.IGLTFValidationResults>;
         onValidationResultsUpdatedObservable: BABYLON.Observable<BABYLON.Nullable<BABYLON.GLTF2.IGLTFValidationResults>>;
-        onExtensionLoadedObservable: BABYLON.Observable<BABYLON.IGLTFLoaderExtension>;
+        onExtensionLoadedObservable: BABYLON.Observable<import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension>;
         glTFLoaderExtensionDefaults: {
             [name: string]: {
                 [key: string]: any;
@@ -43,7 +43,7 @@ declare module INSPECTOR {
             [key: string]: any;
         };
         glTFLoaderExtensions: {
-            [key: string]: BABYLON.IGLTFLoaderExtension;
+            [key: string]: import("babylonjs-loaders/glTF/index").IGLTFLoaderExtension;
         };
         blockMutationUpdates: boolean;
         selectedLineContainerTitles: Array<string>;
@@ -56,7 +56,7 @@ declare module INSPECTOR {
         get ignoreBackfacesForPicking(): boolean;
         set ignoreBackfacesForPicking(value: boolean);
         init(propertyChangedObservable: BABYLON.Observable<PropertyChangedEvent>): void;
-        prepareGLTFPlugin(loader: BABYLON.GLTFFileLoader): void;
+        prepareGLTFPlugin(loader: import("babylonjs-loaders/glTF/index").GLTFFileLoader): void;
         lightGizmos: Array<BABYLON.LightGizmo>;
         enableLightGizmo(light: BABYLON.Light, enable?: boolean): void;
         cameraGizmos: Array<BABYLON.CameraGizmo>;
