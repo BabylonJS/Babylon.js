@@ -33,11 +33,12 @@ declare module "../../Engines/thinEngine" {
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+         * @param loaderOptions options to be passed to the loader
          * @returns the cube texture as an InternalTexture
          */
         createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined,
             onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>,
-            format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>): InternalTexture;
+            format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, loaderOptions: any): InternalTexture;
 
         /**
          * Creates a cube texture
@@ -215,7 +216,10 @@ ThinEngine.prototype._setCubeMapTextureParams = function(loadMipmap: boolean): v
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 };
 
-ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0, lodOffset: number = 0, fallback: Nullable<InternalTexture> = null): InternalTexture {
+ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad: Nullable<(data?: any) => void> = null,
+        onError: Nullable<(message?: string, exception?: any) => void> = null, format?: number, forcedExtension: any = null, createPolynomials: boolean = false, lodScale: number = 0,
+        lodOffset: number = 0, fallback: Nullable<InternalTexture> = null, loaderOptions?: any): InternalTexture
+{
     const gl = this._gl;
 
     const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
@@ -255,7 +259,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
         else {
             // fall back to the original url if the transformed url fails to load
             Logger.Warn(`Failed to load ${rootUrl}, falling back to the ${originalRootUrl}`);
-            this.createCubeTexture(originalRootUrl, scene, files, noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, texture);
+            this.createCubeTexture(originalRootUrl, scene, files, noMipmap, onLoad, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset, texture, loaderOptions);
         }
     };
 

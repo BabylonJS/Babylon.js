@@ -21,6 +21,12 @@ export class MSCTranscoder extends Transcoder {
 
     public static UseFromWorkerThread = true;
 
+    public static Name = "MSCTranscoder";
+
+    public getName(): string {
+        return MSCTranscoder.Name;
+    }
+
     private _mscBasisTranscoderPromise: Promise<any>;
     private _mscBasisModule: any;
 
