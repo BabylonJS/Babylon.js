@@ -8,6 +8,7 @@ import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImp
 import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
 import { PhysicsEngine } from "../../Physics/physicsEngine";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { TransformNode } from '../../Meshes/transformNode';
 
 //declare var require: any;
 declare var CANNON: any;
@@ -164,7 +165,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 if (childImpostor) {
                     var parent = childImpostor.parent;
                     if (parent !== mainImpostor) {
-                        const pPosition = mesh.getAbsolutePosition();
+                        const pPosition = mesh.getAbsolutePosition().subtract((mesh.parent as TransformNode).getAbsolutePosition());
                         const q = mesh.rotationQuaternion;
                         if (childImpostor.physicsBody) {
                             this.removePhysicsBody(childImpostor);
