@@ -8,6 +8,7 @@ import { PhysicsImpostor, IPhysicsEnabledObject } from "../../Physics/physicsImp
 import { PhysicsJoint, IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
 import { PhysicsEngine } from "../../Physics/physicsEngine";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { TransformNode } from '../../Meshes/transformNode';
 
 //declare var require: any;
 declare var CANNON: any;
@@ -155,7 +156,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes(true) : [];
         let currentRotation: Nullable<Quaternion> = mainImpostor.object.rotationQuaternion;
         if (meshChildren.length) {
-            var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
+            const processMesh = (mesh: AbstractMesh) => {
                 if (!currentRotation || !mesh.rotationQuaternion) {
                     return;
                 }
@@ -164,15 +165,15 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 if (childImpostor) {
                     var parent = childImpostor.parent;
                     if (parent !== mainImpostor) {
-                        var pPosition = mesh.position.clone();
-                        // let localRotation = mesh.rotationQuaternion.multiply(Quaternion.Inverse(currentRotation));
+                        const pPosition = mesh.getAbsolutePosition().subtract((mesh.parent as TransformNode).getAbsolutePosition());
+                        const q = mesh.rotationQuaternion;
                         if (childImpostor.physicsBody) {
                             this.removePhysicsBody(childImpostor);
                             childImpostor.physicsBody = null;
                         }
                         childImpostor.parent = mainImpostor;
                         childImpostor.resetUpdateFlags();
-                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z) /*, new this.BJSCANNON.Quaternion(localRotation.x, localRotation.y, localRotation.z, localRotation.w)*/);
+                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z) , new this.BJSCANNON.Quaternion(q.x, q.y, q.z, q.w));
                         //Add the mass of the children.
                         mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                     }
@@ -180,9 +181,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 currentRotation.multiplyInPlace(mesh.rotationQuaternion);
                 mesh.getChildMeshes(true)
                     .filter((m) => !!m.physicsImpostor)
-                    .forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
+                    .forEach(processMesh);
             };
-            meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
+            meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh);
         }
     }
 
@@ -464,8 +465,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         //make sure it is updated...
         object.computeWorldMatrix && object.computeWorldMatrix(true);
         // The delta between the mesh position and the mesh bounding box center
-        let bInfo = object.getBoundingInfo();
-        if (!bInfo) {
+        if (!object.getBoundingInfo()) {
             return;
         }
         var center = impostor.getObjectCenter();
@@ -510,7 +510,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             }
 
             //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
-            var p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
+            const p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
             mesh.setPreTransformMatrix(p);
             mesh.computeWorldMatrix(true);
 
