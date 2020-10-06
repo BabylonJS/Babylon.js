@@ -35146,6 +35146,7 @@ declare module BABYLON {
         _isActiveIntermediate: boolean;
         _onlyForInstancesIntermediate: boolean;
         _actAsRegularMesh: boolean;
+        _currentLOD: Nullable<AbstractMesh>;
     }
     /**
      * Class used to store all common mesh properties
