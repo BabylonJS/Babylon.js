@@ -16,6 +16,8 @@ import { PointerInfo } from 'babylonjs/Events/pointerEvents';
 
 import { PopupComponent } from '../../../../../popupComponent';
 import { ToolSettings } from './toolSettings';
+import { constants } from 'buffer';
+import { Constants } from 'babylonjs/Engines/constants';
 
 require('./textureEditor.scss');
 
@@ -313,7 +315,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
                 pickerOpen={this.state.pickerOpen}
                 setPickerOpen={this.setPickerOpen}
                 pickerRef={this._pickerRef}
-                hasAlpha={this.props.texture.hasAlpha}
+                hasAlpha={this.props.texture.textureFormat === -1 || this.props.texture.textureFormat === Constants.TEXTUREFORMAT_RGBA}
             />}
             <ChannelsBar channels={this.state.channels} setChannels={(channels) => {this.setState({channels})}}/>
             <TextureCanvasComponent canvas2D={this._2DCanvas} canvas3D={this._3DCanvas} canvasUI={this._UICanvas} texture={this.props.texture}/>
