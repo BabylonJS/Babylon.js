@@ -7,6 +7,7 @@ import { IInternalTextureLoader } from '../../Materials/Textures/internalTexture
 import { FileTools } from '../../Misc/fileTools';
 import { DepthTextureCreationOptions } from '../depthTextureCreationOptions';
 import { IWebRequest } from '../../Misc/interfaces/iWebRequest';
+import { Constants } from '../constants';
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -89,7 +90,7 @@ declare module "../../Engines/thinEngine" {
         /**
          * @hidden
          */
-        _setCubeMapTextureParams(loadMipmap: boolean): void;
+        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean): void;
     }
 }
 
@@ -205,12 +206,13 @@ ThinEngine.prototype._partialLoadImg = function(url: string, index: number, load
     }
 };
 
-ThinEngine.prototype._setCubeMapTextureParams = function(loadMipmap: boolean): void {
+ThinEngine.prototype._setCubeMapTextureParams = function(texture: InternalTexture, loadMipmap: boolean): void {
     var gl = this._gl;
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    texture.samplingMode = loadMipmap ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_LINEAR_LINEAR;
 
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 };
@@ -321,7 +323,7 @@ ThinEngine.prototype.createCubeTexture = function(rootUrl: string, scene: Nullab
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
-            this._setCubeMapTextureParams(!noMipmap);
+            this._setCubeMapTextureParams(texture, !noMipmap);
 
             texture.width = width;
             texture.height = height;
