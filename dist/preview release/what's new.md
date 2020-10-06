@@ -126,6 +126,8 @@
 - Ammo.js IDL exposed property update and raycast vehicle stablization support ([MackeyK24](https://github.com/MackeyK24))
 - Recast.js plugin nav mesh and crowd agent to ref performance optimizations. ([MackeyK24](https://github.com/MackeyK24))
 - Added `scene.physicsEnabled` boolean ([Deltakosh](https://github.com/deltakosh))
+- Fixed an issue with transformation set after physics body was created using Cannon.js (excluding height and plane) ([#7928](https://github.com/BabylonJS/Babylon.js/issues/7928)) ([RaananW](https://github.com/RaananW))
+- Fix an issue with compound creation and scaling preset ([#8888](https://github.com/BabylonJS/Babylon.js/issues/8888)) ([RaananW](https://github.com/RaananW))
 
 ### Loaders
 
@@ -306,7 +308,6 @@
 - Make sure bone matrices are up to date when calling `TransformNode.attachToBone` ([Popov72](https://github.com/Popov72))
 - Fix display problem with transparent objects and SSAO2 pipeline (bug in the `GeometryBufferRenderer`) ([Popov72](https://github.com/Popov72))
 - Fixed `Sound` not accepting a `TransformNode` as a source for spatial sound ([Poolminer](https://github.com/Poolminer))
-- Fixed an issue with transformation set after physics body was created using Cannon.js (excluding height and plane) ([#7928](https://github.com/BabylonJS/Babylon.js/issues/7928)) ([RaananW](https://github.com/RaananW))
 - Fix bug when using `ShadowOnlyMaterial` with Cascaded Shadow Map and `autoCalcDepthBounds` is `true` ([Popov72](https://github.com/Popov72))
 - Fix OBJ serializer default scene scene handedness causing [OBJ Mirror export](https://forum.babylonjs.com/t/obj-export-mirrored/10835/10)
 - Fix bug when using shadows + instances + transparent meshes + `transparencyShadow = false` ([Popov72](https://github.com/Popov72))
@@ -337,6 +338,8 @@
 - Changed use of mousemove to pointermove in freeCameraMouseInput and flyCameraMouseInput to fix issue with Firefox ([PolygonalSun](https://github.com/PolygonalSun))
 - Fixed `TriPlanarMaterial` to compute the right world normals ([julien-moreau](https://github.com/julien-moreau))
 - Fix `SkeletonViewer` to use utillity layer with custom lighting to improve debug mesh visibility ([Drigax](https://github.com/drigax))
+- Fix same sub mesh being rendered multiple times in the shadow map ([Popov72](https://github.com/Popov72))
+- Fix incorrect shadows on the master mesh when using a lod mesh ([Popov72](https://github.com/Popov72))
 
 ## Breaking changes
 
