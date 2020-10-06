@@ -3555,6 +3555,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
+            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
 
             // Compute world matrix if LOD is billboard
             if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
