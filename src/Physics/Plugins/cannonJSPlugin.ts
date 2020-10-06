@@ -165,14 +165,14 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                     var parent = childImpostor.parent;
                     if (parent !== mainImpostor) {
                         const pPosition = mesh.getAbsolutePosition();
-                        // let localRotation = mesh.rotationQuaternion.multiply(Quaternion.Inverse(currentRotation));
+                        const q = mesh.rotationQuaternion;
                         if (childImpostor.physicsBody) {
                             this.removePhysicsBody(childImpostor);
                             childImpostor.physicsBody = null;
                         }
                         childImpostor.parent = mainImpostor;
                         childImpostor.resetUpdateFlags();
-                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z) /*, new this.BJSCANNON.Quaternion(localRotation.x, localRotation.y, localRotation.z, localRotation.w)*/);
+                        mainImpostor.physicsBody.addShape(this._createShape(childImpostor), new this.BJSCANNON.Vec3(pPosition.x, pPosition.y, pPosition.z) , new this.BJSCANNON.Quaternion(q.x, q.y, q.z, q.w));
                         //Add the mass of the children.
                         mainImpostor.physicsBody.mass += childImpostor.getParam("mass");
                     }
@@ -464,8 +464,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         //make sure it is updated...
         object.computeWorldMatrix && object.computeWorldMatrix(true);
         // The delta between the mesh position and the mesh bounding box center
-        let bInfo = object.getBoundingInfo();
-        if (!bInfo) {
+        if (!object.getBoundingInfo()) {
             return;
         }
         var center = impostor.getObjectCenter();
