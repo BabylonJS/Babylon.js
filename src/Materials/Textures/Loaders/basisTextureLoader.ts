@@ -48,7 +48,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
         BasisTools.TranscodeAsync(data, transcodeConfig).then((result) => {
             var hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
             BasisTools.LoadTextureFromTranscodeResult(texture, result);
-            (texture.getEngine() as Engine)._setCubeMapTextureParams(hasMipmap);
+            (texture.getEngine() as Engine)._setCubeMapTextureParams(texture, hasMipmap);
             texture.isReady = true;
             texture.onLoadedObservable.notifyObservers(texture);
             texture.onLoadedObservable.clear();

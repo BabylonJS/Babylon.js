@@ -109,7 +109,7 @@ export class KhronosTextureContainer2 {
     }
 
     /** @hidden */
-    public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void> {
+    public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: any): Promise<void> {
         const caps = this._engine.getCaps();
 
         const compressedTexturesCaps = {
@@ -154,7 +154,7 @@ export class KhronosTextureContainer2 {
                         worker.addEventListener("message", onMessage);
 
                         // note: we can't transfer the ownership of data.buffer because if using a fallback texture the data.buffer buffer will be used by the current thread
-                        worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps }/*, [data.buffer]*/);
+                        worker.postMessage({ action: "decode", data, caps: compressedTexturesCaps, options }/*, [data.buffer]*/);
                     });
                 });
             });
@@ -187,7 +187,7 @@ export class KhronosTextureContainer2 {
         delete KhronosTextureContainer2._WorkerPoolPromise;
     }
 
-    protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture) {
+    protected _createTexture(data: any /* IDecodedData */, internalTexture: InternalTexture) {
         this._engine._bindTextureDirectly(this._engine._gl.TEXTURE_2D, internalTexture);
 
         if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
@@ -277,7 +277,7 @@ function workerFunc(): void {
                 postMessage({ action: "init" });
                 break;
             case "decode":
-                ktx2Decoder.decode(event.data.data, event.data.caps).then((data: any) => {
+                ktx2Decoder.decode(event.data.data, event.data.caps, event.data.options).then((data: any) => {
                     const buffers = [];
                     for (let mip = 0; mip < data.mipmaps.length; ++mip) {
                         const mipmap = data.mipmaps[mip];

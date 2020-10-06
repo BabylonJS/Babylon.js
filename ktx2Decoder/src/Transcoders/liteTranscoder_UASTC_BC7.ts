@@ -14,6 +14,12 @@ export class LiteTranscoder_UASTC_BC7 extends LiteTranscoder {
         return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.BC7_RGBA;
     }
 
+    public static Name = "UniversalTranscoder_UASTC_BC7";
+
+    public getName(): string {
+        return LiteTranscoder_UASTC_BC7.Name;
+    }
+
     public initialize(): void {
         this.setModulePath(LiteTranscoder_UASTC_BC7.WasmModuleURL);
     }

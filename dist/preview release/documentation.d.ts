@@ -1119,15 +1119,17 @@ declare module BABYLON {
          * @param createPolynomials will be true if polynomials have been requested
          * @param onLoad defines the callback to trigger once the texture is ready
          * @param onError defines the callback to trigger in case of error
+         * @param options options to be passed to the loader
          */
-        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>): void;
+        loadCubeData(data: ArrayBufferView | ArrayBufferView[], texture: InternalTexture, createPolynomials: boolean, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, options?: any): void;
         /**
          * Uploads the 2D texture data to the WebGL texture. It has already been bound once in the callback.
          * @param data contains the texture data
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
+         * @param options options to be passed to the loader
          */
-        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed?: boolean) => void, options?: any): void;
     }
 }
 declare module BABYLON {
@@ -7816,9 +7818,10 @@ declare module BABYLON {
              * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
              * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
              * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+             * @param loaderOptions options to be passed to the loader
              * @returns the cube texture as an InternalTexture
              */
-            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>): InternalTexture;
+            createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap: boolean | undefined, onLoad: Nullable<(data?: any) => void>, onError: Nullable<(message?: string, exception?: any) => void>, format: number | undefined, forcedExtension: any, createPolynomials: boolean, lodScale: number, lodOffset: number, fallback: Nullable<InternalTexture>, loaderOptions: any): InternalTexture;
             /**
              * Creates a cube texture
              * @param rootUrl defines the url where the files to load is located
@@ -7859,7 +7862,7 @@ declare module BABYLON {
             /**
              * @hidden
              */
-            _setCubeMapTextureParams(loadMipmap: boolean): void;
+            _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean): void;
         }
 }
 declare module BABYLON {
@@ -7915,6 +7918,7 @@ declare module BABYLON {
         private _textureMatrix;
         private _format;
         private _createPolynomials;
+        private _loaderOptions;
         /**
          * Creates a cube texture from an array of image urls
          * @param files defines an array of image urls
@@ -7948,9 +7952,10 @@ declare module BABYLON {
          * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
          * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
          * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+         * @param loaderOptions options to be passed to the loader
          * @return the cube texture
          */
-        constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number);
+        constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions?: Nullable<string[]>, noMipmap?: boolean, files?: Nullable<string[]>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, prefiltered?: boolean, forcedExtension?: any, createPolynomials?: boolean, lodScale?: number, lodOffset?: number, loaderOptions?: any);
         /**
          * Get the current class name of the texture useful for serialization or dynamic coding.
          * @returns "CubeTexture"
@@ -28193,6 +28198,7 @@ declare module BABYLON {
         private _delayedOnLoad;
         private _delayedOnError;
         private _mimeType?;
+        private _loaderOptions?;
         /** Returns the texture mime type if it was defined by a loader (undefined else) */
         get mimeType(): string | undefined;
         /**
@@ -28229,8 +28235,9 @@ declare module BABYLON {
          * @param deleteBuffer defines if the buffer we are loading the texture from should be deleted after load
          * @param format defines the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
          * @param mimeType defines an optional mime type information
+         * @param loaderOptions options to be passed to the loader
          */
-        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string);
+        constructor(url: Nullable<string>, sceneOrEngine: Nullable<Scene | ThinEngine>, noMipmap?: boolean, invertY?: boolean, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, deleteBuffer?: boolean, format?: number, mimeType?: string, loaderOptions?: any);
         /**
          * Update the url (and optional buffer) of this texture if url was null during construction.
          * @param url the url of the texture
@@ -39292,9 +39299,10 @@ declare module BABYLON {
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param mimeType defines an optional mime type
+         * @param loaderOptions options to be passed to the loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
         /**
          * Loads an image as an HTMLImageElement.
          * @param input url string, ArrayBuffer, or Blob to load
@@ -55941,9 +55949,10 @@ declare module BABYLON {
          * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param mimeType defines an optional mime type
+         * @param loaderOptions options to be passed to the loader
          * @returns a InternalTexture for assignment back into BABYLON.Texture
          */
-        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string): InternalTexture;
+        createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>, fallback?: Nullable<InternalTexture>, format?: Nullable<number>, forcedExtension?: Nullable<string>, mimeType?: string, loaderOptions?: any): InternalTexture;
         _createDepthStencilTexture(size: RenderTargetTextureSize, options: DepthTextureCreationOptions): NativeTexture;
         _releaseFramebufferObjects(texture: InternalTexture): void;
         /**
@@ -58579,7 +58588,7 @@ declare module BABYLON {
          */
         constructor(engine: ThinEngine, numWorkers?: number);
         /** @hidden */
-        uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture): Promise<void>;
+        uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: any): Promise<void>;
         /**
          * Stop all async operations and release resources.
          */
@@ -58625,7 +58634,7 @@ declare module BABYLON {
          * @param texture defines the BabylonJS internal texture
          * @param callback defines the method to call once ready to upload
          */
-        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void): void;
+        loadData(data: ArrayBufferView, texture: InternalTexture, callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed: boolean) => void, options?: any): void;
     }
 }
 declare module BABYLON {
