@@ -345,7 +345,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * configured properties for that axis.
      */
     private _updateCamera(
-        value: number, action: Nullable<Vector3>, property: Nullable<Axis>): void {
+        value: number, action: Nullable<Vector3>, property: Nullable<AXIS>): void {
             if (value === 0) {
                 // Mouse wheel has not moved.
                 return;
