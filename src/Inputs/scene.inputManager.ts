@@ -62,6 +62,7 @@ export class InputManager {
 
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
+    private _alreadyAttachedTo: HTMLElement;
 
     // Pointers
     private _wheelEventName = "";
@@ -102,6 +103,7 @@ export class InputManager {
     // Keyboard
     private _onKeyDown: (evt: KeyboardEvent) => void;
     private _onKeyUp: (evt: KeyboardEvent) => void;
+    private _keyboardIsAttached = false;
     private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
 
@@ -468,11 +470,12 @@ export class InputManager {
 
         if (!elementToAttachTo) {
             return;
-        }
+        }        
 
         if (this._alreadyAttached) {
             this.detachControl();
         }
+        this._alreadyAttachedTo = elementToAttachTo;
         let engine = scene.getEngine();
 
         this._initActionManager = (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo): Nullable<AbstractActionManager> => {
@@ -801,20 +804,23 @@ export class InputManager {
             }
         };
 
+        let attachedFunction = () => {
+            if (!elementToAttachTo || this._keyboardIsAttached) {
+                return;
+            }
+            elementToAttachTo.addEventListener("keydown", this._onKeyDown, false);
+            elementToAttachTo.addEventListener("keyup", this._onKeyUp, false);
+            this._keyboardIsAttached = true;
+        };
+
         // Keyboard events
         this._onCanvasFocusObserver = engine.onCanvasFocusObservable.add(
             (() => {
-                let fn = () => {
-                    if (!elementToAttachTo) {
-                        return;
-                    }
-                    elementToAttachTo.addEventListener("keydown", this._onKeyDown, false);
-                    elementToAttachTo.addEventListener("keyup", this._onKeyUp, false);
-                };
+                
                 if (document.activeElement === elementToAttachTo) {
-                    fn();
+                    attachedFunction();
                 }
-                return fn;
+                return attachedFunction;
             })()
         );
 
@@ -824,7 +830,10 @@ export class InputManager {
             }
             elementToAttachTo.removeEventListener("keydown", this._onKeyDown);
             elementToAttachTo.removeEventListener("keyup", this._onKeyUp);
+            this._keyboardIsAttached = false;
         });
+
+        attachedFunction();
 
         // Pointer events
         var eventPrefix = Tools.GetPointerPrefix(engine);
@@ -860,11 +869,10 @@ export class InputManager {
      * Detaches all event handlers
      */
     public detachControl() {
-        const canvas = this._scene.getEngine().getInputElement();
         const engine = this._scene.getEngine();
         const eventPrefix = Tools.GetPointerPrefix(engine);
 
-        if (!canvas) {
+        if (!this._alreadyAttachedTo) {
             return;
         }
 
@@ -873,9 +881,9 @@ export class InputManager {
         }
 
         // Pointer
-        canvas.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
-        canvas.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
-        canvas.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
+        this._alreadyAttachedTo.removeEventListener(eventPrefix + "move", <any>this._onPointerMove);
+        this._alreadyAttachedTo.removeEventListener(this._wheelEventName, <any>this._onPointerMove);
+        this._alreadyAttachedTo.removeEventListener(eventPrefix + "down", <any>this._onPointerDown);
         window.removeEventListener(eventPrefix + "up", <any>this._onPointerUp);
 
         // Blur / Focus
@@ -888,12 +896,12 @@ export class InputManager {
         }
 
         // Keyboard
-        canvas.removeEventListener("keydown", this._onKeyDown);
-        canvas.removeEventListener("keyup", this._onKeyUp);
+        this._alreadyAttachedTo.removeEventListener("keydown", this._onKeyDown);
+        this._alreadyAttachedTo.removeEventListener("keyup", this._onKeyUp);
 
         // Cursor
         if (!this._scene.doNotHandleCursors) {
-            canvas.style.cursor = this._scene.defaultCursor;
+            this._alreadyAttachedTo.style.cursor = this._scene.defaultCursor;
         }
 
         this._alreadyAttached = false;

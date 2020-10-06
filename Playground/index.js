@@ -78,10 +78,12 @@ let checkBabylonVersionAsync= function () {
     return Promise.all(tasks);
 }
 
+var storedPGObbject = BABYLON.Playground;
+
 checkBabylonVersionAsync().then(() => {
     if (typeof BABYLONDEVTOOLS !== 'undefined') {
         var hostElement = document.getElementById("host-element");
-        BABYLON.Playground.Show(hostElement);
+        storedPGObbject.Show(hostElement);
         return;
     }
 
