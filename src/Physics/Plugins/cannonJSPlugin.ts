@@ -155,7 +155,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         var meshChildren = mainImpostor.object.getChildMeshes ? mainImpostor.object.getChildMeshes(true) : [];
         let currentRotation: Nullable<Quaternion> = mainImpostor.object.rotationQuaternion;
         if (meshChildren.length) {
-            var processMesh = (localPosition: Vector3, mesh: AbstractMesh) => {
+            const processMesh = (mesh: AbstractMesh) => {
                 if (!currentRotation || !mesh.rotationQuaternion) {
                     return;
                 }
@@ -164,7 +164,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 if (childImpostor) {
                     var parent = childImpostor.parent;
                     if (parent !== mainImpostor) {
-                        var pPosition = mesh.position.clone();
+                        const pPosition = mesh.getAbsolutePosition();
                         // let localRotation = mesh.rotationQuaternion.multiply(Quaternion.Inverse(currentRotation));
                         if (childImpostor.physicsBody) {
                             this.removePhysicsBody(childImpostor);
@@ -180,9 +180,9 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 currentRotation.multiplyInPlace(mesh.rotationQuaternion);
                 mesh.getChildMeshes(true)
                     .filter((m) => !!m.physicsImpostor)
-                    .forEach(processMesh.bind(this, mesh.getAbsolutePosition()));
+                    .forEach(processMesh);
             };
-            meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh.bind(this, mainImpostor.object.getAbsolutePosition()));
+            meshChildren.filter((m) => !!m.physicsImpostor).forEach(processMesh);
         }
     }
 
@@ -510,7 +510,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
             }
 
             //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
-            var p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
+            const p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
             mesh.setPreTransformMatrix(p);
             mesh.computeWorldMatrix(true);
 
