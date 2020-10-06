@@ -6,6 +6,11 @@ import { DraggableLineComponent } from '../../sharedComponents/draggableLineComp
 import { NodeMaterialModes } from 'babylonjs/Materials/Node/Enums/nodeMaterialModes';
 import { Observer } from 'babylonjs/Misc/observable';
 import { Nullable } from 'babylonjs/types';
+import { DraggableLineWithButtonComponent } from '../../sharedComponents/draggableLineWithButtonComponent';
+import { LineWithFileButtonComponent } from '../../sharedComponents/lineWithFileButtonComponent';
+import { Tools } from 'babylonjs/Misc/tools';
+const addButton = require("../../../imgs/add.svg");
+const deleteButton = require('../../../imgs/delete.svg');
 
 require("./nodeList.scss");
 
@@ -132,7 +137,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "ClearCoatBlock": "PBR ClearCoat block",
         "RefractionBlock": "PBR Refraction block",
         "SubSurfaceBlock": "PBR SubSurface block",
-        "Position2DBlock": "A Vector2 representing the position of each vertex of the screen quad",
+        "ScreenPositionBlock": "A Vector2 representing the position of each vertex of the screen quad (derived from UV set from the quad used to render)",
         "CurrentScreenBlock": "The screen buffer used as input for the post process",
         "ParticleUVBlock": "The particle uv texture coordinate",
         "ParticleTextureBlock": "The particle texture",
@@ -144,11 +149,18 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         "FragCoordBlock": "The gl_FragCoord predefined variable that contains the window relative coordinate (x, y, z, 1/w)",
         "ScreenSizeBlock": "The size (in pixels) of the screen window",
     };
+    
+    private _customFrameList: {[key: string]: string};
 
     constructor(props: INodeListComponentProps) {
         super(props);
 
         this.state = { filter: "" };
+
+        let frameJson = localStorage.getItem("Custom-Frame-List");
+        if(frameJson) {
+            this._customFrameList = JSON.parse(frameJson);
+        }
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
@@ -163,10 +175,56 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         this.setState({ filter: filter });
     }
 
-    render() {
-        // Block types used to create the menu from
-        const allBlocks = {
+    loadCustomFrame(file: File) {
+        Tools.ReadFile(file, async (data) => {
+            // get Frame Data from file
+            let decoder = new TextDecoder("utf-8");
+            const frameData = JSON.parse(decoder.decode(data));
+            let frameName = frameData.editorData.frames[0].name + "Custom";
+            let frameToolTip = frameData.editorData.frames[0].comments || "";
 
+            try {
+                localStorage.setItem(frameName, JSON.stringify(frameData));
+            } catch (error) {
+                this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
+                return;
+            }
+
+            let frameJson = localStorage.getItem("Custom-Frame-List");
+            let frameList:  {[key: string]: string} = {};
+            if(frameJson) {
+                frameList = JSON.parse(frameJson); 
+            }
+            frameList[frameName] = frameToolTip;
+            localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
+                this._customFrameList = frameList;
+                this.forceUpdate();
+
+        }, undefined, true);
+    }
+
+    removeItem(value : string) : void {
+        let frameJson = localStorage.getItem("Custom-Frame-List");
+            if(frameJson) {
+                let frameList = JSON.parse(frameJson);
+                delete frameList[value];
+                localStorage.removeItem(value);
+                localStorage.setItem("Custom-Frame-List", JSON.stringify(frameList));
+                this._customFrameList = frameList;
+                this.forceUpdate();
+            }        
+    }
+
+    render() {
+
+        let customFrameNames: string[] = [];
+        for(let frame in this._customFrameList){
+            customFrameNames.push(frame);
+        }
+        
+        // Block types used to create the menu from
+        const allBlocks: any = {
+            Custom_Frames: customFrameNames,
             Animation: ["BonesBlock", "MorphTargetsBlock"],
             Color_Management: ["ReplaceColorBlock", "PosterizeBlock", "GradientBlock", "DesaturateBlock"],
             Conversion_Blocks: ["ColorMergerBlock", "ColorSplitterBlock", "VectorMergerBlock", "VectorSplitterBlock"],
@@ -181,7 +239,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock"],
             Particle: ["ParticleBlendMultiplyBlock", "ParticleColorBlock", "ParticlePositionWorldBlock", "ParticleRampGradientBlock", "ParticleTextureBlock", "ParticleTextureMaskBlock", "ParticleUVBlock"],
             PBR: ["PBRMetallicRoughnessBlock", "AmbientOcclusionBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "ReflectivityBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
-            PostProcess: ["Position2DBlock", "CurrentScreenBlock"],
+            PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
+            Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
             Scene: ["FogBlock", "CameraPositionBlock", "FogColorBlock", "ImageProcessingBlock", "LightBlock", "LightInformationBlock", "ViewDirectionBlock"],
@@ -191,16 +250,25 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             case NodeMaterialModes.Material:
                 delete allBlocks["PostProcess"];
                 delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
                 break;
             case NodeMaterialModes.PostProcess:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
                 delete allBlocks["Particle"];
+                delete allBlocks["Procedural__Texture"];
+                break;
+            case NodeMaterialModes.ProceduralTexture:
+                delete allBlocks["Animation"];
+                delete allBlocks["Mesh"];  
+                delete allBlocks["Particle"];              
+                delete allBlocks["PostProcess"];
                 break;
             case NodeMaterialModes.Particle:
                 delete allBlocks["Animation"];
                 delete allBlocks["Mesh"];
-                delete allBlocks["PostProcess"];
+                delete allBlocks["PostProcess"];            
+                delete allBlocks["Procedural__Texture"];
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 break;
         }
@@ -211,18 +279,28 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             var blockList = (allBlocks as any)[key].filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
             .sort((a: string, b: string) => a.localeCompare(b))
             .map((block: any, i: number) => {
-                let tooltip = NodeListComponent._Tooltips[block] || "";
+                if(key === "Custom_Frames") {
+                    return <DraggableLineWithButtonComponent key={block} data={block} tooltip={this._customFrameList[block] || ""} iconImage={deleteButton} iconTitle="Delete"
+                    onIconClick={ value => this.removeItem(value)}/>;
+                }
+                return <DraggableLineComponent key={block} data={block} tooltip={ NodeListComponent._Tooltips[block] || ""}/>;
 
-                return <DraggableLineComponent key={block} data={block} tooltip={tooltip}/>;
             });
 
-            if (blockList.length) {
+            if(key === "Custom_Frames") {
+                let line =  <LineWithFileButtonComponent key="add..."title={"Add Custom Frame"} closed={false}
+                label="Add..." uploadName={'custom-frame-upload'} iconImage={addButton} accept=".json" onIconClick={(file) => {
+                    this.loadCustomFrame(file);
+                }}/>;
+                blockList.push(line);
+            }         
+            if(blockList.length) {
                 blockMenu.push(
                     <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
                         {blockList}
                     </LineContainerComponent>
                 );
-            }
+           }
         }
 
         return (
@@ -244,6 +322,5 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 </div>
             </div>
         );
-
     }
 }

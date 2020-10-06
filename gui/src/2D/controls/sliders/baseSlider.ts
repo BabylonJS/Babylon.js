@@ -3,6 +3,7 @@ import { Vector2 } from "babylonjs/Maths/math.vector";
 
 import { Control } from "../control";
 import { ValueAndUnit } from "../../valueAndUnit";
+import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 
 /**
  * Class used to create slider controls
@@ -294,8 +295,8 @@ export class BaseSlider extends Control {
         this.value = this._step ? ((value * mult) | 0) / mult : value;
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean {
-        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
+    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+        if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
 
@@ -307,7 +308,7 @@ export class BaseSlider extends Control {
         return true;
     }
 
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number): void {
+    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownID) {
             return;
@@ -317,7 +318,7 @@ export class BaseSlider extends Control {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
 
-        super._onPointerMove(target, coordinates, pointerId);
+        super._onPointerMove(target, coordinates, pointerId, pi);
     }
 
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
@@ -326,4 +327,10 @@ export class BaseSlider extends Control {
         delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
+
+    public _onCanvasBlur(): void {
+        this._forcePointerUp();
+        super._onCanvasBlur();
+    }
+
 }

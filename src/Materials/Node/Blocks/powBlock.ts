@@ -15,9 +15,12 @@ export class PowBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerInput("power", NodeMaterialBlockConnectionPointTypes.Float);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("power", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
+
+        this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._linkConnectionTypes(0, 1);
     }
 
     /**

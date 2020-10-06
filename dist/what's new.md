@@ -236,6 +236,7 @@
 - Added `ScrollViewer.freezeControls` property to speed up rendering ([Popov72](https://github.com/Popov72))
 - Added `ImageScrollBar.num90RotationInVerticalMode` property to let the user rotate the pictures when in vertical mode ([Popov72](https://github.com/Popov72))
 - Modified isPointerBlocker to block mouse wheel scroll events. ScrollViewer mouse scroll no longer dependent on scene. ([lockphase](https://github.com/lockphase/))
+- Added `_onCanvasBlur` event for controls to detect when the canvas loses focus. Fixes bug where sliders and color pickers would become stuck when canvas lost focus. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 
 ### Particles
 
@@ -354,6 +355,7 @@
 - Fix for bug where frames without comments would display undefined at the bottom right corner ([Kyle Belfort](https://github.com/belfortk))
 - Fixed an issue in XR where one of the cameras used for rendering got the wrong framebuffer dimensions ([RaananW](https://github.com/RaananW/))
 - Fix bug in `StandardMaterial` and `PBRMaterial` where the mesh visibility value is not applied correctly when the material is frozen ([Popov72](https://github.com/Popov72))
+- Fix a bug where the engine would crash if `audioEngine` did not exist on `Engine`
 
 ## Breaking changes
 

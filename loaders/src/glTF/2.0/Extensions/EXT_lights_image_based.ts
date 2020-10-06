@@ -45,7 +45,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
 
     /** @hidden */
     public dispose() {
-        delete this._loader;
+        (this._loader as any) = null;
         delete this._lights;
     }
 

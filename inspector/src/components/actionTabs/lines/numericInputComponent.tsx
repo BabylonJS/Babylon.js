@@ -23,7 +23,6 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
 
     shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: { value: string }) {
         if (this._localChange) {
-            this._localChange = false;
             return true;
         }
 
@@ -53,6 +52,18 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         this.props.onChange(valueAsNumber);
     }
 
+    onBlur() {
+        this._localChange = false;
+        let valueAsNumber = parseFloat(this.state.value);
+
+        if (isNaN(valueAsNumber)) {
+            this.props.onChange(this.props.value);
+            return;
+        }
+
+        this.props.onChange(valueAsNumber);
+    }
+
     render() {
         return (
             <div className="numeric">
@@ -62,7 +73,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
                         {`${this.props.label}: `}
                     </div>
                 }
-                <input type="number" step={this.props.step} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} />
+                <input type="number" step={this.props.step} className="numeric-input" value={this.state.value} onChange={evt => this.updateValue(evt)} onBlur={() => this.onBlur()}/>
             </div>
         )
     }

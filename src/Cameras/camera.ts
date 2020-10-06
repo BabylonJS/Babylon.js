@@ -119,12 +119,20 @@ export class Camera extends Node {
         this._position = newPosition;
     }
 
+    @serializeAsVector3("upVector")
+    protected _upVector = Vector3.Up();
+
     /**
      * The vector the camera should consider as up.
      * (default is Vector3(0, 1, 0) aka Vector3.Up())
      */
-    @serializeAsVector3()
-    public upVector = Vector3.Up();
+    public set upVector(vec: Vector3) {
+        this._upVector = vec;
+    }
+
+    public get upVector() {
+        return this._upVector;
+    }
 
     /**
      * Define the current limit on the left side for an orthographic camera
@@ -617,6 +625,12 @@ export class Camera extends Node {
             this._postProcesses.splice(insertAt, 0, postProcess);
         }
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
+
+        // Update prePass
+        if (this._scene.prePassRenderer) {
+            this._scene.prePassRenderer.markAsDirty();
+        }
+
         return this._postProcesses.indexOf(postProcess);
     }
 
@@ -630,6 +644,12 @@ export class Camera extends Node {
         if (idx !== -1) {
             this._postProcesses[idx] = null;
         }
+
+        // Update prePass
+        if (this._scene.prePassRenderer) {
+            this._scene.prePassRenderer.markAsDirty();
+        }
+
         this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
     }
 

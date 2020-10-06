@@ -17,6 +17,7 @@ import { Light } from "./Lights/light";
 import { Node } from "./node";
 
 declare type Animation = import("./Animations/animation").Animation;
+declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
 
 /**
  * Defines how the parser contract is defined.
@@ -194,10 +195,25 @@ export abstract class AbstractScene {
      */
     public textures = new Array<BaseTexture>();
 
+    /** @hidden */
+    protected _environmentTexture: Nullable<BaseTexture> = null;
     /**
-     * Environment texture for the scene
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
      */
-    public environmentTexture: Nullable<BaseTexture> = null;
+    public get environmentTexture(): Nullable<BaseTexture> {
+        return this._environmentTexture;
+    }
+
+    public set environmentTexture(value: Nullable<BaseTexture>) {
+        this._environmentTexture = value;
+    }
+
+    /**
+     * The list of postprocesses added to the scene
+     */
+    public postProcesses = new Array<PostProcess>();
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones

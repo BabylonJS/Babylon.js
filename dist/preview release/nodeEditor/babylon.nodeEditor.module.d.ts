@@ -263,6 +263,8 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _frameInPorts;
         private _frameOutPorts;
         private _controlledPorts;
+        private _exposedInPorts;
+        private _exposedOutPorts;
         private _id;
         private _comments;
         private _frameIsResizing;
@@ -279,6 +281,10 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _createInputPort;
         private _markFramePortPositions;
         private _createFramePorts;
+        private removePortFromExposedWithNode;
+        private removePortFromExposedWithLink;
+        private createInputPorts;
+        private createOutputPorts;
         private _redrawFramePorts;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
@@ -356,6 +362,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _expandRight;
         private _expandBottom;
         dispose(): void;
+        private serializePortData;
         serialize(): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
@@ -393,6 +400,8 @@ declare module "babylonjs-node-editor/diagram/nodePort" {
         hasLabel(): boolean;
         get exposedOnFrame(): boolean;
         set exposedOnFrame(value: boolean);
+        get exposedPortPosition(): number;
+        set exposedPortPosition(value: number);
         private _isConnectedToNodeOutsideOfFrame;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
@@ -426,7 +435,7 @@ declare module "babylonjs-node-editor/diagram/nodeLink" {
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
-        dispose(): void;
+        dispose(notify?: boolean): void;
     }
 }
 declare module "babylonjs-node-editor/diagram/graphCanvas" {
@@ -1142,6 +1151,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientStepComponent" 
         onDelete: () => void;
         onUpdateStep: () => void;
         onCheckForReOrder: () => void;
+        onCopy?: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -1169,9 +1179,13 @@ declare module "babylonjs-node-editor/diagram/properties/gradientNodePropertyCom
     import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
     import { IPropertyComponentProps } from "babylonjs-node-editor/diagram/properties/propertyComponentProps";
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         forceRebuild(): void;
         deleteStep(step: GradientBlockColorStep): void;
+        copyStep(step: GradientBlockColorStep): void;
         addNewStep(): void;
         checkForReOrder(): void;
         render(): JSX.Element;
@@ -1544,6 +1558,41 @@ declare module "babylonjs-node-editor/sharedComponents/draggableLineComponent" {
         render(): JSX.Element;
     }
 }
+declare module "babylonjs-node-editor/sharedComponents/draggableLineWithButtonComponent" {
+    import * as React from "react";
+    export interface IDraggableLineWithButtonComponent {
+        data: string;
+        tooltip: string;
+        iconImage: any;
+        onIconClick: (value: string) => void;
+        iconTitle: string;
+    }
+    export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
+        constructor(props: IDraggableLineWithButtonComponent);
+        render(): JSX.Element;
+    }
+}
+declare module "babylonjs-node-editor/sharedComponents/lineWithFileButtonComponent" {
+    import * as React from "react";
+    interface ILineWithFileButtonComponentProps {
+        title: string;
+        closed?: boolean;
+        label: string;
+        iconImage: any;
+        onIconClick: (file: File) => void;
+        accept: string;
+        uploadName?: string;
+    }
+    export class LineWithFileButtonComponent extends React.Component<ILineWithFileButtonComponentProps, {
+        isExpanded: boolean;
+    }> {
+        private uploadRef;
+        constructor(props: ILineWithFileButtonComponentProps);
+        onChange(evt: any): void;
+        switchExpandedState(): void;
+        render(): JSX.Element;
+    }
+}
 declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
     import * as React from "react";
     import { GlobalState } from "babylonjs-node-editor/globalState";
@@ -1555,9 +1604,12 @@ declare module "babylonjs-node-editor/components/nodeList/nodeListComponent" {
     }> {
         private _onResetRequiredObserver;
         private static _Tooltips;
+        private _customFrameList;
         constructor(props: INodeListComponentProps);
         componentWillUnmount(): void;
         filterContent(filter: string): void;
+        loadCustomFrame(file: File): void;
+        removeItem(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -1694,7 +1746,9 @@ declare module "babylonjs-node-editor/components/preview/previewManager" {
         private _currentType;
         private _lightParent;
         private _postprocess;
+        private _proceduralTexture;
         private _particleSystem;
+        private _layer;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;
@@ -2026,6 +2080,8 @@ declare module NODEEDITOR {
         private _frameInPorts;
         private _frameOutPorts;
         private _controlledPorts;
+        private _exposedInPorts;
+        private _exposedOutPorts;
         private _id;
         private _comments;
         private _frameIsResizing;
@@ -2042,6 +2098,10 @@ declare module NODEEDITOR {
         private _createInputPort;
         private _markFramePortPositions;
         private _createFramePorts;
+        private removePortFromExposedWithNode;
+        private removePortFromExposedWithLink;
+        private createInputPorts;
+        private createOutputPorts;
         private _redrawFramePorts;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
@@ -2119,6 +2179,7 @@ declare module NODEEDITOR {
         private _expandRight;
         private _expandBottom;
         dispose(): void;
+        private serializePortData;
         serialize(): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
@@ -2145,6 +2206,8 @@ declare module NODEEDITOR {
         hasLabel(): boolean;
         get exposedOnFrame(): boolean;
         set exposedOnFrame(value: boolean);
+        get exposedPortPosition(): number;
+        set exposedPortPosition(value: number);
         private _isConnectedToNodeOutsideOfFrame;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
@@ -2173,7 +2236,7 @@ declare module NODEEDITOR {
         update(endX?: number, endY?: number, straight?: boolean): void;
         constructor(graphCanvas: GraphCanvasComponent, portA: NodePort, nodeA: GraphNode, portB?: NodePort, nodeB?: GraphNode);
         onClick(): void;
-        dispose(): void;
+        dispose(notify?: boolean): void;
     }
 }
 declare module NODEEDITOR {
@@ -2791,6 +2854,7 @@ declare module NODEEDITOR {
         onDelete: () => void;
         onUpdateStep: () => void;
         onCheckForReOrder: () => void;
+        onCopy?: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -2814,9 +2878,13 @@ declare module NODEEDITOR {
 }
 declare module NODEEDITOR {
     export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
+        private onValueChangedObserver;
         constructor(props: IPropertyComponentProps);
+        componentDidMount(): void;
+        componentWillUnmount(): void;
         forceRebuild(): void;
         deleteStep(step: BABYLON.GradientBlockColorStep): void;
+        copyStep(step: BABYLON.GradientBlockColorStep): void;
         addNewStep(): void;
         checkForReOrder(): void;
         render(): JSX.Element;
@@ -3131,6 +3199,39 @@ declare module NODEEDITOR {
     }
 }
 declare module NODEEDITOR {
+    export interface IDraggableLineWithButtonComponent {
+        data: string;
+        tooltip: string;
+        iconImage: any;
+        onIconClick: (value: string) => void;
+        iconTitle: string;
+    }
+    export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
+        constructor(props: IDraggableLineWithButtonComponent);
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
+    interface ILineWithFileButtonComponentProps {
+        title: string;
+        closed?: boolean;
+        label: string;
+        iconImage: any;
+        onIconClick: (file: File) => void;
+        accept: string;
+        uploadName?: string;
+    }
+    export class LineWithFileButtonComponent extends React.Component<ILineWithFileButtonComponentProps, {
+        isExpanded: boolean;
+    }> {
+        private uploadRef;
+        constructor(props: ILineWithFileButtonComponentProps);
+        onChange(evt: any): void;
+        switchExpandedState(): void;
+        render(): JSX.Element;
+    }
+}
+declare module NODEEDITOR {
     interface INodeListComponentProps {
         globalState: GlobalState;
     }
@@ -3139,9 +3240,12 @@ declare module NODEEDITOR {
     }> {
         private _onResetRequiredObserver;
         private static _Tooltips;
+        private _customFrameList;
         constructor(props: INodeListComponentProps);
         componentWillUnmount(): void;
         filterContent(filter: string): void;
+        loadCustomFrame(file: File): void;
+        removeItem(value: string): void;
         render(): JSX.Element;
     }
 }
@@ -3255,7 +3359,9 @@ declare module NODEEDITOR {
         private _currentType;
         private _lightParent;
         private _postprocess;
+        private _proceduralTexture;
         private _particleSystem;
+        private _layer;
         constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState);
         private _handleAnimations;
         private _prepareLights;

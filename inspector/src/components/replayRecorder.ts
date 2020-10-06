@@ -19,6 +19,11 @@ export class ReplayRecorder {
         this._isRecording = true;
     }
 
+    public applyDelta(json: any, scene: Scene) {
+        SceneRecorder.ApplyDelta(json, scene);
+        this._isRecording = false;
+    }
+
     public export() {
        let content = JSON.stringify(this._sceneRecorder.getDelta());
 

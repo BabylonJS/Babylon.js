@@ -156,6 +156,9 @@ export class NodeMaterialBlock {
         return null;
     }
 
+     /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+     public visibleInInspector = false;
+
     /**
      * Creates a new NodeMaterialBlock
      * @param name defines the block name
@@ -583,7 +586,8 @@ export class NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        return "";
+        let variableName = this._codeVariableName;
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector}`;
     }
 
     /** @hidden */
@@ -703,6 +707,7 @@ export class NodeMaterialBlock {
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
         serializationObject.comments = this.comments;
+        serializationObject.visibleInInspector = this.visibleInInspector;
 
         serializationObject.inputs = [];
         serializationObject.outputs = [];
@@ -722,6 +727,7 @@ export class NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
+        this.visibleInInspector = !!serializationObject.visibleInInspector;
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }
 
@@ -735,6 +741,7 @@ export class NodeMaterialBlock {
                 }
                 if (port.isExposedOnFrame) {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
+                    this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
             });
         }
@@ -745,6 +752,7 @@ export class NodeMaterialBlock {
                 }
                 if (port.isExposedOnFrame) {
                     this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
+                    this.outputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
             });
         }

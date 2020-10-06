@@ -1,12 +1,12 @@
 import { Nullable, DataArray } from "../types";
-import { Engine } from "../Engines/engine";
+import { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from './dataBuffer';
 
 /**
  * Class used to store data that will be store in GPU memory
  */
 export class Buffer {
-    private _engine: Engine;
+    private _engine: ThinEngine;
     private _buffer: Nullable<DataBuffer>;
     /** @hidden */
     public _data: Nullable<DataArray>;

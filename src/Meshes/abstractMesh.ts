@@ -30,6 +30,7 @@ import { Epsilon } from '../Maths/math.constants';
 import { Plane } from '../Maths/math.plane';
 import { Axis } from '../Maths/math.axis';
 import { IParticleSystem } from '../Particles/IParticleSystem';
+import { _TypeStore } from '../Misc/typeStore';
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -85,6 +86,7 @@ class _InternalAbstractMeshDataInfo {
     public _isActiveIntermediate = false;
     public _onlyForInstancesIntermediate = false;
     public _actAsRegularMesh = false;
+    public _currentLOD: Nullable<AbstractMesh> = null;
 }
 
 /**
@@ -350,11 +352,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      */
     public enablePointerMoveEvents = false;
 
+    private _renderingGroupId = 0;
+
     /**
      * Specifies the rendering group id for this mesh (0 by default)
      * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
      */
-    public renderingGroupId = 0;
+    public get renderingGroupId() {
+        return this._renderingGroupId;
+    }
+
+    public set renderingGroupId(value: number) {
+        this._renderingGroupId = value;
+    }
     private _material: Nullable<Material> = null;
 
     /** Gets or sets current material */
@@ -548,6 +558,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._meshCollisionData._collisionMask = !isNaN(mask) ? mask : -1;
     }
 
+    /**
+     * Gets or sets a collision response flag (default is true).
+     * when collisionResponse is false, events are still triggered but colliding entity has no response
+     * This helps creating trigger volume when user wants collision feedback events but not position/velocity
+     * to respond to the collision.
+     */
+    public get collisionResponse(): boolean {
+        return this._meshCollisionData._collisionResponse;
+    }
+
+    public set collisionResponse(response: boolean) {
+        this._meshCollisionData._collisionResponse = response;
+    }
     /**
      * Gets or sets the current collision group mask (-1 by default).
      * A collision between A and B will happen if A.collisionGroup & b.collisionMask !== 0
@@ -1485,10 +1508,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param fastCheck defines if fast mode (but less precise) must be used (false by default)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
      * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
+     * @param worldToUse defines the world matrix to use to get the world coordinate of the intersection point
      * @returns the picking info
      * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
      */
-    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false): PickingInfo {
+    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false, worldToUse?: Matrix): PickingInfo {
         var pickingInfo = new PickingInfo();
         const intersectionThreshold = this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" ? (this as any).intersectionThreshold : 0;
         const boundingInfo = this._boundingInfo;
@@ -1512,6 +1536,35 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         var subMeshes = this._scene.getIntersectingSubMeshCandidates(this, ray);
         var len: number = subMeshes.length;
+
+        // Check if all submeshes are using a material that don't allow picking (point/lines rendering)
+        // if no submesh can be picked that way, then fallback to BBox picking
+        var anySubmeshSupportIntersect = false;
+        for (var index = 0; index < len; index++) {
+            var subMesh = subMeshes.data[index];
+            var material = subMesh.getMaterial();
+            if (!material) {
+                continue;
+            }
+            if (this.getIndices()?.length && (material.fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
+                    material.fillMode == Constants.MATERIAL_TriangleFillMode ||
+                    material.fillMode == Constants.MATERIAL_WireFrameFillMode ||
+                    material.fillMode == Constants.MATERIAL_PointFillMode)) {
+                anySubmeshSupportIntersect = true;
+                break;
+            }
+        }
+
+        // no sub mesh support intersection, fallback to BBox that has already be done
+        if (!anySubmeshSupportIntersect) {
+            pickingInfo.hit = true;
+            pickingInfo.pickedMesh = this;
+            pickingInfo.distance = Vector3.Distance(ray.origin, boundingInfo.boundingSphere.center);
+            pickingInfo.subMeshId = -1;
+            return pickingInfo;
+        }
+
+        // at least 1 submesh supports intersection, keep going
         for (var index = 0; index < len; index++) {
             var subMesh = subMeshes.data[index];
 
@@ -1538,7 +1591,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         if (intersectInfo) {
             // Get picked point
-            const world = this.skeleton && this.skeleton.overrideMesh ? this.skeleton.overrideMesh.getWorldMatrix() : this.getWorldMatrix();
+            const world = worldToUse ?? (this.skeleton && this.skeleton.overrideMesh ? this.skeleton.overrideMesh.getWorldMatrix() : this.getWorldMatrix());
             const worldOrigin = TmpVectors.Vector3[0];
             const direction = TmpVectors.Vector3[1];
             Vector3.TransformCoordinatesToRef(ray.origin, world, worldOrigin);
@@ -2184,5 +2237,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public getConnectedParticleSystems(): IParticleSystem[] {
         return this._scene.particleSystems.filter((particleSystem) => particleSystem.emitter === this);
     }
-
 }
+
+_TypeStore.RegisteredTypes["BABYLON.AbstractMesh"] = AbstractMesh;

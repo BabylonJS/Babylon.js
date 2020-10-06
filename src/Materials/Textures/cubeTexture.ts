@@ -103,6 +103,7 @@ export class CubeTexture extends BaseTexture {
 
     private _format: number;
     private _createPolynomials: boolean;
+    private _loaderOptions: any;
 
     /**
      * Creates a cube texture from an array of image urls
@@ -154,12 +155,13 @@ export class CubeTexture extends BaseTexture {
      * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
      * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+     * @param loaderOptions options to be passed to the loader
      * @return the cube texture
      */
     constructor(rootUrl: string, sceneOrEngine: Scene | ThinEngine, extensions: Nullable<string[]> = null, noMipmap: boolean = false, files: Nullable<string[]> = null,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, format: number = Constants.TEXTUREFORMAT_RGBA, prefiltered = false,
         forcedExtension: any = null, createPolynomials: boolean = false,
-        lodScale: number = 0.8, lodOffset: number = 0) {
+        lodScale: number = 0.8, lodOffset: number = 0, loaderOptions?: any) {
         super(sceneOrEngine);
 
         this.name = rootUrl;
@@ -174,6 +176,7 @@ export class CubeTexture extends BaseTexture {
         this._extensions = extensions;
         this._files = files;
         this._forcedExtension = forcedExtension;
+        this._loaderOptions = loaderOptions;
 
         if (!rootUrl && !files) {
             return;
@@ -231,7 +234,7 @@ export class CubeTexture extends BaseTexture {
                     this._texture = this._getEngine()!.createPrefilteredCubeTexture(rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, this._createPolynomials);
                 }
                 else {
-                    this._texture = this._getEngine()!.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset);
+                    this._texture = this._getEngine()!.createCubeTexture(rootUrl, scene, files, noMipmap, onLoad, onError, this._format, forcedExtension, false, lodScale, lodOffset, null, loaderOptions);
                 }
                 this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));
 
@@ -305,7 +308,7 @@ export class CubeTexture extends BaseTexture {
                 this._texture = this._getEngine()!.createPrefilteredCubeTexture(this.url, scene, 0.8, 0, this._delayedOnLoad, undefined, this._format, undefined, this._createPolynomials);
             }
             else {
-                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension);
+                this._texture = this._getEngine()!.createCubeTexture(this.url, scene, this._files, this._noMipmap, this._delayedOnLoad, null, this._format, forcedExtension, false, 0, 0, null, this._loaderOptions);
             }
 
             this._texture?.onLoadedObservable.add(() => this.onLoadObservable.notifyObservers(this));

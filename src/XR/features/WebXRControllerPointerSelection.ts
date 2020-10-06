@@ -7,7 +7,7 @@ import { WebXRInputSource } from "../webXRInputSource";
 import { Scene } from "../../scene";
 import { WebXRControllerComponent } from "../motionController/webXRControllerComponent";
 import { Nullable } from "../../types";
-import { Vector3 } from "../../Maths/math.vector";
+import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3 } from "../../Maths/math.color";
 import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
@@ -20,6 +20,7 @@ import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { WebXRAbstractMotionController } from "../motionController/webXRAbstractMotionController";
 import { WebXRCamera } from "../webXRCamera";
 import { Node } from "../../node";
+import { Viewport } from "../../Maths/math.viewport";
 
 /**
  * Options interface for the pointer selection module
@@ -72,17 +73,29 @@ export interface IWebXRControllerPointerSelectionOptions {
      * the xr input to use with this pointer selection
      */
     xrInput: WebXRInput;
+
+    /**
+     * Should the scene pointerX and pointerY update be disabled
+     * This is required for fullscreen AR GUI, but might slow down other experiences.
+     * Disable in VR, if not needed.
+     * The first rig camera (left eye) will be used to calculate the projection
+     */
+    disableScenePointerVectorUpdate: boolean;
 }
 
 /**
  * A module that will enable pointer selection for motion controllers of XR Input Sources
  */
 export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
-    private static _idCounter = 0;
+    private static _idCounter = 200;
 
     private _attachController = (xrController: WebXRInputSource) => {
         if (this._controllers[xrController.uniqueId]) {
             // already attached
+            return;
+        }
+        // For now no support for hand-tracked input sources!
+        if (xrController.inputSource.hand && !xrController.inputSource.gamepad) {
             return;
         }
         // only support tracker pointer
@@ -277,17 +290,37 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         return null;
     }
 
+    private _identityMatrix = Matrix.Identity();
+    private _screenCoordinatesRef = Vector3.Zero();
+    private _viewportRef = new Viewport(0, 0, 0, 0);
+
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
             const controllerData = this._controllers[id];
 
+            let controllerGlobalPosition: Vector3;
+
             // Every frame check collisions/input
             if (controllerData.xrController) {
+                controllerGlobalPosition = controllerData.xrController.pointer.position;
                 controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
             } else if (controllerData.webXRCamera) {
+                controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
             } else {
                 return;
+            }
+            // update pointerX and pointerY of the scene. Only if the flag is set to true!
+            if (!this._options.disableScenePointerVectorUpdate && controllerGlobalPosition) {
+                const scene = this._xrSessionManager.scene;
+                const camera = this._options.xrInput.xrCamera;
+                if (camera) {
+                    camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight(), this._viewportRef);
+                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), this._viewportRef, this._screenCoordinatesRef);
+
+                    scene.pointerX = this._screenCoordinatesRef.x;
+                    scene.pointerY = this._screenCoordinatesRef.y;
+                }
             }
             controllerData.pick = this._scene.pickWithRay(controllerData.tmpRay, this._scene.pointerMovePredicate || this.raySelectionPredicate);
 

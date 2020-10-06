@@ -38,6 +38,18 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
 
     /**
+     * Manage the touch inputs to control the movement of a free camera.
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @param allowMouse Defines if mouse events can be treated as touch events
+     */
+    constructor(
+        /**
+         * Define if mouse events can be treated as touch events
+         */
+        public allowMouse = false) {
+    }
+
+    /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
@@ -54,7 +66,8 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             this._pointerInput = (p) => {
                 var evt = <PointerEvent>p.event;
 
-                if (evt.pointerType === "mouse") {
+                let isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
+                if (!this.allowMouse && (evt.pointerType === "mouse" || isMouseEvent)) {
                     return;
                 }
 
@@ -150,19 +163,24 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      * This is a dynamically created lambda to avoid the performance penalty of looping for inputs in the render loop.
      */
     public checkInputs(): void {
-        if (this._offsetX && this._offsetY) {
-            var camera = this.camera;
-            camera.cameraRotation.y += this._offsetX / this.touchAngularSensibility;
+        if (this._offsetX === null || this._offsetY === null) {
+            return;
+        }
+        if (this._offsetX === 0 && this._offsetY === 0) {
+            return;
+        }
 
-            if (this._pointerPressed.length > 1) {
-                camera.cameraRotation.x += -this._offsetY / this.touchAngularSensibility;
-            } else {
-                var speed = camera._computeLocalCameraSpeed();
-                var direction = new Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
+        var camera = this.camera;
+        camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
 
-                Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
-                camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
-            }
+        if (this._pointerPressed.length > 1) {
+            camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
+        } else {
+            var speed = camera._computeLocalCameraSpeed();
+            var direction = new Vector3(0, 0, speed * this._offsetY / this.touchMoveSensibility);
+
+            Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
+            camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));
         }
     }
 
