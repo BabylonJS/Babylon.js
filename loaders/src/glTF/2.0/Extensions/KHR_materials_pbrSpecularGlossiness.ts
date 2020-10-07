@@ -5,7 +5,7 @@ import { Material } from "babylonjs/Materials/material";
 
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import { GLTFLoader, TextureDataType } from "../glTFLoader";
 import { IKHRMaterialsPbrSpecularGlossiness } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_pbrSpecularGlossiness";
@@ -85,7 +85,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
             promises.push(this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Specular Glossiness)`;
                 babylonMaterial.reflectivityTexture = texture;
-            }));
+            }, TextureDataType.Glossiness));
 
             babylonMaterial.reflectivityTexture.hasAlpha = true;
             babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
