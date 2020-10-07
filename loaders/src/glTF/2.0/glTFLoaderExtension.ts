@@ -12,6 +12,8 @@ import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextu
 import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 import { IProperty } from 'babylonjs-gltf2interface';
 
+declare type TextureDataType = import("./glTFLoader").TextureDataType;
+
 /**
  * Interface for a glTF loader extension.
  */
@@ -107,9 +109,10 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param context The context when loading the asset
      * @param textureInfo The glTF texture info property
      * @param assign A function called synchronously after parsing the glTF properties
+     * @param textureDataType type of data held by the texture
      * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
      */
-    loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void, textureDataType: TextureDataType): Nullable<Promise<BaseTexture>>;
 
     /**
      * @hidden
@@ -117,9 +120,10 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
      * @param context The context when loading the asset
      * @param texture The glTF texture property
      * @param assign A function called synchronously after parsing the glTF properties
+     * @param textureDataType type of data held by the texture
      * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
      */
-    _loadTextureAsync?(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
+    _loadTextureAsync?(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void, textureDataType: TextureDataType): Nullable<Promise<BaseTexture>>;
 
     /**
      * Define this method to modify the default behavior when loading animations.

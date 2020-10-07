@@ -78,5 +78,17 @@
     "label" : "Setup a shadow generator",
     "documentation" : "https://doc.babylonjs.com/babylon101/shadows",
     "insertText" : "var shadowGenerator = new BABYLON.ShadowGenerator(${1:size}, ${2:the_light_source});\nshadowGenerator.getShadowMap().renderList.push(${3:the_mesh_that_casts_a_shadow});\n${4:mesh_that_receives_the_shadow}.receiveShadows = true;"    
+  },
+  {
+    "label" : "Export scene to GLB",
+    "documentation" : "https://doc.babylonjs.com/extensions/gltfexporter#exporting-a-scene-to-gltf",
+    "insertText" : "BABYLON.GLTF2Export.GLBAsync(scene, \"${1:fileName}\").then((glb) => {\n     glb.downloadFiles();\n});",
+    "language" : "javascript"
+  },
+  {
+    "label" : "Export scene to GLTF",
+    "documentation" : "https://doc.babylonjs.com/extensions/gltfexporter#exporting-a-scene-to-gltf",
+    "insertText" : "BABYLON.GLTF2Export.GLTFAsync(scene, \"${1:fileName}\").then((gltf) => {\n     gltf.downloadFiles();\n});",
+    "language" : "javascript"
   }
 ]
