@@ -3789,10 +3789,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Finalize frame
         if (this.postProcessManager && !camera._multiviewTexture) {
-            // When in XR the outputRenderTarget should be the one the post process is rendered to
-            // To keep the current behavior, I am checking for rigCamera AND that there is an outputRenderTarget defined.
-            // If there isn't, the previous behavior is kept.
-            const texture = camera.isRigCamera && camera.outputRenderTarget ? camera.outputRenderTarget.getInternalTexture()! : undefined;
+            // if the camera has an output render target, render the post process to the render target
+            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.getInternalTexture()! : undefined;
             this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
         }
 
