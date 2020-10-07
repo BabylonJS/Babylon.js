@@ -565,7 +565,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 if (!control.isVisible) {
                     continue;
                 }
-                let mesh = control._linkedMesh;
+                let mesh = control._linkedMesh as AbstractMesh;
                 if (!mesh || mesh.isDisposed()) {
                     Tools.SetImmediate(() => {
                         control.linkWithMesh(null);
