@@ -131,6 +131,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
     public onAfterBoxRenderingObservable = new Observable<BoundingBox>();
 
     /**
+     * When true, no bounding boxes will be rendered
+     */
+    public disabled = false;
+
+    /**
      * @hidden
      */
     public renderList = new SmartArray<BoundingBox>(32);
@@ -231,7 +236,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * @param renderingGroupId defines the rendering group to render
      */
     public render(renderingGroupId: number): void {
-        if (this.renderList.length === 0) {
+        if (this.renderList.length === 0 || this.disabled) {
             return;
         }
 
