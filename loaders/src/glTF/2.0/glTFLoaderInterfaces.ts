@@ -208,20 +208,6 @@ export interface ISkin extends GLTF2.ISkin, IArrayItem {
 }
 
 /**
- * Type of data held by a texture
- */
-export enum TextureDataType {
-    Color,
-    Roughness,
-    Normal,
-    Glossiness,
-    Specular,
-    Transmission,
-    MetallicRoughness,
-    Occlusion
-}
-
-/**
  * Loader interface with additional members.
  */
 export interface ITexture extends GLTF2.ITexture, IArrayItem {

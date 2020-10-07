@@ -2,9 +2,9 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { IMaterial, TextureDataType } from "../glTFLoaderInterfaces";
+import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import { GLTFLoader, TextureDataType } from "../glTFLoader";
 import { IKHRMaterialsClearcoat } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_clearcoat";

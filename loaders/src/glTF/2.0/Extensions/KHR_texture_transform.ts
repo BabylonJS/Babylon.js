@@ -2,9 +2,9 @@ import { Nullable } from "babylonjs/types";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Texture } from "babylonjs/Materials/Textures/texture";
 
-import { ITextureInfo, TextureDataType } from "../glTFLoaderInterfaces";
+import { ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import { GLTFLoader, TextureDataType } from "../glTFLoader";
 import { IKHRTextureTransform } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_texture_transform";

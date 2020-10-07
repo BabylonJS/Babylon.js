@@ -24,7 +24,7 @@ import { MorphTargetManager } from "babylonjs/Morph/morphTargetManager";
 import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData, TextureDataType } from "./glTFLoaderInterfaces";
+import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, IImportMeshAsyncOutput } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
@@ -54,6 +54,29 @@ interface ILoaderProperty extends IProperty {
 
 interface IRegisteredExtension {
     factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
+}
+
+/**
+ * Type of data held by a texture
+ * @hidden
+ */
+export enum TextureDataType {
+    /** color data (albedo, emissive, ...) */
+    Color,
+    /** roughness data */
+    Roughness,
+    /** normal map */
+    Normal,
+    /** glossiness data */
+    Glossiness,
+    /** specular map */
+    Specular,
+    /** transmission map (thickness) */
+    Transmission,
+    /** metallic/roughness data */
+    MetallicRoughness,
+    /** occlusion data */
+    Occlusion
 }
 
 /**
