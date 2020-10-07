@@ -93,6 +93,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             new NodeMaterialConnectionPointCustomObject("subsurface", this, NodeMaterialConnectionPointDirection.Input, SubSurfaceBlock, "SubSurfaceBlock"));
         this.registerInput("anisotropy", NodeMaterialBlockConnectionPointTypes.Object, true, NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("anisotropy", this, NodeMaterialConnectionPointDirection.Input, AnisotropyBlock, "AnisotropyBlock"));
+        this.registerInput("view", NodeMaterialBlockConnectionPointTypes.Matrix, true);
 
         this.registerOutput("ambient", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuse", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -477,6 +478,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the view matrix parameter
+     */
+    public get view(): NodeMaterialConnectionPoint {
+        return this._inputs[14];
+    }
+
+    /**
      * Gets the ambient output component
      */
     public get ambient(): NodeMaterialConnectionPoint {
@@ -756,6 +764,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             });
         } else {
             state.compilationString += `vec4 worldPos = ${worldPos.associatedVariableName};\r\n`;
+            if (this.view.isConnected) {
+                state.compilationString += `mat4 view = ${this.view.associatedVariableName};\r\n`;
+            }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights"
             });
