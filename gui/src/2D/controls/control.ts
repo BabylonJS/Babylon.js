@@ -4,7 +4,7 @@ import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { PointerEventTypes, PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { Logger } from "babylonjs/Misc/logger";
 import { Tools } from "babylonjs/Misc/tools";
-import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+import { TransformNode } from "babylonjs/Meshes/transformNode";
 import { Scene } from "babylonjs/scene";
 
 import { Container } from "./container";
@@ -87,7 +87,7 @@ export class Control {
     private _isVisible = true;
     private _isHighlighted = false;
     /** @hidden */
-    public _linkedMesh: Nullable<AbstractMesh>;
+    public _linkedMesh: Nullable<TransformNode>;
     private _fontSet = false;
     private _dummyVector2 = Vector2.Zero();
     private _downCount = 0;
@@ -710,7 +710,7 @@ export class Control {
     /**
      * Gets the current linked mesh (or null if none)
      */
-    public get linkedMesh(): Nullable<AbstractMesh> {
+    public get linkedMesh(): Nullable<TransformNode> {
         return this._linkedMesh;
     }
 
@@ -1145,7 +1145,7 @@ export class Control {
      * @param mesh defines the mesh to link with
      * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
      */
-    public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
+    public linkWithMesh(mesh: Nullable<TransformNode>): void {
         if (!this._host || this.parent && this.parent !== this._host._rootContainer) {
             if (mesh) {
                 Tools.Error("Cannot link a control to a mesh if the control is not at root level");
