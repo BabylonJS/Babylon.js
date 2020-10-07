@@ -54,7 +54,7 @@ export interface ICompressedFormatCapabilities {
 
 export interface IKTX2DecoderOptions {
     /** use RGBA format if ASTC and BC7 are not available as transcoded format */
-    useRGBAIfASTCBC7NotAvailable?: boolean;
+    useRGBAIfASTCBC7NotAvailableWhenUASTC?: boolean;
 
     /** force to always use RGBA for transcoded format */
     forceRGBA?: boolean;
@@ -131,7 +131,7 @@ export class KTX2Decoder {
         } else if (caps.bptc) {
             targetFormat = transcodeTarget.BC7_RGBA;
             transcodedFormat = COMPRESSED_RGBA_BPTC_UNORM_EXT;
-        } else if (options?.useRGBAIfASTCBC7NotAvailable) {
+        } else if (options?.useRGBAIfASTCBC7NotAvailableWhenUASTC && srcTexFormat === sourceTextureFormat.UASTC4x4) {
             targetFormat = transcodeTarget.RGBA32;
             transcodedFormat = RGBA8Format;
             roundToMultiple4 = false;

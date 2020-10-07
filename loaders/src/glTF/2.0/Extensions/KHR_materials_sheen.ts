@@ -4,7 +4,7 @@ import { Material } from "babylonjs/Materials/material";
 
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import { GLTFLoader, TextureDataType } from "../glTFLoader";
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { IKHRMaterialsSheen } from 'babylonjs-gltf2interface';
 
@@ -88,7 +88,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
                 babylonMaterial.sheen.textureRoughness = texture;
-            }));
+            }, TextureDataType.Roughness));
         }
 
         babylonMaterial.sheen.albedoScaling = true;
