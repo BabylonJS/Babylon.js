@@ -24,7 +24,7 @@ import { MorphTargetManager } from "babylonjs/Morph/morphTargetManager";
 import { ISceneLoaderProgressEvent } from "babylonjs/Loading/sceneLoader";
 import { Scene } from "babylonjs/scene";
 import { IProperty, AccessorType, CameraType, AnimationChannelTargetPath, AnimationSamplerInterpolation, AccessorComponentType, MaterialAlphaMode, TextureMinFilter, TextureWrapMode, TextureMagFilter, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData } from "./glTFLoaderInterfaces";
+import { _IAnimationSamplerData, IGLTF, ISampler, INode, IScene, IMesh, IAccessor, ISkin, ICamera, IAnimation, IAnimationChannel, IAnimationSampler, IBuffer, IBufferView, IMaterialPbrMetallicRoughness, IMaterial, ITextureInfo, ITexture, IImage, IMeshPrimitive, IArrayItem as IArrItem, _ISamplerData, TextureDataType } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "./glTFLoaderExtension";
 import { IGLTFLoader, GLTFFileLoader, GLTFLoaderState, IGLTFLoaderData, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode, IImportMeshAsyncOutput } from "../glTFFileLoader";
 import { IAnimationKey, AnimationKeyInterpolation } from 'babylonjs/Animations/animationKey';
@@ -1692,7 +1692,7 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
                     babylonMaterial.metallicTexture = texture;
-                }));
+                }, TextureDataType.metallicRoughness));
 
                 babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
                 babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
@@ -1833,7 +1833,7 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Normal)`;
                 babylonMaterial.bumpTexture = texture;
-            }));
+            }, TextureDataType.normal));
 
             babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
             babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
@@ -1848,7 +1848,7 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Occlusion)`;
                 babylonMaterial.ambientTexture = texture;
-            }));
+            }, TextureDataType.occlusion));
 
             babylonMaterial.useAmbientInGrayScale = true;
             if (material.occlusionTexture.strength != undefined) {
@@ -1911,10 +1911,11 @@ export class GLTFLoader implements IGLTFLoader {
      * @param context The context when loading the asset
      * @param textureInfo The glTF texture info property
      * @param assign A function called synchronously after parsing the glTF properties
+     * @param textureDataType type of data held by the texture
      * @returns A promise that resolves with the loaded Babylon texture when the load is complete
      */
-    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
-        const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign);
+    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => { }, textureDataType: TextureDataType = TextureDataType.color): Promise<BaseTexture> {
+        const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign, textureDataType);
         if (extensionPromise) {
             return extensionPromise;
         }
@@ -1931,7 +1932,7 @@ export class GLTFLoader implements IGLTFLoader {
             GLTFLoader.AddPointerMetadata(babylonTexture, context);
             this._parent.onTextureLoadedObservable.notifyObservers(babylonTexture);
             assign(babylonTexture);
-        });
+        }, textureDataType);
 
         this.logClose();
 
@@ -1939,8 +1940,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
-        const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign);
+    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => { }, textureDataType: TextureDataType = TextureDataType.color): Promise<BaseTexture> {
+        const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign, textureDataType);
         if (extensionPromise) {
             return extensionPromise;
         }
@@ -1957,7 +1958,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
+    public _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign: (babylonTexture: BaseTexture) => void = () => { }, textureLoaderOptions?: any): Promise<BaseTexture> {
         const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
         const promises = new Array<Promise<any>>();
@@ -1972,7 +1973,7 @@ export class GLTFLoader implements IGLTFLoader {
             if (!this._disposed) {
                 deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
             }
-        }, undefined, undefined, undefined, image.mimeType);
+        }, undefined, undefined, undefined, image.mimeType, textureLoaderOptions);
         this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
 
@@ -2317,12 +2318,12 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(material, "loadMaterialProperties", (extension) => extension.loadMaterialPropertiesAsync && extension.loadMaterialPropertiesAsync(context, material, babylonMaterial));
     }
 
-    private _extensionsLoadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return this._applyExtensions(textureInfo, "loadTextureInfo", (extension) => extension.loadTextureInfoAsync && extension.loadTextureInfoAsync(context, textureInfo, assign));
+    private _extensionsLoadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void, textureDataType: TextureDataType): Nullable<Promise<BaseTexture>> {
+        return this._applyExtensions(textureInfo, "loadTextureInfo", (extension) => extension.loadTextureInfoAsync && extension.loadTextureInfoAsync(context, textureInfo, assign, textureDataType));
     }
 
-    private _extensionsLoadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return this._applyExtensions(texture, "loadTexture", (extension) => extension._loadTextureAsync && extension._loadTextureAsync(context, texture, assign));
+    private _extensionsLoadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void, textureDataType: TextureDataType): Nullable<Promise<BaseTexture>> {
+        return this._applyExtensions(texture, "loadTexture", (extension) => extension._loadTextureAsync && extension._loadTextureAsync(context, texture, assign, textureDataType));
     }
 
     private _extensionsLoadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
