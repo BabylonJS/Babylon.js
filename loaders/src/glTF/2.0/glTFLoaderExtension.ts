@@ -8,9 +8,11 @@ import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Mesh } from "babylonjs/Meshes/mesh";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
 import { IDisposable } from "babylonjs/scene";
-import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, ITexture, IBufferView, IBuffer, TextureDataType } from "./glTFLoaderInterfaces";
+import { IScene, INode, IMesh, ISkin, ICamera, IMeshPrimitive, IMaterial, ITextureInfo, IAnimation, ITexture, IBufferView, IBuffer } from "./glTFLoaderInterfaces";
 import { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 import { IProperty } from 'babylonjs-gltf2interface';
+
+declare type TextureDataType = import("./glTFLoader").TextureDataType;
 
 /**
  * Interface for a glTF loader extension.
