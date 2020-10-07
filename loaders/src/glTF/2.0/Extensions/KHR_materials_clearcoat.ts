@@ -88,14 +88,14 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
                 babylonMaterial.clearCoat.textureRoughness = texture;
-            }, TextureDataType.roughness));
+            }, TextureDataType.Roughness));
         }
 
         if (properties.clearcoatNormalTexture) {
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
                 babylonMaterial.clearCoat.bumpTexture = texture;
-            }, TextureDataType.normal));
+            }, TextureDataType.Normal));
 
             babylonMaterial.invertNormalMapX = !babylonMaterial.getScene().useRightHandedSystem;
             babylonMaterial.invertNormalMapY = babylonMaterial.getScene().useRightHandedSystem;

@@ -1692,7 +1692,7 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
                     babylonMaterial.metallicTexture = texture;
-                }, TextureDataType.metallicRoughness));
+                }, TextureDataType.MetallicRoughness));
 
                 babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
                 babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
@@ -1833,7 +1833,7 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Normal)`;
                 babylonMaterial.bumpTexture = texture;
-            }, TextureDataType.normal));
+            }, TextureDataType.Normal));
 
             babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
             babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
@@ -1848,7 +1848,7 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Occlusion)`;
                 babylonMaterial.ambientTexture = texture;
-            }, TextureDataType.occlusion));
+            }, TextureDataType.Occlusion));
 
             babylonMaterial.useAmbientInGrayScale = true;
             if (material.occlusionTexture.strength != undefined) {
@@ -1914,7 +1914,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param textureDataType type of data held by the texture
      * @returns A promise that resolves with the loaded Babylon texture when the load is complete
      */
-    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => { }, textureDataType: TextureDataType = TextureDataType.color): Promise<BaseTexture> {
+    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => { }, textureDataType: TextureDataType = TextureDataType.Color): Promise<BaseTexture> {
         const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign, textureDataType);
         if (extensionPromise) {
             return extensionPromise;
@@ -1940,7 +1940,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => { }, textureDataType: TextureDataType = TextureDataType.color): Promise<BaseTexture> {
+    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => { }, textureDataType: TextureDataType = TextureDataType.Color): Promise<BaseTexture> {
         const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign, textureDataType);
         if (extensionPromise) {
             return extensionPromise;
