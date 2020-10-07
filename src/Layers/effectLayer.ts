@@ -381,14 +381,14 @@ export abstract class EffectLayer {
             engine.clear(this.neutralColor, true, true, true);
         });
 
-        const boundingBoxRendererDisabled = this._scene.getBoundingBoxRenderer().disabled;
+        const boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
 
         this._mainTexture.onBeforeBindObservable.add(() => {
-            this._scene.getBoundingBoxRenderer().disabled = this.disableBoundingBoxesFromEffectLayer || boundingBoxRendererDisabled;
+            this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
         });
 
         this._mainTexture.onAfterUnbindObservable.add(() => {
-            this._scene.getBoundingBoxRenderer().disabled = boundingBoxRendererDisabled;
+            this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
         });
     }
 

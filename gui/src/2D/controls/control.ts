@@ -1812,7 +1812,7 @@ export class Control {
 
         this._downPointerIds[pointerId] = true;
 
-        var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+        var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
         if (canNotify && this.parent != null) { this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi); }
 

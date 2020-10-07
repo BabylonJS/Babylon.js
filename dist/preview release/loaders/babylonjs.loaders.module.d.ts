@@ -49,6 +49,7 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
     import { Light } from 'babylonjs/Lights/light';
     import { TransformNode } from 'babylonjs/Meshes/transformNode';
     import { RequestFileError } from 'babylonjs/Misc/fileTools';
+    import { Geometry } from 'babylonjs/Meshes/geometry';
     /**
      * Mode that determines the coordinate system to use.
      */
@@ -130,6 +131,7 @@ declare module "babylonjs-loaders/glTF/glTFFileLoader" {
     /** @hidden */
     export interface IImportMeshAsyncOutput {
         meshes: AbstractMesh[];
+        geometries: Geometry[];
         particleSystems: IParticleSystem[];
         skeletons: Skeleton[];
         animationGroups: AnimationGroup[];
@@ -1512,6 +1514,7 @@ declare module "babylonjs-loaders/glTF/2.0/glTFLoader" {
          */
         loadSceneAsync(context: string, scene: IScene): Promise<void>;
         private _forEachPrimitive;
+        private _getGeometries;
         private _getMeshes;
         private _getTransformNodes;
         private _getSkeletons;
@@ -3008,6 +3011,7 @@ declare module BABYLON {
     /** @hidden */
     export interface IImportMeshAsyncOutput {
         meshes: AbstractMesh[];
+        geometries: Geometry[];
         particleSystems: IParticleSystem[];
         skeletons: Skeleton[];
         animationGroups: AnimationGroup[];
@@ -4320,6 +4324,7 @@ declare module BABYLON.GLTF2 {
          */
         loadSceneAsync(context: string, scene: IScene): Promise<void>;
         private _forEachPrimitive;
+        private _getGeometries;
         private _getMeshes;
         private _getTransformNodes;
         private _getSkeletons;

@@ -3281,7 +3281,8 @@ var GLTFLoader = /** @class */ (function () {
                     skeletons: skeletons,
                     animationGroups: [],
                     lights: [],
-                    transformNodes: []
+                    transformNodes: [],
+                    geometries: []
                 });
             }, onProgress, function (message) {
                 reject(new Error(message));
@@ -6875,7 +6876,8 @@ var GLTFLoader = /** @class */ (function () {
                     skeletons: _this._getSkeletons(),
                     animationGroups: _this._getAnimationGroups(),
                     lights: _this._babylonLights,
-                    transformNodes: _this._getTransformNodes()
+                    transformNodes: _this._getTransformNodes(),
+                    geometries: _this._getGeometries()
                 };
             });
         });
@@ -7125,14 +7127,30 @@ var GLTFLoader = /** @class */ (function () {
             }
         }
     };
+    GLTFLoader.prototype._getGeometries = function () {
+        var geometries = new Array();
+        var nodes = this._gltf.nodes;
+        if (nodes) {
+            for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
+                var node = nodes_1[_i];
+                this._forEachPrimitive(node, function (babylonMesh) {
+                    var geometry = babylonMesh.geometry;
+                    if (geometry && geometries.indexOf(geometry) === -1) {
+                        geometries.push(geometry);
+                    }
+                });
+            }
+        }
+        return geometries;
+    };
     GLTFLoader.prototype._getMeshes = function () {
         var meshes = new Array();
         // Root mesh is always first.
         meshes.push(this._rootBabylonMesh);
         var nodes = this._gltf.nodes;
         if (nodes) {
-            for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
-                var node = nodes_1[_i];
+            for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
+                var node = nodes_2[_i];
                 this._forEachPrimitive(node, function (babylonMesh) {
                     meshes.push(babylonMesh);
                 });
@@ -7144,8 +7162,8 @@ var GLTFLoader = /** @class */ (function () {
         var transformNodes = new Array();
         var nodes = this._gltf.nodes;
         if (nodes) {
-            for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
-                var node = nodes_2[_i];
+            for (var _i = 0, nodes_3 = nodes; _i < nodes_3.length; _i++) {
+                var node = nodes_3[_i];
                 if (node._babylonTransformNode && node._babylonTransformNode.getClassName() === "TransformNode") {
                     transformNodes.push(node._babylonTransformNode);
                 }
@@ -7344,7 +7362,9 @@ var GLTFLoader = /** @class */ (function () {
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh_1);
             promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh_1).then(function (babylonGeometry) {
                 return _this._loadMorphTargetsAsync(context, primitive, babylonMesh_1, babylonGeometry).then(function () {
+                    _this._babylonScene._blockEntityCollection = _this._forAssetContainer;
                     babylonGeometry.applyToMesh(babylonMesh_1);
+                    _this._babylonScene._blockEntityCollection = false;
                 });
             }));
             var babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
@@ -9406,6 +9426,7 @@ var GLTFFileLoader = /** @class */ (function () {
                 cameras.push(camera);
             });
             return _this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then(function (result) {
+                Array.prototype.push.apply(container.geometries, result.geometries);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);

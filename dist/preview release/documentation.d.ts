@@ -10710,7 +10710,7 @@ declare module BABYLON {
         static readonly STEP_ISREADYFORMESH_EFFECTLAYER: number;
         static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER: number;
-        static readonly STEP_ACTIVEMESH_BOUNDINGBOXRENDERER: number;
+        static readonly STEP_PREACTIVEMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER: number;
         static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER: number;
         static readonly STEP_BEFORECAMERADRAW_LAYER: number;
@@ -10801,9 +10801,9 @@ declare module BABYLON {
      */
     export type EvaluateSubMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh) => void;
     /**
-     * Strong typing of a Active Mesh related stage step action
+     * Strong typing of a pre active Mesh related stage step action
      */
-    export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
+    export type PreActiveMeshStageAction = (mesh: AbstractMesh) => void;
     /**
      * Strong typing of a Camera related stage step action
      */
@@ -43189,7 +43189,7 @@ declare module BABYLON {
          * @hidden
          * Defines the actions happening during the active mesh stage.
          */
-        _activeMeshStage: Stage<ActiveMeshStageAction>;
+        _preActiveMeshStage: Stage<PreActiveMeshStageAction>;
         /**
          * @hidden
          * Defines the actions happening during the per camera render target step.
@@ -59091,6 +59091,10 @@ declare module BABYLON {
         get renderingGroupId(): number;
         set renderingGroupId(renderingGroupId: number);
         /**
+         * Specifies if the bounding boxes should be rendered normally or if they should undergo the effect of the layer
+         */
+        disableBoundingBoxesFromEffectLayer: boolean;
+        /**
          * An event triggered when the effect layer has been disposed.
          */
         onDisposeObservable: Observable<EffectLayer>;
@@ -72520,6 +72524,10 @@ declare module BABYLON {
          */
         onAfterBoxRenderingObservable: Observable<BoundingBox>;
         /**
+         * When false, no bounding boxes will be rendered
+         */
+        enabled: boolean;
+        /**
          * @hidden
          */
         renderList: SmartArray<BoundingBox>;
@@ -72538,7 +72546,7 @@ declare module BABYLON {
          */
         register(): void;
         private _evaluateSubMesh;
-        private _activeMesh;
+        private _preActiveMesh;
         private _prepareRessources;
         private _createIndexBuffer;
         /**
@@ -81471,6 +81479,7 @@ declare module BABYLON {
     /** @hidden */
     export interface IImportMeshAsyncOutput {
         meshes: AbstractMesh[];
+        geometries: Geometry[];
         particleSystems: IParticleSystem[];
         skeletons: Skeleton[];
         animationGroups: AnimationGroup[];
@@ -82783,6 +82792,7 @@ declare module BABYLON.GLTF2 {
          */
         loadSceneAsync(context: string, scene: IScene): Promise<void>;
         private _forEachPrimitive;
+        private _getGeometries;
         private _getMeshes;
         private _getTransformNodes;
         private _getSkeletons;

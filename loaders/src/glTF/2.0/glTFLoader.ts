@@ -262,7 +262,8 @@ export class GLTFLoader implements IGLTFLoader {
                     skeletons: this._getSkeletons(),
                     animationGroups: this._getAnimationGroups(),
                     lights: this._babylonLights,
-                    transformNodes: this._getTransformNodes()
+                    transformNodes: this._getTransformNodes(),
+                    geometries: this._getGeometries()
                 };
             });
         });
@@ -549,6 +550,24 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
+    private _getGeometries(): Geometry[] {
+        const geometries = new Array<Geometry>();
+
+        const nodes = this._gltf.nodes;
+        if (nodes) {
+            for (const node of nodes) {
+                this._forEachPrimitive(node, (babylonMesh) => {
+                    const geometry = (babylonMesh as Mesh).geometry;
+                    if (geometry && geometries.indexOf(geometry) === -1) {
+                        geometries.push(geometry);
+                    }
+                });
+            }
+        }
+
+        return geometries;
+    }
+
     private _getMeshes(): AbstractMesh[] {
         const meshes = new Array<AbstractMesh>();
 
@@ -799,7 +818,9 @@ export class GLTFLoader implements IGLTFLoader {
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
             promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then((babylonGeometry) => {
                 return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonGeometry).then(() => {
+                    this._babylonScene._blockEntityCollection = this._forAssetContainer;
                     babylonGeometry.applyToMesh(babylonMesh);
+                    this._babylonScene._blockEntityCollection = false;
                 });
             }));
 
