@@ -51989,6 +51989,24 @@ declare module BABYLON {
          * The first rig camera (left eye) will be used to calculate the projection
          */
         disableScenePointerVectorUpdate: boolean;
+        /**
+         * Enable pointer selection on all controllers instead of switching between them
+         */
+        enablePointerSelectionOnAllControllers?: boolean;
+        /**
+         * The preferred hand to give the pointer selection to. This will be prioritized when the controller initialize.
+         * If switch is enabled, it will still allow the user to switch between the different controllers
+         */
+        preferredHandedness?: XRHandedness;
+        /**
+         * Disable switching the pointer selection from one controller to the other.
+         * If the preferred hand is set it will be fixed on this hand, and if not it will be fixed on the first controller added to the scene
+         */
+        disableSwitchOnClick?: boolean;
+        /**
+         * The maximum distance of the pointer selection feature. Defaults to 100.
+         */
+        maxPointerDistance?: number;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
@@ -52000,6 +52018,7 @@ declare module BABYLON {
         private _controllers;
         private _scene;
         private _tmpVectorForPickCompare;
+        private _attachedController;
         /**
          * The module's name
          */
@@ -63648,6 +63667,10 @@ declare module BABYLON {
         */
         get specularColor(): NodeMaterialConnectionPoint;
         /**
+        * Gets the view matrix component
+        */
+        get view(): NodeMaterialConnectionPoint;
+        /**
          * Gets the diffuse output component
          */
         get diffuseOutput(): NodeMaterialConnectionPoint;
@@ -65677,6 +65700,10 @@ declare module BABYLON {
          * Gets the anisotropy object parameters
          */
         get anisotropy(): NodeMaterialConnectionPoint;
+        /**
+         * Gets the view matrix parameter
+         */
+        get view(): NodeMaterialConnectionPoint;
         /**
          * Gets the ambient output component
          */
@@ -77916,7 +77943,7 @@ declare module BABYLON.GUI {
         private _isVisible;
         private _isHighlighted;
         /** @hidden */
-        _linkedMesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+        _linkedMesh: BABYLON.Nullable<BABYLON.TransformNode>;
         private _fontSet;
         private _dummyVector2;
         private _downCount;
@@ -78170,7 +78197,7 @@ declare module BABYLON.GUI {
         /**
          * Gets the current linked mesh (or null if none)
          */
-        get linkedMesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        get linkedMesh(): BABYLON.Nullable<BABYLON.TransformNode>;
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -78347,7 +78374,7 @@ declare module BABYLON.GUI {
          * @param mesh defines the mesh to link with
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkWithMesh(mesh: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
+        linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
         /** @hidden */
