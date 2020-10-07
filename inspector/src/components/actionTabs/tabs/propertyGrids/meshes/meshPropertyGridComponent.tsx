@@ -53,10 +53,13 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
 }> {
     constructor(props: IMeshPropertyGridComponentProps) {
         super(props);
+        
+        const mesh = this.props.mesh;
+
         this.state = {
             displayNormals: false,
             displayVertexColors: false,
-            displayBoneWeights: false,
+            displayBoneWeights: !!(mesh.material && mesh.material.getClassName() === "BoneWeightShader"),
             displayBoneIndex: 0,
             displaySkeletonMap: false
         };
@@ -559,8 +562,7 @@ export class MeshPropertyGridComponent extends React.Component<IMeshPropertyGrid
                     }
                     {
                         !mesh.isAnInstance && this.state.displayBoneWeights && mesh.skeleton &&
-                        <SliderLineComponent label="Target Bone" decimalCount={0} target={mesh.reservedDataStore} propertyName="displayBoneIndex" minimum={0} maximum={mesh.skeleton.bones.length-1 || 0} step={1} onChange={(value)=>{this.onBoneDisplayIndexChange(value)}} />
-                        
+                        <SliderLineComponent label="Target Bone" decimalCount={0} target={mesh.reservedDataStore} propertyName="displayBoneIndex" minimum={0} maximum={mesh.skeleton.bones.length-1 || 0} step={1} onChange={(value)=>{this.onBoneDisplayIndexChange(value)}} />                        
                     }
                     {
                         !mesh.isAnInstance && mesh.skeleton &&
