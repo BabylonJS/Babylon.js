@@ -4,7 +4,7 @@ import { Material } from "babylonjs/Materials/material";
 
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader } from "../glTFLoader";
+import { GLTFLoader, TextureDataType } from "../glTFLoader";
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { IKHRMaterialsSpecular } from 'babylonjs-gltf2interface';
 
@@ -72,7 +72,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             promises.push(this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Specular F0 Color)`;
                 babylonMaterial.metallicReflectanceTexture = texture;
-            }));
+            }, TextureDataType.Specular));
         }
 
         return Promise.all(promises).then(() => { });
