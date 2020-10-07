@@ -156,7 +156,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
     public register(): void {
         this.scene._beforeEvaluateActiveMeshStage.registerStep(SceneComponentConstants.STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER, this, this.reset);
 
-        this.scene._activeMeshStage.registerStep(SceneComponentConstants.STEP_ACTIVEMESH_BOUNDINGBOXRENDERER, this, this._activeMesh);
+        this.scene._preActiveMeshStage.registerStep(SceneComponentConstants.STEP_PREACTIVEMESH_BOUNDINGBOXRENDERER, this, this._preActiveMesh);
 
         this.scene._evaluateSubMeshStage.registerStep(SceneComponentConstants.STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER, this, this._evaluateSubMesh);
 
@@ -173,9 +173,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
         }
     }
 
-    private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
-        if (sourceMesh.showBoundingBox || this.scene.forceShowBoundingBoxes) {
-            let boundingInfo = sourceMesh.getBoundingInfo();
+    private _preActiveMesh(mesh: AbstractMesh): void {
+        if (mesh.showBoundingBox || this.scene.forceShowBoundingBoxes) {
+            let boundingInfo = mesh.getBoundingInfo();
             boundingInfo.boundingBox._tag = mesh.renderingGroupId;
             this.renderList.push(boundingInfo.boundingBox);
         }
@@ -244,6 +244,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         var engine = this.scene.getEngine();
         engine.setDepthWrite(false);
         this._colorShader._preBind();
+
         for (var boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
             var boundingBox = this.renderList.data[boundingBoxIndex];
             if (boundingBox._tag !== renderingGroupId) {
