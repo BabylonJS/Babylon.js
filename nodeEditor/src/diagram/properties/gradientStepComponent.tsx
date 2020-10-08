@@ -48,7 +48,6 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
     render() {
         let step = this.props.step;
         
-
         return (
             <div className="gradient-step">
                 <div className="step">

@@ -24,11 +24,9 @@ interface IFloatLineComponentProps {
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
     private _localChange = false;
     private _store: number;
-    private _smallUI: boolean;
 
     constructor(props: IFloatLineComponentProps) {
         super(props);
-        this._smallUI = props.smallUI ? props.smallUI : false;
         let currentValue = this.props.target[this.props.propertyName];
         this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 2)) : "0" };
         this._store = currentValue;
@@ -102,7 +100,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     render() {
-        let className = this._smallUI ? "short": "value";
+        let className = this.props.smallUI ? "short": "value";
 
         return (
             <div>
