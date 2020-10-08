@@ -98,6 +98,7 @@
 - View & edit textures in pop out inspector using tools such as brush and floodfill. Supports region selection, individual channel editing, mipmap previews, and resizing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 - Added mesh debug tools to display bone influence weights and bone indices maps. ([Pryme8](https://github.com/Pryme8))
 - Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
+- Along with bone index it is now possible to select a bone using its name when viewing bone weights ([#9117](https://github.com/BabylonJS/Babylon.js/issues/9117)) ([RaananW](https://github.com/RaananW))
 
 ### Cameras
 
