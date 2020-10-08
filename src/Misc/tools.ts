@@ -171,6 +171,22 @@ export class Tools {
     }
 
     /**
+     * Provides a slice function that will work even on IE
+     * The difference between this and Slice is that this will force-convert to array
+     * @param data defines the array to slice
+     * @param start defines the start of the data (optional)
+     * @param end defines the end of the data (optional)
+     * @returns the new sliced array
+     */
+    public static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P> {
+        if (Array.isArray(data)) {
+            return (data as Array<P>).slice(start, end);
+        }
+
+        return Array.prototype.slice.call(data, start, end);
+    }
+
+    /**
      * Polyfill for setImmediate
      * @param action defines the action to execute after the current execution block
      */
