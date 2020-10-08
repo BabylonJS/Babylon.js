@@ -1,6 +1,6 @@
 import { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import { EventState, Observable, Observer } from "../../Misc/observable";
+import { Observable, Observer } from "../../Misc/observable";
 import { Camera } from "../../Cameras/camera";
 import { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
@@ -43,7 +43,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
     public onChangedObservable = new Observable<
         {wheelDeltaX: number, wheelDeltaY: number, wheelDeltaZ: number}>();
 
-    private _wheel: Nullable<(pointer: PointerInfo, _: EventState) => void>;
+    private _wheel: Nullable<(pointer: PointerInfo) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
 
     /**
@@ -54,7 +54,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
-        this._wheel = (pointer, _) => {
+        this._wheel = (pointer) => {
             // sanity check - this should be a PointerWheel event.
             if (pointer.type !== PointerEventTypes.POINTERWHEEL) { return; }
 
@@ -92,19 +92,6 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 // Maybe others?
                 this._wheelDeltaY -=
                     this.wheelPrecisionY * (<any>event).wheelDelta / this._normalize;
-            } else if (event.detail) {
-                // Firefox < v17  (Has WebGL >= v4)
-                // TODO How should we scale this?
-                // Since it's Firefox, it's probably the same as
-                // WheelEvent.DOM_DELTA_LINE.
-                // ie: we can presume it needs scaled to match per-pixel.
-                this._wheelDeltaY +=
-                    this.wheelPrecisionY * this._ffMultiplier * event.detail;
-                if ("axis" in event &&
-                      (<any>event).axis === (<any>event).HORIZONTAL_AXIS) {
-                    this._wheelDeltaX = this._wheelDeltaY;
-                    this._wheelDeltaY = 0;
-                }
             }
 
             if (event.preventDefault) {
@@ -124,7 +111,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      * @param element Defines the element to stop listening the inputs from
      */
     public detachControl(element: Nullable<HTMLElement>): void {
-        if (this._observer && element) {
+        if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
             this._wheel = null;
