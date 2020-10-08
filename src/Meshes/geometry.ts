@@ -872,18 +872,16 @@ export class Geometry implements IGetSetVerticesData {
             return false;
         }
 
+        for (let index = this._positionsCache.length * 3, arrayIdx = this._positionsCache.length; index < data.length; index += 3, ++arrayIdx) {
+            this._positionsCache[arrayIdx] = Vector3.FromArray(data, index);
+        }
+
         for (let index = 0, arrayIdx = 0; index < data.length; index += 3, ++arrayIdx) {
-            if (this._positionsCache[arrayIdx]) {
-                this._positionsCache[arrayIdx].set(data[0 + index], data[1 + index], data[2 + index]);
-            } else {
-                this._positionsCache[arrayIdx] = Vector3.FromArray(data, index);
-            }
+            this._positionsCache[arrayIdx].set(data[0 + index], data[1 + index], data[2 + index]);
         }
 
         // just in case the number of positions was reduced, splice the array
-        if (this._positionsCache.length > data.length / 3) {
-            this._positionsCache.splice(data.length / 3);
-        }
+        this._positionsCache.length = data.length / 3;
 
         this._positions = this._positionsCache;
 
