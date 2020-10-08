@@ -1184,7 +1184,7 @@ declare module BABYLON {
         endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
         lineProcessor?: (line: string, isFragment: boolean) => string;
         preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
-        postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
+        postProcessor?: (code: string, defines: string[], isFragment: boolean, engine: ThinEngine) => string;
     }
 }
 declare module BABYLON {
@@ -1497,7 +1497,7 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class ShaderProcessor {
-        static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void): void;
+        static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine): void;
         private static _ProcessPrecision;
         private static _ExtractOperation;
         private static _BuildSubExpression;
@@ -29917,6 +29917,7 @@ declare module BABYLON {
         private _updatable;
         /** @hidden */
         _positions: Nullable<Vector3[]>;
+        private _positionsCache;
         /**
          *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          */
@@ -38174,6 +38175,12 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export class WebGLShaderProcessor implements IShaderProcessor {
+        postProcessor(code: string, defines: string[], isFragment: boolean, engine: ThinEngine): string;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export class WebGL2ShaderProcessor implements IShaderProcessor {
         attributeProcessor(attribute: string): string;
         varyingProcessor(varying: string, isFragment: boolean): string;
@@ -41343,6 +41350,15 @@ declare module BABYLON {
          * @returns the new sliced array
          */
         static Slice<T>(data: T, start?: number, end?: number): T;
+        /**
+         * Provides a slice function that will work even on IE
+         * The difference between this and Slice is that this will force-convert to array
+         * @param data defines the array to slice
+         * @param start defines the start of the data (optional)
+         * @param end defines the end of the data (optional)
+         * @returns the new sliced array
+         */
+        static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P>;
         /**
          * Polyfill for setImmediate
          * @param action defines the action to execute after the current execution block
