@@ -29917,6 +29917,7 @@ declare module BABYLON {
         private _updatable;
         /** @hidden */
         _positions: Nullable<Vector3[]>;
+        private _positionsCache;
         /**
          *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          */
