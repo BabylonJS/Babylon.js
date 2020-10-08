@@ -4,7 +4,7 @@ import { Material } from "babylonjs/Materials/material";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { IMaterial } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { GLTFLoader, TextureDataType } from "../glTFLoader";
+import { GLTFLoader } from "../glTFLoader";
 import { IKHRMaterialsTransmission } from 'babylonjs-gltf2interface';
 import { Scene } from "babylonjs/scene";
 import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
@@ -324,7 +324,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         }
 
         if (extension.transmissionTexture) {
-            return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined, TextureDataType.Transmission)
+            return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined, false)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
                     pbrMaterial.subSurface.useMaskFromThicknessTexture = true;
