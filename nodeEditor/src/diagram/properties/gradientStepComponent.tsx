@@ -3,6 +3,7 @@ import { GlobalState } from '../../globalState';
 import { Color3 } from 'babylonjs/Maths/math.color';
 import { GradientBlockColorStep } from 'babylonjs/Materials/Node/Blocks/gradientBlock';
 import { ColorPickerLineComponent } from '../../sharedComponents/colorPickerComponent';
+import { FloatLineComponent } from '../../sharedComponents/floatLineComponent';
 
 const deleteButton = require('../../../imgs/delete.svg');
 const copyIcon: string = require('../../sharedComponents/copy.svg');
@@ -46,6 +47,8 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
 
     render() {
         let step = this.props.step;
+        
+
         return (
             <div className="gradient-step">
                 <div className="step">
@@ -59,7 +62,15 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
                     />  
                 </div>
                 <div className="step-value">
-                    {step.step.toFixed(2)}
+                    <FloatLineComponent globalState={this.props.globalState} smallUI={true} label="" target={step} propertyName="step"
+                    min={0} max={1}
+                    onEnter={ evt => { 
+                            this.props.onUpdateStep();
+                            this.props.onCheckForReOrder();
+                            this.forceUpdate();
+                        }
+                    } 
+                    ></FloatLineComponent>
                 </div>
                 <div className="step-slider">
                     <input className="range" type="range" step={0.01} min={0} max={1.0} value={step.step}
