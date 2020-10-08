@@ -351,7 +351,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
                         action.set(0, 0, value);
                         break;
                 }
-            }
+            };
         // Do the camera updates for each of the 3 touch-wheel axis.
         updateCameraProperty(
             this._wheelDeltaX, this._wheelXAction, this._wheelXActionCoordinate);

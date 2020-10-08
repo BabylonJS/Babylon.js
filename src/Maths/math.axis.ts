@@ -31,4 +31,3 @@ export enum Coordinate {
     /** Z axis */
     Z
 }
-
