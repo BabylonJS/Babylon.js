@@ -17,6 +17,7 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
 import { DomManagement } from '../Misc/domManagement';
+import { WebGLShaderProcessor } from './WebGL/webGLShaderProcessors';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IPipelineContext } from './IPipelineContext';
@@ -702,6 +703,8 @@ export class ThinEngine {
         // Shader processor
         if (this.webGLVersion > 1) {
             this._shaderProcessor = new WebGL2ShaderProcessor();
+        } else {
+            this._shaderProcessor = new WebGLShaderProcessor();
         }
 
         // Detect if we are running on a faulty buggy OS.
