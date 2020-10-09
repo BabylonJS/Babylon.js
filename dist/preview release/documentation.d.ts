@@ -8786,6 +8786,17 @@ declare module BABYLON {
         /** Z axis */
         static Z: Vector3;
     }
+    /**
+     * Defines cartesian components.
+     */
+    export enum Coordinate {
+        /** X axis */
+        X = 0,
+        /** Y axis */
+        Y = 1,
+        /** Z axis */
+        Z = 2
+    }
 }
 declare module BABYLON {
     /**
@@ -19027,6 +19038,246 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Base class for mouse wheel input..
+     * See FollowCameraMouseWheelInput in src/Cameras/Inputs/freeCameraMouseWheelInput.ts
+     * for example usage.
+     */
+    export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        abstract camera: Camera;
+        /**
+         * How fast is the camera moves in relation to X axis mouseWheel events.
+         * Use negative value to reverse direction.
+         */
+        wheelPrecisionX: number;
+        /**
+         * How fast is the camera moves in relation to Y axis mouseWheel events.
+         * Use negative value to reverse direction.
+         */
+        wheelPrecisionY: number;
+        /**
+         * How fast is the camera moves in relation to Z axis mouseWheel events.
+         * Use negative value to reverse direction.
+         */
+        wheelPrecisionZ: number;
+        /**
+         * Observable for when a mouse wheel move event occurs.
+         */
+        onChangedObservable: Observable<{
+            wheelDeltaX: number;
+            wheelDeltaY: number;
+            wheelDeltaZ: number;
+        }>;
+        private _wheel;
+        private _observer;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls
+         *   should call preventdefault().
+         *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Called for each rendered frame.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+        /**
+         * Incremental value of multiple mouse wheel movements of the X axis.
+         * Should be zero-ed when read.
+         */
+        protected _wheelDeltaX: number;
+        /**
+         * Incremental value of multiple mouse wheel movements of the Y axis.
+         * Should be zero-ed when read.
+         */
+        protected _wheelDeltaY: number;
+        /**
+         * Incremental value of multiple mouse wheel movements of the Z axis.
+         * Should be zero-ed when read.
+         */
+        protected _wheelDeltaZ: number;
+        /**
+         * Firefox uses a different scheme to report scroll distances to other
+         * browsers. Rather than use complicated methods to calculate the exact
+         * multiple we need to apply, let's just cheat and use a constant.
+         * https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
+         * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
+         */
+        private readonly _ffMultiplier;
+        /**
+         * Different event attributes for wheel data fall into a few set ranges.
+         * Some relevant but dated date here:
+         * https://stackoverflow.com/questions/5527601/normalizing-mousewheel-speed-across-browsers
+         */
+        private readonly _normalize;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manage the mouse wheel inputs to control a free camera.
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        /**
+         * Gets the class name of the current input.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Set which movement axis (relative to camera's orientation) the mouse
+         * wheel's X axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelXMoveRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to camera's orientation) the
+         * mouse wheel's X axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelXMoveRelative(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to camera's orientation) the mouse
+         * wheel's Y axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelYMoveRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to camera's orientation) the
+         * mouse wheel's Y axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelYMoveRelative(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to camera's orientation) the mouse
+         * wheel's Z axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelZMoveRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to camera's orientation) the
+         * mouse wheel's Z axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelZMoveRelative(): Nullable<Coordinate>;
+        /**
+         * Set which rotation axis (relative to camera's orientation) the mouse
+         * wheel's X axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelXRotateRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured rotation axis (relative to camera's orientation) the
+         * mouse wheel's X axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelXRotateRelative(): Nullable<Coordinate>;
+        /**
+         * Set which rotation axis (relative to camera's orientation) the mouse
+         * wheel's Y axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelYRotateRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured rotation axis (relative to camera's orientation) the
+         * mouse wheel's Y axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelYRotateRelative(): Nullable<Coordinate>;
+        /**
+         * Set which rotation axis (relative to camera's orientation) the mouse
+         * wheel's Z axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelZRotateRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured rotation axis (relative to camera's orientation) the
+         * mouse wheel's Z axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelZRotateRelative(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to the scene) the mouse wheel's X axis
+         * controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelXMoveScene(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to the scene) the mouse wheel's
+         * X axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelXMoveScene(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to the scene) the mouse wheel's Y axis
+         * controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelYMoveScene(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to the scene) the mouse wheel's
+         * Y axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelYMoveScene(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to the scene) the mouse wheel's Z axis
+         * controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelZMoveScene(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to the scene) the mouse wheel's
+         * Z axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelZMoveScene(): Nullable<Coordinate>;
+        /**
+         * Called for each rendered frame.
+         */
+        checkInputs(): void;
+        private _moveRelative;
+        private _rotateRelative;
+        private _moveScene;
+        /**
+         * These are set to the desired default behaviour.
+         */
+        private _wheelXAction;
+        private _wheelXActionCoordinate;
+        private _wheelYAction;
+        private _wheelYActionCoordinate;
+        private _wheelZAction;
+        private _wheelZActionCoordinate;
+        /**
+         * Update the camera according to any configured properties for the 3
+         * mouse-wheel axis.
+         */
+        private _updateCamera;
+    }
+}
+declare module BABYLON {
+    /**
      * Manage the touch inputs to control the movement of a free camera.
      * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
@@ -19105,6 +19356,10 @@ declare module BABYLON {
          */
         _mouseInput: Nullable<FreeCameraMouseInput>;
         /**
+         * @hidden
+         */
+        _mouseWheelInput: Nullable<FreeCameraMouseWheelInput>;
+        /**
          * Instantiates a new FreeCameraInputsManager.
          * @param camera Defines the camera the inputs belong to
          */
@@ -19125,6 +19380,16 @@ declare module BABYLON {
          * @returns the current input manager
          */
         removeMouse(): FreeCameraInputsManager;
+        /**
+         * Add mouse wheel input support to the input manager.
+         * @returns the current input manager
+         */
+        addMouseWheel(): FreeCameraInputsManager;
+        /**
+         * Removes the mouse wheel input support from the manager
+         * @returns the current input manager
+         */
+        removeMouseWheel(): FreeCameraInputsManager;
         /**
          * Add touch input support to the input manager.
          * @returns the current input manager
@@ -22582,6 +22847,10 @@ declare module BABYLON {
          * Gets the mode property
          */
         get mode(): NodeMaterialModes;
+        /**
+         * A free comment about the material
+         */
+        comment: string;
         /**
          * Create a new node based material
          * @param name defines the material name
@@ -67716,6 +67985,18 @@ declare module BABYLON {
          */
         getAgentVelocityToRef(index: number, result: Vector3): void;
         /**
+         * Gets the agent next target point on the path
+         * @param index agent index returned by addAgent
+         * @returns world space position
+         */
+        getAgentNextTargetPath(index: number): Vector3;
+        /**
+         * Gets the agent next target point on the path
+         * @param index agent index returned by addAgent
+         * @param result output world space position
+         */
+        getAgentNextTargetPathToRef(index: number, result: Vector3): void;
+        /**
          * remove a particular agent previously created
          * @param index agent index returned by addAgent
          */
@@ -68064,6 +68345,18 @@ declare module BABYLON {
          * @param result output world space velocity
          */
         getAgentVelocityToRef(index: number, result: Vector3): void;
+        /**
+         * Returns the agent next target point on the path
+         * @param index agent index returned by addAgent
+         * @returns world space position
+         */
+        getAgentNextTargetPath(index: number): Vector3;
+        /**
+         * Returns the agent next target point on the path
+         * @param index agent index returned by addAgent
+         * @param result output world space position
+         */
+        getAgentNextTargetPathToRef(index: number, result: Vector3): void;
         /**
          * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
          * @param index agent index returned by addAgent
