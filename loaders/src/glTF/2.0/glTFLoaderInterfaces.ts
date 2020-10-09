@@ -217,6 +217,8 @@ export interface ITexture extends GLTF2.ITexture, IArrayItem {
  * Loader interface with additional members.
  */
 export interface ITextureInfo extends GLTF2.ITextureInfo {
+    /** false or undefined if the texture holds color data (true if data are roughness, normal, ...) */
+    isNotColorData?: boolean;
 }
 
 /**

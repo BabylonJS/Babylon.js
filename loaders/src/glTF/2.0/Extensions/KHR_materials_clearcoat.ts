@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { IMaterial } from "../glTFLoaderInterfaces";
+import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { IKHRMaterialsClearcoat } from 'babylonjs-gltf2interface';
@@ -85,17 +85,19 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         }
 
         if (properties.clearcoatRoughnessTexture) {
+            (properties.clearcoatRoughnessTexture as ITextureInfo).isNotColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
                 babylonMaterial.clearCoat.textureRoughness = texture;
-            }, false));
+            }));
         }
 
         if (properties.clearcoatNormalTexture) {
+            (properties.clearcoatNormalTexture as ITextureInfo).isNotColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
                 babylonMaterial.clearCoat.bumpTexture = texture;
-            }, false));
+            }));
 
             babylonMaterial.invertNormalMapX = !babylonMaterial.getScene().useRightHandedSystem;
             babylonMaterial.invertNormalMapY = babylonMaterial.getScene().useRightHandedSystem;
