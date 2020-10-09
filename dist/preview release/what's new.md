@@ -354,3 +354,4 @@
 - `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))
 - Rendering of transparent meshes: stencil state is now set to the value registered in the engine (when calling `engine.setStencilBuffer(value)`) instead of being set to `false` unconditionally. This change may affect the highlight layer when using transparent meshes. If you are impacted, you may need to exclude the transparent mesh(es) from the layer ([Popov72](https://github.com/Popov72))
 - Fix width/height GUI container computation to take into account paddings when `adaptWithToChildren = true` ([Popov72](https://github.com/Popov72))
+- `smoothstep` in NME is now taking any type of parameters for its `value` input. If you use generated code from the NME ("Generate code" button), you may have to move the smoothstep output connection AFTER the input connections ([Popov72](https://github.com/Popov72))
