@@ -117,11 +117,19 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         imgBack.style.width = "150px";
         imgBack.style.gridColumn = "1";
         imgBack.style.gridRow = "1";
+        imgBack.style.top = "50%";
+        imgBack.style.left = "50%";
+        imgBack.style.transform = "translate(-50%, -50%)";
+        imgBack.style.position = "absolute";
 
         const imageSpinnerContainer = document.createElement("div");
         imageSpinnerContainer.style.width = "300px";
         imageSpinnerContainer.style.gridColumn = "1";
         imageSpinnerContainer.style.gridRow = "1";
+        imageSpinnerContainer.style.top = "50%";
+        imageSpinnerContainer.style.left = "50%";
+        imageSpinnerContainer.style.transform = "translate(-50%, -50%)";
+        imageSpinnerContainer.style.position = "absolute";
 
         // Loading spinner
         var imgSpinner = new Image();

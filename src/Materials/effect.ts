@@ -297,8 +297,8 @@ export class Effect implements IDisposable {
                             migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
                         }
                         this._useFinalCode(migratedVertexCode, migratedFragmentCode, baseName);
-                    });
-                });
+                    }, this._engine);
+                }, this._engine);
             });
         });
     }

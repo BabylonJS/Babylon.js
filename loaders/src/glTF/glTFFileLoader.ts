@@ -21,6 +21,7 @@ import { Light } from 'babylonjs/Lights/light';
 import { TransformNode } from 'babylonjs/Meshes/transformNode';
 import { RequestFileError } from 'babylonjs/Misc/fileTools';
 import { StringTools } from 'babylonjs/Misc/stringTools';
+import { Geometry } from 'babylonjs/Meshes/geometry';
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -122,6 +123,7 @@ export enum GLTFLoaderState {
 /** @hidden */
 export interface IImportMeshAsyncOutput {
     meshes: AbstractMesh[];
+    geometries: Geometry[];
     particleSystems: IParticleSystem[];
     skeletons: Skeleton[];
     animationGroups: AnimationGroup[];
@@ -650,6 +652,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             });
 
             return this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then((result) => {
+                Array.prototype.push.apply(container.geometries, result.geometries);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);

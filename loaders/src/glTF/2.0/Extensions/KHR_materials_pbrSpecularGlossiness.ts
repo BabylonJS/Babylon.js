@@ -85,7 +85,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
             promises.push(this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Specular Glossiness)`;
                 babylonMaterial.reflectivityTexture = texture;
-            }));
+            }, false));
 
             babylonMaterial.reflectivityTexture.hasAlpha = true;
             babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;

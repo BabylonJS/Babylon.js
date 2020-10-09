@@ -461,6 +461,26 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
+     * Returns the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @returns world space position
+     */
+    getAgentNextTargetPath(index: number): Vector3 {
+        var pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
+        return new Vector3(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
+    }
+
+    /**
+     * Returns the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @param result output world space position
+     */
+    getAgentNextTargetPathToRef(index: number, result: Vector3): void {
+        var pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
+        result.set(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
+    }
+
+    /**
      * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
      * @param index agent index returned by addAgent
      * @param destination targeted world position

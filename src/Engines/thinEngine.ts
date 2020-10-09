@@ -17,6 +17,7 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
 import { DomManagement } from '../Misc/domManagement';
+import { WebGLShaderProcessor } from './WebGL/webGLShaderProcessors';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IPipelineContext } from './IPipelineContext';
@@ -157,14 +158,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-beta.10";
+        return "babylonjs@4.2.0-beta.11";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-beta.10";
+        return "4.2.0-beta.11";
     }
 
     /**
@@ -702,6 +703,8 @@ export class ThinEngine {
         // Shader processor
         if (this.webGLVersion > 1) {
             this._shaderProcessor = new WebGL2ShaderProcessor();
+        } else {
+            this._shaderProcessor = new WebGLShaderProcessor();
         }
 
         // Detect if we are running on a faulty buggy OS.
