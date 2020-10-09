@@ -108,6 +108,7 @@
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 - Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
+- Added mouse wheel controls to FreeCamera. ([mrdunk](https://github.com/mrdunk))
 
 ### Debug
 - Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))
@@ -160,6 +161,7 @@
 ### Navigation
 
 - export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
+- get next path step point for an agent ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Materials
 
@@ -344,6 +346,7 @@
 - Fix `SkeletonViewer` to use utillity layer with custom lighting to improve debug mesh visibility ([Drigax](https://github.com/drigax))
 - Fix same sub mesh being rendered multiple times in the shadow map ([Popov72](https://github.com/Popov72))
 - Fix incorrect shadows on the master mesh when using a lod mesh ([Popov72](https://github.com/Popov72))
+- Take first gamepad connected when attaching camera (and not only XBOX gamepads) ([#9136](https://github.com/BabylonJS/Babylon.js/issues/9136)) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
@@ -355,3 +358,4 @@
 - `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))
 - Rendering of transparent meshes: stencil state is now set to the value registered in the engine (when calling `engine.setStencilBuffer(value)`) instead of being set to `false` unconditionally. This change may affect the highlight layer when using transparent meshes. If you are impacted, you may need to exclude the transparent mesh(es) from the layer ([Popov72](https://github.com/Popov72))
 - Fix width/height GUI container computation to take into account paddings when `adaptWithToChildren = true` ([Popov72](https://github.com/Popov72))
+- `smoothstep` in NME is now taking any type of parameters for its `value` input. If you use generated code from the NME ("Generate code" button), you may have to move the smoothstep output connection AFTER the input connections ([Popov72](https://github.com/Popov72))
