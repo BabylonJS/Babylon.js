@@ -1710,7 +1710,7 @@ export class GLTFLoader implements IGLTFLoader {
             }
 
             if (properties.metallicRoughnessTexture) {
-                properties.metallicRoughnessTexture.isNotColorData = true;
+                properties.metallicRoughnessTexture.nonColorData = true;
                 promises.push(this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
                     babylonMaterial.metallicTexture = texture;
@@ -1852,7 +1852,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         if (material.normalTexture) {
-            material.normalTexture.isNotColorData = true;
+            material.normalTexture.nonColorData = true;
             promises.push(this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Normal)`;
                 babylonMaterial.bumpTexture = texture;
@@ -1868,7 +1868,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         if (material.occlusionTexture) {
-            material.occlusionTexture.isNotColorData = true;
+            material.occlusionTexture.nonColorData = true;
             promises.push(this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Occlusion)`;
                 babylonMaterial.ambientTexture = texture;

@@ -85,7 +85,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         }
 
         if (properties.clearcoatRoughnessTexture) {
-            (properties.clearcoatRoughnessTexture as ITextureInfo).isNotColorData = true;
+            (properties.clearcoatRoughnessTexture as ITextureInfo).nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
                 babylonMaterial.clearCoat.textureRoughness = texture;
@@ -93,7 +93,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         }
 
         if (properties.clearcoatNormalTexture) {
-            (properties.clearcoatNormalTexture as ITextureInfo).isNotColorData = true;
+            (properties.clearcoatNormalTexture as ITextureInfo).nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
                 babylonMaterial.clearCoat.bumpTexture = texture;
