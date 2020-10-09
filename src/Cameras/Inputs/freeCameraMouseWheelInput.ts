@@ -6,6 +6,12 @@ import { BaseCameraMouseWheelInput } from "../../Cameras/Inputs/BaseCameraMouseW
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Coordinate } from "../../Maths/math.axis";
 
+enum _CameraProperty {
+    MoveRelative,
+    RotateRelative,
+    MoveScene
+}
+
 /**
  * Manage the mouse wheel inputs to control a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -32,11 +38,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelXMoveRelative(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelXAction !== this._moveRelative) {
+        if (axis === null && this._wheelXAction !== _CameraProperty.MoveRelative) {
             // Attempting to clear different _wheelXAction.
             return;
         }
-        this._wheelXAction = this._moveRelative;
+        this._wheelXAction = _CameraProperty.MoveRelative;
         this._wheelXActionCoordinate = axis;
     }
 
@@ -46,7 +52,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelXMoveRelative(): Nullable<Coordinate> {
-        if (this._wheelXAction !== this._moveRelative) {
+        if (this._wheelXAction !== _CameraProperty.MoveRelative) {
             return null;
         }
         return this._wheelXActionCoordinate;
@@ -59,11 +65,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelYMoveRelative(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelYAction !== this._moveRelative) {
+        if (axis === null && this._wheelYAction !== _CameraProperty.MoveRelative) {
             // Attempting to clear different _wheelYAction.
             return;
         }
-        this._wheelYAction = this._moveRelative;
+        this._wheelYAction = _CameraProperty.MoveRelative;
         this._wheelYActionCoordinate = axis;
     }
 
@@ -73,7 +79,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelYMoveRelative(): Nullable<Coordinate> {
-        if (this._wheelYAction !== this._moveRelative) {
+        if (this._wheelYAction !== _CameraProperty.MoveRelative) {
             return null;
         }
         return this._wheelYActionCoordinate;
@@ -86,11 +92,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelZMoveRelative(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelZAction !== this._moveRelative) {
+        if (axis === null && this._wheelZAction !== _CameraProperty.MoveRelative) {
             // Attempting to clear different _wheelZAction.
             return;
         }
-        this._wheelZAction = this._moveRelative;
+        this._wheelZAction = _CameraProperty.MoveRelative;
         this._wheelZActionCoordinate = axis;
     }
 
@@ -100,7 +106,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelZMoveRelative(): Nullable<Coordinate> {
-        if (this._wheelZAction !== this._moveRelative) {
+        if (this._wheelZAction !== _CameraProperty.MoveRelative) {
             return null;
         }
         return this._wheelZActionCoordinate;
@@ -113,11 +119,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelXRotateRelative(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelXAction !== this._rotateRelative) {
+        if (axis === null && this._wheelXAction !== _CameraProperty.RotateRelative) {
             // Attempting to clear different _wheelXAction.
             return;
         }
-        this._wheelXAction = this._rotateRelative;
+        this._wheelXAction = _CameraProperty.RotateRelative;
         this._wheelXActionCoordinate = axis;
     }
 
@@ -127,7 +133,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelXRotateRelative(): Nullable<Coordinate> {
-        if (this._wheelXAction !== this._rotateRelative) {
+        if (this._wheelXAction !== _CameraProperty.RotateRelative) {
             return null;
         }
         return this._wheelXActionCoordinate;
@@ -140,11 +146,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelYRotateRelative(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelYAction !== this._rotateRelative) {
+        if (axis === null && this._wheelYAction !== _CameraProperty.RotateRelative) {
             // Attempting to clear different _wheelYAction.
             return;
         }
-        this._wheelYAction = this._rotateRelative;
+        this._wheelYAction = _CameraProperty.RotateRelative;
         this._wheelYActionCoordinate = axis;
     }
 
@@ -154,7 +160,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelYRotateRelative(): Nullable<Coordinate> {
-        if (this._wheelYAction !== this._rotateRelative) {
+        if (this._wheelYAction !== _CameraProperty.RotateRelative) {
             return null;
         }
         return this._wheelYActionCoordinate;
@@ -167,11 +173,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelZRotateRelative(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelZAction !== this._rotateRelative) {
+        if (axis === null && this._wheelZAction !== _CameraProperty.RotateRelative) {
             // Attempting to clear different _wheelZAction.
             return;
         }
-        this._wheelZAction = this._rotateRelative;
+        this._wheelZAction = _CameraProperty.RotateRelative;
         this._wheelZActionCoordinate = axis;
     }
 
@@ -181,7 +187,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelZRotateRelative(): Nullable<Coordinate> {
-        if (this._wheelZAction !== this._rotateRelative) {
+        if (this._wheelZAction !== _CameraProperty.RotateRelative) {
             return null;
         }
         return this._wheelZActionCoordinate;
@@ -194,11 +200,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelXMoveScene(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelXAction !== this._rotateRelative) {
+        if (axis === null && this._wheelXAction !== _CameraProperty.MoveScene) {
             // Attempting to clear different _wheelXAction.
             return;
         }
-        this._wheelXAction = this._moveScene;
+        this._wheelXAction = _CameraProperty.MoveScene;
         this._wheelXActionCoordinate = axis;
     }
 
@@ -208,7 +214,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelXMoveScene(): Nullable<Coordinate> {
-        if (this._wheelXAction !== this._moveScene) {
+        if (this._wheelXAction !== _CameraProperty.MoveScene) {
             return null;
         }
         return this._wheelXActionCoordinate;
@@ -221,11 +227,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelYMoveScene(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelYAction !== this._rotateRelative) {
+        if (axis === null && this._wheelYAction !== _CameraProperty.MoveScene) {
             // Attempting to clear different _wheelYAction.
             return;
         }
-        this._wheelYAction = this._moveScene;
+        this._wheelYAction = _CameraProperty.MoveScene;
         this._wheelYActionCoordinate = axis;
     }
 
@@ -235,7 +241,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelYMoveScene(): Nullable<Coordinate> {
-        if (this._wheelYAction !== this._moveScene) {
+        if (this._wheelYAction !== _CameraProperty.MoveScene) {
             return null;
         }
         return this._wheelYActionCoordinate;
@@ -248,11 +254,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      */
     @serialize()
     public set wheelZMoveScene(axis: Nullable<Coordinate>) {
-        if (axis === null && this._wheelZAction !== this._rotateRelative) {
+        if (axis === null && this._wheelZAction !== _CameraProperty.MoveScene) {
             // Attempting to clear different _wheelZAction.
             return;
         }
-        this._wheelZAction = this._moveScene;
+        this._wheelZAction = _CameraProperty.MoveScene;
         this._wheelZActionCoordinate = axis;
     }
 
@@ -262,7 +268,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * @returns The configured axis or null if none.
      */
     public get wheelZMoveScene(): Nullable<Coordinate> {
-        if (this._wheelZAction !== this._moveScene) {
+        if (this._wheelZAction !== _CameraProperty.MoveScene) {
             return null;
         }
         return this._wheelZActionCoordinate;
@@ -316,11 +322,11 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
     /**
      * These are set to the desired default behaviour.
      */
-    private _wheelXAction: Nullable<Vector3> = this._moveRelative;
+    private _wheelXAction: Nullable<_CameraProperty> = _CameraProperty.MoveRelative;
     private _wheelXActionCoordinate: Nullable<Coordinate> = Coordinate.X;
-    private _wheelYAction: Nullable<Vector3> = this._moveRelative;
+    private _wheelYAction: Nullable<_CameraProperty> = _CameraProperty.MoveRelative;
     private _wheelYActionCoordinate: Nullable<Coordinate> = Coordinate.Z;
-    private _wheelZAction: Nullable<Vector3> = null;
+    private _wheelZAction: Nullable<_CameraProperty> = null;
     private _wheelZActionCoordinate: Nullable<Coordinate> = null;
 
     /**
@@ -328,16 +334,36 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * mouse-wheel axis.
      */
     private _updateCamera(): void {
-        let updateCameraProperty = function(value: number,
-                                            action: Nullable<Vector3>,
+        const moveRelative = this._moveRelative;
+        const rotateRelative = this._rotateRelative;
+        const moveScene = this._moveScene;
+
+        let updateCameraProperty = function(/* Mouse-wheel delta. */
+                                            value: number,
+                                            /* Camera property to be changed. */
+                                            cameraProperty: Nullable<_CameraProperty>,
+                                            /* Axis of Camera property to be changed. */
                                             coordinate: Nullable<Coordinate>): void {
                 if (value === 0) {
                     // Mouse wheel has not moved.
                     return;
                 }
-                if (action === null || coordinate === null) {
+                if (cameraProperty === null || coordinate === null) {
                     // Mouse wheel axis not configured.
                     return;
+                }
+
+                let action = null;
+                switch (cameraProperty) {
+                    case _CameraProperty.MoveRelative:
+                        action = moveRelative;
+                        break;
+                    case _CameraProperty.RotateRelative:
+                        action = rotateRelative;
+                        break;
+                    case _CameraProperty.MoveScene:
+                        action = moveScene;
+                        break;
                 }
 
                 switch (coordinate) {
@@ -352,6 +378,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
                         break;
                 }
             };
+
         // Do the camera updates for each of the 3 touch-wheel axis.
         updateCameraProperty(
             this._wheelDeltaX, this._wheelXAction, this._wheelXActionCoordinate);
