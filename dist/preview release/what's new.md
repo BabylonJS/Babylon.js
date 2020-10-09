@@ -153,6 +153,7 @@
 ### Navigation
 
 - export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
+- get next path step point for an agent ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Materials
 
