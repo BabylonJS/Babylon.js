@@ -237,7 +237,7 @@
     .gradient-step {
         display: grid;
         grid-template-rows: 100%;
-        grid-template-columns: 30px 30px 40px auto 20px 30px;
+        grid-template-columns: 20px 30px 40px auto 20px 30px;
         padding-top: 5px;
         padding-left: 5px;
         padding-bottom: 5px;
@@ -267,7 +267,8 @@
             display: grid;
             justify-content: stretch;
             align-content: center;
-            margin-right: 5px;
+            margin-right: -5px;
+            padding-left: 12px;
 
             input {
                 width: 90%;
@@ -329,6 +330,28 @@
             
             input {
                 width: 110px;
+            }
+        }
+
+        .short {
+            grid-column: 2;
+            
+            display: flex;
+            align-items: center;
+            
+            input {
+                width: 27px;
+
+            }
+            
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+              -webkit-appearance: none;
+              margin: 0;
+            }
+
+            input[type=number] {
+                -moz-appearance: textfield;
             }
         }
     }
