@@ -1950,6 +1950,8 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const texture = ArrayItem.Get(`${context}/index`, this._gltf.textures, textureInfo.index);
+        texture._textureInfo = textureInfo;
+
         const promise = this._loadTextureAsync(`/textures/${textureInfo.index}`, texture, (babylonTexture) => {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
             GLTFLoader.AddPointerMetadata(babylonTexture, context);
