@@ -1,6 +1,6 @@
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { ITexture, ITextureInfo } from "../glTFLoaderInterfaces";
+import { ITexture } from "../glTFLoaderInterfaces";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Nullable } from "babylonjs/types";
 import { IKHRTextureBasisU } from 'babylonjs-gltf2interface';
