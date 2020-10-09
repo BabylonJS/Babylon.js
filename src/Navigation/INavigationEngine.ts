@@ -178,7 +178,7 @@ export interface ICrowd {
     /**
      * Gets the agent next target point on the path
      * @param index agent index returned by addAgent
-     * @param result output world space position
+     * @returns world space position
      */
     getAgentNextTargetPath(index: number): Vector3;
 
