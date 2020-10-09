@@ -12,9 +12,9 @@ interface IFloatLineComponentProps {
     isInteger?: boolean;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     additionalClass?: string;
-    step?: string,
+    step?: string;
     digits?: number;
-    globalState: GlobalState
+    globalState: GlobalState;
     min?: number
     max?: number
     smallUI?: boolean;
@@ -24,12 +24,22 @@ interface IFloatLineComponentProps {
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string }> {
     private _localChange = false;
     private _store: number;
+    private _regExp: RegExp;
 
     constructor(props: IFloatLineComponentProps) {
         super(props);
         let currentValue = this.props.target[this.props.propertyName];
         this.state = { value: currentValue ? (this.props.isInteger ? currentValue.toFixed(0) : currentValue.toFixed(this.props.digits || 2)) : "0" };
         this._store = currentValue;
+
+        let rexp = "(.*\\.";
+        let numDigits = this.props.digits || 2;
+        while (numDigits--) {
+            rexp += ".";
+        }
+        rexp += ").+";
+
+        this._regExp = new RegExp(rexp);
     }
 
     shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string }) {
@@ -65,12 +75,11 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
     }
 
     updateValue(valueString: string) {
-
         if (/[^0-9\.\-]/g.test(valueString)) {
             return;
         }
 
-        valueString = valueString.replace(/(.+\...).+/, "$1");
+        valueString = valueString.replace(this._regExp, "$1");
 
         let valueAsNumber: number;
 
@@ -111,7 +120,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                         </div>
                         <div className={className}>
                             <input type="number" step={this.props.step || "0.01"} className="numeric-input"
-                            onBlur={evt => {
+                            onBlur={(evt) => {
                                 this.props.globalState.blockKeyboardEvents = false;
                                 if(this.props.onEnter) {
                                     this.props.onEnter(this._store);
@@ -126,7 +135,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 }
                             }}
                             onFocus={() => this.props.globalState.blockKeyboardEvents = true}
-                            value={this.state.value} onChange={evt => this.updateValue(evt.target.value)} />
+                            value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} />
                         </div>
                     </div>
                 }
