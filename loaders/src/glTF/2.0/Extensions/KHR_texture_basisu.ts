@@ -1,6 +1,6 @@
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import { ITexture } from "../glTFLoaderInterfaces";
+import { ITexture, ITextureInfo } from "../glTFLoaderInterfaces";
 import { BaseTexture } from "babylonjs/Materials/Textures/baseTexture";
 import { Nullable } from "babylonjs/types";
 import { IKHRTextureBasisU } from 'babylonjs-gltf2interface';
@@ -19,6 +19,7 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
     public enabled: boolean;
 
     private _loader: GLTFLoader;
+    private _textureInfo: ITextureInfo;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -32,13 +33,19 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
     }
 
     /** @hidden */
-    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void, isColorData = true): Nullable<Promise<BaseTexture>> {
+    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
+        this._textureInfo = textureInfo; // need to save this for use in _loadTextureAsync below
+        return this._loader.loadTextureInfoAsync(context, textureInfo, assign);
+    }
+
+    /** @hidden */
+    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
         return GLTFLoader.LoadExtensionAsync<IKHRTextureBasisU, BaseTexture>(context, texture, this.name, (extensionContext, extension) => {
             const sampler = (texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._loader.gltf.samplers, texture.sampler));
             const image = ArrayItem.Get(`${extensionContext}/source`, this._loader.gltf.images, extension.source);
             return this._loader._createTextureAsync(context, sampler, image, (babylonTexture) => {
                 assign(babylonTexture);
-            }, isColorData ? undefined : { useRGBAIfASTCBC7NotAvailableWhenUASTC: true });
+            }, this._textureInfo.isNotColorData ? { useRGBAIfASTCBC7NotAvailableWhenUASTC: true } : undefined);
         });
     }
 }
