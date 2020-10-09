@@ -128,6 +128,31 @@
         }
     }
     
+    .textInputArea {
+        padding-left: $line-padding-left;
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1fr 120px;
+
+        .label {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .value {                        
+            display: flex;
+            align-items: center;
+            grid-column: 2;
+            
+            textarea {
+                width: calc(150% - 5px);
+                margin-left: -50%;
+                height: 40px;
+            }
+        }
+    }
+    
     .paneContainer {
         margin-top: 3px;
         display:grid;
