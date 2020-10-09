@@ -19,7 +19,6 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
     public enabled: boolean;
 
     private _loader: GLTFLoader;
-    private _textureInfo: ITextureInfo;
 
     /** @hidden */
     constructor(loader: GLTFLoader) {
@@ -34,7 +33,8 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
 
     /** @hidden */
     public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        this._textureInfo = textureInfo; // need to save this for use in _loadTextureAsync below
+        const texture = ArrayItem.Get(`${context}/index`, this._loader.gltf.textures, textureInfo.index);
+        texture._textureInfo = textureInfo; // need to save this for use in _loadTextureAsync below
         return this._loader.loadTextureInfoAsync(context, textureInfo, assign);
     }
 
@@ -45,7 +45,7 @@ export class KHR_texture_basisu implements IGLTFLoaderExtension {
             const image = ArrayItem.Get(`${extensionContext}/source`, this._loader.gltf.images, extension.source);
             return this._loader._createTextureAsync(context, sampler, image, (babylonTexture) => {
                 assign(babylonTexture);
-            }, this._textureInfo.isNotColorData ? { useRGBAIfASTCBC7NotAvailableWhenUASTC: true } : undefined);
+            }, texture._textureInfo.nonColorData ? { useRGBAIfASTCBC7NotAvailableWhenUASTC: true } : undefined);
         });
     }
 }

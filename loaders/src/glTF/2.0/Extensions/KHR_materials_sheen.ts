@@ -85,7 +85,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
         }
 
         if (properties.sheenRoughnessTexture) {
-            (properties.sheenRoughnessTexture as ITextureInfo).isNotColorData = true;
+            (properties.sheenRoughnessTexture as ITextureInfo).nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
                 babylonMaterial.sheen.textureRoughness = texture;
