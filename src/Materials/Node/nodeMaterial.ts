@@ -261,6 +261,12 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * A free comment about the material
+     */
+    @serialize("comment")
+    public comment: string;
+
+    /**
      * Create a new node based material
      * @param name defines the material name
      * @param scene defines the hosting scene
@@ -1808,6 +1814,8 @@ export class NodeMaterial extends PushMaterial {
 
             this.editorData.map = blockMap;
         }
+
+        this.comment = source.comment;
 
         if (!merge) {
             this._mode = source.mode ?? NodeMaterialModes.Material;
