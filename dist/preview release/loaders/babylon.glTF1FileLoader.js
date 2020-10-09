@@ -1901,7 +1901,8 @@ var GLTFLoader = /** @class */ (function () {
                     skeletons: skeletons,
                     animationGroups: [],
                     lights: [],
-                    transformNodes: []
+                    transformNodes: [],
+                    geometries: []
                 });
             }, onProgress, function (message) {
                 reject(new Error(message));
@@ -3277,6 +3278,7 @@ var GLTFFileLoader = /** @class */ (function () {
                 cameras.push(camera);
             });
             return _this._loader.importMeshAsync(null, scene, true, data, rootUrl, onProgress, fileName).then(function (result) {
+                Array.prototype.push.apply(container.geometries, result.geometries);
                 Array.prototype.push.apply(container.meshes, result.meshes);
                 Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                 Array.prototype.push.apply(container.skeletons, result.skeletons);

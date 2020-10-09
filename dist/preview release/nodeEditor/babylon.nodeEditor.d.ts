@@ -430,12 +430,17 @@ declare module NODEEDITOR {
         step?: string;
         digits?: number;
         globalState: GlobalState;
+        min?: number;
+        max?: number;
+        smallUI?: boolean;
+        onEnter?: (newValue: number) => void;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
     }> {
         private _localChange;
         private _store;
+        private _regExp;
         constructor(props: IFloatLineComponentProps);
         shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
             value: string;
@@ -796,6 +801,7 @@ declare module NODEEDITOR {
         target?: any;
         propertyName?: string;
         value?: string;
+        multilines?: boolean;
         onChange?: (value: string) => void;
         validator?: (value: string) => boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;

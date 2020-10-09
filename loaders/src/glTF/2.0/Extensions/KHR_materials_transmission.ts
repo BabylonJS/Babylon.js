@@ -324,7 +324,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         }
 
         if (extension.transmissionTexture) {
-            return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture)
+            return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined, false)
                 .then((texture: BaseTexture) => {
                     pbrMaterial.subSurface.thicknessTexture = texture;
                     pbrMaterial.subSurface.useMaskFromThicknessTexture = true;

@@ -53,6 +53,7 @@
 - Added optional success and error callbacks for freezeActiveMeshes ([RaananW](https://github.com/RaananW))
 - Allow cross-eye mode in photo and video dome ([#8897](https://github.com/BabylonJS/Babylon.js/issues/8897)) ([RaananW](https://github.com/RaananW))
 - Added noMipMap option to the photo dome construction process ([#8972](https://github.com/BabylonJS/Babylon.js/issues/8972)) ([RaananW](https://github.com/RaananW))
+- Add a `disableBoundingBoxesFromEffectLayer` property to the `EffectLayer` class to render the bounding boxes unaffected by the effect ([Popov72](https://github.com/Popov72))
 
 ### Engine
 
@@ -97,6 +98,7 @@
 - View & edit textures in pop out inspector using tools such as brush and floodfill. Supports region selection, individual channel editing, mipmap previews, and resizing. ([DarraghBurkeMS](https://github.com/DarraghBurkeMS))
 - Added mesh debug tools to display bone influence weights and bone indices maps. ([Pryme8](https://github.com/Pryme8))
 - Added more functionality and options to the skeleton debug panel. ([Pryme8](https://github.com/Pryme8))
+- Along with bone index it is now possible to select a bone using its name when viewing bone weights ([#9117](https://github.com/BabylonJS/Babylon.js/issues/9117)) ([RaananW](https://github.com/RaananW))
 
 ### Cameras
 
@@ -106,6 +108,7 @@
 - Added flag to TargetCamera to invert rotation direction and multiplier to adjust speed ([Exolun](https://github.com/Exolun))
 - Added upwards and downwards keyboard input to `FreeCamera` ([Pheater](https://github.com/pheater))
 - Handle scales in camera matrices ([Popov72](https://github.com/Popov72))
+- Added mouse wheel controls to FreeCamera. ([mrdunk](https://github.com/mrdunk))
 
 ### Debug
 - Added new view modes to the `SkeletonViewer` class. ([Pryme8](https://github.com/Pryme8))
@@ -158,6 +161,7 @@
 ### Navigation
 
 - export/load prebuilt binary navigation mesh ([cedricguillemet](https://github.com/cedricguillemet))
+- get next path step point for an agent ([cedricguillemet](https://github.com/cedricguillemet))
 
 ### Materials
 
@@ -212,6 +216,8 @@
 - XR's main camera uses the first eye's projection matrix ([#8944](https://github.com/BabylonJS/Babylon.js/issues/8944)) ([RaananW](https://github.com/RaananW))
 - pointerX and pointerY of the scene are now updated when using the pointer selection feature ([#8879](https://github.com/BabylonJS/Babylon.js/issues/8879)) ([RaananW](https://github.com/RaananW))
 - XR tracking state was added to the camera ([#9076](https://github.com/BabylonJS/Babylon.js/issues/9076)) ([RaananW](https://github.com/RaananW))
+- Individual post processing can be applied to the XR rig cameras ([#9038](https://github.com/BabylonJS/Babylon.js/issues/9038)) ([RaananW](https://github.com/RaananW))
+- Pointer selection improvements - single/dual hand selection, max ray distance and more ([#7974](https://github.com/BabylonJS/Babylon.js/issues/7974)) ([RaananW](https://github.com/RaananW))
 
 ### Collisions
 
@@ -340,6 +346,7 @@
 - Fix `SkeletonViewer` to use utillity layer with custom lighting to improve debug mesh visibility ([Drigax](https://github.com/drigax))
 - Fix same sub mesh being rendered multiple times in the shadow map ([Popov72](https://github.com/Popov72))
 - Fix incorrect shadows on the master mesh when using a lod mesh ([Popov72](https://github.com/Popov72))
+- Take first gamepad connected when attaching camera (and not only XBOX gamepads) ([#9136](https://github.com/BabylonJS/Babylon.js/issues/9136)) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
@@ -351,3 +358,4 @@
 - `SceneLoaderProgress` class is now `ISceneLoaderProgress` interface ([bghgary](https://github.com/bghgary))
 - Rendering of transparent meshes: stencil state is now set to the value registered in the engine (when calling `engine.setStencilBuffer(value)`) instead of being set to `false` unconditionally. This change may affect the highlight layer when using transparent meshes. If you are impacted, you may need to exclude the transparent mesh(es) from the layer ([Popov72](https://github.com/Popov72))
 - Fix width/height GUI container computation to take into account paddings when `adaptWithToChildren = true` ([Popov72](https://github.com/Popov72))
+- `smoothstep` in NME is now taking any type of parameters for its `value` input. If you use generated code from the NME ("Generate code" button), you may have to move the smoothstep output connection AFTER the input connections ([Popov72](https://github.com/Popov72))

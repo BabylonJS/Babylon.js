@@ -239,11 +239,12 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Null_Value: number;
-    class ListLineOption {
+    export class ListLineOption {
         label: string;
         value: number;
+        selected?: boolean;
     }
-    interface IOptionsLineComponentProps {
+    export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;

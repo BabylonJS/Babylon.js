@@ -664,7 +664,7 @@ declare module "babylonjs-gui/2D/controls/control" {
     import { Observable } from "babylonjs/Misc/observable";
     import { Vector2, Vector3 } from "babylonjs/Maths/math.vector";
     import { PointerInfoBase } from 'babylonjs/Events/pointerEvents';
-    import { AbstractMesh } from "babylonjs/Meshes/abstractMesh";
+    import { TransformNode } from "babylonjs/Meshes/transformNode";
     import { Scene } from "babylonjs/scene";
     import { Container } from "babylonjs-gui/2D/controls/container";
     import { AdvancedDynamicTexture } from "babylonjs-gui/2D/advancedDynamicTexture";
@@ -749,7 +749,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         private _isVisible;
         private _isHighlighted;
         /** @hidden */
-        _linkedMesh: Nullable<AbstractMesh>;
+        _linkedMesh: Nullable<TransformNode>;
         private _fontSet;
         private _dummyVector2;
         private _downCount;
@@ -1003,7 +1003,7 @@ declare module "babylonjs-gui/2D/controls/control" {
         /**
          * Gets the current linked mesh (or null if none)
          */
-        get linkedMesh(): Nullable<AbstractMesh>;
+        get linkedMesh(): Nullable<TransformNode>;
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1180,7 +1180,7 @@ declare module "babylonjs-gui/2D/controls/control" {
          * @param mesh defines the mesh to link with
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkWithMesh(mesh: Nullable<AbstractMesh>): void;
+        linkWithMesh(mesh: Nullable<TransformNode>): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: Vector3): void;
         /** @hidden */
@@ -5153,7 +5153,7 @@ declare module BABYLON.GUI {
         private _isVisible;
         private _isHighlighted;
         /** @hidden */
-        _linkedMesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+        _linkedMesh: BABYLON.Nullable<BABYLON.TransformNode>;
         private _fontSet;
         private _dummyVector2;
         private _downCount;
@@ -5407,7 +5407,7 @@ declare module BABYLON.GUI {
         /**
          * Gets the current linked mesh (or null if none)
          */
-        get linkedMesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        get linkedMesh(): BABYLON.Nullable<BABYLON.TransformNode>;
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -5584,7 +5584,7 @@ declare module BABYLON.GUI {
          * @param mesh defines the mesh to link with
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkWithMesh(mesh: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
+        linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
         /** @hidden */

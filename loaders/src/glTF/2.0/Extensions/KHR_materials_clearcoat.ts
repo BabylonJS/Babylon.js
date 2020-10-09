@@ -10,9 +10,8 @@ import { IKHRMaterialsClearcoat } from 'babylonjs-gltf2interface';
 const NAME = "KHR_materials_clearcoat";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_clearcoat/README.md)
  * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
- * !!! Experimental Extension Subject to Changes !!!
  */
 export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
     /**
@@ -89,14 +88,14 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
                 babylonMaterial.clearCoat.textureRoughness = texture;
-            }));
+            }, false));
         }
 
         if (properties.clearcoatNormalTexture) {
             promises.push(this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
                 babylonMaterial.clearCoat.bumpTexture = texture;
-            }));
+            }, false));
 
             babylonMaterial.invertNormalMapX = !babylonMaterial.getScene().useRightHandedSystem;
             babylonMaterial.invertNormalMapY = babylonMaterial.getScene().useRightHandedSystem;

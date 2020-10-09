@@ -262,7 +262,8 @@ export class GLTFLoader implements IGLTFLoader {
                     skeletons: this._getSkeletons(),
                     animationGroups: this._getAnimationGroups(),
                     lights: this._babylonLights,
-                    transformNodes: this._getTransformNodes()
+                    transformNodes: this._getTransformNodes(),
+                    geometries: this._getGeometries()
                 };
             });
         });
@@ -549,6 +550,24 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
+    private _getGeometries(): Geometry[] {
+        const geometries = new Array<Geometry>();
+
+        const nodes = this._gltf.nodes;
+        if (nodes) {
+            for (const node of nodes) {
+                this._forEachPrimitive(node, (babylonMesh) => {
+                    const geometry = (babylonMesh as Mesh).geometry;
+                    if (geometry && geometries.indexOf(geometry) === -1) {
+                        geometries.push(geometry);
+                    }
+                });
+            }
+        }
+
+        return geometries;
+    }
+
     private _getMeshes(): AbstractMesh[] {
         const meshes = new Array<AbstractMesh>();
 
@@ -799,7 +818,9 @@ export class GLTFLoader implements IGLTFLoader {
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
             promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then((babylonGeometry) => {
                 return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonGeometry).then(() => {
+                    this._babylonScene._blockEntityCollection = this._forAssetContainer;
                     babylonGeometry.applyToMesh(babylonMesh);
+                    this._babylonScene._blockEntityCollection = false;
                 });
             }));
 
@@ -1692,7 +1713,7 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
                     babylonMaterial.metallicTexture = texture;
-                }));
+                }, false));
 
                 babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
                 babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
@@ -1833,7 +1854,7 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Normal)`;
                 babylonMaterial.bumpTexture = texture;
-            }));
+            }, false));
 
             babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
             babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
@@ -1848,7 +1869,7 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Occlusion)`;
                 babylonMaterial.ambientTexture = texture;
-            }));
+            }, false));
 
             babylonMaterial.useAmbientInGrayScale = true;
             if (material.occlusionTexture.strength != undefined) {
@@ -1911,10 +1932,11 @@ export class GLTFLoader implements IGLTFLoader {
      * @param context The context when loading the asset
      * @param textureInfo The glTF texture info property
      * @param assign A function called synchronously after parsing the glTF properties
+     * @param isColorData true if the texture held color data, else false
      * @returns A promise that resolves with the loaded Babylon texture when the load is complete
      */
-    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
-        const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign);
+    public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => { }, isColorData = true): Promise<BaseTexture> {
+        const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign, isColorData);
         if (extensionPromise) {
             return extensionPromise;
         }
@@ -1931,7 +1953,7 @@ export class GLTFLoader implements IGLTFLoader {
             GLTFLoader.AddPointerMetadata(babylonTexture, context);
             this._parent.onTextureLoadedObservable.notifyObservers(babylonTexture);
             assign(babylonTexture);
-        });
+        }, isColorData);
 
         this.logClose();
 
@@ -1939,8 +1961,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
-        const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign);
+    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => { }, isColorData = true): Promise<BaseTexture> {
+        const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign, isColorData);
         if (extensionPromise) {
             return extensionPromise;
         }
@@ -1957,7 +1979,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
+    public _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign: (babylonTexture: BaseTexture) => void = () => { }, textureLoaderOptions?: any): Promise<BaseTexture> {
         const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
         const promises = new Array<Promise<any>>();
@@ -1972,7 +1994,7 @@ export class GLTFLoader implements IGLTFLoader {
             if (!this._disposed) {
                 deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
             }
-        }, undefined, undefined, undefined, image.mimeType);
+        }, undefined, undefined, undefined, image.mimeType, textureLoaderOptions);
         this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
 
@@ -2317,12 +2339,12 @@ export class GLTFLoader implements IGLTFLoader {
         return this._applyExtensions(material, "loadMaterialProperties", (extension) => extension.loadMaterialPropertiesAsync && extension.loadMaterialPropertiesAsync(context, material, babylonMaterial));
     }
 
-    private _extensionsLoadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return this._applyExtensions(textureInfo, "loadTextureInfo", (extension) => extension.loadTextureInfoAsync && extension.loadTextureInfoAsync(context, textureInfo, assign));
+    private _extensionsLoadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void, isColorData: boolean): Nullable<Promise<BaseTexture>> {
+        return this._applyExtensions(textureInfo, "loadTextureInfo", (extension) => extension.loadTextureInfoAsync && extension.loadTextureInfoAsync(context, textureInfo, assign, isColorData));
     }
 
-    private _extensionsLoadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return this._applyExtensions(texture, "loadTexture", (extension) => extension._loadTextureAsync && extension._loadTextureAsync(context, texture, assign));
+    private _extensionsLoadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void, isColorData: boolean): Nullable<Promise<BaseTexture>> {
+        return this._applyExtensions(texture, "loadTexture", (extension) => extension._loadTextureAsync && extension._loadTextureAsync(context, texture, assign, isColorData));
     }
 
     private _extensionsLoadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {

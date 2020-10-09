@@ -1704,7 +1704,8 @@ export class GLTFLoader implements IGLTFLoader {
                     skeletons: skeletons,
                     animationGroups: [],
                     lights: [],
-                    transformNodes: []
+                    transformNodes: [],
+                    geometries: []
                 });
             }, onProgress, (message) => {
                 reject(new Error(message));

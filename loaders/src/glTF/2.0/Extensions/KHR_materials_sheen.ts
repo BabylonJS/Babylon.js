@@ -88,7 +88,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             promises.push(this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
                 babylonMaterial.sheen.textureRoughness = texture;
-            }));
+            }, false));
         }
 
         babylonMaterial.sheen.albedoScaling = true;

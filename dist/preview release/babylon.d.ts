@@ -1184,7 +1184,7 @@ declare module BABYLON {
         endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
         lineProcessor?: (line: string, isFragment: boolean) => string;
         preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
-        postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
+        postProcessor?: (code: string, defines: string[], isFragment: boolean, engine: ThinEngine) => string;
     }
 }
 declare module BABYLON {
@@ -1497,7 +1497,7 @@ declare module BABYLON {
 declare module BABYLON {
     /** @hidden */
     export class ShaderProcessor {
-        static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void): void;
+        static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine): void;
         private static _ProcessPrecision;
         private static _ExtractOperation;
         private static _BuildSubExpression;
@@ -8786,6 +8786,17 @@ declare module BABYLON {
         /** Z axis */
         static Z: Vector3;
     }
+    /**
+     * Defines cartesian components.
+     */
+    export enum Coordinate {
+        /** X axis */
+        X = 0,
+        /** Y axis */
+        Y = 1,
+        /** Z axis */
+        Z = 2
+    }
 }
 declare module BABYLON {
     /**
@@ -10710,7 +10721,7 @@ declare module BABYLON {
         static readonly STEP_ISREADYFORMESH_EFFECTLAYER: number;
         static readonly STEP_BEFOREEVALUATEACTIVEMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_EVALUATESUBMESH_BOUNDINGBOXRENDERER: number;
-        static readonly STEP_ACTIVEMESH_BOUNDINGBOXRENDERER: number;
+        static readonly STEP_PREACTIVEMESH_BOUNDINGBOXRENDERER: number;
         static readonly STEP_CAMERADRAWRENDERTARGET_EFFECTLAYER: number;
         static readonly STEP_BEFORECAMERADRAW_EFFECTLAYER: number;
         static readonly STEP_BEFORECAMERADRAW_LAYER: number;
@@ -10801,9 +10812,9 @@ declare module BABYLON {
      */
     export type EvaluateSubMeshStageAction = (mesh: AbstractMesh, subMesh: SubMesh) => void;
     /**
-     * Strong typing of a Active Mesh related stage step action
+     * Strong typing of a pre active Mesh related stage step action
      */
-    export type ActiveMeshStageAction = (sourceMesh: AbstractMesh, mesh: AbstractMesh) => void;
+    export type PreActiveMeshStageAction = (mesh: AbstractMesh) => void;
     /**
      * Strong typing of a Camera related stage step action
      */
@@ -19027,6 +19038,246 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /**
+     * Base class for mouse wheel input..
+     * See FollowCameraMouseWheelInput in src/Cameras/Inputs/freeCameraMouseWheelInput.ts
+     * for example usage.
+     */
+    export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        abstract camera: Camera;
+        /**
+         * How fast is the camera moves in relation to X axis mouseWheel events.
+         * Use negative value to reverse direction.
+         */
+        wheelPrecisionX: number;
+        /**
+         * How fast is the camera moves in relation to Y axis mouseWheel events.
+         * Use negative value to reverse direction.
+         */
+        wheelPrecisionY: number;
+        /**
+         * How fast is the camera moves in relation to Z axis mouseWheel events.
+         * Use negative value to reverse direction.
+         */
+        wheelPrecisionZ: number;
+        /**
+         * Observable for when a mouse wheel move event occurs.
+         */
+        onChangedObservable: Observable<{
+            wheelDeltaX: number;
+            wheelDeltaY: number;
+            wheelDeltaZ: number;
+        }>;
+        private _wheel;
+        private _observer;
+        /**
+         * Attach the input controls to a specific dom element to get the input from.
+         * @param element Defines the element the controls should be listened from
+         * @param noPreventDefault Defines whether event caught by the controls
+         *   should call preventdefault().
+         *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
+         */
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        /**
+         * Detach the current controls from the specified dom element.
+         * @param element Defines the element to stop listening the inputs from
+         */
+        detachControl(element: Nullable<HTMLElement>): void;
+        /**
+         * Called for each rendered frame.
+         */
+        checkInputs(): void;
+        /**
+         * Gets the class name of the current intput.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Get the friendly name associated with the input class.
+         * @returns the input friendly name
+         */
+        getSimpleName(): string;
+        /**
+         * Incremental value of multiple mouse wheel movements of the X axis.
+         * Should be zero-ed when read.
+         */
+        protected _wheelDeltaX: number;
+        /**
+         * Incremental value of multiple mouse wheel movements of the Y axis.
+         * Should be zero-ed when read.
+         */
+        protected _wheelDeltaY: number;
+        /**
+         * Incremental value of multiple mouse wheel movements of the Z axis.
+         * Should be zero-ed when read.
+         */
+        protected _wheelDeltaZ: number;
+        /**
+         * Firefox uses a different scheme to report scroll distances to other
+         * browsers. Rather than use complicated methods to calculate the exact
+         * multiple we need to apply, let's just cheat and use a constant.
+         * https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
+         * https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
+         */
+        private readonly _ffMultiplier;
+        /**
+         * Different event attributes for wheel data fall into a few set ranges.
+         * Some relevant but dated date here:
+         * https://stackoverflow.com/questions/5527601/normalizing-mousewheel-speed-across-browsers
+         */
+        private readonly _normalize;
+    }
+}
+declare module BABYLON {
+    /**
+     * Manage the mouse wheel inputs to control a free camera.
+     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     */
+    export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
+        /**
+         * Defines the camera the input is attached to.
+         */
+        camera: FreeCamera;
+        /**
+         * Gets the class name of the current input.
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Set which movement axis (relative to camera's orientation) the mouse
+         * wheel's X axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelXMoveRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to camera's orientation) the
+         * mouse wheel's X axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelXMoveRelative(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to camera's orientation) the mouse
+         * wheel's Y axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelYMoveRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to camera's orientation) the
+         * mouse wheel's Y axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelYMoveRelative(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to camera's orientation) the mouse
+         * wheel's Z axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelZMoveRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to camera's orientation) the
+         * mouse wheel's Z axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelZMoveRelative(): Nullable<Coordinate>;
+        /**
+         * Set which rotation axis (relative to camera's orientation) the mouse
+         * wheel's X axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelXRotateRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured rotation axis (relative to camera's orientation) the
+         * mouse wheel's X axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelXRotateRelative(): Nullable<Coordinate>;
+        /**
+         * Set which rotation axis (relative to camera's orientation) the mouse
+         * wheel's Y axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelYRotateRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured rotation axis (relative to camera's orientation) the
+         * mouse wheel's Y axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelYRotateRelative(): Nullable<Coordinate>;
+        /**
+         * Set which rotation axis (relative to camera's orientation) the mouse
+         * wheel's Z axis controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelZRotateRelative(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured rotation axis (relative to camera's orientation) the
+         * mouse wheel's Z axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelZRotateRelative(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to the scene) the mouse wheel's X axis
+         * controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelXMoveScene(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to the scene) the mouse wheel's
+         * X axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelXMoveScene(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to the scene) the mouse wheel's Y axis
+         * controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelYMoveScene(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to the scene) the mouse wheel's
+         * Y axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelYMoveScene(): Nullable<Coordinate>;
+        /**
+         * Set which movement axis (relative to the scene) the mouse wheel's Z axis
+         * controls.
+         * @param axis The axis to be moved. Set null to clear.
+         */
+        set wheelZMoveScene(axis: Nullable<Coordinate>);
+        /**
+         * Get the configured movement axis (relative to the scene) the mouse wheel's
+         * Z axis controls.
+         * @returns The configured axis or null if none.
+         */
+        get wheelZMoveScene(): Nullable<Coordinate>;
+        /**
+         * Called for each rendered frame.
+         */
+        checkInputs(): void;
+        private _moveRelative;
+        private _rotateRelative;
+        private _moveScene;
+        /**
+         * These are set to the desired default behaviour.
+         */
+        private _wheelXAction;
+        private _wheelXActionCoordinate;
+        private _wheelYAction;
+        private _wheelYActionCoordinate;
+        private _wheelZAction;
+        private _wheelZActionCoordinate;
+        /**
+         * Update the camera according to any configured properties for the 3
+         * mouse-wheel axis.
+         */
+        private _updateCamera;
+    }
+}
+declare module BABYLON {
+    /**
      * Manage the touch inputs to control the movement of a free camera.
      * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
      */
@@ -19105,6 +19356,10 @@ declare module BABYLON {
          */
         _mouseInput: Nullable<FreeCameraMouseInput>;
         /**
+         * @hidden
+         */
+        _mouseWheelInput: Nullable<FreeCameraMouseWheelInput>;
+        /**
          * Instantiates a new FreeCameraInputsManager.
          * @param camera Defines the camera the inputs belong to
          */
@@ -19125,6 +19380,16 @@ declare module BABYLON {
          * @returns the current input manager
          */
         removeMouse(): FreeCameraInputsManager;
+        /**
+         * Add mouse wheel input support to the input manager.
+         * @returns the current input manager
+         */
+        addMouseWheel(): FreeCameraInputsManager;
+        /**
+         * Removes the mouse wheel input support from the manager
+         * @returns the current input manager
+         */
+        removeMouseWheel(): FreeCameraInputsManager;
         /**
          * Add touch input support to the input manager.
          * @returns the current input manager
@@ -22582,6 +22847,10 @@ declare module BABYLON {
          * Gets the mode property
          */
         get mode(): NodeMaterialModes;
+        /**
+         * A free comment about the material
+         */
+        comment: string;
         /**
          * Create a new node based material
          * @param name defines the material name
@@ -29917,6 +30186,7 @@ declare module BABYLON {
         private _updatable;
         /** @hidden */
         _positions: Nullable<Vector3[]>;
+        private _positionsCache;
         /**
          *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          */
@@ -38174,6 +38444,12 @@ declare module BABYLON {
 }
 declare module BABYLON {
     /** @hidden */
+    export class WebGLShaderProcessor implements IShaderProcessor {
+        postProcessor(code: string, defines: string[], isFragment: boolean, engine: ThinEngine): string;
+    }
+}
+declare module BABYLON {
+    /** @hidden */
     export class WebGL2ShaderProcessor implements IShaderProcessor {
         attributeProcessor(attribute: string): string;
         varyingProcessor(varying: string, isFragment: boolean): string;
@@ -41344,6 +41620,15 @@ declare module BABYLON {
          */
         static Slice<T>(data: T, start?: number, end?: number): T;
         /**
+         * Provides a slice function that will work even on IE
+         * The difference between this and Slice is that this will force-convert to array
+         * @param data defines the array to slice
+         * @param start defines the start of the data (optional)
+         * @param end defines the end of the data (optional)
+         * @returns the new sliced array
+         */
+        static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P>;
+        /**
          * Polyfill for setImmediate
          * @param action defines the action to execute after the current execution block
          */
@@ -43189,7 +43474,7 @@ declare module BABYLON {
          * @hidden
          * Defines the actions happening during the active mesh stage.
          */
-        _activeMeshStage: Stage<ActiveMeshStageAction>;
+        _preActiveMeshStage: Stage<PreActiveMeshStageAction>;
         /**
          * @hidden
          * Defines the actions happening during the per camera render target step.
@@ -51989,6 +52274,24 @@ declare module BABYLON {
          * The first rig camera (left eye) will be used to calculate the projection
          */
         disableScenePointerVectorUpdate: boolean;
+        /**
+         * Enable pointer selection on all controllers instead of switching between them
+         */
+        enablePointerSelectionOnAllControllers?: boolean;
+        /**
+         * The preferred hand to give the pointer selection to. This will be prioritized when the controller initialize.
+         * If switch is enabled, it will still allow the user to switch between the different controllers
+         */
+        preferredHandedness?: XRHandedness;
+        /**
+         * Disable switching the pointer selection from one controller to the other.
+         * If the preferred hand is set it will be fixed on this hand, and if not it will be fixed on the first controller added to the scene
+         */
+        disableSwitchOnClick?: boolean;
+        /**
+         * The maximum distance of the pointer selection feature. Defaults to 100.
+         */
+        maxPointerDistance?: number;
     }
     /**
      * A module that will enable pointer selection for motion controllers of XR Input Sources
@@ -52000,6 +52303,7 @@ declare module BABYLON {
         private _controllers;
         private _scene;
         private _tmpVectorForPickCompare;
+        private _attachedController;
         /**
          * The module's name
          */
@@ -59072,6 +59376,10 @@ declare module BABYLON {
         get renderingGroupId(): number;
         set renderingGroupId(renderingGroupId: number);
         /**
+         * Specifies if the bounding boxes should be rendered normally or if they should undergo the effect of the layer
+         */
+        disableBoundingBoxesFromEffectLayer: boolean;
+        /**
          * An event triggered when the effect layer has been disposed.
          */
         onDisposeObservable: Observable<EffectLayer>;
@@ -63648,6 +63956,10 @@ declare module BABYLON {
         */
         get specularColor(): NodeMaterialConnectionPoint;
         /**
+        * Gets the view matrix component
+        */
+        get view(): NodeMaterialConnectionPoint;
+        /**
          * Gets the diffuse output component
          */
         get diffuseOutput(): NodeMaterialConnectionPoint;
@@ -65678,6 +65990,10 @@ declare module BABYLON {
          */
         get anisotropy(): NodeMaterialConnectionPoint;
         /**
+         * Gets the view matrix parameter
+         */
+        get view(): NodeMaterialConnectionPoint;
+        /**
          * Gets the ambient output component
          */
         get ambient(): NodeMaterialConnectionPoint;
@@ -67669,6 +67985,18 @@ declare module BABYLON {
          */
         getAgentVelocityToRef(index: number, result: Vector3): void;
         /**
+         * Gets the agent next target point on the path
+         * @param index agent index returned by addAgent
+         * @returns world space position
+         */
+        getAgentNextTargetPath(index: number): Vector3;
+        /**
+         * Gets the agent next target point on the path
+         * @param index agent index returned by addAgent
+         * @param result output world space position
+         */
+        getAgentNextTargetPathToRef(index: number, result: Vector3): void;
+        /**
          * remove a particular agent previously created
          * @param index agent index returned by addAgent
          */
@@ -68017,6 +68345,18 @@ declare module BABYLON {
          * @param result output world space velocity
          */
         getAgentVelocityToRef(index: number, result: Vector3): void;
+        /**
+         * Returns the agent next target point on the path
+         * @param index agent index returned by addAgent
+         * @returns world space position
+         */
+        getAgentNextTargetPath(index: number): Vector3;
+        /**
+         * Returns the agent next target point on the path
+         * @param index agent index returned by addAgent
+         * @param result output world space position
+         */
+        getAgentNextTargetPathToRef(index: number, result: Vector3): void;
         /**
          * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
          * @param index agent index returned by addAgent
@@ -72493,6 +72833,10 @@ declare module BABYLON {
          */
         onAfterBoxRenderingObservable: Observable<BoundingBox>;
         /**
+         * When false, no bounding boxes will be rendered
+         */
+        enabled: boolean;
+        /**
          * @hidden
          */
         renderList: SmartArray<BoundingBox>;
@@ -72511,7 +72855,7 @@ declare module BABYLON {
          */
         register(): void;
         private _evaluateSubMesh;
-        private _activeMesh;
+        private _preActiveMesh;
         private _prepareRessources;
         private _createIndexBuffer;
         /**

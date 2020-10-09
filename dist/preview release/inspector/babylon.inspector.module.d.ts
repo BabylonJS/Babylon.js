@@ -277,11 +277,12 @@ declare module "babylonjs-inspector/components/actionTabs/lines/optionsLineCompo
     import { Observable } from "babylonjs/Misc/observable";
     import { PropertyChangedEvent } from "babylonjs-inspector/components/propertyChangedEvent";
     export const Null_Value: number;
-    class ListLineOption {
+    export class ListLineOption {
         label: string;
         value: number;
+        selected?: boolean;
     }
-    interface IOptionsLineComponentProps {
+    export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;
@@ -4781,11 +4782,12 @@ declare module INSPECTOR {
 }
 declare module INSPECTOR {
     export const Null_Value: number;
-    class ListLineOption {
+    export class ListLineOption {
         label: string;
         value: number;
+        selected?: boolean;
     }
-    interface IOptionsLineComponentProps {
+    export interface IOptionsLineComponentProps {
         label: string;
         target: any;
         propertyName: string;

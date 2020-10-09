@@ -72,7 +72,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             promises.push(this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Specular F0 Color)`;
                 babylonMaterial.metallicReflectanceTexture = texture;
-            }));
+            }, false));
         }
 
         return Promise.all(promises).then(() => { });
