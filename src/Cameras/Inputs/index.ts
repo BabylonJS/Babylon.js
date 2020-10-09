@@ -12,5 +12,6 @@ export * from "./freeCameraDeviceOrientationInput";
 export * from "./freeCameraGamepadInput";
 export * from "./freeCameraKeyboardMoveInput";
 export * from "./freeCameraMouseInput";
+export * from "./freeCameraMouseWheelInput";
 export * from "./freeCameraTouchInput";
 export * from "./freeCameraVirtualJoystickInput";
