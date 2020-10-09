@@ -171,8 +171,10 @@ export class NodeMaterialBuildState {
 
     /** @hidden */
     public _emit2DSampler(name: string) {
-        this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
-        this.samplers.push(name);
+        if (this.samplers.indexOf(name) < 0) {
+            this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+            this.samplers.push(name);
+        }
     }
 
     /** @hidden */
