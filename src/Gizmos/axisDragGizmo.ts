@@ -102,13 +102,12 @@ export class AxisDragGizmo extends Gizmo {
 
         // Build Mesh + Collider
         const arrow = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness);
-        const collider = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness * 4, true);
+        const collider = AxisDragGizmo._CreateArrow(gizmoLayer.utilityLayerScene, this._coloredMaterial, thickness + 4, true);
 
         // Add to Root Node
         this._gizmoMesh = new Mesh("", gizmoLayer.utilityLayerScene);
-        [...arrow.getChildMeshes(), ...collider.getChildMeshes()].forEach((mesh) => {
-            this._gizmoMesh.addChild(mesh);
-        });
+        this._gizmoMesh.addChild((arrow as Mesh));
+        this._gizmoMesh.addChild((collider as Mesh));
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
         this._gizmoMesh.scaling.scaleInPlace(1 / 3);
@@ -154,14 +153,27 @@ export class AxisDragGizmo extends Gizmo {
             }
         });
 
+        var light = gizmoLayer._getSharedGizmoLight();
+        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
+
+        const cache: any = {
+            gizmoMeshes: arrow.getChildMeshes(),
+            colliderMeshes: collider.getChildMeshes(),
+            material: this._coloredMaterial,
+            hoverMaterial: this._hoverMaterial,
+            disableMaterial: this._disableMaterial,
+            active: false
+        };
+        this._parent?.addToAxisCache(collider as Mesh, cache);
+
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (this._customMeshSet) {
                 return;
             }
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
-                this._rootMesh.getChildMeshes().forEach((m) => {
+                cache.gizmoMeshes.forEach((m: Mesh) => {
                     m.material = material;
                     if ((<LinesMesh>m).color) {
                         (<LinesMesh>m).color = material.diffuseColor;
@@ -169,17 +181,6 @@ export class AxisDragGizmo extends Gizmo {
                 });
             }
         });
-
-        var light = gizmoLayer._getSharedGizmoLight();
-        light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
-
-        const cache: any = {
-            material: this._coloredMaterial,
-            hoverMaterial: this._hoverMaterial,
-            disableMaterial: this._disableMaterial,
-            active: false
-        };
-        this._parent?.addToAxisCache(this._gizmoMesh, cache);
     }
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
