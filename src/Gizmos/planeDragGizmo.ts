@@ -112,29 +112,31 @@ export class PlaneDragGizmo extends Gizmo {
             }
         });
 
-        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (this._customMeshSet) {
-                return;
-            }
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
-            if (!this._parent) {
-                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
-                this._rootMesh.getChildMeshes().forEach((m) => {
-                    m.material = material;
-                });
-            }
-        });
-
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
         const cache: any = {
+            gizmoMeshes: this._gizmoMesh.getChildMeshes(),
+            colliderMeshes: this._gizmoMesh.getChildMeshes(),
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
             active: false
         };
         this._parent?.addToAxisCache((this._gizmoMesh as Mesh), cache);
+
+        this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
+            if (this._customMeshSet) {
+                return;
+            }
+            this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
+            if (!this._parent) {
+                var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
+                cache.gizmoMeshes.forEach((m: Mesh) => {
+                    m.material = material;
+                });
+            }
+        });
     }
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {

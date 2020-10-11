@@ -49,7 +49,6 @@ export class AxisScaleGizmo extends Gizmo {
     private _coloredMaterial: StandardMaterial;
     private _hoverMaterial: StandardMaterial;
     private _disableMaterial: StandardMaterial;
-    private _eventListeners: any[] = [];
 
     /**
      * Creates an AxisScaleGizmo
@@ -164,12 +163,11 @@ export class AxisScaleGizmo extends Gizmo {
         this.dragBehavior.onDragEndObservable.add(resetGizmoMesh);
 
         // Listeners for Universal Scalar
-        document.addEventListener('universalGizmoDrag', (e) => increaseGizmoMesh((e as any).detail));
-        document.addEventListener('universalGizmoEnd', resetGizmoMesh);
-        this._eventListeners.push({listener: 'universalGizmoDrag', fn: increaseGizmoMesh });
-        this._eventListeners.push({listener: 'universalGizmoEnd', fn: resetGizmoMesh });
+        parent?.uniformScaleGizmo?.dragBehavior?.onDragObservable?.add((e) => increaseGizmoMesh(e.delta.y));
+        parent?.uniformScaleGizmo?.dragBehavior?.onDragEndObservable?.add(resetGizmoMesh);
 
         const cache: any = {
+            gizmoMeshes: this._gizmoMesh.getChildMeshes(),
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
@@ -178,13 +176,13 @@ export class AxisScaleGizmo extends Gizmo {
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (this._customMeshSet) {
+            if (this._customMeshSet) { // We can Dispose this in setCustomMesh()
                 return;
             }
-            this._isHovered = !!(pointerInfo.pickInfo && (this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1));
+            this._isHovered = !!(cache.gizmoMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh?.parent) != -1);
             if (!this._parent) {
                 var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
-                this._rootMesh.getChildMeshes().forEach((m) => {
+                cache.gizmoMeshes.forEach((m: Mesh) => {
                     m.material = material;
                     if ((<LinesMesh>m).color) {
                         (<LinesMesh>m).color = material.diffuseColor;
@@ -265,9 +263,6 @@ export class AxisScaleGizmo extends Gizmo {
             if (matl) {
                 matl.dispose();
             }
-        });
-        this._eventListeners.forEach((e) => {
-            document.addEventListener(e.listener, e.fn, false);
         });
         super.dispose();
     }

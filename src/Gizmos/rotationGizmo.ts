@@ -178,15 +178,13 @@ export class RotationGizmo extends Gizmo {
                 // On Hover Logic
                 if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
                     if (this.dragging) { return; }
-                    this.gizmoAxisCache.forEach((statusMap, parentMesh) => {
-                        const isHovered = pointerInfo.pickInfo && (parentMesh.getChildMeshes().indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
-                        const material = isHovered || statusMap.active ? statusMap.hoverMaterial : statusMap.material;
-                        parentMesh.getChildMeshes().forEach((m) => {
-                            if (m.name !== 'ignore') {
-                                m.material = material;
-                                if ((m as LinesMesh).color) {
-                                    (m as LinesMesh).color = material.diffuseColor;
-                                }
+                    this.gizmoAxisCache.forEach((cache) => {
+                        const isHovered = pointerInfo.pickInfo && (cache.colliderMeshes.indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
+                        const material = isHovered || cache.active ? cache.hoverMaterial : cache.material;
+                        cache.gizmoMeshes.forEach((m: Mesh) => {
+                            m.material = material;
+                            if ((m as LinesMesh).color) {
+                                (m as LinesMesh).color = material.diffuseColor;
                             }
                         });
                     });
@@ -199,15 +197,13 @@ export class RotationGizmo extends Gizmo {
                         this.dragging = true;
                         const statusMap = this.gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
                         statusMap!.active = true;
-                        this.gizmoAxisCache.forEach((statusMap, parentMesh) => {
-                            const isHovered = pointerInfo.pickInfo && (parentMesh.getChildMeshes().indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
-                            const material = isHovered || statusMap.active ? statusMap.hoverMaterial : statusMap.disableMaterial;
-                            parentMesh.getChildMeshes().forEach((m) => {
-                                if (m.name !== 'ignore') {
-                                    m.material = material;
-                                    if ((m as LinesMesh).color) {
-                                        (m as LinesMesh).color = material.diffuseColor;
-                                    }
+                        this.gizmoAxisCache.forEach((cache) => {
+                            const isHovered = pointerInfo.pickInfo && (cache.colliderMeshes.indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
+                            const material = isHovered || cache.active ? cache.hoverMaterial : cache.disableMaterial;
+                            cache.gizmoMeshes.forEach((m: Mesh) => {
+                                m.material = material;
+                                if ((m as LinesMesh).color) {
+                                    (m as LinesMesh).color = material.diffuseColor;
                                 }
                             });
                         });
@@ -216,15 +212,13 @@ export class RotationGizmo extends Gizmo {
 
                 // On Mouse Up
                 if (pointerInfo.type === PointerEventTypes.POINTERUP) {
-                    this.gizmoAxisCache.forEach((statusMap, parentMesh) => {
-                        statusMap.active = false;
+                    this.gizmoAxisCache.forEach((cache) => {
+                        cache.active = false;
                         this.dragging = false;
-                        parentMesh.getChildMeshes().forEach((m) => {
-                            if (m.name !== 'ignore') {
-                                m.material = statusMap.material;
-                                if ((m as LinesMesh).color) {
-                                    (m as LinesMesh).color = statusMap.material.diffuseColor;
-                                }
+                        cache.colliderMeshes.forEach((m: Mesh) => {
+                            m.material = cache.material;
+                            if ((m as LinesMesh).color) {
+                                (m as LinesMesh).color = cache.material.diffuseColor;
                             }
                         });
                     });
