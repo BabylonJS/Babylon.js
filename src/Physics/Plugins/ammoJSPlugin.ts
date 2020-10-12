@@ -13,6 +13,7 @@ import { LinesBuilder } from "../../Meshes/Builders/linesBuilder";
 import { LinesMesh } from '../../Meshes/linesMesh';
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { Scalar } from "../../Maths/math.scalar";
+import { Epsilon } from '../../Maths/math.constants';
 
 declare var Ammo: any;
 
@@ -1041,13 +1042,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
         // If rotation/position has changed update and activate rigged body
         if (
-            trans.getOrigin().x() != newPosition.x ||
-            trans.getOrigin().y() != newPosition.y ||
-            trans.getOrigin().z() != newPosition.z ||
-            trans.getRotation().x() != newRotation.x ||
-            trans.getRotation().y() != newRotation.y ||
-            trans.getRotation().z() != newRotation.z ||
-            trans.getRotation().w() != newRotation.w
+            Math.abs(trans.getOrigin().x() - newPosition.x) > Epsilon ||
+            Math.abs(trans.getOrigin().y() - newPosition.y) > Epsilon ||
+            Math.abs(trans.getOrigin().z() - newPosition.z) > Epsilon ||
+            Math.abs(trans.getRotation().x() - newRotation.x) > Epsilon ||
+            Math.abs(trans.getRotation().y() - newRotation.y) > Epsilon ||
+            Math.abs(trans.getRotation().z() - newRotation.z) > Epsilon ||
+            Math.abs(trans.getRotation().w() - newRotation.w) > Epsilon
         ) {
             this._tmpAmmoVectorA.setValue(newPosition.x, newPosition.y, newPosition.z);
             trans.setOrigin(this._tmpAmmoVectorA);
