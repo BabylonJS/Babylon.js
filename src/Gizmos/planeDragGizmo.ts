@@ -8,7 +8,7 @@ import { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { PlaneBuilder } from "../Meshes/Builders/planeBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
@@ -115,9 +115,9 @@ export class PlaneDragGizmo extends Gizmo {
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
-        const cache: any = {
-            gizmoMeshes: this._gizmoMesh.getChildMeshes(),
-            colliderMeshes: this._gizmoMesh.getChildMeshes(),
+        const cache: GizmoAxisCache = {
+            gizmoMeshes: this._gizmoMesh.getChildMeshes() as Mesh[],
+            colliderMeshes: this._gizmoMesh.getChildMeshes() as Mesh[],
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,

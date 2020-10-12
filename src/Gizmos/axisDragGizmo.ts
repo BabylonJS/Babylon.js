@@ -8,7 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { LinesMesh } from "../Meshes/linesMesh";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { Scene } from "../scene";
@@ -59,9 +59,7 @@ export class AxisDragGizmo extends Gizmo {
         line.rotation.x = Math.PI / 2;
 
         if (isCollider) {
-            line.name = 'ignore';
             line.visibility = 0;
-            cylinder.name = 'ignore';
             cylinder.visibility = 0;
         }
         return arrow;
@@ -156,9 +154,9 @@ export class AxisDragGizmo extends Gizmo {
         var light = gizmoLayer._getSharedGizmoLight();
         light.includedOnlyMeshes = light.includedOnlyMeshes.concat(this._rootMesh.getChildMeshes(false));
 
-        const cache: any = {
-            gizmoMeshes: arrow.getChildMeshes(),
-            colliderMeshes: collider.getChildMeshes(),
+        const cache: GizmoAxisCache = {
+            gizmoMeshes: arrow.getChildMeshes() as Mesh[],
+            colliderMeshes: collider.getChildMeshes() as Mesh[],
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,

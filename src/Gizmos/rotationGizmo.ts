@@ -5,7 +5,7 @@ import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { PlaneRotationGizmo } from "./planeRotationGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Node } from "../node";
@@ -39,9 +39,9 @@ export class RotationGizmo extends Gizmo {
     private _observables: Nullable<Observer<PointerInfo>>[] = [];
 
     /** Gizmo state variables used for UI behavior */
-    private dragging = false;
+    private _dragging = false;
     /** Node Caching for quick lookup */
-    private gizmoAxisCache: Map<Mesh, any> = new Map();
+    private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
     public get attachedMesh() {
         return this._meshAttached;
@@ -119,7 +119,7 @@ export class RotationGizmo extends Gizmo {
 
         this.attachedMesh = null;
         this.attachedNode = null;
-        this.subscribeToPointerObserver();
+        this._subscribeToPointerObserver();
     }
 
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
@@ -165,40 +165,42 @@ export class RotationGizmo extends Gizmo {
      * @param mesh Axis gizmo mesh
       @param cache display gizmo axis thickness
      */
-    public addToAxisCache(mesh: Mesh, cache: any) {
-        this.gizmoAxisCache.set(mesh, cache);
+    public addToAxisCache(mesh: Mesh, cache: GizmoAxisCache) {
+        this._gizmoAxisCache.set(mesh, cache);
     }
 
     /**
      * Subscribes to pointer up, down, and hover events. Used for responsive gizmos.
      */
-    public subscribeToPointerObserver(): void {
+    public _subscribeToPointerObserver(): void {
         const pointerObserver = this.gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.pickInfo) {
                 // On Hover Logic
                 if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
-                    if (this.dragging) { return; }
-                    this.gizmoAxisCache.forEach((cache) => {
-                        const isHovered = pointerInfo.pickInfo && (cache.colliderMeshes.indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
-                        const material = isHovered || cache.active ? cache.hoverMaterial : cache.material;
-                        cache.gizmoMeshes.forEach((m: Mesh) => {
-                            m.material = material;
-                            if ((m as LinesMesh).color) {
-                                (m as LinesMesh).color = material.diffuseColor;
-                            }
-                        });
+                    if (this._dragging) { return; }
+                    this._gizmoAxisCache.forEach((cache) => {
+                        if (cache.colliderMeshes && cache.gizmoMeshes) {
+                            const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
+                            const material = isHovered || cache.active ? cache.hoverMaterial : cache.material;
+                            cache.gizmoMeshes.forEach((m: Mesh) => {
+                                m.material = material;
+                                if ((m as LinesMesh).color) {
+                                    (m as LinesMesh).color = material.diffuseColor;
+                                }
+                            });
+                        }
                     });
                 }
 
                 // On Mouse Down
                 if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                     // If user Clicked Gizmo
-                    if (this.gizmoAxisCache.has(pointerInfo.pickInfo.pickedMesh?.parent as Mesh)) {
-                        this.dragging = true;
-                        const statusMap = this.gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
+                    if (this._gizmoAxisCache.has(pointerInfo.pickInfo.pickedMesh?.parent as Mesh)) {
+                        this._dragging = true;
+                        const statusMap = this._gizmoAxisCache.get(pointerInfo.pickInfo.pickedMesh?.parent as Mesh);
                         statusMap!.active = true;
-                        this.gizmoAxisCache.forEach((cache) => {
-                            const isHovered = pointerInfo.pickInfo && (cache.colliderMeshes.indexOf((pointerInfo.pickInfo.pickedMesh as Mesh)) != -1);
+                        this._gizmoAxisCache.forEach((cache) => {
+                            const isHovered = (cache.colliderMeshes?.indexOf((pointerInfo?.pickInfo?.pickedMesh as Mesh)) != -1);
                             const material = isHovered || cache.active ? cache.hoverMaterial : cache.disableMaterial;
                             cache.gizmoMeshes.forEach((m: Mesh) => {
                                 m.material = material;
@@ -212,10 +214,10 @@ export class RotationGizmo extends Gizmo {
 
                 // On Mouse Up
                 if (pointerInfo.type === PointerEventTypes.POINTERUP) {
-                    this.gizmoAxisCache.forEach((cache) => {
+                    this._gizmoAxisCache.forEach((cache) => {
                         cache.active = false;
-                        this.dragging = false;
-                        cache.colliderMeshes.forEach((m: Mesh) => {
+                        this._dragging = false;
+                        cache.gizmoMeshes.forEach((m: Mesh) => {
                             m.material = cache.material;
                             if ((m as LinesMesh).color) {
                                 (m as LinesMesh).color = cache.material.diffuseColor;

@@ -11,6 +11,16 @@ import { Node } from "../node";
 import { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { TransformNode } from '../Meshes/transformNode';
+import { StandardMaterial } from 'Materials';
+
+export interface GizmoAxisCache {
+    gizmoMeshes: Mesh[];
+    colliderMeshes: Mesh[];
+    material: StandardMaterial;
+    hoverMaterial: StandardMaterial;
+    disableMaterial: StandardMaterial;
+    active: boolean;
+}
 /**
  * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
  */

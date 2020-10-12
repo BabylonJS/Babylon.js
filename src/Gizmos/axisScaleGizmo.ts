@@ -10,7 +10,7 @@ import { BoxBuilder } from "../Meshes/Builders/boxBuilder";
 import { CylinderBuilder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from '../Maths/math.color';
@@ -75,7 +75,7 @@ export class AxisScaleGizmo extends Gizmo {
         // Build mesh + Collider
         this._gizmoMesh = new Mesh("axis", gizmoLayer.utilityLayerScene);
         const { arrowMesh, arrowTail } = this._createGizmoMesh(this._gizmoMesh, thickness);
-        this._createGizmoMesh(this._gizmoMesh, thickness * 4, true);
+        const collider = this._createGizmoMesh(this._gizmoMesh, thickness + 4, true);
 
         this._gizmoMesh.lookAt(this._rootMesh.position.add(dragAxis));
         this._rootMesh.addChild(this._gizmoMesh);
@@ -100,9 +100,9 @@ export class AxisScaleGizmo extends Gizmo {
         };
 
         const resetGizmoMesh = () => {
-            arrowMesh.position = new Vector3(nodePosition.x, nodePosition.y, nodePosition.z);
-            arrowTail.position = new Vector3(linePosition.x, linePosition.y, linePosition.z);
-            arrowTail.scaling = new Vector3(lineScale.x, lineScale.y, lineScale.z);
+            arrowMesh.position.set(nodePosition.x, nodePosition.y, nodePosition.z);
+            arrowTail.position.set(linePosition.x, linePosition.y, linePosition.z);
+            arrowTail.scaling.set(lineScale.x, lineScale.y, lineScale.z);
         };
 
         // Add drag behavior to handle events when the gizmo is dragged
@@ -166,8 +166,9 @@ export class AxisScaleGizmo extends Gizmo {
         parent?.uniformScaleGizmo?.dragBehavior?.onDragObservable?.add((e) => increaseGizmoMesh(e.delta.y));
         parent?.uniformScaleGizmo?.dragBehavior?.onDragEndObservable?.add(resetGizmoMesh);
 
-        const cache: any = {
-            gizmoMeshes: this._gizmoMesh.getChildMeshes(),
+        const cache: GizmoAxisCache = {
+            gizmoMeshes: [arrowMesh, arrowTail],
+            colliderMeshes: [collider.arrowMesh, collider.arrowTail],
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
@@ -176,10 +177,10 @@ export class AxisScaleGizmo extends Gizmo {
         this._parent?.addToAxisCache(this._gizmoMesh, cache);
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
-            if (this._customMeshSet) { // We can Dispose this in setCustomMesh()
+            if (this._customMeshSet) {
                 return;
             }
-            this._isHovered = !!(cache.gizmoMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh?.parent) != -1);
+            this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 var material = this._isHovered ? this._hoverMaterial : this._coloredMaterial;
                 cache.gizmoMeshes.forEach((m: Mesh) => {
@@ -211,9 +212,7 @@ export class AxisScaleGizmo extends Gizmo {
         arrowTail.rotation.x = Math.PI / 2;
 
         if (isCollider) {
-            arrowMesh.name = 'ignore';
             arrowMesh.visibility = 0;
-            arrowTail.name = 'ignore';
             arrowTail.visibility = 0;
         }
 
