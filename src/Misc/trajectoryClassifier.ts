@@ -804,8 +804,13 @@ export class TrajectoryClassifier {
     public static Generate(): TrajectoryClassifier {
         let vecs = Vector3Alphabet.Generate(64, 256, 0.1, 0.001, [Vector3.Forward()]);
 
+        const charIdxs = new Array(vecs.chars.length);
+        for (let idx = 0; idx < charIdxs.length; ++idx) {
+            charIdxs[idx] = idx;
+        }
+
         let alphabet = new Levenshtein.Alphabet<number>(
-            Array.from(Array(vecs.chars.length), (_, idx) => idx),
+            charIdxs,
             (idx) => idx === 0 ? 0 : 1,
             (idx) => idx === 0 ? 0 : 1,
             (a, b) => Math.min(1 - Vector3.Dot(vecs.chars[a], vecs.chars[b]), 1));

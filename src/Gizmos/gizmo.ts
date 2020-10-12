@@ -28,6 +28,11 @@ export class Gizmo implements IDisposable {
     protected _scaleRatio = 1;
 
     /**
+     * boolean updated by pointermove when a gizmo mesh is hovered
+     */
+    protected _isHovered = false;
+
+    /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
@@ -37,6 +42,14 @@ export class Gizmo implements IDisposable {
     public get scaleRatio() {
         return this._scaleRatio;
     }
+
+    /**
+     * True when the mouse pointer is hovered a gizmo mesh
+     */
+    public get isHovered() {
+        return this._isHovered;
+    }
+
     /**
      * If a custom mesh has been set (Default: false)
      */
@@ -239,10 +252,12 @@ export class Gizmo implements IDisposable {
             } else {
                 this._attachedNode._worldMatrix.decompose(transform.scaling, this._tempQuaternion, transform.position);
             }
-            if (transform.rotationQuaternion) {
-                transform.rotationQuaternion.copyFrom(this._tempQuaternion);
-            } else {
-                transform.rotation = this._tempQuaternion.toEulerAngles();
+            if (!transform.billboardMode) {
+                if (transform.rotationQuaternion) {
+                    transform.rotationQuaternion.copyFrom(this._tempQuaternion);
+                } else {
+                    transform.rotation = this._tempQuaternion.toEulerAngles();
+                }
             }
         } else if (this._attachedNode.getClassName() === "Bone") {
             var bone = this._attachedNode as Bone;

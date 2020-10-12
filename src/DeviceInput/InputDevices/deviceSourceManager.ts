@@ -49,24 +49,18 @@ export class DeviceSource<T extends DeviceType> {
 export class DeviceSourceManager implements IDisposable {
     // Public Members
     /**
-     * Observable to be triggered when before a device is connected
+     * Observable to be triggered when after a device is connected, any new observers added will be triggered against already connected devices
      */
-    public readonly onBeforeDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
-
-    /**
-     * Observable to be triggered when before a device is disconnected
-     */
-    public readonly onBeforeDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
-
-    /**
-     * Observable to be triggered when after a device is connected
-     */
-    public readonly onAfterDeviceConnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onDeviceConnectedObservable = new Observable<DeviceSource<DeviceType>>((observer) => {
+        this.getDevices().forEach((device) => {
+            this.onDeviceConnectedObservable.notifyObserver(observer, device);
+        });
+    });
 
     /**
      * Observable to be triggered when after a device is disconnected
      */
-    public readonly onAfterDeviceDisconnectedObservable = new Observable<{ deviceType: DeviceType, deviceSlot: number }>();
+    public readonly onDeviceDisconnectedObservable = new Observable<DeviceSource<DeviceType>>();
 
     // Private Members
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
@@ -84,14 +78,13 @@ export class DeviceSourceManager implements IDisposable {
         this._deviceInputSystem = DeviceInputSystem.Create(engine);
 
         this._deviceInputSystem.onDeviceConnected = (deviceType, deviceSlot) => {
-            this.onBeforeDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
             this._addDevice(deviceType, deviceSlot);
-            this.onAfterDeviceConnectedObservable.notifyObservers({ deviceType, deviceSlot });
+            this.onDeviceConnectedObservable.notifyObservers(this.getDeviceSource(deviceType, deviceSlot)!);
         };
         this._deviceInputSystem.onDeviceDisconnected = (deviceType, deviceSlot) => {
-            this.onBeforeDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
+            const device = this.getDeviceSource(deviceType, deviceSlot)!; // Grab local reference to use before removing from devices
             this._removeDevice(deviceType, deviceSlot);
-            this.onAfterDeviceDisconnectedObservable.notifyObservers({ deviceType, deviceSlot });
+            this.onDeviceDisconnectedObservable.notifyObservers(device);
         };
 
         if (!this._deviceInputSystem.onInputChanged) {
@@ -134,13 +127,24 @@ export class DeviceSourceManager implements IDisposable {
     }
 
     /**
+     * Returns a read-only list of all available devices
+     * @returns Read-only array with active devices
+     */
+    public getDevices(): ReadonlyArray<DeviceSource<DeviceType>> {
+        const deviceArray = new Array<DeviceSource<DeviceType>>();
+        this._devices.forEach((deviceSet) => {
+            deviceArray.push.apply(deviceArray, deviceSet);
+        });
+
+        return deviceArray;
+    }
+
+    /**
      * Dispose of DeviceInputSystem and other parts
      */
     public dispose() {
-        this.onBeforeDeviceConnectedObservable.clear();
-        this.onBeforeDeviceDisconnectedObservable.clear();
-        this.onAfterDeviceConnectedObservable.clear();
-        this.onAfterDeviceDisconnectedObservable.clear();
+        this.onDeviceConnectedObservable.clear();
+        this.onDeviceDisconnectedObservable.clear();
         this._deviceInputSystem.dispose();
     }
 
@@ -155,8 +159,10 @@ export class DeviceSourceManager implements IDisposable {
             this._devices[deviceType] = new Array<DeviceSource<DeviceType>>();
         }
 
-        this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
-        this._updateFirstDevices(deviceType);
+        if (!this._devices[deviceType][deviceSlot]) {
+            this._devices[deviceType][deviceSlot] = new DeviceSource(this._deviceInputSystem, deviceType, deviceSlot);
+            this._updateFirstDevices(deviceType);
+        }
     }
 
     /**

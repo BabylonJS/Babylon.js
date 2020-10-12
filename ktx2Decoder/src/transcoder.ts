@@ -29,8 +29,14 @@ export enum transcodeTarget {
  */
 export class Transcoder {
 
-    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget): boolean {
+    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return false;
+    }
+
+    public static Name = "Transcoder";
+
+    public getName(): string {
+        return Transcoder.Name;
     }
 
     public initialize(): void {

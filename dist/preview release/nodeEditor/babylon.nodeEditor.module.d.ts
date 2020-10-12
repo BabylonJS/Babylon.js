@@ -263,6 +263,8 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _frameInPorts;
         private _frameOutPorts;
         private _controlledPorts;
+        private _exposedInPorts;
+        private _exposedOutPorts;
         private _id;
         private _comments;
         private _frameIsResizing;
@@ -279,6 +281,10 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _createInputPort;
         private _markFramePortPositions;
         private _createFramePorts;
+        private removePortFromExposedWithNode;
+        private removePortFromExposedWithLink;
+        private createInputPorts;
+        private createOutputPorts;
         private _redrawFramePorts;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
@@ -356,6 +362,7 @@ declare module "babylonjs-node-editor/diagram/graphFrame" {
         private _expandRight;
         private _expandBottom;
         dispose(): void;
+        private serializePortData;
         serialize(): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
@@ -393,6 +400,8 @@ declare module "babylonjs-node-editor/diagram/nodePort" {
         hasLabel(): boolean;
         get exposedOnFrame(): boolean;
         set exposedOnFrame(value: boolean);
+        get exposedPortPosition(): number;
+        set exposedPortPosition(value: number);
         private _isConnectedToNodeOutsideOfFrame;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
@@ -553,12 +562,17 @@ declare module "babylonjs-node-editor/sharedComponents/floatLineComponent" {
         step?: string;
         digits?: number;
         globalState: GlobalState;
+        min?: number;
+        max?: number;
+        smallUI?: boolean;
+        onEnter?: (newValue: number) => void;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
     }> {
         private _localChange;
         private _store;
+        private _regExp;
         constructor(props: IFloatLineComponentProps);
         shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
             value: string;
@@ -980,6 +994,7 @@ declare module "babylonjs-node-editor/sharedComponents/textInputLineComponent" {
         target?: any;
         propertyName?: string;
         value?: string;
+        multilines?: boolean;
         onChange?: (value: string) => void;
         validator?: (value: string) => boolean;
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
@@ -1142,6 +1157,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientStepComponent" 
         onDelete: () => void;
         onUpdateStep: () => void;
         onCheckForReOrder: () => void;
+        onCopy?: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -1175,6 +1191,7 @@ declare module "babylonjs-node-editor/diagram/properties/gradientNodePropertyCom
         componentWillUnmount(): void;
         forceRebuild(): void;
         deleteStep(step: GradientBlockColorStep): void;
+        copyStep(step: GradientBlockColorStep): void;
         addNewStep(): void;
         checkForReOrder(): void;
         render(): JSX.Element;
@@ -2069,6 +2086,8 @@ declare module NODEEDITOR {
         private _frameInPorts;
         private _frameOutPorts;
         private _controlledPorts;
+        private _exposedInPorts;
+        private _exposedOutPorts;
         private _id;
         private _comments;
         private _frameIsResizing;
@@ -2085,6 +2104,10 @@ declare module NODEEDITOR {
         private _createInputPort;
         private _markFramePortPositions;
         private _createFramePorts;
+        private removePortFromExposedWithNode;
+        private removePortFromExposedWithLink;
+        private createInputPorts;
+        private createOutputPorts;
         private _redrawFramePorts;
         set isCollapsed(value: boolean);
         get nodes(): GraphNode[];
@@ -2162,6 +2185,7 @@ declare module NODEEDITOR {
         private _expandRight;
         private _expandBottom;
         dispose(): void;
+        private serializePortData;
         serialize(): IFrameData;
         export(): void;
         static Parse(serializationData: IFrameData, canvas: GraphCanvasComponent, map?: {
@@ -2188,6 +2212,8 @@ declare module NODEEDITOR {
         hasLabel(): boolean;
         get exposedOnFrame(): boolean;
         set exposedOnFrame(value: boolean);
+        get exposedPortPosition(): number;
+        set exposedPortPosition(value: number);
         private _isConnectedToNodeOutsideOfFrame;
         refresh(): void;
         constructor(portContainer: HTMLElement, connectionPoint: BABYLON.NodeMaterialConnectionPoint, node: GraphNode, globalState: GlobalState);
@@ -2328,12 +2354,17 @@ declare module NODEEDITOR {
         step?: string;
         digits?: number;
         globalState: GlobalState;
+        min?: number;
+        max?: number;
+        smallUI?: boolean;
+        onEnter?: (newValue: number) => void;
     }
     export class FloatLineComponent extends React.Component<IFloatLineComponentProps, {
         value: string;
     }> {
         private _localChange;
         private _store;
+        private _regExp;
         constructor(props: IFloatLineComponentProps);
         shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: {
             value: string;
@@ -2694,6 +2725,7 @@ declare module NODEEDITOR {
         target?: any;
         propertyName?: string;
         value?: string;
+        multilines?: boolean;
         onChange?: (value: string) => void;
         validator?: (value: string) => boolean;
         onPropertyChangedObservable?: BABYLON.Observable<PropertyChangedEvent>;
@@ -2834,6 +2866,7 @@ declare module NODEEDITOR {
         onDelete: () => void;
         onUpdateStep: () => void;
         onCheckForReOrder: () => void;
+        onCopy?: () => void;
     }
     export class GradientStepComponent extends React.Component<IGradientStepComponentProps, {
         gradient: number;
@@ -2863,6 +2896,7 @@ declare module NODEEDITOR {
         componentWillUnmount(): void;
         forceRebuild(): void;
         deleteStep(step: BABYLON.GradientBlockColorStep): void;
+        copyStep(step: BABYLON.GradientBlockColorStep): void;
         addNewStep(): void;
         checkForReOrder(): void;
         render(): JSX.Element;

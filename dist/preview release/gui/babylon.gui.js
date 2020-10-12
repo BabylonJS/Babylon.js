@@ -7,7 +7,7 @@
 		exports["babylonjs-gui"] = factory(require("babylonjs"));
 	else
 		root["BABYLON"] = root["BABYLON"] || {}, root["BABYLON"]["GUI"] = factory(root["BABYLON"]);
-})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math_vector__) {
+})((typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this), function(__WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -98,7 +98,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
 /*!***********************************************************!*\
-  !*** D:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  !*** C:/Repos/Babylon.js/node_modules/tslib/tslib.es6.js ***!
   \***********************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -147,7 +147,7 @@ PERFORMANCE OF THIS SOFTWARE.
 var extendStatics = function(d, b) {
     extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
     return extendStatics(d, b);
 };
 
@@ -241,8 +241,8 @@ var __createBinding = Object.create ? (function(o, m, k, k2) {
     o[k2] = m[k];
 });
 
-function __exportStar(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+function __exportStar(m, o) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
 }
 
 function __values(o) {
@@ -332,7 +332,7 @@ var __setModuleDefault = Object.create ? (function(o, v) {
 function __importStar(mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 }
@@ -400,7 +400,7 @@ module.exports = g;
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTextureInstrumentation", function() { return AdvancedDynamicTextureInstrumentation; });
-/* harmony import */ var babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/perfCounter */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/perfCounter */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_perfCounter__WEBPACK_IMPORTED_MODULE_0__);
 
 /**
@@ -543,7 +543,7 @@ var AdvancedDynamicTextureInstrumentation = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AdvancedDynamicTexture", function() { return AdvancedDynamicTexture; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _controls_container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./controls/container */ "./2D/controls/container.ts");
 /* harmony import */ var _style__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./style */ "./2D/style.ts");
@@ -579,13 +579,14 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
    * @param scene defines the hosting scene
    * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+   * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
    */
-    function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode) {
+    function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode, invertY) {
         if (width === void 0) { width = 0; }
         if (height === void 0) { height = 0; }
         if (generateMipMaps === void 0) { generateMipMaps = false; }
         if (samplingMode === void 0) { samplingMode = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].NEAREST_SAMPLINGMODE; }
-        var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA) || this;
+        var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Constants"].TEXTUREFORMAT_RGBA, invertY) || this;
         _this._isDirty = false;
         /** @hidden */
         _this._rootContainer = new _controls_container__WEBPACK_IMPORTED_MODULE_2__["Container"]("root");
@@ -1222,7 +1223,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         this._lastControlDown[pointerId] = control;
         this.onControlPickedObservable.notifyObservers(control);
     };
-    AdvancedDynamicTexture.prototype._doPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    AdvancedDynamicTexture.prototype._doPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -1236,15 +1237,15 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
-            this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
+            this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
         this._cursorChanged = false;
-        if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+        if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
             this._changeCursor("");
             if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);
                     delete this._lastControlOver[pointerId];
                 }
             }
@@ -1311,7 +1312,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             _this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             var pointerId = pi.event.pointerId || _this._defaultMousePointerId;
-            _this._doPicking(x, y, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
+            _this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, pi.event.deltaX, pi.event.deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (_this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = _this._shouldBlockPointer;
@@ -1359,7 +1360,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     var size = _this.getSize();
-                    _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pointerId, pi.event.button);
+                    _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
                 }
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERUP) {
@@ -1392,7 +1393,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
             }
             else if (pi.type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["PointerEventTypes"].POINTERMOVE) {
                 if (_this._lastControlOver[pointerId]) {
-                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], true);
+                    _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId], pi, true);
                 }
                 delete _this._lastControlOver[pointerId];
             }
@@ -1430,7 +1431,7 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
         var _this = this;
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function (pointerEvent) {
             if (_this._lastControlOver[pointerEvent.pointerId]) {
-                _this._lastControlOver[pointerEvent.pointerId]._onPointerOut(_this._lastControlOver[pointerEvent.pointerId]);
+                _this._lastControlOver[pointerEvent.pointerId]._onPointerOut(_this._lastControlOver[pointerEvent.pointerId], null);
             }
             delete _this._lastControlOver[pointerEvent.pointerId];
             if (_this._lastControlDown[pointerEvent.pointerId] && _this._lastControlDown[pointerEvent.pointerId] !== _this._capturingControl[pointerEvent.pointerId]) {
@@ -1457,14 +1458,15 @@ var AdvancedDynamicTexture = /** @class */ (function (_super) {
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      * @returns a new AdvancedDynamicTexture
      */
-    AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove, onlyAlphaTesting) {
+    AdvancedDynamicTexture.CreateForMesh = function (mesh, width, height, supportPointerMove, onlyAlphaTesting, invertY) {
         if (width === void 0) { width = 1024; }
         if (height === void 0) { height = 1024; }
         if (supportPointerMove === void 0) { supportPointerMove = true; }
         if (onlyAlphaTesting === void 0) { onlyAlphaTesting = false; }
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE);
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Texture"].TRILINEAR_SAMPLINGMODE, invertY);
         var material = new babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["StandardMaterial"]("AdvancedDynamicTextureMaterial", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["Color3"].Black();
@@ -1530,7 +1532,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _textBlock__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./textBlock */ "./2D/controls/textBlock.ts");
 /* harmony import */ var _image__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./image */ "./2D/controls/image.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__);
 
 
@@ -1601,7 +1603,7 @@ var Button = /** @class */ (function (_super) {
     };
     // While being a container, the button behaves like a control.
     /** @hidden */
-    Button.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Button.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled || !this.isHitTestVisible || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -1621,12 +1623,12 @@ var Button = /** @class */ (function (_super) {
                 return false;
             }
         }
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerEnter = function (target) {
-        if (!_super.prototype._onPointerEnter.call(this, target)) {
+    Button.prototype._onPointerEnter = function (target, pi) {
+        if (!_super.prototype._onPointerEnter.call(this, target, pi)) {
             return false;
         }
         if (this.pointerEnterAnimation) {
@@ -1635,16 +1637,16 @@ var Button = /** @class */ (function (_super) {
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerOut = function (target, force) {
+    Button.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
         if (this.pointerOutAnimation) {
             this.pointerOutAnimation();
         }
-        _super.prototype._onPointerOut.call(this, target, force);
+        _super.prototype._onPointerOut.call(this, target, pi, force);
     };
     /** @hidden */
-    Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    Button.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         if (this.pointerDownAnimation) {
@@ -1653,11 +1655,11 @@ var Button = /** @class */ (function (_super) {
         return true;
     };
     /** @hidden */
-    Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    Button.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         if (this.pointerUpAnimation) {
             this.pointerUpAnimation();
         }
-        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
     };
     // Statics
     /**
@@ -1762,7 +1764,7 @@ babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_5__["_TypeStore"].RegisteredTy
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return Checkbox; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
@@ -1893,8 +1895,8 @@ var Checkbox = /** @class */ (function (_super) {
     };
     // Events
     /** @hidden */
-    Checkbox.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    Checkbox.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this.isChecked = !this.isChecked;
@@ -1945,7 +1947,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorPicker", function() { return ColorPicker; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _inputText__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./inputText */ "./2D/controls/inputText.ts");
@@ -2267,8 +2269,8 @@ var ColorPicker = /** @class */ (function (_super) {
         }
         return false;
     };
-    ColorPicker.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    ColorPicker.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._pointerIsDown = true;
@@ -2289,7 +2291,7 @@ var ColorPicker = /** @class */ (function (_super) {
         this._lastPointerDownID = pointerId;
         return true;
     };
-    ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    ColorPicker.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownID) {
             return;
@@ -2301,12 +2303,12 @@ var ColorPicker = /** @class */ (function (_super) {
         if (this._pointerIsDown) {
             this._updateValueFromPointer(x, y);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
-    ColorPicker.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    ColorPicker.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         this._pointerIsDown = false;
         delete this._host._capturingControl[pointerId];
-        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick);
+        _super.prototype._onPointerUp.call(this, target, coordinates, pointerId, buttonIndex, notifyClick, pi);
     };
     ColorPicker.prototype._onCanvasBlur = function () {
         this._forcePointerUp();
@@ -3338,7 +3340,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Container", function() { return Container; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/logger */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/logger */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
@@ -3703,7 +3705,7 @@ var Container = /** @class */ (function (_super) {
         }
     };
     /** @hidden */
-    Container.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Container.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -3713,7 +3715,7 @@ var Container = /** @class */ (function (_super) {
         // Checking backwards to pick closest first
         for (var index = this._children.length - 1; index >= 0; index--) {
             var child = this._children[index];
-            if (child._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+            if (child._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
                 if (child.hoverCursor) {
                     this._host._changeCursor(child.hoverCursor);
                 }
@@ -3723,7 +3725,7 @@ var Container = /** @class */ (function (_super) {
         if (!this.isHitTestVisible) {
             return false;
         }
-        return this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        return this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
     };
     /** @hidden */
     Container.prototype._additionalProcessing = function (parentMeasure, context) {
@@ -3755,7 +3757,7 @@ babylonjs_Misc_logger__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredTypes
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Control", function() { return Control; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../measure */ "./2D/measure.ts");
@@ -5380,7 +5382,7 @@ var Control = /** @class */ (function () {
         return true;
     };
     /** @hidden */
-    Control.prototype._processPicking = function (x, y, type, pointerId, buttonIndex, deltaX, deltaY) {
+    Control.prototype._processPicking = function (x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled) {
             return false;
         }
@@ -5390,18 +5392,18 @@ var Control = /** @class */ (function () {
         if (!this.contains(x, y)) {
             return false;
         }
-        this._processObservables(type, x, y, pointerId, buttonIndex, deltaX, deltaY);
+        this._processObservables(type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY);
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerMove = function (target, coordinates, pointerId) {
-        var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
+    Control.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
+        var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerMove(target, coordinates, pointerId);
+            this.parent._onPointerMove(target, coordinates, pointerId, pi);
         }
     };
     /** @hidden */
-    Control.prototype._onPointerEnter = function (target) {
+    Control.prototype._onPointerEnter = function (target, pi) {
         if (!this._isEnabled) {
             return false;
         }
@@ -5412,14 +5414,14 @@ var Control = /** @class */ (function () {
             this._enterCount = 0;
         }
         this._enterCount++;
-        var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+        var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerEnter(target);
+            this.parent._onPointerEnter(target, pi);
         }
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerOut = function (target, force) {
+    Control.prototype._onPointerOut = function (target, pi, force) {
         if (force === void 0) { force = false; }
         if (!force && (!this._isEnabled || target === this)) {
             return;
@@ -5427,30 +5429,30 @@ var Control = /** @class */ (function () {
         this._enterCount = 0;
         var canNotify = true;
         if (!target.isAscendant(this)) {
-            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+            canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this, pi);
         }
         if (canNotify && this.parent != null) {
-            this.parent._onPointerOut(target, force);
+            this.parent._onPointerOut(target, pi, force);
         }
     };
     /** @hidden */
-    Control.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    Control.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         // Prevent pointerout to lose control context.
         // Event redundancy is checked inside the function.
-        this._onPointerEnter(this);
+        this._onPointerEnter(this, pi);
         if (this._downCount !== 0) {
             return false;
         }
         this._downCount++;
         this._downPointerIds[pointerId] = true;
-        var canNotify = this.onPointerDownObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
+        var canNotify = this.onPointerDownObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex);
+            this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
         }
         return true;
     };
     /** @hidden */
-    Control.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
+    Control.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick, pi) {
         if (!this._isEnabled) {
             return;
         }
@@ -5458,11 +5460,11 @@ var Control = /** @class */ (function () {
         delete this._downPointerIds[pointerId];
         var canNotifyClick = notifyClick;
         if (notifyClick && (this._enterCount > 0 || this._enterCount === -1)) {
-            canNotifyClick = this.onPointerClickObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
+            canNotifyClick = this.onPointerClickObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this, pi);
         }
-        var canNotify = this.onPointerUpObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this);
+        var canNotify = this.onPointerUpObservable.notifyObservers(new _math2D__WEBPACK_IMPORTED_MODULE_3__["Vector2WithInfo"](coordinates, buttonIndex), -1, target, this, pi);
         if (canNotify && this.parent != null) {
-            this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
+            this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
         }
     };
     /** @hidden */
@@ -5490,32 +5492,32 @@ var Control = /** @class */ (function () {
     /** @hidden */
     Control.prototype._onCanvasBlur = function () { };
     /** @hidden */
-    Control.prototype._processObservables = function (type, x, y, pointerId, buttonIndex, deltaX, deltaY) {
+    Control.prototype._processObservables = function (type, x, y, pi, pointerId, buttonIndex, deltaX, deltaY) {
         if (!this._isEnabled) {
             return false;
         }
         this._dummyVector2.copyFromFloats(x, y);
         if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERMOVE) {
-            this._onPointerMove(this, this._dummyVector2, pointerId);
+            this._onPointerMove(this, this._dummyVector2, pointerId, pi);
             var previousControlOver = this._host._lastControlOver[pointerId];
             if (previousControlOver && previousControlOver !== this) {
-                previousControlOver._onPointerOut(this);
+                previousControlOver._onPointerOut(this, pi);
             }
             if (previousControlOver !== this) {
-                this._onPointerEnter(this);
+                this._onPointerEnter(this, pi);
             }
             this._host._lastControlOver[pointerId] = this;
             return true;
         }
         if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERDOWN) {
-            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
+            this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex, pi);
             this._host._registerLastControlDown(this, pointerId);
             this._host._lastPickedControl = this;
             return true;
         }
         if (type === babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__["PointerEventTypes"].POINTERUP) {
             if (this._host._lastControlDown[pointerId]) {
-                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true);
+                this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true, pi);
             }
             delete this._host._lastControlDown[pointerId];
             return true;
@@ -5704,7 +5706,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DisplayGrid", function() { return DisplayGrid; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -5937,7 +5939,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__);
 
 
@@ -6034,7 +6036,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__);
 
 
@@ -6492,7 +6494,7 @@ babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_4__["_TypeStore"].RegisteredTypes[
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Image", function() { return Image; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 
@@ -7429,7 +7431,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputPassword", function() { return InputPassword; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _inputText__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./inputText */ "./2D/controls/inputText.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -7468,7 +7470,7 @@ babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTy
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "InputText", function() { return InputText; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -8413,8 +8415,8 @@ var InputText = /** @class */ (function (_super) {
         }
         context.restore();
     };
-    InputText.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    InputText.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._clickedCoordinate = coordinates.x;
@@ -8435,13 +8437,13 @@ var InputText = /** @class */ (function (_super) {
         this._host.focusedControl = this;
         return true;
     };
-    InputText.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    InputText.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         if (this._host.focusedControl === this && this._isPointerDown) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
             this._updateValueFromCursorIndex(this._cursorOffset);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
     InputText.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._isPointerDown = false;
@@ -8481,7 +8483,7 @@ babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].RegisteredT
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Line", function() { return Line; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -8752,7 +8754,7 @@ babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].Registere
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MultiLine", function() { return MultiLine; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/abstractMesh */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/abstractMesh */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _multiLinePoint__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../multiLinePoint */ "./2D/multiLinePoint.ts");
@@ -9022,7 +9024,7 @@ babylonjs_Meshes_abstractMesh__WEBPACK_IMPORTED_MODULE_1__["_TypeStore"].Registe
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RadioButton", function() { return RadioButton; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
@@ -9171,8 +9173,8 @@ var RadioButton = /** @class */ (function (_super) {
         context.restore();
     };
     // Events
-    RadioButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    RadioButton.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         if (!this.isChecked) {
@@ -9229,7 +9231,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Rectangle", function() { return Rectangle; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -9379,7 +9381,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _scrollViewerWindow__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./scrollViewerWindow */ "./2D/controls/scrollViewers/scrollViewerWindow.ts");
 /* harmony import */ var _sliders_scrollBar__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../sliders/scrollBar */ "./2D/controls/sliders/scrollBar.ts");
 /* harmony import */ var _sliders_imageScrollBar__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../sliders/imageScrollBar */ "./2D/controls/sliders/imageScrollBar.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_7__);
 
 
@@ -10697,6 +10699,14 @@ var SelectionPanel = /** @class */ (function (_super) {
     SelectionPanel.prototype._getTypeName = function () {
         return "SelectionPanel";
     };
+    Object.defineProperty(SelectionPanel.prototype, "panel", {
+        /** Gets the (stack) panel of the SelectionPanel  */
+        get: function () {
+            return this._panel;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(SelectionPanel.prototype, "headerColor", {
         /** Gets or sets the headerColor */
         get: function () {
@@ -11002,7 +11012,7 @@ var SelectionPanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BaseSlider", function() { return BaseSlider; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../control */ "./2D/controls/control.ts");
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../valueAndUnit */ "./2D/valueAndUnit.ts");
@@ -11287,8 +11297,8 @@ var BaseSlider = /** @class */ (function (_super) {
         var mult = (1 / this._step) | 0;
         this.value = this._step ? ((value * mult) | 0) / mult : value;
     };
-    BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
-        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex)) {
+    BaseSlider.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
+        if (!_super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
         this._pointerIsDown = true;
@@ -11297,7 +11307,7 @@ var BaseSlider = /** @class */ (function (_super) {
         this._lastPointerDownID = pointerId;
         return true;
     };
-    BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId) {
+    BaseSlider.prototype._onPointerMove = function (target, coordinates, pointerId, pi) {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownID) {
             return;
@@ -11305,7 +11315,7 @@ var BaseSlider = /** @class */ (function (_super) {
         if (this._pointerIsDown) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
-        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId);
+        _super.prototype._onPointerMove.call(this, target, coordinates, pointerId, pi);
     };
     BaseSlider.prototype._onPointerUp = function (target, coordinates, pointerId, buttonIndex, notifyClick) {
         this._pointerIsDown = false;
@@ -11336,7 +11346,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _baseSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./baseSlider */ "./2D/controls/sliders/baseSlider.ts");
 /* harmony import */ var _measure__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../measure */ "./2D/measure.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_3__);
 
 
@@ -11760,9 +11770,9 @@ var ImageScrollBar = /** @class */ (function (_super) {
         this._originX = x;
         this._originY = y;
     };
-    ImageScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    ImageScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         this._first = true;
-        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex);
+        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
     };
     return ImageScrollBar;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
@@ -11906,9 +11916,9 @@ var ScrollBar = /** @class */ (function (_super) {
         this._originX = x;
         this._originY = y;
     };
-    ScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex) {
+    ScrollBar.prototype._onPointerDown = function (target, coordinates, pointerId, buttonIndex, pi) {
         this._first = true;
-        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex);
+        return _super.prototype._onPointerDown.call(this, target, coordinates, pointerId, buttonIndex, pi);
     };
     return ScrollBar;
 }(_baseSlider__WEBPACK_IMPORTED_MODULE_1__["BaseSlider"]));
@@ -11929,7 +11939,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Slider", function() { return Slider; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _baseSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./baseSlider */ "./2D/controls/sliders/baseSlider.ts");
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__);
 
 
@@ -12201,7 +12211,7 @@ babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_2__["_TypeStore"].RegisteredTy
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StackPanel", function() { return StackPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container */ "./2D/controls/container.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
@@ -12471,7 +12481,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextWrapping", function() { return TextWrapping; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextBlock", function() { return TextBlock; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../valueAndUnit */ "./2D/valueAndUnit.ts");
 /* harmony import */ var _control__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./control */ "./2D/controls/control.ts");
@@ -12847,6 +12857,8 @@ var TextBlock = /** @class */ (function (_super) {
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
             context.strokeStyle = this.outlineColor;
+            context.lineJoin = 'miter';
+            context.miterLimit = 2;
         }
     };
     TextBlock.prototype._breakLines = function (refWidth, context) {
@@ -13005,7 +13017,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "KeyPropertySet", function() { return KeyPropertySet; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VirtualKeyboard", function() { return VirtualKeyboard; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _stackPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./stackPanel */ "./2D/controls/stackPanel.ts");
 /* harmony import */ var _button__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./button */ "./2D/controls/button.ts");
@@ -13394,7 +13406,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector2WithInfo", function() { return Vector2WithInfo; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Matrix2D", function() { return Matrix2D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -13619,7 +13631,7 @@ var Matrix2D = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Measure", function() { return Measure; });
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
 
 var tmpRect = [
@@ -13784,7 +13796,7 @@ var Measure = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MultiLinePoint", function() { return MultiLinePoint; });
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./valueAndUnit */ "./2D/valueAndUnit.ts");
 
@@ -13927,7 +13939,7 @@ var MultiLinePoint = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Style", function() { return Style; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _valueAndUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./valueAndUnit */ "./2D/valueAndUnit.ts");
 
@@ -14233,7 +14245,7 @@ var ValueAndUnit = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "XmlLoader", function() { return XmlLoader; });
-/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/typeStore */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_typeStore__WEBPACK_IMPORTED_MODULE_0__);
 
 /**
@@ -14552,7 +14564,7 @@ var XmlLoader = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractButton3D", function() { return AbstractButton3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
 
@@ -14595,7 +14607,7 @@ var AbstractButton3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Button3D", function() { return Button3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _abstractButton3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./abstractButton3D */ "./3D/controls/abstractButton3D.ts");
 /* harmony import */ var _2D_advancedDynamicTexture__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../2D/advancedDynamicTexture */ "./2D/advancedDynamicTexture.ts");
@@ -14776,7 +14788,7 @@ var Button3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Container3D", function() { return Container3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Meshes/transformNode */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Meshes_transformNode__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _control3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./control3D */ "./3D/controls/control3D.ts");
 
@@ -14933,7 +14945,7 @@ var Container3D = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Control3D", function() { return Control3D; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _vector3WithInfo__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../vector3WithInfo */ "./3D/vector3WithInfo.ts");
 
@@ -15339,7 +15351,7 @@ var Control3D = /** @class */ (function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CylinderPanel", function() { return CylinderPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -15425,7 +15437,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HolographicButton", function() { return HolographicButton; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _button3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./button3D */ "./3D/controls/button3D.ts");
-/* harmony import */ var babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/standardMaterial */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! babylonjs/Materials/standardMaterial */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_standardMaterial__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _materials_fluentMaterial__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../materials/fluentMaterial */ "./3D/materials/fluentMaterial.ts");
 /* harmony import */ var _2D_controls_stackPanel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../2D/controls/stackPanel */ "./2D/controls/stackPanel.ts");
@@ -15919,7 +15931,7 @@ var MeshButton3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PlanePanel", function() { return PlanePanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
@@ -15974,7 +15986,7 @@ var PlanePanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ScatterPanel", function() { return ScatterPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -16101,7 +16113,7 @@ var ScatterPanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SpherePanel", function() { return SpherePanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _volumeBasedPanel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./volumeBasedPanel */ "./3D/controls/volumeBasedPanel.ts");
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
@@ -16187,7 +16199,7 @@ var SpherePanel = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "StackPanel3D", function() { return StackPanel3D; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 
@@ -16312,7 +16324,7 @@ var StackPanel3D = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VolumeBasedPanel", function() { return VolumeBasedPanel; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/tools */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_tools__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _container3D__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./container3D */ "./3D/controls/container3D.ts");
 
@@ -16503,7 +16515,7 @@ var VolumeBasedPanel = /** @class */ (function (_super) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GUI3DManager", function() { return GUI3DManager; });
-/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Misc/observable */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_observable__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _controls_container3D__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./controls/container3D */ "./3D/controls/container3D.ts");
 
@@ -16770,7 +16782,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FluentMaterialDefines", function() { return FluentMaterialDefines; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FluentMaterial", function() { return FluentMaterial; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Misc/decorators */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Misc_decorators__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _shaders_fluent_vertex__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./shaders/fluent.vertex */ "./3D/materials/shaders/fluent.vertex.ts");
 /* harmony import */ var _shaders_fluent_fragment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./shaders/fluent.fragment */ "./3D/materials/shaders/fluent.fragment.ts");
@@ -17086,7 +17098,7 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fluentPixelShader", function() { return fluentPixelShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 var name = 'fluentPixelShader';
@@ -17108,7 +17120,7 @@ var fluentPixelShader = { name: name, shader: shader };
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fluentVertexShader", function() { return fluentVertexShader; });
-/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! babylonjs/Materials/effect */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Materials_effect__WEBPACK_IMPORTED_MODULE_0__);
 
 var name = 'fluentVertexShader';
@@ -17131,7 +17143,7 @@ var fluentVertexShader = { name: name, shader: shader };
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Vector3WithInfo", function() { return Vector3WithInfo; });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "../../node_modules/tslib/tslib.es6.js");
-/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Maths/math.vector");
+/* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! babylonjs/Maths/math.vector */ "babylonjs/Misc/observable");
 /* harmony import */ var babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(babylonjs_Maths_math_vector__WEBPACK_IMPORTED_MODULE_1__);
 
 
@@ -17433,14 +17445,14 @@ if (typeof globalObject !== "undefined") {
 
 /***/ }),
 
-/***/ "babylonjs/Maths/math.vector":
+/***/ "babylonjs/Misc/observable":
 /*!****************************************************************************************************!*\
   !*** external {"root":"BABYLON","commonjs":"babylonjs","commonjs2":"babylonjs","amd":"babylonjs"} ***!
   \****************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Maths_math_vector__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_babylonjs_Misc_observable__;
 
 /***/ })
 

@@ -130,6 +130,11 @@ export class Material implements IAnimatable {
     public static readonly MiscDirtyFlag = Constants.MATERIAL_MiscDirtyFlag;
 
     /**
+     * The dirty prepass flag value
+     */
+    public static readonly PrePassDirtyFlag = Constants.MATERIAL_PrePassDirtyFlag;
+
+    /**
      * The all dirty flag value
      */
     public static readonly AllDirtyFlag = Constants.MATERIAL_AllDirtyFlag;
@@ -1156,6 +1161,7 @@ export class Material implements IAnimatable {
     private static readonly _TextureDirtyCallBack = (defines: MaterialDefines) => defines.markAsTexturesDirty();
     private static readonly _FresnelDirtyCallBack = (defines: MaterialDefines) => defines.markAsFresnelDirty();
     private static readonly _MiscDirtyCallBack = (defines: MaterialDefines) => defines.markAsMiscDirty();
+    private static readonly _PrePassDirtyCallBack = (defines: MaterialDefines) => defines.markAsPrePassDirty();
     private static readonly _LightsDirtyCallBack = (defines: MaterialDefines) => defines.markAsLightDirty();
     private static readonly _AttributeDirtyCallBack = (defines: MaterialDefines) => defines.markAsAttributesDirty();
 
@@ -1205,6 +1211,10 @@ export class Material implements IAnimatable {
 
         if (flag & Material.MiscDirtyFlag) {
             Material._DirtyCallbackArray.push(Material._MiscDirtyCallBack);
+        }
+
+        if (flag & Material.PrePassDirtyFlag) {
+            Material._DirtyCallbackArray.push(Material._PrePassDirtyCallBack);
         }
 
         if (Material._DirtyCallbackArray.length) {
@@ -1309,6 +1319,13 @@ export class Material implements IAnimatable {
      * Indicates that misc needs to be re-calculated for all submeshes
      */
     protected _markAllSubMeshesAsMiscDirty() {
+        this._markAllSubMeshesAsDirty(Material._MiscDirtyCallBack);
+    }
+
+    /**
+     * Indicates that prepass needs to be re-calculated for all submeshes
+     */
+    protected _markAllSubMeshesAsPrePassDirty() {
         this._markAllSubMeshesAsDirty(Material._MiscDirtyCallBack);
     }
 

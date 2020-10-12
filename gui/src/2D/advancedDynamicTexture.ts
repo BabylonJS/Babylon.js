@@ -2,7 +2,7 @@ import { Nullable } from "babylonjs/types";
 import { Observable, Observer } from "babylonjs/Misc/observable";
 import { Vector2, Vector3, Matrix } from "babylonjs/Maths/math.vector";
 import { Tools } from "babylonjs/Misc/tools";
-import { PointerInfoPre, PointerInfo, PointerEventTypes } from 'babylonjs/Events/pointerEvents';
+import { PointerInfoPre, PointerInfo, PointerEventTypes, PointerInfoBase } from 'babylonjs/Events/pointerEvents';
 import { ClipboardEventTypes, ClipboardInfo } from "babylonjs/Events/clipboardEvents";
 import { KeyboardInfoPre, KeyboardEventTypes } from "babylonjs/Events/keyboardEvents";
 import { Camera } from "babylonjs/Cameras/camera";
@@ -334,9 +334,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
    * @param scene defines the hosting scene
    * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
    * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+   * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
    */
-    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE) {
-        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA);
+    constructor(name: string, width = 0, height = 0, scene: Nullable<Scene>, generateMipMaps = false, samplingMode = Texture.NEAREST_SAMPLINGMODE, invertY?: boolean) {
+        super(name, { width: width, height: height }, scene, generateMipMaps, samplingMode, Constants.TEXTUREFORMAT_RGBA, invertY);
         scene = this.getScene();
         if (!scene || !this._texture) {
             return;
@@ -564,7 +565,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 if (!control.isVisible) {
                     continue;
                 }
-                let mesh = control._linkedMesh;
+                let mesh = control._linkedMesh as AbstractMesh;
                 if (!mesh || mesh.isDisposed()) {
                     Tools.SetImmediate(() => {
                         control.linkWithMesh(null);
@@ -643,7 +644,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._lastControlDown[pointerId] = control;
         this.onControlPickedObservable.notifyObservers(control);
     }
-    private _doPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
+    private _doPicking(x: number, y: number, pi: PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): void {
         var scene = this.getScene();
         if (!scene) {
             return;
@@ -657,16 +658,16 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             y = y * (textureSize.height / (engine.getRenderHeight() * viewport.height));
         }
         if (this._capturingControl[pointerId]) {
-            this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
+            this._capturingControl[pointerId]._processObservables(type, x, y, pi, pointerId, buttonIndex);
             return;
         }
 
         this._cursorChanged = false;
-        if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex, deltaX, deltaY)) {
+        if (!this._rootContainer._processPicking(x, y, pi, type, pointerId, buttonIndex, deltaX, deltaY)) {
             this._changeCursor("");
             if (type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);
                     delete this._lastControlOver[pointerId];
                 }
             }
@@ -738,7 +739,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this._shouldBlockPointer = false;
             // Do picking modifies _shouldBlockPointer
             let pointerId = (pi.event as PointerEvent).pointerId || this._defaultMousePointerId;
-            this._doPicking(x, y, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
+            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<MouseWheelEvent>pi.event).deltaX, (<MouseWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer) {
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
@@ -806,7 +807,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 var uv = pi.pickInfo.getTextureCoordinates();
                 if (uv) {
                     let size = this.getSize();
-                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pointerId, pi.event.button);
+                    this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi, pi.type, pointerId, pi.event.button);
                 }
             } else if (pi.type === PointerEventTypes.POINTERUP) {
                 if (this._lastControlDown[pointerId]) {
@@ -836,7 +837,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 }
             } else if (pi.type === PointerEventTypes.POINTERMOVE) {
                 if (this._lastControlOver[pointerId]) {
-                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], true);
+                    this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi, true);
                 }
                 delete this._lastControlOver[pointerId];
             }
@@ -873,7 +874,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _attachToOnPointerOut(scene: Scene): void {
         this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add((pointerEvent) => {
             if (this._lastControlOver[pointerEvent.pointerId]) {
-                this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId]);
+                this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId], null);
             }
             delete this._lastControlOver[pointerEvent.pointerId];
             if (this._lastControlDown[pointerEvent.pointerId] && this._lastControlDown[pointerEvent.pointerId] !== this._capturingControl[pointerEvent.pointerId]) {
@@ -898,10 +899,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
+     * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false): AdvancedDynamicTexture {
-        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE);
+    public static CreateForMesh(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, onlyAlphaTesting = false, invertY?: boolean): AdvancedDynamicTexture {
+        var result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
         var material = new StandardMaterial("AdvancedDynamicTextureMaterial", mesh.getScene());
         material.backFaceCulling = false;
         material.diffuseColor = Color3.Black();

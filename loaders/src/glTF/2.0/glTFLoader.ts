@@ -262,7 +262,8 @@ export class GLTFLoader implements IGLTFLoader {
                     skeletons: this._getSkeletons(),
                     animationGroups: this._getAnimationGroups(),
                     lights: this._babylonLights,
-                    transformNodes: this._getTransformNodes()
+                    transformNodes: this._getTransformNodes(),
+                    geometries: this._getGeometries()
                 };
             });
         });
@@ -549,6 +550,24 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
+    private _getGeometries(): Geometry[] {
+        const geometries = new Array<Geometry>();
+
+        const nodes = this._gltf.nodes;
+        if (nodes) {
+            for (const node of nodes) {
+                this._forEachPrimitive(node, (babylonMesh) => {
+                    const geometry = (babylonMesh as Mesh).geometry;
+                    if (geometry && geometries.indexOf(geometry) === -1) {
+                        geometries.push(geometry);
+                    }
+                });
+            }
+        }
+
+        return geometries;
+    }
+
     private _getMeshes(): AbstractMesh[] {
         const meshes = new Array<AbstractMesh>();
 
@@ -799,7 +818,9 @@ export class GLTFLoader implements IGLTFLoader {
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
             promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then((babylonGeometry) => {
                 return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonGeometry).then(() => {
+                    this._babylonScene._blockEntityCollection = this._forAssetContainer;
                     babylonGeometry.applyToMesh(babylonMesh);
+                    this._babylonScene._blockEntityCollection = false;
                 });
             }));
 
@@ -1689,6 +1710,7 @@ export class GLTFLoader implements IGLTFLoader {
             }
 
             if (properties.metallicRoughnessTexture) {
+                properties.metallicRoughnessTexture.nonColorData = true;
                 promises.push(this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
                     babylonMaterial.metallicTexture = texture;
@@ -1830,6 +1852,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         if (material.normalTexture) {
+            material.normalTexture.nonColorData = true;
             promises.push(this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Normal)`;
                 babylonMaterial.bumpTexture = texture;
@@ -1845,6 +1868,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         if (material.occlusionTexture) {
+            material.occlusionTexture.nonColorData = true;
             promises.push(this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Occlusion)`;
                 babylonMaterial.ambientTexture = texture;
@@ -1926,6 +1950,8 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const texture = ArrayItem.Get(`${context}/index`, this._gltf.textures, textureInfo.index);
+        texture._textureInfo = textureInfo;
+
         const promise = this._loadTextureAsync(`/textures/${textureInfo.index}`, texture, (babylonTexture) => {
             babylonTexture.coordinatesIndex = textureInfo.texCoord || 0;
             GLTFLoader.AddPointerMetadata(babylonTexture, context);
@@ -1957,7 +1983,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /** @hidden */
-    public _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign: (babylonTexture: BaseTexture) => void = () => { }): Promise<BaseTexture> {
+    public _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign: (babylonTexture: BaseTexture) => void = () => { }, textureLoaderOptions?: any): Promise<BaseTexture> {
         const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
         const promises = new Array<Promise<any>>();
@@ -1972,7 +1998,7 @@ export class GLTFLoader implements IGLTFLoader {
             if (!this._disposed) {
                 deferred.reject(new Error(`${context}: ${(exception && exception.message) ? exception.message : message || "Failed to load texture"}`));
             }
-        }, undefined, undefined, undefined, image.mimeType);
+        }, undefined, undefined, undefined, image.mimeType, textureLoaderOptions);
         this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
 

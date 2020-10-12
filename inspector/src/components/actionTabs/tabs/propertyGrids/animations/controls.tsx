@@ -7,12 +7,15 @@ interface IControlsProps {
     selected: IAnimationKey | null;
     currentFrame: number;
     onCurrentFrameChange: (frame: number) => void;
-    repositionCanvas: (frame: number) => void;
+    repositionCanvas: (keyframe: IAnimationKey) => void;
     playPause: (direction: number) => void;
     isPlaying: boolean;
     scrollable: React.RefObject<HTMLDivElement>;
 }
 
+/**
+ * The playback controls for the animation editor
+ */
 export class Controls extends React.Component<IControlsProps, { selected: IAnimationKey; playingType: string }> {
     readonly _sizeOfKeyframe: number = 5;
     constructor(props: IControlsProps) {
@@ -22,91 +25,131 @@ export class Controls extends React.Component<IControlsProps, { selected: IAnima
         }
     }
 
-    playBackwards() {
+    playBackwards = () => {
         this.setState({ playingType: "reverse" });
         this.props.playPause(-1);
-    }
+    };
 
-    play() {
+    play = () => {
         this.setState({ playingType: "forward" });
         this.props.playPause(1);
-    }
+    };
 
-    pause() {
+    pause = () => {
         if (this.props.isPlaying) {
             this.setState({ playingType: "" });
             this.props.playPause(0);
         }
-    }
+    };
 
-    moveToAnimationStart() {
-        const start = this.props.keyframes && this.props.keyframes[0].frame;
-        if (start !== undefined && typeof start === "number") {
-            this.props.onCurrentFrameChange(start);
-            this.props.repositionCanvas(start);
+    moveToAnimationStart = () => {
+        const startKeyframe = this.props.keyframes && this.props.keyframes[0];
+        if (startKeyframe !== null) {
+            if (typeof startKeyframe.frame === "number") {
+                this.props.onCurrentFrameChange(startKeyframe.frame);
+            }
         }
-    }
+    };
 
-    moveToAnimationEnd() {
-        const end = this.props.keyframes && this.props.keyframes[this.props.keyframes.length - 1].frame;
-        if (end !== undefined && typeof end === "number") {
-            this.props.onCurrentFrameChange(end);
-            this.props.repositionCanvas(end);
+    moveToAnimationEnd = () => {
+        const endKeyframe = this.props.keyframes && this.props.keyframes[this.props.keyframes.length - 1];
+        if (endKeyframe !== null) {
+            if (typeof endKeyframe.frame === "number") {
+                this.props.onCurrentFrameChange(endKeyframe.frame);
+            }
         }
-    }
+    };
 
-    nextKeyframe() {
+    nextKeyframe = () => {
         if (this.props.keyframes !== null) {
             let first = this.props.keyframes.find((kf) => kf.frame > this.props.currentFrame);
             if (first) {
                 this.props.onCurrentFrameChange(first.frame);
-                this.props.repositionCanvas(first.frame);
                 this.setState({ selected: first });
                 (this.props.scrollable.current as HTMLDivElement).scrollLeft = first.frame * this._sizeOfKeyframe;
             }
         }
-    }
+    };
 
-    previousKeyframe() {
+    previousKeyframe = () => {
         if (this.props.keyframes !== null) {
             let keyframes = [...this.props.keyframes];
             let first = keyframes.reverse().find((kf) => kf.frame < this.props.currentFrame);
             if (first) {
                 this.props.onCurrentFrameChange(first.frame);
-                this.props.repositionCanvas(first.frame);
                 this.setState({ selected: first });
                 (this.props.scrollable.current as HTMLDivElement).scrollLeft = -(first.frame * this._sizeOfKeyframe);
             }
         }
-    }
+    };
 
     render() {
         return (
             <div className="controls">
-                <IconButtonLineComponent tooltip="Animation Start" icon="animation-start" onClick={() => this.moveToAnimationStart()}></IconButtonLineComponent>
-                <IconButtonLineComponent tooltip="Previous Keyframe" icon="animation-lastkey" onClick={() => this.previousKeyframe()}></IconButtonLineComponent>
+                <IconButtonLineComponent
+                    tooltip="Animation Start"
+                    icon="animation-start"
+                    onClick={this.moveToAnimationStart}
+                ></IconButtonLineComponent>
+                <IconButtonLineComponent
+                    tooltip="Previous Keyframe"
+                    icon="animation-lastkey"
+                    onClick={this.previousKeyframe}
+                ></IconButtonLineComponent>
                 {this.props.isPlaying ? (
                     <div className="stop-container">
                         {this.state.playingType === "reverse" ? (
                             <>
-                                <IconButtonLineComponent tooltip="Pause" icon="animation-stop" onClick={() => this.pause()}></IconButtonLineComponent>
-                                <IconButtonLineComponent tooltip="Play Forward" icon="animation-playfwd" onClick={() => this.play()}></IconButtonLineComponent>
+                                <IconButtonLineComponent
+                                    tooltip="Pause"
+                                    icon="animation-stop"
+                                    onClick={this.pause}
+                                ></IconButtonLineComponent>
+                                <IconButtonLineComponent
+                                    tooltip="Play Forward"
+                                    icon="animation-playfwd"
+                                    onClick={this.play}
+                                ></IconButtonLineComponent>
                             </>
                         ) : (
                             <>
-                                <IconButtonLineComponent tooltip="Play Reverse" icon="animation-playrev" onClick={() => this.playBackwards()}></IconButtonLineComponent>
-                                <IconButtonLineComponent tooltip="Pause" icon="animation-stop" onClick={() => this.pause()}></IconButtonLineComponent>
+                                <IconButtonLineComponent
+                                    tooltip="Play Reverse"
+                                    icon="animation-playrev"
+                                    onClick={this.playBackwards}
+                                ></IconButtonLineComponent>
+                                <IconButtonLineComponent
+                                    tooltip="Pause"
+                                    icon="animation-stop"
+                                    onClick={this.pause}
+                                ></IconButtonLineComponent>
                             </>
                         )}
                     </div>
                 ) : (
                     <div className="stop-container">
-                        <IconButtonLineComponent tooltip="Play Reverse" icon="animation-playrev" onClick={() => this.playBackwards()}></IconButtonLineComponent>
-                        <IconButtonLineComponent tooltip="Play Forward" icon="animation-playfwd" onClick={() => this.play()}></IconButtonLineComponent>
+                        <IconButtonLineComponent
+                            tooltip="Play Reverse"
+                            icon="animation-playrev"
+                            onClick={this.playBackwards}
+                        ></IconButtonLineComponent>
+                        <IconButtonLineComponent
+                            tooltip="Play Forward"
+                            icon="animation-playfwd"
+                            onClick={this.play}
+                        ></IconButtonLineComponent>
                     </div>
                 )}
-                <IconButtonLineComponent tooltip="Next Keyframe" icon="animation-nextkey" onClick={() => this.nextKeyframe()}></IconButtonLineComponent>
-                <IconButtonLineComponent tooltip="Animation End" icon="animation-end" onClick={() => this.moveToAnimationEnd()}></IconButtonLineComponent>
+                <IconButtonLineComponent
+                    tooltip="Next Keyframe"
+                    icon="animation-nextkey"
+                    onClick={this.nextKeyframe}
+                ></IconButtonLineComponent>
+                <IconButtonLineComponent
+                    tooltip="Animation End"
+                    icon="animation-end"
+                    onClick={this.moveToAnimationEnd}
+                ></IconButtonLineComponent>
             </div>
         );
     }

@@ -92,7 +92,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
                     continue;
                 }
 
-                const wm = mesh.computeWorldMatrix(false);
+                const wm = mesh.computeWorldMatrix(true);
 
                 for (tri = 0; tri < meshIndices.length; tri++) {
                     indices.push(meshIndices[tri] + offset);
@@ -458,6 +458,44 @@ export class RecastJSCrowd implements ICrowd {
     getAgentVelocityToRef(index: number, result: Vector3): void {
         var agentVel = this.recastCrowd.getAgentVelocity(index);
         result.set(agentVel.x, agentVel.y, agentVel.z);
+    }
+
+    /**
+     * Returns the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @returns world space position
+     */
+    getAgentNextTargetPath(index: number): Vector3 {
+        var pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
+        return new Vector3(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
+    }
+
+    /**
+     * Returns the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @param result output world space position
+     */
+    getAgentNextTargetPathToRef(index: number, result: Vector3): void {
+        var pathTargetPos = this.recastCrowd.getAgentNextTargetPath(index);
+        result.set(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
+    }
+
+    /**
+     * Gets the agent state
+     * @param index agent index returned by addAgent
+     * @returns agent state
+     */
+    getAgentState(index: number): number {
+        return this.recastCrowd.getAgentState(index);
+    }
+
+    /**
+     * returns true if the agent in over an off mesh link connection
+     * @param index agent index returned by addAgent
+     * @returns true if over an off mesh link connection
+     */
+    overOffmeshConnection(index: number): boolean {
+        return this.recastCrowd.overOffmeshConnection(index);
     }
 
     /**

@@ -78,7 +78,12 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
             }
         });
 
+        // check if there are already other controllers connected
         this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
+        // if no xbox controller was found, but there are gamepad controllers, take the first one
+        if (!this.gamepad && manager.gamepads.length) {
+            this.gamepad = manager.gamepads[0];
+        }
     }
 
     /**
@@ -110,8 +115,7 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
                 var normalizedRY = (RSValues.y / this.gamepadAngularSensibility) * this._yAxisScale;
                 RSValues.x = Math.abs(normalizedRX) > 0.001 ? 0 + normalizedRX : 0;
                 RSValues.y = Math.abs(normalizedRY) > 0.001 ? 0 + normalizedRY : 0;
-            }
-            else {
+            } else {
                 RSValues = { x: 0, y: 0 };
             }
 

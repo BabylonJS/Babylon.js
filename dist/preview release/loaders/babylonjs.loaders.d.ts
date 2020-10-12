@@ -110,6 +110,7 @@ declare module BABYLON {
     /** @hidden */
     export interface IImportMeshAsyncOutput {
         meshes: AbstractMesh[];
+        geometries: Geometry[];
         particleSystems: IParticleSystem[];
         skeletons: Skeleton[];
         animationGroups: AnimationGroup[];
@@ -1149,11 +1150,15 @@ declare module BABYLON.GLTF2.Loader {
      * Loader interface with additional members.
      */
     export interface ITexture extends BABYLON.GLTF2.ITexture, IArrayItem {
+        /** @hidden */
+        _textureInfo: ITextureInfo;
     }
     /**
      * Loader interface with additional members.
      */
     export interface ITextureInfo extends BABYLON.GLTF2.ITextureInfo {
+        /** false or undefined if the texture holds color data (true if data are roughness, normal, ...) */
+        nonColorData?: boolean;
     }
     /**
      * Loader interface with additional members.
@@ -1422,6 +1427,7 @@ declare module BABYLON.GLTF2 {
          */
         loadSceneAsync(context: string, scene: IScene): Promise<void>;
         private _forEachPrimitive;
+        private _getGeometries;
         private _getMeshes;
         private _getTransformNodes;
         private _getSkeletons;
@@ -1547,7 +1553,7 @@ declare module BABYLON.GLTF2 {
         /** @hidden */
         _loadTextureAsync(context: string, texture: ITexture, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         /** @hidden */
-        _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
+        _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void, textureLoaderOptions?: any): Promise<BaseTexture>;
         private _loadSampler;
         /**
          * Loads a glTF image.
@@ -1831,9 +1837,8 @@ declare module BABYLON.GLTF2.Loader.Extensions {
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
     /**
-     * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1677)
+     * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_clearcoat/README.md)
      * [Playground Sample](https://www.babylonjs-playground.com/frame.html#7F7PN6#8)
-     * !!! Experimental Extension Subject to Changes !!!
      */
     export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         /**

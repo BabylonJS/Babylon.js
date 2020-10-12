@@ -1,3 +1,5 @@
+declare type ThinEngine = import("../thinEngine").ThinEngine;
+
 /** @hidden */
 export interface IShaderProcessor {
     attributeProcessor?: (attribute: string) => string;
@@ -7,5 +9,5 @@ export interface IShaderProcessor {
     endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean) => string;
     lineProcessor?: (line: string, isFragment: boolean) => string;
     preProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
-    postProcessor?: (code: string, defines: string[], isFragment: boolean) => string;
+    postProcessor?: (code: string, defines: string[], isFragment: boolean, engine: ThinEngine) => string;
 }

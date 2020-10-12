@@ -222,7 +222,7 @@ export class PhysicsImpostor {
     private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     /** @hidden */
-    public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void; otherImpostors: Array<PhysicsImpostor> }> = [];
+    public _onPhysicsCollideCallbacks: Array<{ callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>) => void; otherImpostors: Array<PhysicsImpostor> }> = [];
 
     private _deltaPosition: Vector3 = Vector3.Zero();
     private _deltaRotation: Quaternion;
@@ -610,12 +610,17 @@ export class PhysicsImpostor {
     public getObjectExtendSize(): Vector3 {
         if (this.object.getBoundingInfo) {
             let q = this.object.rotationQuaternion;
+            const scaling = this.object.scaling.clone();
             //reset rotation
             this.object.rotationQuaternion = PhysicsImpostor.IDENTITY_QUATERNION;
             //calculate the world matrix with no rotation
-            this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
+            const worldMatrix = this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
+            if (worldMatrix) {
+                worldMatrix.decompose(scaling, undefined, undefined);
+            }
             const boundingInfo = this.object.getBoundingInfo();
-            const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(this.object.scaling);
+            // get the global scaling of the object
+            const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(scaling);
             //bring back the rotation
             this.object.rotationQuaternion = q;
             //calculate the world matrix with the new rotation
@@ -885,7 +890,7 @@ export class PhysicsImpostor {
     /**
      * event and body object due to cannon's event-based architecture.
      */
-    public onCollide = (e: { body: any }) => {
+    public onCollide = (e: { body: any; point: Nullable<Vector3> }) => {
         if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {
             return;
         }
@@ -904,7 +909,7 @@ export class PhysicsImpostor {
                     return obj.otherImpostors.indexOf(<PhysicsImpostor>otherImpostor) !== -1;
                 })
                 .forEach((obj) => {
-                    obj.callback(this, <PhysicsImpostor>otherImpostor);
+                    obj.callback(this, <PhysicsImpostor>otherImpostor, e.point);
                 });
         }
     };

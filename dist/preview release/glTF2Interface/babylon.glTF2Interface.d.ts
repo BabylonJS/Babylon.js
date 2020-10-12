@@ -1028,8 +1028,9 @@ declare module BABYLON.GLTF2 {
     /** @hidden */
     interface IKHRMaterialsSheen {
         sheenColorFactor?: number[];
-        sheenTexture?: ITextureInfo;
+        sheenColorTexture?: ITextureInfo;
         sheenRoughnessFactor?: number;
+        sheenRoughnessTexture?: ITextureInfo;
     }
 
     /**

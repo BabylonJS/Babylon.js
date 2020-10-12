@@ -17,6 +17,7 @@ import { DataBuffer } from '../Meshes/dataBuffer';
 import { IFileRequest } from '../Misc/fileRequest';
 import { Logger } from '../Misc/logger';
 import { DomManagement } from '../Misc/domManagement';
+import { WebGLShaderProcessor } from './WebGL/webGLShaderProcessors';
 import { WebGL2ShaderProcessor } from './WebGL/webGL2ShaderProcessors';
 import { WebGLDataBuffer } from '../Meshes/WebGL/webGLDataBuffer';
 import { IPipelineContext } from './IPipelineContext';
@@ -126,6 +127,11 @@ export interface EngineOptions extends WebGLContextAttributes {
      * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
      */
     useHighPrecisionMatrix?: boolean;
+
+    /**
+     * Will prevent the system from falling back to software implementation if a hardware device cannot be created
+     */
+    failIfMajorPerformanceCaveat?: boolean;
 }
 
 /**
@@ -152,14 +158,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@4.2.0-beta.3";
+        return "babylonjs@4.2.0-beta.12";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "4.2.0-beta.3";
+        return "4.2.0-beta.12";
     }
 
     /**
@@ -697,19 +703,21 @@ export class ThinEngine {
         // Shader processor
         if (this.webGLVersion > 1) {
             this._shaderProcessor = new WebGL2ShaderProcessor();
+        } else {
+            this._shaderProcessor = new WebGLShaderProcessor();
         }
 
         // Detect if we are running on a faulty buggy OS.
         this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
         // Starting with iOS 14, we can trust the browser
-        let matches = navigator.userAgent.match(/Version\/(\d+)/);
+        // let matches = navigator.userAgent.match(/Version\/(\d+)/);
 
-        if (matches && matches.length === 2) {
-            if (parseInt(matches[1]) >= 14) {
-                this._badOS = false;
-            }
-        }
+        // if (matches && matches.length === 2) {
+        //     if (parseInt(matches[1]) >= 14) {
+        //         this._badOS = false;
+        //     }
+        // }
 
         // Detect if we are running on a faulty buggy desktop OS.
         this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -2859,12 +2867,13 @@ export class ThinEngine {
      * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param mimeType defines an optional mime type
+     * @param loaderOptions options to be passed to the loader
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
     public createTexture(url: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<ISceneLike>, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<() => void> = null, onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, fallback: Nullable<InternalTexture> = null, format: Nullable<number> = null,
-        forcedExtension: Nullable<string> = null, mimeType?: string): InternalTexture {
+        forcedExtension: Nullable<string> = null, mimeType?: string, loaderOptions?: any): InternalTexture {
         url = url || "";
         const fromData = url.substr(0, 5) === "data:";
         const fromBlob = url.substr(0, 5) === "blob:";
@@ -2937,7 +2946,7 @@ export class ThinEngine {
             else {
                 // fall back to the original url if the transformed url fails to load
                 Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
-                this.createTexture(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, buffer, texture, format, forcedExtension, mimeType);
+                this.createTexture(originalUrl, noMipmap, texture.invertY, scene, samplingMode, onLoad, onError, buffer, texture, format, forcedExtension, mimeType, loaderOptions);
             }
         };
 
@@ -2953,7 +2962,7 @@ export class ThinEngine {
                             return false;
                         }, samplingMode);
                     }
-                });
+                }, loaderOptions);
             };
 
             if (!buffer) {
@@ -4307,25 +4316,56 @@ export class ThinEngine {
 
     // Statics
 
-    private static _isSupported: Nullable<boolean> = null;
+    private static _IsSupported: Nullable<boolean> = null;
+    private static _HasMajorPerformanceCaveat : Nullable<boolean> = null;
+
+    /**
+     * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
+     */
+    public static get IsSupported(): boolean {
+        return this.isSupported(); // Backward compat
+    }
+
     /**
      * Gets a boolean indicating if the engine can be instanciated (ie. if a webGL context can be found)
      * @returns true if the engine can be created
      * @ignorenaming
      */
     public static isSupported(): boolean {
-        if (this._isSupported === null) {
+        if (this._HasMajorPerformanceCaveat !== null) {
+            return !this._HasMajorPerformanceCaveat; // We know it is performant so WebGL is supported
+        }
+
+        if (this._IsSupported === null) {
             try {
                 var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
                 var gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
 
-                this._isSupported = gl != null && !!window.WebGLRenderingContext;
+                this._IsSupported = gl != null && !!window.WebGLRenderingContext;
             } catch (e) {
-                this._isSupported = false;
+                this._IsSupported = false;
             }
         }
 
-        return this._isSupported;
+        return this._IsSupported;
+    }
+
+    /**
+     * Gets a boolean indicating if the engine can be instanciated on a performant device (ie. if a webGL context can be found and it does not use a slow implementation)
+     */
+    public static get HasMajorPerformanceCaveat(): boolean {
+        if (this._HasMajorPerformanceCaveat === null) {
+            try {
+                var tempcanvas = CanvasGenerator.CreateCanvas(1, 1);
+                var gl = tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) || (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });
+
+                this._HasMajorPerformanceCaveat = !gl;
+            } catch (e) {
+                this._HasMajorPerformanceCaveat = false;
+            }
+        }
+
+        return this._HasMajorPerformanceCaveat;
     }
 
     /**

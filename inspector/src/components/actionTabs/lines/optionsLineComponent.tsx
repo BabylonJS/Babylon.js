@@ -5,12 +5,13 @@ import { PropertyChangedEvent } from "../../propertyChangedEvent";
 
 export const Null_Value = Number.MAX_SAFE_INTEGER;
 
-class ListLineOption {
+export class ListLineOption {
     public label: string;
     public value: number;
+    selected?: boolean;
 }
 
-interface IOptionsLineComponentProps {
+export interface IOptionsLineComponentProps {
     label: string;
     target: any;
     propertyName: string;
@@ -90,19 +91,16 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     render() {
         return (
             <div className="listLine">
-                <div className="label">
-                    {this.props.label}
-
-                </div>
+                <div className="label">{this.props.label}</div>
                 <div className="options">
                     <select onChange={(evt) => this.updateValue(evt.target.value)} value={this.state.value ?? ""}>
-                        {
-                            this.props.options.map((option, i) => {
-                                return (
-                                    <option key={option.label + i} value={option.value}>{option.label}</option>
-                                );
-                            })
-                        }
+                        {this.props.options.map((option, i) => {
+                            return (
+                                <option selected={option.selected} key={option.label + i} value={option.value}>
+                                    {option.label}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
             </div>

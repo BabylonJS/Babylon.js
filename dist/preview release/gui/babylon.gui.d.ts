@@ -504,8 +504,9 @@ declare module BABYLON.GUI {
        * @param scene defines the hosting scene
        * @param generateMipMaps defines a boolean indicating if mipmaps must be generated (false by default)
        * @param samplingMode defines the texture sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+       * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
        */
-        constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number);
+        constructor(name: string, width: number | undefined, height: number | undefined, scene: BABYLON.Nullable<BABYLON.Scene>, generateMipMaps?: boolean, samplingMode?: number, invertY?: boolean);
         /**
         * Get the current class name of the texture useful for serialization or dynamic coding.
         * @returns "AdvancedDynamicTexture"
@@ -619,9 +620,10 @@ declare module BABYLON.GUI {
          * @param height defines the texture height (1024 by default)
          * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
          * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
+         * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
          * @returns a new AdvancedDynamicTexture
          */
-        static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean): AdvancedDynamicTexture;
+        static CreateForMesh(mesh: BABYLON.AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean, onlyAlphaTesting?: boolean, invertY?: boolean): AdvancedDynamicTexture;
         /**
         * Creates a new AdvancedDynamicTexture in fullscreen mode.
         * In this mode the texture will rely on a layer for its rendering.
@@ -715,7 +717,7 @@ declare module BABYLON.GUI {
         private _isVisible;
         private _isHighlighted;
         /** @hidden */
-        _linkedMesh: BABYLON.Nullable<BABYLON.AbstractMesh>;
+        _linkedMesh: BABYLON.Nullable<BABYLON.TransformNode>;
         private _fontSet;
         private _dummyVector2;
         private _downCount;
@@ -969,7 +971,7 @@ declare module BABYLON.GUI {
         /**
          * Gets the current linked mesh (or null if none)
          */
-        get linkedMesh(): BABYLON.Nullable<BABYLON.AbstractMesh>;
+        get linkedMesh(): BABYLON.Nullable<BABYLON.TransformNode>;
         /**
          * Gets or sets a value indicating the padding to use on the left of the control
          * @see https://doc.babylonjs.com/how_to/gui#position-and-size
@@ -1146,7 +1148,7 @@ declare module BABYLON.GUI {
          * @param mesh defines the mesh to link with
          * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
          */
-        linkWithMesh(mesh: BABYLON.Nullable<BABYLON.AbstractMesh>): void;
+        linkWithMesh(mesh: BABYLON.Nullable<BABYLON.TransformNode>): void;
         /** @hidden */
         _moveToProjectedPosition(projectedPosition: BABYLON.Vector3): void;
         /** @hidden */
@@ -1205,17 +1207,17 @@ declare module BABYLON.GUI {
          */
         contains(x: number, y: number): boolean;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         /** @hidden */
-        _onPointerEnter(target: Control): boolean;
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerOut(target: Control, force?: boolean): void;
+        _onPointerOut(target: Control, pi: BABYLON.Nullable<BABYLON.PointerInfoBase>, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: BABYLON.PointerInfoBase): void;
         /** @hidden */
         _forcePointerUp(pointerId?: BABYLON.Nullable<number>): void;
         /** @hidden */
@@ -1223,7 +1225,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _onCanvasBlur(): void;
         /** @hidden */
-        _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processObservables(type: number, x: number, y: number, pi: BABYLON.PointerInfoBase, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         private _prepareFont;
         /** Releases associated resources */
         dispose(): void;
@@ -1372,7 +1374,7 @@ declare module BABYLON.GUI {
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: Measure): void;
         getDescendantsToRef(results: Control[], directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): void;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         /** Releases associated resources */
@@ -1791,15 +1793,15 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         /** @hidden */
-        _processPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
+        _processPicking(x: number, y: number, pi: BABYLON.PointerInfoBase, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean;
         /** @hidden */
-        _onPointerEnter(target: Control): boolean;
+        _onPointerEnter(target: Control, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerOut(target: Control, force?: boolean): void;
+        _onPointerOut(target: Control, pi: BABYLON.PointerInfoBase, force?: boolean): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /** @hidden */
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
         /**
          * Creates a new button made with an image and a text
          * @param name defines the name of the button
@@ -1908,7 +1910,7 @@ declare module BABYLON.GUI {
         /** @hidden */
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
         /** @hidden */
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
          * Utility function to easily create a checkbox with a header
          * @param title defines the label to use for the header
@@ -2167,8 +2169,8 @@ declare module BABYLON.GUI {
         /** @hidden */
         private _onPasteText;
         _draw(context: CanvasRenderingContext2D, invalidatedRectangle?: BABYLON.Nullable<Measure>): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         protected _beforeRenderText(text: string): string;
         dispose(): void;
@@ -2353,9 +2355,9 @@ declare module BABYLON.GUI {
         private _updateValueFromPointer;
         private _isPointOnSquare;
         private _isPointOnWheel;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
-        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
+        _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi: BABYLON.PointerInfoBase): void;
         _onCanvasBlur(): void;
         /**
          * This function expands the color picker by creating a color picker dialog with manual
@@ -2619,7 +2621,7 @@ declare module BABYLON.GUI {
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(context: CanvasRenderingContext2D): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
         /**
          * Utility function to easily create a radio button with a header
          * @param title defines the label to use for the header
@@ -2700,8 +2702,8 @@ declare module BABYLON.GUI {
         private _pointerIsDown;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number): void;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
+        _onPointerMove(target: Control, coordinates: BABYLON.Vector2, pointerId: number, pi: BABYLON.PointerInfoBase): void;
         _onPointerUp(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         _onCanvasBlur(): void;
     }
@@ -2866,6 +2868,8 @@ declare module BABYLON.GUI {
         /** an array of SelectionGroups */
         groups?: SelectorGroup[]);
         protected _getTypeName(): string;
+        /** Gets the (stack) panel of the SelectionPanel  */
+        get panel(): StackPanel;
         /** Gets or sets the headerColor */
         get headerColor(): string;
         set headerColor(color: string);
@@ -3020,7 +3024,7 @@ declare module BABYLON.GUI {
         private _originY;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
     }
 }
 declare module BABYLON.GUI {
@@ -3077,7 +3081,7 @@ declare module BABYLON.GUI {
         private _originY;
         /** @hidden */
         protected _updateValueFromPointer(x: number, y: number): void;
-        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number): boolean;
+        _onPointerDown(target: Control, coordinates: BABYLON.Vector2, pointerId: number, buttonIndex: number, pi: BABYLON.PointerInfoBase): boolean;
     }
 }
 declare module BABYLON.GUI {

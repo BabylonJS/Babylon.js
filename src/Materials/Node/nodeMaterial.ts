@@ -261,6 +261,12 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * A free comment about the material
+     */
+    @serialize("comment")
+    public comment: string;
+
+    /**
      * Create a new node based material
      * @param name defines the material name
      * @param scene defines the hosting scene
@@ -1446,14 +1452,14 @@ export class NodeMaterial extends PushMaterial {
         vmerger.connectTo(vertexOutput);
 
         // Pixel
-        const scale = new InputBlock("scale");
+        const scale = new InputBlock("Scale");
         scale.visibleInInspector = true;
         scale.value = new Vector2(1, 1);
 
         const uv0 = new RemapBlock("uv0");
         position.connectTo(uv0);
 
-        const uv = new MultiplyBlock("uv");
+        const uv = new MultiplyBlock("UV scale");
         uv0.connectTo(uv);
         scale.connectTo(uv);
 
@@ -1809,6 +1815,8 @@ export class NodeMaterial extends PushMaterial {
             this.editorData.map = blockMap;
         }
 
+        this.comment = source.comment;
+
         if (!merge) {
             this._mode = source.mode ?? NodeMaterialModes.Material;
         }
@@ -1871,6 +1879,10 @@ export class NodeMaterial extends PushMaterial {
      * @returns a promise that will resolve to the new node material
      */
     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = "", nodeMaterial?: NodeMaterial): Promise<NodeMaterial> {
+        if (snippetId === "_BLANK") {
+            return Promise.resolve(this.CreateDefault("blank", scene));
+        }
+
         return new Promise((resolve, reject) => {
             var request = new WebRequest();
             request.addEventListener("readystatechange", () => {

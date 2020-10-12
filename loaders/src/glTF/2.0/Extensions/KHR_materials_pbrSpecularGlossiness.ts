@@ -3,7 +3,7 @@ import { Color3 } from "babylonjs/Maths/math.color";
 import { PBRMaterial } from "babylonjs/Materials/PBR/pbrMaterial";
 import { Material } from "babylonjs/Materials/material";
 
-import { IMaterial } from "../glTFLoaderInterfaces";
+import { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { IKHRMaterialsPbrSpecularGlossiness } from 'babylonjs-gltf2interface';
@@ -82,6 +82,7 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
         }
 
         if (properties.specularGlossinessTexture) {
+            (properties.specularGlossinessTexture as ITextureInfo).nonColorData = true;
             promises.push(this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, (texture) => {
                 texture.name = `${babylonMaterial.name} (Specular Glossiness)`;
                 babylonMaterial.reflectivityTexture = texture;

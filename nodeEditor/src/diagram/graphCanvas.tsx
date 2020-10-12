@@ -198,8 +198,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     } else {                    
                         this._selectedNodes = [selection];
                     }
-                } else if(selection instanceof NodePort && !selection.hasLabel()){ // if node port is uneditable, select graphNode instead
-                    props.globalState.onSelectionChangedObservable.notifyObservers(selection.node)
                 } else if(selection instanceof NodePort){
                     this._selectedNodes = [];
                     this._selectedFrame = null;
@@ -416,6 +414,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Update graph
         let dagreNodes = graph.nodes().map(node => graph.node(node));
         dagreNodes.forEach((dagreNode: any) => {
+            if (!dagreNode) {
+                return;
+            }
             if (dagreNode.type === "node") {
                 for (var node of this._nodes) {
                     if (node.id === dagreNode.id) {

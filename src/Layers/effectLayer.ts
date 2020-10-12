@@ -125,6 +125,12 @@ export abstract class EffectLayer {
     }
 
     /**
+     * Specifies if the bounding boxes should be rendered normally or if they should undergo the effect of the layer
+     */
+    @serialize()
+    public disableBoundingBoxesFromEffectLayer = false;
+
+    /**
      * An event triggered when the effect layer has been disposed.
      */
     public onDisposeObservable = new Observable<EffectLayer>();
@@ -373,6 +379,16 @@ export abstract class EffectLayer {
 
         this._mainTexture.onClearObservable.add((engine: Engine) => {
             engine.clear(this.neutralColor, true, true, true);
+        });
+
+        const boundingBoxRendererEnabled = this._scene.getBoundingBoxRenderer().enabled;
+
+        this._mainTexture.onBeforeBindObservable.add(() => {
+            this._scene.getBoundingBoxRenderer().enabled = !this.disableBoundingBoxesFromEffectLayer && boundingBoxRendererEnabled;
+        });
+
+        this._mainTexture.onAfterUnbindObservable.add(() => {
+            this._scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
         });
     }
 

@@ -35,7 +35,7 @@ import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import { IOfflineProvider } from "./Offline/IOfflineProvider";
 import { RenderingGroupInfo, RenderingManager, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
-import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, ActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
+import { ISceneComponent, ISceneSerializableComponent, Stage, SimpleStageAction, RenderTargetsStageAction, RenderTargetStageAction, MeshStageAction, EvaluateSubMeshStageAction, PreActiveMeshStageAction, CameraStageAction, RenderingGroupStageAction, RenderingMeshStageAction, PointerMoveStageAction, PointerUpDownStageAction, CameraStageFrameBufferAction } from "./sceneComponent";
 import { Engine } from "./Engines/engine";
 import { Node } from "./node";
 import { MorphTarget } from "./Morph/morphTarget";
@@ -1301,7 +1301,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @hidden
      * Defines the actions happening during the active mesh stage.
      */
-    public _activeMeshStage = Stage.Create<ActiveMeshStageAction>();
+    public _preActiveMeshStage = Stage.Create<PreActiveMeshStageAction>();
     /**
      * @hidden
      * Defines the actions happening during the per camera render target step.
@@ -3440,11 +3440,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
      * @param skipEvaluateActiveMeshes defines an optional boolean indicating that the evaluate active meshes step must be completely skipped
+     * @param onSuccess optional success callback
+     * @param onError optional error callback
      * @returns the current scene
      */
-    public freezeActiveMeshes(skipEvaluateActiveMeshes = false): Scene {
+    public freezeActiveMeshes(skipEvaluateActiveMeshes = false, onSuccess?: () => void, onError?: (message: string) => void): Scene {
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
+                onError && onError('No active camera found');
                 return;
             }
 
@@ -3459,6 +3462,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             for (var index = 0; index < this._activeMeshes.length; index++) {
                 this._activeMeshes.data[index]._freeze();
             }
+            onSuccess && onSuccess();
         });
         return this;
     }
@@ -3551,6 +3555,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             if (meshToRender === undefined || meshToRender === null) {
                 continue;
             }
+            mesh._internalAbstractMeshDataInfo._currentLOD = meshToRender;
 
             // Compute world matrix if LOD is billboard
             if (meshToRender !== mesh && meshToRender.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
@@ -3565,6 +3570,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                 if (meshToRender !== mesh) {
                     meshToRender._activate(this._renderId, false);
+                }
+
+                for (let step of this._preActiveMeshStage) {
+                    step.action(mesh);
                 }
 
                 if (mesh._activate(this._renderId, false)) {
@@ -3615,10 +3624,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             if (!mesh.computeBonesUsingShaders) {
                 this._softwareSkinnedMeshes.pushNoDuplicate(<Mesh>mesh);
             }
-        }
-
-        for (let step of this._activeMeshStage) {
-            step.action(sourceMesh, mesh);
         }
 
         if (
@@ -3784,7 +3789,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Finalize frame
         if (this.postProcessManager && !camera._multiviewTexture) {
-            this.postProcessManager._finalizeFrame(camera.isIntermediate);
+            // if the camera has an output render target, render the post process to the render target
+            const texture = camera.outputRenderTarget ? camera.outputRenderTarget.getInternalTexture()! : undefined;
+            this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
         }
 
         // Reset some special arrays
@@ -4147,7 +4154,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._isReadyForMeshStage.clear();
         this._beforeEvaluateActiveMeshStage.clear();
         this._evaluateSubMeshStage.clear();
-        this._activeMeshStage.clear();
+        this._preActiveMeshStage.clear();
         this._cameraDrawRenderTargetStage.clear();
         this._beforeCameraDrawStage.clear();
         this._beforeRenderTargetDrawStage.clear();
