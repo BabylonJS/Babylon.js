@@ -1150,11 +1150,15 @@ declare module BABYLON.GLTF2.Loader {
      * Loader interface with additional members.
      */
     export interface ITexture extends BABYLON.GLTF2.ITexture, IArrayItem {
+        /** @hidden */
+        _textureInfo: ITextureInfo;
     }
     /**
      * Loader interface with additional members.
      */
     export interface ITextureInfo extends BABYLON.GLTF2.ITextureInfo {
+        /** false or undefined if the texture holds color data (true if data are roughness, normal, ...) */
+        nonColorData?: boolean;
     }
     /**
      * Loader interface with additional members.
@@ -1261,20 +1265,18 @@ declare module BABYLON.GLTF2 {
          * @param context The context when loading the asset
          * @param textureInfo The glTF texture info property
          * @param assign A function called synchronously after parsing the glTF properties
-         * @param isColorData true if the texture held color data, else false
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
          */
-        loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void, isColorData: boolean): Nullable<Promise<BaseTexture>>;
+        loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
         /**
          * @hidden
          * Define this method to modify the default behavior when loading textures.
          * @param context The context when loading the asset
          * @param texture The glTF texture property
          * @param assign A function called synchronously after parsing the glTF properties
-         * @param isColorData true if the texture held color data, else false
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
          */
-        _loadTextureAsync?(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void, isColorData: boolean): Nullable<Promise<BaseTexture>>;
+        _loadTextureAsync?(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
         /**
          * Define this method to modify the default behavior when loading animations.
          * @param context The context when loading the asset
@@ -1545,12 +1547,11 @@ declare module BABYLON.GLTF2 {
          * @param context The context when loading the asset
          * @param textureInfo The glTF texture info property
          * @param assign A function called synchronously after parsing the glTF properties
-         * @param isColorData true if the texture held color data, else false
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete
          */
-        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign?: (babylonTexture: BaseTexture) => void, isColorData?: boolean): Promise<BaseTexture>;
+        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         /** @hidden */
-        _loadTextureAsync(context: string, texture: ITexture, assign?: (babylonTexture: BaseTexture) => void, isColorData?: boolean): Promise<BaseTexture>;
+        _loadTextureAsync(context: string, texture: ITexture, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         /** @hidden */
         _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void, textureLoaderOptions?: any): Promise<BaseTexture>;
         private _loadSampler;
@@ -2087,7 +2088,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void, isColorData?: boolean): Nullable<Promise<BaseTexture>>;
+        _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -2109,7 +2110,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void, isColorData?: boolean): Nullable<Promise<BaseTexture>>;
+        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
