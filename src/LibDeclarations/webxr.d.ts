@@ -1,10 +1,10 @@
 /**
- * The session modes available
+ * Available session modes
  */
 type XRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
 
 /**
- * The different reference types
+ * Reference space types
  */
 type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
 
@@ -28,7 +28,7 @@ type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
 type XREye = "none" | "left" | "right";
 
 /**
- * Type of events available to eh XR session
+ * Type of XR events available
  */
 type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
@@ -73,11 +73,42 @@ interface XRSessionEvent extends Event {
 interface XRSession {
     addEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | AddEventListenerOptions): void;
     removeEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | EventListenerOptions): void;
+    /**
+     * Requests that a new XRReferenceSpace of the specified type be created.
+     * Returns a promise which resolves with the XRReferenceSpace or
+     * XRBoundedReferenceSpace which was requested, or throws a NotSupportedError if
+     * the requested space type isn't supported by the device.
+     */
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
+    /**
+     * Schedules the specified method to be called the next time the user agent
+     * is working on rendering an animation frame for the WebXR device. Returns an
+     * integer value which can be used to identify the request for the purposes of
+     * canceling the callback using cancelAnimationFrame(). This method is comparable
+     * to the Window.requestAnimationFrame() method.
+     */
     requestAnimationFrame: XRFrameRequestCallback;
+    /**
+     * Removes a callback from the animation frame painting callback from
+     * XRSession's set of animation frame rendering callbacks, given the
+     * identifying handle returned by a previous call to requestAnimationFrame().
+     */
+    cancelAnimationFrame: (handle: number) => void;
+    /**
+     * Ends the WebXR session. Returns a promise which resolves when the
+     * session has been shut down.
+     */
     end(): Promise<void>;
+    /**
+     * object which contains options affecting how the imagery is rendered.
+     * This includes things such as the near and far clipping planes
+     */
     renderState: XRRenderState;
+    /**
+     * Returns a list of this session's XRInputSources, each representing an input device
+     * used to control the camera and/or scene.
+     */
     inputSources: Array<XRInputSource>;
 
     onend: XREventHandler<XRSessionEvent>;
@@ -263,8 +294,6 @@ interface XRHand extends Iterable<XRJointSpace> {
     readonly length: number;
 
     [index: number]: XRJointSpace;
-
-    // Specs have the function 'joint(idx: number)', but chrome doesn't support it yet.
 
     readonly WRIST: number;
 
