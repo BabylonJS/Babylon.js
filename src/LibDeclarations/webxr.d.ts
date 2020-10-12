@@ -18,7 +18,7 @@ type XRVisibilityState = "visible" | "visible-blurred" | "hidden";
 type XRHandedness = "none" | "left" | "right";
 
 /**
- * InputSOurce target ray modes
+ * InputSource target ray modes
  */
 type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
 
@@ -31,6 +31,8 @@ type XREye = "none" | "left" | "right";
  * Type of events available to eh XR session
  */
 type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
+
+type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;
 
 type XRPlaneSet = Set<XRPlane>;
 type XRAnchorSet = Set<XRAnchor>;
@@ -61,17 +63,21 @@ interface XRSessionInit {
     requiredFeatures?: string[];
 }
 
+interface XRSessionEvent extends Event {
+    readonly session: XRSession;
+}
+
 interface XRSession {
     addEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | AddEventListenerOptions): void;
     removeEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | EventListenerOptions): void;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
-    requestAnimationFrame: Function;
+    requestAnimationFrame: XRFrameRequestCallback;
     end(): Promise<void>;
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
-    onend: XREventHandler<Event>;
+    onend: XREventHandler<XRSessionEvent>;
     oninputsourceschange: XREventHandler<XRInputSourceChangeEvent>;
     onselect: XREventHandler<XRInputSourceEvent>;
     onselectstart: XREventHandler<XRInputSourceEvent>;
