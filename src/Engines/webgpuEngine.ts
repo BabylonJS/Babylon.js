@@ -261,6 +261,8 @@ export class WebGPUEngine extends Engine {
         ThinEngine.Features.supportShadowSamplers = true;
         ThinEngine.Features.uniformBufferHardCheckMatrix = true;
         ThinEngine.Features.allowTexturePrefiltering = true;
+        ThinEngine.Features.trackUbosInFrame = true;
+        ThinEngine.Features._collectUbosUpdatedInFrame = true;
 
         options.deviceDescriptor = options.deviceDescriptor || { };
         options.swapChainFormat = options.swapChainFormat || WebGPUConstants.TextureFormat.BGRA8Unorm;
@@ -2426,6 +2428,22 @@ export class WebGPUEngine extends Engine {
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
         this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
+
+        if (ThinEngine.Features._collectUbosUpdatedInFrame) {
+            if (dbgVerboseLogsForFirstFrames) {
+                if (!(this as any)._count || (this as any)._count < dbgVerboseLogsNumFrames) {
+                    const list: Array<string> = [];
+                    for (const name in UniformBuffer._updatedUbosInFrame) {
+                        list.push(name + ":" + UniformBuffer._updatedUbosInFrame[name]);
+                    }
+                    console.log("updated ubos in frame #" + (this as any)._count, " -", list.join(", "));
+                }
+            }
+            UniformBuffer._updatedUbosInFrame = {};
+        }
+
+        this._counters.numPipelineDescriptorCreation = 0;
+        this._counters.numBindGroupsCreation = 0;
 
         super.endFrame();
 

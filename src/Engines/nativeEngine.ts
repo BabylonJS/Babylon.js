@@ -167,10 +167,6 @@ class NativePipelineContext implements IPipelineContext {
         attributes.push(...engine.getAttributes(this, attributesNames));
     }
 
-    /** @hidden */
-    public _useNewBindings(): void {
-    }
-
     /**
      * Release all associated resources.
      **/

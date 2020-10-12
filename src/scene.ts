@@ -55,6 +55,7 @@ import { Frustum } from './Maths/math.frustum';
 import { UniqueIdGenerator } from './Misc/uniqueIdGenerator';
 import { FileTools, LoadFileError, RequestFileError, ReadFileError } from './Misc/fileTools';
 import { IClipPlanesHolder } from './Misc/interfaces/iClipPlanesHolder';
+import { ThinEngine } from './Engines/thinEngine';
 
 declare type Ray = import("./Culling/ray").Ray;
 declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
@@ -1170,9 +1171,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _activeAnimatables = new Array<Animatable>();
 
     private _transformMatrix = Matrix.Zero();
-    private _sceneUbo: { viewUpdateFlag: number, projectionUpdateFlag: number, index: number, buffer: UniformBuffer };
-    private _sceneUbos: Array<{ viewUpdateFlag: number, projectionUpdateFlag: number, index: number, buffer: UniformBuffer }> = [];
-    private _sceneUboNextIndex = 0;
+    private _sceneUbo: UniformBuffer;
 
     /** @hidden */
     public _viewMatrix: Matrix;
@@ -1411,6 +1410,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (DomManagement.IsWindowObjectExist()) {
             this.attachControl();
         }
+
+        // Uniform Buffer
+        this._createUbo();
 
         // Default Image processing definition
         if (ImageProcessingConfiguration) {
@@ -1653,14 +1655,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._renderId++;
     }
 
-    private _createUbo(): UniformBuffer {
-        const ubo = new UniformBuffer(this._engine, undefined, true);
-
-        ubo.addUniform("viewProjection", 16);
-        ubo.addUniform("view", 16);
-        ubo.addUniform("viewPosition", 4);
-
-        return ubo;
+    private _createUbo(): void {
+        this._sceneUbo = new UniformBuffer(this._engine, undefined, !ThinEngine.Features.trackUbosInFrame, "scene");
+        this._sceneUbo.addUniform("viewProjection", 16);
+        this._sceneUbo.addUniform("view", 16);
+        this._sceneUbo.addUniform("viewPosition", 4);
     }
 
     /**
@@ -2004,12 +2003,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param projectionR defines the right Projection matrix to use (if provided)
      */
     public setTransformMatrix(viewL: Matrix, projectionL: Matrix, viewR?: Matrix, projectionR?: Matrix): void {
-        if (this._engine.supportsUniformBuffers) {
-            if (this._sceneUbo && this._sceneUbo.viewUpdateFlag === viewL.updateFlag && this._sceneUbo.projectionUpdateFlag === projectionL.updateFlag) {
-                this._sceneUboNextIndex = this._sceneUbo.index + 1;
-                return;
-            }
-        } else if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
+        // TODO WEBGPU handle case where the matrices didn't change but the viewPosition will still be different than previously
+        if (this._viewUpdateFlag === viewL.updateFlag && this._projectionUpdateFlag === projectionL.updateFlag) {
             return;
         }
 
@@ -2028,53 +2023,29 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         if (this._multiviewSceneUbo && this._multiviewSceneUbo.useUbo) {
-            // TODO WEBGPU handle multiview ubo the same way we handle scene ubo
             this._updateMultiviewUbo(viewR, projectionR);
-        } else if (this._engine.supportsUniformBuffers) {
-            this._getNewSceneUniformBuffer(false);
-
-            this._sceneUbo.viewUpdateFlag = viewL.updateFlag;
-            this._sceneUbo.projectionUpdateFlag = projectionL.updateFlag;
-
-            this._sceneUbo.buffer.updateMatrix("viewProjection", this._transformMatrix);
-            this._sceneUbo.buffer.updateMatrix("view", this._viewMatrix);
+        } else if (this._sceneUbo.useUbo) {
+            this._sceneUbo.updateMatrix("viewProjection", this._transformMatrix);
+            this._sceneUbo.updateMatrix("view", this._viewMatrix);
 
             const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : (this._mirroredCameraPosition ? this._mirroredCameraPosition : (this.activeCamera!).globalPosition);
             const invertNormal = (this.useRightHandedSystem === (this._mirroredCameraPosition != null));
-            this._sceneUbo.buffer.updateFloat4("viewPosition",
+            this._sceneUbo.updateFloat4("viewPosition",
                 eyePosition.x,
                 eyePosition.y,
                 eyePosition.z,
                 invertNormal ? -1 : 1);
 
-            this._sceneUbo.buffer.update();
+            this._sceneUbo.update();
         }
     }
 
-    /** @hidden */
-    public _getNewSceneUniformBuffer(resetFlags = true): UniformBuffer {
-        if (this._sceneUboNextIndex == this._sceneUbos.length) {
-            this._sceneUbos.push({ viewUpdateFlag: -1, projectionUpdateFlag: -1, index: this._sceneUboNextIndex, buffer: this._createUbo() });
-        }
-
-        this._sceneUbo = this._sceneUbos[this._sceneUboNextIndex++];
-        if (resetFlags) {
-            this._sceneUbo.viewUpdateFlag = this._sceneUbo.projectionUpdateFlag = -1;
-        }
-
-        return this._sceneUbo.buffer;
-    }
-
-    private _resetSceneUniformBuffer() {
-        this._sceneUboNextIndex = 0;
-        this._sceneUbo = this._sceneUbos[0];
-    }
     /**
      * Gets the uniform buffer used to store scene data
      * @returns a UniformBuffer
      */
     public getSceneUniformBuffer(): UniformBuffer {
-        return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo.buffer;
+        return this._multiviewSceneUbo ? this._multiviewSceneUbo : this._sceneUbo;
     }
 
     /**
@@ -3991,7 +3962,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._frameId++;
-        this._resetSceneUniformBuffer();
 
         // Register components that have been associated lately to the scene.
         this._registerTransientComponents();
@@ -4390,11 +4360,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Release UBO
-        if (this._sceneUbos) {
-            for (let i = 0; i < this._sceneUbos.length; ++i) {
-                this._sceneUbos[i].buffer.dispose();
-            }
-        }
+        this._sceneUbo.dispose();
 
         if (this._multiviewSceneUbo) {
             this._multiviewSceneUbo.dispose();

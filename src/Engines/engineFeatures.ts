@@ -19,4 +19,10 @@ export interface EngineFeatures {
 
     /** Indicates that prefiltered mipmaps can be generated in some processes (for eg when loading an HDR cube texture) */
     allowTexturePrefiltering: boolean;
+
+    /** Indicates to track the usage of ubos and to create new ones as necessary during a frame duration */
+    trackUbosInFrame: boolean;
+
+    /** @hidden */
+    _collectUbosUpdatedInFrame: boolean;
 }

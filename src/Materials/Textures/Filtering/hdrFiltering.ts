@@ -138,8 +138,6 @@ export class HDRFiltering {
                 effect.setFloat("alphaG", alpha);
 
                 this._effectRenderer.draw();
-
-                effect.useNewBindings();
             }
         }
 
