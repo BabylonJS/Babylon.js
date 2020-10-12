@@ -95,7 +95,11 @@ export class WebGPUPipelineContext implements IPipelineContext {
         return false;
     }
 
+    /** @hidden */
+    public _name: string;
+
     constructor(shaderProcessingContext: WebGPUShaderProcessingContext, engine: WebGPUEngine) {
+        this._name = "unnamed";
         if (shaderProcessingContext) {
             this.availableAttributes = shaderProcessingContext.availableAttributes;
             this.availableUBOs = shaderProcessingContext.availableUBOs;
@@ -159,11 +163,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
             return;
         }
 
-        if (this.uniformBuffer) {
-            // If the uniform buffer is already existing it means one wants to do multiple rendering with the same pipeline context
-            // we need to have a new uniform buffer for the new rendering, else all the rendering will end up using the same uniform buffer.
-            // Calling _rebuild() is enough to recreate the underlying hardware buffer without removing any other data.
-            // That means the user does not need to re-set all the uniforms of the buffer, the new buffer is in the same state than the previous one.
+        this.uniformBuffer = new UniformBuffer(this.engine, undefined, undefined, "leftOver-" + this._name);
 
         for (let leftOverUniform of this.leftOverUniforms) {
             const size = _uniformSizes[leftOverUniform.type];
