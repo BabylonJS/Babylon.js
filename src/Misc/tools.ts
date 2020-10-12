@@ -742,6 +742,12 @@ export class Tools {
         window.URL.revokeObjectURL(url);
     }
 
+    /**
+     * Will return the right value of the noPreventDefault variable
+     * Needed to keep backwards compatibility to the old API.
+     *
+     * @param args arguments passed to the attachControl function
+     */
     public static BackCompatCameraNoPreventDefault(args: IArguments): boolean {
         // is it used correctly?
         if (typeof args[0] === "boolean") {
