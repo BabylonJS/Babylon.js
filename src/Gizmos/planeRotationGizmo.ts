@@ -115,7 +115,7 @@ export class PlaneRotationGizmo extends Gizmo {
                 const origin = this._rotationCircle.getAbsolutePosition().clone();
                 const originalRotationPoint = this._rotationCircle.getAbsolutePosition().clone().addInPlace(direction);
                 const dragStartPoint = e.dragPlanePoint;
-                let angle = Vector3.GetAngleBetweenVectors(originalRotationPoint.subtract(origin), dragStartPoint.subtract(origin), this._rotationCircle.up);
+                const angle = Vector3.GetAngleBetweenVectors(originalRotationPoint.subtract(origin), dragStartPoint.subtract(origin), this._rotationCircle.up);
 
                 this._rotationCircle.addRotation(0, angle, 0);
             }
