@@ -37,7 +37,7 @@ type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => voi
 type XRPlaneSet = Set<XRPlane>;
 type XRAnchorSet = Set<XRAnchor>;
 
-type XREventHandler<T extends Event> = (callback: T) => void;
+type XREventHandler = EventHandler
 
 interface XRLayer extends EventTarget {}
 
@@ -102,7 +102,7 @@ interface XRRenderStateInit extends XRRenderState {
 
 interface XRReferenceSpace extends XRSpace {
     getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
-    onreset: XREventHandler<Event>;
+    onreset: XREventHandler;
 }
 
 interface XRBoundedReferenceSpace extends XRSpace {
@@ -151,8 +151,8 @@ interface XRInputSourceEvent extends Event {
 type XRInputSourceArray = XRInputSource[];
 
 interface XRSession {
-    addEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | AddEventListenerOptions): void;
-    removeEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | EventListenerOptions): void;
+    addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
     /**
      * Returns a list of this session's XRInputSources, each representing an input device
      * used to control the camera and/or scene.
@@ -193,15 +193,15 @@ interface XRSession {
 
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
 
-    onend: XREventHandler<XRSessionEvent>;
-    oninputsourceschange: XREventHandler<XRInputSourceChangeEvent>;
-    onselect: XREventHandler<XRInputSourceEvent>;
-    onselectstart: XREventHandler<XRInputSourceEvent>;
-    onselectend: XREventHandler<XRInputSourceEvent>;
-    onsqueeze: XREventHandler<XRInputSourceEvent>;
-    onsqueezestart: XREventHandler<XRInputSourceEvent>;
-    onsqueezeend: XREventHandler<XRInputSourceEvent>;
-    onvisibilitychange: XREventHandler<Event>;
+    onend: XREventHandler;
+    oninputsourceschange: XREventHandler;
+    onselect: XREventHandler;
+    onselectstart: XREventHandler;
+    onselectend: XREventHandler;
+    onsqueeze: XREventHandler;
+    onsqueezestart: XREventHandler;
+    onsqueezeend: XREventHandler;
+    onvisibilitychange: XREventHandler;
 
     // hit test
     requestHitTestSource?(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
