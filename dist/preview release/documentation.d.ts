@@ -10690,7 +10690,7 @@ declare module BABYLON {
             /** @hidden */
             _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
             /** @hidden */
-            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
         }
 }
 declare module BABYLON {
@@ -36066,10 +36066,11 @@ declare module BABYLON {
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
          * @param worldToUse defines the world matrix to use to get the world coordinate of the intersection point
+         * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
          * @returns the picking info
          * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
          */
-        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo?: boolean, worldToUse?: Matrix): PickingInfo;
+        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo?: boolean, worldToUse?: Matrix, skipBoundingInfo?: boolean): PickingInfo;
         /**
          * Clones the current mesh
          * @param name defines the mesh name
@@ -67991,6 +67992,18 @@ declare module BABYLON {
          */
         getAgentNextTargetPath(index: number): Vector3;
         /**
+         * Gets the agent state
+         * @param index agent index returned by addAgent
+         * @returns agent state
+         */
+        getAgentState(index: number): number;
+        /**
+         * returns true if the agent in over an off mesh link connection
+         * @param index agent index returned by addAgent
+         * @returns true if over an off mesh link connection
+         */
+        overOffmeshConnection(index: number): boolean;
+        /**
          * Gets the agent next target point on the path
          * @param index agent index returned by addAgent
          * @param result output world space position
@@ -68357,6 +68370,18 @@ declare module BABYLON {
          * @param result output world space position
          */
         getAgentNextTargetPathToRef(index: number, result: Vector3): void;
+        /**
+         * Gets the agent state
+         * @param index agent index returned by addAgent
+         * @returns agent state
+         */
+        getAgentState(index: number): number;
+        /**
+         * returns true if the agent in over an off mesh link connection
+         * @param index agent index returned by addAgent
+         * @returns true if over an off mesh link connection
+         */
+        overOffmeshConnection(index: number): boolean;
         /**
          * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
          * @param index agent index returned by addAgent
@@ -72832,6 +72857,10 @@ declare module BABYLON {
          * Observable raised after rendering a bounding box
          */
         onAfterBoxRenderingObservable: Observable<BoundingBox>;
+        /**
+         * Observable raised after ressources are created
+         */
+        onRessourcesReadyObservable: Observable<BoundingBoxRenderer>;
         /**
          * When false, no bounding boxes will be rendered
          */
