@@ -96,7 +96,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             Tools.Warn("waiting for viewer reference space to initialize");
             return;
         }
-        this._xrSessionManager.session.requestHitTestSource(hitTestOptions).then((hitTestSource) => {
+        this._xrSessionManager.session.requestHitTestSource!(hitTestOptions).then((hitTestSource) => {
             if (this._xrHitTestSource) {
                 this._xrHitTestSource.cancel();
             }
@@ -173,7 +173,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         if (this.options.enableTransientHitTest) {
             const offsetRay = new XRRay(this.options.transientOffsetRay || {});
             this._xrSessionManager.session
-                .requestHitTestSourceForTransientInput({
+                .requestHitTestSourceForTransientInput!({
                     profile: "generic-touchscreen",
                     offsetRay,
                     entityTypes: this.options.entityTypes,
