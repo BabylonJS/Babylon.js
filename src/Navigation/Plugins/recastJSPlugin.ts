@@ -481,6 +481,24 @@ export class RecastJSCrowd implements ICrowd {
     }
 
     /**
+     * Gets the agent state
+     * @param index agent index returned by addAgent
+     * @returns agent state
+     */
+    getAgentState(index: number): number {
+        return this.recastCrowd.getAgentState(index);
+    }
+
+    /**
+     * returns true if the agent in over an off mesh link connection
+     * @param index agent index returned by addAgent
+     * @returns true if over an off mesh link connection
+     */
+    overOffmeshConnection(index: number): boolean {
+        return this.recastCrowd.overOffmeshConnection(index);
+    }
+
+    /**
      * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
      * @param index agent index returned by addAgent
      * @param destination targeted world position
