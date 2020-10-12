@@ -150,18 +150,19 @@ interface XRWebGLLayerOptions {
     framebufferScaleFactor?: number;
 }
 
-declare var XRWebGLLayer: {
-    prototype: XRWebGLLayer;
-    new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
-    getNativeFramebufferScaleFactor(session: XRSession): number;
-};
-interface XRWebGLLayer extends XRLayer {
-    framebuffer: WebGLFramebuffer;
-    framebufferWidth: number;
-    framebufferHeight: number;
+declare class XRWebGLLayer {
+    static getNativeFramebufferScaleFactor(session: XRSession): number;
+    constructor(
+        session: XRSession,
+        context: WebGLRenderingContext | WebGL2RenderingContext,
+        layerInit?: XRWebGLLayerInit,
+    );
     readonly antialias: boolean;
+    readonly framebuffer: WebGLFramebuffer;
+    readonly framebufferWidth: number;
+    readonly framebufferHeight: number;
     readonly ignoreDepthValues: boolean;
-    getViewport(view: XRView): XRViewport;
+    getViewport: (view: XRView) => XRViewport;
 }
 
 declare class XRRigidTransform {
