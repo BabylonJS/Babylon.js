@@ -39,16 +39,74 @@ type XRAnchorSet = Set<XRAnchor>;
 
 type XREventHandler<T extends Event> = (callback: T) => void;
 
-interface XRSpace extends EventTarget {}
-
 interface XRLayer extends EventTarget {}
 
+interface XRSessionInit {
+    optionalFeatures?: string[];
+    requiredFeatures?: string[];
+}
+
+interface XRSessionEvent extends Event {
+    readonly session: XRSession;
+}
+
+interface XRSystem {
+    isSessionSupported: (sessionMode: XRSessionMode) => Promise<boolean>;
+    requestSession: (sessionMode: XRSessionMode, sessionInit?: any) => Promise<XRSession>;
+}
+
+interface XRViewport {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+}
+
+interface XRWebGLLayerInit {
+    antialias?: boolean;
+    depth?: boolean;
+    stencil?: boolean;
+    alpha?: boolean;
+    multiview?: boolean;
+    framebufferScaleFactor?: number;
+}
+
+declare class XRWebGLLayer {
+    static getNativeFramebufferScaleFactor(session: XRSession): number;
+    constructor(session: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext, layerInit?: XRWebGLLayerInit);
+    readonly antialias: boolean;
+    readonly framebuffer: WebGLFramebuffer;
+    readonly framebufferWidth: number;
+    readonly framebufferHeight: number;
+    readonly ignoreDepthValues: boolean;
+    getViewport: (view: XRView) => XRViewport;
+}
+
+// tslint:disable-next-line no-empty-interface
+interface XRSpace extends EventTarget {}
+
 interface XRRenderState {
-    depthNear: number;
+    readonly baseLayer?: XRWebGLLayer;
+    readonly depthFar: number;
+    readonly depthNear: number;
+    readonly inlineVerticalFieldOfView?: number;
+}
+
+interface XRRenderStateInit extends XRRenderState {
+    baseLayer: XRWebGLLayer;
     depthFar: number;
+    depthNear: number;
     inlineVerticalFieldOfView?: number;
-    baseLayer?: XRWebGLLayer;
     layers?: XRLayer[];
+}
+
+interface XRReferenceSpace extends XRSpace {
+    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
+    onreset: XREventHandler<Event>;
+}
+
+interface XRBoundedReferenceSpace extends XRSpace {
+    readonly boundsGeometry: DOMPointReadOnly[];
 }
 
 interface XRInputSource {
@@ -61,34 +119,51 @@ interface XRInputSource {
     readonly hand?: XRHand;
 }
 
-interface XRSessionInit {
-    optionalFeatures?: string[];
-    requiredFeatures?: string[];
+interface XRPose {
+    readonly transform: XRRigidTransform;
+    readonly emulatedPosition: boolean;
 }
 
-interface XRSessionEvent extends Event {
+interface XRFrame {
     readonly session: XRSession;
+    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
+
+    // AR
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
+    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
+    // Anchors
+    trackedAnchors?: XRAnchorSet;
+    createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
+    // Planes
+    worldInformation?: {
+        detectedPlanes?: XRPlaneSet;
+    };
+    // Hand tracking
+    getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
 }
+
+interface XRInputSourceEvent extends Event {
+    readonly frame: XRFrame;
+    readonly inputSource: XRInputSource;
+}
+
+type XRInputSourceArray = XRInputSource[];
 
 interface XRSession {
     addEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | AddEventListenerOptions): void;
     removeEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | EventListenerOptions): void;
     /**
-     * Requests that a new XRReferenceSpace of the specified type be created.
-     * Returns a promise which resolves with the XRReferenceSpace or
-     * XRBoundedReferenceSpace which was requested, or throws a NotSupportedError if
-     * the requested space type isn't supported by the device.
+     * Returns a list of this session's XRInputSources, each representing an input device
+     * used to control the camera and/or scene.
      */
-    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
-    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
+    readonly inputSources: Array<XRInputSource>;
     /**
-     * Schedules the specified method to be called the next time the user agent
-     * is working on rendering an animation frame for the WebXR device. Returns an
-     * integer value which can be used to identify the request for the purposes of
-     * canceling the callback using cancelAnimationFrame(). This method is comparable
-     * to the Window.requestAnimationFrame() method.
+     * object which contains options affecting how the imagery is rendered.
+     * This includes things such as the near and far clipping planes
      */
-    requestAnimationFrame: XRFrameRequestCallback;
+    readonly renderState: XRRenderState;
+    readonly visibilityState: XRVisibilityState;
     /**
      * Removes a callback from the animation frame painting callback from
      * XRSession's set of animation frame rendering callbacks, given the
@@ -101,15 +176,22 @@ interface XRSession {
      */
     end(): Promise<void>;
     /**
-     * object which contains options affecting how the imagery is rendered.
-     * This includes things such as the near and far clipping planes
+     * Schedules the specified method to be called the next time the user agent
+     * is working on rendering an animation frame for the WebXR device. Returns an
+     * integer value which can be used to identify the request for the purposes of
+     * canceling the callback using cancelAnimationFrame(). This method is comparable
+     * to the Window.requestAnimationFrame() method.
      */
-    renderState: XRRenderState;
+    requestAnimationFrame: XRFrameRequestCallback;
     /**
-     * Returns a list of this session's XRInputSources, each representing an input device
-     * used to control the camera and/or scene.
+     * Requests that a new XRReferenceSpace of the specified type be created.
+     * Returns a promise which resolves with the XRReferenceSpace or
+     * XRBoundedReferenceSpace which was requested, or throws a NotSupportedError if
+     * the requested space type isn't supported by the device.
      */
-    inputSources: Array<XRInputSource>;
+    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace | XRBoundedReferenceSpace>;
+
+    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
 
     onend: XREventHandler<XRSessionEvent>;
     oninputsourceschange: XREventHandler<XRInputSourceChangeEvent>;
@@ -132,68 +214,8 @@ interface XRSession {
     updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
 }
 
-interface XRReferenceSpace extends XRSpace {
-    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
-    onreset: any;
-}
-
-interface XRFrame {
-    session: XRSession;
-    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
-    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
-
-    // AR
-    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
-    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
-    // Anchors
-    trackedAnchors?: XRAnchorSet;
-    createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // Planes
-    worldInformation?: {
-        detectedPlanes?: XRPlaneSet;
-    };
-    // Hand tracking
-    getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
-}
-
 interface XRViewerPose extends XRPose {
-    views: Array<XRView>;
-}
-
-interface XRPose {
-    transform: XRRigidTransform;
-    readonly emulatedPosition: boolean;
-}
-
-interface XRViewport {
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
-}
-
-interface XRWebGLLayerInit {
-    antialias?: boolean;
-    depth?: boolean;
-    stencil?: boolean;
-    alpha?: boolean;
-    multiview?: boolean;
-    framebufferScaleFactor?: number;
-}
-
-declare class XRWebGLLayer {
-    static getNativeFramebufferScaleFactor(session: XRSession): number;
-    constructor(
-        session: XRSession,
-        context: WebGLRenderingContext | WebGL2RenderingContext,
-        layerInit?: XRWebGLLayerInit,
-    );
-    readonly antialias: boolean;
-    readonly framebuffer: WebGLFramebuffer;
-    readonly framebufferWidth: number;
-    readonly framebufferHeight: number;
-    readonly ignoreDepthValues: boolean;
-    getViewport: (view: XRView) => XRViewport;
+    readonly views: Array<XRView>;
 }
 
 declare class XRRigidTransform {
@@ -205,10 +227,10 @@ declare class XRRigidTransform {
 }
 
 interface XRView {
-    eye: XREye;
-    projectionMatrix: Float32Array;
-    transform: XRRigidTransform;
-    recommendedViewportScale?: number;
+    readonly eye: XREye;
+    readonly projectionMatrix: Float32Array;
+    readonly transform: XRRigidTransform;
+    readonly recommendedViewportScale?: number;
     requestViewportScale(scale: number): void;
 }
 
@@ -216,11 +238,6 @@ interface XRInputSourceChangeEvent extends Event {
     session: XRSession;
     removed: Array<XRInputSource>;
     added: Array<XRInputSource>;
-}
-
-interface XRInputSourceEvent extends Event {
-    readonly frame: XRFrame;
-    readonly inputSource: XRInputSource;
 }
 
 // Experimental/Draft features
