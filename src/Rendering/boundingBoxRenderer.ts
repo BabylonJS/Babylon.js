@@ -131,6 +131,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
     public onAfterBoxRenderingObservable = new Observable<BoundingBox>();
 
     /**
+     * Observable raised after ressources are created
+     */
+    public onRessourcesReadyObservable = new Observable<BoundingBoxRenderer>();
+
+    /**
      * When false, no bounding boxes will be rendered
      */
     public enabled = true;
@@ -205,6 +210,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(engine, <FloatArray>boxdata.positions, VertexBuffer.PositionKind, false);
         this._createIndexBuffer();
         this._fillIndexData = boxdata.indices;
+        this.onRessourcesReadyObservable.notifyObservers(this);
     }
 
     private _createIndexBuffer(): void {
@@ -352,6 +358,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
         this.onBeforeBoxRenderingObservable.clear();
         this.onAfterBoxRenderingObservable.clear();
+        this.onRessourcesReadyObservable.clear();
 
         this.renderList.dispose();
 
