@@ -3,6 +3,7 @@ import { Nullable } from "../types";
 import { PointerInfo } from "../Events/pointerEvents";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import { Color3 } from '../Maths/math.color';
+import "../Meshes/Builders/linesBuilder";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { LinesMesh } from '../Meshes/linesMesh';
 import { Mesh } from "../Meshes/mesh";
@@ -10,10 +11,8 @@ import { Node } from "../node";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 import { Gizmo, GizmoAxisCache } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import "../Meshes/Builders/linesBuilder";   // Why
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { RotationGizmo } from "./rotationGizmo";
-import { Angle } from '../Maths/math.path';
 
 /**
  * Single plane rotation gizmo
@@ -104,7 +103,6 @@ export class PlaneRotationGizmo extends Gizmo {
                 lastDragPosition.copyFrom(e.dragPlanePoint);
 
                 // This is for instantiation location of rotation circle
-                // Rotation Circle Forward Vector
                 const forward = new Vector3(0, 0, 1);
                 const direction = this._rotationCircle.getDirection(forward);
                 direction.normalize();
@@ -115,13 +113,9 @@ export class PlaneRotationGizmo extends Gizmo {
                 lastDragPosition.copyFrom(e.dragPlanePoint);
                 dragPlanePoint = e.dragPlanePoint;
                 const origin = this._rotationCircle.getAbsolutePosition().clone();
-                const originalRotationVector = this._rotationCircle.getAbsolutePosition().clone().addInPlace(direction);
-                const dragStartVector = e.dragPlanePoint;
-                let angle = this.angleBetween3DCoords(origin, originalRotationVector, dragStartVector);
-
-                if (Vector3.Dot(this._rotationCircle.up, Vector3.Down()) > 0) {
-                    angle = -angle;
-                }
+                const originalRotationPoint = this._rotationCircle.getAbsolutePosition().clone().addInPlace(direction);
+                const dragStartPoint = e.dragPlanePoint;
+                let angle = Vector3.GetAngleBetweenVectors(originalRotationPoint.subtract(origin), dragStartPoint.subtract(origin), this._rotationCircle.up);
 
                 this._rotationCircle.addRotation(0, angle, 0);
             }
@@ -271,34 +265,6 @@ export class PlaneRotationGizmo extends Gizmo {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
         }
-    }
-
-    private angleBetween3DCoords(origin: Vector3, coord1: Vector3, coord2: Vector3): number {
-        // The dot product of vectors v1 & v2 is a function of the cosine of the angle between them scaled by the product of their magnitudes.
-        const v1 = new Vector3(coord1.x - origin.x, coord1.y - origin.y, coord1.z - origin.z);
-        const v2 = new Vector3(coord2.x - origin.x, coord2.y - origin.y, coord2.z - origin.z);
-
-        // Normalize v1
-        const v1mag = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
-        const v1norm = new Vector3(v1.x / v1mag, v1.y / v1mag, v1.z / v1mag);
-
-        // Normalize v2
-        const v2mag = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
-        const v2norm = new Vector3(v2.x / v2mag, v2.y / v2mag, v2.z / v2mag);
-
-        // Calculate the dot products of vectors v1 and v2
-        const dotProducts = v1norm.x * v2norm.x + v1norm.y * v2norm.y + v1norm.z * v2norm.z;
-        const cross = Vector3.Cross(v1norm as any, v2norm as any);
-
-        // Extract the angle from the dot products
-        let angle = (Math.acos(dotProducts) * 180.0) / Math.PI;
-        angle = Math.round(angle * 1000) / 1000;
-        angle = Angle.FromDegrees(angle).radians();
-
-        // Flip if its cross has negitive y orientation
-        if (cross.y < 0) { angle = -angle; }
-
-        return angle;
     }
 
     private setupRotationCircle(paths: Vector3[][], parentMesh: AbstractMesh): Mesh {

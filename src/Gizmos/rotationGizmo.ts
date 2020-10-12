@@ -36,7 +36,7 @@ export class RotationGizmo extends Gizmo {
 
     private _meshAttached: Nullable<AbstractMesh>;
     private _nodeAttached: Nullable<Node>;
-    private _observables: Nullable<Observer<PointerInfo>>[] = [];
+    private _observables: Observer<PointerInfo>[] = [];
 
     /** Gizmo state variables used for UI behavior */
     private _dragging = false;
@@ -228,7 +228,7 @@ export class RotationGizmo extends Gizmo {
             }
         });
 
-        this._observables = [pointerObserver];
+        this._observables = [pointerObserver!];
     }
 
     /**
