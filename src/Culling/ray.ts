@@ -591,7 +591,7 @@ declare module "../scene" {
         _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
 
         /** @hidden */
-        _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+        _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
     }
 }
 
@@ -659,10 +659,10 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
     return this;
 };
 
-Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate) {
+Scene.prototype._internalPickForMesh = function (pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean) {
     let ray = rayFunction(world);
 
-    let result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world);
+    let result = mesh.intersects(ray, fastCheck, trianglePredicate, onlyBoundingInfo, world, skipBoundingInfo);
     if (!result || !result.hit) {
         return null;
     }
@@ -695,19 +695,27 @@ Scene.prototype._internalPick = function (rayFunction: (world: Matrix) => Ray, p
         let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
-            const tmpMatrix = TmpVectors.Matrix[0];
-            let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-            for (let index = 0; index < thinMatrices.length; index++) {
-                let thinMatrix = thinMatrices[index];
-                thinMatrix.multiplyToRef(world, tmpMatrix);
-                let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, tmpMatrix, fastCheck, onlyBoundingInfo, trianglePredicate);
+            // first check if the ray intersects the whole bounding box/sphere of the mesh
+            let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, world, fastCheck, true, trianglePredicate);
+            if (result) {
+                if (onlyBoundingInfo) {
+                    // the user only asked for a bounding info check so we can return
+                    return pickingInfo;
+                }
+                const tmpMatrix = TmpVectors.Matrix[1];
+                let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                for (let index = 0; index < thinMatrices.length; index++) {
+                    let thinMatrix = thinMatrices[index];
+                    thinMatrix.multiplyToRef(world, tmpMatrix);
+                    let result = this._internalPickForMesh(pickingInfo, rayFunction, mesh, tmpMatrix, fastCheck, onlyBoundingInfo, trianglePredicate, true);
 
-                if (result) {
-                    pickingInfo = result;
-                    pickingInfo.thinInstanceIndex = index;
+                    if (result) {
+                        pickingInfo = result;
+                        pickingInfo.thinInstanceIndex = index;
 
-                    if (fastCheck) {
-                        return pickingInfo;
+                        if (fastCheck) {
+                            return pickingInfo;
+                        }
                     }
                 }
             }
@@ -747,16 +755,19 @@ Scene.prototype._internalMultiPick = function (rayFunction: (world: Matrix) => R
         let world = mesh.skeleton && mesh.skeleton.overrideMesh ? mesh.skeleton.overrideMesh.getWorldMatrix() : mesh.getWorldMatrix();
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
-            const tmpMatrix = TmpVectors.Matrix[0];
-            let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
-            for (let index = 0; index < thinMatrices.length; index++) {
-                let thinMatrix = thinMatrices[index];
-                thinMatrix.multiplyToRef(world, tmpMatrix);
-                let result = this._internalPickForMesh(null, rayFunction, mesh, tmpMatrix, false, false, trianglePredicate);
+            let result = this._internalPickForMesh(null, rayFunction, mesh, world, false, true, trianglePredicate);
+            if (result) {
+                const tmpMatrix = TmpVectors.Matrix[1];
+                let thinMatrices = (mesh as Mesh).thinInstanceGetWorldMatrices();
+                for (let index = 0; index < thinMatrices.length; index++) {
+                    let thinMatrix = thinMatrices[index];
+                    thinMatrix.multiplyToRef(world, tmpMatrix);
+                    let result = this._internalPickForMesh(null, rayFunction, mesh, tmpMatrix, false, false, trianglePredicate, true);
 
-                if (result) {
-                    result.thinInstanceIndex = index;
-                    pickingInfos.push(result);
+                    if (result) {
+                        result.thinInstanceIndex = index;
+                        pickingInfos.push(result);
+                    }
                 }
             }
         } else {
