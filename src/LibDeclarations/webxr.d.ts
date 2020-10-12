@@ -41,11 +41,14 @@ type XREventHandler<T extends Event> = (callback: T) => void;
 
 interface XRSpace extends EventTarget {}
 
+interface XRLayer extends EventTarget {}
+
 interface XRRenderState {
-    depthNear?: number;
-    depthFar?: number;
+    depthNear: number;
+    depthFar: number;
     inlineVerticalFieldOfView?: number;
     baseLayer?: XRWebGLLayer;
+    layers?: XRLayer[];
 }
 
 interface XRInputSource {
@@ -152,7 +155,7 @@ declare var XRWebGLLayer: {
     new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
     getNativeFramebufferScaleFactor(session: XRSession): number;
 };
-interface XRWebGLLayer {
+interface XRWebGLLayer extends XRLayer {
     framebuffer: WebGLFramebuffer;
     framebufferWidth: number;
     framebufferHeight: number;
