@@ -167,6 +167,8 @@ export class DeviceInputSystem implements IDisposable {
 
         // If the device in use has mouse capabilities, pre-register mouse
         if (matchMedia('(pointer:fine)').matches) {
+            // This will provide a dummy value for the cursor position and is expected to be overriden when the first mouse event happens.
+            // There isn't any good way to get the current position outside of a pointer event so that's why this was done.
             this._addPointerDevice(DeviceType.Mouse, 0, 0, 0);
         }
     }
