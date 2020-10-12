@@ -166,7 +166,7 @@ declare class XRWebGLLayer {
 }
 
 declare class XRRigidTransform {
-    constructor(matrix: Float32Array | DOMPointInit, direction?: DOMPointInit);
+    constructor(position?: DOMPointInit, direction?: DOMPointInit);
     position: DOMPointReadOnly;
     orientation: DOMPointReadOnly;
     matrix: Float32Array;
