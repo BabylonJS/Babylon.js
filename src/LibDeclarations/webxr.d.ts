@@ -1,18 +1,41 @@
+/**
+ * The session modes available
+ */
 type XRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
 
+/**
+ * The different reference types
+ */
 type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
 
 type XREnvironmentBlendMode = "opaque" | "additive" | "alpha-blend";
 
 type XRVisibilityState = "visible" | "visible-blurred" | "hidden";
 
+/**
+ * Handedness types
+ */
 type XRHandedness = "none" | "left" | "right";
 
+/**
+ * InputSOurce target ray modes
+ */
 type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
 
+/**
+ * Eye types
+ */
 type XREye = "none" | "left" | "right";
 
+/**
+ * Type of events available to eh XR session
+ */
 type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
+
+type XRPlaneSet = Set<XRPlane>;
+type XRAnchorSet = Set<XRAnchor>;
+
+type XREventHandler = (callback: T) => void;
 
 interface XRSpace extends EventTarget {}
 
@@ -24,13 +47,13 @@ interface XRRenderState {
 }
 
 interface XRInputSource {
-    handedness: XRHandedness;
-    targetRayMode: XRTargetRayMode;
-    targetRaySpace: XRSpace;
-    gripSpace: XRSpace | undefined;
-    gamepad: Gamepad | undefined;
-    profiles: Array<string>;
-    hand: XRHand | undefined;
+    readonly handedness: XRHandedness;
+    readonly targetRayMode: XRTargetRayMode;
+    readonly targetRaySpace: XRSpace;
+    readonly gripSpace?: XRSpace;
+    readonly gamepad?: Gamepad;
+    readonly profiles: Array<string>;
+    readonly hand?: XRHand;
 }
 
 interface XRSessionInit {
@@ -39,8 +62,8 @@ interface XRSessionInit {
 }
 
 interface XRSession {
-    addEventListener: Function;
-    removeEventListener: Function;
+    addEventListener<T extends Event>(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener<T extends Event>(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
     requestAnimationFrame: Function;
@@ -48,24 +71,31 @@ interface XRSession {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
+    onend: XREventHandler;
+    oninputsourceschange: XREventHandler;
+    onselect: XREventHandler;
+    onselectstart: XREventHandler;
+    onselectend: XREventHandler;
+    onsqueeze: XREventHandler;
+    onsqueezestart: XREventHandler;
+    onsqueezeend: XREventHandler;
+    onvisibilitychange: XREventHandler;
+
     // hit test
-    requestHitTestSource(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
-    requestHitTestSourceForTransientInput(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
+    requestHitTestSource?(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
+    requestHitTestSourceForTransientInput?(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
 
     // legacy AR hit test
-    requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
+    requestHitTest?(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
 
     // legacy plane detection
-    updateWorldTrackingState(options: { planeDetectionState?: { enabled: boolean } }): void;
+    updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
 }
 
 interface XRReferenceSpace extends XRSpace {
     getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
     onreset: any;
 }
-
-type XRPlaneSet = Set<XRPlane>;
-type XRAnchorSet = Set<XRAnchor>;
 
 interface XRFrame {
     session: XRSession;
@@ -77,13 +107,13 @@ interface XRFrame {
     getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
     // Anchors
     trackedAnchors?: XRAnchorSet;
-    createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
+    createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
     // Planes
-    worldInformation: {
+    worldInformation?: {
         detectedPlanes?: XRPlaneSet;
     };
     // Hand tracking
-    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+    getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
 }
 
 interface XRViewerPose extends XRPose {
@@ -92,7 +122,14 @@ interface XRViewerPose extends XRPose {
 
 interface XRPose {
     transform: XRRigidTransform;
-    emulatedPosition: boolean;
+    readonly emulatedPosition: boolean;
+}
+
+interface XRViewport {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
 }
 
 interface XRWebGLLayerOptions {
@@ -107,12 +144,16 @@ interface XRWebGLLayerOptions {
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
     new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
+    static getNativeFramebufferScaleFactor(session: XRSession);
 };
 interface XRWebGLLayer {
     framebuffer: WebGLFramebuffer;
     framebufferWidth: number;
     framebufferHeight: number;
     getViewport: Function;
+    readonly antialias: boolean;
+    readonly ignoreDepthValues: boolean;
+    getViewport(view: XRView): XRViewport;
 }
 
 declare class XRRigidTransform {
@@ -127,6 +168,8 @@ interface XRView {
     eye: XREye;
     projectionMatrix: Float32Array;
     transform: XRRigidTransform;
+    recommendedViewportScale?: number;
+    requestViewportScale?(scale: number);
 }
 
 interface XRInputSourceChangeEvent {
@@ -140,7 +183,7 @@ interface XRInputSourceEvent extends Event {
     readonly inputSource: XRInputSource;
 }
 
-// Experimental(er) features
+// Experimental/Draft features
 declare class XRRay {
     constructor(transformOrOrigin: XRRigidTransform | DOMPointInit, direction?: DOMPointInit);
     origin: DOMPointReadOnly;
@@ -207,7 +250,7 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
-interface XRHand /*extends Iterablele<XRJointSpace>*/ {
+interface XRHand extends Iterable<XRJointSpace> {
     readonly length: number;
 
     [index: number]: XRJointSpace;
