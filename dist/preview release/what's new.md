@@ -246,6 +246,7 @@
 ### Audio
 
 - Added support of `metadata` in `Sound` class. ([julien-moreau](https://github.com/julien-moreau))
+- Added `currentTime` property to the `Sound` class. ([jocravio](https://github.com/jocravio))
 
 ### Build
 
