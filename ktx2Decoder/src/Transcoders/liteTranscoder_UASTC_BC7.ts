@@ -10,7 +10,7 @@ export class LiteTranscoder_UASTC_BC7 extends LiteTranscoder {
      */
     public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_bc7.wasm";
 
-    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget): boolean {
+    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.BC7_RGBA;
     }
 
@@ -21,6 +21,7 @@ export class LiteTranscoder_UASTC_BC7 extends LiteTranscoder {
     }
 
     public initialize(): void {
+        super.initialize();
         this.setModulePath(LiteTranscoder_UASTC_BC7.WasmModuleURL);
     }
 }
