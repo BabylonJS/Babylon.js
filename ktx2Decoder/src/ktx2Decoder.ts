@@ -12,6 +12,8 @@ import { KTX2FileReader, SupercompressionScheme, IKTX2_ImageDesc } from './ktx2F
 import { TranscoderManager } from './transcoderManager';
 import { LiteTranscoder_UASTC_ASTC } from './Transcoders/liteTranscoder_UASTC_ASTC';
 import { LiteTranscoder_UASTC_BC7 } from './Transcoders/liteTranscoder_UASTC_BC7';
+import { LiteTranscoder_UASTC_RGBA_UNORM } from './Transcoders/liteTranscoder_UASTC_RGBA_UNORM';
+import { LiteTranscoder_UASTC_RGBA_SRGB } from './Transcoders/liteTranscoder_UASTC_RGBA_SRGB';
 import { MSCTranscoder } from './Transcoders/mscTranscoder';
 import { transcodeTarget, sourceTextureFormat } from './transcoder';
 import { ZSTDDecoder } from './zstddec';
@@ -63,6 +65,8 @@ export interface IKTX2DecoderOptions {
      * list of transcoders to bypass when looking for a suitable transcoder. The available transcoders are:
      *      UniversalTranscoder_UASTC_ASTC
      *      UniversalTranscoder_UASTC_BC7
+     *      UniversalTranscoder_UASTC_RGBA_UNORM
+     *      UniversalTranscoder_UASTC_RGBA_SRGB
      *      MSCTranscoder
     */
     bypassTranscoders?: string[];
@@ -153,7 +157,7 @@ export class KTX2Decoder {
             roundToMultiple4 = false;
         }
 
-        const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, targetFormat, options?.bypassTranscoders);
+        const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, targetFormat, kfr.isInGammaSpace, options?.bypassTranscoders);
 
         if (transcoder === null) {
             throw new Error(`no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[targetFormat]}"`);
@@ -243,4 +247,6 @@ export class KTX2Decoder {
 // Put in the order you want the transcoders to be used in priority
 TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_ASTC);
 TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_BC7);
+TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_RGBA_UNORM);
+TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_RGBA_SRGB);
 TranscoderManager.RegisterTranscoder(MSCTranscoder); // catch all transcoder - will throw an error if the format can't be transcoded
