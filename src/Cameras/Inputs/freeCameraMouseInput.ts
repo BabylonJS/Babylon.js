@@ -4,6 +4,7 @@ import { Nullable } from "../../types";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { PointerInfo, PointerEventTypes } from "../../Events/pointerEvents";
+import { Tools } from "../../Misc/tools";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -29,12 +30,12 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
     private _onMouseMove: Nullable<(e: MouseEvent) => any>;
     private _observer: Nullable<Observer<PointerInfo>>;
-    private previousPosition: Nullable<{ x: number, y: number }> = null;
+    private previousPosition: Nullable<{ x: number; y: number }> = null;
 
     /**
      * Observable for when a pointer move event occurs containing the move offset
      */
-    public onPointerMovedObservable = new Observable<{ offsetX: number, offsetY: number }>();
+    public onPointerMovedObservable = new Observable<{ offsetX: number; offsetY: number }>();
     /**
      * @hidden
      * If the camera should be rotated automatically based on pointer movement
@@ -49,16 +50,17 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
         /**
          * Define if touch is enabled in the mouse input
          */
-        public touchEnabled = true) {
-    }
+        public touchEnabled = true
+    ) {}
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         var engine = this.camera.getEngine();
+        const element = engine.getInputElement();
 
         if (!this._pointerInput) {
             this._pointerInput = (p) => {
@@ -87,20 +89,19 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                     this.previousPosition = {
                         x: evt.clientX,
-                        y: evt.clientY
+                        y: evt.clientY,
                     };
 
                     if (!noPreventDefault) {
                         evt.preventDefault();
-                        element.focus();
+                        element && element.focus();
                     }
 
                     // This is required to move while pointer button is down
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                }
-                else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
+                } else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                     try {
                         srcElement.releasePointerCapture(evt.pointerId);
                     } catch (e) {
@@ -111,9 +112,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                }
-
-                else if (p.type === PointerEventTypes.POINTERMOVE) {
+                } else if (p.type === PointerEventTypes.POINTERMOVE) {
                     if (!this.previousPosition) {
                         if (engine.isPointerLock && this._onMouseMove) {
                             this._onMouseMove(p.event);
@@ -124,18 +123,22 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                     var offsetX = evt.clientX - this.previousPosition.x;
                     var offsetY = evt.clientY - this.previousPosition.y;
-                    if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
-                    if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
+                    if (this.camera.getScene().useRightHandedSystem) {
+                        offsetX *= -1;
+                    }
+                    if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
+                        offsetX *= -1;
+                    }
 
                     if (this._allowCameraRotation) {
                         this.camera.cameraRotation.y += offsetX / this.angularSensibility;
                         this.camera.cameraRotation.x += offsetY / this.angularSensibility;
                     }
-                    this.onPointerMovedObservable.notifyObservers({offsetX: offsetX, offsetY: offsetY});
+                    this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
 
                     this.previousPosition = {
                         x: evt.clientX,
-                        y: evt.clientY
+                        y: evt.clientY,
                     };
 
                     if (!noPreventDefault) {
@@ -155,8 +158,12 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             }
 
             var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-            if (this.camera.getScene().useRightHandedSystem) { offsetX *= -1; }
-            if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) { offsetX *= -1; }
+            if (this.camera.getScene().useRightHandedSystem) {
+                offsetX *= -1;
+            }
+            if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
+                offsetX *= -1;
+            }
             this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
             var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
@@ -171,8 +178,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
         this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
-        element.addEventListener("contextmenu",
-            <EventListener>this.onContextMenu.bind(this), false);
+        element && element.addEventListener("contextmenu", <EventListener>this.onContextMenu.bind(this), false);
     }
 
     /**
@@ -185,14 +191,15 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
-        if (this._observer && element) {
+    public detachControl(): void {
+        if (this._observer) {
             this.camera.getScene().onPointerObservable.remove(this._observer);
 
             if (this.onContextMenu) {
-                element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
+                const engine = this.camera.getEngine();
+                const element = engine.getInputElement();
+                element && element.removeEventListener("contextmenu", <EventListener>this.onContextMenu);
             }
 
             if (this.onPointerMovedObservable) {

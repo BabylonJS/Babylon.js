@@ -58,10 +58,8 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
-     * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(): void {
         let manager = this.camera.getScene().gamepadManager;
         this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
             if (gamepad.type !== Gamepad.POSE_ENABLED) {
@@ -88,9 +86,8 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>): void {
+    public detachControl(): void {
         this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
         this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
         this.gamepad = null;
