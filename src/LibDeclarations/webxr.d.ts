@@ -35,7 +35,7 @@ type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourcesch
 type XRPlaneSet = Set<XRPlane>;
 type XRAnchorSet = Set<XRAnchor>;
 
-type XREventHandler = (callback: T) => void;
+type XREventHandler<T> = (callback: T) => void;
 
 interface XRSpace extends EventTarget {}
 
@@ -62,8 +62,8 @@ interface XRSessionInit {
 }
 
 interface XRSession {
-    addEventListener<T extends Event>(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
-    removeEventListener<T extends Event>(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
+    addEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener<T extends Event>(type: XREventType, listener: XREventHandler<T>, options?: boolean | EventListenerOptions): void;
     requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
     updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
     requestAnimationFrame: Function;
@@ -71,15 +71,15 @@ interface XRSession {
     renderState: XRRenderState;
     inputSources: Array<XRInputSource>;
 
-    onend: XREventHandler;
-    oninputsourceschange: XREventHandler;
-    onselect: XREventHandler;
-    onselectstart: XREventHandler;
-    onselectend: XREventHandler;
-    onsqueeze: XREventHandler;
-    onsqueezestart: XREventHandler;
-    onsqueezeend: XREventHandler;
-    onvisibilitychange: XREventHandler;
+    onend: XREventHandler<Event>;
+    oninputsourceschange: XREventHandler<XRInputSourceChangeEvent>;
+    onselect: XREventHandler<XRInputSourceEvent>;
+    onselectstart: XREventHandler<XRInputSourceEvent>;
+    onselectend: XREventHandler<XRInputSourceEvent>;
+    onsqueeze: XREventHandler<XRInputSourceEvent>;
+    onsqueezestart: XREventHandler<XRInputSourceEvent>;
+    onsqueezeend: XREventHandler<XRInputSourceEvent>;
+    onvisibilitychange: XREventHandler<Event>;
 
     // hit test
     requestHitTestSource?(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
@@ -144,13 +144,12 @@ interface XRWebGLLayerOptions {
 declare var XRWebGLLayer: {
     prototype: XRWebGLLayer;
     new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
-    static getNativeFramebufferScaleFactor(session: XRSession);
+    getNativeFramebufferScaleFactor(session: XRSession): number;
 };
 interface XRWebGLLayer {
     framebuffer: WebGLFramebuffer;
     framebufferWidth: number;
     framebufferHeight: number;
-    getViewport: Function;
     readonly antialias: boolean;
     readonly ignoreDepthValues: boolean;
     getViewport(view: XRView): XRViewport;
@@ -169,10 +168,10 @@ interface XRView {
     projectionMatrix: Float32Array;
     transform: XRRigidTransform;
     recommendedViewportScale?: number;
-    requestViewportScale?(scale: number);
+    requestViewportScale(scale: number): void;
 }
 
-interface XRInputSourceChangeEvent {
+interface XRInputSourceChangeEvent extends Event {
     session: XRSession;
     removed: Array<XRInputSource>;
     added: Array<XRInputSource>;
