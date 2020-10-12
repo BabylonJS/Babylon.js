@@ -480,7 +480,7 @@ declare module BABYLON {
      * Extended version of XMLHttpRequest with support for customizations (headers, ...)
      */
     export class WebRequest implements IWebRequest {
-        private _xhr;
+        private readonly _xhr;
         /**
          * Custom HTTP Request Headers to be sent with XMLHttpRequests
          * i.e. when loading files, where the server/service expects an Authorization header
@@ -10690,7 +10690,7 @@ declare module BABYLON {
             /** @hidden */
             _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]>;
             /** @hidden */
-            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo>;
+            _internalPickForMesh(pickingInfo: Nullable<PickingInfo>, rayFunction: (world: Matrix) => Ray, mesh: AbstractMesh, world: Matrix, fastCheck?: boolean, onlyBoundingInfo?: boolean, trianglePredicate?: TrianglePickingPredicate, skipBoundingInfo?: boolean): Nullable<PickingInfo>;
         }
 }
 declare module BABYLON {
@@ -36066,10 +36066,11 @@ declare module BABYLON {
          * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected
          * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
          * @param worldToUse defines the world matrix to use to get the world coordinate of the intersection point
+         * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
          * @returns the picking info
          * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
          */
-        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo?: boolean, worldToUse?: Matrix): PickingInfo;
+        intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo?: boolean, worldToUse?: Matrix, skipBoundingInfo?: boolean): PickingInfo;
         /**
          * Clones the current mesh
          * @param name defines the mesh name
@@ -50214,7 +50215,7 @@ declare module BABYLON {
         /**
          * Options for this XR Layer output
          */
-        canvasOptions?: XRWebGLLayerOptions;
+        canvasOptions?: XRWebGLLayerInit;
         /**
          * CSS styling for a newly created canvas (if not provided)
          */
@@ -58867,6 +58868,8 @@ declare module BABYLON {
          *     URLConfig.jsDecoderModule
          *     URLConfig.wasmUASTCToASTC
          *     URLConfig.wasmUASTCToBC7
+         *     URLConfig.wasmUASTCToRGBA_UNORM
+         *     URLConfig.wasmUASTCToRGBA_SRGB
          *     URLConfig.jsMSCTranscoder
          *     URLConfig.wasmMSCTranscoder
          * You can see their default values in this PG: https://playground.babylonjs.com/#EIJH8L#9
@@ -58875,6 +58878,8 @@ declare module BABYLON {
             jsDecoderModule: string;
             wasmUASTCToASTC: null;
             wasmUASTCToBC7: null;
+            wasmUASTCToRGBA_UNORM: null;
+            wasmUASTCToRGBA_SRGB: null;
             jsMSCTranscoder: null;
             wasmMSCTranscoder: null;
         };
@@ -58897,7 +58902,7 @@ declare module BABYLON {
          * Stop all async operations and release resources.
          */
         dispose(): void;
-        protected _createTexture(data: any, internalTexture: InternalTexture): void;
+        protected _createTexture(data: any, internalTexture: InternalTexture, options?: any): void;
         /**
          * Checks if the given data starts with a KTX2 file identifier.
          * @param data the data to check
@@ -67991,6 +67996,18 @@ declare module BABYLON {
          */
         getAgentNextTargetPath(index: number): Vector3;
         /**
+         * Gets the agent state
+         * @param index agent index returned by addAgent
+         * @returns agent state
+         */
+        getAgentState(index: number): number;
+        /**
+         * returns true if the agent in over an off mesh link connection
+         * @param index agent index returned by addAgent
+         * @returns true if over an off mesh link connection
+         */
+        overOffmeshConnection(index: number): boolean;
+        /**
          * Gets the agent next target point on the path
          * @param index agent index returned by addAgent
          * @param result output world space position
@@ -68357,6 +68374,18 @@ declare module BABYLON {
          * @param result output world space position
          */
         getAgentNextTargetPathToRef(index: number, result: Vector3): void;
+        /**
+         * Gets the agent state
+         * @param index agent index returned by addAgent
+         * @returns agent state
+         */
+        getAgentState(index: number): number;
+        /**
+         * returns true if the agent in over an off mesh link connection
+         * @param index agent index returned by addAgent
+         * @returns true if over an off mesh link connection
+         */
+        overOffmeshConnection(index: number): boolean;
         /**
          * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
          * @param index agent index returned by addAgent
@@ -72833,6 +72862,10 @@ declare module BABYLON {
          */
         onAfterBoxRenderingObservable: Observable<BoundingBox>;
         /**
+         * Observable raised after ressources are created
+         */
+        onRessourcesReadyObservable: Observable<BoundingBoxRenderer>;
+        /**
          * When false, no bounding boxes will be rendered
          */
         enabled: boolean;
@@ -77270,104 +77303,71 @@ interface Window {
 interface Gamepad {
     readonly displayId: number;
 }
+/**
+ * Available session modes
+ */
 type XRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
 
+/**
+ * Reference space types
+ */
 type XRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
 
 type XREnvironmentBlendMode = "opaque" | "additive" | "alpha-blend";
 
 type XRVisibilityState = "visible" | "visible-blurred" | "hidden";
 
+/**
+ * Handedness types
+ */
 type XRHandedness = "none" | "left" | "right";
 
+/**
+ * InputSource target ray modes
+ */
 type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
 
+/**
+ * Eye types
+ */
 type XREye = "none" | "left" | "right";
 
+/**
+ * Type of XR events available
+ */
 type XREventType = "devicechange" | "visibilitychange" | "end" | "inputsourceschange" | "select" | "selectstart" | "selectend" | "squeeze" | "squeezestart" | "squeezeend" | "reset";
 
-interface XRSpace extends EventTarget {}
+type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => void;
 
-interface XRRenderState {
-    depthNear?: number;
-    depthFar?: number;
-    inlineVerticalFieldOfView?: number;
-    baseLayer?: XRWebGLLayer;
-}
+type XRPlaneSet = Set<XRPlane>;
+type XRAnchorSet = Set<XRAnchor>;
 
-interface XRInputSource {
-    handedness: XRHandedness;
-    targetRayMode: XRTargetRayMode;
-    targetRaySpace: XRSpace;
-    gripSpace: XRSpace | undefined;
-    gamepad: Gamepad | undefined;
-    profiles: Array<string>;
-    hand: XRHand | undefined;
-}
+type XREventHandler = (callback: any) => void;
+
+interface XRLayer extends EventTarget {}
 
 interface XRSessionInit {
     optionalFeatures?: string[];
     requiredFeatures?: string[];
 }
 
-interface XRSession {
-    addEventListener: Function;
-    removeEventListener: Function;
-    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace>;
-    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
-    requestAnimationFrame: Function;
-    end(): Promise<void>;
-    renderState: XRRenderState;
-    inputSources: Array<XRInputSource>;
-
-    // hit test
-    requestHitTestSource(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
-    requestHitTestSourceForTransientInput(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
-
-    // legacy AR hit test
-    requestHitTest(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
-
-    // legacy plane detection
-    updateWorldTrackingState(options: { planeDetectionState?: { enabled: boolean } }): void;
+interface XRSessionEvent extends Event {
+    readonly session: XRSession;
 }
 
-interface XRReferenceSpace extends XRSpace {
-    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
-    onreset: any;
+interface XRSystem {
+    isSessionSupported: (sessionMode: XRSessionMode) => Promise<boolean>;
+    requestSession: (sessionMode: XRSessionMode, sessionInit?: any) => Promise<XRSession>;
 }
 
-type XRPlaneSet = Set<XRPlane>;
-type XRAnchorSet = Set<XRAnchor>;
-
-interface XRFrame {
-    session: XRSession;
-    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
-    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
-
-    // AR
-    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
-    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
-    // Anchors
-    trackedAnchors?: XRAnchorSet;
-    createAnchor(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
-    // Planes
-    worldInformation: {
-        detectedPlanes?: XRPlaneSet;
-    };
-    // Hand tracking
-    getJointPose(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
+interface XRViewport {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
 }
 
-interface XRViewerPose extends XRPose {
-    views: Array<XRView>;
-}
-
-interface XRPose {
-    transform: XRRigidTransform;
-    emulatedPosition: boolean;
-}
-
-interface XRWebGLLayerOptions {
+interface XRWebGLLayerInit {
     antialias?: boolean;
     depth?: boolean;
     stencil?: boolean;
@@ -77376,35 +77376,76 @@ interface XRWebGLLayerOptions {
     framebufferScaleFactor?: number;
 }
 
-declare var XRWebGLLayer: {
-    prototype: XRWebGLLayer;
-    new (session: XRSession, context: WebGLRenderingContext | undefined, options?: XRWebGLLayerOptions): XRWebGLLayer;
-};
-interface XRWebGLLayer {
-    framebuffer: WebGLFramebuffer;
-    framebufferWidth: number;
-    framebufferHeight: number;
-    getViewport: Function;
+declare class XRWebGLLayer {
+    static getNativeFramebufferScaleFactor(session: XRSession): number;
+    constructor(session: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext, layerInit?: XRWebGLLayerInit);
+    readonly antialias: boolean;
+    readonly framebuffer: WebGLFramebuffer;
+    readonly framebufferWidth: number;
+    readonly framebufferHeight: number;
+    readonly ignoreDepthValues: boolean;
+    getViewport: (view: XRView) => XRViewport;
 }
 
-declare class XRRigidTransform {
-    constructor(matrix: Float32Array | DOMPointInit, direction?: DOMPointInit);
-    position: DOMPointReadOnly;
-    orientation: DOMPointReadOnly;
-    matrix: Float32Array;
-    inverse: XRRigidTransform;
+// tslint:disable-next-line no-empty-interface
+interface XRSpace extends EventTarget {}
+
+interface XRRenderState {
+    readonly baseLayer?: XRWebGLLayer;
+    readonly depthFar: number;
+    readonly depthNear: number;
+    readonly inlineVerticalFieldOfView?: number;
 }
 
-interface XRView {
-    eye: XREye;
-    projectionMatrix: Float32Array;
-    transform: XRRigidTransform;
+interface XRRenderStateInit extends XRRenderState {
+    baseLayer: XRWebGLLayer;
+    depthFar: number;
+    depthNear: number;
+    inlineVerticalFieldOfView?: number;
+    layers?: XRLayer[];
 }
 
-interface XRInputSourceChangeEvent {
-    session: XRSession;
-    removed: Array<XRInputSource>;
-    added: Array<XRInputSource>;
+interface XRReferenceSpace extends XRSpace {
+    getOffsetReferenceSpace(originOffset: XRRigidTransform): XRReferenceSpace;
+    onreset: XREventHandler;
+}
+
+interface XRBoundedReferenceSpace extends XRSpace {
+    readonly boundsGeometry: DOMPointReadOnly[];
+}
+
+interface XRInputSource {
+    readonly handedness: XRHandedness;
+    readonly targetRayMode: XRTargetRayMode;
+    readonly targetRaySpace: XRSpace;
+    readonly gripSpace?: XRSpace;
+    readonly gamepad?: Gamepad;
+    readonly profiles: Array<string>;
+    readonly hand?: XRHand;
+}
+
+interface XRPose {
+    readonly transform: XRRigidTransform;
+    readonly emulatedPosition: boolean;
+}
+
+interface XRFrame {
+    readonly session: XRSession;
+    getPose(space: XRSpace, baseSpace: XRSpace): XRPose | undefined;
+    getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
+
+    // AR
+    getHitTestResults(hitTestSource: XRHitTestSource): Array<XRHitTestResult>;
+    getHitTestResultsForTransientInput(hitTestSource: XRTransientInputHitTestSource): Array<XRTransientInputHitTestResult>;
+    // Anchors
+    trackedAnchors?: XRAnchorSet;
+    createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
+    // Planes
+    worldInformation?: {
+        detectedPlanes?: XRPlaneSet;
+    };
+    // Hand tracking
+    getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
 }
 
 interface XRInputSourceEvent extends Event {
@@ -77412,7 +77453,99 @@ interface XRInputSourceEvent extends Event {
     readonly inputSource: XRInputSource;
 }
 
-// Experimental(er) features
+type XRInputSourceArray = XRInputSource[];
+
+interface XRSession {
+    addEventListener(type: XREventType, listener: XREventHandler, options?: boolean | AddEventListenerOptions): void;
+    removeEventListener(type: XREventType, listener: XREventHandler, options?: boolean | EventListenerOptions): void;
+    /**
+     * Returns a list of this session's XRInputSources, each representing an input device
+     * used to control the camera and/or scene.
+     */
+    readonly inputSources: Array<XRInputSource>;
+    /**
+     * object which contains options affecting how the imagery is rendered.
+     * This includes things such as the near and far clipping planes
+     */
+    readonly renderState: XRRenderState;
+    readonly visibilityState: XRVisibilityState;
+    /**
+     * Removes a callback from the animation frame painting callback from
+     * XRSession's set of animation frame rendering callbacks, given the
+     * identifying handle returned by a previous call to requestAnimationFrame().
+     */
+    cancelAnimationFrame: (handle: number) => void;
+    /**
+     * Ends the WebXR session. Returns a promise which resolves when the
+     * session has been shut down.
+     */
+    end(): Promise<void>;
+    /**
+     * Schedules the specified method to be called the next time the user agent
+     * is working on rendering an animation frame for the WebXR device. Returns an
+     * integer value which can be used to identify the request for the purposes of
+     * canceling the callback using cancelAnimationFrame(). This method is comparable
+     * to the Window.requestAnimationFrame() method.
+     */
+    requestAnimationFrame: XRFrameRequestCallback;
+    /**
+     * Requests that a new XRReferenceSpace of the specified type be created.
+     * Returns a promise which resolves with the XRReferenceSpace or
+     * XRBoundedReferenceSpace which was requested, or throws a NotSupportedError if
+     * the requested space type isn't supported by the device.
+     */
+    requestReferenceSpace(type: XRReferenceSpaceType): Promise<XRReferenceSpace | XRBoundedReferenceSpace>;
+
+    updateRenderState(XRRenderStateInit: XRRenderState): Promise<void>;
+
+    onend: XREventHandler;
+    oninputsourceschange: XREventHandler;
+    onselect: XREventHandler;
+    onselectstart: XREventHandler;
+    onselectend: XREventHandler;
+    onsqueeze: XREventHandler;
+    onsqueezestart: XREventHandler;
+    onsqueezeend: XREventHandler;
+    onvisibilitychange: XREventHandler;
+
+    // hit test
+    requestHitTestSource?(options: XRHitTestOptionsInit): Promise<XRHitTestSource>;
+    requestHitTestSourceForTransientInput?(options: XRTransientInputHitTestOptionsInit): Promise<XRTransientInputHitTestSource>;
+
+    // legacy AR hit test
+    requestHitTest?(ray: XRRay, referenceSpace: XRReferenceSpace): Promise<XRHitResult[]>;
+
+    // legacy plane detection
+    updateWorldTrackingState?(options: { planeDetectionState?: { enabled: boolean } }): void;
+}
+
+interface XRViewerPose extends XRPose {
+    readonly views: Array<XRView>;
+}
+
+declare class XRRigidTransform {
+    constructor(position?: DOMPointInit, direction?: DOMPointInit);
+    position: DOMPointReadOnly;
+    orientation: DOMPointReadOnly;
+    matrix: Float32Array;
+    inverse: XRRigidTransform;
+}
+
+interface XRView {
+    readonly eye: XREye;
+    readonly projectionMatrix: Float32Array;
+    readonly transform: XRRigidTransform;
+    readonly recommendedViewportScale?: number;
+    requestViewportScale(scale: number): void;
+}
+
+interface XRInputSourceChangeEvent extends Event {
+    session: XRSession;
+    removed: Array<XRInputSource>;
+    added: Array<XRInputSource>;
+}
+
+// Experimental/Draft features
 declare class XRRay {
     constructor(transformOrOrigin: XRRigidTransform | DOMPointInit, direction?: DOMPointInit);
     origin: DOMPointReadOnly;
@@ -77479,12 +77612,10 @@ interface XRJointPose extends XRPose {
     radius: number | undefined;
 }
 
-interface XRHand /*extends Iterablele<XRJointSpace>*/ {
+interface XRHand extends Iterable<XRJointSpace> {
     readonly length: number;
 
     [index: number]: XRJointSpace;
-
-    // Specs have the function 'joint(idx: number)', but chrome doesn't support it yet.
 
     readonly WRIST: number;
 
@@ -82828,11 +82959,15 @@ declare module BABYLON.GLTF2.Loader {
      * Loader interface with additional members.
      */
     export interface ITexture extends BABYLON.GLTF2.ITexture, IArrayItem {
+        /** @hidden */
+        _textureInfo: ITextureInfo;
     }
     /**
      * Loader interface with additional members.
      */
     export interface ITextureInfo extends BABYLON.GLTF2.ITextureInfo {
+        /** false or undefined if the texture holds color data (true if data are roughness, normal, ...) */
+        nonColorData?: boolean;
     }
     /**
      * Loader interface with additional members.
@@ -82939,20 +83074,18 @@ declare module BABYLON.GLTF2 {
          * @param context The context when loading the asset
          * @param textureInfo The glTF texture info property
          * @param assign A function called synchronously after parsing the glTF properties
-         * @param isColorData true if the texture held color data, else false
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
          */
-        loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void, isColorData: boolean): Nullable<Promise<BaseTexture>>;
+        loadTextureInfoAsync?(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
         /**
          * @hidden
          * Define this method to modify the default behavior when loading textures.
          * @param context The context when loading the asset
          * @param texture The glTF texture property
          * @param assign A function called synchronously after parsing the glTF properties
-         * @param isColorData true if the texture held color data, else false
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete or null if not handled
          */
-        _loadTextureAsync?(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void, isColorData: boolean): Nullable<Promise<BaseTexture>>;
+        _loadTextureAsync?(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
         /**
          * Define this method to modify the default behavior when loading animations.
          * @param context The context when loading the asset
@@ -83223,12 +83356,11 @@ declare module BABYLON.GLTF2 {
          * @param context The context when loading the asset
          * @param textureInfo The glTF texture info property
          * @param assign A function called synchronously after parsing the glTF properties
-         * @param isColorData true if the texture held color data, else false
          * @returns A promise that resolves with the loaded Babylon texture when the load is complete
          */
-        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign?: (babylonTexture: BaseTexture) => void, isColorData?: boolean): Promise<BaseTexture>;
+        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         /** @hidden */
-        _loadTextureAsync(context: string, texture: ITexture, assign?: (babylonTexture: BaseTexture) => void, isColorData?: boolean): Promise<BaseTexture>;
+        _loadTextureAsync(context: string, texture: ITexture, assign?: (babylonTexture: BaseTexture) => void): Promise<BaseTexture>;
         /** @hidden */
         _createTextureAsync(context: string, sampler: ISampler, image: IImage, assign?: (babylonTexture: BaseTexture) => void, textureLoaderOptions?: any): Promise<BaseTexture>;
         private _loadSampler;
@@ -83765,7 +83897,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void, isColorData?: boolean): Nullable<Promise<BaseTexture>>;
+        _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
@@ -83787,7 +83919,7 @@ declare module BABYLON.GLTF2.Loader.Extensions {
         /** @hidden */
         dispose(): void;
         /** @hidden */
-        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void, isColorData?: boolean): Nullable<Promise<BaseTexture>>;
+        loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>>;
     }
 }
 declare module BABYLON.GLTF2.Loader.Extensions {
