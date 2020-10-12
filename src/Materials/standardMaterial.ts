@@ -1377,7 +1377,6 @@ export class StandardMaterial extends PushMaterial {
         mesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
         mesh.transferToEffect(world);
 
-
         // PrePass
         this.prePassConfiguration.bindForSubMesh(this._activeEffect, scene, mesh, world, this.isFrozen);
 
@@ -1601,8 +1600,8 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        ubo.update();
         this._afterBind(mesh, this._activeEffect);
+        ubo.update();
     }
 
     /**

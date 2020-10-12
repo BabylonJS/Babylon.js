@@ -2078,9 +2078,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);
         }
 
-        ubo.update();
-
         this._afterBind(mesh, this._activeEffect);
+
+        ubo.update();
     }
 
     /**
