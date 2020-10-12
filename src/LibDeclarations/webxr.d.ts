@@ -141,7 +141,7 @@ interface XRViewport {
     readonly height: number;
 }
 
-interface XRWebGLLayerOptions {
+interface XRWebGLLayerInit {
     antialias?: boolean;
     depth?: boolean;
     stencil?: boolean;
