@@ -105,7 +105,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
      * @returns a promise that resolves with an array of native XR hit result in xr coordinates system
      */
     public static XRHitTestWithRay(xrSession: XRSession, xrRay: XRRay, referenceSpace: XRReferenceSpace, filter?: (result: XRHitResult) => boolean): Promise<XRHitResult[]> {
-        return xrSession.requestHitTest(xrRay, referenceSpace).then((results) => {
+        return xrSession.requestHitTest!(xrRay, referenceSpace).then((results) => {
             const filterFunction = filter || ((result) => !!result.hitMatrix);
             return results.filter(filterFunction);
         });
