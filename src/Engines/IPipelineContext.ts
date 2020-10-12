@@ -27,9 +27,6 @@ export interface IPipelineContext {
     /** @hidden */
     _fillEffectInformation(effect: Effect, uniformBuffersNames: { [key: string]: number }, uniformsNames: string[], uniforms: { [key: string]: Nullable<WebGLUniformLocation> }, samplerList: string[], samplers: { [key: string]: number }, attributesNames: string[], attributes: number[]): void;
 
-    /** @hidden */
-    _useNewBindings(): void;
-
     /** Releases the resources associated with the pipeline. */
     dispose(): void;
 

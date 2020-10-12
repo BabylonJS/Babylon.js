@@ -182,6 +182,8 @@ export class ThinEngine {
         supportShadowSamplers: false,
         uniformBufferHardCheckMatrix: false,
         allowTexturePrefiltering: false,
+        trackUbosInFrame: false,
+        _collectUbosUpdatedInFrame: false,
     };
 
     /**
@@ -258,6 +260,14 @@ export class ThinEngine {
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
      */
     public disableUniformBuffers = false;
+
+    private _frameId = 0;
+    /**
+     * Gets the current frame id
+     */
+    public get frameId(): number {
+        return this._frameId;
+    }
 
     /** @hidden */
     public _uniformBuffers = new Array<UniformBuffer>();
@@ -1335,6 +1345,7 @@ export class ThinEngine {
         if (this._badOS) {
             this.flushFramebuffer();
         }
+        this._frameId++;
     }
 
     /**

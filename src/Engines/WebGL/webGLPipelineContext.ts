@@ -76,11 +76,6 @@ export class WebGLPipelineContext implements IPipelineContext {
         }
     }
 
-    /** @hidden */
-    public _useNewBindings(): void {
-        // nothing to do in WebGL
-    }
-
     /**
      * Release all associated resources.
      **/
