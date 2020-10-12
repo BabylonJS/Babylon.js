@@ -41,6 +41,7 @@ export class UniformBuffer {
     private _needSync: boolean;
     private _noUBO: boolean;
     private _currentEffect: Effect;
+    private _name: string;
     private _currentFrameId: number;
 
     /** @hidden */
@@ -161,10 +162,11 @@ export class UniformBuffer {
      * @param data Define the data contained in the buffer
      * @param dynamic Define if the buffer is updatable
      */
-    constructor(engine: Engine, data?: number[], dynamic?: boolean) {
+    constructor(engine: Engine, data?: number[], dynamic?: boolean, name?: string) {
         this._engine = engine;
         this._noUBO = !engine.supportsUniformBuffers;
         this._dynamic = dynamic;
+        this._name = name ?? "no-name";
 
         this._data = data || [];
 

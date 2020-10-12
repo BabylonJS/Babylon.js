@@ -665,6 +665,7 @@ export class Effect implements IDisposable {
             let engine = this._engine;
 
             this._pipelineContext = engine.createPipelineContext(this._processingContext);
+            this._pipelineContext._name = this._key;
 
             let rebuildRebind = this._rebuildProgram.bind(this);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
