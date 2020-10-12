@@ -6,6 +6,7 @@ import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { ICameraInput, CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { Engine } from "../../Engines/engine";
 import { KeyboardInfo, KeyboardEventTypes } from "../../Events/keyboardEvents";
+import { Tools } from '../../Misc/tools';
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
@@ -85,10 +86,12 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
-     * @param element Defines the element the controls should be listened from
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
+    public attachControl(noPreventDefault?: boolean): void {
+        // was there a second variable defined?
+        noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
+
         if (this._onCanvasBlurObserver) {
             return;
         }
@@ -107,11 +110,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                     this._ctrlPressed = evt.ctrlKey;
                     this._altPressed = evt.altKey;
 
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysReset.indexOf(evt.keyCode) !== -1) {
+                    if (this.keysUp.indexOf(evt.keyCode) !== -1 || this.keysDown.indexOf(evt.keyCode) !== -1 || this.keysLeft.indexOf(evt.keyCode) !== -1 || this.keysRight.indexOf(evt.keyCode) !== -1 || this.keysReset.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index === -1) {
@@ -124,13 +123,8 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                             }
                         }
                     }
-                }
-                else {
-                    if (this.keysUp.indexOf(evt.keyCode) !== -1 ||
-                        this.keysDown.indexOf(evt.keyCode) !== -1 ||
-                        this.keysLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRight.indexOf(evt.keyCode) !== -1 ||
-                        this.keysReset.indexOf(evt.keyCode) !== -1) {
+                } else {
+                    if (this.keysUp.indexOf(evt.keyCode) !== -1 || this.keysDown.indexOf(evt.keyCode) !== -1 || this.keysLeft.indexOf(evt.keyCode) !== -1 || this.keysRight.indexOf(evt.keyCode) !== -1 || this.keysReset.indexOf(evt.keyCode) !== -1) {
                         var index = this._keys.indexOf(evt.keyCode);
 
                         if (index >= 0) {
@@ -150,9 +144,8 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
 
     /**
      * Detach the current controls from the specified dom element.
-     * @param element Defines the element to stop listening the inputs from
      */
-    public detachControl(element: Nullable<HTMLElement>) {
+    public detachControl() {
         if (this._scene) {
             if (this._onKeyboardObserver) {
                 this._scene.onKeyboardObservable.remove(this._onKeyboardObserver);
@@ -186,11 +179,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                 } else if (this.keysUp.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                         camera.inertialPanningY += 1 / this.panningSensibility;
-                    }
-                    else if (this._altPressed && this.useAltToZoom) {
+                    } else if (this._altPressed && this.useAltToZoom) {
                         camera.inertialRadiusOffset += 1 / this.zoomingSensibility;
-                    }
-                    else {
+                    } else {
                         camera.inertialBetaOffset -= this.angularSpeed;
                     }
                 } else if (this.keysRight.indexOf(keyCode) !== -1) {
@@ -202,11 +193,9 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                 } else if (this.keysDown.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
                         camera.inertialPanningY -= 1 / this.panningSensibility;
-                    }
-                    else if (this._altPressed && this.useAltToZoom) {
+                    } else if (this._altPressed && this.useAltToZoom) {
                         camera.inertialRadiusOffset -= 1 / this.zoomingSensibility;
-                    }
-                    else {
+                    } else {
                         camera.inertialBetaOffset += this.angularSpeed;
                     }
                 } else if (this.keysReset.indexOf(keyCode) !== -1) {

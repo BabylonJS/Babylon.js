@@ -55,6 +55,7 @@
 - Added noMipMap option to the photo dome construction process ([#8972](https://github.com/BabylonJS/Babylon.js/issues/8972)) ([RaananW](https://github.com/RaananW))
 - Add a `disableBoundingBoxesFromEffectLayer` property to the `EffectLayer` class to render the bounding boxes unaffected by the effect ([Popov72](https://github.com/Popov72))
 - Added `boundingBoxRenderer.onRessourcesReadyObservable` ([aWeirdo](https://github.com/aWeirdo))
+- Removed all references to HTML element from cameras' attach and detach control functions ([RaananW](https://github.com/RaananW))
 
 ### Engine
 
