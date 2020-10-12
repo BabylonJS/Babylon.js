@@ -37,7 +37,7 @@ type XRFrameRequestCallback = (time: DOMHighResTimeStamp, frame: XRFrame) => voi
 type XRPlaneSet = Set<XRPlane>;
 type XRAnchorSet = Set<XRAnchor>;
 
-type XREventHandler = EventHandler
+type XREventHandler = (callback: any) => void;
 
 interface XRLayer extends EventTarget {}
 
