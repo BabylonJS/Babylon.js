@@ -183,6 +183,20 @@ export interface ICrowd {
     getAgentNextTargetPath(index: number): Vector3;
 
     /**
+     * Gets the agent state
+     * @param index agent index returned by addAgent
+     * @returns agent state
+     */
+    getAgentState(index: number): number;
+
+    /**
+     * returns true if the agent in over an off mesh link connection
+     * @param index agent index returned by addAgent
+     * @returns true if over an off mesh link connection
+     */
+    overOffmeshConnection(index: number): boolean;
+
+    /**
      * Gets the agent next target point on the path
      * @param index agent index returned by addAgent
      * @param result output world space position
