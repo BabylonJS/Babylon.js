@@ -151,7 +151,7 @@ export class WebXRHand implements IDisposable {
         this.trackedMeshes.forEach((mesh, idx) => {
             const xrJoint = hand[idx];
             if (xrJoint) {
-                let pose = xrFrame.getJointPose(xrJoint, referenceSpace);
+                let pose = xrFrame.getJointPose!(xrJoint, referenceSpace);
                 if (!pose || !pose.transform) {
                     return;
                 }
