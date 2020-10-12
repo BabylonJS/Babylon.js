@@ -16,7 +16,7 @@ export class WebXRManagedOutputCanvasOptions {
     /**
      * Options for this XR Layer output
      */
-    public canvasOptions?: XRWebGLLayerOptions;
+    public canvasOptions?: XRWebGLLayerInit;
     /**
      * CSS styling for a newly created canvas (if not provided)
      */
